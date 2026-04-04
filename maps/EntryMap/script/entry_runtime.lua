@@ -1,6 +1,14 @@
 local CONFIG = require 'entry_config'
+local BondSystem = require 'runtime_bonds'
 local develop_command = require 'y3.develop.command'
 local M = {}
+local heal_hero
+
+local function trace_boot(message)
+  print('[entry_runtime] ' .. tostring(message))
+end
+
+trace_boot('chunk loaded')
 
 local function create_skill_runtime()
   return {
@@ -32,8 +40,8 @@ local ATTACK_SKILL_DEFS = {
     summary = '发射 1 支箭矢，造成 100% 攻击的物理伤害。',
     damage_type = '物理',
     base_damage_ratio = 1.0,
-    base_cooldown = 1.7,
-    base_range = 700,
+    base_cooldown = 1.6,
+    base_range = 760,
   },
   arcane_arrow = {
     id = 'arcane_arrow',
@@ -59,12 +67,16 @@ local ATTACK_SKILL_DEFS = {
   frost_arrow = {
     id = 'frost_arrow',
     name = '寒冰箭',
-    summary = '射出 1 支寒冰箭，造成冰系魔法伤害。',
+    summary = '射出 1 支寒冰箭，造成冰系魔法伤害并短暂击退目标。',
     damage_type = '法术',
     base_damage_ratio = 1.7,
     base_cooldown = 4.8,
     base_range = 920,
     base_pierce = 0,
+    base_pierce_width = 95,
+    base_control_lock_time = 0.20,
+    base_knockback_distance = 90,
+    base_knockback_speed = 880,
   },
   thunder = {
     id = 'thunder',
@@ -141,6 +153,350 @@ local ATTACK_SKILL_VFX = {
   },
 }
 
+local BOND_DEFS = {
+  blessing = {
+    id = 'blessing',
+    name = '祝福',
+    quality = 'common',
+    required_count = 2,
+    pool_weight = 10,
+    bond_effect_desc = '每8秒回复6%最大生命，并获得8%伤害减免，持续2秒。',
+    runtime = { blessing_active = 1 },
+  },
+  berserk = {
+    id = 'berserk',
+    name = '狂战',
+    quality = 'common',
+    required_count = 2,
+    pool_weight = 10,
+    bond_effect_desc = '生命低于50%时，额外获得攻速+35%与普攻伤害+25%。',
+    runtime = { berserk_active = 1 },
+  },
+  hunter = {
+    id = 'hunter',
+    name = '猎手',
+    quality = 'common',
+    required_count = 2,
+    pool_weight = 9,
+    bond_effect_desc = '对精英与Boss伤害额外+25%，首次命中时追加50%攻击力伤害。',
+    runtime = {
+      boss_damage_bonus = 0.25,
+      elite_damage_bonus = 0.25,
+      hunter_first_hit_ratio = 0.50,
+    },
+  },
+  greed = {
+    id = 'greed',
+    name = '贪欲',
+    quality = 'common',
+    required_count = 2,
+    pool_weight = 9,
+    bond_effect_desc = '每击杀30个敌人，额外获得40木材与30金币。',
+    runtime = { greed_active = 1 },
+  },
+  barrage = {
+    id = 'barrage',
+    name = '连射',
+    quality = 'rare',
+    required_count = 3,
+    pool_weight = 8,
+    bond_effect_desc = '多重数量+1，多重伤害+35%。',
+    runtime = {
+      multishot_count = 1,
+      multishot_ratio = 0.35,
+    },
+  },
+  chain = {
+    id = 'chain',
+    name = '连锁',
+    quality = 'rare',
+    required_count = 3,
+    pool_weight = 8,
+    bond_effect_desc = '弹射次数+1，弹射伤害+35%。',
+    runtime = {
+      chain_bounces = 1,
+      chain_ratio = 0.35,
+    },
+  },
+  arcane = {
+    id = 'arcane',
+    name = '奥术',
+    quality = 'rare',
+    required_count = 3,
+    pool_weight = 8,
+    bond_effect_desc = '技能伤害+35%，释放攻击技能后3秒内所有伤害+12%。',
+    runtime = {
+      skill_damage_bonus = 0.35,
+      arcane_empower_enabled = 1,
+    },
+  },
+  execute = {
+    id = 'execute',
+    name = '处决',
+    quality = 'rare',
+    required_count = 3,
+    pool_weight = 8,
+    bond_effect_desc = '对生命低于35%的敌人造成的伤害额外+40%。',
+    runtime = {
+      execute_damage_bonus = 0.40,
+      execute_threshold = 0.35,
+    },
+  },
+  growth = {
+    id = 'growth',
+    name = '成长',
+    quality = 'epic',
+    required_count = 4,
+    pool_weight = 6,
+    bond_effect_desc = '每击杀20个敌人永久攻击+12；每100击杀额外获得伤害加成+4%。',
+    runtime = { growth_active = 1 },
+  },
+  fortress = {
+    id = 'fortress',
+    name = '坚壁',
+    quality = 'epic',
+    required_count = 4,
+    pool_weight = 6,
+    bond_effect_desc = '生命高于80%时伤害减免+12%；生命低于50%时每秒回复3%最大生命。',
+    runtime = { fortress_active = 1 },
+  },
+}
+
+local BOND_CARD_DEFS = {
+  {
+    id = 'blessing_holy_water',
+    bond_id = 'blessing',
+    name = '圣水',
+    quality = 'common',
+    base_effect_desc = '生命恢复 +8',
+    attr = { ['生命恢复'] = 8 },
+  },
+  {
+    id = 'blessing_prayer',
+    bond_id = 'blessing',
+    name = '祈愿',
+    quality = 'common',
+    base_effect_desc = '最大生命 +160',
+    attr = { ['最大生命'] = 160 },
+  },
+  {
+    id = 'berserk_fury',
+    bond_id = 'berserk',
+    name = '怒意',
+    quality = 'common',
+    base_effect_desc = '物理攻击 +18',
+    attr = { ['物理攻击'] = 18 },
+  },
+  {
+    id = 'berserk_hot_blood',
+    bond_id = 'berserk',
+    name = '热血',
+    quality = 'common',
+    base_effect_desc = '攻击速度 +12%',
+    attr = { ['攻击速度'] = 12 },
+  },
+  {
+    id = 'hunter_pursuit',
+    bond_id = 'hunter',
+    name = '追猎',
+    quality = 'common',
+    base_effect_desc = 'Boss伤害 +12%',
+    runtime = { boss_damage_bonus = 0.12 },
+  },
+  {
+    id = 'hunter_purge',
+    bond_id = 'hunter',
+    name = '剿灭',
+    quality = 'common',
+    base_effect_desc = '精英伤害 +12%',
+    runtime = { elite_damage_bonus = 0.12 },
+  },
+  {
+    id = 'greed_coin',
+    bond_id = 'greed',
+    name = '铜币',
+    quality = 'common',
+    base_effect_desc = '杀敌金币 +20%',
+    runtime = { kill_gold_ratio = 0.20 },
+  },
+  {
+    id = 'greed_hoard',
+    bond_id = 'greed',
+    name = '囤积',
+    quality = 'common',
+    base_effect_desc = '每秒金币 +2',
+    runtime = { gold_per_sec_bonus = 2 },
+  },
+  {
+    id = 'barrage_swiftstring',
+    bond_id = 'barrage',
+    name = '疾弦',
+    quality = 'rare',
+    base_effect_desc = '攻击速度 +10%',
+    attr = { ['攻击速度'] = 10 },
+  },
+  {
+    id = 'barrage_draw',
+    bond_id = 'barrage',
+    name = '开弓',
+    quality = 'rare',
+    base_effect_desc = '普攻伤害 +12%',
+    runtime = { normal_attack_damage_bonus = 0.12 },
+  },
+  {
+    id = 'barrage_spread',
+    bond_id = 'barrage',
+    name = '扩散',
+    quality = 'rare',
+    base_effect_desc = '多重伤害 +15%',
+    runtime = { multishot_ratio = 0.15 },
+  },
+  {
+    id = 'chain_echo',
+    bond_id = 'chain',
+    name = '回响',
+    quality = 'rare',
+    base_effect_desc = '弹射伤害 +15%',
+    runtime = { chain_ratio = 0.15 },
+  },
+  {
+    id = 'chain_return',
+    bond_id = 'chain',
+    name = '折返',
+    quality = 'rare',
+    base_effect_desc = '攻击范围 +40',
+    attr = { ['攻击范围'] = 40 },
+  },
+  {
+    id = 'chain_pursue',
+    bond_id = 'chain',
+    name = '追击',
+    quality = 'rare',
+    base_effect_desc = '普攻伤害 +10%',
+    runtime = { normal_attack_damage_bonus = 0.10 },
+  },
+  {
+    id = 'arcane_chant',
+    bond_id = 'arcane',
+    name = '咏唱',
+    quality = 'rare',
+    base_effect_desc = '技能伤害 +12%',
+    runtime = { skill_damage_bonus = 0.12 },
+  },
+  {
+    id = 'arcane_conduit',
+    bond_id = 'arcane',
+    name = '导能',
+    quality = 'rare',
+    base_effect_desc = '伤害加成 +8%',
+    attr = { ['伤害加成'] = 8 },
+  },
+  {
+    id = 'arcane_focus',
+    bond_id = 'arcane',
+    name = '聚焦',
+    quality = 'rare',
+    base_effect_desc = '攻击范围 +40',
+    attr = { ['攻击范围'] = 40 },
+  },
+  {
+    id = 'execute_weakness',
+    bond_id = 'execute',
+    name = '破绽',
+    quality = 'rare',
+    base_effect_desc = '普攻伤害 +10%',
+    runtime = { normal_attack_damage_bonus = 0.10 },
+  },
+  {
+    id = 'execute_suppress',
+    bond_id = 'execute',
+    name = '压制',
+    quality = 'rare',
+    base_effect_desc = '精英伤害 +10%',
+    runtime = { elite_damage_bonus = 0.10 },
+  },
+  {
+    id = 'execute_thrust',
+    bond_id = 'execute',
+    name = '突刺',
+    quality = 'rare',
+    base_effect_desc = '物理攻击 +16',
+    attr = { ['物理攻击'] = 16 },
+  },
+  {
+    id = 'growth_hone',
+    bond_id = 'growth',
+    name = '磨砺',
+    quality = 'epic',
+    base_effect_desc = '伤害加成 +8%',
+    attr = { ['伤害加成'] = 8 },
+  },
+  {
+    id = 'growth_accumulate',
+    bond_id = 'growth',
+    name = '积累',
+    quality = 'epic',
+    base_effect_desc = '杀敌攻击 +1',
+    runtime = { attack_on_kill = 1 },
+  },
+  {
+    id = 'growth_merit',
+    bond_id = 'growth',
+    name = '历战',
+    quality = 'epic',
+    base_effect_desc = '杀敌奖励 +10%',
+    runtime = { kill_reward_ratio = 0.10 },
+  },
+  {
+    id = 'growth_charge',
+    bond_id = 'growth',
+    name = '蓄势',
+    quality = 'epic',
+    base_effect_desc = '物理攻击 +20',
+    attr = { ['物理攻击'] = 20 },
+  },
+  {
+    id = 'fortress_iron',
+    bond_id = 'fortress',
+    name = '铁甲',
+    quality = 'epic',
+    base_effect_desc = '最大生命 +180',
+    attr = { ['最大生命'] = 180 },
+  },
+  {
+    id = 'fortress_wall',
+    bond_id = 'fortress',
+    name = '壁垒',
+    quality = 'epic',
+    base_effect_desc = '伤害减免 +4%',
+    attr = { ['伤害减免'] = 4 },
+  },
+  {
+    id = 'fortress_heal',
+    bond_id = 'fortress',
+    name = '自愈',
+    quality = 'epic',
+    base_effect_desc = '生命恢复 +10',
+    attr = { ['生命恢复'] = 10 },
+  },
+  {
+    id = 'fortress_stable',
+    bond_id = 'fortress',
+    name = '稳固',
+    quality = 'epic',
+    base_effect_desc = '护甲 +6',
+    attr = { ['护甲'] = 6 },
+  },
+}
+
+local BOND_CARD_BY_ID = {}
+local BOND_CARDS_BY_BOND = {}
+for _, card in ipairs(BOND_CARD_DEFS) do
+  BOND_CARD_BY_ID[card.id] = card
+  BOND_CARDS_BY_BOND[card.bond_id] = BOND_CARDS_BY_BOND[card.bond_id] or {}
+  BOND_CARDS_BY_BOND[card.bond_id][#BOND_CARDS_BY_BOND[card.bond_id] + 1] = card
+end
+
 local function create_attack_skill_instance(skill_id, slot)
   local def = ATTACK_SKILL_DEFS[skill_id]
   return {
@@ -159,10 +515,14 @@ local function create_attack_skill_instance(skill_id, slot)
     range_bonus = 0,
     attack_speed_bonus = 0,
     pierce = def.base_pierce or 0,
+    pierce_width = def.base_pierce_width or 90,
     repeat_count = def.base_repeat_count or 1,
     explosion_ratio = def.base_explosion_ratio or 0,
     explosion_radius = def.base_explosion_radius or 0,
     extra_targets = def.base_extra_targets or 0,
+    control_lock_time = def.base_control_lock_time or 0,
+    knockback_distance = def.base_knockback_distance or 0,
+    knockback_speed = def.base_knockback_speed or 900,
   }
 end
 
@@ -179,7 +539,14 @@ local function create_attack_skill_state()
       basic_attack = basic_attack,
     },
     upgrade_counts = {},
+    last_picked_skill_id = nil,
+    new_skill_feed = {},
+    unlock_offer_fail_streak = 0,
   }
+end
+
+local function create_bond_runtime()
+  return BondSystem.create_runtime()
 end
 
 local STATE = {
@@ -194,6 +561,9 @@ local STATE = {
   active_wave = nil,
   active_challenges = nil,
   resources = nil,
+  resource_income_elapsed = 0,
+  bond_runtime = nil,
+  enemy_info_map = nil,
   skill_points = 0,
   hero_progress = nil,
   awaiting_upgrade = false,
@@ -206,6 +576,8 @@ local STATE = {
   defeated_boss_waves = nil,
   basic_attack_ability_bound = false,
   basic_attack_ability_warned = false,
+  debug_ctrl_down_count = 0,
+  gm_ui = nil,
   game_finished = false,
 }
 
@@ -229,6 +601,8 @@ end
 local function round_number(value)
   return math.floor((value or 0) + 0.5)
 end
+
+local create_bond_env
 
 local function get_basic_attack_skill()
   if not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
@@ -367,6 +741,168 @@ end
 
 local function get_hero_progression_rules()
   return CONFIG.hero_progression or {}
+end
+
+local function get_resource_rules()
+  return CONFIG.resource_rules or {}
+end
+
+local function get_bond_quality_label(quality)
+  if quality == 'epic' then
+    return '史诗'
+  end
+  if quality == 'rare' then
+    return '稀有'
+  end
+  return '普通'
+end
+
+local function add_bonus_value(target, key, value)
+  if not target or not key or value == nil or value == 0 then
+    return
+  end
+  target[key] = (target[key] or 0) + value
+end
+
+local function merge_bonus_pack(target, source)
+  if not target or not source then
+    return
+  end
+  for key, value in pairs(source) do
+    add_bonus_value(target, key, value)
+  end
+end
+
+local function get_bond_runtime_bonus(key)
+  return BondSystem.get_runtime_bonus(STATE, key)
+end
+
+local function get_bond_progress_count(bond_id)
+  return BondSystem.get_progress_count(STATE, bond_id)
+end
+
+local function is_bond_active(bond_id)
+  return BondSystem.is_active(STATE, bond_id)
+end
+
+local function legacy_is_bond_card_acquired(card_id)
+  local runtime = STATE.bond_runtime
+  if not runtime or not card_id then
+    return false
+  end
+
+  for _, owned_card_id in ipairs(runtime.slots) do
+    if owned_card_id == card_id then
+      return true
+    end
+  end
+  return runtime.swallowed_card_ids[card_id] == true
+end
+
+local function legacy_get_incomplete_bond_group_count()
+  local runtime = STATE.bond_runtime
+  if not runtime then
+    return 0
+  end
+
+  local count = 0
+  for bond_id, progress in pairs(runtime.progress) do
+    local def = BOND_DEFS[bond_id]
+    if def and progress > 0 and progress < def.required_count then
+      count = count + 1
+    end
+  end
+  return count
+end
+
+local function legacy_rebuild_bond_progress()
+  local runtime = STATE.bond_runtime
+  if not runtime then
+    return
+  end
+
+  runtime.progress = {}
+  runtime.active_bond_ids = {}
+
+  for _, card_id in ipairs(runtime.slots) do
+    local card = BOND_CARD_BY_ID[card_id]
+    if card then
+      add_bonus_value(runtime.progress, card.bond_id, 1)
+    end
+  end
+
+  for bond_id, def in pairs(BOND_DEFS) do
+    if (runtime.progress[bond_id] or 0) >= def.required_count then
+      runtime.active_bond_ids[bond_id] = true
+    end
+  end
+end
+
+local function legacy_set_bond_dynamic_attr_bonus(attr_name, value)
+  local runtime = STATE.bond_runtime
+  if not runtime or not attr_name then
+    return
+  end
+
+  local prev = runtime.dynamic_attr_bonuses[attr_name] or 0
+  local next_value = value or 0
+  if prev == next_value then
+    return
+  end
+
+  runtime.dynamic_attr_bonuses[attr_name] = next_value ~= 0 and next_value or nil
+  if STATE.hero and STATE.hero:is_exist() then
+    STATE.hero:add_attr(attr_name, next_value - prev)
+  end
+end
+
+local function legacy_set_bond_dynamic_runtime_bonus(key, value)
+  local runtime = STATE.bond_runtime
+  if not runtime or not key then
+    return
+  end
+  if value == nil or value == 0 then
+    runtime.dynamic_runtime_bonuses[key] = nil
+  else
+    runtime.dynamic_runtime_bonuses[key] = value
+  end
+end
+
+local function refresh_bond_effects()
+  BondSystem.refresh_effects(create_bond_env())
+end
+
+local function legacy_apply_bond_dynamic_bonuses(desired_attr, desired_runtime)
+  local runtime = STATE.bond_runtime
+  if not runtime then
+    return
+  end
+
+  if STATE.hero and STATE.hero:is_exist() then
+    local seen_attr = {}
+    for attr_name, desired_value in pairs(desired_attr) do
+      seen_attr[attr_name] = true
+      local prev = runtime.dynamic_attr_bonuses[attr_name] or 0
+      local delta = desired_value - prev
+      if delta ~= 0 then
+        STATE.hero:add_attr(attr_name, delta)
+      end
+    end
+
+    for attr_name, prev in pairs(runtime.dynamic_attr_bonuses) do
+      if not seen_attr[attr_name] and prev ~= 0 then
+        STATE.hero:add_attr(attr_name, -prev)
+      end
+    end
+  end
+
+  runtime.dynamic_attr_bonuses = desired_attr
+  runtime.dynamic_runtime_bonuses = desired_runtime
+  sync_basic_attack_ability()
+end
+
+local function update_bond_effects(dt)
+  BondSystem.update_effects(create_bond_env(), dt)
 end
 
 local function get_hero_max_level()
@@ -688,6 +1224,23 @@ local function show_calibration_help()
   message('校准指令：.epos / .eset hero / .eset defense / .earea 区域名 [宽] [高] [偏移X] [偏移Y] / .eblink hero|defense / .edump')
 end
 
+local function debug_message(text)
+  message('[DEBUG] ' .. text)
+end
+
+local function show_debug_hotkey_help()
+  debug_message('Ctrl+F1：显示调试快捷键说明')
+  debug_message('Ctrl+F2：补 500 金币 / 300 木材 / 5 技能点')
+  debug_message('Ctrl+F3：英雄直接升 3 级')
+  debug_message('Ctrl+F4：解锁全部攻击技能并补 3 技能点')
+  debug_message('Ctrl+F5：直接打开 G 三选一（无技能点时自动补 1）')
+  debug_message('Ctrl+F6：直接触发 F 抽卡（木材不足时自动补足）')
+  debug_message('Ctrl+F7：补满挑战次数')
+  debug_message('Ctrl+F8：立即刷出当前波 Boss')
+  debug_message('Ctrl+F9：秒杀场上全部敌人')
+  debug_message('Ctrl+F10：显示 / 隐藏 GM 面板')
+end
+
 local function register_dev_commands()
   if STATE.dev_commands_registered then
     return
@@ -817,6 +1370,13 @@ local function register_dev_commands()
       dump_calibration_file()
     end,
   })
+
+  develop_command.register('EHOTKEY', {
+    desc = '打印当前调试快捷键说明。',
+    onCommand = function()
+      show_debug_hotkey_help()
+    end,
+  })
 end
 
 local function has_unit_data(unit_id)
@@ -828,6 +1388,37 @@ local function is_active_enemy(unit)
     and unit:is_exist()
     and STATE.all_enemies
     and unit:is_in_group(STATE.all_enemies)
+end
+
+local function get_enemy_runtime_info(unit)
+  if not STATE.enemy_info_map or not unit then
+    return nil
+  end
+  return STATE.enemy_info_map[unit]
+end
+
+local function is_boss_runtime_enemy(info)
+  return info and (info.kind == 'boss' or info.is_boss == true) or false
+end
+
+local function is_elite_runtime_enemy(info)
+  return info and (info.is_elite == true or is_boss_runtime_enemy(info)) or false
+end
+
+create_bond_env = function()
+  return {
+    STATE = STATE,
+    message = message,
+    round_number = round_number,
+    y3 = y3,
+    heal_hero = heal_hero,
+    sync_basic_attack_ability = sync_basic_attack_ability,
+    is_active_enemy = is_active_enemy,
+    get_enemy_runtime_info = get_enemy_runtime_info,
+    is_boss_runtime_enemy = is_boss_runtime_enemy,
+    is_elite_runtime_enemy = is_elite_runtime_enemy,
+    basic_attack_damage_type = ATTACK_SKILL_DEFS.basic_attack.damage_type,
+  }
 end
 
 local function get_enemies_in_range(center, radius, except_unit)
@@ -860,12 +1451,60 @@ local function resolve_damage_text_type(damage_type, visual)
   return 'magic'
 end
 
+local function get_target_hp_ratio(target)
+  if not target or not target:is_exist() then
+    return 1
+  end
+  local max_hp = y3.helper.tonumber(target:get_attr('最大生命')) or 0
+  if max_hp <= 0 then
+    return 1
+  end
+  return math.max(0, (target:get_hp() or 0) / max_hp)
+end
+
+local function get_damage_bonus_multiplier(target, context)
+  local multiplier = 1
+  multiplier = multiplier * (1 + get_bond_runtime_bonus('all_damage_bonus'))
+
+  if context and context.is_skill then
+    multiplier = multiplier * (1 + get_bond_runtime_bonus('skill_damage_bonus'))
+  end
+  if context and context.is_basic_attack then
+    multiplier = multiplier * (1 + get_bond_runtime_bonus('normal_attack_damage_bonus'))
+  end
+
+  local info = get_enemy_runtime_info(target)
+  if is_boss_runtime_enemy(info) then
+    multiplier = multiplier * (1 + get_bond_runtime_bonus('boss_damage_bonus'))
+  end
+  if is_elite_runtime_enemy(info) then
+    multiplier = multiplier * (1 + get_bond_runtime_bonus('elite_damage_bonus'))
+  end
+
+  local execute_threshold = get_bond_runtime_bonus('execute_threshold')
+  if execute_threshold > 0 and get_target_hp_ratio(target) <= execute_threshold then
+    multiplier = multiplier * (1 + get_bond_runtime_bonus('execute_damage_bonus'))
+  end
+
+  return multiplier
+end
+
+local function try_trigger_hunter_first_hit(target)
+  BondSystem.try_trigger_hunter_first_hit(create_bond_env(), target)
+end
+
+local function build_reward_with_bond_bonus(reward)
+  return BondSystem.build_reward_with_bonus(create_bond_env(), reward)
+end
+
 local function deal_skill_damage(target, amount, damage_type, visual)
   if not STATE.hero or not STATE.hero:is_exist() or not is_active_enemy(target) then
     return
   end
 
-  local final_damage = math.floor(amount or 0)
+  local final_damage = math.floor((amount or 0) * get_damage_bonus_multiplier(target, {
+    is_skill = true,
+  }))
   if final_damage <= 0 then
     return
   end
@@ -882,9 +1521,13 @@ local function deal_skill_damage(target, amount, damage_type, visual)
     common_attack = false,
     no_miss = true,
   })
+
+  if not (visual and visual.skip_hunter_first_hit) then
+    try_trigger_hunter_first_hit(target)
+  end
 end
 
-local function heal_hero(amount)
+heal_hero = function(amount)
   if amount <= 0 or not STATE.hero or not STATE.hero:is_exist() then
     return
   end
@@ -934,6 +1577,28 @@ local function award_rewards(reward, source_text, silent)
   if #parts > 0 then
     message(string.format('%s：%s', source_text or '获得奖励', table.concat(parts, '，')))
   end
+end
+
+local function update_passive_resources(dt)
+  local rules = get_resource_rules()
+  local gold_per_sec = math.max(0, (rules.gold_per_sec or 0) + get_bond_runtime_bonus('gold_per_sec_bonus'))
+  local wood_per_sec = math.max(0, (rules.wood_per_sec or 0) + get_bond_runtime_bonus('wood_per_sec_bonus'))
+  if (gold_per_sec <= 0 and wood_per_sec <= 0) or not STATE.resources then
+    return
+  end
+
+  local interval = math.max(0.05, CONFIG.debug_time_scale or 1.0)
+  STATE.resource_income_elapsed = (STATE.resource_income_elapsed or 0) + dt
+
+  while STATE.resource_income_elapsed >= interval do
+    STATE.resource_income_elapsed = STATE.resource_income_elapsed - interval
+    STATE.resources.gold = STATE.resources.gold + gold_per_sec
+    STATE.resources.wood = STATE.resources.wood + wood_per_sec
+  end
+end
+
+local function handle_bond_enemy_kill(info)
+  BondSystem.handle_enemy_kill(create_bond_env(), info)
 end
 
 local function get_current_wave()
@@ -1154,6 +1819,23 @@ local function trigger_td_skills_on_hit(data)
     end
   end
 
+  local bond_chain_bounces = math.max(0, round_number(get_bond_runtime_bonus('chain_bounces')))
+  local bond_chain_ratio = math.max(0, get_bond_runtime_bonus('chain_ratio'))
+  if bond_chain_bounces > 0 and bond_chain_ratio > 0 then
+    local bounced = 0
+    for _, unit in ipairs(get_enemies_in_range(target, math.max(skill.chain_radius or 0, 420), target)) do
+      deal_skill_damage(unit, data.damage * bond_chain_ratio, '法术', {
+        text_type = 'magic',
+        particle = ATTACK_SKILL_VFX.thunder.chain_particle,
+        skip_hunter_first_hit = true,
+      })
+      bounced = bounced + 1
+      if bounced >= bond_chain_bounces then
+        break
+      end
+    end
+  end
+
   if skill.execute_threshold > 0 and target:is_exist() and target:get_hp() > 0 then
     local max_hp = target:get_attr('最大生命')
     if max_hp > 0 and target:get_hp() / max_hp <= skill.execute_threshold then
@@ -1179,8 +1861,13 @@ local function pick_upgrade_choices(count)
   return choices
 end
 
-local function show_upgrade_choices()
+local function legacy_show_upgrade_choices()
   if STATE.game_finished then
+    return
+  end
+
+  if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice then
+    message('请先完成当前 F 羁绊三选一。')
     return
   end
 
@@ -1203,7 +1890,7 @@ local function show_upgrade_choices()
   end
 end
 
-local function apply_upgrade(index)
+local function legacy_apply_upgrade(index)
   if not STATE.awaiting_upgrade then
     return
   end
@@ -1344,6 +2031,7 @@ local function unlock_attack_skill(skill_id)
   local skill = create_attack_skill_instance(skill_id, empty_slot)
   STATE.attack_skill_state.slots[empty_slot] = skill
   STATE.attack_skill_state.by_id[skill_id] = skill
+  STATE.attack_skill_state.new_skill_feed[skill_id] = 2
   return skill, empty_slot, true
 end
 
@@ -1366,6 +2054,122 @@ local function get_unit_point_snapshot(unit)
     return nil
   end
   return clone_point(unit:get_point())
+end
+
+local function get_enemies_on_line(origin_point, impact_point, max_distance, line_width, max_hits, except_unit)
+  local result = {}
+  if not origin_point or not impact_point or max_hits <= 0 then
+    return result
+  end
+
+  local ox = origin_point:get_x()
+  local oy = origin_point:get_y()
+  local tx = impact_point:get_x()
+  local ty = impact_point:get_y()
+  local dir_x = tx - ox
+  local dir_y = ty - oy
+  local length = math.sqrt(dir_x * dir_x + dir_y * dir_y)
+  if length < 1 then
+    return result
+  end
+
+  local reach = math.max(length, max_distance or length)
+  local nx = dir_x / length
+  local ny = dir_y / length
+  local width = math.max(40, line_width or 95)
+  local start_projection = math.max(0, length - width)
+  local candidates = {}
+  local picked = y3.selector.create()
+    :is_enemy(get_player())
+    :in_range(origin_point, reach + width)
+    :pick()
+
+  for _, unit in ipairs(picked) do
+    if unit ~= except_unit and is_active_enemy(unit) then
+      local point = unit:get_point()
+      local rel_x = point:get_x() - ox
+      local rel_y = point:get_y() - oy
+      local projection = rel_x * nx + rel_y * ny
+      if projection >= start_projection and projection <= reach then
+        local lateral = math.abs(rel_x * ny - rel_y * nx)
+        if lateral <= width then
+          candidates[#candidates + 1] = {
+            unit = unit,
+            projection = projection,
+          }
+        end
+      end
+    end
+  end
+
+  table.sort(candidates, function(a, b)
+    return a.projection < b.projection
+  end)
+
+  for index = 1, math.min(max_hits, #candidates), 1 do
+    result[#result + 1] = candidates[index].unit
+  end
+
+  return result
+end
+
+local function resume_enemy_path(unit)
+  if is_active_enemy(unit) and STATE.defense_point then
+    unit:attack_move(STATE.defense_point)
+  end
+end
+
+local function apply_frost_arrow_control(skill, unit)
+  if not unit or not is_active_enemy(unit) then
+    return
+  end
+
+  local control_lock_time = math.max(0, skill.control_lock_time or 0)
+  local knockback_distance = math.max(0, skill.knockback_distance or 0)
+
+  unit:stop()
+
+  if control_lock_time > 0 then
+    unit:add_state('禁止移动')
+    unit:add_state('禁止转向')
+    y3.ltimer.wait(control_lock_time, function()
+      if not unit or not unit:is_exist() then
+        return
+      end
+      unit:remove_state('禁止移动')
+      unit:remove_state('禁止转向')
+      resume_enemy_path(unit)
+    end)
+  end
+
+  if knockback_distance <= 0 or not STATE.hero or not STATE.hero:is_exist() then
+    return
+  end
+
+  local hero_point = get_hero_point()
+  local unit_point = get_unit_point_snapshot(unit)
+  if not hero_point or not unit_point then
+    return
+  end
+
+  pcall(function()
+    unit:mover_line({
+      angle = hero_point:get_angle_with(unit_point),
+      distance = knockback_distance,
+      speed = skill.knockback_speed or 900,
+      terrain_block = false,
+      on_finish = function()
+        if control_lock_time <= 0 then
+          resume_enemy_path(unit)
+        end
+      end,
+      on_break = function()
+        if control_lock_time <= 0 then
+          resume_enemy_path(unit)
+        end
+      end,
+    })
+  end)
 end
 
 local function play_particle_on_unit(unit, effect_key, scale, time, socket)
@@ -1579,6 +2383,7 @@ local function cast_frost_arrow(skill, target)
   local vfx = ATTACK_SKILL_VFX.frost_arrow
   local damage = get_skill_damage(skill)
   local remaining_hits = 1 + math.max(0, skill.pierce or 0)
+  local origin_point = get_hero_point()
   play_particle_on_unit(STATE.hero, vfx.cast_particle, vfx.cast_scale, vfx.cast_time)
 
   launch_projectile_to_target(vfx, target, function(impact_point)
@@ -1589,6 +2394,7 @@ local function cast_frost_arrow(skill, target)
 
     if is_active_enemy(target) then
       deal_skill_damage(target, damage, skill.damage_type)
+      apply_frost_arrow_control(skill, target)
       remaining_hits = remaining_hits - 1
     end
 
@@ -1596,10 +2402,18 @@ local function cast_frost_arrow(skill, target)
       return
     end
 
-    for _, unit in ipairs(get_enemies_in_range(center or target, 280, target)) do
+    for _, unit in ipairs(get_enemies_on_line(
+      origin_point,
+      center or get_unit_point_snapshot(target),
+      math.max(1, (skill.cast_range or 0) + (skill.range_bonus or 0)),
+      skill.pierce_width or 95,
+      remaining_hits,
+      target
+    )) do
       deal_skill_damage(unit, damage, skill.damage_type, {
         particle = vfx.impact_particle,
       })
+      apply_frost_arrow_control(skill, unit)
       remaining_hits = remaining_hits - 1
       if remaining_hits <= 0 then
         break
@@ -1657,6 +2471,8 @@ local function cast_attack_skill_once(skill, target)
   if skill.id == 'basic_attack' then
     local vfx = ATTACK_SKILL_VFX.basic_attack
     local damage = get_skill_damage(skill)
+    local multishot_count = math.max(0, round_number(get_bond_runtime_bonus('multishot_count')))
+    local multishot_ratio = math.max(0, get_bond_runtime_bonus('multishot_ratio'))
     local hero_point = get_hero_point()
     if hero_point and target and target:is_exist() and not STATE.hero:has_state('禁止转向') then
       STATE.hero:set_facing(hero_point:get_angle_with(target:get_point()), 0.08)
@@ -1674,7 +2490,9 @@ local function cast_attack_skill_once(skill, target)
       if is_active_enemy(target) then
         STATE.hero:damage({
           target = target,
-          damage = round_number(damage),
+          damage = round_number(damage * get_damage_bonus_multiplier(target, {
+            is_basic_attack = true,
+          })),
           type = skill.damage_type,
           ability = STATE.hero_common_attack and STATE.hero_common_attack:is_exist() and STATE.hero_common_attack or nil,
           text_type = 'physics',
@@ -1682,9 +2500,28 @@ local function cast_attack_skill_once(skill, target)
           common_attack = true,
           no_miss = true,
         })
+        try_trigger_hunter_first_hit(target)
+      end
+
+      if multishot_count > 0 and multishot_ratio > 0 then
+        local hit_count = 0
+        for _, unit in ipairs(get_enemies_in_range(target, math.max(260, get_current_basic_attack_range() * 0.45), target)) do
+          deal_skill_damage(unit, damage * multishot_ratio, skill.damage_type, {
+            text_type = 'physics',
+            skip_hunter_first_hit = true,
+          })
+          hit_count = hit_count + 1
+          if hit_count >= multishot_count then
+            break
+          end
+        end
       end
     end)
     return
+  end
+
+  if STATE.bond_runtime and is_bond_active('arcane') then
+    STATE.bond_runtime.arcane_empower_remaining = 3
   end
 
   if skill.id == 'arcane_arrow' then
@@ -1840,8 +2677,8 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '强化箭矢',
     desc = '普攻伤害 +20%。',
-    weight = 8,
-    max_picks = 6,
+    weight = 5,
+    max_picks = 5,
     can_offer = function()
       return get_attack_skill('basic_attack') ~= nil
     end,
@@ -1859,8 +2696,8 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '迅捷拉弦',
     desc = '攻击速度 +15%。',
-    weight = 6,
-    max_picks = 4,
+    weight = 4,
+    max_picks = 3,
     can_offer = function()
       return get_attack_skill('basic_attack') ~= nil
     end,
@@ -1878,8 +2715,8 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '猎手视界',
     desc = '攻击范围 +80。',
-    weight = 4,
-    max_picks = 3,
+    weight = 3,
+    max_picks = 2,
     can_offer = function()
       return get_attack_skill('basic_attack') ~= nil
     end,
@@ -1897,7 +2734,7 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '箭矢增幅',
     desc = '奥术箭伤害 +25%。',
-    weight = 6,
+    weight = 7,
     max_picks = 5,
     can_offer = function()
       return get_attack_skill('arcane_arrow') ~= nil
@@ -1914,7 +2751,7 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '急速抽箭',
     desc = '奥术箭冷却缩减 12%。',
-    weight = 4,
+    weight = 5,
     max_picks = 4,
     can_offer = function()
       return get_attack_skill('arcane_arrow') ~= nil
@@ -1931,7 +2768,7 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '贯通延伸',
     desc = '奥术箭额外穿透 +1。',
-    weight = 3,
+    weight = 4,
     max_picks = 2,
     can_offer = function()
       return get_attack_skill('arcane_arrow') ~= nil
@@ -1948,7 +2785,7 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '火箭增幅',
     desc = '爆炎箭命中与爆炸伤害 +20%。',
-    weight = 6,
+    weight = 7,
     max_picks = 5,
     can_offer = function()
       return get_attack_skill('flame_arrow') ~= nil
@@ -1966,7 +2803,7 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '爆炸扩散',
     desc = '爆炎箭爆炸范围 +60。',
-    weight = 4,
+    weight = 5,
     max_picks = 3,
     can_offer = function()
       return get_attack_skill('flame_arrow') ~= nil
@@ -1983,7 +2820,7 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '连珠火箭',
     desc = '爆炎箭额外释放 1 次。',
-    weight = 3,
+    weight = 4,
     max_picks = 2,
     can_offer = function()
       return get_attack_skill('flame_arrow') ~= nil
@@ -2000,7 +2837,7 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '冰箭增幅',
     desc = '寒冰箭伤害 +25%。',
-    weight = 6,
+    weight = 7,
     max_picks = 5,
     can_offer = function()
       return get_attack_skill('frost_arrow') ~= nil
@@ -2017,7 +2854,7 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '冰箭连发',
     desc = '寒冰箭冷却缩减 10%。',
-    weight = 4,
+    weight = 5,
     max_picks = 4,
     can_offer = function()
       return get_attack_skill('frost_arrow') ~= nil
@@ -2034,7 +2871,7 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '冰箭贯穿',
     desc = '寒冰箭额外穿透 +1。',
-    weight = 3,
+    weight = 4,
     max_picks = 2,
     can_offer = function()
       return get_attack_skill('frost_arrow') ~= nil
@@ -2051,7 +2888,7 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '雷击增幅',
     desc = '天雷伤害 +25%。',
-    weight = 6,
+    weight = 7,
     max_picks = 5,
     can_offer = function()
       return get_attack_skill('thunder') ~= nil
@@ -2068,7 +2905,7 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '连续雷击',
     desc = '天雷额外打击 1 个附近目标。',
-    weight = 4,
+    weight = 6,
     max_picks = 3,
     can_offer = function()
       return get_attack_skill('thunder') ~= nil
@@ -2085,7 +2922,7 @@ local ATTACK_UPGRADE_DEFS = {
     level_delta = 1,
     name = '高压导体',
     desc = '天雷冷却缩减 10%。',
-    weight = 4,
+    weight = 5,
     max_picks = 4,
     can_offer = function()
       return get_attack_skill('thunder') ~= nil
@@ -2101,23 +2938,161 @@ local function is_unlock_upgrade(upgrade)
   return upgrade and type(upgrade.key) == 'string' and string.sub(upgrade.key, 1, 7) == 'unlock_'
 end
 
-local function pick_weighted_upgrade(pool)
+local function get_upgrade_balance_wave_index()
+  return math.max(1, STATE.current_wave_index or 0, STATE.started_wave_count or 0)
+end
+
+local function get_unlock_offer_chance(unlocked_skill_count)
+  local wave_index = get_upgrade_balance_wave_index()
+  if unlocked_skill_count <= 1 then
+    if wave_index <= 1 then
+      return 0.75
+    end
+    if wave_index == 2 then
+      return 0.65
+    end
+    return 0.50
+  end
+  if unlocked_skill_count == 2 then
+    if wave_index <= 1 then
+      return 0.55
+    end
+    if wave_index == 2 then
+      return 0.45
+    end
+    return 0.35
+  end
+  if unlocked_skill_count == 3 then
+    if wave_index <= 2 then
+      return 0.30
+    end
+    if wave_index <= 4 then
+      return 0.22
+    end
+    return 0.15
+  end
+  return 0
+end
+
+local function get_skill_regular_upgrade_pick_count(skill_id)
+  if not skill_id then
+    return 0
+  end
+
+  local total = 0
+  for _, upgrade in ipairs(ATTACK_UPGRADE_DEFS) do
+    if upgrade.skill_id == skill_id and not is_unlock_upgrade(upgrade) then
+      total = total + get_upgrade_pick_count(upgrade.key)
+    end
+  end
+  return total
+end
+
+local function get_regular_upgrade_weight(upgrade)
+  local base_weight = upgrade.weight or 1
+  local skill_id = upgrade.skill_id
+  if not skill_id then
+    return base_weight
+  end
+
+  local factor = 1.0
+  local wave_index = get_upgrade_balance_wave_index()
+  local picked_count = get_skill_regular_upgrade_pick_count(skill_id)
+
+  if picked_count > 0 then
+    factor = factor * 1.25
+  else
+    factor = factor * 0.90
+  end
+
+  if skill_id == 'basic_attack' then
+    if wave_index <= 2 then
+      factor = factor * 1.20
+    elseif picked_count >= 2 then
+      factor = factor * 0.85
+    end
+  end
+
+  if STATE.attack_skill_state and STATE.attack_skill_state.last_picked_skill_id == skill_id then
+    factor = factor * 1.25
+  end
+
+  local feed_rounds = STATE.attack_skill_state
+    and STATE.attack_skill_state.new_skill_feed
+    and STATE.attack_skill_state.new_skill_feed[skill_id]
+    or 0
+  if feed_rounds > 0 then
+    factor = factor * 1.60
+  end
+
+  factor = math.min(factor, 2.2)
+  return base_weight * factor
+end
+
+local function get_upgrade_effective_weight(upgrade)
+  if is_unlock_upgrade(upgrade) then
+    return upgrade.weight or 1
+  end
+  return get_regular_upgrade_weight(upgrade)
+end
+
+local function count_distinct_skill_ids(pool)
+  local seen = {}
+  local count = 0
+  for _, upgrade in ipairs(pool) do
+    local skill_id = upgrade.skill_id
+    if skill_id and not seen[skill_id] then
+      seen[skill_id] = true
+      count = count + 1
+    end
+  end
+  return count
+end
+
+local function decay_new_skill_feed_rounds()
+  if not STATE.attack_skill_state or not STATE.attack_skill_state.new_skill_feed then
+    return
+  end
+
+  for skill_id, rounds in pairs(STATE.attack_skill_state.new_skill_feed) do
+    local next_rounds = rounds - 1
+    if next_rounds > 0 then
+      STATE.attack_skill_state.new_skill_feed[skill_id] = next_rounds
+    else
+      STATE.attack_skill_state.new_skill_feed[skill_id] = nil
+    end
+  end
+end
+
+local function pick_weighted_upgrade(pool, avoid_skill_id)
   if #pool == 0 then
     return nil
   end
 
   local total_weight = 0
-  for _, upgrade in ipairs(pool) do
-    total_weight = total_weight + (upgrade.weight or 1)
+  local candidates = {}
+  for index, upgrade in ipairs(pool) do
+    if not avoid_skill_id or upgrade.skill_id ~= avoid_skill_id then
+      local weight = math.max(0.01, get_upgrade_effective_weight(upgrade))
+      total_weight = total_weight + weight
+      candidates[#candidates + 1] = {
+        index = index,
+        weight = weight,
+      }
+    end
+  end
+
+  if #candidates == 0 then
+    return pick_weighted_upgrade(pool, nil)
   end
 
   local roll = math.random() * total_weight
   local cumulative = 0
-  local picked_index = #pool
-  for index, upgrade in ipairs(pool) do
-    cumulative = cumulative + (upgrade.weight or 1)
+  local picked_index = candidates[#candidates].index
+  for _, candidate in ipairs(candidates) do
+    cumulative = cumulative + candidate.weight
     if roll <= cumulative then
-      picked_index = index
+      picked_index = candidate.index
       break
     end
   end
@@ -2148,32 +3123,67 @@ local function pick_upgrade_choices(count)
   local regular_pool, unlock_pool = build_upgrade_pool()
   local choices = {}
   local unlocked_skill_count = get_unlocked_attack_skill_count()
-  local guaranteed_unlock_count = 0
+  local has_unlock_available = get_empty_attack_skill_slot() ~= nil and #unlock_pool > 0
+  local unlock_added = false
 
-  if get_empty_attack_skill_slot() ~= nil and #unlock_pool > 0 then
-    if unlocked_skill_count <= 1 then
-      guaranteed_unlock_count = math.min(2, count, #unlock_pool)
-    else
-      guaranteed_unlock_count = math.min(1, count, #unlock_pool)
+  if has_unlock_available then
+    local force_unlock = STATE.attack_skill_state
+      and (STATE.attack_skill_state.unlock_offer_fail_streak or 0) >= 3
+    local should_offer_unlock = force_unlock
+      or math.random() <= get_unlock_offer_chance(unlocked_skill_count)
+    if should_offer_unlock then
+      local picked = pick_weighted_upgrade(unlock_pool)
+      if picked then
+        choices[#choices + 1] = picked
+        unlock_added = true
+      end
     end
   end
 
-  for _ = 1, guaranteed_unlock_count, 1 do
-    local picked = pick_weighted_upgrade(unlock_pool)
-    if picked then
-      choices[#choices + 1] = picked
+  local regular_skill_ids = {}
+  while #choices < count and #regular_pool > 0 do
+    local avoid_skill_id = nil
+    if #regular_skill_ids == 1 and count_distinct_skill_ids(regular_pool) > 1 then
+      avoid_skill_id = regular_skill_ids[1]
     end
-  end
 
-  while #choices < count and (#regular_pool > 0 or #unlock_pool > 0) do
-    local picked = pick_weighted_upgrade(regular_pool)
-    if not picked then
-      picked = pick_weighted_upgrade(unlock_pool)
-    end
+    local picked = pick_weighted_upgrade(regular_pool, avoid_skill_id)
     if not picked then
       break
     end
     choices[#choices + 1] = picked
+    regular_skill_ids[#regular_skill_ids + 1] = picked.skill_id
+  end
+
+  if #choices < count and not unlock_added and has_unlock_available then
+    local picked = pick_weighted_upgrade(unlock_pool)
+    if picked then
+      choices[#choices + 1] = picked
+      unlock_added = true
+    end
+  end
+
+  while #choices < count and #regular_pool > 0 do
+    local picked = pick_weighted_upgrade(regular_pool)
+    if not picked then
+      break
+    end
+    choices[#choices + 1] = picked
+  end
+
+  if STATE.attack_skill_state and #choices > 0 then
+    if has_unlock_available then
+      if unlock_added then
+        STATE.attack_skill_state.unlock_offer_fail_streak = 0
+      else
+        STATE.attack_skill_state.unlock_offer_fail_streak =
+          (STATE.attack_skill_state.unlock_offer_fail_streak or 0) + 1
+      end
+    else
+      STATE.attack_skill_state.unlock_offer_fail_streak = 0
+    end
+
+    decay_new_skill_feed_rounds()
   end
 
   return choices
@@ -2228,6 +3238,9 @@ local function apply_upgrade(index)
 
   upgrade.apply(STATE)
   record_upgrade_pick(upgrade.key)
+  if STATE.attack_skill_state then
+    STATE.attack_skill_state.last_picked_skill_id = upgrade.skill_id
+  end
   STATE.awaiting_upgrade = false
   STATE.current_upgrade_choices = nil
   message('已选择强化：' .. upgrade.name)
@@ -2242,7 +3255,7 @@ local function apply_upgrade(index)
   end
 end
 
-local function try_bond_draw()
+local function legacy_try_bond_draw()
   local cost_wood = 100
   if STATE.awaiting_upgrade then
     message('请先完成当前 G 三选一。')
@@ -2261,6 +3274,215 @@ local function try_bond_draw()
   else
     message(string.format('已进行第 %d 次羁绊抽卡。当前按占位逻辑视为触发一次“替换/吞噬”决策。', STATE.bond_draw_count))
   end
+end
+
+local function build_bond_slot_text(slot)
+  local runtime = STATE.bond_runtime
+  local card_id = runtime and runtime.slots[slot] or nil
+  if not card_id then
+    return string.format('%d号羁绊位 空', slot)
+  end
+
+  local card = BOND_CARD_BY_ID[card_id]
+  local bond = card and BOND_DEFS[card.bond_id] or nil
+  if not card or not bond then
+    return string.format('%d号羁绊位 空', slot)
+  end
+
+  local progress = get_bond_progress_count(card.bond_id)
+  local state_text = is_bond_active(card.bond_id)
+    and '已激活'
+    or string.format('%d/%d', progress, bond.required_count)
+  return string.format(
+    '%d号羁绊位 [%s]%s-%s | %s | %s',
+    slot,
+    get_bond_quality_label(card.quality),
+    bond.name,
+    card.name,
+    state_text,
+    card.base_effect_desc
+  )
+end
+
+local function show_bond_loadout()
+  BondSystem.show_loadout(create_bond_env())
+end
+
+local function legacy_get_bond_quality_weights()
+  local wave_index = math.max(1, STATE.current_wave_index or 0, STATE.started_wave_count or 0)
+  if wave_index <= 2 then
+    return { common = 100, rare = 40, epic = 8 }
+  end
+  if wave_index == 3 then
+    return { common = 70, rare = 70, epic = 18 }
+  end
+  if wave_index == 4 then
+    return { common = 40, rare = 80, epic = 35 }
+  end
+  return { common = 25, rare = 70, epic = 55 }
+end
+
+local function legacy_pick_weighted_bond_card(excluded_bond_ids)
+  local quality_weights = get_bond_quality_weights()
+  local incomplete_group_count = get_incomplete_bond_group_count()
+  local pool = {}
+  local total_weight = 0
+
+  for _, card in ipairs(BOND_CARD_DEFS) do
+    if not is_bond_card_acquired(card.id)
+      and not (excluded_bond_ids and excluded_bond_ids[card.bond_id]) then
+      local bond = BOND_DEFS[card.bond_id]
+      if bond then
+        local progress = get_bond_progress_count(card.bond_id)
+        local weight = (bond.pool_weight or 1) * (quality_weights[card.quality] or 1)
+
+        if progress == 0 then
+          if incomplete_group_count >= 2 then
+            weight = weight * 0.6
+          end
+        elseif progress == 1 then
+          weight = weight * 1.8
+        elseif progress == 2 then
+          weight = weight * 2.4
+        else
+          weight = weight * 3.0
+        end
+
+        if progress >= bond.required_count then
+          weight = weight * 0.8
+        end
+
+        if weight > 0 then
+          total_weight = total_weight + weight
+          pool[#pool + 1] = {
+            card = card,
+            weight = weight,
+          }
+        end
+      end
+    end
+  end
+
+  if #pool == 0 or total_weight <= 0 then
+    return nil
+  end
+
+  local roll = math.random() * total_weight
+  local cumulative = 0
+  for _, entry in ipairs(pool) do
+    cumulative = cumulative + entry.weight
+    if roll <= cumulative then
+      return entry.card
+    end
+  end
+
+  return pool[#pool].card
+end
+
+local function legacy_pick_bond_choices(count)
+  local choices = {}
+  local excluded_bond_ids = {}
+
+  while #choices < count do
+    local picked = pick_weighted_bond_card(excluded_bond_ids)
+    if not picked then
+      break
+    end
+
+    excluded_bond_ids[picked.bond_id] = true
+    choices[#choices + 1] = picked
+  end
+
+  return choices
+end
+
+local function legacy_build_bond_choice_text(index, card)
+  local bond = card and BOND_DEFS[card.bond_id] or nil
+  if not card or not bond then
+    return string.format('%d. 空', index)
+  end
+
+  local current_count = get_bond_progress_count(card.bond_id)
+  local next_count = math.min(bond.required_count, current_count + 1)
+  return string.format(
+    '%d. [%s][%s %d/%d] %s | 单卡:%s | 成套:%s',
+    index,
+    get_bond_quality_label(card.quality),
+    bond.name,
+    next_count,
+    bond.required_count,
+    card.name,
+    card.base_effect_desc,
+    bond.bond_effect_desc
+  )
+end
+
+local function legacy_get_bond_replace_score(card_id)
+  local card = BOND_CARD_BY_ID[card_id]
+  local bond = card and BOND_DEFS[card.bond_id] or nil
+  if not card or not bond then
+    return -9999
+  end
+
+  local progress = get_bond_progress_count(card.bond_id)
+  local score = 0
+  if progress <= 1 then
+    score = score + 35
+  end
+  if progress < bond.required_count then
+    score = score + 30
+  else
+    score = score - 100
+  end
+  if progress - 1 >= bond.required_count then
+    score = score + 120
+  end
+
+  if card.quality == 'common' then
+    score = score + 20
+  elseif card.quality == 'rare' then
+    score = score + 8
+  else
+    score = score - 10
+  end
+
+  return score
+end
+
+local function legacy_pick_bond_replace_slot()
+  local runtime = STATE.bond_runtime
+  if not runtime or #runtime.slots == 0 then
+    return nil
+  end
+
+  local best_slot = 1
+  local best_score = -999999
+  for slot, card_id in ipairs(runtime.slots) do
+    local score = get_bond_replace_score(card_id)
+    if score > best_score then
+      best_score = score
+      best_slot = slot
+    end
+  end
+  return best_slot
+end
+
+local function apply_bond_choice(index)
+  BondSystem.apply_choice(create_bond_env(), index)
+end
+
+local function apply_round_choice(index)
+  if STATE.awaiting_upgrade then
+    apply_upgrade(index)
+    return
+  end
+  if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice then
+    apply_bond_choice(index)
+  end
+end
+
+local function try_bond_draw()
+  BondSystem.try_draw(create_bond_env())
 end
 
 local function show_status_legacy()
@@ -2339,6 +3561,8 @@ local function create_enemy_info(unit, info)
   info.alive = true
   info.owner = info.owner or nil
 
+  STATE.enemy_info_map = STATE.enemy_info_map or {}
+  STATE.enemy_info_map[unit] = info
   STATE.all_enemies:add_unit(unit)
   STATE.total_enemy_alive = STATE.total_enemy_alive + 1
 
@@ -2355,6 +3579,9 @@ local function create_enemy_info(unit, info)
     if STATE.all_enemies and unit then
       STATE.all_enemies:remove_unit(unit)
     end
+    if STATE.enemy_info_map and unit then
+      STATE.enemy_info_map[unit] = nil
+    end
     if STATE.total_enemy_alive > 0 then
       STATE.total_enemy_alive = STATE.total_enemy_alive - 1
     end
@@ -2367,7 +3594,7 @@ local function create_enemy_info(unit, info)
 
     if grant_death_rewards then
       if info.kind == 'main' then
-        award_rewards(info.reward, nil, true)
+        award_rewards(build_reward_with_bond_bonus(info.reward), nil, true)
         if STATE.skill_runtime.medbot_every > 0 and STATE.skill_runtime.medbot_heal > 0 then
           STATE.skill_runtime.medbot_kills = STATE.skill_runtime.medbot_kills + 1
           if STATE.skill_runtime.medbot_kills >= STATE.skill_runtime.medbot_every then
@@ -2376,7 +3603,7 @@ local function create_enemy_info(unit, info)
           end
         end
       elseif info.kind == 'boss' then
-        award_rewards(info.reward, get_boss_name(info.wave), false)
+        award_rewards(build_reward_with_bond_bonus(info.reward), get_boss_name(info.wave), false)
       end
     end
 
@@ -2409,6 +3636,8 @@ local function create_enemy_info(unit, info)
     if info.kind == 'main' and STATE.skill_runtime.bonus_gold_on_kill > 0 then
       STATE.resources.gold = STATE.resources.gold + STATE.skill_runtime.bonus_gold_on_kill
     end
+
+    handle_bond_enemy_kill(info)
   end)
 
   return info
@@ -2417,6 +3646,14 @@ end
 local function spawn_enemy(unit_id, area_id, facing, info)
   local spawn_point = random_point_in_area(area_id)
   local unit = y3.unit.create_unit(get_enemy_player(), unit_id, spawn_point, facing or 180.0)
+  if info and info.attr_overrides then
+    set_attr_pack(unit, info.attr_overrides)
+  end
+  if info and info.spawn_hp ~= nil then
+    unit:set_hp(info.spawn_hp)
+  elseif info and info.attr_overrides and info.attr_overrides.hp_max ~= nil then
+    unit:set_hp(info.attr_overrides.hp_max)
+  end
   unit:set_reward_exp(0)
   unit:attack_move(STATE.defense_point)
   return create_enemy_info(unit, info)
@@ -2465,6 +3702,8 @@ local function spawn_main_batch(runner)
       kind = 'main',
       owner = runner,
       wave = wave,
+      attr_overrides = wave.main_attr_overrides,
+      spawn_hp = wave.main_spawn_hp,
       reward = wave.main_kill_reward,
     })
   end
@@ -2484,6 +3723,353 @@ local function spawn_boss(runner)
     wave = runner.wave,
     reward = runner.wave.boss_kill_reward,
   })
+end
+
+local function debug_add_test_resources()
+  if not STATE.resources then
+    return
+  end
+  STATE.resources.gold = STATE.resources.gold + 500
+  STATE.resources.wood = STATE.resources.wood + 300
+  STATE.skill_points = STATE.skill_points + 5
+  debug_message(string.format(
+    '已添加测试资源：金币 %d，木材 %d，技能点 %d。',
+    STATE.resources.gold,
+    STATE.resources.wood,
+    STATE.skill_points
+  ))
+end
+
+local function debug_grant_levels(level_count)
+  if not STATE.hero_progress then
+    return
+  end
+
+  local grant_count = math.max(1, level_count or 1)
+  local granted = 0
+  while granted < grant_count and STATE.hero_progress.level < get_hero_max_level() do
+    STATE.hero_progress.level = STATE.hero_progress.level + 1
+    STATE.hero_progress.exp = 0
+    sync_hero_progression()
+    STATE.skill_points = STATE.skill_points + 1
+    granted = granted + 1
+  end
+
+  debug_message(string.format(
+    '英雄调试升级完成：Lv%d，技能点 %d。',
+    STATE.hero_progress.level,
+    STATE.skill_points
+  ))
+end
+
+local function debug_unlock_all_attack_skills()
+  local unlocked = 0
+  for _, skill_id in ipairs({ 'arcane_arrow', 'flame_arrow', 'frost_arrow', 'thunder' }) do
+    local _, _, is_new = unlock_attack_skill(skill_id)
+    if is_new then
+      unlocked = unlocked + 1
+    end
+  end
+  STATE.skill_points = STATE.skill_points + 3
+  debug_message(string.format('已检查并解锁全部攻击技能；新解锁 %d 个，当前技能点 %d。', unlocked, STATE.skill_points))
+  show_attack_skill_loadout()
+end
+
+local function debug_open_upgrade_panel()
+  if STATE.skill_points <= 0 then
+    STATE.skill_points = 1
+    debug_message('技能点不足，已自动补 1 点。')
+  end
+  show_upgrade_choices()
+end
+
+local function debug_trigger_bond_draw()
+  if not STATE.resources then
+    return
+  end
+  if STATE.resources.wood < 100 then
+    STATE.resources.wood = 100
+    debug_message('木材不足，已自动补到 100。')
+  end
+  try_bond_draw()
+end
+
+local function debug_refill_challenge_charges()
+  STATE.challenge_charges = CONFIG.challenge_rules.max_charges
+  STATE.challenge_recover_elapsed = 0
+  debug_message(string.format('挑战次数已补满：%d/%d。', STATE.challenge_charges, CONFIG.challenge_rules.max_charges))
+end
+
+local function debug_force_spawn_boss()
+  local runner = STATE.active_wave
+  if not runner or not runner.active then
+    debug_message('当前没有进行中的主线波次。')
+    return
+  end
+  if runner.boss_spawned then
+    debug_message('当前波 Boss 已经登场。')
+    return
+  end
+
+  runner.elapsed = math.max(runner.elapsed, runner.wave.boss_spawn_sec)
+  spawn_boss(runner)
+  debug_message('已强制刷出当前波 Boss。')
+end
+
+local function debug_execute_enemy(unit)
+  if not STATE.hero or not STATE.hero:is_exist() or not is_active_enemy(unit) then
+    return false
+  end
+
+  STATE.hero:damage({
+    target = unit,
+    damage = 99999999,
+    type = '真实伤害',
+    text_type = 'magic',
+    text_track = 934269508,
+    common_attack = false,
+    no_miss = true,
+  })
+  return true
+end
+
+local function debug_kill_all_active_enemies()
+  if not STATE.all_enemies then
+    return
+  end
+
+  local killed = 0
+  for _, unit in ipairs(STATE.all_enemies:pick()) do
+    if debug_execute_enemy(unit) then
+      killed = killed + 1
+    end
+  end
+
+  debug_message(string.format('已秒杀场上敌人 %d 个。', killed))
+end
+
+local function get_active_challenge_count()
+  local count = 0
+  if not STATE.active_challenges then
+    return count
+  end
+
+  for _ in pairs(STATE.active_challenges) do
+    count = count + 1
+  end
+  return count
+end
+
+local function get_gm_panel_wave_text()
+  local wave = get_current_wave()
+  if not wave then
+    return '波次：未开始'
+  end
+
+  local wave_name = wave.name or ('第' .. tostring(wave.index) .. '波')
+  return string.format('波次：%d  %s', wave.index or 0, wave_name)
+end
+
+local function get_gm_panel_boss_text()
+  if not STATE.active_wave or not STATE.active_wave.wave then
+    return 'Boss：等待本波开始'
+  end
+  if STATE.active_wave.boss_spawned then
+    return string.format('Boss：%s 已登场', get_boss_name(STATE.active_wave.wave))
+  end
+
+  local remain = math.max(0, STATE.active_wave.wave.boss_spawn_sec - STATE.active_wave.elapsed)
+  return string.format('Boss：%.1f 秒后登场', remain)
+end
+
+local function get_gm_panel_status_text()
+  local hero_level = 1
+  if STATE.hero_progress and STATE.hero_progress.level then
+    hero_level = STATE.hero_progress.level
+  elseif STATE.hero and STATE.hero:is_exist() then
+    hero_level = STATE.hero:get_level()
+  end
+
+  local gold = STATE.resources and STATE.resources.gold or 0
+  local wood = STATE.resources and STATE.resources.wood or 0
+  local skill_points = STATE.skill_points or 0
+  local challenge_charges = STATE.challenge_charges or 0
+  local max_charges = CONFIG.challenge_rules.max_charges or 0
+  local enemy_alive = STATE.total_enemy_alive or 0
+  local challenge_count = get_active_challenge_count()
+
+  return table.concat({
+    get_gm_panel_wave_text(),
+    get_gm_panel_boss_text(),
+    string.format('英雄：Lv.%d    敌人数：%d', hero_level, enemy_alive),
+    string.format('金币：%d    木材：%d', gold, wood),
+    string.format('技能点：%d    挑战次数：%d/%d', skill_points, challenge_charges, max_charges),
+    string.format('进行中挑战：%d', challenge_count),
+  }, '\n')
+end
+
+local function refresh_gm_panel()
+  local gm_ui = STATE.gm_ui
+  if not gm_ui then
+    return
+  end
+
+  if gm_ui.panel and not gm_ui.panel:is_removed() then
+    gm_ui.panel:set_visible(gm_ui.visible == true)
+  end
+  if gm_ui.toggle_button and not gm_ui.toggle_button:is_removed() then
+    gm_ui.toggle_button:set_text(gm_ui.visible and '收起GM' or 'GM')
+  end
+  if gm_ui.status_text and not gm_ui.status_text:is_removed() then
+    gm_ui.status_text:set_text(get_gm_panel_status_text())
+  end
+end
+
+local function toggle_gm_panel()
+  local gm_ui = STATE.gm_ui
+  if not gm_ui then
+    return
+  end
+
+  gm_ui.visible = not gm_ui.visible
+  refresh_gm_panel()
+end
+
+local function create_gm_panel()
+  if not y3.game.is_debug_mode() then
+    return nil
+  end
+
+  local ok, hud = pcall(y3.ui.get_ui, get_player(), 'GameHUD')
+  if not ok or not hud then
+    return nil
+  end
+
+  if STATE.gm_ui and STATE.gm_ui.panel and not STATE.gm_ui.panel:is_removed() then
+    refresh_gm_panel()
+    return STATE.gm_ui
+  end
+
+  local gm_ui = {
+    visible = true,
+  }
+
+  local toggle_button = hud:create_child('按钮')
+  toggle_button:set_ui_size(92, 34)
+  toggle_button:set_relative_parent_pos('顶部', 18)
+  toggle_button:set_relative_parent_pos('右侧', 66)
+  toggle_button:set_text('收起GM')
+  toggle_button:set_font_size(16)
+  toggle_button:set_text_color(235, 242, 255, 255)
+  toggle_button:set_z_order(9501)
+  toggle_button:add_fast_event('左键-点击', function()
+    toggle_gm_panel()
+  end)
+  gm_ui.toggle_button = toggle_button
+
+  local panel = hud:create_child('图片')
+  panel:set_image(999)
+  panel:set_ui_size(408, 454)
+  panel:set_relative_parent_pos('顶部', 62)
+  panel:set_relative_parent_pos('右侧', 18)
+  panel:set_image_color(9, 15, 23, 220)
+  panel:set_z_order(9500)
+  panel:set_intercepts_operations(true)
+  gm_ui.panel = panel
+
+  local header_bg = panel:create_child('图片')
+  header_bg:set_image(999)
+  header_bg:set_ui_size(376, 54)
+  header_bg:set_pos(204, 421)
+  header_bg:set_image_color(22, 38, 58, 230)
+
+  local title = panel:create_child('文本')
+  title:set_ui_size(260, 26)
+  title:set_pos(146, 428)
+  title:set_text('GM 调试面板')
+  title:set_font_size(24)
+  title:set_text_color(245, 248, 255, 255)
+  title:set_text_alignment('左', '中')
+
+  local subtitle = panel:create_child('文本')
+  subtitle:set_ui_size(320, 22)
+  subtitle:set_pos(178, 399)
+  subtitle:set_text('右侧速测工具条，默认服务单机压测与功能验收')
+  subtitle:set_font_size(14)
+  subtitle:set_text_color(156, 178, 208, 255)
+  subtitle:set_text_alignment('左', '中')
+
+  local status_bg = panel:create_child('图片')
+  status_bg:set_image(999)
+  status_bg:set_ui_size(376, 120)
+  status_bg:set_pos(204, 320)
+  status_bg:set_image_color(16, 28, 42, 235)
+
+  local status_text = panel:create_child('文本')
+  status_text:set_ui_size(344, 96)
+  status_text:set_pos(192, 320)
+  status_text:set_font_size(17)
+  status_text:set_text_color(233, 239, 248, 255)
+  status_text:set_text_alignment('左', '上')
+  gm_ui.status_text = status_text
+
+  local function create_gm_action_button(label, left, bottom, width, height, callback, color)
+    local r = color and color[1] or 32
+    local g = color and color[2] or 71
+    local b = color and color[3] or 118
+
+    local bg = panel:create_child('图片')
+    bg:set_image(999)
+    bg:set_ui_size(width, height)
+    bg:set_pos(left + width / 2, bottom + height / 2)
+    bg:set_image_color(r, g, b, 235)
+
+    local btn = panel:create_child('按钮')
+    btn:set_ui_size(width, height)
+    btn:set_pos(left + width / 2, bottom + height / 2)
+    btn:set_text(label)
+    btn:set_font_size(18)
+    btn:set_text_color(245, 248, 255, 255)
+    btn:set_z_order(9502)
+    btn:add_fast_event('左键-点击', function()
+      callback()
+      refresh_gm_panel()
+    end)
+    return btn
+  end
+
+  local button_defs = {
+    { '帮助 / F1', 24, 204, show_debug_hotkey_help, { 58, 84, 120 } },
+    { '加资源 / F2', 204, 204, debug_add_test_resources, { 73, 94, 132 } },
+    { '升 3 级 / F3', 24, 148, function() debug_grant_levels(3) end, { 64, 88, 128 } },
+    { '解锁技能 / F4', 204, 148, debug_unlock_all_attack_skills, { 84, 97, 138 } },
+    { '开强化 / F5', 24, 92, debug_open_upgrade_panel, { 72, 102, 142 } },
+    { '抽羁绊 / F6', 204, 92, debug_trigger_bond_draw, { 84, 110, 150 } },
+    { '满挑战 / F7', 24, 36, debug_refill_challenge_charges, { 70, 112, 142 } },
+    { '刷 Boss / F8', 204, 36, debug_force_spawn_boss, { 110, 86, 126 } },
+    { '清全场 / F9', 24, 0, debug_kill_all_active_enemies, { 128, 74, 88 } },
+    { '打印状态', 204, 0, show_runtime_status, { 60, 92, 120 } },
+  }
+
+  for _, def in ipairs(button_defs) do
+    create_gm_action_button(def[1], def[2], def[3], 180, 44, def[4], def[5])
+  end
+
+  STATE.gm_ui = gm_ui
+  refresh_gm_panel()
+  return gm_ui
+end
+
+local function ensure_gm_panel()
+  if not y3.game.is_debug_mode() then
+    return nil
+  end
+
+  if STATE.gm_ui and STATE.gm_ui.panel and not STATE.gm_ui.panel:is_removed() then
+    return STATE.gm_ui
+  end
+
+  return create_gm_panel()
 end
 
 function M.start_wave(index)
@@ -2543,6 +4129,8 @@ local function spawn_challenge_batch(instance, batch_index, batch)
       local boss_info = spawn_enemy(instance.def.boss_unit_id, instance.def.spawn_area_id, 180.0, {
         kind = 'challenge',
         owner = instance,
+        is_boss = true,
+        is_elite = true,
         reward = nil,
       })
       instance.infos[#instance.infos + 1] = boss_info
@@ -2550,6 +4138,7 @@ local function spawn_challenge_batch(instance, batch_index, batch)
         local info = spawn_enemy(instance.def.guard_unit_id, instance.def.spawn_area_id, 180.0, {
           kind = 'challenge',
           owner = instance,
+          is_elite = true,
           reward = nil,
         })
         instance.infos[#instance.infos + 1] = info
@@ -2559,6 +4148,7 @@ local function spawn_challenge_batch(instance, batch_index, batch)
         local info = spawn_enemy(instance.def.guard_unit_id, instance.def.spawn_area_id, 180.0, {
           kind = 'challenge',
           owner = instance,
+          is_elite = true,
           reward = nil,
         })
         instance.infos[#instance.infos + 1] = info
@@ -2599,7 +4189,9 @@ local function try_start_challenge(challenge_id)
     return
   end
 
-  if not evaluate_unlock(def.unlock_rule) then
+  local ignore_unlock_requirements = CONFIG.challenge_rules
+    and CONFIG.challenge_rules.ignore_unlock_requirements
+  if not ignore_unlock_requirements and not evaluate_unlock(def.unlock_rule) then
     message(def.unlock_rule.text or '该挑战尚未解锁。')
     return
   end
@@ -2816,17 +4408,61 @@ local function register_runtime_events()
   end)
 
   y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_1'], function()
-    apply_upgrade(1)
+    apply_round_choice(1)
   end)
   y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_2'], function()
-    apply_upgrade(2)
+    apply_round_choice(2)
   end)
   y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_3'], function()
-    apply_upgrade(3)
+    apply_round_choice(3)
   end)
   y3.game:event('键盘-按下', 'SPACE', function()
     show_runtime_status()
   end)
+
+  if y3.game.is_debug_mode() then
+    local function add_debug_ctrl_state(delta)
+      STATE.debug_ctrl_down_count = math.max(0, (STATE.debug_ctrl_down_count or 0) + delta)
+    end
+
+    y3.game:event('键盘-按下', y3.const.KeyboardKey['LCTRL'], function()
+      add_debug_ctrl_state(1)
+    end)
+    y3.game:event('键盘-按下', y3.const.KeyboardKey['RCTRL'], function()
+      add_debug_ctrl_state(1)
+    end)
+    y3.game:event('键盘-抬起', y3.const.KeyboardKey['LCTRL'], function()
+      add_debug_ctrl_state(-1)
+    end)
+    y3.game:event('键盘-抬起', y3.const.KeyboardKey['RCTRL'], function()
+      add_debug_ctrl_state(-1)
+    end)
+
+    local function register_debug_hotkey(key_name, callback)
+      y3.game:event('键盘-按下', y3.const.KeyboardKey[key_name], function()
+        if (STATE.debug_ctrl_down_count or 0) <= 0 then
+          return
+        end
+        callback()
+      end)
+    end
+
+    register_debug_hotkey('F1', show_debug_hotkey_help)
+    register_debug_hotkey('F2', debug_add_test_resources)
+    register_debug_hotkey('F3', function()
+      debug_grant_levels(3)
+    end)
+    register_debug_hotkey('F4', debug_unlock_all_attack_skills)
+    register_debug_hotkey('F5', debug_open_upgrade_panel)
+    register_debug_hotkey('F6', debug_trigger_bond_draw)
+    register_debug_hotkey('F7', debug_refill_challenge_charges)
+    register_debug_hotkey('F8', debug_force_spawn_boss)
+    register_debug_hotkey('F9', debug_kill_all_active_enemies)
+    register_debug_hotkey('F10', function()
+      ensure_gm_panel()
+      toggle_gm_panel()
+    end)
+  end
 end
 
 local function start_runtime_loops()
@@ -2836,9 +4472,11 @@ local function start_runtime_loops()
       return
     end
 
+    update_passive_resources(0.25)
     update_wave(0.25)
     update_challenges(0.25)
     update_challenge_charges(0.25)
+    update_bond_effects(0.25)
     update_attack_skills(0.25)
   end)
 
@@ -2869,6 +4507,18 @@ local function start_runtime_loops()
       deal_skill_damage(unit, damage, '法术')
     end
   end)
+
+  if y3.game.is_debug_mode() then
+    y3.ltimer.loop(0.25, function(timer)
+      if STATE.game_finished then
+        timer:remove()
+        return
+      end
+
+      ensure_gm_panel()
+      refresh_gm_panel()
+    end)
+  end
 end
 
 local function reset_state()
@@ -2881,7 +4531,13 @@ local function reset_state()
   STATE.started_wave_count = 0
   STATE.active_wave = nil
   STATE.active_challenges = {}
-  STATE.resources = { gold = 0, wood = 0 }
+  STATE.resources = {
+    gold = get_resource_rules().initial_gold or 0,
+    wood = get_resource_rules().initial_wood or 0,
+  }
+  STATE.resource_income_elapsed = 0
+  STATE.bond_runtime = create_bond_runtime()
+  STATE.enemy_info_map = {}
   STATE.skill_points = 0
   STATE.hero_progress = nil
   STATE.awaiting_upgrade = false
@@ -2895,6 +4551,8 @@ local function reset_state()
   STATE.defeated_boss_waves = {}
   STATE.basic_attack_ability_bound = false
   STATE.basic_attack_ability_warned = false
+  STATE.debug_ctrl_down_count = 0
+  STATE.gm_ui = nil
   STATE.game_finished = false
   STATE.events_registered = STATE.events_registered or false
   STATE.dev_commands_registered = STATE.dev_commands_registered or false
@@ -2915,6 +4573,7 @@ function M.bootstrap()
   register_runtime_events()
   register_dev_commands()
   start_runtime_loops()
+  ensure_gm_panel()
   message('初始攻击技能已装配：1 号位 普攻 Lv1；2-4 号位可通过 G 三选一逐步解锁。')
   show_attack_skill_loadout()
 
@@ -2931,6 +4590,8 @@ function M.bootstrap()
   ))
   if CONFIG.debug_time_scale < 1 then
     message(string.format('当前为调试模式，时间缩放为 %.1f 倍，便于快速验证波次与挑战流程。', CONFIG.debug_time_scale))
+    message('调试快捷键已启用：按 Ctrl+F1 查看完整说明。')
+    message('GM 调试面板已挂到右上角；也可按 Ctrl+F10 快速折叠。')
   end
 
   y3.ltimer.wait(1, function()

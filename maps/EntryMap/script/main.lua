@@ -8,10 +8,72 @@ else
   y3.config.log.level = 'info'
 end
 
-local runtime = require 'entry_runtime'
+local runtime
+local runtime_load_attempted = false
+local bootstrapped = false
+
+local function trace_boot(message)
+  print('[EntryMap] ' .. tostring(message))
+end
+
+local function load_runtime()
+  if runtime_load_attempted then
+    return runtime
+  end
+
+  runtime_load_attempted = true
+  trace_boot('loading entry_runtime')
+
+  local ok, result = xpcall(function()
+    return require 'entry_runtime'
+  end, debug.traceback)
+
+  if not ok then
+    trace_boot('failed to require entry_runtime:\n' .. tostring(result))
+    return nil
+  end
+
+  runtime = result
+  trace_boot('entry_runtime loaded')
+  return runtime
+end
+
+local function bootstrap_once()
+  if bootstrapped then
+    return
+  end
+
+  local loaded_runtime = load_runtime()
+  if not loaded_runtime then
+    return
+  end
+  if type(loaded_runtime.bootstrap) ~= 'function' then
+    trace_boot('entry_runtime.bootstrap is missing')
+    return
+  end
+
+  bootstrapped = true
+  trace_boot('calling runtime.bootstrap')
+
+  local ok, err = xpcall(function()
+    loaded_runtime.bootstrap()
+  end, debug.traceback)
+
+  if not ok then
+    bootstrapped = false
+    trace_boot('runtime.bootstrap failed:\n' .. tostring(err))
+    return
+  end
+
+  trace_boot('runtime.bootstrap finished')
+end
 
 y3.game:event('游戏-初始化', function()
-  runtime.bootstrap()
+  bootstrap_once()
+end)
+
+y3.ltimer.wait(0, function()
+  bootstrap_once()
 end)
 
 include '可重载的代码'
