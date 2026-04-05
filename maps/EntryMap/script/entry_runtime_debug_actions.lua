@@ -12,10 +12,23 @@ function M.create(env)
   local try_bond_draw = env.try_bond_draw
   local force_spawn_boss = env.force_spawn_boss
   local execute_enemy = env.execute_enemy
+  local is_battle_active = env.is_battle_active
 
   local api = {}
 
+  local function guard_battle()
+    if not is_battle_active or is_battle_active() then
+      return true
+    end
+
+    debug_message('当前不在战斗中。')
+    return false
+  end
+
   function api.debug_add_test_resources()
+    if not guard_battle() then
+      return
+    end
     if not STATE.resources then
       return
     end
@@ -32,6 +45,9 @@ function M.create(env)
   end
 
   function api.debug_grant_levels(level_count)
+    if not guard_battle() then
+      return
+    end
     if not STATE.hero_progress then
       return
     end
@@ -54,6 +70,9 @@ function M.create(env)
   end
 
   function api.debug_unlock_all_attack_skills()
+    if not guard_battle() then
+      return
+    end
     local unlocked = 0
     for _, skill_id in ipairs({ 'arcane_arrow', 'flame_arrow', 'frost_arrow', 'thunder' }) do
       local _, _, is_new = unlock_attack_skill(skill_id)
@@ -72,6 +91,9 @@ function M.create(env)
   end
 
   function api.debug_open_upgrade_panel()
+    if not guard_battle() then
+      return
+    end
     if STATE.skill_points <= 0 then
       STATE.skill_points = 1
       debug_message('Skill points were empty; auto-added 1 point.')
@@ -80,6 +102,9 @@ function M.create(env)
   end
 
   function api.debug_trigger_bond_draw()
+    if not guard_battle() then
+      return
+    end
     if not STATE.resources then
       return
     end
@@ -91,6 +116,9 @@ function M.create(env)
   end
 
   function api.debug_refill_challenge_charges()
+    if not guard_battle() then
+      return
+    end
     STATE.challenge_charges = CONFIG.challenge_rules.max_charges
     STATE.challenge_recover_elapsed = 0
     debug_message(string.format(
@@ -101,6 +129,9 @@ function M.create(env)
   end
 
   function api.debug_force_spawn_boss()
+    if not guard_battle() then
+      return
+    end
     local ok, err = force_spawn_boss()
     if not ok then
       debug_message(err)
@@ -110,10 +141,16 @@ function M.create(env)
   end
 
   function api.debug_execute_enemy(unit)
+    if not guard_battle() then
+      return false
+    end
     return execute_enemy(unit)
   end
 
   function api.debug_kill_all_active_enemies()
+    if not guard_battle() then
+      return
+    end
     if not STATE.all_enemies then
       return
     end

@@ -9,6 +9,7 @@ local BattlefieldSystem = require 'entry_runtime_battlefield'
 local DebugToolsSystem = require 'entry_runtime_debug_tools'
 local DebugActionsSystem = require 'entry_runtime_debug_actions'
 local RuntimeHUDSystem = require 'entry_runtime_hud'
+local OutgameSystem = require 'entry_runtime_outgame'
 local AttackUpgradeSystem = require 'entry_runtime_attack_upgrades'
 local AttackSkillsSystem = require 'entry_runtime_attack_skills'
 local develop_command = require 'y3.develop.command'
@@ -19,6 +20,7 @@ local battlefield_system
 local debug_tools_system
 local debug_actions_system
 local runtime_hud_system
+local outgame_system
 local attack_upgrade_system
 local attack_skills_system
 
@@ -202,6 +204,16 @@ local STATE = {
   runtime_elapsed = 0,
   runtime_hud = nil,
   gm_ui = nil,
+  session_phase = 'outgame',
+  outgame_profile = nil,
+  selected_stage_id = nil,
+  selected_mode_id = nil,
+  current_stage_def = nil,
+  current_mode_def = nil,
+  last_battle_result = nil,
+  outgame_ui = nil,
+  outgame_profile_save_enabled = false,
+  outgame_profile_save_warned = false,
   game_finished = false,
 }
 
@@ -231,6 +243,9 @@ local award_rewards
 local show_mark_choices
 local show_treasure_choices
 local try_open_queued_treasure_round
+local is_battle_active
+local reset_battle_state
+local set_battle_hud_visible
 
 progression_system = ProgressionSystem.create({
   STATE = STATE,
@@ -324,11 +339,13 @@ local function grant_hero_exp(amount)
   return progression_system.grant_hero_exp(amount)
 end
 
-local function point_to_table(point)
+local ReservedRuntimeApi = {}
+
+function ReservedRuntimeApi.point_to_table(point)
   return debug_tools_system.point_to_table(point)
 end
 
-local function format_point(point)
+function ReservedRuntimeApi.format_point(point)
   return debug_tools_system.format_point(point)
 end
 
@@ -354,7 +371,7 @@ local function random_point_in_area(area_id)
   return y3.point.create(x, y, area.z or 0)
 end
 
-local function get_area_size(area_id)
+function ReservedRuntimeApi.get_area_size(area_id)
   return debug_tools_system.get_area_size(area_id)
 end
 
@@ -365,19 +382,19 @@ local function get_hero_point()
   return STATE.hero:get_point()
 end
 
-local function update_point_config(point_key, point)
+function ReservedRuntimeApi.update_point_config(point_key, point)
   return debug_tools_system.update_point_config(point_key, point)
 end
 
-local function recenter_area(area_id, center_point, width, height, offset_x, offset_y)
+function ReservedRuntimeApi.recenter_area(area_id, center_point, width, height, offset_x, offset_y)
   return debug_tools_system.recenter_area(area_id, center_point, width, height, offset_x, offset_y)
 end
 
-local function dump_calibration_file()
+function ReservedRuntimeApi.dump_calibration_file()
   return debug_tools_system.dump_calibration_file()
 end
 
-local function show_calibration_help()
+function ReservedRuntimeApi.show_calibration_help()
   return debug_tools_system.show_calibration_help()
 end
 
@@ -393,7 +410,7 @@ local function register_dev_commands()
   return debug_tools_system.register_dev_commands()
 end
 
-local function has_unit_data(unit_id)
+function ReservedRuntimeApi.has_unit_data(unit_id)
   return battlefield_system.has_unit_data(unit_id)
 end
 
@@ -1644,6 +1661,13 @@ local function get_boss_name(wave)
 end
 
 local function show_runtime_status()
+  if STATE.session_phase ~= 'battle' then
+    local stage_name = STATE.current_stage_def and STATE.current_stage_def.display_name or '未选择'
+    local mode_name = STATE.current_mode_def and STATE.current_mode_def.display_name or '标准模式'
+    message(string.format('当前处于局外选关阶段：%s %s。', stage_name, mode_name))
+    return
+  end
+
   local wave = get_current_wave()
   local wave_text = wave and wave.name or '未开始'
   local boss_text = '无'
@@ -1760,6 +1784,20 @@ local function handle_challenge_success(instance)
   return true
 end
 
+local function handle_battle_finished(result)
+  if battlefield_system and battlefield_system.cleanup_battle_units then
+    battlefield_system.cleanup_battle_units()
+  end
+  set_battle_hud_visible(false)
+  reset_battle_state()
+  STATE.session_phase = 'outgame'
+  STATE.game_finished = true
+  STATE.last_battle_result = result
+  if outgame_system then
+    outgame_system.enter_outgame(result)
+  end
+end
+
 battlefield_system = BattlefieldSystem.create({
   STATE = STATE,
   CONFIG = CONFIG,
@@ -1789,6 +1827,9 @@ battlefield_system = BattlefieldSystem.create({
   end,
   handle_challenge_success = function(instance)
     return handle_challenge_success(instance)
+  end,
+  on_finish_game = function(result)
+    return handle_battle_finished(result)
   end,
 })
 
@@ -1997,6 +2038,9 @@ debug_actions_system = DebugActionsSystem.create({
   STATE = STATE,
   CONFIG = CONFIG,
   debug_message = debug_message,
+  is_battle_active = function()
+    return is_battle_active and is_battle_active() or false
+  end,
   get_hero_max_level = get_hero_max_level,
   sync_hero_progression = sync_hero_progression,
   unlock_attack_skill = unlock_attack_skill,
@@ -2138,6 +2182,12 @@ runtime_hud_system = RuntimeHUDSystem.create({
   get_hero_progress_text = get_hero_progress_text,
   get_active_challenge_count = get_active_challenge_count,
   get_reward_queue_count = get_reward_queue_count,
+  get_current_stage_text = function()
+    if STATE.current_stage_def and STATE.current_stage_def.display_name then
+      return STATE.current_stage_def.display_name
+    end
+    return '主线 1-1'
+  end,
   show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
   try_start_challenge = try_start_challenge,
@@ -2151,6 +2201,12 @@ local function refresh_runtime_hud()
   return runtime_hud_system.refresh_hud()
 end
 
+set_battle_hud_visible = function(visible)
+  if runtime_hud_system and runtime_hud_system.set_visible then
+    runtime_hud_system.set_visible(visible)
+  end
+end
+
 local function create_hero()
   return battlefield_system.create_hero(ATTACK_SKILL_DEFS.basic_attack.base_range or 250)
 end
@@ -2159,6 +2215,161 @@ local function validate_config()
   return battlefield_system.validate_config()
 end
 
+is_battle_active = function()
+  return STATE.session_phase == 'battle' and STATE.game_finished ~= true
+end
+
+reset_battle_state = function()
+  STATE.hero = nil
+  STATE.hero_common_attack = nil
+  STATE.hero_spawn_point = make_point(CONFIG.points.hero_spawn)
+  STATE.defense_point = make_point(CONFIG.points.defense_point)
+  STATE.all_enemies = y3.unit_group.create()
+  STATE.total_enemy_alive = 0
+  STATE.current_wave_index = 0
+  STATE.started_wave_count = 0
+  STATE.active_wave = nil
+  STATE.active_challenges = {}
+  STATE.resources = {
+    gold = get_resource_rules().initial_gold or 0,
+    wood = get_resource_rules().initial_wood or 0,
+  }
+  STATE.resource_income_elapsed = 0
+  STATE.bond_runtime = create_bond_runtime()
+  STATE.mark_runtime = create_mark_runtime()
+  STATE.treasure_runtime = create_treasure_runtime()
+  STATE.enemy_info_map = {}
+  STATE.skill_points = 0
+  STATE.hero_progress = nil
+  STATE.awaiting_upgrade = false
+  STATE.current_upgrade_choices = nil
+  STATE.skill_runtime = create_skill_runtime()
+  STATE.attack_skill_state = create_attack_skill_state()
+  STATE.reward_queue = {}
+  STATE.challenge_charges = CONFIG.challenge_rules.initial_charges
+  STATE.challenge_recover_elapsed = 0
+  STATE.bond_draw_count = 0
+  STATE.defeated_boss_waves = {}
+  STATE.basic_attack_ability_bound = false
+  STATE.basic_attack_ability_warned = false
+  STATE.runtime_elapsed = 0
+  STATE.game_finished = false
+end
+
+local function reset_session_state()
+  reset_battle_state()
+  STATE.session_phase = 'outgame'
+  STATE.outgame_profile = nil
+  STATE.selected_stage_id = nil
+  STATE.selected_mode_id = nil
+  STATE.current_stage_def = nil
+  STATE.current_mode_def = nil
+  STATE.last_battle_result = nil
+  STATE.outgame_ui = nil
+  STATE.outgame_profile_save_enabled = false
+  STATE.outgame_profile_save_warned = false
+  STATE.runtime_hud = nil
+  STATE.gm_ui = nil
+  STATE.debug_ctrl_down_count = 0
+  STATE.game_finished = true
+  STATE.events_registered = STATE.events_registered or false
+  STATE.dev_commands_registered = STATE.dev_commands_registered or false
+end
+
+local function start_selected_stage(stage_id, mode_id)
+  local stage_def = CONFIG.stages and CONFIG.stages.by_id and CONFIG.stages.by_id[stage_id] or nil
+  local mode_def = CONFIG.stage_modes and CONFIG.stage_modes.by_id and CONFIG.stage_modes.by_id[mode_id] or nil
+  local content_source_stage_id = stage_def and (stage_def.content_source_stage_id or stage_def.stage_id) or nil
+  local content_source_stage_def = content_source_stage_id
+    and CONFIG.stages
+    and CONFIG.stages.by_id
+    and CONFIG.stages.by_id[content_source_stage_id]
+    or nil
+
+  if not stage_def or not mode_def then
+    message('当前关卡或模式配置无效。')
+    if outgame_system then
+      outgame_system.set_ui_visible(true)
+      outgame_system.refresh_ui()
+    end
+    return false
+  end
+
+  local mode_supported = false
+  for _, supported_mode_id in ipairs(stage_def.mode_ids or {}) do
+    if supported_mode_id == mode_id then
+      mode_supported = true
+      break
+    end
+  end
+  if not mode_supported then
+    message('当前章节不支持所选模式。')
+    if outgame_system then
+      outgame_system.set_ui_visible(true)
+      outgame_system.refresh_ui()
+    end
+    return false
+  end
+
+  if not content_source_stage_def then
+    message('当前章节复用源配置无效。')
+    if outgame_system then
+      outgame_system.set_ui_visible(true)
+      outgame_system.refresh_ui()
+    end
+    return false
+  end
+
+  if battlefield_system and battlefield_system.cleanup_battle_units then
+    battlefield_system.cleanup_battle_units()
+  end
+
+  reset_battle_state()
+  STATE.session_phase = 'battle'
+  STATE.selected_stage_id = stage_id
+  STATE.selected_mode_id = mode_id
+  STATE.current_stage_def = stage_def
+  STATE.current_mode_def = mode_def
+  STATE.last_battle_result = nil
+
+  get_player():set_hostility(get_enemy_player(), true)
+  get_enemy_player():set_hostility(get_player(), true)
+
+  STATE.hero = create_hero()
+  initialize_hero_progression()
+  setup_basic_attack_ability()
+  ensure_runtime_hud()
+  set_battle_hud_visible(true)
+  refresh_runtime_hud()
+
+  message(string.format('已进入 %s %s。', stage_def.display_name, mode_def.display_name))
+  if stage_def.content_source_stage_id and stage_def.content_source_stage_id ~= stage_def.stage_id then
+    message(string.format(
+      '%s 当前暂复用 %s 的战斗内容。',
+      stage_def.display_name,
+      tostring(content_source_stage_def.stage_id or stage_def.content_source_stage_id)
+    ))
+  end
+
+  M.start_wave(1)
+  return true
+end
+
+outgame_system = OutgameSystem.create({
+  STATE = STATE,
+  CONFIG = CONFIG,
+  y3 = y3,
+  message = message,
+  round_number = round_number,
+  get_player = get_player,
+  start_selected_stage = function(stage_id, mode_id)
+    return start_selected_stage(stage_id, mode_id)
+  end,
+  set_battle_hud_visible = function(visible)
+    return set_battle_hud_visible(visible)
+  end,
+})
+
 local function register_runtime_events()
   if STATE.events_registered then
     return
@@ -2166,7 +2377,7 @@ local function register_runtime_events()
   STATE.events_registered = true
 
   y3.game:event('单位-升级', function(_, data)
-    if STATE.game_finished or data.unit ~= STATE.hero or not STATE.hero_progress then
+    if not is_battle_active() or data.unit ~= STATE.hero or not STATE.hero_progress then
       return
     end
 
@@ -2185,34 +2396,64 @@ local function register_runtime_events()
   end)
 
   y3.game:event('键盘-按下', 'G', function()
+    if not is_battle_active() then
+      return
+    end
     show_upgrade_choices()
   end)
   y3.game:event('键盘-按下', 'F', function()
+    if not is_battle_active() then
+      return
+    end
     try_bond_draw()
   end)
   y3.game:event('键盘-按下', 'Q', function()
+    if not is_battle_active() then
+      return
+    end
     try_start_challenge('gold_trial')
   end)
   y3.game:event('键盘-按下', 'W', function()
+    if not is_battle_active() then
+      return
+    end
     try_start_challenge('wood_trial')
   end)
   y3.game:event('键盘-按下', 'E', function()
+    if not is_battle_active() then
+      return
+    end
     try_start_challenge('exp_trial')
   end)
   y3.game:event('键盘-按下', 'R', function()
+    if not is_battle_active() then
+      return
+    end
     try_start_challenge('treasure_trial')
   end)
 
   y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_1'], function()
+    if not is_battle_active() then
+      return
+    end
     apply_round_choice(1)
   end)
   y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_2'], function()
+    if not is_battle_active() then
+      return
+    end
     apply_round_choice(2)
   end)
   y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_3'], function()
+    if not is_battle_active() then
+      return
+    end
     apply_round_choice(3)
   end)
   y3.game:event('键盘-按下', 'SPACE', function()
+    if not is_battle_active() then
+      return
+    end
     show_runtime_status()
   end)
 
@@ -2262,26 +2503,29 @@ local function register_runtime_events()
 end
 
 local function start_runtime_loops()
-  y3.ltimer.loop(0.25, function(timer)
-    if STATE.game_finished then
-      timer:remove()
+  y3.ltimer.loop(0.25, function()
+    if is_battle_active() then
+      STATE.runtime_elapsed = (STATE.runtime_elapsed or 0) + 0.25
+      update_passive_resources(0.25)
+      update_wave(0.25)
+      update_challenges(0.25)
+      update_challenge_charges(0.25)
+      update_bond_effects(0.25)
+      update_attack_skills(0.25)
+      ensure_runtime_hud()
+      set_battle_hud_visible(true)
+      refresh_runtime_hud()
       return
     end
 
-    STATE.runtime_elapsed = (STATE.runtime_elapsed or 0) + 0.25
-    update_passive_resources(0.25)
-    update_wave(0.25)
-    update_challenges(0.25)
-    update_challenge_charges(0.25)
-    update_bond_effects(0.25)
-    update_attack_skills(0.25)
-    ensure_runtime_hud()
-    refresh_runtime_hud()
+    set_battle_hud_visible(false)
+    if outgame_system then
+      outgame_system.refresh_ui()
+    end
   end)
 
-  y3.ltimer.loop(1, function(timer)
-    if STATE.game_finished then
-      timer:remove()
+  y3.ltimer.loop(1, function()
+    if not is_battle_active() then
       return
     end
 
@@ -2308,58 +2552,11 @@ local function start_runtime_loops()
   end)
 
   if y3.game.is_debug_mode() then
-    y3.ltimer.loop(0.25, function(timer)
-      if STATE.game_finished then
-        timer:remove()
-        return
-      end
-
+    y3.ltimer.loop(0.25, function()
       ensure_gm_panel()
       refresh_gm_panel()
     end)
   end
-end
-
-local function reset_state()
-  STATE.hero = nil
-  STATE.hero_spawn_point = make_point(CONFIG.points.hero_spawn)
-  STATE.defense_point = make_point(CONFIG.points.defense_point)
-  STATE.all_enemies = y3.unit_group.create()
-  STATE.total_enemy_alive = 0
-  STATE.current_wave_index = 0
-  STATE.started_wave_count = 0
-  STATE.active_wave = nil
-  STATE.active_challenges = {}
-  STATE.resources = {
-    gold = get_resource_rules().initial_gold or 0,
-    wood = get_resource_rules().initial_wood or 0,
-  }
-  STATE.resource_income_elapsed = 0
-  STATE.bond_runtime = create_bond_runtime()
-  STATE.mark_runtime = create_mark_runtime()
-  STATE.treasure_runtime = create_treasure_runtime()
-  STATE.enemy_info_map = {}
-  STATE.skill_points = 0
-  STATE.hero_progress = nil
-  STATE.awaiting_upgrade = false
-  STATE.current_upgrade_choices = nil
-  STATE.skill_runtime = create_skill_runtime()
-  STATE.attack_skill_state = create_attack_skill_state()
-  STATE.hero_common_attack = nil
-  STATE.reward_queue = {}
-  STATE.challenge_charges = CONFIG.challenge_rules.initial_charges
-  STATE.challenge_recover_elapsed = 0
-  STATE.bond_draw_count = 0
-  STATE.defeated_boss_waves = {}
-  STATE.basic_attack_ability_bound = false
-  STATE.basic_attack_ability_warned = false
-  STATE.debug_ctrl_down_count = 0
-  STATE.runtime_elapsed = 0
-  STATE.runtime_hud = nil
-  STATE.gm_ui = nil
-  STATE.game_finished = false
-  STATE.events_registered = STATE.events_registered or false
-  STATE.dev_commands_registered = STATE.dev_commands_registered or false
 end
 
 function M.bootstrap()
@@ -2367,23 +2564,14 @@ function M.bootstrap()
     return
   end
 
-  reset_state()
-
-  get_player():set_hostility(get_enemy_player(), true)
-  get_enemy_player():set_hostility(get_player(), true)
-  STATE.hero = create_hero()
-  initialize_hero_progression()
-  setup_basic_attack_ability()
+  reset_session_state()
   register_runtime_events()
   register_dev_commands()
   start_runtime_loops()
-  ensure_runtime_hud()
-  refresh_runtime_hud()
   ensure_gm_panel()
-  message('初始攻击技能已装配：1 号位 普攻 Lv1；2-4 号位可通过 G 三选一逐步解锁。')
-  show_attack_skill_loadout()
-
-  message('主循环骨架已启动：G 技能三选一，F 羁绊占位抽卡，Q/W/E/R 临时触发四类挑战，Space 查看状态。')
+  outgame_system.load_profile()
+  outgame_system.enter_outgame(nil)
+  message('局外选关已启动：先选择章节与模式，再进入战斗。')
   message('开发模式坐标校准：.epos / .eset hero / .eset defense / .earea main_spawn_wave_1 280 360 / .edump')
   message(string.format(
     '当前临时物编：英雄=%s，1-5波主怪=%s/%s/%s/%s/%s。',
@@ -2399,10 +2587,6 @@ function M.bootstrap()
     message('调试快捷键已启用：按 Ctrl+F1 查看完整说明。')
     message('GM 调试面板已挂到右上角；也可按 Ctrl+F10 快速折叠。')
   end
-
-  y3.ltimer.wait(1, function()
-    M.start_wave(1)
-  end)
 end
 
 return M

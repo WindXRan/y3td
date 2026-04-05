@@ -19,6 +19,7 @@
   - `maps/EntryMap/script/entry_runtime_progression.lua`
   - `maps/EntryMap/script/entry_runtime_attack_skills.lua`
   - `maps/EntryMap/script/entry_runtime_attack_upgrades.lua`
+  - `maps/EntryMap/script/entry_runtime_outgame.lua`
   - `maps/EntryMap/script/entry_runtime_hud.lua`
   - `maps/EntryMap/script/entry_runtime_debug_tools.lua`
   - `maps/EntryMap/script/entry_runtime_debug_actions.lua`
@@ -44,10 +45,11 @@
 2. `maps/EntryMap/script/docs/项目模块/00-项目总览/项目概览.md`
 3. `maps/EntryMap/script/docs/项目模块/01-启动与入口/启动入口链路.md`
 4. `maps/EntryMap/script/docs/项目模块/02-运行时主循环/主循环与状态机.md`
-5. `maps/EntryMap/script/docs/项目模块/03-战斗与成长`
-6. `maps/EntryMap/script/docs/项目模块/04-UI与调试`
-7. `maps/EntryMap/script/entry_objects/README.md`
-8. `maps/EntryMap/script/docs/项目模块/07-实现状态与路线图/实现状态与路线图.md`
+5. `maps/EntryMap/script/docs/项目模块/08-局外与长期进度/局外选关与存档骨架.md`
+6. `maps/EntryMap/script/docs/项目模块/03-战斗与成长`
+7. `maps/EntryMap/script/docs/项目模块/04-UI与调试`
+8. `maps/EntryMap/script/entry_objects/README.md`
+9. `maps/EntryMap/script/docs/项目模块/07-实现状态与路线图/实现状态与路线图.md`
 
 ## 模块到代码位置映射
 
@@ -60,10 +62,16 @@
   - 调用 `bootstrap()`
 - `maps/EntryMap/script/entry_runtime.lua`
   - 持有 `STATE`
-  - 在 `bootstrap()` 中重置整局状态
+  - 在 `bootstrap()` 中完成配置校验、会话态初始化、事件/循环注册与局外入口切换
   - 装配各运行时子系统
   - 维护奖励队列、轮次互斥和系统间协调
-  - 统一注册键位、开发命令、HUD 与 GM 面板入口
+  - 统一注册键位、开发命令、HUD、局外 UI 与 GM 面板入口
+- `maps/EntryMap/script/entry_runtime_outgame.lua`
+  - 局外存档加载/修正/保存
+  - 章节与模式选择
+  - 线性解锁
+  - 最近结果回显
+  - 战斗结束后回到局外页
 
 ### 战场与波次
 
@@ -73,7 +81,8 @@
   - 5 波推进
   - Boss 登场与切波
   - `Q/W/E/R` 挑战
-  - 胜负结算
+  - 生成单局 `battle_result`
+  - 战场清理入口
   - 配置校验
 
 ### 成长与经验
@@ -134,6 +143,8 @@
   - 点位与区域
   - 挑战恢复规则
   - `entry_objects.waves` / `entry_objects.challenges` 汇总接入
+  - `entry_objects.stages` / `entry_objects.stage_modes` 汇总接入
+  - `save_slots.outgame_profile`
   - 临时单位标签与物编 ID 映射
 
 ### UI 与调试
@@ -142,6 +153,7 @@
   - 运行时顶部/底部 HUD
   - 技能、羁绊、挑战按钮
   - 波次、Boss、资源、待领奖励显示
+  - 当前章节文本与战斗 HUD 显隐
 - `maps/EntryMap/script/entry_runtime_debug_tools.lua`
   - GM 面板
   - 校准命令
@@ -159,6 +171,11 @@
 
 ### 已实现
 
+- 局外选关页与章节/模式选择
+- `1-1`、`1-2`、`1-3` 三章卡片
+- `standard` / `challenge` 双模式身份、解锁与最近结果记录
+- `1-2`、`1-3` 以 `content_source_stage_id = 1-1` 暂复用首章战斗内容
+- `outgame_profile` 存档骨架与线性解锁规则
 - 5 波主线与 Boss 切波
 - 英雄自动战斗
 - 4 槽攻击技能运行时
@@ -175,6 +192,7 @@
 
 ### 部分实现
 
+- 局外系统当前只完成选关、解锁、最近结果与基础存档骨架，未接长期养成资源
 - 宝物、烙印、`G/F` 已进入真实 runtime，但当前主要还是文本提示加 HUD 按钮，不是正式中央决策面板
 - 地图已有 UI 资产与运行时 HUD，但背包、奖励记录、正式结算页还没做完
 - Boss 配置已有扩展空间，但没有完整 Boss 时间轴系统
@@ -185,9 +203,9 @@
 - 成长武器
 - 词缀节点
 - 正式中央决策面板与背包页
-- 局外成长 / 存档闭环
+- 长期局外成长、局外货币与完整结算写回
 - 多英雄
-- 多章节 / 长线内容
+- 多章节专属战斗内容与更完整模式差异
 
 ## 文档分层约定
 
@@ -243,10 +261,10 @@ entry_config.lua
   -> 汇总点位/区域/资源规则/挑战规则/对象列表
 
 entry_runtime.lua
-  -> 持有 STATE 并协调各子系统
+  -> 持有 STATE 并协调局外/战斗双阶段
 
 entry_runtime_battlefield.lua
-  -> 主线波次/挑战/战场/胜负
+  -> 主线波次/挑战/战场/单局结果
 
 entry_runtime_progression.lua
   -> 等级/经验/技能点
@@ -260,8 +278,11 @@ entry_runtime_attack_upgrades.lua
 runtime_bonds.lua
   -> F 系统 / 羁绊效果 / 奖励修正
 
+entry_runtime_outgame.lua
+  -> 选关 UI / 解锁 / 存档骨架 / 战斗回流
+
 entry_runtime_hud.lua
-  -> 运行时 HUD
+  -> 战斗 HUD
 
 maps/EntryMap/ui
   -> 提供 HUD 与面板挂载点

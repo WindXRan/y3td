@@ -52,6 +52,14 @@ function M.create(env)
     end
 
     STATE.game_finished = true
+    local result = {
+      stage_id = STATE.current_stage_def and STATE.current_stage_def.stage_id or nil,
+      mode_id = STATE.current_mode_def and STATE.current_mode_def.mode_id or nil,
+      is_win = is_win == true,
+      reached_wave_index = math.max(0, STATE.current_wave_index or 0),
+      reason = reason,
+    }
+    STATE.last_battle_result = result
     message((is_win and '游戏胜利：' or '游戏失败：') .. (reason and (' ' .. reason) or ''))
     message(string.format(
       '结算：波次 %d/%d，金币 %d，木材 %d，英雄剩余生命 %.0f。',
@@ -61,6 +69,12 @@ function M.create(env)
       STATE.resources.wood,
       STATE.hero and STATE.hero:is_exist() and STATE.hero:get_hp() or 0
     ))
+
+    if env.on_finish_game then
+      y3.ltimer.wait(0, function()
+        env.on_finish_game(result)
+      end)
+    end
   end
 
   local function create_enemy_info(unit, info)
@@ -262,7 +276,7 @@ function M.create(env)
 
   function api.start_wave(index)
     local wave = CONFIG.waves[index]
-    if not wave or STATE.game_finished then
+    if not wave or STATE.game_finished or STATE.session_phase ~= 'battle' then
       return
     end
 
@@ -356,7 +370,7 @@ function M.create(env)
   end
 
   function api.try_start_challenge(challenge_id)
-    if STATE.game_finished then
+    if STATE.game_finished or STATE.session_phase ~= 'battle' then
       return
     end
     if STATE.awaiting_upgrade then
@@ -410,7 +424,7 @@ function M.create(env)
 
   function api.update_wave(dt)
     local runner = STATE.active_wave
-    if not runner or not runner.active or STATE.game_finished then
+    if not runner or not runner.active or STATE.game_finished or STATE.session_phase ~= 'battle' then
       return
     end
 
@@ -432,6 +446,10 @@ function M.create(env)
   end
 
   function api.update_challenges(dt)
+    if STATE.session_phase ~= 'battle' then
+      return
+    end
+
     local instances = {}
     for _, instance in pairs(STATE.active_challenges) do
       instances[#instances + 1] = instance
@@ -457,6 +475,10 @@ function M.create(env)
   end
 
   function api.update_challenge_charges(dt)
+    if STATE.session_phase ~= 'battle' then
+      return
+    end
+
     if STATE.challenge_charges >= CONFIG.challenge_rules.max_charges then
       STATE.challenge_recover_elapsed = 0
       return
@@ -515,6 +537,26 @@ function M.create(env)
     end)
 
     return hero
+  end
+
+  function api.cleanup_battle_units()
+    local infos = {}
+    if STATE.enemy_info_map then
+      for _, info in pairs(STATE.enemy_info_map) do
+        infos[#infos + 1] = info
+      end
+    end
+
+    for _, info in ipairs(infos) do
+      if info.alive and info.unit and info.unit:is_exist() then
+        info.remove_runtime(false)
+        info.unit:remove()
+      end
+    end
+
+    if STATE.hero and STATE.hero:is_exist() then
+      STATE.hero:remove()
+    end
   end
 
   function api.validate_config()

@@ -95,9 +95,15 @@ function M.create(env)
   end
 
   local function get_stage_text()
+    if env.get_current_stage_text then
+      local text = env.get_current_stage_text()
+      if text and text ~= '' then
+        return text
+      end
+    end
     local wave_index = math.max(0, STATE.current_wave_index or 0)
     if wave_index <= 0 then
-      return '主线 准备'
+      return '主线 1-1'
     end
     return string.format('主线 1-%d', wave_index)
   end
@@ -881,6 +887,15 @@ function M.create(env)
     end,
     refresh_hud = function()
       return refresh_runtime_hud()
+    end,
+    set_visible = function(visible)
+      local runtime_hud = STATE.runtime_hud
+      if not is_hud_alive(runtime_hud) then
+        return
+      end
+      runtime_hud.center_root:set_visible(visible == true)
+      runtime_hud.left_root:set_visible(visible == true)
+      runtime_hud.right_root:set_visible(visible == true)
     end,
   }
 end

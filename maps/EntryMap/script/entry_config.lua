@@ -20,6 +20,8 @@ end
 
 local WaveObjects = require 'entry_objects.waves'
 local ChallengeObjects = require 'entry_objects.challenges'
+local StageObjects = require 'entry_objects.stages'
+local StageModeObjects = require 'entry_objects.stage_modes'
 
 local M = {
   debug_time_scale = DEBUG_TIME_SCALE,
@@ -121,9 +123,15 @@ local M = {
     recover_sec = scale(105),
   },
 
+  save_slots = {
+    outgame_profile = 1,
+  },
+
   waves = WaveObjects.list,
 
   challenges = ChallengeObjects.by_id,
+  stages = StageObjects,
+  stage_modes = StageModeObjects,
 }
 
 for _, wave in ipairs(M.waves) do

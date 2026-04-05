@@ -1,4 +1,9 @@
 {
+    "Friks": {
+        "archive": {},
+        "platform_prop": {},
+        "role_id": 1
+    },
     "test_account1": {
         "archive": {},
         "platform_prop": {},
@@ -7,6 +12,6 @@
     "螺旋炒面": {
         "archive": {},
         "platform_prop": {},
-        "role_id": 1
+        "role_id": -2
     }
 }
