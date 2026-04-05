@@ -1,6 +1,7 @@
 ﻿local M = {}
 local BondObjects = require 'entry_objects.bonds'
 
+local BOND_DEF_LIST = BondObjects.defs
 local BOND_DEFS = BondObjects.defs_by_id
 local BOND_CARD_DEFS = BondObjects.cards
 local BOND_CARD_BY_ID = BondObjects.cards_by_id
@@ -25,6 +26,8 @@ function M.create_runtime()
   return {
     slots = {},
     swallowed_card_ids = {},
+    swallowed_bonds = {},
+    swallowed_bond_ids = {},
     progress = {},
     active_bond_ids = {},
     applied_attr_bonuses = {},
@@ -74,10 +77,24 @@ function M.is_active(state, bond_id)
   return runtime and runtime.active_bond_ids[bond_id] == true or false
 end
 
+local function merge_card_effects_by_id(target_attr, target_runtime, card_id)
+  local card = BOND_CARD_BY_ID[card_id]
+  if not card then
+    return
+  end
+  merge_bonus_pack(target_attr, card.attr)
+  merge_bonus_pack(target_runtime, card.runtime)
+end
+
 local function is_card_acquired(state, card_id)
   local runtime = state and state.bond_runtime
   if not runtime or not card_id then
     return false
+  end
+
+  local card = BOND_CARD_BY_ID[card_id]
+  if card and runtime.swallowed_bond_ids[card.bond_id] == true then
+    return true
   end
 
   for _, owned_card_id in ipairs(runtime.slots) do
@@ -86,6 +103,56 @@ local function is_card_acquired(state, card_id)
     end
   end
   return runtime.swallowed_card_ids[card_id] == true
+end
+
+local function consume_completed_bonds(state)
+  local runtime = state and state.bond_runtime
+  if not runtime then
+    return {}
+  end
+
+  local consumed_entries = {}
+  local remaining_slots = runtime.slots
+  for _, def in ipairs(BOND_DEF_LIST) do
+    local bond_id = def.id
+    if bond_id then
+      local swallowed_card_ids = {}
+      local next_slots = {}
+      for _, card_id in ipairs(remaining_slots) do
+        local card = BOND_CARD_BY_ID[card_id]
+        if card and card.bond_id == bond_id then
+          swallowed_card_ids[#swallowed_card_ids + 1] = card_id
+        else
+          next_slots[#next_slots + 1] = card_id
+        end
+      end
+
+      if runtime.swallowed_bond_ids[bond_id] == true then
+        if #swallowed_card_ids > 0 then
+          remaining_slots = next_slots
+          for _, card_id in ipairs(swallowed_card_ids) do
+            runtime.swallowed_card_ids[card_id] = true
+          end
+        end
+      elseif #swallowed_card_ids >= (def.required_count or math.huge) then
+        remaining_slots = next_slots
+        runtime.swallowed_bond_ids[bond_id] = true
+        for _, card_id in ipairs(swallowed_card_ids) do
+          runtime.swallowed_card_ids[card_id] = true
+        end
+
+        local entry = {
+          bond_id = bond_id,
+          card_ids = swallowed_card_ids,
+        }
+        runtime.swallowed_bonds[#runtime.swallowed_bonds + 1] = entry
+        consumed_entries[#consumed_entries + 1] = entry
+      end
+    end
+  end
+
+  runtime.slots = remaining_slots
+  return consumed_entries
 end
 
 local function get_incomplete_group_count(state)
@@ -120,8 +187,17 @@ local function rebuild_progress(state)
     end
   end
 
-  for bond_id, def in pairs(BOND_DEFS) do
-    if (runtime.progress[bond_id] or 0) >= def.required_count then
+  for _, entry in ipairs(runtime.swallowed_bonds or {}) do
+    local bond_id = entry.bond_id
+    local def = bond_id and BOND_DEFS[bond_id] or nil
+    if def then
+      runtime.progress[bond_id] = math.max(runtime.progress[bond_id] or 0, def.required_count)
+    end
+  end
+
+  for _, def in ipairs(BOND_DEF_LIST) do
+    local bond_id = def.id
+    if bond_id and (runtime.progress[bond_id] or 0) >= def.required_count then
       runtime.active_bond_ids[bond_id] = true
     end
   end
@@ -134,15 +210,18 @@ function M.refresh_effects(env)
     return
   end
 
+  consume_completed_bonds(state)
   rebuild_progress(state)
 
   local desired_attr = {}
   local desired_runtime = {}
   for _, card_id in ipairs(runtime.slots) do
-    local card = BOND_CARD_BY_ID[card_id]
-    if card then
-      merge_bonus_pack(desired_attr, card.attr)
-      merge_bonus_pack(desired_runtime, card.runtime)
+    merge_card_effects_by_id(desired_attr, desired_runtime, card_id)
+  end
+
+  for _, entry in ipairs(runtime.swallowed_bonds or {}) do
+    for _, card_id in ipairs(entry.card_ids or {}) do
+      merge_card_effects_by_id(desired_attr, desired_runtime, card_id)
     end
   end
 
@@ -480,6 +559,44 @@ function M.show_loadout(env)
   end
 end
 
+local function build_swallowed_bond_text(index, entry)
+  local bond = entry and BOND_DEFS[entry.bond_id] or nil
+  if not bond then
+    return string.format('%d. 未知羁绊', index)
+  end
+
+  local card_parts = {}
+  for _, card_id in ipairs(entry.card_ids or {}) do
+    local card = BOND_CARD_BY_ID[card_id]
+    if card then
+      card_parts[#card_parts + 1] = string.format('%s(%s)', card.name, card.base_effect_desc)
+    end
+  end
+
+  local card_text = #card_parts > 0 and table.concat(card_parts, '、') or '无'
+  return string.format(
+    '%d. [%s]%s | 单卡：%s | 成套：%s',
+    index,
+    M.get_quality_label(bond.quality),
+    bond.name,
+    card_text,
+    bond.bond_effect_desc
+  )
+end
+
+function M.show_swallowed_bonds(env)
+  local runtime = env and env.STATE and env.STATE.bond_runtime
+  if not runtime or #runtime.swallowed_bonds == 0 then
+    env.message('已吞噬羁绊：暂无。')
+    return
+  end
+
+  env.message('已吞噬羁绊（效果保留）：')
+  for index, entry in ipairs(runtime.swallowed_bonds) do
+    env.message(build_swallowed_bond_text(index, entry))
+  end
+end
+
 local function build_choice_text(state, index, card)
   local bond = card and BOND_DEFS[card.bond_id] or nil
   if not card or not bond then
@@ -501,11 +618,18 @@ local function build_choice_text(state, index, card)
   )
 end
 
-local function get_replace_score(state, card_id)
+local function get_replace_score(state, card_id, incoming_card)
   local card = BOND_CARD_BY_ID[card_id]
   local bond = card and BOND_DEFS[card.bond_id] or nil
   if not card or not bond then
     return -9999
+  end
+
+  if incoming_card and incoming_card.bond_id == card.bond_id then
+    local incoming_bond = BOND_DEFS[incoming_card.bond_id]
+    if incoming_bond and M.get_progress_count(state, incoming_card.bond_id) + 1 >= incoming_bond.required_count then
+      return -999999
+    end
   end
 
   local progress = M.get_progress_count(state, card.bond_id)
@@ -533,7 +657,7 @@ local function get_replace_score(state, card_id)
   return score
 end
 
-local function pick_replace_slot(state)
+local function pick_replace_slot(state, incoming_card)
   local runtime = state and state.bond_runtime
   if not runtime or #runtime.slots == 0 then
     return nil
@@ -542,7 +666,7 @@ local function pick_replace_slot(state)
   local best_slot = 1
   local best_score = -999999
   for slot, card_id in ipairs(runtime.slots) do
-    local score = get_replace_score(state, card_id)
+    local score = get_replace_score(state, card_id, incoming_card)
     if score > best_score then
       best_score = score
       best_slot = slot
@@ -571,7 +695,7 @@ function M.apply_choice(env, index)
   local replaced_card = nil
   local replace_slot = nil
   if #runtime.slots >= 7 then
-    replace_slot = pick_replace_slot(state) or 1
+    replace_slot = pick_replace_slot(state, card) or 1
     replaced_card = runtime.slots[replace_slot]
     if replaced_card then
       runtime.swallowed_card_ids[replaced_card] = true
@@ -584,6 +708,7 @@ function M.apply_choice(env, index)
   runtime.awaiting_choice = false
   runtime.current_choices = nil
 
+  local swallowed_entries = consume_completed_bonds(state)
   M.refresh_effects(env)
 
   local bond = BOND_DEFS[card.bond_id]
@@ -605,7 +730,21 @@ function M.apply_choice(env, index)
     end
   end
 
+  for _, entry in ipairs(swallowed_entries) do
+    local swallowed_bond = BOND_DEFS[entry.bond_id]
+    if swallowed_bond then
+      env.message(string.format(
+        '羁绊整套吞噬：%s 已移出羁绊栏，效果保留，释放 %d 格。按 I 可查看已吞噬列表。',
+        swallowed_bond.name,
+        #entry.card_ids
+      ))
+    end
+  end
+
   M.show_loadout(env)
+  if #swallowed_entries > 0 then
+    M.show_swallowed_bonds(env)
+  end
 end
 
 function M.try_draw(env)

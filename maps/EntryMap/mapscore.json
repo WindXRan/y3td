@@ -1,1 +1,8 @@
-{}
+{
+    "1": {
+        "data_type": 0, 
+        "default_value": 0, 
+        "need_upload_billboard": 0, 
+        "only_read": 0
+    }
+}

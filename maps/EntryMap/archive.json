@@ -1,6 +1,21 @@
 {
     "archive_drop_config": {}, 
-    "archive_slots": {}, 
+    "archive_slots": {
+        "1": {
+            "billboard_max_item_num": 0, 
+            "billboard_sort_type": 0, 
+            "desc": "", 
+            "encrypt": true, 
+            "game_mode_limit": 0, 
+            "key": 1, 
+            "max_value_limit_type": 0, 
+            "name": "1", 
+            "time_interval_limit": [], 
+            "type": 4, 
+            "value": "{}", 
+            "week_date_limit": []
+        }
+    }, 
     "multi_keys_limit_config": {}, 
     "open_archive_key": 0
 }

@@ -1700,6 +1700,10 @@ local function show_runtime_status()
     get_reward_queue_count()
   ))
   show_attack_skill_loadout()
+  BondSystem.show_loadout(create_bond_env())
+  if STATE.bond_runtime and STATE.bond_runtime.swallowed_bonds and #STATE.bond_runtime.swallowed_bonds > 0 then
+    BondSystem.show_swallowed_bonds(create_bond_env())
+  end
   show_mark_loadout()
   show_treasure_loadout()
   if get_mark_runtime().awaiting_choice then
@@ -2406,6 +2410,12 @@ local function register_runtime_events()
       return
     end
     try_bond_draw()
+  end)
+  y3.game:event('键盘-按下', 'I', function()
+    if not is_battle_active() then
+      return
+    end
+    BondSystem.show_swallowed_bonds(create_bond_env())
   end)
   y3.game:event('键盘-按下', 'Q', function()
     if not is_battle_active() then
