@@ -1,0 +1,5 @@
+{"type":"server-started","port":56582,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:56582","screen_dir":"E:\\game_01\\y3td\\.superpowers\\brainstorm\\ps-3040-20260406154519\\content","state_dir":"E:\\game_01\\y3td\\.superpowers\\brainstorm\\ps-3040-20260406154519\\state"}
+{"type":"screen-added","file":"E:\\game_01\\y3td\\.superpowers\\brainstorm\\ps-3040-20260406154519\\content\\ui-approach-options.html"}
+{"source":"user-event","type":"click","text":"C. 混合方案（推荐）\n        \n          静态外壳 + Lua Presenter\n          固定面板背景 / 卡槽 / 图标槽 / 稀有度框\n          \n            通用卡模板\n            通用卡模板\n            通用卡模板\n          \n        \n      \n    \n    \n      方案 C：静态骨架 + 运行时数据/换图\n      把面板和卡槽结构固定在 UI 资产里，Lua 只负责打开、刷新、绑定图片资源 ID 和点击回调。\n      \n        优点兼容当前 Lua 主链路也给未来美术留足槽位G / F / 宝物可共用一套面板\n        缺点需要先定义字段规范要补节点命名规范第一版要多写一点文档","choice":"c","id":null,"timestamp":1775461675660}
+{"type":"screen-added","file":"E:\\game_01\\y3td\\.superpowers\\brainstorm\\ps-3040-20260406154519\\content\\three-choice-wireframe.html"}
+{"type":"server-stopped","reason":"idle timeout"}

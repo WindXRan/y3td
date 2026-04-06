@@ -1,0 +1,50 @@
+﻿<h2>三选一奖励面板：推荐线框</h2>
+<p class="subtitle">统一承载 G 强化 / F 羁绊 / 宝物 3 选 1，保留现有热键入口，只替换中间选择过程</p>
+
+<div class="mockup">
+  <div class="mockup-header">ThreeChoiceRewardPanel</div>
+  <div class="mockup-body">
+    <div class="placeholder" style="height:32px;margin-bottom:10px">全屏半透明遮罩</div>
+    <div class="placeholder" style="height:40px;margin-bottom:8px">标题：攻击强化 / 羁绊抽卡 / 宝物选择</div>
+    <div class="placeholder" style="height:28px;margin-bottom:14px">副标题：按 1/2/3 选择，Esc/关闭按钮按策略决定是否允许</div>
+    <div style="display:flex;gap:12px;margin-bottom:14px">
+      <div class="placeholder" style="flex:1;height:220px">左侧摘要栏：当前资源 / 当前羁绊栏 / 当前宝物栏 / 替换提示</div>
+      <div style="flex:3;display:flex;gap:12px">
+        <div class="placeholder" style="flex:1;height:220px">卡 1</div>
+        <div class="placeholder" style="flex:1;height:220px">卡 2</div>
+        <div class="placeholder" style="flex:1;height:220px">卡 3</div>
+      </div>
+    </div>
+    <div class="placeholder" style="height:34px">底部提示区：稀有度说明 / 替换说明 / 当前操作反馈</div>
+  </div>
+</div>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">单张卡层级</div>
+    <div class="mockup-body">
+      <div class="placeholder" style="height:24px;margin-bottom:8px">稀有度外框 / 角标</div>
+      <div class="placeholder" style="height:80px;margin-bottom:8px">主图标 / 未来美术图</div>
+      <div class="placeholder" style="height:24px;margin-bottom:8px">标题：名称</div>
+      <div class="placeholder" style="height:20px;margin-bottom:8px">标签：普攻 / 奥术箭 / 稀有 / 宝物流派</div>
+      <div class="placeholder" style="height:42px;margin-bottom:8px">正文：效果描述 / 替换提示</div>
+      <div class="placeholder" style="height:24px">按钮态：正常 / 悬停 / 按下 / 禁用 / 已选中</div>
+    </div>
+  </div>
+  <div class="mockup">
+    <div class="mockup-header">图片接入槽位</div>
+    <div class="mockup-body">
+      <div class="placeholder" style="height:24px;margin-bottom:8px">panel_bg</div>
+      <div class="placeholder" style="height:24px;margin-bottom:8px">card_bg</div>
+      <div class="placeholder" style="height:24px;margin-bottom:8px">card_frame_common/rare/epic</div>
+      <div class="placeholder" style="height:24px;margin-bottom:8px">icon_main</div>
+      <div class="placeholder" style="height:24px;margin-bottom:8px">badge_new / badge_replace / badge_locked</div>
+      <div class="placeholder" style="height:24px">btn_normal / hover / press / disabled</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="label">命名建议</div>
+  <p>`ThreeChoiceRewardPanel` + `ChoiceRewardCard`。业务不要再直接拼 UI 节点，统一交给 presenter 填槽位。</p>
+</div>
