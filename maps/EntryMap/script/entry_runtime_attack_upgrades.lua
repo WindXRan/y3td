@@ -11,6 +11,27 @@ function M.create(env)
   local unlock_attack_skill = env.unlock_attack_skill
   local sync_basic_attack_ability = env.sync_basic_attack_ability
   local build_attack_skill_slot_text = env.build_attack_skill_slot_text
+  local UPGRADE_FREE_REFRESH_COUNT = 3
+
+  local function get_refresh_cost(paid_count)
+    if (paid_count or 0) <= 0 then
+      return 40
+    end
+    if paid_count == 1 then
+      return 80
+    end
+    return 100
+  end
+
+  local function ensure_upgrade_round()
+    if not STATE.current_upgrade_round then
+      STATE.current_upgrade_round = {
+        free_refresh_left = UPGRADE_FREE_REFRESH_COUNT,
+        refresh_paid_count = 0,
+      }
+    end
+    return STATE.current_upgrade_round
+  end
 
   local ATTACK_UPGRADE_DEFS = {
     {
@@ -622,14 +643,49 @@ function M.create(env)
       STATE.skill_points = STATE.skill_points - 1
       STATE.awaiting_upgrade = true
       STATE.current_upgrade_choices = choices
+      STATE.current_upgrade_round = {
+        free_refresh_left = UPGRADE_FREE_REFRESH_COUNT,
+        refresh_paid_count = 0,
+      }
       message('攻击技能强化 3 选 1：按 1 / 2 / 3 选择。')
     end
-  
+
     for index, upgrade in ipairs(STATE.current_upgrade_choices) do
       message(string.format('%d. [%s] %s %s', index, upgrade.tag or '强化', upgrade.name, upgrade.desc))
     end
   end
-  
+
+  local function refresh_upgrade_choices()
+    if not STATE.awaiting_upgrade or not STATE.current_upgrade_choices then
+      return false
+    end
+
+    local choices = pick_upgrade_choices(3)
+    if #choices == 0 then
+      message('当前没有可刷新的攻击技能强化选项。')
+      return false
+    end
+
+    local round = ensure_upgrade_round()
+    if (round.free_refresh_left or 0) > 0 then
+      round.free_refresh_left = round.free_refresh_left - 1
+      message(string.format('已免费刷新 G 三选一，剩余免费次数 %d。', round.free_refresh_left))
+    else
+      local cost = get_refresh_cost(round.refresh_paid_count or 0)
+      local wood = STATE.resources and STATE.resources.wood or 0
+      if wood < cost then
+        message(string.format('木材不足，刷新 G 三选一需要 %d 木材。', cost))
+        return false
+      end
+      STATE.resources.wood = wood - cost
+      round.refresh_paid_count = (round.refresh_paid_count or 0) + 1
+      message(string.format('已消耗 %d 木材刷新 G 三选一。', cost))
+    end
+
+    STATE.current_upgrade_choices = choices
+    return true
+  end
+
   local function apply_upgrade(index)
     if not STATE.awaiting_upgrade then
       return
@@ -654,6 +710,7 @@ function M.create(env)
     end
     STATE.awaiting_upgrade = false
     STATE.current_upgrade_choices = nil
+    STATE.current_upgrade_round = nil
     message('已选择强化：' .. upgrade.name)
   
     if upgrade.skill_id == 'basic_attack' then
@@ -668,6 +725,7 @@ function M.create(env)
 
   return {
     show_upgrade_choices = show_upgrade_choices,
+    refresh_upgrade_choices = refresh_upgrade_choices,
     apply_upgrade = apply_upgrade,
   }
 end

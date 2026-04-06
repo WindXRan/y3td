@@ -59,6 +59,14 @@ M.button_styles = {
     bg_image = M.images.runtime_hud and M.images.runtime_hud.action_button_bg or nil,
     shadow_image = M.images.runtime_hud and M.images.runtime_hud.action_button_shadow or nil,
   },
+  choice_panel_action = {
+    status_images = get_status_images('primary'),
+    bg_color = theme.palette.accent_soft,
+    shadow_color = { 4, 8, 16, 110 },
+    text_color = { 245, 248, 255, 255 },
+    bg_image = M.images.choice_panel and M.images.choice_panel.action_button_bg or nil,
+    shadow_image = M.images.choice_panel and M.images.choice_panel.action_button_shadow or nil,
+  },
   runtime_trial_gold = {
     status_images = get_status_images('primary'),
     bg_color = { 126, 104, 52, 224 },

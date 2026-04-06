@@ -34,6 +34,7 @@ function M.create_runtime()
     applied_runtime_bonuses = {},
     dynamic_attr_bonuses = {},
     dynamic_runtime_bonuses = {},
+    current_round = nil,
     current_choices = nil,
     awaiting_choice = false,
     greed_kill_count = 0,
@@ -43,6 +44,16 @@ function M.create_runtime()
     blessing_guard_remaining = 0,
     arcane_empower_remaining = 0,
   }
+end
+
+local function get_refresh_cost(paid_count)
+  if (paid_count or 0) <= 0 then
+    return 40
+  end
+  if paid_count == 1 then
+    return 80
+  end
+  return 100
 end
 
 function M.get_quality_label(quality)
@@ -710,6 +721,7 @@ function M.apply_choice(env, index)
   end
 
   runtime.awaiting_choice = false
+  runtime.current_round = nil
   runtime.current_choices = nil
 
   local swallowed_entries = consume_completed_bonds(state)
@@ -787,6 +799,10 @@ function M.try_draw(env)
   state.resources.wood = state.resources.wood - cost_wood
   state.bond_draw_count = state.bond_draw_count + 1
   runtime.awaiting_choice = true
+  runtime.current_round = {
+    free_refresh_left = 0,
+    refresh_paid_count = 0,
+  }
   runtime.current_choices = choices
 
   env.message('羁绊抽卡 3选1：按 1 / 2 / 3 选择。')
@@ -797,6 +813,43 @@ function M.try_draw(env)
     env.message(build_choice_text(state, index, card))
   end
   M.show_loadout(env)
+end
+
+function M.refresh_choice(env)
+  local state = env.STATE
+  local runtime = state and state.bond_runtime
+  if not runtime or not runtime.awaiting_choice or not runtime.current_choices then
+    return false
+  end
+
+  local choices = pick_choices(state, 3)
+  if #choices == 0 then
+    env.message('当前没有可刷新的羁绊卡候选。')
+    return false
+  end
+
+  runtime.current_round = runtime.current_round or {
+    free_refresh_left = 0,
+    refresh_paid_count = 0,
+  }
+
+  if (runtime.current_round.free_refresh_left or 0) > 0 then
+    runtime.current_round.free_refresh_left = runtime.current_round.free_refresh_left - 1
+    env.message(string.format('已免费刷新 F 羁绊三选一，剩余免费次数 %d。', runtime.current_round.free_refresh_left))
+  else
+    local cost = get_refresh_cost(runtime.current_round.refresh_paid_count or 0)
+    local wood = state.resources and state.resources.wood or 0
+    if wood < cost then
+      env.message(string.format('木材不足，刷新 F 羁绊三选一需要 %d 木材。', cost))
+      return false
+    end
+    state.resources.wood = wood - cost
+    runtime.current_round.refresh_paid_count = (runtime.current_round.refresh_paid_count or 0) + 1
+    env.message(string.format('已消耗 %d 木材刷新 F 羁绊三选一。', cost))
+  end
+
+  runtime.current_choices = choices
+  return true
 end
 
 return M

@@ -1,19 +1,15 @@
 ﻿local CONFIG = require 'entry_config'
 local BondSystem = require 'runtime_bonds'
 local AttackSkillObjects = require 'entry_objects.attack_skills'
-local MarkObjects = require 'entry_objects.marks'
-local MarkNodeObjects = require 'entry_objects.mark_nodes'
-local TreasureObjects = require 'entry_objects.treasures'
 local ProgressionSystem = require 'entry_runtime_progression'
 local BattlefieldSystem = require 'entry_runtime_battlefield'
 local DebugToolsSystem = require 'entry_runtime_debug_tools'
 local DebugActionsSystem = require 'entry_runtime_debug_actions'
-local RuntimeHUDSystem = require 'entry_runtime_hud'
 local RuntimeOverviewSystem = require 'ui.runtime_overview'
 local OutgameSystem = require 'entry_runtime_outgame'
 local AttackUpgradeSystem = require 'entry_runtime_attack_upgrades'
 local AttackSkillsSystem = require 'entry_runtime_attack_skills'
-local develop_command = require 'y3.develop.command'
+local RewardSystem = require 'entry_runtime_rewards'
 local M = {}
 local helper_signals_started = false
 local heal_hero
@@ -22,10 +18,12 @@ local battlefield_system
 local debug_tools_system
 local debug_actions_system
 local runtime_hud_system
+local choice_panel_system
 local runtime_overview_system
 local outgame_system
 local attack_upgrade_system
 local attack_skills_system
+local reward_system
 
 local function trace_boot(message)
   print('[entry_runtime] ' .. tostring(message))
@@ -72,8 +70,6 @@ local function create_skill_runtime()
 end
 
 local ATTACK_SKILL_DEFS = AttackSkillObjects.defs_by_id
-local ATTACK_SKILL_VFX = AttackSkillObjects.vfx_by_id
-
 local function create_attack_skill_instance(skill_id, slot)
   local def = ATTACK_SKILL_DEFS[skill_id]
   return {
@@ -126,69 +122,6 @@ local function create_bond_runtime()
   return BondSystem.create_runtime()
 end
 
-local TREASURE_QUALITY_LABELS = {
-  common = '普通',
-  rare = '稀有',
-  epic = '史诗',
-}
-
-local MARK_QUALITY_LABELS = {
-  common = '普通',
-  rare = '稀有',
-  epic = '史诗',
-}
-
-local TREASURE_DEF_LIST = TreasureObjects.list
-local TREASURE_DEFS = TreasureObjects.by_id
-local MARK_DEF_LIST = MarkObjects.list
-local MARK_DEFS = MarkObjects.by_id
-local MARK_NODES_BY_LEVEL = MarkNodeObjects.by_level
-
-local function create_treasure_runtime()
-  return {
-    active_slots = {
-      [1] = nil,
-      [2] = nil,
-      [3] = nil,
-    },
-    active_by_id = {},
-    acquired_treasure_ids = {},
-    discarded_treasure_ids = {},
-    no_high_quality_rounds = 0,
-    next_round_id = 1,
-    current_round = nil,
-    current_choices = nil,
-    awaiting_choice = false,
-    awaiting_replace = false,
-    pending_replace_choice = nil,
-    applied = {
-      attr = {},
-      skill_runtime = {},
-      reward_ratio = {},
-      passive_income = {},
-      attack_skill = {},
-    },
-  }
-end
-
-local function create_mark_runtime()
-  return {
-    owned_mark_ids = {},
-    ordered_mark_ids = {},
-    triggered_node_ids = {},
-    rounds_by_id = {},
-    next_round_id = 1,
-    current_round = nil,
-    current_choices = nil,
-    awaiting_choice = false,
-    applied = {
-      attr = {},
-      runtime = {},
-      attack_skill = {},
-    },
-  }
-end
-
 local STATE = {
   hero = nil,
   hero_common_attack = nil,
@@ -210,6 +143,7 @@ local STATE = {
   hero_progress = nil,
   awaiting_upgrade = false,
   current_upgrade_choices = nil,
+  current_upgrade_round = nil,
   skill_runtime = nil,
   attack_skill_state = nil,
   reward_queue = nil,
@@ -222,6 +156,8 @@ local STATE = {
   debug_ctrl_down_count = 0,
   runtime_elapsed = 0,
   runtime_hud = nil,
+  choice_panel = nil,
+  choice_panel_hidden = false,
   runtime_overview = nil,
   runtime_overview_mode = 'build',
   gm_ui = nil,
@@ -306,6 +242,122 @@ local function add_attr_pack(unit, attr_pack)
       unit:add_attr(attr_name, value)
     end
   end
+end
+
+reward_system = RewardSystem.create({
+  STATE = STATE,
+  message = message,
+  round_number = round_number,
+  add_attr_pack = add_attr_pack,
+  sync_basic_attack_ability = sync_basic_attack_ability,
+})
+
+local function create_treasure_runtime()
+  return reward_system.create_treasure_runtime()
+end
+
+local function create_mark_runtime()
+  return reward_system.create_mark_runtime()
+end
+
+local function get_treasure_runtime()
+  return reward_system.get_treasure_runtime()
+end
+
+local function get_mark_runtime()
+  return reward_system.get_mark_runtime()
+end
+
+local function get_reward_queue()
+  return reward_system.get_reward_queue()
+end
+
+local function get_reward_queue_count()
+  return reward_system.get_reward_queue_count()
+end
+
+local function get_treasure_quality_label(quality)
+  return reward_system.get_treasure_quality_label(quality)
+end
+
+local function get_mark_quality_label(quality)
+  return reward_system.get_mark_quality_label(quality)
+end
+
+local function get_treasure_active_count()
+  return reward_system.get_treasure_active_count()
+end
+
+local function get_mark_active_count()
+  return reward_system.get_mark_active_count()
+end
+
+local function build_treasure_slot_text(slot)
+  return reward_system.build_treasure_slot_text(slot)
+end
+
+local function build_mark_slot_text(slot)
+  return reward_system.build_mark_slot_text(slot)
+end
+
+local function pick_treasure_choices(choice_count)
+  return reward_system.pick_treasure_choices(choice_count)
+end
+
+local function get_treasure_reward_ratio(key)
+  return reward_system.get_treasure_reward_ratio(key)
+end
+
+local function get_treasure_passive_income(key)
+  return reward_system.get_treasure_passive_income(key)
+end
+
+local function build_reward_with_treasure_bonus(reward)
+  return reward_system.build_reward_with_treasure_bonus(reward)
+end
+
+local function sync_treasure_effects()
+  return reward_system.sync_treasure_effects()
+end
+
+local function sync_mark_effects()
+  return reward_system.sync_mark_effects()
+end
+
+local function show_treasure_loadout()
+  return reward_system.show_treasure_loadout()
+end
+
+local function show_mark_loadout()
+  return reward_system.show_mark_loadout()
+end
+
+local function apply_treasure_choice(index)
+  return reward_system.apply_treasure_choice(index)
+end
+
+local function apply_mark_choice(index)
+  return reward_system.apply_mark_choice(index)
+end
+
+local function queue_treasure_round(source_type, source_name)
+  return reward_system.queue_treasure_round(source_type, source_name)
+end
+
+local function try_queue_mark_node_for_level(level)
+  return reward_system.try_queue_mark_node_for_level(level)
+end
+
+show_mark_choices = function()
+  return reward_system.show_mark_choices()
+end
+
+show_treasure_choices = function()
+  return reward_system.show_treasure_choices()
+end
+
+try_open_queued_treasure_round = function()
+  return reward_system.try_process_reward_queue()
 end
 
 local function get_hero_progression_rules()
@@ -561,1002 +613,6 @@ local function build_reward_with_bond_bonus(reward)
   return BondSystem.build_reward_with_bonus(create_bond_env(), reward)
 end
 
-local function get_treasure_runtime()
-  if not STATE.treasure_runtime then
-    STATE.treasure_runtime = create_treasure_runtime()
-  end
-  return STATE.treasure_runtime
-end
-
-local function get_mark_runtime()
-  if not STATE.mark_runtime then
-    STATE.mark_runtime = create_mark_runtime()
-  end
-  return STATE.mark_runtime
-end
-
-local function get_reward_queue()
-  if not STATE.reward_queue then
-    STATE.reward_queue = {}
-  end
-  return STATE.reward_queue
-end
-
-local function get_reward_queue_count()
-  return #get_reward_queue()
-end
-
-local function get_treasure_quality_label(quality)
-  return TREASURE_QUALITY_LABELS[quality] or '普通'
-end
-
-local function get_mark_quality_label(quality)
-  return MARK_QUALITY_LABELS[quality] or '普通'
-end
-
-local function clone_reward(reward)
-  if not reward then
-    return nil
-  end
-
-  return {
-    gold = reward.gold or 0,
-    wood = reward.wood or 0,
-    exp = reward.exp or 0,
-    special = reward.special,
-  }
-end
-
-local function add_bonus_pack(target, pack)
-  if not target or not pack then
-    return
-  end
-
-  for key, value in pairs(pack) do
-    if value ~= nil and value ~= 0 then
-      target[key] = (target[key] or 0) + value
-    end
-  end
-end
-
-local function enqueue_reward_entry(entry)
-  local queue = get_reward_queue()
-  local priority = entry.priority or 0
-  local insert_at = #queue + 1
-
-  for index, queued in ipairs(queue) do
-    if priority > (queued.priority or 0) then
-      insert_at = index
-      break
-    end
-  end
-
-  table.insert(queue, insert_at, entry)
-  return entry
-end
-
-local function get_treasure_active_count()
-  local runtime = get_treasure_runtime()
-  local count = 0
-  for slot = 1, 3, 1 do
-    if runtime.active_slots[slot] then
-      count = count + 1
-    end
-  end
-  return count
-end
-
-local function get_empty_treasure_slot()
-  local runtime = get_treasure_runtime()
-  for slot = 1, 3, 1 do
-    if not runtime.active_slots[slot] then
-      return slot
-    end
-  end
-  return nil
-end
-
-local function build_treasure_choice_text(index, def)
-  return string.format(
-    '%d. [%s] %s：%s',
-    index,
-    get_treasure_quality_label(def.quality),
-    def.name,
-    def.summary
-  )
-end
-
-local function build_treasure_slot_text(slot)
-  local runtime = get_treasure_runtime()
-  local treasure_id = runtime.active_slots[slot]
-  if not treasure_id then
-    return string.format('宝物位 %d：空。', slot)
-  end
-
-  local def = TREASURE_DEFS[treasure_id]
-  if not def then
-    return string.format('宝物位 %d：未知宝物 %s。', slot, tostring(treasure_id))
-  end
-
-  return string.format(
-    '宝物位 %d：[%s] %s - %s',
-    slot,
-    get_treasure_quality_label(def.quality),
-    def.name,
-    def.summary
-  )
-end
-
-local function get_mark_active_count()
-  local runtime = get_mark_runtime()
-  return #runtime.ordered_mark_ids
-end
-
-local function build_mark_choice_text(index, def)
-  return string.format(
-    '%d. [%s] %s：%s',
-    index,
-    get_mark_quality_label(def.quality),
-    def.name,
-    def.summary
-  )
-end
-
-local function build_mark_slot_text(slot)
-  local runtime = get_mark_runtime()
-  local mark_id = runtime.ordered_mark_ids[slot]
-  if not mark_id then
-    return string.format('烙印位 %d：空。', slot)
-  end
-
-  local def = MARK_DEFS[mark_id]
-  if not def then
-    return string.format('烙印位 %d：未知烙印 %s。', slot, tostring(mark_id))
-  end
-
-  return string.format(
-    '烙印位 %d：[%s] %s - %s',
-    slot,
-    get_mark_quality_label(def.quality),
-    def.name,
-    def.summary
-  )
-end
-
-local function show_mark_loadout()
-  message('烙印栏：')
-  local count = math.max(4, get_mark_active_count())
-  for slot = 1, count, 1 do
-    message(build_mark_slot_text(slot))
-  end
-end
-
-local function is_high_quality_treasure(def)
-  return def and (def.quality == 'rare' or def.quality == 'epic') or false
-end
-
-local function build_current_treasure_tags()
-  local tags = {
-    basic_attack = true,
-  }
-
-  local attack_state = STATE.attack_skill_state
-  if attack_state and attack_state.by_id then
-    if attack_state.by_id.arcane_arrow
-      or attack_state.by_id.flame_arrow
-      or attack_state.by_id.frost_arrow
-      or attack_state.by_id.thunder then
-      tags.skill = true
-      tags.spell_cycle = true
-    end
-    if attack_state.by_id.flame_arrow then
-      tags.aoe = true
-    end
-    if attack_state.by_id.thunder then
-      tags.bounce = true
-    end
-  end
-
-  if STATE.skill_runtime and STATE.skill_runtime.splash_ratio > 0 then
-    tags.aoe = true
-  end
-  if STATE.skill_runtime and STATE.skill_runtime.chain_bounces > 0 then
-    tags.bounce = true
-  end
-
-  local runtime = get_treasure_runtime()
-  if runtime.active_by_id.coin_casket or runtime.active_by_id.harvest_flask then
-    tags.economy = true
-  end
-  if runtime.active_by_id.field_bandage
-    or runtime.active_by_id.heart_guard_mirror
-    or runtime.active_by_id.dragonblood_ring then
-    tags.survival = true
-  end
-
-  return tags
-end
-
-local function get_treasure_quality_weights()
-  local wave_index = math.max(STATE.current_wave_index or 0, STATE.started_wave_count or 0, 1)
-  local weights
-
-  if wave_index <= 2 then
-    weights = { common = 72, rare = 24, epic = 4 }
-  elseif wave_index <= 4 then
-    weights = { common = 54, rare = 34, epic = 12 }
-  else
-    weights = { common = 38, rare = 40, epic = 22 }
-  end
-
-  local runtime = get_treasure_runtime()
-  if runtime.no_high_quality_rounds >= 2 then
-    weights.common = math.max(10, weights.common - 24)
-    weights.rare = weights.rare + 18
-    weights.epic = weights.epic + 6
-  end
-
-  return weights
-end
-
-local function build_available_treasure_defs(require_high_quality)
-  local runtime = get_treasure_runtime()
-  local result = {}
-
-  for _, def in ipairs(TREASURE_DEF_LIST) do
-    if not runtime.acquired_treasure_ids[def.id]
-      and not runtime.discarded_treasure_ids[def.id]
-      and not runtime.active_by_id[def.id]
-      and (not require_high_quality or is_high_quality_treasure(def)) then
-      result[#result + 1] = def
-    end
-  end
-
-  return result
-end
-
-local function remove_treasure_def(list, treasure_id)
-  for index, def in ipairs(list) do
-    if def.id == treasure_id then
-      table.remove(list, index)
-      return
-    end
-  end
-end
-
-local function get_treasure_pick_weight(def, build_tags, quality_weights)
-  local weight = (def.pool_weight or 1) * (quality_weights[def.quality] or 1)
-
-  for _, tag in ipairs(def.tags or {}) do
-    if build_tags[tag] then
-      weight = weight * 1.35
-      break
-    end
-  end
-
-  return math.max(0.01, weight)
-end
-
-local function pick_weighted_treasure(pool, build_tags, quality_weights)
-  if #pool == 0 then
-    return nil
-  end
-
-  local total_weight = 0
-  local weights = {}
-  for index, def in ipairs(pool) do
-    local weight = get_treasure_pick_weight(def, build_tags, quality_weights)
-    weights[index] = weight
-    total_weight = total_weight + weight
-  end
-
-  if total_weight <= 0 then
-    return pool[math.random(1, #pool)]
-  end
-
-  local roll = math.random() * total_weight
-  local passed = 0
-  for index, def in ipairs(pool) do
-    passed = passed + weights[index]
-    if roll <= passed then
-      return def
-    end
-  end
-
-  return pool[#pool]
-end
-
-local function pick_treasure_choices(choice_count)
-  local runtime = get_treasure_runtime()
-  local available = build_available_treasure_defs(false)
-  if #available == 0 then
-    return {}
-  end
-
-  local build_tags = build_current_treasure_tags()
-  local quality_weights = get_treasure_quality_weights()
-  local choices = {}
-  local guarantee_high_quality = runtime.no_high_quality_rounds >= 2
-
-  if guarantee_high_quality then
-    local high_quality_pool = build_available_treasure_defs(true)
-    local guaranteed = pick_weighted_treasure(high_quality_pool, build_tags, quality_weights)
-    if guaranteed then
-      choices[#choices + 1] = guaranteed
-      remove_treasure_def(available, guaranteed.id)
-    end
-  end
-
-  while #choices < choice_count and #available > 0 do
-    local picked = pick_weighted_treasure(available, build_tags, quality_weights)
-    if not picked then
-      break
-    end
-    choices[#choices + 1] = picked
-    remove_treasure_def(available, picked.id)
-  end
-
-  local has_high_quality = false
-  for _, def in ipairs(choices) do
-    if is_high_quality_treasure(def) then
-      has_high_quality = true
-      break
-    end
-  end
-  runtime.no_high_quality_rounds = has_high_quality and 0 or (runtime.no_high_quality_rounds + 1)
-
-  return choices
-end
-
-local function build_available_mark_defs()
-  local runtime = get_mark_runtime()
-  local result = {}
-
-  for _, def in ipairs(MARK_DEF_LIST) do
-    if not runtime.owned_mark_ids[def.id] then
-      result[#result + 1] = def
-    end
-  end
-
-  return result
-end
-
-local function remove_mark_def(list, mark_id)
-  for index, def in ipairs(list) do
-    if def.id == mark_id then
-      table.remove(list, index)
-      return
-    end
-  end
-end
-
-local function get_mark_pick_weight(def)
-  return math.max(0.01, def.pool_weight or 1)
-end
-
-local function pick_weighted_mark(pool)
-  if #pool == 0 then
-    return nil
-  end
-
-  local total_weight = 0
-  local weights = {}
-  for index, def in ipairs(pool) do
-    local weight = get_mark_pick_weight(def)
-    weights[index] = weight
-    total_weight = total_weight + weight
-  end
-
-  if total_weight <= 0 then
-    return pool[math.random(1, #pool)]
-  end
-
-  local roll = math.random() * total_weight
-  local passed = 0
-  for index, def in ipairs(pool) do
-    passed = passed + weights[index]
-    if roll <= passed then
-      return def
-    end
-  end
-
-  return pool[#pool]
-end
-
-local function pick_mark_choices(choice_count)
-  local available = build_available_mark_defs()
-  if #available == 0 then
-    return {}
-  end
-
-  local choices = {}
-  while #choices < choice_count and #available > 0 do
-    local picked = pick_weighted_mark(available)
-    if not picked then
-      break
-    end
-    choices[#choices + 1] = picked
-    remove_mark_def(available, picked.id)
-  end
-
-  return choices
-end
-
-local function get_treasure_reward_ratio(key)
-  local runtime = get_treasure_runtime()
-  return runtime.applied.reward_ratio[key] or 0
-end
-
-local function get_treasure_passive_income(key)
-  local runtime = get_treasure_runtime()
-  return runtime.applied.passive_income[key] or 0
-end
-
-local function build_reward_with_treasure_bonus(reward)
-  if not reward then
-    return nil
-  end
-
-  local result = clone_reward(reward)
-  local gold_ratio = get_treasure_reward_ratio('gold')
-  local wood_ratio = get_treasure_reward_ratio('wood')
-  local exp_ratio = get_treasure_reward_ratio('exp')
-
-  if result.gold > 0 and gold_ratio > 0 then
-    result.gold = result.gold + round_number(result.gold * gold_ratio)
-  end
-  if result.wood > 0 and wood_ratio > 0 then
-    result.wood = result.wood + round_number(result.wood * wood_ratio)
-  end
-  if result.exp > 0 and exp_ratio > 0 then
-    result.exp = result.exp + round_number(result.exp * exp_ratio)
-  end
-
-  return result
-end
-
-local function apply_treasure_bonus_to_attack_skill(skill_id, skill, bonus, direction)
-  if not skill or not bonus then
-    return
-  end
-  if not bonus.include_basic and skill_id == 'basic_attack' then
-    return
-  end
-
-  local factor = direction or 1
-  if bonus.cooldown_reduction and bonus.cooldown_reduction ~= 0 then
-    skill.cooldown_reduction = math.max(0, (skill.cooldown_reduction or 0) + bonus.cooldown_reduction * factor)
-  end
-  if bonus.damage_ratio and bonus.damage_ratio ~= 0 then
-    skill.damage_ratio = math.max(0, (skill.damage_ratio or 0) + bonus.damage_ratio * factor)
-  end
-  if bonus.repeat_count and bonus.repeat_count ~= 0 then
-    skill.repeat_count = math.max(1, (skill.repeat_count or 1) + bonus.repeat_count * factor)
-  end
-  if bonus.range_bonus and bonus.range_bonus ~= 0 then
-    skill.range_bonus = math.max(0, (skill.range_bonus or 0) + bonus.range_bonus * factor)
-  end
-end
-
-local function apply_treasure_attack_skill_bonus(bonus, direction)
-  if not bonus or not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
-    return
-  end
-
-  for skill_id, skill in pairs(STATE.attack_skill_state.by_id) do
-    apply_treasure_bonus_to_attack_skill(skill_id, skill, bonus, direction)
-  end
-end
-
-local function build_treasure_bonus_pack()
-  local runtime = get_treasure_runtime()
-  local aggregate = {
-    attr = {},
-    skill_runtime = {},
-    reward_ratio = {},
-    passive_income = {},
-    attack_skill = {},
-  }
-  local rare_count = 0
-  local epic_count = 0
-
-  for slot = 1, 3, 1 do
-    local treasure_id = runtime.active_slots[slot]
-    local def = treasure_id and TREASURE_DEFS[treasure_id] or nil
-    if def then
-      if def.quality == 'rare' then
-        rare_count = rare_count + 1
-      elseif def.quality == 'epic' then
-        epic_count = epic_count + 1
-      end
-
-      add_bonus_pack(aggregate.attr, def.bonuses and def.bonuses.attr)
-      add_bonus_pack(aggregate.skill_runtime, def.bonuses and def.bonuses.skill_runtime)
-      add_bonus_pack(aggregate.reward_ratio, def.bonuses and def.bonuses.reward_ratio)
-      add_bonus_pack(aggregate.passive_income, def.bonuses and def.bonuses.passive_income)
-      add_bonus_pack(aggregate.attack_skill, def.bonuses and def.bonuses.attack_skill)
-    end
-  end
-
-  if runtime.active_by_id.crown_fragment then
-    aggregate.attr['物理攻击'] = (aggregate.attr['物理攻击'] or 0) + rare_count * 12 + epic_count * 24
-  end
-
-  return aggregate
-end
-
-local function sync_treasure_effects()
-  local runtime = get_treasure_runtime()
-  local previous = runtime.applied or {
-    attr = {},
-    skill_runtime = {},
-    reward_ratio = {},
-    passive_income = {},
-    attack_skill = {},
-  }
-
-  if STATE.hero and STATE.hero:is_exist() then
-    local negative_attr = {}
-    for attr_name, value in pairs(previous.attr or {}) do
-      if value ~= 0 then
-        negative_attr[attr_name] = -value
-      end
-    end
-    add_attr_pack(STATE.hero, negative_attr)
-  end
-
-  for key, value in pairs(previous.skill_runtime or {}) do
-    if value ~= 0 then
-      STATE.skill_runtime[key] = (STATE.skill_runtime[key] or 0) - value
-    end
-  end
-  apply_treasure_attack_skill_bonus(previous.attack_skill or {}, -1)
-
-  local aggregate = build_treasure_bonus_pack()
-
-  if STATE.hero and STATE.hero:is_exist() then
-    add_attr_pack(STATE.hero, aggregate.attr)
-  end
-  for key, value in pairs(aggregate.skill_runtime) do
-    if value ~= 0 then
-      STATE.skill_runtime[key] = (STATE.skill_runtime[key] or 0) + value
-    end
-  end
-  apply_treasure_attack_skill_bonus(aggregate.attack_skill, 1)
-
-  if (STATE.skill_runtime.medbot_every or 0) <= 0 then
-    STATE.skill_runtime.medbot_kills = 0
-  else
-    STATE.skill_runtime.medbot_kills = math.min(
-      STATE.skill_runtime.medbot_kills or 0,
-      math.max(0, STATE.skill_runtime.medbot_every - 1)
-    )
-  end
-
-  runtime.applied = aggregate
-  sync_basic_attack_ability()
-end
-
-local function apply_mark_attack_skill_bonus(bonus, direction)
-  if not bonus or not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
-    return
-  end
-
-  local factor = direction or 1
-  for skill_id, skill in pairs(STATE.attack_skill_state.by_id) do
-    if skill_id ~= 'basic_attack' then
-      apply_treasure_bonus_to_attack_skill(skill_id, skill, bonus, factor)
-    end
-  end
-end
-
-local function build_mark_bonus_pack()
-  local runtime = get_mark_runtime()
-  local aggregate = {
-    attr = {},
-    runtime = {},
-    attack_skill = {},
-  }
-
-  for _, mark_id in ipairs(runtime.ordered_mark_ids) do
-    local def = MARK_DEFS[mark_id]
-    if def and def.bonuses then
-      add_bonus_pack(aggregate.attr, def.bonuses.attr)
-      add_bonus_pack(aggregate.runtime, def.bonuses.runtime)
-      add_bonus_pack(aggregate.attack_skill, def.bonuses.attack_skill)
-    end
-  end
-
-  return aggregate
-end
-
-local function sync_mark_effects()
-  local runtime = get_mark_runtime()
-  local previous = runtime.applied or {
-    attr = {},
-    runtime = {},
-    attack_skill = {},
-  }
-
-  if STATE.hero and STATE.hero:is_exist() then
-    local negative_attr = {}
-    for attr_name, value in pairs(previous.attr or {}) do
-      if value ~= 0 then
-        negative_attr[attr_name] = -value
-      end
-    end
-    add_attr_pack(STATE.hero, negative_attr)
-  end
-
-  apply_mark_attack_skill_bonus(previous.attack_skill or {}, -1)
-
-  local aggregate = build_mark_bonus_pack()
-
-  if STATE.hero and STATE.hero:is_exist() then
-    add_attr_pack(STATE.hero, aggregate.attr)
-  end
-
-  apply_mark_attack_skill_bonus(aggregate.attack_skill or {}, 1)
-
-  runtime.applied = aggregate
-  sync_basic_attack_ability()
-end
-
-local function show_treasure_loadout()
-  message('宝物栏：')
-  for slot = 1, 3, 1 do
-    message(build_treasure_slot_text(slot))
-  end
-end
-
-local function resolve_treasure_pick(def, replace_slot)
-  local runtime = get_treasure_runtime()
-  local target_slot = replace_slot or get_empty_treasure_slot() or 1
-  local replaced_id = runtime.active_slots[target_slot]
-
-  if replaced_id then
-    runtime.active_slots[target_slot] = nil
-    runtime.active_by_id[replaced_id] = nil
-    runtime.discarded_treasure_ids[replaced_id] = true
-  end
-
-  runtime.active_slots[target_slot] = def.id
-  runtime.active_by_id[def.id] = {
-    slot = target_slot,
-    acquired_round_id = runtime.current_round and runtime.current_round.round_id or 0,
-  }
-  runtime.acquired_treasure_ids[def.id] = true
-
-  runtime.awaiting_choice = false
-  runtime.awaiting_replace = false
-  runtime.current_choices = nil
-  runtime.pending_replace_choice = nil
-  runtime.current_round = nil
-
-  sync_treasure_effects()
-
-  message(string.format(
-    '已获得宝物：[%s] %s。',
-    get_treasure_quality_label(def.quality),
-    def.name
-  ))
-  if replaced_id then
-    local replaced_def = TREASURE_DEFS[replaced_id]
-    if replaced_def then
-      message(string.format('已替换宝物位 %d：%s。', target_slot, replaced_def.name))
-    end
-  end
-  show_treasure_loadout()
-
-  try_open_queued_treasure_round()
-end
-
-show_treasure_choices = function()
-  local runtime = get_treasure_runtime()
-
-  if runtime.awaiting_replace and runtime.pending_replace_choice then
-    local def = runtime.pending_replace_choice
-    message(string.format(
-      '已选中 [%s] %s，请按 1 / 2 / 3 选择要替换的宝物位。',
-      get_treasure_quality_label(def.quality),
-      def.name
-    ))
-    for slot = 1, 3, 1 do
-      message(string.format('%d. %s', slot, build_treasure_slot_text(slot)))
-    end
-    return
-  end
-
-  if not runtime.awaiting_choice or not runtime.current_choices then
-    return
-  end
-
-  message('宝物 3选1：按 1 / 2 / 3 选择。')
-  if get_treasure_active_count() >= 3 then
-    message('当前 3 个宝物位已满，选中后还需要再指定一个被替换的旧宝物。')
-  end
-  for index, def in ipairs(runtime.current_choices) do
-    message(build_treasure_choice_text(index, def))
-  end
-  show_treasure_loadout()
-end
-
-local function apply_treasure_choice(index)
-  local runtime = get_treasure_runtime()
-
-  if runtime.awaiting_replace and runtime.pending_replace_choice then
-    if not runtime.active_slots[index] then
-      return
-    end
-    resolve_treasure_pick(runtime.pending_replace_choice, index)
-    return
-  end
-
-  if not runtime.awaiting_choice or not runtime.current_choices then
-    return
-  end
-
-  local def = runtime.current_choices[index]
-  if not def then
-    return
-  end
-
-  local empty_slot = get_empty_treasure_slot()
-  if empty_slot then
-    resolve_treasure_pick(def, empty_slot)
-    return
-  end
-
-  runtime.awaiting_choice = false
-  runtime.awaiting_replace = true
-  runtime.pending_replace_choice = def
-  if runtime.current_round then
-    runtime.current_round.state = 'await_replace'
-    runtime.current_round.selected_treasure_id = def.id
-  end
-  show_treasure_choices()
-end
-
-local function resolve_mark_pick(def)
-  local runtime = get_mark_runtime()
-  runtime.owned_mark_ids[def.id] = true
-  runtime.ordered_mark_ids[#runtime.ordered_mark_ids + 1] = def.id
-
-  if runtime.current_round then
-    runtime.current_round.selected_mark_id = def.id
-    runtime.current_round.state = 'resolved'
-  end
-
-  runtime.awaiting_choice = false
-  runtime.current_choices = nil
-  runtime.current_round = nil
-
-  sync_mark_effects()
-
-  message(string.format(
-    '已获得烙印：[%s] %s。',
-    get_mark_quality_label(def.quality),
-    def.name
-  ))
-  show_mark_loadout()
-
-  try_open_queued_treasure_round()
-end
-
-show_mark_choices = function()
-  local runtime = get_mark_runtime()
-  if not runtime.awaiting_choice or not runtime.current_choices then
-    return
-  end
-
-  local title = runtime.current_round and runtime.current_round.ui_title or '烙印选择'
-  message(string.format('%s：按 1 / 2 / 3 选择。', title))
-  for index, def in ipairs(runtime.current_choices) do
-    message(build_mark_choice_text(index, def))
-  end
-  show_mark_loadout()
-end
-
-local function apply_mark_choice(index)
-  local runtime = get_mark_runtime()
-  if not runtime.awaiting_choice or not runtime.current_choices then
-    return
-  end
-
-  local def = runtime.current_choices[index]
-  if not def then
-    return
-  end
-
-  resolve_mark_pick(def)
-end
-
-local function can_process_reward_queue()
-  local runtime = get_treasure_runtime()
-  if STATE.game_finished then
-    return false
-  end
-  local mark_runtime = get_mark_runtime()
-  if mark_runtime.awaiting_choice then
-    return false
-  end
-  if runtime.awaiting_choice or runtime.awaiting_replace then
-    return false
-  end
-  if STATE.awaiting_upgrade then
-    return false
-  end
-  if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice then
-    return false
-  end
-  return true
-end
-
-local function open_treasure_reward_entry(entry)
-  local runtime = get_treasure_runtime()
-  local choices = pick_treasure_choices(3)
-  if #choices == 0 then
-    message('本局可用宝物已经抽空，本次不再生成新的宝物候选。')
-    return true
-  end
-
-  runtime.current_round = {
-    round_id = runtime.next_round_id,
-    source_type = entry.source_type,
-    source_name = entry.source_name,
-    state = 'pending',
-    candidate_treasure_ids = {},
-  }
-  runtime.next_round_id = runtime.next_round_id + 1
-  runtime.current_choices = choices
-  runtime.awaiting_choice = true
-  runtime.awaiting_replace = false
-  runtime.pending_replace_choice = nil
-
-  for _, def in ipairs(choices) do
-    runtime.current_round.candidate_treasure_ids[#runtime.current_round.candidate_treasure_ids + 1] = def.id
-  end
-
-  message(string.format('%s 奖励：获得一次宝物 3选1。', entry.source_name or '宝物挑战'))
-  show_treasure_choices()
-  return true
-end
-
-local function open_mark_reward_entry(entry)
-  local runtime = get_mark_runtime()
-  local round = entry.round_id and runtime.rounds_by_id[entry.round_id] or nil
-  if not round then
-    message('烙印轮次数据不存在，本次奖励已跳过。')
-    return true
-  end
-
-  local choices = {}
-  for _, mark_id in ipairs(round.candidate_mark_ids or {}) do
-    local def = MARK_DEFS[mark_id]
-    if def and not runtime.owned_mark_ids[mark_id] then
-      choices[#choices + 1] = def
-    end
-  end
-
-  if #choices == 0 then
-    message(string.format('%s：没有可用烙印候选，本轮已跳过。', round.ui_title or '烙印选择'))
-    round.state = 'skipped'
-    return true
-  end
-
-  runtime.current_round = round
-  runtime.current_choices = choices
-  runtime.awaiting_choice = true
-  round.state = 'pending'
-
-  message(string.format('%s：获得一次烙印 3选1。', round.ui_title or '烙印选择'))
-  show_mark_choices()
-  return true
-end
-
-local function try_open_reward_entry(entry)
-  if not entry then
-    return false
-  end
-  if entry.kind == 'mark_choice' then
-    return open_mark_reward_entry(entry)
-  end
-  if entry.kind == 'treasure_choice' then
-    return open_treasure_reward_entry(entry)
-  end
-
-  message(string.format('存在未识别的奖励队列类型：%s。', tostring(entry.kind)))
-  return true
-end
-
-local function try_process_reward_queue()
-  if not can_process_reward_queue() then
-    return false
-  end
-
-  local queue = get_reward_queue()
-  local next_entry = table.remove(queue, 1)
-  if not next_entry then
-    return false
-  end
-
-  return try_open_reward_entry(next_entry)
-end
-
-try_open_queued_treasure_round = function()
-  return try_process_reward_queue()
-end
-
-local function queue_treasure_round(source_type, source_name)
-  local entry = enqueue_reward_entry({
-    kind = 'treasure_choice',
-    priority = 90,
-    source_type = source_type,
-    source_name = source_name,
-  })
-
-  local runtime = get_treasure_runtime()
-  if runtime.awaiting_choice or runtime.awaiting_replace then
-    message('新的宝物候选已加入待处理队列。')
-    return
-  end
-
-  if not try_process_reward_queue() and entry and get_reward_queue_count() > 0 then
-    message('宝物候选已加入待处理队列，完成当前选择后会自动弹出。')
-  end
-end
-
-local function try_queue_mark_node_for_level(level)
-  local node = MARK_NODES_BY_LEVEL[level]
-  if not node then
-    return false
-  end
-
-  local runtime = get_mark_runtime()
-  if runtime.triggered_node_ids[node.id] then
-    return false
-  end
-
-  runtime.triggered_node_ids[node.id] = true
-
-  local choices = pick_mark_choices(node.choice_count or 3)
-  if #choices == 0 then
-    message(string.format('%s：本局没有可用烙印候选。', node.ui_title or '烙印选择'))
-    return false
-  end
-
-  local round_id = runtime.next_round_id
-  runtime.next_round_id = runtime.next_round_id + 1
-  runtime.rounds_by_id[round_id] = {
-    round_id = round_id,
-    node_id = node.id,
-    trigger_level = node.trigger_level,
-    ui_title = node.ui_title,
-    state = 'queued',
-    candidate_mark_ids = {},
-  }
-
-  for _, def in ipairs(choices) do
-    runtime.rounds_by_id[round_id].candidate_mark_ids[#runtime.rounds_by_id[round_id].candidate_mark_ids + 1] = def.id
-  end
-
-  enqueue_reward_entry({
-    kind = 'mark_choice',
-    priority = node.queue_priority or 95,
-    round_id = round_id,
-    source_name = node.ui_title or '烙印选择',
-  })
-
-  if runtime.awaiting_choice then
-    message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '烙印选择'))
-    return true
-  end
-
-  if not try_process_reward_queue() and get_reward_queue_count() > 0 then
-    message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '烙印选择'))
-  end
-  return true
-end
 
 local function deal_skill_damage(target, amount, damage_type, visual)
   if not STATE.hero or not STATE.hero:is_exist() or not is_active_enemy(target) then
@@ -1765,7 +821,7 @@ local function trigger_td_skills_on_hit(data)
     for _, unit in ipairs(get_enemies_in_range(target, skill.chain_radius, target, skill.chain_bounces)) do
       deal_skill_damage(unit, data.damage * skill.chain_ratio, '法术', {
         text_type = 'magic',
-        particle = ATTACK_SKILL_VFX.thunder.chain_particle,
+        particle = AttackSkillObjects.vfx_by_id.thunder.chain_particle,
       })
       bounced = bounced + 1
       if bounced >= skill.chain_bounces then
@@ -1781,7 +837,7 @@ local function trigger_td_skills_on_hit(data)
     for _, unit in ipairs(get_enemies_in_range(target, math.max(skill.chain_radius or 0, 420), target, bond_chain_bounces)) do
       deal_skill_damage(unit, data.damage * bond_chain_ratio, '法术', {
         text_type = 'magic',
-        particle = ATTACK_SKILL_VFX.thunder.chain_particle,
+        particle = AttackSkillObjects.vfx_by_id.thunder.chain_particle,
         skip_hunter_first_hit = true,
       })
       bounced = bounced + 1
@@ -1916,7 +972,7 @@ attack_skills_system = AttackSkillsSystem.create({
   round_number = round_number,
   message = message,
   ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS,
-  ATTACK_SKILL_VFX = ATTACK_SKILL_VFX,
+  ATTACK_SKILL_VFX = AttackSkillObjects.vfx_by_id,
   get_player = get_player,
   get_hero_point = get_hero_point,
   get_bond_runtime_bonus = get_bond_runtime_bonus,
@@ -2242,6 +1298,7 @@ local get_runtime_overview_model
 
 local function show_pending_round_choice(kind)
   local current_kind = kind or get_pending_round_choice_kind()
+  STATE.choice_panel_hidden = false
   if current_kind == 'upgrade' then
     attack_upgrade_system.show_upgrade_choices()
     return
@@ -2271,6 +1328,7 @@ local function ensure_round_choice_available(allowed_kind)
 end
 
 local function show_upgrade_choices()
+  STATE.choice_panel_hidden = false
   if not ensure_round_choice_available('upgrade') then
     return
   end
@@ -2279,6 +1337,7 @@ end
 
 local function apply_upgrade(index)
   local result = attack_upgrade_system.apply_upgrade(index)
+  STATE.choice_panel_hidden = false
   sync_mark_effects()
   sync_treasure_effects()
   try_open_queued_treasure_round()
@@ -2287,6 +1346,7 @@ end
 
 local function apply_bond_choice(index)
   BondSystem.apply_choice(create_bond_env(), index)
+  STATE.choice_panel_hidden = false
   try_open_queued_treasure_round()
 end
 
@@ -2305,10 +1365,12 @@ local function apply_round_choice(index)
   end
   if STATE.treasure_runtime and (STATE.treasure_runtime.awaiting_choice or STATE.treasure_runtime.awaiting_replace) then
     apply_treasure_choice(index)
+    STATE.choice_panel_hidden = false
   end
 end
 
 local function try_bond_draw()
+  STATE.choice_panel_hidden = false
   if not ensure_round_choice_available('bond') then
     return
   end
@@ -2348,7 +1410,7 @@ debug_tools_system = DebugToolsSystem.create({
   message = message,
   round_number = round_number,
   make_point = make_point,
-  develop_command = develop_command,
+  develop_command = require 'y3.develop.command',
   get_player = get_player,
   get_hero_point = get_hero_point,
   get_current_wave = get_current_wave,
@@ -2399,7 +1461,20 @@ local function try_start_challenge(challenge_id)
   return battlefield_system.try_start_challenge(challenge_id)
 end
 
-runtime_hud_system = RuntimeHUDSystem.create({
+local function has_pending_treasure_choice()
+  return reward_system.has_pending_treasure_choice()
+end
+
+local function try_treasure_entry()
+  if has_pending_treasure_choice() then
+    STATE.choice_panel_hidden = false
+    show_pending_round_choice('treasure')
+    return
+  end
+  try_start_challenge('treasure_trial')
+end
+
+runtime_hud_system = require('entry_runtime_hud').create({
   STATE = STATE,
   CONFIG = CONFIG,
   y3 = y3,
@@ -2418,141 +1493,45 @@ runtime_hud_system = RuntimeHUDSystem.create({
     end
     return '主线 1-1'
   end,
-  get_current_decision_panel_model = function()
-    local kind = get_pending_round_choice_kind()
-    if not kind then
-      return nil
-    end
-
-    if kind == 'upgrade' then
-      local options = {}
-      for index, upgrade in ipairs(STATE.current_upgrade_choices or {}) do
-        options[#options + 1] = {
-          index = index,
-          title = upgrade.name,
-          desc = upgrade.desc,
-          rarity = (upgrade and type(upgrade.key) == 'string' and string.sub(upgrade.key, 1, 7) == 'unlock_')
-              and 'rare'
-            or 'common',
-          tag = upgrade.tag or '强化',
-        }
-      end
-      return {
-        kind = kind,
-        title = '技能强化',
-        subtitle = string.format('消耗 1 点技能点，当前剩余 %d 点', STATE.skill_points or 0),
-        hint = '点击卡片或按 1 / 2 / 3 选择',
-        options = options,
-      }
-    end
-
-    if kind == 'bond' then
-      local options = {}
-      local runtime = STATE.bond_runtime
-      local bond_defs = require('entry_objects.bonds').defs_by_id
-      for index, card in ipairs(runtime and runtime.current_choices or {}) do
-        local bond = bond_defs[card.bond_id]
-        local current_count = BondSystem.get_progress_count(STATE, card.bond_id)
-        local next_count = bond and math.min(bond.required_count, current_count + 1) or current_count
-        options[#options + 1] = {
-          index = index,
-          title = bond and string.format('%s - %s', bond.name, card.name) or card.name,
-          desc = bond and string.format(
-            '单卡：%s  成套：%s  进度 %d/%d',
-            card.base_effect_desc,
-            bond.bond_effect_desc,
-            next_count,
-            bond.required_count
-          ) or card.base_effect_desc,
-          rarity = card.quality or 'common',
-          tag = '羁绊',
-        }
-      end
-      return {
-        kind = kind,
-        title = '羁绊抽卡',
-        subtitle = #((runtime and runtime.slots) or {}) >= 7
-          and '当前羁绊位已满，选择后会自动吞噬 1 张旧卡'
-          or '选择 1 张羁绊卡加入当前构筑',
-        hint = '点击卡片或按 1 / 2 / 3 选择',
-        options = options,
-      }
-    end
-
-    if kind == 'mark' then
-      local options = {}
-      local runtime = STATE.mark_runtime
-      for index, def in ipairs(runtime and runtime.current_choices or {}) do
-        options[#options + 1] = {
-          index = index,
-          title = def.name,
-          desc = def.summary,
-          rarity = def.quality or 'common',
-          tag = '烙印',
-        }
-      end
-      return {
-        kind = kind,
-        title = runtime and runtime.current_round and runtime.current_round.ui_title or '烙印选择',
-        subtitle = '选择 1 个烙印加入本局成长',
-        hint = '点击卡片或按 1 / 2 / 3 选择',
-        options = options,
-      }
-    end
-
-    if kind == 'treasure' then
-      local runtime = STATE.treasure_runtime
-      local options = {}
-      local subtitle = '选择 1 件宝物加入本局构筑'
-      local tag = '宝物'
-
-      if runtime and runtime.awaiting_replace and runtime.pending_replace_choice then
-        subtitle = string.format(
-          '已选中 [%s] %s，请再选择 1 个被替换的宝物位',
-          get_treasure_quality_label(runtime.pending_replace_choice.quality),
-          runtime.pending_replace_choice.name
-        )
-        tag = '替换'
-        for slot = 1, 3, 1 do
-          options[#options + 1] = {
-            index = slot,
-            title = string.format('宝物位 %d', slot),
-            desc = build_treasure_slot_text(slot),
-            rarity = 'common',
-            tag = tag,
-          }
-        end
-      else
-        for index, def in ipairs(runtime and runtime.current_choices or {}) do
-          options[#options + 1] = {
-            index = index,
-            title = def.name,
-            desc = def.summary,
-            rarity = def.quality or 'common',
-            tag = tag,
-          }
-        end
-        if get_treasure_active_count() >= 3 then
-          subtitle = '当前 3 个宝物位已满，选中后还需要再指定被替换的旧宝物'
-        end
-      end
-
-      return {
-        kind = kind,
-        title = '宝物选择',
-        subtitle = subtitle,
-        hint = '点击卡片或按 1 / 2 / 3 选择',
-        options = options,
-      }
-    end
-
-    return nil
-  end,
   apply_round_choice = apply_round_choice,
   show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
   try_start_challenge = try_start_challenge,
+  try_treasure_entry = try_treasure_entry,
+  has_pending_treasure_choice = has_pending_treasure_choice,
 })
+
+choice_panel_system = (function()
+  local choice_panel_model_system = require('entry_runtime_choice_panel_model').create({
+    STATE = STATE,
+    message = message,
+    BondSystem = BondSystem,
+    ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS,
+    TREASURE_DEFS = reward_system.TREASURE_DEFS,
+    get_pending_round_choice_kind = get_pending_round_choice_kind,
+    get_treasure_runtime = get_treasure_runtime,
+    get_treasure_quality_label = get_treasure_quality_label,
+    get_treasure_active_count = get_treasure_active_count,
+    pick_treasure_choices = pick_treasure_choices,
+    create_bond_env = function()
+      return create_bond_env()
+    end,
+    refresh_upgrade_choices = function()
+      return attack_upgrade_system.refresh_upgrade_choices()
+    end,
+  })
+
+  return require('entry_runtime_choice_panel').create({
+    STATE = STATE,
+    y3 = y3,
+    round_number = round_number,
+    get_player = get_player,
+    get_current_choice_panel_model = choice_panel_model_system.get_current_choice_panel_model,
+    apply_round_choice = apply_round_choice,
+    hide_current_choice_panel = choice_panel_model_system.hide_current_choice_panel,
+    refresh_current_choice_panel = choice_panel_model_system.refresh_current_choice_panel,
+  })
+end)()
 
 get_runtime_overview_model = function()
   if STATE.runtime_overview_mode == 'attr' then
@@ -2649,6 +1628,26 @@ local function refresh_runtime_hud()
   return runtime_hud_system.refresh_hud()
 end
 
+local function ensure_choice_panel()
+  if not choice_panel_system or not choice_panel_system.ensure_panel then
+    return nil
+  end
+  return choice_panel_system.ensure_panel()
+end
+
+local function refresh_choice_panel()
+  if not choice_panel_system or not choice_panel_system.refresh_panel then
+    return nil
+  end
+  return choice_panel_system.refresh_panel()
+end
+
+local function destroy_choice_panel()
+  if choice_panel_system and choice_panel_system.destroy_panel then
+    choice_panel_system.destroy_panel()
+  end
+end
+
 local function refresh_runtime_overview()
   if runtime_overview_system and runtime_overview_system.refresh_overview then
     runtime_overview_system.refresh_overview()
@@ -2658,6 +1657,9 @@ end
 set_battle_hud_visible = function(visible)
   if runtime_hud_system and runtime_hud_system.set_visible then
     runtime_hud_system.set_visible(visible)
+  end
+  if choice_panel_system and choice_panel_system.set_visible then
+    choice_panel_system.set_visible(visible)
   end
   if runtime_overview_system and runtime_overview_system.set_visible and visible ~= true then
     runtime_overview_system.set_visible(false)
@@ -2677,6 +1679,7 @@ is_battle_active = function()
 end
 
 reset_battle_state = function()
+  destroy_choice_panel()
   STATE.hero = nil
   STATE.hero_common_attack = nil
   STATE.hero_spawn_point = make_point(CONFIG.points.hero_spawn)
@@ -2700,6 +1703,7 @@ reset_battle_state = function()
   STATE.hero_progress = nil
   STATE.awaiting_upgrade = false
   STATE.current_upgrade_choices = nil
+  STATE.current_upgrade_round = nil
   STATE.skill_runtime = create_skill_runtime()
   STATE.attack_skill_state = create_attack_skill_state()
   STATE.reward_queue = {}
@@ -2710,10 +1714,13 @@ reset_battle_state = function()
   STATE.basic_attack_ability_bound = false
   STATE.basic_attack_ability_warned = false
   STATE.runtime_elapsed = 0
+  STATE.choice_panel_hidden = false
+  STATE.choice_panel = nil
   STATE.game_finished = false
 end
 
 local function reset_session_state()
+  destroy_choice_panel()
   reset_battle_state()
   STATE.session_phase = 'outgame'
   STATE.outgame_profile = nil
@@ -2726,6 +1733,7 @@ local function reset_session_state()
   STATE.outgame_profile_save_enabled = false
   STATE.outgame_profile_save_warned = false
   STATE.runtime_hud = nil
+  STATE.choice_panel = nil
   STATE.runtime_overview = nil
   STATE.runtime_overview_mode = 'build'
   STATE.gm_ui = nil
@@ -2911,7 +1919,7 @@ local function register_runtime_events()
     if not is_battle_active() then
       return
     end
-    try_start_challenge('treasure_trial')
+    try_treasure_entry()
   end)
 
   y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_1'], function()
@@ -3009,8 +2017,10 @@ local function start_runtime_loops()
       update_bond_effects(0.25)
       update_attack_skills(0.25)
       ensure_runtime_hud()
+      ensure_choice_panel()
       set_battle_hud_visible(true)
       refresh_runtime_hud()
+      refresh_choice_panel()
       refresh_runtime_overview()
       return
     end

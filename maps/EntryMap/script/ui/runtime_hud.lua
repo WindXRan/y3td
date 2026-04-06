@@ -556,6 +556,12 @@ function M.create(env)
       and (not runtime_hud.decision_root or not runtime_hud.decision_root:is_removed())
   end
 
+  local function hide_legacy_decision_panel(runtime_hud)
+    if runtime_hud and runtime_hud.decision_root then
+      runtime_hud.decision_root:set_visible(false)
+    end
+  end
+
   refresh_runtime_hud = function()
     local runtime_hud = STATE.runtime_hud
     if not is_hud_alive(runtime_hud) then
@@ -640,75 +646,16 @@ function M.create(env)
       button_ref.shadow:set_image_color(status.shadow[1], status.shadow[2], status.shadow[3], status.shadow[4])
     end
 
-    local decision_model = env.get_current_decision_panel_model and env.get_current_decision_panel_model() or nil
-    if runtime_hud.decision_root then
-      runtime_hud.decision_root:set_visible(decision_model ~= nil)
+    local treasure_pending = env.has_pending_treasure_choice and env.has_pending_treasure_choice() or false
+    local treasure_button = runtime_hud.challenge_buttons.treasure_trial
+    if treasure_pending and treasure_button then
+      treasure_button.button:set_button_enable(true)
+      treasure_button.button:set_text('宝物 R 继续选择')
+      treasure_button.bg:set_image_color(152, 106, 74, 235)
+      treasure_button.shadow:set_image_color(46, 24, 12, 150)
+      treasure_button.button:set_text_color(255, 244, 228, 255)
     end
-
-    if decision_model and runtime_hud.decision_title then
-      runtime_hud.decision_title:set_text(decision_model.title or '当前选择')
-      runtime_hud.decision_subtitle:set_text(decision_model.subtitle or '')
-      runtime_hud.decision_hint:set_text(decision_model.hint or '')
-      if runtime_hud.decision_caption then
-        runtime_hud.decision_caption:set_text(get_decision_caption(decision_model.kind))
-      end
-
-      for index, option_ref in ipairs(runtime_hud.decision_options or {}) do
-        local option = decision_model.options and decision_model.options[index] or nil
-        local visible = option ~= nil
-        option_ref.shadow:set_visible(visible)
-        option_ref.bg:set_visible(visible)
-        option_ref.edge:set_visible(visible)
-        option_ref.badge_bg:set_visible(visible)
-        option_ref.emblem:set_visible(visible)
-        option_ref.badge_text:set_visible(visible)
-        option_ref.tag_text:set_visible(visible)
-        option_ref.title_text:set_visible(visible)
-        option_ref.desc_text:set_visible(visible)
-        option_ref.hotkey_text:set_visible(visible)
-        option_ref.pick_text:set_visible(visible)
-        option_ref.button:set_visible(visible)
-        option_ref.button:set_button_enable(visible and not STATE.game_finished)
-
-        if visible then
-          local palette = get_decision_rarity_palette_v2(option.rarity)
-          option_ref.shadow:set_image_color(palette.shadow[1], palette.shadow[2], palette.shadow[3], palette.shadow[4])
-          option_ref.bg:set_image_color(palette.card[1], palette.card[2], palette.card[3], palette.card[4])
-          option_ref.edge:set_image_color(palette.edge[1], palette.edge[2], palette.edge[3], palette.edge[4])
-          option_ref.badge_bg:set_image_color(palette.badge[1], palette.badge[2], palette.badge[3], palette.badge[4])
-          option_ref.emblem:set_image_color(palette.badge_text[1], palette.badge_text[2], palette.badge_text[3], 210)
-          option_ref.badge_text:set_text(get_decision_rarity_label_v2(option.rarity))
-          option_ref.badge_text:set_text_color(palette.badge_text[1], palette.badge_text[2], palette.badge_text[3], palette.badge_text[4])
-          option_ref.tag_text:set_text(option.tag or '')
-          option_ref.tag_text:set_text_color(palette.tag[1], palette.tag[2], palette.tag[3], palette.tag[4])
-          option_ref.title_text:set_text(option.title or '')
-          option_ref.title_text:set_text_color(palette.title[1], palette.title[2], palette.title[3], palette.title[4])
-          option_ref.desc_text:set_text(option.desc or '')
-          option_ref.desc_text:set_text_color(palette.desc[1], palette.desc[2], palette.desc[3], palette.desc[4])
-          option_ref.hotkey_text:set_text(tostring(option.index or index))
-          option_ref.pick_text:set_text(get_decision_pick_text(decision_model.kind, option.index or index))
-          option_ref.pick_text:set_text_color(palette.hint[1], palette.hint[2], palette.hint[3], palette.hint[4])
-        end
-      end
-    elseif runtime_hud.decision_options then
-      if runtime_hud.decision_caption then
-        runtime_hud.decision_caption:set_text('当前抉择')
-      end
-      for _, option_ref in ipairs(runtime_hud.decision_options) do
-        option_ref.shadow:set_visible(false)
-        option_ref.bg:set_visible(false)
-        option_ref.edge:set_visible(false)
-        option_ref.badge_bg:set_visible(false)
-        option_ref.emblem:set_visible(false)
-        option_ref.badge_text:set_visible(false)
-        option_ref.tag_text:set_visible(false)
-        option_ref.title_text:set_visible(false)
-        option_ref.desc_text:set_visible(false)
-        option_ref.hotkey_text:set_visible(false)
-        option_ref.pick_text:set_visible(false)
-        option_ref.button:set_visible(false)
-      end
-    end
+    hide_legacy_decision_panel(runtime_hud)
   end
 
   local function create_runtime_hud()
@@ -1247,7 +1194,7 @@ function M.create(env)
         scaled(30, scale),
         '宝物 R',
         function()
-          env.try_start_challenge('treasure_trial')
+          env.try_treasure_entry()
           refresh_runtime_hud()
         end,
         {
@@ -1355,11 +1302,7 @@ function M.create(env)
       runtime_hud.center_root:set_visible(visible == true)
       runtime_hud.left_root:set_visible(visible == true)
       runtime_hud.right_root:set_visible(visible == true)
-      if runtime_hud.decision_root then
-        runtime_hud.decision_root:set_visible(
-          visible == true and (env.get_current_decision_panel_model and env.get_current_decision_panel_model() ~= nil)
-        )
-      end
+      hide_legacy_decision_panel(runtime_hud)
     end,
   }
 end

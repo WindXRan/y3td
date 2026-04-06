@@ -13,6 +13,7 @@
 - 当前玩法主目录：`maps/EntryMap/script`
 - 真实启动入口：`maps/EntryMap/script/main.lua`
 - 运行时总协调：`maps/EntryMap/script/entry_runtime.lua`
+- 奖励运行时拆分：`maps/EntryMap/script/entry_runtime_rewards.lua`
 - 配置汇总入口：`maps/EntryMap/script/entry_config.lua`
 - 静态对象定义：`maps/EntryMap/script/entry_objects`
 - 羁绊主实现：`maps/EntryMap/script/runtime_bonds.lua`
@@ -62,6 +63,7 @@
   - `maps/EntryMap/script/entry_objects/bond_cards`
 - 宝物 / 烙印 / 奖励队列：
   - `maps/EntryMap/script/entry_runtime.lua`
+  - `maps/EntryMap/script/entry_runtime_rewards.lua`
   - `maps/EntryMap/script/entry_objects/treasures`
   - `maps/EntryMap/script/entry_objects/marks`
   - `maps/EntryMap/script/entry_objects/mark_nodes`
@@ -99,7 +101,8 @@
   - 成长：`entry_runtime_progression.lua`
   - 攻击技能：`entry_runtime_attack_skills.lua` / `entry_runtime_attack_upgrades.lua`
   - 羁绊：`runtime_bonds.lua`
-  - 总协调与奖励队列：`entry_runtime.lua`
+  - 总协调：`entry_runtime.lua`
+  - 宝物 / 烙印 / 奖励队列：`entry_runtime_rewards.lua`
   - HUD：`entry_runtime_hud.lua`
   - 调试：`entry_runtime_debug_tools.lua` / `entry_runtime_debug_actions.lua`
 - 新系统进入实现前，先明确：
