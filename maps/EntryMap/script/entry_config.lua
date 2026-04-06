@@ -117,7 +117,6 @@ local M = {
   },
 
   challenge_rules = {
-    ignore_unlock_requirements = true,
     max_charges = 3,
     initial_charges = 1,
     recover_sec = scale(105),

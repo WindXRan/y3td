@@ -559,6 +559,8 @@ function M.show_loadout(env)
   end
 end
 
+M.build_slot_text = build_slot_text
+
 local function build_swallowed_bond_text(index, entry)
   local bond = entry and BOND_DEFS[entry.bond_id] or nil
   if not bond then
@@ -596,6 +598,8 @@ function M.show_swallowed_bonds(env)
     env.message(build_swallowed_bond_text(index, entry))
   end
 end
+
+M.build_swallowed_bond_text = build_swallowed_bond_text
 
 local function build_choice_text(state, index, card)
   local bond = card and BOND_DEFS[card.bond_id] or nil
