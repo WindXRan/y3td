@@ -9,23 +9,42 @@ local BattlefieldSystem = require 'entry_runtime_battlefield'
 local DebugToolsSystem = require 'entry_runtime_debug_tools'
 local DebugActionsSystem = require 'entry_runtime_debug_actions'
 local RuntimeHUDSystem = require 'entry_runtime_hud'
+local RuntimeOverviewSystem = require 'ui.runtime_overview'
 local OutgameSystem = require 'entry_runtime_outgame'
 local AttackUpgradeSystem = require 'entry_runtime_attack_upgrades'
 local AttackSkillsSystem = require 'entry_runtime_attack_skills'
 local develop_command = require 'y3.develop.command'
 local M = {}
+local helper_signals_started = false
 local heal_hero
 local progression_system
 local battlefield_system
 local debug_tools_system
 local debug_actions_system
 local runtime_hud_system
+local runtime_overview_system
 local outgame_system
 local attack_upgrade_system
 local attack_skills_system
 
 local function trace_boot(message)
   print('[entry_runtime] ' .. tostring(message))
+end
+
+local function ensure_helper_signals()
+  if helper_signals_started or not y3.game.is_debug_mode() then
+    return
+  end
+
+  helper_signals_started = true
+
+  y3.ltimer.wait(1, function()
+    print('[Y3_HELPER_READY]')
+  end)
+
+  y3.ltimer.loop(5, function()
+    print('[HEARTBEAT]')
+  end)
 end
 
 trace_boot('chunk loaded')
@@ -203,6 +222,8 @@ local STATE = {
   debug_ctrl_down_count = 0,
   runtime_elapsed = 0,
   runtime_hud = nil,
+  runtime_overview = nil,
+  runtime_overview_mode = 'build',
   gm_ui = nil,
   session_phase = 'outgame',
   outgame_profile = nil,
@@ -1958,6 +1979,267 @@ local function get_pending_round_choice_label(kind)
   return '当前选择'
 end
 
+local function get_active_challenge_count_value()
+  local count = 0
+  for _ in pairs(STATE.active_challenges or {}) do
+    count = count + 1
+  end
+  return count
+end
+
+local function format_attr_value(value)
+  return round_number(value or 0)
+end
+
+local function build_overview_summary_lines()
+  if STATE.session_phase ~= 'battle' then
+    return {
+      string.format('当前阶段：局外 %s / %s', STATE.selected_stage_id or '未选章节', STATE.selected_mode_id or '未选模式'),
+    }
+  end
+
+  local lines = {}
+  local wave = get_current_wave()
+  lines[#lines + 1] = string.format(
+    '章节：%s / %s',
+    STATE.current_stage_def and STATE.current_stage_def.display_name or '未命名章节',
+    STATE.current_mode_def and STATE.current_mode_def.display_name or '未命名模式'
+  )
+  lines[#lines + 1] = string.format(
+    '波次：%s',
+    wave and wave.name or '未开始'
+  )
+
+  if STATE.active_wave and STATE.active_wave.wave then
+    if STATE.active_wave.boss_spawned then
+      lines[#lines + 1] = string.format('Boss：%s 已登场', get_boss_name(STATE.active_wave.wave))
+    else
+      lines[#lines + 1] = string.format(
+        'Boss：%.1f 秒后登场',
+        math.max(0, (STATE.active_wave.wave.boss_spawn_sec or 0) - (STATE.active_wave.elapsed or 0))
+      )
+    end
+  else
+    lines[#lines + 1] = 'Boss：当前无主线波次'
+  end
+
+  if STATE.hero and STATE.hero:is_exist() then
+    lines[#lines + 1] = string.format(
+      '英雄：%s  HP %d/%d  攻击 %d  攻速 %d',
+      get_hero_progress_text(),
+      format_attr_value(STATE.hero:get_hp()),
+      format_attr_value(STATE.hero:get_attr('hp_max')),
+      format_attr_value(STATE.hero:get_attr('attack_phy')),
+      format_attr_value(STATE.hero:get_attr('attack_speed'))
+    )
+    lines[#lines + 1] = string.format(
+      '暴击 %d%%  爆伤 %d%%  吸血 %d%%  射程 %d',
+      format_attr_value(STATE.hero:get_attr('critical_chance')),
+      format_attr_value(STATE.hero:get_attr('critical_dmg')),
+      format_attr_value(STATE.hero:get_attr('vampire_phy')),
+      format_attr_value(STATE.hero:get_attr('attack_range'))
+    )
+  else
+    lines[#lines + 1] = '英雄：当前未创建'
+  end
+
+  lines[#lines + 1] = string.format(
+    '资源：金币 %d  木材 %d  技能点 %d',
+    STATE.resources and STATE.resources.gold or 0,
+    STATE.resources and STATE.resources.wood or 0,
+    STATE.skill_points or 0
+  )
+  lines[#lines + 1] = string.format(
+    '挑战：%d/%d  进行中 %d  待领奖励 %d  敌人数 %d',
+    STATE.challenge_charges or 0,
+    CONFIG.challenge_rules.max_charges or 0,
+    get_active_challenge_count_value(),
+    get_reward_queue_count(),
+    STATE.total_enemy_alive or 0
+  )
+
+  return lines
+end
+
+local function build_attack_skill_overview_lines()
+  local lines = {}
+  for slot = 1, 4, 1 do
+    lines[#lines + 1] = attack_skills_system.build_attack_skill_slot_text(slot)
+  end
+  return lines
+end
+
+local function build_bond_overview_lines()
+  local lines = {}
+  for slot = 1, 7, 1 do
+    lines[#lines + 1] = BondSystem.build_slot_text(STATE, slot)
+  end
+  return lines
+end
+
+local function build_swallowed_bond_overview_lines()
+  local runtime = STATE.bond_runtime
+  if not runtime or #(runtime.swallowed_bonds or {}) == 0 then
+    return { '当前没有已吞噬整套羁绊。' }
+  end
+
+  local lines = {}
+  local total = #runtime.swallowed_bonds
+  local start_index = math.max(1, total - 2)
+  for index = start_index, total, 1 do
+    lines[#lines + 1] = BondSystem.build_swallowed_bond_text(index, runtime.swallowed_bonds[index])
+  end
+  return lines
+end
+
+local function build_treasure_and_mark_overview_lines()
+  local lines = {}
+  for slot = 1, 3, 1 do
+    lines[#lines + 1] = build_treasure_slot_text(slot)
+  end
+  local mark_count = math.max(4, get_mark_active_count())
+  for slot = 1, mark_count, 1 do
+    lines[#lines + 1] = build_mark_slot_text(slot)
+  end
+  return lines
+end
+
+local function build_pending_overview_lines()
+  local lines = {}
+  local pending_kind = get_pending_round_choice_kind()
+  if pending_kind == 'upgrade' then
+    lines[#lines + 1] = string.format('当前待选：技能强化，剩余技能点 %d', STATE.skill_points or 0)
+  elseif pending_kind == 'bond' then
+    lines[#lines + 1] = '当前待选：羁绊三选一'
+  elseif pending_kind == 'treasure' then
+    local runtime = get_treasure_runtime()
+    if runtime.awaiting_replace and runtime.pending_replace_choice then
+      lines[#lines + 1] = string.format(
+        '当前待选：宝物替换 [%s] %s',
+        get_treasure_quality_label(runtime.pending_replace_choice.quality),
+        runtime.pending_replace_choice.name
+      )
+    else
+      lines[#lines + 1] = '当前待选：宝物三选一'
+    end
+  elseif pending_kind == 'mark' then
+    local runtime = get_mark_runtime()
+    lines[#lines + 1] = string.format('当前待选：%s', runtime.current_round and runtime.current_round.ui_title or '烙印选择')
+  else
+    lines[#lines + 1] = '当前没有进行中的待选轮次。'
+  end
+
+  local queue = get_reward_queue()
+  if #queue <= 0 then
+    lines[#lines + 1] = '奖励队列：空'
+    return lines
+  end
+
+  lines[#lines + 1] = string.format('奖励队列：共 %d 项', #queue)
+  for index = 1, math.min(4, #queue), 1 do
+    local entry = queue[index]
+    local label = entry.source_name or entry.kind or '未命名奖励'
+    lines[#lines + 1] = string.format('%d. %s [%s]', index, label, tostring(entry.kind or 'unknown'))
+  end
+  return lines
+end
+
+local function build_attribute_summary_lines()
+  if not STATE.hero or not STATE.hero:is_exist() then
+    return { '英雄：当前未创建。' }
+  end
+
+  return {
+    string.format('等级：%s', get_hero_progress_text()),
+    string.format('生命：%d / %d',
+      format_attr_value(STATE.hero:get_hp()),
+      format_attr_value(STATE.hero:get_attr('hp_max'))
+    ),
+    string.format('攻击：%d  攻速：%d  射程：%d',
+      format_attr_value(STATE.hero:get_attr('attack_phy')),
+      format_attr_value(STATE.hero:get_attr('attack_speed')),
+      format_attr_value(STATE.hero:get_attr('attack_range'))
+    ),
+    string.format('暴击：%d%%  爆伤：%d%%  吸血：%d%%',
+      format_attr_value(STATE.hero:get_attr('critical_chance')),
+      format_attr_value(STATE.hero:get_attr('critical_dmg')),
+      format_attr_value(STATE.hero:get_attr('vampire_phy'))
+    ),
+  }
+end
+
+local function build_damage_bonus_lines()
+  return {
+    string.format('全伤加成：%d%%', format_attr_value(get_bond_runtime_bonus('all_damage_bonus') * 100)),
+    string.format('技能加成：%d%%  普攻加成：%d%%',
+      format_attr_value(get_bond_runtime_bonus('skill_damage_bonus') * 100),
+      format_attr_value(get_bond_runtime_bonus('normal_attack_damage_bonus') * 100)
+    ),
+    string.format('Boss加成：%d%%  精英加成：%d%%',
+      format_attr_value(get_bond_runtime_bonus('boss_damage_bonus') * 100),
+      format_attr_value(get_bond_runtime_bonus('elite_damage_bonus') * 100)
+    ),
+    string.format('处决阈值：%d%%  处决增伤：%d%%',
+      format_attr_value(get_bond_runtime_bonus('execute_threshold') * 100),
+      format_attr_value(get_bond_runtime_bonus('execute_damage_bonus') * 100)
+    ),
+  }
+end
+
+local function build_skill_runtime_lines()
+  local skill = STATE.skill_runtime or {}
+  return {
+    string.format('普攻追伤：%d%%  杀敌金币：%d',
+      format_attr_value((skill.normal_attack_bonus_ratio or 0) * 100),
+      format_attr_value(skill.bonus_gold_on_kill or 0)
+    ),
+    string.format('溅射：%d%% / 半径 %d',
+      format_attr_value((skill.splash_ratio or 0) * 100),
+      format_attr_value(skill.splash_radius or 0)
+    ),
+    string.format('连锁：%d%% / %d 跳 / %d%%',
+      format_attr_value((skill.chain_chance or 0) * 100),
+      format_attr_value(skill.chain_bounces or 0),
+      format_attr_value((skill.chain_ratio or 0) * 100)
+    ),
+    string.format('医疗无人机：每 %d 杀回复 %d',
+      format_attr_value(skill.medbot_every or 0),
+      format_attr_value(skill.medbot_heal or 0)
+    ),
+    string.format('火炮：间隔 %d / 基础 %d / 系数 %d%% / 半径 %d',
+      format_attr_value(skill.artillery_interval or 0),
+      format_attr_value(skill.artillery_base or 0),
+      format_attr_value((skill.artillery_ratio or 0) * 100),
+      format_attr_value(skill.artillery_radius or 0)
+    ),
+  }
+end
+
+local function build_economy_bonus_lines()
+  return {
+    string.format('资源恢复：金币每秒 %+d  木材每秒 %+d',
+      format_attr_value(get_bond_runtime_bonus('gold_per_sec_bonus')),
+      format_attr_value(get_bond_runtime_bonus('wood_per_sec_bonus'))
+    ),
+    string.format('奖励倍率：金币 %+d%%  木材 %+d%%  经验 %+d%%',
+      format_attr_value(get_treasure_reward_ratio('gold') * 100),
+      format_attr_value(get_treasure_reward_ratio('wood') * 100),
+      format_attr_value(get_treasure_reward_ratio('exp') * 100)
+    ),
+    string.format('被动收入：金币 %+d / 秒  木材 %+d / 秒',
+      format_attr_value(get_treasure_passive_income('gold')),
+      format_attr_value(get_treasure_passive_income('wood'))
+    ),
+    string.format('构筑计数：宝物 %d / 3  烙印 %d  吞噬羁绊 %d',
+      get_treasure_active_count(),
+      get_mark_active_count(),
+      STATE.bond_runtime and #(STATE.bond_runtime.swallowed_bonds or {}) or 0
+    ),
+  }
+end
+
+local get_runtime_overview_model
+
 local function show_pending_round_choice(kind)
   local current_kind = kind or get_pending_round_choice_kind()
   if current_kind == 'upgrade' then
@@ -2059,46 +2341,6 @@ debug_actions_system = DebugActionsSystem.create({
   end,
 })
 
-local function debug_add_test_resources()
-  return debug_actions_system.debug_add_test_resources()
-end
-
-local function debug_grant_levels(level_count)
-  return debug_actions_system.debug_grant_levels(level_count)
-end
-
-local function debug_unlock_all_attack_skills()
-  return debug_actions_system.debug_unlock_all_attack_skills()
-end
-
-local function debug_open_upgrade_panel()
-  return debug_actions_system.debug_open_upgrade_panel()
-end
-
-local function debug_trigger_bond_draw()
-  return debug_actions_system.debug_trigger_bond_draw()
-end
-
-local function debug_refill_challenge_charges()
-  return debug_actions_system.debug_refill_challenge_charges()
-end
-
-local function debug_force_spawn_boss()
-  return debug_actions_system.debug_force_spawn_boss()
-end
-
-local function debug_execute_enemy(unit)
-  return debug_actions_system.debug_execute_enemy(unit)
-end
-
-local function debug_kill_all_active_enemies()
-  return debug_actions_system.debug_kill_all_active_enemies()
-end
-
-local function get_active_challenge_count()
-  return battlefield_system.get_active_challenge_count()
-end
-
 debug_tools_system = DebugToolsSystem.create({
   STATE = STATE,
   CONFIG = CONFIG,
@@ -2112,41 +2354,35 @@ debug_tools_system = DebugToolsSystem.create({
   get_current_wave = get_current_wave,
   get_boss_name = get_boss_name,
   get_hero_level = get_hero_level,
-  get_active_challenge_count = get_active_challenge_count,
+  get_active_challenge_count = function()
+    return battlefield_system.get_active_challenge_count()
+  end,
   show_runtime_status = show_runtime_status,
-  debug_add_test_resources = debug_add_test_resources,
-  debug_grant_levels = debug_grant_levels,
-  debug_unlock_all_attack_skills = debug_unlock_all_attack_skills,
-  debug_open_upgrade_panel = debug_open_upgrade_panel,
-  debug_trigger_bond_draw = debug_trigger_bond_draw,
-  debug_refill_challenge_charges = debug_refill_challenge_charges,
-  debug_force_spawn_boss = debug_force_spawn_boss,
-  debug_kill_all_active_enemies = debug_kill_all_active_enemies,
+  debug_add_test_resources = function()
+    return debug_actions_system.debug_add_test_resources()
+  end,
+  debug_grant_levels = function(level_count)
+    return debug_actions_system.debug_grant_levels(level_count)
+  end,
+  debug_unlock_all_attack_skills = function()
+    return debug_actions_system.debug_unlock_all_attack_skills()
+  end,
+  debug_open_upgrade_panel = function()
+    return debug_actions_system.debug_open_upgrade_panel()
+  end,
+  debug_trigger_bond_draw = function()
+    return debug_actions_system.debug_trigger_bond_draw()
+  end,
+  debug_refill_challenge_charges = function()
+    return debug_actions_system.debug_refill_challenge_charges()
+  end,
+  debug_force_spawn_boss = function()
+    return debug_actions_system.debug_force_spawn_boss()
+  end,
+  debug_kill_all_active_enemies = function()
+    return debug_actions_system.debug_kill_all_active_enemies()
+  end,
 })
-
-local function get_gm_panel_wave_text()
-  return debug_tools_system.get_gm_panel_wave_text()
-end
-
-local function get_gm_panel_boss_text()
-  return debug_tools_system.get_gm_panel_boss_text()
-end
-
-local function get_gm_panel_status_text()
-  return debug_tools_system.get_gm_panel_status_text()
-end
-
-local function refresh_gm_panel()
-  return debug_tools_system.refresh_gm_panel()
-end
-
-local function toggle_gm_panel()
-  return debug_tools_system.toggle_gm_panel()
-end
-
-local function ensure_gm_panel()
-  return debug_tools_system.ensure_gm_panel()
-end
 
 function M.start_wave(index)
   return battlefield_system.start_wave(index)
@@ -2163,18 +2399,6 @@ local function try_start_challenge(challenge_id)
   return battlefield_system.try_start_challenge(challenge_id)
 end
 
-local function update_wave(dt)
-  return battlefield_system.update_wave(dt)
-end
-
-local function update_challenges(dt)
-  return battlefield_system.update_challenges(dt)
-end
-
-local function update_challenge_charges(dt)
-  return battlefield_system.update_challenge_charges(dt)
-end
-
 runtime_hud_system = RuntimeHUDSystem.create({
   STATE = STATE,
   CONFIG = CONFIG,
@@ -2184,7 +2408,9 @@ runtime_hud_system = RuntimeHUDSystem.create({
   get_boss_name = get_boss_name,
   get_hero_level = get_hero_level,
   get_hero_progress_text = get_hero_progress_text,
-  get_active_challenge_count = get_active_challenge_count,
+  get_active_challenge_count = function()
+    return battlefield_system.get_active_challenge_count()
+  end,
   get_reward_queue_count = get_reward_queue_count,
   get_current_stage_text = function()
     if STATE.current_stage_def and STATE.current_stage_def.display_name then
@@ -2192,9 +2418,227 @@ runtime_hud_system = RuntimeHUDSystem.create({
     end
     return '主线 1-1'
   end,
+  get_current_decision_panel_model = function()
+    local kind = get_pending_round_choice_kind()
+    if not kind then
+      return nil
+    end
+
+    if kind == 'upgrade' then
+      local options = {}
+      for index, upgrade in ipairs(STATE.current_upgrade_choices or {}) do
+        options[#options + 1] = {
+          index = index,
+          title = upgrade.name,
+          desc = upgrade.desc,
+          rarity = (upgrade and type(upgrade.key) == 'string' and string.sub(upgrade.key, 1, 7) == 'unlock_')
+              and 'rare'
+            or 'common',
+          tag = upgrade.tag or '强化',
+        }
+      end
+      return {
+        kind = kind,
+        title = '技能强化',
+        subtitle = string.format('消耗 1 点技能点，当前剩余 %d 点', STATE.skill_points or 0),
+        hint = '点击卡片或按 1 / 2 / 3 选择',
+        options = options,
+      }
+    end
+
+    if kind == 'bond' then
+      local options = {}
+      local runtime = STATE.bond_runtime
+      local bond_defs = require('entry_objects.bonds').defs_by_id
+      for index, card in ipairs(runtime and runtime.current_choices or {}) do
+        local bond = bond_defs[card.bond_id]
+        local current_count = BondSystem.get_progress_count(STATE, card.bond_id)
+        local next_count = bond and math.min(bond.required_count, current_count + 1) or current_count
+        options[#options + 1] = {
+          index = index,
+          title = bond and string.format('%s - %s', bond.name, card.name) or card.name,
+          desc = bond and string.format(
+            '单卡：%s  成套：%s  进度 %d/%d',
+            card.base_effect_desc,
+            bond.bond_effect_desc,
+            next_count,
+            bond.required_count
+          ) or card.base_effect_desc,
+          rarity = card.quality or 'common',
+          tag = '羁绊',
+        }
+      end
+      return {
+        kind = kind,
+        title = '羁绊抽卡',
+        subtitle = #((runtime and runtime.slots) or {}) >= 7
+          and '当前羁绊位已满，选择后会自动吞噬 1 张旧卡'
+          or '选择 1 张羁绊卡加入当前构筑',
+        hint = '点击卡片或按 1 / 2 / 3 选择',
+        options = options,
+      }
+    end
+
+    if kind == 'mark' then
+      local options = {}
+      local runtime = STATE.mark_runtime
+      for index, def in ipairs(runtime and runtime.current_choices or {}) do
+        options[#options + 1] = {
+          index = index,
+          title = def.name,
+          desc = def.summary,
+          rarity = def.quality or 'common',
+          tag = '烙印',
+        }
+      end
+      return {
+        kind = kind,
+        title = runtime and runtime.current_round and runtime.current_round.ui_title or '烙印选择',
+        subtitle = '选择 1 个烙印加入本局成长',
+        hint = '点击卡片或按 1 / 2 / 3 选择',
+        options = options,
+      }
+    end
+
+    if kind == 'treasure' then
+      local runtime = STATE.treasure_runtime
+      local options = {}
+      local subtitle = '选择 1 件宝物加入本局构筑'
+      local tag = '宝物'
+
+      if runtime and runtime.awaiting_replace and runtime.pending_replace_choice then
+        subtitle = string.format(
+          '已选中 [%s] %s，请再选择 1 个被替换的宝物位',
+          get_treasure_quality_label(runtime.pending_replace_choice.quality),
+          runtime.pending_replace_choice.name
+        )
+        tag = '替换'
+        for slot = 1, 3, 1 do
+          options[#options + 1] = {
+            index = slot,
+            title = string.format('宝物位 %d', slot),
+            desc = build_treasure_slot_text(slot),
+            rarity = 'common',
+            tag = tag,
+          }
+        end
+      else
+        for index, def in ipairs(runtime and runtime.current_choices or {}) do
+          options[#options + 1] = {
+            index = index,
+            title = def.name,
+            desc = def.summary,
+            rarity = def.quality or 'common',
+            tag = tag,
+          }
+        end
+        if get_treasure_active_count() >= 3 then
+          subtitle = '当前 3 个宝物位已满，选中后还需要再指定被替换的旧宝物'
+        end
+      end
+
+      return {
+        kind = kind,
+        title = '宝物选择',
+        subtitle = subtitle,
+        hint = '点击卡片或按 1 / 2 / 3 选择',
+        options = options,
+      }
+    end
+
+    return nil
+  end,
+  apply_round_choice = apply_round_choice,
   show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
   try_start_challenge = try_start_challenge,
+})
+
+get_runtime_overview_model = function()
+  if STATE.runtime_overview_mode == 'attr' then
+    return {
+      title = '局内属性总览',
+      subtitle = string.format(
+        '按 TAB 查看属性  按 B 返回构筑  当前战斗时长 %s',
+        os.date('!%M:%S', math.max(0, math.floor(STATE.runtime_elapsed or 0)))
+      ),
+      close_label = '关闭 B',
+      sections = {
+        summary = {
+          title = '英雄面板',
+          lines = build_attribute_summary_lines(),
+        },
+        skills = {
+          title = '伤害加成',
+          lines = build_damage_bonus_lines(),
+        },
+        bonds = {
+          title = '技能运行时',
+          lines = build_skill_runtime_lines(),
+        },
+        treasures = {
+          title = '经济与奖励',
+          lines = build_economy_bonus_lines(),
+        },
+        pending = {
+          title = '待处理轮次',
+          lines = build_pending_overview_lines(),
+        },
+        swallowed = {
+          title = '已吞噬羁绊',
+          lines = build_swallowed_bond_overview_lines(),
+        },
+      },
+    }
+  end
+
+  return {
+    title = '局内构筑总览',
+    subtitle = string.format(
+      '按 B 收起  按 TAB 查看属性  当前战斗时长 %s',
+      os.date('!%M:%S', math.max(0, math.floor(STATE.runtime_elapsed or 0)))
+    ),
+    close_label = '关闭 B',
+    sections = {
+      summary = {
+        title = '战况摘要',
+        lines = build_overview_summary_lines(),
+      },
+      skills = {
+        title = '攻击技能',
+        lines = build_attack_skill_overview_lines(),
+      },
+      bonds = {
+        title = '羁绊',
+        lines = build_bond_overview_lines(),
+      },
+      treasures = {
+        title = '宝物与烙印',
+        lines = build_treasure_and_mark_overview_lines(),
+      },
+      pending = {
+        title = '待处理轮次',
+        lines = build_pending_overview_lines(),
+      },
+      swallowed = {
+        title = '已吞噬羁绊',
+        lines = build_swallowed_bond_overview_lines(),
+      },
+    },
+  }
+end
+
+runtime_overview_system = RuntimeOverviewSystem.create({
+  STATE = STATE,
+  y3 = y3,
+  round_number = round_number,
+  get_player = get_player,
+  get_runtime_overview_model = function()
+    return get_runtime_overview_model()
+  end,
+  toggle_overview = function(force_visible)
+    return runtime_overview_system.toggle_overview(force_visible)
+  end,
 })
 
 local function ensure_runtime_hud()
@@ -2205,9 +2649,18 @@ local function refresh_runtime_hud()
   return runtime_hud_system.refresh_hud()
 end
 
+local function refresh_runtime_overview()
+  if runtime_overview_system and runtime_overview_system.refresh_overview then
+    runtime_overview_system.refresh_overview()
+  end
+end
+
 set_battle_hud_visible = function(visible)
   if runtime_hud_system and runtime_hud_system.set_visible then
     runtime_hud_system.set_visible(visible)
+  end
+  if runtime_overview_system and runtime_overview_system.set_visible and visible ~= true then
+    runtime_overview_system.set_visible(false)
   end
 end
 
@@ -2273,6 +2726,8 @@ local function reset_session_state()
   STATE.outgame_profile_save_enabled = false
   STATE.outgame_profile_save_warned = false
   STATE.runtime_hud = nil
+  STATE.runtime_overview = nil
+  STATE.runtime_overview_mode = 'build'
   STATE.gm_ui = nil
   STATE.debug_ctrl_down_count = 0
   STATE.game_finished = true
@@ -2417,6 +2872,23 @@ local function register_runtime_events()
     end
     BondSystem.show_swallowed_bonds(create_bond_env())
   end)
+  y3.game:event('键盘-按下', 'B', function()
+    if not is_battle_active() then
+      return
+    end
+    STATE.runtime_overview_mode = 'build'
+    runtime_overview_system.ensure_panel()
+    runtime_overview_system.toggle_overview()
+  end)
+  y3.game:event('键盘-按下', y3.const.KeyboardKey['TAB'], function()
+    if not is_battle_active() then
+      return
+    end
+    STATE.runtime_overview_mode = 'attr'
+    runtime_overview_system.ensure_panel()
+    runtime_overview_system.set_visible(true)
+    refresh_runtime_overview()
+  end)
   y3.game:event('键盘-按下', 'Q', function()
     if not is_battle_active() then
       return
@@ -2495,19 +2967,33 @@ local function register_runtime_events()
     end
 
     register_debug_hotkey('F1', show_debug_hotkey_help)
-    register_debug_hotkey('F2', debug_add_test_resources)
-    register_debug_hotkey('F3', function()
-      debug_grant_levels(3)
+    register_debug_hotkey('F2', function()
+      return debug_actions_system.debug_add_test_resources()
     end)
-    register_debug_hotkey('F4', debug_unlock_all_attack_skills)
-    register_debug_hotkey('F5', debug_open_upgrade_panel)
-    register_debug_hotkey('F6', debug_trigger_bond_draw)
-    register_debug_hotkey('F7', debug_refill_challenge_charges)
-    register_debug_hotkey('F8', debug_force_spawn_boss)
-    register_debug_hotkey('F9', debug_kill_all_active_enemies)
+    register_debug_hotkey('F3', function()
+      debug_actions_system.debug_grant_levels(3)
+    end)
+    register_debug_hotkey('F4', function()
+      return debug_actions_system.debug_unlock_all_attack_skills()
+    end)
+    register_debug_hotkey('F5', function()
+      return debug_actions_system.debug_open_upgrade_panel()
+    end)
+    register_debug_hotkey('F6', function()
+      return debug_actions_system.debug_trigger_bond_draw()
+    end)
+    register_debug_hotkey('F7', function()
+      return debug_actions_system.debug_refill_challenge_charges()
+    end)
+    register_debug_hotkey('F8', function()
+      return debug_actions_system.debug_force_spawn_boss()
+    end)
+    register_debug_hotkey('F9', function()
+      return debug_actions_system.debug_kill_all_active_enemies()
+    end)
     register_debug_hotkey('F10', function()
-      ensure_gm_panel()
-      toggle_gm_panel()
+      debug_tools_system.ensure_gm_panel()
+      debug_tools_system.toggle_gm_panel()
     end)
   end
 end
@@ -2517,14 +3003,15 @@ local function start_runtime_loops()
     if is_battle_active() then
       STATE.runtime_elapsed = (STATE.runtime_elapsed or 0) + 0.25
       update_passive_resources(0.25)
-      update_wave(0.25)
-      update_challenges(0.25)
-      update_challenge_charges(0.25)
+      battlefield_system.update_wave(0.25)
+      battlefield_system.update_challenges(0.25)
+      battlefield_system.update_challenge_charges(0.25)
       update_bond_effects(0.25)
       update_attack_skills(0.25)
       ensure_runtime_hud()
       set_battle_hud_visible(true)
       refresh_runtime_hud()
+      refresh_runtime_overview()
       return
     end
 
@@ -2563,8 +3050,8 @@ local function start_runtime_loops()
 
   if y3.game.is_debug_mode() then
     y3.ltimer.loop(0.25, function()
-      ensure_gm_panel()
-      refresh_gm_panel()
+      debug_tools_system.ensure_gm_panel()
+      debug_tools_system.refresh_gm_panel()
     end)
   end
 end
@@ -2574,11 +3061,12 @@ function M.bootstrap()
     return
   end
 
+  ensure_helper_signals()
   reset_session_state()
   register_runtime_events()
   register_dev_commands()
   start_runtime_loops()
-  ensure_gm_panel()
+  debug_tools_system.ensure_gm_panel()
   outgame_system.load_profile()
   outgame_system.enter_outgame(nil)
   message('局外选关已启动：先选择章节与模式，再进入战斗。')

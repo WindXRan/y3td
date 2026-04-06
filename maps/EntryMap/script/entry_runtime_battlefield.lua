@@ -255,25 +255,6 @@ function M.create(env)
     end
   end
 
-  local function evaluate_unlock(rule)
-    if not rule then
-      return true
-    end
-    if rule.type == 'wave_started' then
-      return STATE.started_wave_count >= rule.value
-    end
-    if rule.type == 'bond_draw_count' then
-      return STATE.bond_draw_count >= rule.value
-    end
-    if rule.type == 'hero_level' then
-      return env.get_hero_level() >= rule.value
-    end
-    if rule.type == 'boss_kill_wave' then
-      return STATE.defeated_boss_waves[rule.value] == true
-    end
-    return false
-  end
-
   function api.start_wave(index)
     local wave = CONFIG.waves[index]
     if not wave or STATE.game_finished or STATE.session_phase ~= 'battle' then
@@ -385,13 +366,6 @@ function M.create(env)
 
     if STATE.active_challenges[challenge_id] then
       message(def.name .. ' 进行中。')
-      return
-    end
-
-    local ignore_unlock_requirements = CONFIG.challenge_rules
-      and CONFIG.challenge_rules.ignore_unlock_requirements
-    if not ignore_unlock_requirements and not evaluate_unlock(def.unlock_rule) then
-      message(def.unlock_rule.text or '该挑战尚未解锁。')
       return
     end
 
