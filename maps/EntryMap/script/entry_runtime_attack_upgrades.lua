@@ -11,6 +11,8 @@ function M.create(env)
   local unlock_attack_skill = env.unlock_attack_skill
   local sync_basic_attack_ability = env.sync_basic_attack_ability
   local build_attack_skill_slot_text = env.build_attack_skill_slot_text
+  local is_bond_active = env.is_bond_active
+  local has_active_treasure = env.has_active_treasure
   local UPGRADE_FREE_REFRESH_COUNT = 3
 
   local function get_refresh_cost(paid_count)
@@ -33,14 +35,31 @@ function M.create(env)
     return STATE.current_upgrade_round
   end
 
+  local function unlock_upgrade(def)
+    def.tag = '新技能'
+    def.weight = def.weight or 10
+    def.max_picks = def.max_picks or 1
+    def.route_tags = def.route_tags or {}
+    return def
+  end
+
+  local function skill_upgrade(def)
+    def.level_delta = def.level_delta or 1
+    def.weight = def.weight or 5
+    def.route_tags = def.route_tags or {}
+    def.can_offer = def.can_offer or function()
+      return get_attack_skill(def.skill_id) ~= nil
+    end
+    return def
+  end
+
   local ATTACK_UPGRADE_DEFS = {
-    {
+    unlock_upgrade({
       key = 'unlock_arcane_arrow',
-      tag = '新技能',
       skill_id = 'arcane_arrow',
       name = '奥术箭',
-      desc = '装配到空余攻击技能位，冷却 2.0 秒，造成 80% 攻击的能量魔法伤害。',
-      weight = 10,
+      desc = '装配到空余攻击技能位。',
+      route_tags = { 'arcane_arrow', 'element' },
       can_offer = function()
         return get_empty_attack_skill_slot() ~= nil and not get_attack_skill('arcane_arrow')
       end,
@@ -50,14 +69,13 @@ function M.create(env)
           message(string.format('已装配 %d 号位攻击技能：%s。', slot, skill.name))
         end
       end,
-    },
-    {
+    }),
+    unlock_upgrade({
       key = 'unlock_flame_arrow',
-      tag = '新技能',
       skill_id = 'flame_arrow',
       name = '爆炎箭',
-      desc = '装配到空余攻击技能位，冷却 6.2 秒，命中并爆炸造成火系物理伤害。',
-      weight = 10,
+      desc = '装配到空余攻击技能位。',
+      route_tags = { 'flame_arrow', 'element' },
       can_offer = function()
         return get_empty_attack_skill_slot() ~= nil and not get_attack_skill('flame_arrow')
       end,
@@ -67,14 +85,13 @@ function M.create(env)
           message(string.format('已装配 %d 号位攻击技能：%s。', slot, skill.name))
         end
       end,
-    },
-    {
+    }),
+    unlock_upgrade({
       key = 'unlock_frost_arrow',
-      tag = '新技能',
       skill_id = 'frost_arrow',
       name = '寒冰箭',
-      desc = '装配到空余攻击技能位，冷却 4.8 秒，造成冰系魔法伤害。',
-      weight = 10,
+      desc = '装配到空余攻击技能位。',
+      route_tags = { 'frost_arrow', 'element' },
       can_offer = function()
         return get_empty_attack_skill_slot() ~= nil and not get_attack_skill('frost_arrow')
       end,
@@ -84,14 +101,13 @@ function M.create(env)
           message(string.format('已装配 %d 号位攻击技能：%s。', slot, skill.name))
         end
       end,
-    },
-    {
+    }),
+    unlock_upgrade({
       key = 'unlock_thunder',
-      tag = '新技能',
       skill_id = 'thunder',
       name = '天雷',
-      desc = '装配到空余攻击技能位，冷却 5.5 秒，召唤天雷打击目标。',
-      weight = 10,
+      desc = '装配到空余攻击技能位。',
+      route_tags = { 'thunder', 'element' },
       can_offer = function()
         return get_empty_attack_skill_slot() ~= nil and not get_attack_skill('thunder')
       end,
@@ -101,279 +117,276 @@ function M.create(env)
           message(string.format('已装配 %d 号位攻击技能：%s。', slot, skill.name))
         end
       end,
-    },
-    {
+    }),
+    skill_upgrade({
       key = 'basic_attack_damage',
-      tag = '普攻',
       skill_id = 'basic_attack',
-      level_delta = 1,
       name = '强化箭矢',
-      desc = '普攻伤害 +20%。',
-      weight = 5,
-      max_picks = 5,
-      can_offer = function()
-        return get_attack_skill('basic_attack') ~= nil
-      end,
-      apply = function(state)
-        local skill = get_attack_skill('basic_attack')
-        skill.damage_ratio = skill.damage_ratio + 0.20
-        state.skill_runtime.normal_attack_bonus_ratio = state.skill_runtime.normal_attack_bonus_ratio + 0.20
-        sync_basic_attack_ability()
-      end,
-    },
-    {
-      key = 'basic_attack_speed',
-      tag = '普攻',
-      skill_id = 'basic_attack',
-      level_delta = 1,
-      name = '迅捷拉弦',
-      desc = '攻击速度 +15%。',
-      weight = 4,
-      max_picks = 3,
-      can_offer = function()
-        return get_attack_skill('basic_attack') ~= nil
-      end,
-      apply = function(state)
-        local skill = get_attack_skill('basic_attack')
-        skill.attack_speed_bonus = skill.attack_speed_bonus + 15
-        state.hero:add_attr('攻击速度', 15)
-        sync_basic_attack_ability()
-      end,
-    },
-    {
-      key = 'basic_attack_range',
-      tag = '普攻',
-      skill_id = 'basic_attack',
-      level_delta = 1,
-      name = '猎手视界',
-      desc = '攻击范围 +80。',
-      weight = 3,
-      max_picks = 2,
-      can_offer = function()
-        return get_attack_skill('basic_attack') ~= nil
-      end,
-      apply = function(state)
-        local skill = get_attack_skill('basic_attack')
-        skill.range_bonus = skill.range_bonus + 80
-        state.hero:add_attr('攻击范围', 80)
-        sync_basic_attack_ability()
-      end,
-    },
-    {
-      key = 'arcane_damage',
-      tag = '奥术箭',
-      skill_id = 'arcane_arrow',
-      level_delta = 1,
-      name = '箭矢增幅',
-      desc = '奥术箭伤害 +25%。',
-      weight = 7,
-      max_picks = 5,
-      can_offer = function()
-        return get_attack_skill('arcane_arrow') ~= nil
-      end,
-      apply = function()
-        local skill = get_attack_skill('arcane_arrow')
-        skill.damage_ratio = skill.damage_ratio + 0.25
-      end,
-    },
-    {
-      key = 'arcane_cdr',
-      tag = '奥术箭',
-      skill_id = 'arcane_arrow',
-      level_delta = 1,
-      name = '急速抽箭',
-      desc = '奥术箭冷却缩减 12%。',
-      weight = 5,
+      desc = '普攻伤害 +15%。',
       max_picks = 4,
-      can_offer = function()
-        return get_attack_skill('arcane_arrow') ~= nil
-      end,
+      route_tags = { 'basic_attack' },
       apply = function()
-        local skill = get_attack_skill('arcane_arrow')
-        skill.cooldown_reduction = math.min(0.60, skill.cooldown_reduction + 0.12)
+        local skill = get_attack_skill('basic_attack')
+        skill.damage_ratio = skill.damage_ratio + 0.15
+        sync_basic_attack_ability()
       end,
-    },
-    {
-      key = 'arcane_pierce',
-      tag = '奥术箭',
-      skill_id = 'arcane_arrow',
-      level_delta = 1,
-      name = '贯通延伸',
-      desc = '奥术箭额外穿透 +1。',
-      weight = 4,
-      max_picks = 2,
-      can_offer = function()
-        return get_attack_skill('arcane_arrow') ~= nil
-      end,
-      apply = function()
-        local skill = get_attack_skill('arcane_arrow')
-        skill.pierce = skill.pierce + 1
-      end,
-    },
-    {
-      key = 'flame_damage',
-      tag = '爆炎箭',
-      skill_id = 'flame_arrow',
-      level_delta = 1,
-      name = '火箭增幅',
-      desc = '爆炎箭命中与爆炸伤害 +20%。',
-      weight = 7,
-      max_picks = 5,
-      can_offer = function()
-        return get_attack_skill('flame_arrow') ~= nil
-      end,
-      apply = function()
-        local skill = get_attack_skill('flame_arrow')
-        skill.damage_ratio = skill.damage_ratio + 0.20
-        skill.explosion_ratio = skill.explosion_ratio + 0.20
-      end,
-    },
-    {
-      key = 'flame_radius',
-      tag = '爆炎箭',
-      skill_id = 'flame_arrow',
-      level_delta = 1,
-      name = '爆炸扩散',
-      desc = '爆炎箭爆炸范围 +60。',
-      weight = 5,
+    }),
+    skill_upgrade({
+      key = 'basic_splitshot',
+      skill_id = 'basic_attack',
+      name = '分裂箭矢',
+      desc = '普攻额外分裂 1 个目标，分裂伤害 +15%。',
       max_picks = 3,
-      can_offer = function()
-        return get_attack_skill('flame_arrow') ~= nil
+      route_tags = { 'basic_attack', 'barrage', 'clear' },
+      apply = function()
+        local skill = get_attack_skill('basic_attack')
+        skill.split_count = skill.split_count + 1
+        skill.split_ratio = skill.split_ratio + 0.15
+        sync_basic_attack_ability()
       end,
+    }),
+    skill_upgrade({
+      key = 'basic_hunter_mark',
+      skill_id = 'basic_attack',
+      name = '猎王刻印',
+      desc = '对精英与 Boss 额外伤害 +15%，攻击范围 +60。',
+      max_picks = 3,
+      route_tags = { 'basic_attack', 'hunter', 'boss' },
+      apply = function()
+        local skill = get_attack_skill('basic_attack')
+        skill.boss_bonus_ratio = skill.boss_bonus_ratio + 0.15
+        skill.range_bonus = skill.range_bonus + 60
+        STATE.hero:add_attr('攻击范围', 60)
+        sync_basic_attack_ability()
+      end,
+    }),
+    skill_upgrade({
+      key = 'basic_sunder',
+      skill_id = 'basic_attack',
+      name = '破甲强弩',
+      desc = '普攻附加破甲，持续时间 +1 秒，叠层上限 +1。',
+      max_picks = 3,
+      route_tags = { 'basic_attack', 'armor_break', 'boss' },
+      apply = function()
+        local skill = get_attack_skill('basic_attack')
+        skill.armor_break_ratio = skill.armor_break_ratio + 0.04
+        skill.armor_break_duration = skill.armor_break_duration + 1
+        skill.armor_break_max_stacks = skill.armor_break_max_stacks + 1
+        sync_basic_attack_ability()
+      end,
+    }),
+    skill_upgrade({
+      key = 'arcane_damage',
+      skill_id = 'arcane_arrow',
+      name = '箭矢增幅',
+      desc = '奥术箭伤害 +20%。',
+      max_picks = 4,
+      route_tags = { 'arcane_arrow', 'element' },
+      apply = function()
+        local skill = get_attack_skill('arcane_arrow')
+        skill.damage_ratio = skill.damage_ratio + 0.20
+      end,
+    }),
+    skill_upgrade({
+      key = 'arcane_secondary',
+      skill_id = 'arcane_arrow',
+      name = '次级箭',
+      desc = '奥术箭次级目标 +1。',
+      max_picks = 3,
+      route_tags = { 'arcane_arrow', 'resonance', 'clear' },
+      apply = function()
+        local skill = get_attack_skill('arcane_arrow')
+        skill.secondary_targets = skill.secondary_targets + 1
+      end,
+    }),
+    skill_upgrade({
+      key = 'arcane_burst',
+      skill_id = 'arcane_arrow',
+      name = '爆裂棱镜',
+      desc = '奥术箭命中后额外爆裂，半径 +110，倍率 +20%。',
+      max_picks = 3,
+      route_tags = { 'arcane_arrow', 'resonance', 'burst' },
+      apply = function()
+        local skill = get_attack_skill('arcane_arrow')
+        skill.burst_radius = skill.burst_radius + 110
+        skill.burst_ratio = skill.burst_ratio + 0.20
+      end,
+    }),
+    skill_upgrade({
+      key = 'arcane_volley',
+      skill_id = 'arcane_arrow',
+      name = '齐射回路',
+      desc = '奥术箭额外释放 1 次，冷却缩减 8%。',
+      max_picks = 2,
+      route_tags = { 'arcane_arrow', 'tempo', 'element' },
+      apply = function()
+        local skill = get_attack_skill('arcane_arrow')
+        skill.repeat_count = skill.repeat_count + 1
+        skill.cooldown_reduction = math.min(0.65, skill.cooldown_reduction + 0.08)
+      end,
+    }),
+    skill_upgrade({
+      key = 'flame_damage',
+      skill_id = 'flame_arrow',
+      name = '火箭增幅',
+      desc = '爆炎箭本体与爆炸伤害各 +18%。',
+      max_picks = 4,
+      route_tags = { 'flame_arrow', 'element' },
       apply = function()
         local skill = get_attack_skill('flame_arrow')
-        skill.explosion_radius = skill.explosion_radius + 60
+        skill.damage_ratio = skill.damage_ratio + 0.18
+        skill.explosion_ratio = skill.explosion_ratio + 0.18
       end,
-    },
-    {
-      key = 'flame_repeat',
-      tag = '爆炎箭',
+    }),
+    skill_upgrade({
+      key = 'flame_ignite',
       skill_id = 'flame_arrow',
-      level_delta = 1,
-      name = '连珠火箭',
-      desc = '爆炎箭额外释放 1 次。',
-      weight = 4,
-      max_picks = 2,
-      can_offer = function()
-        return get_attack_skill('flame_arrow') ~= nil
+      name = '灼热引信',
+      desc = '点燃持续时间 +2 秒，每秒伤害 +6% 攻击。',
+      max_picks = 3,
+      route_tags = { 'flame_arrow', 'burn', 'element' },
+      apply = function()
+        local skill = get_attack_skill('flame_arrow')
+        skill.ignite_duration = skill.ignite_duration + 2
+        skill.ignite_tick_ratio = skill.ignite_tick_ratio + 0.06
       end,
+    }),
+    skill_upgrade({
+      key = 'flame_spread',
+      skill_id = 'flame_arrow',
+      name = '余烬扩散',
+      desc = '点燃扩散半径 +140，爆炸半径 +50。',
+      max_picks = 3,
+      route_tags = { 'flame_arrow', 'burn', 'clear' },
+      apply = function()
+        local skill = get_attack_skill('flame_arrow')
+        skill.ignite_spread_radius = skill.ignite_spread_radius + 140
+        skill.explosion_radius = skill.explosion_radius + 50
+      end,
+    }),
+    skill_upgrade({
+      key = 'flame_double_blast',
+      skill_id = 'flame_arrow',
+      name = '火箭爆破',
+      desc = '爆炎箭额外释放 1 次，爆炸倍率 +25%。',
+      max_picks = 2,
+      route_tags = { 'flame_arrow', 'burst', 'boss' },
       apply = function()
         local skill = get_attack_skill('flame_arrow')
         skill.repeat_count = skill.repeat_count + 1
+        skill.explosion_ratio = skill.explosion_ratio + 0.25
       end,
-    },
-    {
+    }),
+    skill_upgrade({
       key = 'frost_damage',
-      tag = '寒冰箭',
       skill_id = 'frost_arrow',
-      level_delta = 1,
       name = '冰箭增幅',
-      desc = '寒冰箭伤害 +25%。',
-      weight = 7,
-      max_picks = 5,
-      can_offer = function()
-        return get_attack_skill('frost_arrow') ~= nil
-      end,
-      apply = function()
-        local skill = get_attack_skill('frost_arrow')
-        skill.damage_ratio = skill.damage_ratio + 0.25
-      end,
-    },
-    {
-      key = 'frost_cdr',
-      tag = '寒冰箭',
-      skill_id = 'frost_arrow',
-      level_delta = 1,
-      name = '冰箭连发',
-      desc = '寒冰箭冷却缩减 10%。',
-      weight = 5,
+      desc = '寒冰箭伤害 +20%。',
       max_picks = 4,
-      can_offer = function()
-        return get_attack_skill('frost_arrow') ~= nil
-      end,
+      route_tags = { 'frost_arrow', 'element' },
       apply = function()
         local skill = get_attack_skill('frost_arrow')
-        skill.cooldown_reduction = math.min(0.55, skill.cooldown_reduction + 0.10)
+        skill.damage_ratio = skill.damage_ratio + 0.20
       end,
-    },
-    {
+    }),
+    skill_upgrade({
       key = 'frost_pierce',
-      tag = '寒冰箭',
       skill_id = 'frost_arrow',
-      level_delta = 1,
-      name = '冰箭贯穿',
-      desc = '寒冰箭额外穿透 +1。',
-      weight = 4,
-      max_picks = 2,
-      can_offer = function()
-        return get_attack_skill('frost_arrow') ~= nil
-      end,
+      name = '贯穿冰箭',
+      desc = '寒冰箭穿透 +1。',
+      max_picks = 3,
+      route_tags = { 'frost_arrow', 'line', 'control' },
       apply = function()
         local skill = get_attack_skill('frost_arrow')
         skill.pierce = skill.pierce + 1
       end,
-    },
-    {
-      key = 'thunder_damage',
-      tag = '天雷',
-      skill_id = 'thunder',
-      level_delta = 1,
-      name = '雷击增幅',
-      desc = '天雷伤害 +25%。',
-      weight = 7,
-      max_picks = 5,
-      can_offer = function()
-        return get_attack_skill('thunder') ~= nil
+    }),
+    skill_upgrade({
+      key = 'frost_shards',
+      skill_id = 'frost_arrow',
+      name = '三棱冰片',
+      desc = '寒冰箭额外裂出 2 枚冰片，冰片伤害 +15%。',
+      max_picks = 3,
+      route_tags = { 'frost_arrow', 'cold_tide', 'clear' },
+      apply = function()
+        local skill = get_attack_skill('frost_arrow')
+        skill.shard_count = skill.shard_count + 2
+        skill.shard_ratio = skill.shard_ratio + 0.15
       end,
+    }),
+    skill_upgrade({
+      key = 'frost_shatter',
+      skill_id = 'frost_arrow',
+      name = '冰片增伤',
+      desc = '对受控目标额外伤害 +15%，控制时间 +0.12 秒。',
+      max_picks = 3,
+      route_tags = { 'frost_arrow', 'control', 'boss' },
+      apply = function()
+        local skill = get_attack_skill('frost_arrow')
+        skill.shatter_bonus = skill.shatter_bonus + 0.15
+        skill.control_lock_time = skill.control_lock_time + 0.12
+      end,
+    }),
+    skill_upgrade({
+      key = 'thunder_damage',
+      skill_id = 'thunder',
+      name = '雷击增幅',
+      desc = '天雷伤害 +20%。',
+      max_picks = 4,
+      route_tags = { 'thunder', 'element' },
       apply = function()
         local skill = get_attack_skill('thunder')
-        skill.damage_ratio = skill.damage_ratio + 0.25
+        skill.damage_ratio = skill.damage_ratio + 0.20
       end,
-    },
-    {
+    }),
+    skill_upgrade({
       key = 'thunder_chain',
-      tag = '天雷',
       skill_id = 'thunder',
-      level_delta = 1,
       name = '连续雷击',
       desc = '天雷额外打击 1 个附近目标。',
-      weight = 6,
       max_picks = 3,
-      can_offer = function()
-        return get_attack_skill('thunder') ~= nil
-      end,
+      route_tags = { 'thunder', 'shock', 'clear' },
       apply = function()
         local skill = get_attack_skill('thunder')
         skill.extra_targets = skill.extra_targets + 1
       end,
-    },
-    {
-      key = 'thunder_cdr',
-      tag = '天雷',
+    }),
+    skill_upgrade({
+      key = 'thunder_shock',
       skill_id = 'thunder',
-      level_delta = 1,
       name = '高压导体',
-      desc = '天雷冷却缩减 10%。',
-      weight = 5,
-      max_picks = 4,
-      can_offer = function()
-        return get_attack_skill('thunder') ~= nil
-      end,
+      desc = '感电持续时间 +1.5 秒，对感电目标额外伤害 +10%。',
+      max_picks = 3,
+      route_tags = { 'thunder', 'shock', 'boss' },
       apply = function()
         local skill = get_attack_skill('thunder')
-        skill.cooldown_reduction = math.min(0.55, skill.cooldown_reduction + 0.10)
+        skill.shock_duration = skill.shock_duration + 1.5
+        skill.shock_bonus = skill.shock_bonus + 0.10
       end,
-    },
+    }),
+    skill_upgrade({
+      key = 'thunder_field',
+      skill_id = 'thunder',
+      name = '磁暴电场',
+      desc = '天雷落点生成电场，半径 +120，倍率 +20%。',
+      max_picks = 3,
+      route_tags = { 'thunder', 'shock', 'clear' },
+      apply = function()
+        local skill = get_attack_skill('thunder')
+        skill.field_radius = skill.field_radius + 120
+        skill.field_ratio = skill.field_ratio + 0.20
+      end,
+    }),
   }
-  
+
   local function is_unlock_upgrade(upgrade)
     return upgrade and type(upgrade.key) == 'string' and string.sub(upgrade.key, 1, 7) == 'unlock_'
   end
-  
+
   local function get_upgrade_balance_wave_index()
     return math.max(1, STATE.current_wave_index or 0, STATE.started_wave_count or 0)
   end
-  
+
   local function get_unlock_offer_chance(unlocked_skill_count)
     local wave_index = get_upgrade_balance_wave_index()
     if unlocked_skill_count <= 1 then
@@ -405,12 +418,12 @@ function M.create(env)
     end
     return 0
   end
-  
+
   local function get_skill_regular_upgrade_pick_count(skill_id)
     if not skill_id then
       return 0
     end
-  
+
     local total = 0
     for _, upgrade in ipairs(ATTACK_UPGRADE_DEFS) do
       if upgrade.skill_id == skill_id and not is_unlock_upgrade(upgrade) then
@@ -419,55 +432,86 @@ function M.create(env)
     end
     return total
   end
-  
+
+  local function build_upgrade_route_tags()
+    local tags = {}
+
+    for _, skill_id in ipairs({ 'basic_attack', 'arcane_arrow', 'flame_arrow', 'frost_arrow', 'thunder' }) do
+      if get_attack_skill(skill_id) then
+        tags[skill_id] = true
+      end
+    end
+
+    for _, bond_id in ipairs({
+      'barrage', 'hunter', 'armor_break', 'arcane', 'burn', 'cold_tide',
+      'shock', 'resonance', 'chain', 'tailwind', 'blessing', 'berserk',
+      'growth', 'fortress', 'blood_pact', 'guardian',
+    }) do
+      if is_bond_active and is_bond_active(bond_id) then
+        tags[bond_id] = true
+      end
+    end
+
+    for _, treasure_id in ipairs({
+      'hunter_badge', 'feather_quiver', 'echo_codex',
+      'gale_tailfeather', 'thunder_pin', 'time_rift_hourglass',
+    }) do
+      if has_active_treasure and has_active_treasure(treasure_id) then
+        tags[treasure_id] = true
+      end
+    end
+
+    return tags
+  end
+
   local function get_regular_upgrade_weight(upgrade)
     local base_weight = upgrade.weight or 1
-    local skill_id = upgrade.skill_id
-    if not skill_id then
-      return base_weight
-    end
-  
     local factor = 1.0
+
+    local skill_id = upgrade.skill_id
     local wave_index = get_upgrade_balance_wave_index()
     local picked_count = get_skill_regular_upgrade_pick_count(skill_id)
-  
+    local route_tags = build_upgrade_route_tags()
+
     if picked_count > 0 then
-      factor = factor * 1.25
+      factor = factor * 1.20
     else
       factor = factor * 0.90
     end
-  
-    if skill_id == 'basic_attack' then
-      if wave_index <= 2 then
-        factor = factor * 1.20
-      elseif picked_count >= 2 then
-        factor = factor * 0.85
-      end
-    end
-  
+
     if STATE.attack_skill_state and STATE.attack_skill_state.last_picked_skill_id == skill_id then
-      factor = factor * 1.25
+      factor = factor * 1.20
     end
-  
+
     local feed_rounds = STATE.attack_skill_state
       and STATE.attack_skill_state.new_skill_feed
       and STATE.attack_skill_state.new_skill_feed[skill_id]
       or 0
     if feed_rounds > 0 then
-      factor = factor * 1.60
+      factor = factor * 1.50
     end
-  
-    factor = math.min(factor, 2.2)
-    return base_weight * factor
+
+    for _, tag in ipairs(upgrade.route_tags or {}) do
+      if route_tags[tag] then
+        factor = factor * 1.30
+        break
+      end
+    end
+
+    if skill_id == 'basic_attack' and wave_index <= 2 then
+      factor = factor * 1.15
+    end
+
+    return base_weight * math.min(factor, 2.5)
   end
-  
+
   local function get_upgrade_effective_weight(upgrade)
     if is_unlock_upgrade(upgrade) then
       return upgrade.weight or 1
     end
     return get_regular_upgrade_weight(upgrade)
   end
-  
+
   local function count_distinct_skill_ids(pool)
     local seen = {}
     local count = 0
@@ -480,12 +524,12 @@ function M.create(env)
     end
     return count
   end
-  
+
   local function decay_new_skill_feed_rounds()
     if not STATE.attack_skill_state or not STATE.attack_skill_state.new_skill_feed then
       return
     end
-  
+
     for skill_id, rounds in pairs(STATE.attack_skill_state.new_skill_feed) do
       local next_rounds = rounds - 1
       if next_rounds > 0 then
@@ -495,12 +539,12 @@ function M.create(env)
       end
     end
   end
-  
+
   local function pick_weighted_upgrade(pool, avoid_skill_id)
     if #pool == 0 then
       return nil
     end
-  
+
     local total_weight = 0
     local candidates = {}
     for index, upgrade in ipairs(pool) do
@@ -513,11 +557,11 @@ function M.create(env)
         }
       end
     end
-  
+
     if #candidates == 0 then
       return pick_weighted_upgrade(pool, nil)
     end
-  
+
     local roll = math.random() * total_weight
     local cumulative = 0
     local picked_index = candidates[#candidates].index
@@ -528,12 +572,12 @@ function M.create(env)
         break
       end
     end
-  
+
     local picked = pool[picked_index]
     table.remove(pool, picked_index)
     return picked
   end
-  
+
   local function build_upgrade_pool()
     local regular_pool = {}
     local unlock_pool = {}
@@ -550,14 +594,14 @@ function M.create(env)
     end
     return regular_pool, unlock_pool
   end
-  
+
   local function pick_upgrade_choices(count)
     local regular_pool, unlock_pool = build_upgrade_pool()
     local choices = {}
     local unlocked_skill_count = get_unlocked_attack_skill_count()
     local has_unlock_available = get_empty_attack_skill_slot() ~= nil and #unlock_pool > 0
     local unlock_added = false
-  
+
     if has_unlock_available then
       local force_unlock = STATE.attack_skill_state
         and (STATE.attack_skill_state.unlock_offer_fail_streak or 0) >= 3
@@ -571,14 +615,14 @@ function M.create(env)
         end
       end
     end
-  
+
     local regular_skill_ids = {}
     while #choices < count and #regular_pool > 0 do
       local avoid_skill_id = nil
       if #regular_skill_ids == 1 and count_distinct_skill_ids(regular_pool) > 1 then
         avoid_skill_id = regular_skill_ids[1]
       end
-  
+
       local picked = pick_weighted_upgrade(regular_pool, avoid_skill_id)
       if not picked then
         break
@@ -586,7 +630,7 @@ function M.create(env)
       choices[#choices + 1] = picked
       regular_skill_ids[#regular_skill_ids + 1] = picked.skill_id
     end
-  
+
     if #choices < count and not unlock_added and has_unlock_available then
       local picked = pick_weighted_upgrade(unlock_pool)
       if picked then
@@ -594,7 +638,7 @@ function M.create(env)
         unlock_added = true
       end
     end
-  
+
     while #choices < count and #regular_pool > 0 do
       local picked = pick_weighted_upgrade(regular_pool)
       if not picked then
@@ -602,7 +646,7 @@ function M.create(env)
       end
       choices[#choices + 1] = picked
     end
-  
+
     if STATE.attack_skill_state and #choices > 0 then
       if has_unlock_available then
         if unlock_added then
@@ -614,18 +658,18 @@ function M.create(env)
       else
         STATE.attack_skill_state.unlock_offer_fail_streak = 0
       end
-  
+
       decay_new_skill_feed_rounds()
     end
-  
+
     return choices
   end
-  
+
   local function show_upgrade_choices()
     if STATE.game_finished then
       return
     end
-  
+
     if STATE.awaiting_upgrade and STATE.current_upgrade_choices then
       message('继续当前 G 三选一。')
     else
@@ -633,13 +677,13 @@ function M.create(env)
         message('技能点不足。')
         return
       end
-  
+
       local choices = pick_upgrade_choices(3)
       if #choices == 0 then
         message('当前没有可用的攻击技能强化选项。')
         return
       end
-  
+
       STATE.skill_points = STATE.skill_points - 1
       STATE.awaiting_upgrade = true
       STATE.current_upgrade_choices = choices
@@ -690,19 +734,19 @@ function M.create(env)
     if not STATE.awaiting_upgrade then
       return
     end
-  
+
     local upgrade = STATE.current_upgrade_choices and STATE.current_upgrade_choices[index]
     if not upgrade then
       return
     end
-  
+
     if upgrade.level_delta and upgrade.skill_id then
       local skill = get_attack_skill(upgrade.skill_id)
       if skill then
         skill.level = skill.level + upgrade.level_delta
       end
     end
-  
+
     upgrade.apply(STATE)
     record_upgrade_pick(upgrade.key)
     if STATE.attack_skill_state then
@@ -712,11 +756,11 @@ function M.create(env)
     STATE.current_upgrade_choices = nil
     STATE.current_upgrade_round = nil
     message('已选择强化：' .. upgrade.name)
-  
+
     if upgrade.skill_id == 'basic_attack' then
       sync_basic_attack_ability()
     end
-  
+
     if upgrade.skill_id and get_attack_skill(upgrade.skill_id) then
       local skill = get_attack_skill(upgrade.skill_id)
       message('技能更新：' .. build_attack_skill_slot_text(skill.slot))

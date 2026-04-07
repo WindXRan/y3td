@@ -13,6 +13,9 @@ function M.create(env)
   local force_spawn_boss = env.force_spawn_boss
   local execute_enemy = env.execute_enemy
   local is_battle_active = env.is_battle_active
+  local grant_bond_card = env.grant_bond_card
+  local grant_treasure = env.grant_treasure
+  local dump_temporary_treasures = env.dump_temporary_treasures
 
   local api = {}
 
@@ -163,6 +166,36 @@ function M.create(env)
     end
 
     debug_message(string.format('Enemies eliminated by debug action: %d.', killed))
+  end
+
+  function api.debug_grant_bond_card(card_id)
+    if not guard_battle() then
+      return
+    end
+    local ok, result = grant_bond_card(card_id)
+    debug_message(ok and result or result)
+  end
+
+  function api.debug_grant_treasure(treasure_id, replace_slot)
+    if not guard_battle() then
+      return
+    end
+    local ok, result = grant_treasure(treasure_id, replace_slot)
+    debug_message(ok and result or result)
+  end
+
+  function api.debug_print_temporary_treasures()
+    if not guard_battle() then
+      return
+    end
+    local lines = dump_temporary_treasures()
+    if #lines == 0 then
+      debug_message('当前没有临时宝物。')
+      return
+    end
+    for _, line in ipairs(lines) do
+      debug_message(line)
+    end
   end
 
   return api

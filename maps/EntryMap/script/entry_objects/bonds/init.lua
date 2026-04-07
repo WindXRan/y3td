@@ -1,4 +1,5 @@
 local helpers = require 'entry_objects.helpers'
+local RecipeObjects = require 'entry_objects.bond_recipes'
 
 local bond_module_paths = {
   'entry_objects.bonds.blessing',
@@ -11,6 +12,22 @@ local bond_module_paths = {
   'entry_objects.bonds.execute',
   'entry_objects.bonds.growth',
   'entry_objects.bonds.fortress',
+  'entry_objects.bonds.armor_break',
+  'entry_objects.bonds.burn',
+  'entry_objects.bonds.cold_tide',
+  'entry_objects.bonds.shock',
+  'entry_objects.bonds.resonance',
+  'entry_objects.bonds.tailwind',
+  'entry_objects.bonds.blood_pact',
+  'entry_objects.bonds.guardian',
+  'entry_objects.bonds.hunt_decree',
+  'entry_objects.bonds.royal_hunt',
+  'entry_objects.bonds.flame_thunder_overload',
+  'entry_objects.bonds.frost_arcane_prism',
+  'entry_objects.bonds.elemental_throne',
+  'entry_objects.bonds.stormweb_echo',
+  'entry_objects.bonds.unyielding_warpath',
+  'entry_objects.bonds.holy_bastion',
 }
 
 local card_module_paths = {
@@ -42,17 +59,32 @@ local card_module_paths = {
   'entry_objects.bond_cards.fortress_wall',
   'entry_objects.bond_cards.fortress_heal',
   'entry_objects.bond_cards.fortress_stable',
+  'entry_objects.bond_cards.armor_break_rend',
+  'entry_objects.bond_cards.armor_break_breach',
+  'entry_objects.bond_cards.burn_ember',
+  'entry_objects.bond_cards.burn_kindling',
+  'entry_objects.bond_cards.cold_tide_frost_mark',
+  'entry_objects.bond_cards.cold_tide_splinter',
+  'entry_objects.bond_cards.shock_static',
+  'entry_objects.bond_cards.shock_conduct',
+  'entry_objects.bond_cards.resonance_overtone',
+  'entry_objects.bond_cards.resonance_tuning',
+  'entry_objects.bond_cards.tailwind_gale',
+  'entry_objects.bond_cards.tailwind_longshot',
+  'entry_objects.bond_cards.blood_pact_thirst',
+  'entry_objects.bond_cards.blood_pact_ferocity',
+  'entry_objects.bond_cards.guardian_barrier',
+  'entry_objects.bond_cards.guardian_watch',
 }
 
 local defs = helpers.load_list(bond_module_paths)
 local cards = helpers.load_list(card_module_paths)
 
-local defs_by_id = helpers.list_to_map(defs)
-local cards_by_id = helpers.list_to_map(cards)
-
 return {
   defs = defs,
-  defs_by_id = defs_by_id,
+  defs_by_id = helpers.list_to_map(defs),
   cards = cards,
-  cards_by_id = cards_by_id,
+  cards_by_id = helpers.list_to_map(cards),
+  recipes = RecipeObjects.list,
+  recipes_by_output_bond_id = RecipeObjects.by_output_bond_id,
 }

@@ -66,6 +66,27 @@ local function create_skill_runtime()
     artillery_radius = 0,
     artillery_cd = 0,
     bonus_gold_on_kill = 0,
+    split_count = 0,
+    split_ratio = 0,
+    boss_bonus_ratio = 0,
+    armor_break_ratio = 0,
+    armor_break_duration = 0,
+    armor_break_max_stacks = 0,
+    secondary_targets = 0,
+    burst_radius = 0,
+    burst_ratio = 0,
+    extra_targets = 0,
+    ignite_duration = 0,
+    ignite_tick_ratio = 0,
+    ignite_spread_radius = 0,
+    frost_control_bonus = 0,
+    shatter_bonus = 0,
+    shard_count = 0,
+    shard_ratio = 0,
+    shock_duration = 0,
+    shock_bonus = 0,
+    field_radius = 0,
+    field_ratio = 0,
   }
 end
 
@@ -96,6 +117,26 @@ local function create_attack_skill_instance(skill_id, slot)
     control_lock_time = def.base_control_lock_time or 0,
     knockback_distance = def.base_knockback_distance or 0,
     knockback_speed = def.base_knockback_speed or 900,
+    split_count = 0,
+    split_ratio = 0,
+    boss_bonus_ratio = 0,
+    armor_break_ratio = 0,
+    armor_break_duration = 0,
+    armor_break_max_stacks = 0,
+    secondary_targets = 0,
+    burst_radius = 0,
+    burst_ratio = 0,
+    ignite_duration = 0,
+    ignite_tick_ratio = 0,
+    ignite_spread_radius = 0,
+    frost_control_bonus = 0,
+    shatter_bonus = 0,
+    shard_count = 0,
+    shard_ratio = 0,
+    shock_duration = 0,
+    shock_bonus = 0,
+    field_radius = 0,
+    field_ratio = 0,
   }
 end
 
@@ -250,6 +291,9 @@ reward_system = RewardSystem.create({
   round_number = round_number,
   add_attr_pack = add_attr_pack,
   sync_basic_attack_ability = sync_basic_attack_ability,
+  heal_hero = function(amount)
+    return heal_hero(amount)
+  end,
 })
 
 local function create_treasure_runtime()
@@ -312,12 +356,24 @@ local function get_treasure_passive_income(key)
   return reward_system.get_treasure_passive_income(key)
 end
 
+local function get_treasure_runtime_bonus(key)
+  return reward_system.get_treasure_runtime_bonus(key)
+end
+
 local function build_reward_with_treasure_bonus(reward)
   return reward_system.build_reward_with_treasure_bonus(reward)
 end
 
+local function apply_treasure_bonus_to_attack_skill(skill_id, skill, bonus, direction)
+  return reward_system.apply_treasure_bonus_to_attack_skill(skill_id, skill, bonus, direction)
+end
+
 local function sync_treasure_effects()
   return reward_system.sync_treasure_effects()
+end
+
+local function update_temporary_treasures(dt)
+  return reward_system.update_temporary_treasures(dt)
 end
 
 local function sync_mark_effects()
@@ -370,6 +426,10 @@ end
 
 local function update_bond_effects(dt)
   BondSystem.update_effects(create_bond_env(), dt)
+end
+
+local function update_enemy_statuses(dt)
+  return attack_skills_system.update_enemy_statuses(dt)
 end
 
 local function get_hero_max_level()
@@ -512,6 +572,10 @@ local function get_bond_runtime_bonus(key)
   return BondSystem.get_runtime_bonus(STATE, key) + mark_bonus
 end
 
+local function get_combat_bonus(key)
+  return get_bond_runtime_bonus(key) + get_treasure_runtime_bonus(key)
+end
+
 local function is_bond_active(bond_id)
   return BondSystem.is_active(STATE, bond_id)
 end
@@ -580,26 +644,41 @@ end
 
 local function get_damage_bonus_multiplier(target, context)
   local multiplier = 1
-  multiplier = multiplier * (1 + get_bond_runtime_bonus('all_damage_bonus'))
+  multiplier = multiplier * (1 + get_combat_bonus('all_damage_bonus'))
 
   if context and context.is_skill then
-    multiplier = multiplier * (1 + get_bond_runtime_bonus('skill_damage_bonus'))
+    multiplier = multiplier * (1 + get_combat_bonus('skill_damage_bonus'))
   end
   if context and context.is_basic_attack then
-    multiplier = multiplier * (1 + get_bond_runtime_bonus('normal_attack_damage_bonus'))
+    multiplier = multiplier * (1 + get_combat_bonus('normal_attack_damage_bonus'))
   end
 
   local info = get_enemy_runtime_info(target)
   if is_boss_runtime_enemy(info) then
-    multiplier = multiplier * (1 + get_bond_runtime_bonus('boss_damage_bonus'))
+    multiplier = multiplier * (1 + get_combat_bonus('boss_damage_bonus'))
   end
   if is_elite_runtime_enemy(info) then
-    multiplier = multiplier * (1 + get_bond_runtime_bonus('elite_damage_bonus'))
+    multiplier = multiplier * (1 + get_combat_bonus('elite_damage_bonus'))
+  end
+  if info and info.kind == 'challenge' then
+    multiplier = multiplier * (1 + get_combat_bonus('challenge_damage_bonus'))
   end
 
-  local execute_threshold = get_bond_runtime_bonus('execute_threshold')
+  local execute_threshold = get_combat_bonus('execute_threshold')
   if execute_threshold > 0 and get_target_hp_ratio(target) <= execute_threshold then
-    multiplier = multiplier * (1 + get_bond_runtime_bonus('execute_damage_bonus'))
+    multiplier = multiplier * (1 + get_combat_bonus('execute_damage_bonus'))
+  end
+
+  if info and info.status then
+    local armor_break = info.status.armor_break
+    if armor_break and (armor_break.stacks or 0) > 0 and (armor_break.ratio or 0) > 0 then
+      multiplier = multiplier * (1 + armor_break.ratio * armor_break.stacks)
+    end
+
+    local shock = info.status.shock
+    if shock and (shock.bonus or 0) > 0 then
+      multiplier = multiplier * (1 + shock.bonus)
+    end
   end
 
   return multiplier
@@ -906,6 +985,21 @@ battlefield_system = BattlefieldSystem.create({
   on_hero_damage = function(data)
     return trigger_td_skills_on_hit(data)
   end,
+  on_wave_started = function(wave_index)
+    return reward_system.handle_wave_started(wave_index)
+  end,
+  on_boss_spawned = function(boss_info)
+    return reward_system.handle_boss_spawned(boss_info)
+  end,
+  on_challenge_started = function(instance)
+    return reward_system.handle_challenge_started(instance)
+  end,
+  on_challenge_finished = function(instance, is_success)
+    return reward_system.handle_challenge_finished(instance, is_success)
+  end,
+  on_hero_be_hurt = function()
+    return reward_system.handle_hero_be_hurt()
+  end,
   handle_challenge_success = function(instance)
     return handle_challenge_success(instance)
   end,
@@ -996,6 +1090,14 @@ attack_upgrade_system = AttackUpgradeSystem.create({
   unlock_attack_skill = unlock_attack_skill,
   sync_basic_attack_ability = sync_basic_attack_ability,
   build_attack_skill_slot_text = build_attack_skill_slot_text,
+  is_bond_active = function(bond_id)
+    return BondSystem.is_active(STATE, bond_id)
+  end,
+  has_active_treasure = function(treasure_id)
+    return STATE.treasure_runtime
+      and STATE.treasure_runtime.active_by_id
+      and STATE.treasure_runtime.active_by_id[treasure_id] ~= nil
+  end,
 })
 
 local function get_pending_round_choice_kind()
@@ -1401,6 +1503,15 @@ debug_actions_system = DebugActionsSystem.create({
   execute_enemy = function(unit)
     return battlefield_system.execute_enemy(unit)
   end,
+  grant_bond_card = function(card_id)
+    return BondSystem.debug_grant_card(create_bond_env(), card_id)
+  end,
+  grant_treasure = function(treasure_id, replace_slot)
+    return reward_system.debug_grant_treasure(treasure_id, replace_slot)
+  end,
+  dump_temporary_treasures = function()
+    return reward_system.debug_dump_temporary_treasures()
+  end,
 })
 
 debug_tools_system = DebugToolsSystem.create({
@@ -1443,6 +1554,15 @@ debug_tools_system = DebugToolsSystem.create({
   end,
   debug_kill_all_active_enemies = function()
     return debug_actions_system.debug_kill_all_active_enemies()
+  end,
+  debug_grant_bond_card = function(card_id)
+    return debug_actions_system.debug_grant_bond_card(card_id)
+  end,
+  debug_grant_treasure = function(treasure_id, replace_slot)
+    return debug_actions_system.debug_grant_treasure(treasure_id, replace_slot)
+  end,
+  debug_print_temporary_treasures = function()
+    return debug_actions_system.debug_print_temporary_treasures()
   end,
 })
 
@@ -2015,7 +2135,9 @@ local function start_runtime_loops()
       battlefield_system.update_challenges(0.25)
       battlefield_system.update_challenge_charges(0.25)
       update_bond_effects(0.25)
+      update_enemy_statuses(0.25)
       update_attack_skills(0.25)
+      update_temporary_treasures(0.25)
       ensure_runtime_hud()
       ensure_choice_panel()
       set_battle_hud_visible(true)

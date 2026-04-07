@@ -13,13 +13,16 @@ local module_paths = {
   'entry_objects.treasures.time_rift_hourglass',
   'entry_objects.treasures.dragonblood_ring',
   'entry_objects.treasures.crown_fragment',
+  'entry_objects.treasures.battle_horn',
+  'entry_objects.treasures.charged_talisman',
+  'entry_objects.treasures.challenge_banner',
+  'entry_objects.treasures.emergency_ration',
+  'entry_objects.treasures.boss_edict',
 }
 
 local list = helpers.load_list(module_paths)
 
-local by_id = helpers.list_to_map(list)
-
 return {
   list = list,
-  by_id = by_id,
+  by_id = helpers.list_to_map(list),
 }

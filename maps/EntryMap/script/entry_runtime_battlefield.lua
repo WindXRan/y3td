@@ -81,6 +81,7 @@ function M.create(env)
     info.unit = unit
     info.alive = true
     info.owner = info.owner or nil
+    info.status = info.status or {}
 
     STATE.enemy_info_map = STATE.enemy_info_map or {}
     STATE.enemy_info_map[unit] = info
@@ -244,6 +245,9 @@ function M.create(env)
       wave = runner.wave,
       reward = runner.wave.boss_kill_reward,
     })
+    if env.on_boss_spawned then
+      env.on_boss_spawned(runner.boss_info)
+    end
   end
 
   local function cleanup_challenge_units(instance)
@@ -274,6 +278,9 @@ function M.create(env)
     }
 
     message(string.format('%s 开始，Boss 将在 %.0f 秒后加入战场。', wave.name, design_seconds(wave.boss_spawn_sec)))
+    if env.on_wave_started then
+      env.on_wave_started(index)
+    end
   end
 
   function api.finish_challenge(instance, is_success)
@@ -295,6 +302,10 @@ function M.create(env)
     else
       cleanup_challenge_units(instance)
       message(instance.def.name .. ' 失败。')
+    end
+
+    if env.on_challenge_finished then
+      env.on_challenge_finished(instance, is_success)
     end
   end
 
@@ -394,6 +405,9 @@ function M.create(env)
     STATE.active_challenges[challenge_id] = instance
 
     message(string.format('%s 开始，持续 %.0f 秒。', def.name, design_seconds(def.duration_sec)))
+    if env.on_challenge_started then
+      env.on_challenge_started(instance)
+    end
   end
 
   function api.update_wave(dt)
@@ -508,6 +522,12 @@ function M.create(env)
 
     hero:event('单位-造成伤害后', function(_, data)
       env.on_hero_damage(data)
+    end)
+
+    hero:event('单位-受到伤害后', function()
+      if env.on_hero_be_hurt then
+        env.on_hero_be_hurt()
+      end
     end)
 
     return hero

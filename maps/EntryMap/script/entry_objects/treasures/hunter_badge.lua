@@ -5,6 +5,11 @@ return {
     summary = '普攻追加 15% 攻击的物理追击，物理攻击 +12。',
     pool_weight = 10,
     tags = { 'basic_attack', 'attack' },
+    treasure_type = 'route_amp',
+    duration_type = 'permanent',
+    theme_tags = { 'basic_attack', 'boss' },
+    best_with_tags = { 'basic_attack', 'hunter', 'boss' },
+    timing_tags = { 'immediate', 'persistent' },
     bonuses = {
       attr = {
         ['物理攻击'] = 12,

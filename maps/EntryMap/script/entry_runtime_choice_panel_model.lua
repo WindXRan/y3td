@@ -7,6 +7,7 @@ local CHOICE_BADGE_TEXT = {
   common = 'N',
   rare = 'R',
   epic = 'E',
+  legendary = 'L',
 }
 
 local BOND_DEFS = BondObjects.defs_by_id
@@ -198,13 +199,17 @@ function M.create(env)
         icon_res = def.ui_icon or get_choice_default_icon('treasure', def.quality),
         title_text = def.name,
         progress_text = '',
-        subtitle_text = get_treasure_quality_label(def.quality),
+        subtitle_text = def.treasure_type == 'tactical_temp' and '临时宝物' or get_treasure_quality_label(def.quality),
         body_blocks = build_choice_text_blocks(
           {
             text = def.summary or '',
             color = 'green',
           },
-          get_treasure_active_count() >= 3 and {
+          def.treasure_type == 'tactical_temp' and {
+            text = '不占用常驻宝物位。',
+            color = 'gold',
+          } or nil,
+          def.treasure_type ~= 'tactical_temp' and get_treasure_active_count() >= 3 and {
             text = '满 3 个宝物位后，选中将进入替换阶段。',
             color = 'gold',
           } or nil

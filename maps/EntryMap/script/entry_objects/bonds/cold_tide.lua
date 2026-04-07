@@ -1,0 +1,21 @@
+return {
+  id = 'cold_tide',
+  name = '寒潮',
+  quality = 'rare',
+  required_count = 2,
+  pool_weight = 7,
+  tier = 't1',
+  bond_role = 'material',
+  result_type = 'evolve_keep',
+  target_quality = 'rare',
+  route_tags = { 'element', 'control' },
+  compose_inputs = {},
+  compose_hint = '提供寒冰控制与裂片牵引。',
+  bond_effect_desc = '寒冰箭控制时间 +0.20 秒；命中受控目标额外伤害 +20%；额外裂出 1 枚冰片。',
+  runtime = {
+    frost_control_bonus = 0.20,
+    shatter_bonus = 0.20,
+    shard_count = 1,
+    shard_ratio = 0.20,
+  },
+}

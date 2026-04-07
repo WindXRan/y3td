@@ -268,6 +268,35 @@ function M.create(env)
         show_debug_hotkey_help()
       end,
     })
+
+    develop_command.register('EBOND', {
+      desc = '直接获得指定羁绊卡，如 .ebond armor_break_rend',
+      onCommand = function(card_id)
+        if not card_id or card_id == '' then
+          message('用法：.ebond <card_id>')
+          return
+        end
+        env.debug_grant_bond_card(card_id)
+      end,
+    })
+
+    develop_command.register('ETREASURE', {
+      desc = '直接获得指定宝物，如 .etreasure battle_horn [replace_slot]',
+      onCommand = function(treasure_id, replace_slot)
+        if not treasure_id or treasure_id == '' then
+          message('用法：.etreasure <treasure_id> [replace_slot]')
+          return
+        end
+        env.debug_grant_treasure(treasure_id, tonumber(replace_slot))
+      end,
+    })
+
+    develop_command.register('ETEMP', {
+      desc = '打印当前临时宝物列表。',
+      onCommand = function()
+        env.debug_print_temporary_treasures()
+      end,
+    })
   end
 
   local function get_gm_panel_wave_text()

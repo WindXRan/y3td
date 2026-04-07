@@ -5,6 +5,8 @@ local BOND_DEF_LIST = BondObjects.defs
 local BOND_DEFS = BondObjects.defs_by_id
 local BOND_CARD_DEFS = BondObjects.cards
 local BOND_CARD_BY_ID = BondObjects.cards_by_id
+local BOND_RECIPES = BondObjects.recipes or {}
+local BOND_RECIPES_BY_OUTPUT = BondObjects.recipes_by_output_bond_id or {}
 
 local function add_bonus_value(target, key, value)
   if not target or not key or value == nil or value == 0 then
@@ -28,6 +30,7 @@ function M.create_runtime()
     swallowed_card_ids = {},
     swallowed_bonds = {},
     swallowed_bond_ids = {},
+    resolved_recipe_ids = {},
     progress = {},
     active_bond_ids = {},
     applied_attr_bonuses = {},
@@ -46,6 +49,36 @@ function M.create_runtime()
   }
 end
 
+local function make_card_slot(card_id)
+  return {
+    entry_type = 'card',
+    card_id = card_id,
+  }
+end
+
+local function make_bond_slot(bond_id, source_kind, source_ids)
+  return {
+    entry_type = 'bond',
+    bond_id = bond_id,
+    source_kind = source_kind,
+    source_ids = source_ids or {},
+  }
+end
+
+local function get_slot_bond_id(entry)
+  if not entry then
+    return nil
+  end
+  if entry.entry_type == 'bond' then
+    return entry.bond_id
+  end
+  if entry.entry_type == 'card' then
+    local card = BOND_CARD_BY_ID[entry.card_id]
+    return card and card.bond_id or nil
+  end
+  return nil
+end
+
 local function get_refresh_cost(paid_count)
   if (paid_count or 0) <= 0 then
     return 40
@@ -57,6 +90,9 @@ local function get_refresh_cost(paid_count)
 end
 
 function M.get_quality_label(quality)
+  if quality == 'legendary' then
+    return '传说'
+  end
   if quality == 'epic' then
     return '史诗'
   end
@@ -104,66 +140,167 @@ local function is_card_acquired(state, card_id)
   end
 
   local card = BOND_CARD_BY_ID[card_id]
+  if not card then
+    return false
+  end
   if card and runtime.swallowed_bond_ids[card.bond_id] == true then
     return true
   end
 
-  for _, owned_card_id in ipairs(runtime.slots) do
-    if owned_card_id == card_id then
+  for _, entry in ipairs(runtime.slots) do
+    if entry.entry_type == 'card' and entry.card_id == card_id then
+      return true
+    end
+    if entry.entry_type == 'bond' and entry.bond_id == card.bond_id then
       return true
     end
   end
   return runtime.swallowed_card_ids[card_id] == true
 end
 
-local function consume_completed_bonds(state)
+local function record_swallowed_bond(runtime, bond_id, source_kind, source_ids)
+  runtime.swallowed_bond_ids[bond_id] = true
+  runtime.swallowed_bonds[#runtime.swallowed_bonds + 1] = {
+    bond_id = bond_id,
+    source_kind = source_kind,
+    source_ids = source_ids or {},
+  }
+end
+
+local function is_recipe_input_bond(bond_id)
+  if not bond_id then
+    return false
+  end
+  for _, recipe in ipairs(BOND_RECIPES) do
+    for _, input_bond_id in ipairs(recipe.input_bond_ids or {}) do
+      if input_bond_id == bond_id then
+        return true
+      end
+    end
+  end
+  return false
+end
+
+local function finalize_completed_bond(runtime, def, source_kind, source_ids)
+  local result_type = def.result_type
+  if result_type == nil and is_recipe_input_bond(def.id) then
+    result_type = 'evolve_keep'
+  end
+
+  if result_type == 'evolve_keep' then
+    return make_bond_slot(def.id, source_kind, source_ids)
+  end
+
+  record_swallowed_bond(runtime, def.id, source_kind, source_ids)
+  return nil
+end
+
+local function resolve_completed_card_sets(state)
   local runtime = state and state.bond_runtime
   if not runtime then
     return {}
   end
 
-  local consumed_entries = {}
-  local remaining_slots = runtime.slots
-  for _, def in ipairs(BOND_DEF_LIST) do
-    local bond_id = def.id
-    if bond_id then
-      local swallowed_card_ids = {}
-      local next_slots = {}
-      for _, card_id in ipairs(remaining_slots) do
-        local card = BOND_CARD_BY_ID[card_id]
-        if card and card.bond_id == bond_id then
-          swallowed_card_ids[#swallowed_card_ids + 1] = card_id
-        else
-          next_slots[#next_slots + 1] = card_id
-        end
+  local by_bond_id = {}
+  local kept_slots = {}
+  for _, entry in ipairs(runtime.slots) do
+    if entry.entry_type == 'card' then
+      local bond_id = get_slot_bond_id(entry)
+      if bond_id then
+        by_bond_id[bond_id] = by_bond_id[bond_id] or {}
+        by_bond_id[bond_id][#by_bond_id[bond_id] + 1] = entry.card_id
       end
+    else
+      kept_slots[#kept_slots + 1] = entry
+    end
+  end
 
-      if runtime.swallowed_bond_ids[bond_id] == true then
-        if #swallowed_card_ids > 0 then
-          remaining_slots = next_slots
-          for _, card_id in ipairs(swallowed_card_ids) do
-            runtime.swallowed_card_ids[card_id] = true
-          end
-        end
-      elseif #swallowed_card_ids >= (def.required_count or math.huge) then
-        remaining_slots = next_slots
-        runtime.swallowed_bond_ids[bond_id] = true
-        for _, card_id in ipairs(swallowed_card_ids) do
-          runtime.swallowed_card_ids[card_id] = true
-        end
-
-        local entry = {
-          bond_id = bond_id,
-          card_ids = swallowed_card_ids,
-        }
-        runtime.swallowed_bonds[#runtime.swallowed_bonds + 1] = entry
-        consumed_entries[#consumed_entries + 1] = entry
+  local consumed_entries = {}
+  for _, def in ipairs(BOND_DEF_LIST) do
+    local card_ids = by_bond_id[def.id] or {}
+    if #card_ids >= (def.required_count or math.huge) then
+      local slot_entry = finalize_completed_bond(runtime, def, 'card_set', card_ids)
+      if slot_entry then
+        kept_slots[#kept_slots + 1] = slot_entry
+      end
+      for _, card_id in ipairs(card_ids) do
+        runtime.swallowed_card_ids[card_id] = true
+      end
+      consumed_entries[#consumed_entries + 1] = {
+        bond_id = def.id,
+        source_kind = 'card_set',
+        source_ids = card_ids,
+      }
+    else
+      for _, card_id in ipairs(card_ids) do
+        kept_slots[#kept_slots + 1] = make_card_slot(card_id)
       end
     end
   end
 
-  runtime.slots = remaining_slots
+  runtime.slots = kept_slots
   return consumed_entries
+end
+
+local function try_resolve_recipe_once(state)
+  local runtime = state and state.bond_runtime
+  if not runtime then
+    return nil
+  end
+
+  for _, recipe in ipairs(BOND_RECIPES) do
+    if not runtime.resolved_recipe_ids[recipe.output_bond_id] then
+      local matched_slots = {}
+      local used_slot = {}
+      for _, input_bond_id in ipairs(recipe.input_bond_ids or {}) do
+        for slot, entry in ipairs(runtime.slots) do
+          if not used_slot[slot] and entry.entry_type == 'bond' and entry.bond_id == input_bond_id then
+            used_slot[slot] = true
+            matched_slots[#matched_slots + 1] = slot
+            break
+          end
+        end
+      end
+
+      if #matched_slots == #(recipe.input_bond_ids or {}) then
+        table.sort(matched_slots, function(a, b)
+          return a > b
+        end)
+
+        local source_ids = {}
+        for _, slot in ipairs(matched_slots) do
+          source_ids[#source_ids + 1] = runtime.slots[slot].bond_id
+          table.remove(runtime.slots, slot)
+        end
+
+        local def = BOND_DEFS[recipe.output_bond_id]
+        local slot_entry = finalize_completed_bond(runtime, def, 'recipe', source_ids)
+        runtime.resolved_recipe_ids[recipe.output_bond_id] = true
+        if slot_entry then
+          runtime.slots[#runtime.slots + 1] = slot_entry
+        end
+
+        return {
+          output_bond_id = recipe.output_bond_id,
+          source_ids = source_ids,
+        }
+      end
+    end
+  end
+
+  return nil
+end
+
+local function resolve_all_recipes(state)
+  local resolved = {}
+  while true do
+    local entry = try_resolve_recipe_once(state)
+    if not entry then
+      break
+    end
+    resolved[#resolved + 1] = entry
+  end
+  return resolved
 end
 
 local function get_incomplete_group_count(state)
@@ -191,25 +328,26 @@ local function rebuild_progress(state)
   runtime.progress = {}
   runtime.active_bond_ids = {}
 
-  for _, card_id in ipairs(runtime.slots) do
-    local card = BOND_CARD_BY_ID[card_id]
-    if card then
-      add_bonus_value(runtime.progress, card.bond_id, 1)
+  for _, entry in ipairs(runtime.slots) do
+    if entry.entry_type == 'card' then
+      local card = BOND_CARD_BY_ID[entry.card_id]
+      if card then
+        add_bonus_value(runtime.progress, card.bond_id, 1)
+      end
+    elseif entry.entry_type == 'bond' then
+      local def = BOND_DEFS[entry.bond_id]
+      if def then
+        runtime.progress[entry.bond_id] = def.required_count
+        runtime.active_bond_ids[entry.bond_id] = true
+      end
     end
   end
 
   for _, entry in ipairs(runtime.swallowed_bonds or {}) do
-    local bond_id = entry.bond_id
-    local def = bond_id and BOND_DEFS[bond_id] or nil
+    local def = entry.bond_id and BOND_DEFS[entry.bond_id] or nil
     if def then
-      runtime.progress[bond_id] = math.max(runtime.progress[bond_id] or 0, def.required_count)
-    end
-  end
-
-  for _, def in ipairs(BOND_DEF_LIST) do
-    local bond_id = def.id
-    if bond_id and (runtime.progress[bond_id] or 0) >= def.required_count then
-      runtime.active_bond_ids[bond_id] = true
+      runtime.progress[entry.bond_id] = def.required_count
+      runtime.active_bond_ids[entry.bond_id] = true
     end
   end
 end
@@ -221,17 +359,20 @@ function M.refresh_effects(env)
     return
   end
 
-  consume_completed_bonds(state)
+  local consumed_entries = resolve_completed_card_sets(state)
+  local resolved_recipes = resolve_all_recipes(state)
   rebuild_progress(state)
 
   local desired_attr = {}
   local desired_runtime = {}
-  for _, card_id in ipairs(runtime.slots) do
-    merge_card_effects_by_id(desired_attr, desired_runtime, card_id)
+  for _, entry in ipairs(runtime.slots) do
+    if entry.entry_type == 'card' then
+      merge_card_effects_by_id(desired_attr, desired_runtime, entry.card_id)
+    end
   end
 
   for _, entry in ipairs(runtime.swallowed_bonds or {}) do
-    for _, card_id in ipairs(entry.card_ids or {}) do
+    for _, card_id in ipairs(entry.source_kind == 'card_set' and entry.source_ids or {}) do
       merge_card_effects_by_id(desired_attr, desired_runtime, card_id)
     end
   end
@@ -268,6 +409,8 @@ function M.refresh_effects(env)
   runtime.applied_attr_bonuses = desired_attr
   runtime.applied_runtime_bonuses = desired_runtime
   env.sync_basic_attack_ability()
+
+  return consumed_entries, resolved_recipes
 end
 
 local function apply_dynamic_bonuses(env, desired_attr, desired_runtime)
@@ -537,29 +680,42 @@ end
 
 local function build_slot_text(state, slot)
   local runtime = state and state.bond_runtime
-  local card_id = runtime and runtime.slots[slot] or nil
-  if not card_id then
+  local entry = runtime and runtime.slots[slot] or nil
+  if not entry then
     return string.format('%d号羁绊位 空', slot)
   end
 
-  local card = BOND_CARD_BY_ID[card_id]
-  local bond = card and BOND_DEFS[card.bond_id] or nil
-  if not card or not bond then
+  if entry.entry_type == 'card' then
+    local card = BOND_CARD_BY_ID[entry.card_id]
+    local bond = card and BOND_DEFS[card.bond_id] or nil
+    if not card or not bond then
+      return string.format('%d号羁绊位 空', slot)
+    end
+
+    local progress = M.get_progress_count(state, card.bond_id)
+    return string.format(
+      '%d号羁绊位 [%s]%s-%s | %d/%d | %s',
+      slot,
+      M.get_quality_label(card.quality),
+      bond.name,
+      card.name,
+      progress,
+      bond.required_count,
+      card.base_effect_desc
+    )
+  end
+
+  local bond = BOND_DEFS[entry.bond_id]
+  if not bond then
     return string.format('%d号羁绊位 空', slot)
   end
 
-  local progress = M.get_progress_count(state, card.bond_id)
-  local state_text = M.is_active(state, card.bond_id)
-    and '已激活'
-    or string.format('%d/%d', progress, bond.required_count)
   return string.format(
-    '%d号羁绊位 [%s]%s-%s | %s | %s',
+    '%d号羁绊位 [%s]%s | 已成型 | %s',
     slot,
-    M.get_quality_label(card.quality),
+    M.get_quality_label(bond.quality),
     bond.name,
-    card.name,
-    state_text,
-    card.base_effect_desc
+    bond.bond_effect_desc
   )
 end
 
@@ -578,8 +734,19 @@ local function build_swallowed_bond_text(index, entry)
     return string.format('%d. 未知羁绊', index)
   end
 
+  if entry.source_kind == 'recipe' then
+    return string.format(
+      '%d. [%s]%s | 配方：%s | 成套：%s',
+      index,
+      M.get_quality_label(bond.quality),
+      bond.name,
+      table.concat(entry.source_ids or {}, ' + '),
+      bond.bond_effect_desc
+    )
+  end
+
   local card_parts = {}
-  for _, card_id in ipairs(entry.card_ids or {}) do
+  for _, card_id in ipairs(entry.card_ids or entry.source_ids or {}) do
     local card = BOND_CARD_BY_ID[card_id]
     if card then
       card_parts[#card_parts + 1] = string.format('%s(%s)', card.name, card.base_effect_desc)
@@ -633,10 +800,19 @@ local function build_choice_text(state, index, card)
   )
 end
 
-local function get_replace_score(state, card_id, incoming_card)
-  local card = BOND_CARD_BY_ID[card_id]
-  local bond = card and BOND_DEFS[card.bond_id] or nil
-  if not card or not bond then
+local function get_replace_score(state, entry, incoming_card)
+  local bond_id = get_slot_bond_id(entry)
+  local bond = bond_id and BOND_DEFS[bond_id] or nil
+  if not bond then
+    return -9999
+  end
+
+  if entry.entry_type == 'bond' then
+    return -500
+  end
+
+  local card = BOND_CARD_BY_ID[entry.card_id]
+  if not card then
     return -9999
   end
 
@@ -680,8 +856,8 @@ local function pick_replace_slot(state, incoming_card)
 
   local best_slot = 1
   local best_score = -999999
-  for slot, card_id in ipairs(runtime.slots) do
-    local score = get_replace_score(state, card_id, incoming_card)
+  for slot, entry in ipairs(runtime.slots) do
+    local score = get_replace_score(state, entry, incoming_card)
     if score > best_score then
       best_score = score
       best_slot = slot
@@ -707,40 +883,75 @@ function M.apply_choice(env, index)
     previous_active[bond_id] = true
   end
 
+  local previous_swallowed_count = #runtime.swallowed_bonds
   local replaced_card = nil
   local replace_slot = nil
   if #runtime.slots >= 7 then
     replace_slot = pick_replace_slot(state, card) or 1
     replaced_card = runtime.slots[replace_slot]
-    if replaced_card then
-      runtime.swallowed_card_ids[replaced_card] = true
+    if replaced_card and replaced_card.entry_type == 'card' then
+      runtime.swallowed_card_ids[replaced_card.card_id] = true
     end
-    runtime.slots[replace_slot] = card.id
+    runtime.slots[replace_slot] = make_card_slot(card.id)
   else
-    runtime.slots[#runtime.slots + 1] = card.id
+    runtime.slots[#runtime.slots + 1] = make_card_slot(card.id)
   end
 
   runtime.awaiting_choice = false
   runtime.current_round = nil
   runtime.current_choices = nil
 
-  local swallowed_entries = consume_completed_bonds(state)
-  M.refresh_effects(env)
+  local consumed_entries, resolved_recipes = M.refresh_effects(env)
+  local swallowed_entries = {}
+  for entry_index = previous_swallowed_count + 1, #runtime.swallowed_bonds, 1 do
+    swallowed_entries[#swallowed_entries + 1] = runtime.swallowed_bonds[entry_index]
+  end
 
   local bond = BOND_DEFS[card.bond_id]
   env.message(string.format('已选择羁绊卡：[%s]%s-%s。', M.get_quality_label(card.quality), bond.name, card.name))
   if replaced_card then
-    local old_card = BOND_CARD_BY_ID[replaced_card]
-    local old_bond = old_card and BOND_DEFS[old_card.bond_id] or nil
-    if old_card and old_bond then
-      env.message(string.format('当前羁绊位已满，已自动吞噬第 %d 格：%s-%s。', replace_slot, old_bond.name, old_card.name))
+    if replaced_card.entry_type == 'card' then
+      local old_card = BOND_CARD_BY_ID[replaced_card.card_id]
+      local old_bond = old_card and BOND_DEFS[old_card.bond_id] or nil
+      if old_card and old_bond then
+        env.message(string.format('当前羁绊位已满，已自动吞噬第 %d 格：%s-%s。', replace_slot, old_bond.name, old_card.name))
+      end
+    elseif replaced_card.entry_type == 'bond' then
+      local old_bond = BOND_DEFS[replaced_card.bond_id]
+      if old_bond then
+        env.message(string.format('当前羁绊位已满，已移出第 %d 格已成型羁绊：%s。', replace_slot, old_bond.name))
+      end
+    end
+  end
+
+  for _, entry in ipairs(consumed_entries or {}) do
+    local activated_bond = BOND_DEFS[entry.bond_id]
+    if activated_bond and activated_bond.result_type == 'evolve_keep' then
+      env.message(string.format(
+        '羁绊成型：[%s]%s 已占用羁绊位。%s',
+        M.get_quality_label(activated_bond.quality),
+        activated_bond.name,
+        activated_bond.bond_effect_desc
+      ))
+    end
+  end
+
+  for _, entry in ipairs(resolved_recipes or {}) do
+    local resolved_bond = BOND_DEFS[entry.output_bond_id]
+    if resolved_bond then
+      env.message(string.format(
+        '配方进化：[%s]%s <- %s。',
+        M.get_quality_label(resolved_bond.quality),
+        resolved_bond.name,
+        table.concat(entry.source_ids or {}, ' + ')
+      ))
     end
   end
 
   for bond_id in pairs(runtime.active_bond_ids) do
-    if not previous_active[bond_id] then
+    if not previous_active[bond_id] and not BOND_RECIPES_BY_OUTPUT[bond_id] then
       local activated_bond = BOND_DEFS[bond_id]
-      if activated_bond then
+      if activated_bond and activated_bond.result_type ~= 'evolve_keep' then
         env.message(string.format('羁绊激活：%s %d/%d。%s', activated_bond.name, activated_bond.required_count, activated_bond.required_count, activated_bond.bond_effect_desc))
       end
     end
@@ -752,7 +963,7 @@ function M.apply_choice(env, index)
       env.message(string.format(
         '羁绊整套吞噬：%s 已移出羁绊栏，效果保留，释放 %d 格。按 I 可查看已吞噬列表。',
         swallowed_bond.name,
-        #entry.card_ids
+        #(entry.card_ids or entry.source_ids or {})
       ))
     end
   end
@@ -761,6 +972,22 @@ function M.apply_choice(env, index)
   if #swallowed_entries > 0 then
     M.show_swallowed_bonds(env)
   end
+end
+
+function M.debug_grant_card(env, card_id)
+  local state = env and env.STATE
+  local runtime = state and state.bond_runtime
+  local card = BOND_CARD_BY_ID[card_id]
+  if not runtime or not card then
+    return false, '未知羁绊卡。'
+  end
+  if #runtime.slots >= 7 then
+    return false, '当前羁绊位已满，请先让已有羁绊成型或吞噬。'
+  end
+
+  runtime.slots[#runtime.slots + 1] = make_card_slot(card_id)
+  M.refresh_effects(env)
+  return true, string.format('已发放羁绊卡：%s。', card.name)
 end
 
 function M.try_draw(env)

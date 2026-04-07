@@ -1,0 +1,20 @@
+return {
+  id = 'shock',
+  name = '感电',
+  quality = 'rare',
+  required_count = 2,
+  pool_weight = 7,
+  tier = 't1',
+  bond_role = 'material',
+  result_type = 'evolve_keep',
+  target_quality = 'rare',
+  route_tags = { 'element', 'clear' },
+  compose_inputs = {},
+  compose_hint = '赋予感电与雷网扩散。',
+  bond_effect_desc = '天雷附加感电（4 秒）；命中感电目标额外伤害 +18%；额外连锁 1 个目标。',
+  runtime = {
+    shock_duration = 4,
+    shock_bonus = 0.18,
+    extra_targets = 1,
+  },
+}

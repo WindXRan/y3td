@@ -5,6 +5,11 @@ return {
     summary = '最大生命 +260；每击杀 14 名主线敌人回复 75 生命。',
     pool_weight = 8,
     tags = { 'survival' },
+    treasure_type = 'general',
+    duration_type = 'permanent',
+    theme_tags = { 'survival' },
+    best_with_tags = { 'survival', 'mainline' },
+    timing_tags = { 'immediate', 'persistent' },
     bonuses = {
       attr = {
         ['最大生命'] = 260,

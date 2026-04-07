@@ -24,12 +24,25 @@ function M.create(env)
     end
     return STATE.attack_skill_state.by_id.basic_attack
   end
+
+  local function get_global_skill_bonus(field)
+    local state_bonus = STATE.skill_runtime and STATE.skill_runtime[field] or 0
+    return state_bonus + get_bond_runtime_bonus(field)
+  end
+
+  local function get_effective_skill_value(skill, field)
+    return math.max(0, (skill and skill[field] or 0) + get_global_skill_bonus(field))
+  end
   
   local function get_current_basic_attack_range()
     if not STATE.hero or not STATE.hero:is_exist() then
       return ATTACK_SKILL_DEFS.basic_attack.base_range or 0
     end
-    return math.max(1, round_number(STATE.hero:get_attr('attack_range')))
+    local range = y3.helper.tonumber(STATE.hero:get_attr('攻击范围'))
+      or y3.helper.tonumber(STATE.hero:get_attr('attack_range'))
+      or ATTACK_SKILL_DEFS.basic_attack.base_range
+      or 0
+    return math.max(1, round_number(range))
   end
   
   local function build_basic_attack_ability_description(skill)
@@ -70,6 +83,22 @@ function M.create(env)
       lines[#lines + 1] = string.format(
         '处决：目标生命低于 %.0f%% 时立即击杀。',
         STATE.skill_runtime.execute_threshold * 100
+      )
+    end
+
+    if get_effective_skill_value(skill, 'split_count') > 0 then
+      lines[#lines + 1] = string.format(
+        '分裂：额外命中 %d 个目标，造成 %.0f%% 伤害。',
+        round_number(get_effective_skill_value(skill, 'split_count')),
+        get_effective_skill_value(skill, 'split_ratio') * 100
+      )
+    end
+
+    if get_effective_skill_value(skill, 'armor_break_ratio') > 0 then
+      lines[#lines + 1] = string.format(
+        '破甲：命中附加 %.0f%% 破甲，持续 %.1f 秒。',
+        get_effective_skill_value(skill, 'armor_break_ratio') * 100,
+        get_effective_skill_value(skill, 'armor_break_duration')
       )
     end
   
@@ -228,6 +257,18 @@ function M.create(env)
     if skill.repeat_count and skill.repeat_count > 1 then
       parts[#parts + 1] = '连发x' .. tostring(skill.repeat_count)
     end
+    if skill.id == 'arcane_arrow' and get_effective_skill_value(skill, 'secondary_targets') > 0 then
+      parts[#parts + 1] = '次级+' .. tostring(round_number(get_effective_skill_value(skill, 'secondary_targets')))
+    end
+    if skill.id == 'flame_arrow' and get_effective_skill_value(skill, 'ignite_duration') > 0 then
+      parts[#parts + 1] = '点燃'
+    end
+    if skill.id == 'frost_arrow' and get_effective_skill_value(skill, 'shard_count') > 0 then
+      parts[#parts + 1] = '冰片+' .. tostring(round_number(get_effective_skill_value(skill, 'shard_count')))
+    end
+    if skill.id == 'thunder' and get_effective_skill_value(skill, 'shock_duration') > 0 then
+      parts[#parts + 1] = '感电'
+    end
   
     return table.concat(parts, ' | ')
   end
@@ -342,14 +383,46 @@ function M.create(env)
       unit:attack_move(STATE.defense_point)
     end
   end
+
+  local function get_enemy_status_bucket(unit)
+    local info = STATE.enemy_info_map and STATE.enemy_info_map[unit] or nil
+    if not info then
+      return nil
+    end
+    info.status = info.status or {}
+    return info.status
+  end
+
+  local function apply_enemy_status(unit, status_id, values)
+    local bucket = get_enemy_status_bucket(unit)
+    if not bucket then
+      return nil
+    end
+    bucket[status_id] = bucket[status_id] or {}
+    for key, value in pairs(values or {}) do
+      bucket[status_id][key] = value
+    end
+    return bucket[status_id]
+  end
+
+  local function get_enemy_status(unit, status_id)
+    local bucket = get_enemy_status_bucket(unit)
+    return bucket and bucket[status_id] or nil
+  end
   
   local function apply_frost_arrow_control(skill, unit)
     if not unit or not is_active_enemy(unit) then
       return
     end
   
-    local control_lock_time = math.max(0, skill.control_lock_time or 0)
+    local control_lock_time = math.max(0, (skill.control_lock_time or 0) + get_effective_skill_value(skill, 'frost_control_bonus'))
     local knockback_distance = math.max(0, skill.knockback_distance or 0)
+
+    if control_lock_time > 0 then
+      apply_enemy_status(unit, 'frost_lock', {
+        remaining = control_lock_time,
+      })
+    end
   
     unit:stop()
   
@@ -394,6 +467,40 @@ function M.create(env)
         end,
       })
     end)
+  end
+
+  local function update_enemy_statuses(dt)
+    if not STATE.enemy_info_map or not STATE.hero or not STATE.hero:is_exist() then
+      return
+    end
+
+    for unit, info in pairs(STATE.enemy_info_map) do
+      if info and info.status then
+        local ignite = info.status.ignite
+        if ignite then
+          ignite.remaining = math.max(0, (ignite.remaining or 0) - dt)
+          ignite.tick_cd = (ignite.tick_cd or 1) - dt
+          if ignite.remaining <= 0 then
+            info.status.ignite = nil
+          elseif ignite.tick_cd <= 0 and is_active_enemy(unit) then
+            ignite.tick_cd = 1
+            deal_skill_damage(unit, STATE.hero:get_attr('物理攻击') * (ignite.tick_ratio or 0), '物理', {
+              text_type = 'physics',
+            })
+          end
+        end
+
+        for _, status_id in ipairs({ 'armor_break', 'shock', 'frost_lock' }) do
+          local entry = info.status[status_id]
+          if entry then
+            entry.remaining = math.max(0, (entry.remaining or 0) - dt)
+            if entry.remaining <= 0 then
+              info.status[status_id] = nil
+            end
+          end
+        end
+      end
+    end
   end
   
   local function play_particle_on_unit(unit, effect_key, scale, time, socket)
@@ -539,14 +646,75 @@ function M.create(env)
   
     return nil
   end
-  
+
+  local function get_basic_attack_bonus_multiplier(skill, target)
+    local multiplier = 1
+    if target and is_active_enemy(target) then
+      multiplier = multiplier * get_damage_bonus_multiplier(target, {
+        is_basic_attack = true,
+      })
+      local info = STATE.enemy_info_map and STATE.enemy_info_map[target] or nil
+      if info and (info.is_elite == true or info.kind == 'boss' or info.is_boss == true) then
+        multiplier = multiplier * (1 + get_effective_skill_value(skill, 'boss_bonus_ratio'))
+      end
+    end
+    return multiplier
+  end
+
+  local function deal_basic_attack_damage(skill, target, amount, options)
+    if not STATE.hero or not STATE.hero:is_exist() or not target or not is_active_enemy(target) then
+      return
+    end
+
+    STATE.hero:damage({
+      target = target,
+      damage = round_number((amount or 0) * get_basic_attack_bonus_multiplier(skill, target)),
+      type = skill.damage_type,
+      ability = STATE.hero_common_attack and STATE.hero_common_attack:is_exist() and STATE.hero_common_attack or nil,
+      text_type = options and options.text_type or 'physics',
+      text_track = 934269508,
+      common_attack = options and options.common_attack == true or false,
+      no_miss = true,
+    })
+  end
+
+  local function apply_armor_break_on_hit(target)
+    local skill = get_basic_attack_skill()
+    local ratio = get_effective_skill_value(skill, 'armor_break_ratio')
+    local duration = get_effective_skill_value(skill, 'armor_break_duration')
+    local max_stacks = math.max(1, round_number(get_effective_skill_value(skill, 'armor_break_max_stacks')))
+    if ratio <= 0 or duration <= 0 or not is_active_enemy(target) then
+      return
+    end
+
+    local status = get_enemy_status(target, 'armor_break') or { stacks = 0 }
+    status.stacks = math.min(max_stacks, (status.stacks or 0) + 1)
+    status.remaining = duration
+    status.ratio = ratio
+    apply_enemy_status(target, 'armor_break', status)
+  end
+
   local function cast_arcane_arrow(skill, target)
     local vfx = ATTACK_SKILL_VFX.arcane_arrow
     local damage = get_skill_damage(skill)
     local remaining_hits = 1 + math.max(0, skill.pierce or 0)
+    local secondary_targets = math.max(0, round_number(get_effective_skill_value(skill, 'secondary_targets')))
+    local burst_radius = get_effective_skill_value(skill, 'burst_radius')
+    local burst_ratio = get_effective_skill_value(skill, 'burst_ratio')
     play_particle_on_unit(STATE.hero, vfx.cast_particle, vfx.cast_scale, vfx.cast_time)
   
     launch_projectile_to_target(vfx, target, function(impact_point)
+      local function trigger_arcane_burst(center)
+        if not center or burst_radius <= 0 or burst_ratio <= 0 then
+          return
+        end
+        for _, unit in ipairs(get_enemies_in_range(center, burst_radius)) do
+          deal_skill_damage(unit, damage * burst_ratio, skill.damage_type, {
+            particle = vfx.impact_particle,
+          })
+        end
+      end
+
       local center = impact_point or get_unit_point_snapshot(target)
       if center then
         play_particle_on_point(center, vfx.impact_particle, vfx.impact_scale, vfx.impact_time, 20)
@@ -554,31 +722,61 @@ function M.create(env)
   
       if is_active_enemy(target) then
         deal_skill_damage(target, damage, skill.damage_type)
+        trigger_arcane_burst(center or target)
         remaining_hits = remaining_hits - 1
       end
   
       if remaining_hits <= 0 then
-        return
+        remaining_hits = 0
       end
   
       for _, unit in ipairs(get_enemies_in_range(center or target, 320, target, remaining_hits)) do
         deal_skill_damage(unit, damage, skill.damage_type, {
           particle = vfx.impact_particle,
         })
+        trigger_arcane_burst(unit:get_point())
         remaining_hits = remaining_hits - 1
         if remaining_hits <= 0 then
           break
         end
       end
+
+      if secondary_targets > 0 then
+        local hit_count = 0
+        for _, unit in ipairs(get_enemies_in_range(center or target, 360, target, secondary_targets)) do
+          deal_skill_damage(unit, damage, skill.damage_type, {
+            particle = vfx.impact_particle,
+          })
+          trigger_arcane_burst(unit:get_point())
+          hit_count = hit_count + 1
+          if hit_count >= secondary_targets then
+            break
+          end
+        end
+      end
     end)
   end
-  
+
   local function cast_flame_arrow(skill, target)
     local vfx = ATTACK_SKILL_VFX.flame_arrow
     local explosion_damage = get_skill_damage(skill, skill.explosion_ratio)
+    local ignite_duration = get_effective_skill_value(skill, 'ignite_duration')
+    local ignite_tick_ratio = get_effective_skill_value(skill, 'ignite_tick_ratio')
+    local ignite_spread_radius = get_effective_skill_value(skill, 'ignite_spread_radius')
     play_particle_on_unit(STATE.hero, vfx.cast_particle, vfx.cast_scale, vfx.cast_time)
   
     launch_projectile_to_target(vfx, target, function(impact_point)
+      local function apply_ignite(unit)
+        if ignite_duration <= 0 or ignite_tick_ratio <= 0 or not is_active_enemy(unit) then
+          return
+        end
+        apply_enemy_status(unit, 'ignite', {
+          remaining = ignite_duration,
+          tick_cd = 1,
+          tick_ratio = ignite_tick_ratio,
+        })
+      end
+
       local center = impact_point or get_unit_point_snapshot(target)
       if center then
         play_particle_on_point(center, vfx.impact_particle, vfx.impact_scale, vfx.impact_time, 20)
@@ -586,6 +784,7 @@ function M.create(env)
   
       if is_active_enemy(target) then
         deal_skill_damage(target, get_skill_damage(skill), skill.damage_type)
+        apply_ignite(target)
       end
   
       if skill.explosion_ratio <= 0 or skill.explosion_radius <= 0 then
@@ -600,15 +799,27 @@ function M.create(env)
         deal_skill_damage(unit, explosion_damage, skill.damage_type, {
           particle = vfx.explosion_particle,
         })
+        apply_ignite(unit)
+      end
+
+      if ignite_spread_radius > 0 then
+        for _, unit in ipairs(get_enemies_in_range(center or target, ignite_spread_radius)) do
+          if not get_enemy_status(unit, 'ignite') then
+            apply_ignite(unit)
+          end
+        end
       end
     end)
   end
-  
+
   local function cast_frost_arrow(skill, target)
     local vfx = ATTACK_SKILL_VFX.frost_arrow
     local damage = get_skill_damage(skill)
     local remaining_hits = 1 + math.max(0, skill.pierce or 0)
     local origin_point = get_hero_point()
+    local shatter_bonus = get_effective_skill_value(skill, 'shatter_bonus')
+    local shard_count = math.max(0, round_number(get_effective_skill_value(skill, 'shard_count')))
+    local shard_ratio = get_effective_skill_value(skill, 'shard_ratio')
     play_particle_on_unit(STATE.hero, vfx.cast_particle, vfx.cast_scale, vfx.cast_time)
   
     launch_projectile_to_target(vfx, target, function(impact_point)
@@ -618,7 +829,8 @@ function M.create(env)
       end
   
       if is_active_enemy(target) then
-        deal_skill_damage(target, damage, skill.damage_type)
+        local damage_multiplier = get_enemy_status(target, 'frost_lock') and (1 + shatter_bonus) or 1
+        deal_skill_damage(target, damage * damage_multiplier, skill.damage_type)
         apply_frost_arrow_control(skill, target)
         remaining_hits = remaining_hits - 1
       end
@@ -635,7 +847,8 @@ function M.create(env)
         remaining_hits,
         target
       )) do
-        deal_skill_damage(unit, damage, skill.damage_type, {
+        local damage_multiplier = get_enemy_status(unit, 'frost_lock') and (1 + shatter_bonus) or 1
+        deal_skill_damage(unit, damage * damage_multiplier, skill.damage_type, {
           particle = vfx.impact_particle,
         })
         apply_frost_arrow_control(skill, unit)
@@ -644,13 +857,30 @@ function M.create(env)
           break
         end
       end
+
+      if shard_count > 0 and shard_ratio > 0 then
+        local hit_count = 0
+        for _, unit in ipairs(get_enemies_in_range(center or target, 300, target, shard_count)) do
+          deal_skill_damage(unit, damage * shard_ratio, skill.damage_type, {
+            particle = vfx.impact_particle,
+          })
+          hit_count = hit_count + 1
+          if hit_count >= shard_count then
+            break
+          end
+        end
+      end
     end)
   end
-  
+
   local function cast_thunder(skill, target)
     local vfx = ATTACK_SKILL_VFX.thunder
     local damage = get_skill_damage(skill)
     local locked_point = get_unit_point_snapshot(target)
+    local shock_duration = get_effective_skill_value(skill, 'shock_duration')
+    local shock_bonus = get_effective_skill_value(skill, 'shock_bonus')
+    local field_radius = get_effective_skill_value(skill, 'field_radius')
+    local field_ratio = get_effective_skill_value(skill, 'field_ratio')
     if locked_point then
       play_particle_on_point(locked_point, vfx.charge_particle, vfx.charge_scale, vfx.charge_time, 200)
     end
@@ -666,11 +896,37 @@ function M.create(env)
       end
   
       play_particle_on_point(strike_center, vfx.impact_particle, vfx.impact_scale, vfx.impact_time, 0)
-  
+
+      local function apply_shock(unit)
+        if shock_duration <= 0 or not is_active_enemy(unit) then
+          return
+        end
+        apply_enemy_status(unit, 'shock', {
+          remaining = shock_duration,
+          bonus = shock_bonus,
+        })
+      end
+
+      local function get_shock_multiplier(unit)
+        return get_enemy_status(unit, 'shock') and (1 + shock_bonus) or 1
+      end
+
+      local function trigger_field(center)
+        if field_radius <= 0 or field_ratio <= 0 then
+          return
+        end
+        for _, unit in ipairs(get_enemies_in_range(center, field_radius)) do
+          deal_skill_damage(unit, damage * field_ratio, skill.damage_type, {
+            particle = vfx.chain_particle,
+          })
+        end
+      end
+
       if is_active_enemy(target) then
-        deal_skill_damage(target, damage, skill.damage_type, {
+        deal_skill_damage(target, damage * get_shock_multiplier(target), skill.damage_type, {
           particle = vfx.impact_particle,
         })
+        apply_shock(target)
       end
   
       local extra_targets = math.max(0, skill.extra_targets or 0)
@@ -681,14 +937,17 @@ function M.create(env)
       local hit_count = 0
       for _, unit in ipairs(get_enemies_in_range(strike_center, 420, target, extra_targets)) do
         play_particle_on_point(unit:get_point(), vfx.chain_particle, vfx.chain_scale, vfx.chain_time, 0)
-        deal_skill_damage(unit, damage, skill.damage_type, {
+        deal_skill_damage(unit, damage * get_shock_multiplier(unit), skill.damage_type, {
           particle = vfx.chain_particle,
         })
+        apply_shock(unit)
         hit_count = hit_count + 1
         if hit_count >= extra_targets then
           break
         end
       end
+
+      trigger_field(strike_center)
     end)
   end
   
@@ -698,6 +957,8 @@ function M.create(env)
       local damage = get_skill_damage(skill)
       local multishot_count = math.max(0, round_number(get_bond_runtime_bonus('multishot_count')))
       local multishot_ratio = math.max(0, get_bond_runtime_bonus('multishot_ratio'))
+      local split_count = math.max(0, round_number(get_effective_skill_value(skill, 'split_count')))
+      local split_ratio = get_effective_skill_value(skill, 'split_ratio')
       local hero_point = get_hero_point()
       if hero_point and target and target:is_exist() and not STATE.hero:has_state('禁止转向') then
         STATE.hero:set_facing(hero_point:get_angle_with(target:get_point()), 0.08)
@@ -713,19 +974,11 @@ function M.create(env)
         end
   
         if is_active_enemy(target) then
-          STATE.hero:damage({
-            target = target,
-            damage = round_number(damage * get_damage_bonus_multiplier(target, {
-              is_basic_attack = true,
-            })),
-            type = skill.damage_type,
-            ability = STATE.hero_common_attack and STATE.hero_common_attack:is_exist() and STATE.hero_common_attack or nil,
-            text_type = 'physics',
-            text_track = 934269508,
+          deal_basic_attack_damage(skill, target, damage, {
             common_attack = true,
-            no_miss = true,
           })
           try_trigger_hunter_first_hit(target)
+          apply_armor_break_on_hit(target)
         end
   
         if multishot_count > 0 and multishot_ratio > 0 then
@@ -742,6 +995,23 @@ function M.create(env)
             })
             hit_count = hit_count + 1
             if hit_count >= multishot_count then
+              break
+            end
+          end
+        end
+
+        if split_count > 0 and split_ratio > 0 then
+          local split_hits = 0
+          for _, unit in ipairs(get_enemies_in_range(
+            target,
+            math.max(260, get_current_basic_attack_range() * 0.45),
+            target,
+            split_count
+          )) do
+            deal_basic_attack_damage(skill, unit, damage * split_ratio)
+            apply_armor_break_on_hit(unit)
+            split_hits = split_hits + 1
+            if split_hits >= split_count then
               break
             end
           end
@@ -845,6 +1115,7 @@ function M.create(env)
     build_attack_skill_slot_text = build_attack_skill_slot_text,
     show_attack_skill_loadout = show_attack_skill_loadout,
     unlock_attack_skill = unlock_attack_skill,
+    update_enemy_statuses = update_enemy_statuses,
     update_attack_skills = update_attack_skills,
   }
 end

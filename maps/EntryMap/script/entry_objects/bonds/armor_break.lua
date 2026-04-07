@@ -1,0 +1,22 @@
+return {
+  id = 'armor_break',
+  name = '穿甲',
+  quality = 'rare',
+  required_count = 2,
+  pool_weight = 7,
+  tier = 't1',
+  bond_role = 'material',
+  result_type = 'evolve_keep',
+  target_quality = 'rare',
+  route_tags = { 'basic_attack', 'hunter' },
+  compose_inputs = {},
+  compose_hint = '作为狩杀号令的素材羁绊。',
+  bond_effect_desc = '普攻命中附加 1 层破甲（4 秒，最多 2 层），对精英与 Boss 伤害额外 +15%。',
+  runtime = {
+    boss_damage_bonus = 0.15,
+    elite_damage_bonus = 0.15,
+    armor_break_ratio = 0.08,
+    armor_break_duration = 4,
+    armor_break_max_stacks = 2,
+  },
+}

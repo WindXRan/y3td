@@ -57,11 +57,13 @@ function M.create(env)
   local round_number = env.round_number
   local add_attr_pack = env.add_attr_pack
   local sync_basic_attack_ability = env.sync_basic_attack_ability
+  local heal_hero = env.heal_hero
 
   local api = {
     TREASURE_DEFS = TREASURE_DEFS,
     MARK_DEFS = MARK_DEFS,
   }
+  local resolve_treasure_pick
 
   function api.create_treasure_runtime()
     return {
@@ -80,8 +82,14 @@ function M.create(env)
       awaiting_choice = false,
       awaiting_replace = false,
       pending_replace_choice = nil,
+      pending_bonus_refreshes = 0,
+      temporary_buffs = {
+        next_runtime_id = 1,
+        active = {},
+      },
       applied = {
         attr = {},
+        runtime = {},
         skill_runtime = {},
         reward_ratio = {},
         passive_income = {},
@@ -510,6 +518,11 @@ function M.create(env)
     return runtime.applied.passive_income[key] or 0
   end
 
+  function api.get_treasure_runtime_bonus(key)
+    local runtime = api.get_treasure_runtime()
+    return runtime.applied.runtime[key] or 0
+  end
+
   function api.build_reward_with_treasure_bonus(reward)
     if not reward then
       return nil
@@ -556,6 +569,8 @@ function M.create(env)
     end
   end
 
+  api.apply_treasure_bonus_to_attack_skill = apply_treasure_bonus_to_attack_skill
+
   local function apply_treasure_attack_skill_bonus(bonus, direction)
     if not bonus or not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
       return
@@ -566,10 +581,91 @@ function M.create(env)
     end
   end
 
+  local function add_treasure_def_to_aggregate(aggregate, def)
+    if not def or not def.bonuses then
+      return
+    end
+    add_bonus_pack(aggregate.attr, def.bonuses.attr)
+    add_bonus_pack(aggregate.runtime, def.bonuses.runtime)
+    add_bonus_pack(aggregate.skill_runtime, def.bonuses.skill_runtime)
+    add_bonus_pack(aggregate.reward_ratio, def.bonuses.reward_ratio)
+    add_bonus_pack(aggregate.passive_income, def.bonuses.passive_income)
+    add_bonus_pack(aggregate.attack_skill, def.bonuses.attack_skill)
+  end
+
+  local function grant_temporary_treasure(def, source_context)
+    local runtime = api.get_treasure_runtime()
+    local runtime_id = runtime.temporary_buffs.next_runtime_id
+    runtime.temporary_buffs.next_runtime_id = runtime_id + 1
+
+    local entry = {
+      runtime_id = runtime_id,
+      treasure_id = def.id,
+      name = def.name,
+      quality = def.quality,
+      treasure_type = def.treasure_type,
+      duration_type = def.duration_type,
+      source_context = source_context,
+      active = def.duration_type ~= 'next_boss' and def.duration_type ~= 'next_challenge',
+      armed_for_boss = def.duration_type == 'next_boss',
+      armed_for_challenge = def.duration_type == 'next_challenge',
+      remaining_time = def.duration and (def.duration.duration_sec or def.duration.active_duration_sec) or nil,
+      remaining_charges = def.duration and def.duration.max_charges or nil,
+      guard_duration = def.duration and def.duration.guard_duration or nil,
+      guard_remaining = 0,
+      pending_bonus_refreshes = def.duration and def.duration.bonus_refreshes or 0,
+      expires_on_wave = def.duration_type == 'wave' and STATE.current_wave_index or nil,
+      challenge_instance_id = nil,
+    }
+
+    runtime.temporary_buffs.active[#runtime.temporary_buffs.active + 1] = entry
+    runtime.acquired_treasure_ids[def.id] = true
+    api.sync_treasure_effects()
+    return entry
+  end
+
+  local function remove_expired_temporary_buffs(predicate)
+    local runtime = api.get_treasure_runtime()
+    local next_active = {}
+    local removed = false
+    for _, entry in ipairs(runtime.temporary_buffs.active) do
+      if predicate(entry) then
+        removed = true
+      else
+        next_active[#next_active + 1] = entry
+      end
+    end
+    runtime.temporary_buffs.active = next_active
+    if removed then
+      api.sync_treasure_effects()
+    end
+    return removed
+  end
+
+  local function build_temporary_treasure_text(entry)
+    if entry.duration_type == 'wave' then
+      return string.format('[%s] %s：持续到本波结束。', api.get_treasure_quality_label(entry.quality), entry.name)
+    end
+    if entry.duration_type == 'timed' then
+      return string.format('[%s] %s：剩余 %.0f 秒。', api.get_treasure_quality_label(entry.quality), entry.name, math.max(0, entry.remaining_time or 0))
+    end
+    if entry.duration_type == 'charges' then
+      return string.format('[%s] %s：剩余 %d 次。', api.get_treasure_quality_label(entry.quality), entry.name, math.max(0, entry.remaining_charges or 0))
+    end
+    if entry.duration_type == 'next_boss' and entry.armed_for_boss then
+      return string.format('[%s] %s：等待下一次 Boss 战触发。', api.get_treasure_quality_label(entry.quality), entry.name)
+    end
+    if entry.duration_type == 'next_challenge' and entry.armed_for_challenge then
+      return string.format('[%s] %s：等待下一次挑战触发。', api.get_treasure_quality_label(entry.quality), entry.name)
+    end
+    return string.format('[%s] %s：生效中。', api.get_treasure_quality_label(entry.quality), entry.name)
+  end
+
   local function build_treasure_bonus_pack()
     local runtime = api.get_treasure_runtime()
     local aggregate = {
       attr = {},
+      runtime = {},
       skill_runtime = {},
       reward_ratio = {},
       passive_income = {},
@@ -587,12 +683,17 @@ function M.create(env)
         elseif def.quality == 'epic' then
           epic_count = epic_count + 1
         end
+        add_treasure_def_to_aggregate(aggregate, def)
+      end
+    end
 
-        add_bonus_pack(aggregate.attr, def.bonuses and def.bonuses.attr)
-        add_bonus_pack(aggregate.skill_runtime, def.bonuses and def.bonuses.skill_runtime)
-        add_bonus_pack(aggregate.reward_ratio, def.bonuses and def.bonuses.reward_ratio)
-        add_bonus_pack(aggregate.passive_income, def.bonuses and def.bonuses.passive_income)
-        add_bonus_pack(aggregate.attack_skill, def.bonuses and def.bonuses.attack_skill)
+    for _, entry in ipairs(runtime.temporary_buffs.active or {}) do
+      if entry.active and not entry.expired then
+        local def = TREASURE_DEFS[entry.treasure_id]
+        add_treasure_def_to_aggregate(aggregate, def)
+        if entry.duration_type == 'charges' and (entry.guard_remaining or 0) > 0 then
+          aggregate.attr['伤害减免'] = (aggregate.attr['伤害减免'] or 0) + 12
+        end
       end
     end
 
@@ -607,6 +708,7 @@ function M.create(env)
     local runtime = api.get_treasure_runtime()
     local previous = runtime.applied or {
       attr = {},
+      runtime = {},
       skill_runtime = {},
       reward_ratio = {},
       passive_income = {},
@@ -721,9 +823,18 @@ function M.create(env)
   end
 
   function api.show_treasure_loadout()
+    local runtime = api.get_treasure_runtime()
     message('宝物栏：')
     for slot = 1, 3, 1 do
       message(api.build_treasure_slot_text(slot))
+    end
+    message('临时宝物：')
+    if #(runtime.temporary_buffs.active or {}) == 0 then
+      message('暂无。')
+    else
+      for _, entry in ipairs(runtime.temporary_buffs.active) do
+        message(build_temporary_treasure_text(entry))
+      end
     end
   end
 
@@ -796,10 +907,11 @@ function M.create(env)
         source_type = next_entry.source_type,
         source_name = next_entry.source_name,
         state = 'pending',
-        free_refresh_left = 3,
+        free_refresh_left = 3 + (runtime.pending_bonus_refreshes or 0),
         refresh_paid_count = 0,
         candidate_treasure_ids = {},
       }
+      runtime.pending_bonus_refreshes = 0
       runtime.next_round_id = runtime.next_round_id + 1
       runtime.current_choices = choices
       runtime.awaiting_choice = true
@@ -820,7 +932,7 @@ function M.create(env)
     return true
   end
 
-  local function resolve_treasure_pick(def, replace_slot)
+  resolve_treasure_pick = function(def, replace_slot)
     local runtime = api.get_treasure_runtime()
     local target_slot = replace_slot or get_empty_treasure_slot() or 1
     local replaced_id = runtime.active_slots[target_slot]
@@ -912,6 +1024,19 @@ function M.create(env)
       return
     end
 
+    if def.treasure_type == 'tactical_temp' then
+      runtime.awaiting_choice = false
+      runtime.awaiting_replace = false
+      runtime.current_choices = nil
+      runtime.pending_replace_choice = nil
+      runtime.current_round = nil
+      local entry = grant_temporary_treasure(def, 'choice')
+      message(string.format('已获得临时宝物：[%s] %s。', api.get_treasure_quality_label(def.quality), def.name))
+      message(build_temporary_treasure_text(entry))
+      try_process_reward_queue()
+      return
+    end
+
     local empty_slot = get_empty_treasure_slot()
     if empty_slot then
       resolve_treasure_pick(def, empty_slot)
@@ -984,6 +1109,127 @@ function M.create(env)
 
   function api.try_process_reward_queue()
     return try_process_reward_queue()
+  end
+
+  function api.update_temporary_treasures(dt)
+    local runtime = api.get_treasure_runtime()
+    local dirty = false
+    for _, entry in ipairs(runtime.temporary_buffs.active) do
+      if entry.active and entry.duration_type == 'timed' and entry.remaining_time then
+        entry.remaining_time = math.max(0, entry.remaining_time - dt)
+        if entry.remaining_time <= 0 then
+          entry.expired = true
+          dirty = true
+        end
+      end
+      if entry.active and entry.duration_type == 'charges' and (entry.guard_remaining or 0) > 0 then
+        entry.guard_remaining = math.max(0, entry.guard_remaining - dt)
+        dirty = true
+      end
+    end
+    if dirty then
+      local removed = remove_expired_temporary_buffs(function(entry)
+        return entry.expired == true
+      end)
+      if not removed then
+        api.sync_treasure_effects()
+      end
+    end
+  end
+
+  function api.handle_wave_started(wave_index)
+    remove_expired_temporary_buffs(function(entry)
+      return entry.duration_type == 'wave'
+        and entry.expires_on_wave ~= nil
+        and entry.expires_on_wave < wave_index
+    end)
+  end
+
+  function api.handle_boss_spawned()
+    local runtime = api.get_treasure_runtime()
+    for _, entry in ipairs(runtime.temporary_buffs.active) do
+      if entry.armed_for_boss then
+        entry.armed_for_boss = false
+        entry.active = true
+        entry.remaining_time = 60
+      end
+    end
+    api.sync_treasure_effects()
+  end
+
+  function api.handle_challenge_started(instance)
+    local runtime = api.get_treasure_runtime()
+    for _, entry in ipairs(runtime.temporary_buffs.active) do
+      if entry.armed_for_challenge then
+        entry.armed_for_challenge = false
+        entry.active = true
+        entry.challenge_instance_id = instance.id
+      end
+    end
+    api.sync_treasure_effects()
+  end
+
+  function api.handle_challenge_finished(instance, is_success)
+    local runtime = api.get_treasure_runtime()
+    for _, entry in ipairs(runtime.temporary_buffs.active) do
+      if entry.duration_type == 'next_challenge' and entry.challenge_instance_id == instance.id then
+        if is_success and (entry.pending_bonus_refreshes or 0) > 0 then
+          runtime.pending_bonus_refreshes = runtime.pending_bonus_refreshes + entry.pending_bonus_refreshes
+        end
+        entry.expired = true
+      end
+    end
+    remove_expired_temporary_buffs(function(entry)
+      return entry.expired == true
+    end)
+  end
+
+  function api.handle_hero_be_hurt()
+    local runtime = api.get_treasure_runtime()
+    local max_hp = STATE.hero and STATE.hero:get_attr('最大生命') or 0
+    for _, entry in ipairs(runtime.temporary_buffs.active) do
+      if entry.duration_type == 'charges' and (entry.remaining_charges or 0) > 0 then
+        entry.remaining_charges = entry.remaining_charges - 1
+        if max_hp > 0 then
+          if heal_hero then
+            heal_hero(max_hp * 0.05)
+          else
+            STATE.hero:add_hp(max_hp * 0.05)
+          end
+        end
+        entry.guard_remaining = entry.guard_duration or 0
+        if entry.remaining_charges <= 0 then
+          entry.expired = true
+        end
+      end
+    end
+    remove_expired_temporary_buffs(function(entry)
+      return entry.expired == true
+    end)
+  end
+
+  function api.debug_grant_treasure(treasure_id, replace_slot)
+    local def = TREASURE_DEFS[treasure_id]
+    if not def then
+      return false, '未知宝物。'
+    end
+
+    if def.treasure_type == 'tactical_temp' then
+      grant_temporary_treasure(def, 'debug')
+      return true, string.format('已发放临时宝物：%s。', def.name)
+    end
+
+    resolve_treasure_pick(def, replace_slot or get_empty_treasure_slot() or 1)
+    return true, string.format('已发放常驻宝物：%s。', def.name)
+  end
+
+  function api.debug_dump_temporary_treasures()
+    local runtime = api.get_treasure_runtime()
+    local lines = {}
+    for _, entry in ipairs(runtime.temporary_buffs.active) do
+      lines[#lines + 1] = build_temporary_treasure_text(entry)
+    end
+    return lines
   end
 
   function api.queue_treasure_round(source_type, source_name)
