@@ -11,7 +11,7 @@ return {
   route_tags = { 'element', 'control' },
   compose_inputs = {},
   compose_hint = '提供寒冰控制与裂片牵引。',
-  bond_effect_desc = '寒冰箭控制时间 +0.20 秒；命中受控目标额外伤害 +20%；额外裂出 1 枚冰片。',
+  bond_effect_desc = '寒冰箭控制时间 +0.20 秒；命中受控目标额外伤害 +20%；额外裂出 1 枚冰片；每 7.5 秒施放 1 次霜环震荡。',
   runtime = {
     frost_control_bonus = 0.20,
     shatter_bonus = 0.20,

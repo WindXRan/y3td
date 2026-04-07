@@ -17,6 +17,8 @@ function M.create(env)
   local get_damage_bonus_multiplier = env.get_damage_bonus_multiplier
   local get_enemies_in_range = env.get_enemies_in_range
   local try_trigger_hunter_first_hit = env.try_trigger_hunter_first_hit
+  local notify_auto_active_basic_attack = env.notify_auto_active_basic_attack
+  local notify_auto_active_skill_cast = env.notify_auto_active_skill_cast
 
   local function get_basic_attack_skill()
     if not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
@@ -1011,6 +1013,9 @@ function M.create(env)
       local split_ratio = get_effective_skill_value(skill, 'split_ratio')
       local hero_point = get_hero_point()
       play_basic_attack_animation()
+      if notify_auto_active_basic_attack then
+        notify_auto_active_basic_attack(target)
+      end
       if hero_point and target and target:is_exist() and not STATE.hero:has_state('禁止转向') then
         STATE.hero:set_facing(hero_point:get_angle_with(target:get_point()), 0.08)
       end
@@ -1073,6 +1078,9 @@ function M.create(env)
   
     if STATE.bond_runtime and is_bond_active('arcane') then
       STATE.bond_runtime.arcane_empower_remaining = 3
+    end
+    if notify_auto_active_skill_cast then
+      notify_auto_active_skill_cast(skill, target)
     end
   
     if skill.id == 'arcane_arrow' then

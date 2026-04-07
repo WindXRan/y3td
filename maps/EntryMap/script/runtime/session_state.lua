@@ -47,6 +47,7 @@ function M.create(env)
     STATE.bond_runtime = create_bond_runtime()
     STATE.mark_runtime = create_mark_runtime()
     STATE.treasure_runtime = create_treasure_runtime()
+    STATE.auto_active_effects = nil
     STATE.enemy_info_map = {}
     STATE.skill_points = 0
     STATE.hero_progress = nil

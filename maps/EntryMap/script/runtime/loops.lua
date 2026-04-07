@@ -7,6 +7,7 @@ function M.create(env)
   local update_passive_resources = env.update_passive_resources
   local battlefield_system = env.battlefield_system
   local update_bond_effects = env.update_bond_effects
+  local update_auto_active_effects = env.update_auto_active_effects
   local update_enemy_statuses = env.update_enemy_statuses
   local update_attack_skills = env.update_attack_skills
   local update_temporary_treasures = env.update_temporary_treasures
@@ -31,6 +32,7 @@ function M.create(env)
         battlefield_system.update_challenges(0.25)
         battlefield_system.update_challenge_charges(0.25)
         update_bond_effects(0.25)
+        update_auto_active_effects(0.25)
         update_enemy_statuses(0.25)
         update_attack_skills(0.25)
         update_temporary_treasures(0.25)

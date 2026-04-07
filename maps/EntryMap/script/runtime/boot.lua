@@ -13,6 +13,7 @@ local RuntimeOverviewSystem = require 'ui.runtime_overview'
 local OutgameSystem = require 'ui.outgame'
 local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
+local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
 local RewardSystem = require 'runtime.rewards'
 local M = {}
 local helper_signals_started = false
@@ -31,6 +32,7 @@ local input_events_system
 local runtime_loops_system
 local attack_upgrade_system
 local attack_skills_system
+local auto_active_effects_system
 local reward_system
 
 local function trace_boot(message)
@@ -187,6 +189,7 @@ local STATE = {
   bond_runtime = nil,
   mark_runtime = nil,
   treasure_runtime = nil,
+  auto_active_effects = nil,
   enemy_info_map = nil,
   skill_points = 0,
   hero_progress = nil,
@@ -435,6 +438,12 @@ end
 
 local function update_bond_effects(dt)
   BondSystem.update_effects(create_bond_env(), dt)
+end
+
+local function update_auto_active_effects(dt)
+  if auto_active_effects_system then
+    auto_active_effects_system.update(dt)
+  end
 end
 
 local function update_enemy_statuses(dt)
@@ -815,6 +824,9 @@ end
 
 local function handle_bond_enemy_kill(info)
   BondSystem.handle_enemy_kill(create_bond_env(), info)
+  if auto_active_effects_system then
+    auto_active_effects_system.handle_enemy_kill(info)
+  end
 end
 
 local function get_current_wave()
@@ -1086,6 +1098,32 @@ attack_skills_system = AttackSkillsSystem.create({
   get_damage_bonus_multiplier = get_damage_bonus_multiplier,
   get_enemies_in_range = get_enemies_in_range,
   try_trigger_hunter_first_hit = try_trigger_hunter_first_hit,
+  notify_auto_active_basic_attack = function(target)
+    if auto_active_effects_system then
+      auto_active_effects_system.handle_basic_attack_cast(target)
+    end
+  end,
+  notify_auto_active_skill_cast = function(skill, target)
+    if auto_active_effects_system then
+      auto_active_effects_system.handle_attack_skill_cast(skill, target)
+    end
+  end,
+})
+
+auto_active_effects_system = AutoActiveEffectsSystem.create({
+  STATE = STATE,
+  y3 = y3,
+  ATTACK_SKILL_VFX = AttackSkillObjects.vfx_by_id,
+  get_player = get_player,
+  is_bond_active = function(bond_id)
+    return BondSystem.is_active(STATE, bond_id)
+  end,
+  is_active_enemy = is_active_enemy,
+  get_enemies_in_range = get_enemies_in_range,
+  deal_skill_damage = deal_skill_damage,
+  heal_hero = function(amount)
+    return heal_hero(amount)
+  end,
 })
 
 attack_upgrade_system = AttackUpgradeSystem.create({
@@ -1609,6 +1647,7 @@ runtime_loops_system = RuntimeLoopsSystem.create({
   update_passive_resources = update_passive_resources,
   battlefield_system = battlefield_system,
   update_bond_effects = update_bond_effects,
+  update_auto_active_effects = update_auto_active_effects,
   update_enemy_statuses = update_enemy_statuses,
   update_attack_skills = update_attack_skills,
   update_temporary_treasures = update_temporary_treasures,

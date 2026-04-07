@@ -1,0 +1,444 @@
+{
+    "describe": -394789354, 
+    "editor_res": false, 
+    "key": 4049, 
+    "map_name": "G57", 
+    "model_id": 4049, 
+    "name": 1460437586, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "code_Cartoon", 
+            "code_Hero", 
+            "code_Three Kingdoms", 
+            "code_Male", 
+            "code_Adult", 
+            "code_Archer", 
+            "code_Strong", 
+            "code_Blue", 
+            "P13(Q\u7248\u56fd\u98ce\u7cfb\u5217)"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/4049", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_identify": "all", 
+    "res_type": "code_Role,code_Hero", 
+    "rigidbody_offset": [
+        0.0, 
+        0.9, 
+        0.0
+    ], 
+    "select_effect_scale": 1.0, 
+    "size": 0.8, 
+    "socket_info": {
+        "attack1": {
+            "__tuple__": true, 
+            "items": [
+                "attack1", 
+                "bip01 l hand", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "attack2": {
+            "__tuple__": true, 
+            "items": [
+                "attack2", 
+                "bip01 r hand", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "blood": {
+            "__tuple__": true, 
+            "items": [
+                "blood", 
+                "bip01 spine1", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "centroid": {
+            "__tuple__": true, 
+            "items": [
+                "centroid", 
+                "Scene Root", 
+                0.0, 
+                1.325, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "foot1": {
+            "__tuple__": true, 
+            "items": [
+                "foot1", 
+                "bip01 l foot", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "foot2": {
+            "__tuple__": true, 
+            "items": [
+                "foot2", 
+                "bip01 r foot", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hand1": {
+            "__tuple__": true, 
+            "items": [
+                "hand1", 
+                "bip01 l hand", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hand2": {
+            "__tuple__": true, 
+            "items": [
+                "hand2", 
+                "bip01 r hand", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "head": {
+            "__tuple__": true, 
+            "items": [
+                "head", 
+                "bip01 head", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hit_point": {
+            "__tuple__": true, 
+            "items": [
+                "hit_point", 
+                "bip01 spine1", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hp_effect_buff_01": {
+            "__tuple__": true, 
+            "items": [
+                "hp_effect_buff_01", 
+                "", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hp_effect_zs_01": {
+            "__tuple__": true, 
+            "items": [
+                "hp_effect_zs_01", 
+                "bip01 l upperarm", 
+                -0.0128685712814, 
+                0.00380428314209, 
+                -0.00398564457893, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hp_effect_zs_02": {
+            "__tuple__": true, 
+            "items": [
+                "hp_effect_zs_02", 
+                "bip01 l upperarm", 
+                -0.00905995130539, 
+                -0.00127847671509, 
+                -0.0143050849438, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hp_effect_zs_03": {
+            "__tuple__": true, 
+            "items": [
+                "hp_effect_zs_03", 
+                "wq1", 
+                -0.00565136909485, 
+                -0.00193411827087, 
+                0.0000673261284828, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hp_effect_zs_04": {
+            "__tuple__": true, 
+            "items": [
+                "hp_effect_zs_04", 
+                "bip01 r hand", 
+                0.00482406616211, 
+                -0.00767539024353, 
+                0.0031300008297, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hp_effect_zs_05": {
+            "__tuple__": true, 
+            "items": [
+                "hp_effect_zs_05", 
+                "bone20", 
+                0.00925534844398, 
+                -0.00836318969727, 
+                -0.0190016937256, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hp_effect_zs_06": {
+            "__tuple__": true, 
+            "items": [
+                "hp_effect_zs_06", 
+                "bone15", 
+                -0.0000275373458862, 
+                -0.0223702669144, 
+                -0.00441635131836, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hp_effect_zs_07": {
+            "__tuple__": true, 
+            "items": [
+                "hp_effect_zs_07", 
+                "bone08", 
+                -0.000102421045303, 
+                0.000504283905029, 
+                0.00191902160645, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hp_effect_zs_08": {
+            "__tuple__": true, 
+            "items": [
+                "hp_effect_zs_08", 
+                "bone09", 
+                0.0103329503536, 
+                -0.0104439640045, 
+                0.00944564819336, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hp_effect_zs_09": {
+            "__tuple__": true, 
+            "items": [
+                "hp_effect_zs_09", 
+                "bone41", 
+                -0.0101718521118, 
+                -0.0166014921665, 
+                -0.0211719608307, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hp_effect_zs_10": {
+            "__tuple__": true, 
+            "items": [
+                "hp_effect_zs_10", 
+                "bone41", 
+                0.0150671482086, 
+                -0.00125836133957, 
+                -0.0163331985474, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "origin": {
+            "__tuple__": true, 
+            "items": [
+                "origin", 
+                "Scene Root", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "root": {
+            "__tuple__": true, 
+            "items": [
+                "root", 
+                "Scene Root", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "root_follow": {
+            "__tuple__": true, 
+            "items": [
+                "root_follow", 
+                "bone0", 
+                -0.00290458120406, 
+                0.0104901818186, 
+                0.00000742316246033, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "root_shadow": {
+            "__tuple__": true, 
+            "items": [
+                "root_shadow", 
+                "bone0", 
+                -0.00290458120406, 
+                0.0104901818186, 
+                0.00000742316246033, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "sound": {
+            "__tuple__": true, 
+            "items": [
+                "sound", 
+                "bip01 head", 
+                -0.2, 
+                0.1, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "top": {
+            "__tuple__": true, 
+            "items": [
+                "top", 
+                "Scene Root", 
+                0.0, 
+                2.65, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "ui_hp": {
+            "__tuple__": true, 
+            "items": [
+                "ui_hp", 
+                "Scene Root", 
+                0.0, 
+                3.15, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "vo": {
+            "__tuple__": true, 
+            "items": [
+                "vo", 
+                "", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "weapon1": {
+            "__tuple__": true, 
+            "items": [
+                "weapon1", 
+                "bip01 r hand", 
+                0.00272869586945, 
+                -0.00465511322021, 
+                0.00522325873375, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "weapon2": {
+            "__tuple__": true, 
+            "items": [
+                "weapon2", 
+                "bip01 l hand", 
+                0.00112557411194, 
+                -0.00951957702637, 
+                0.00655565857887, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }
+    }, 
+    "source": "code_Source_Import", 
+    "uid": "editor_model_4049", 
+    "unit_prefab": 0
+}

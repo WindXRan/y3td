@@ -172,6 +172,12 @@ function M.create(env)
       end
 
       env.handle_bond_enemy_kill(info)
+
+      y3.ltimer.wait(0.3, function()
+        if unit and unit:is_exist() then
+          unit:remove()
+        end
+      end)
     end)
 
     return info
