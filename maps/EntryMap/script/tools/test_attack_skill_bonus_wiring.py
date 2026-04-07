@@ -5,8 +5,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNTIME = ROOT / 'entry_runtime.lua'
-REWARDS = ROOT / 'entry_runtime_rewards.lua'
+RUNTIME = ROOT / 'runtime' / 'boot.lua'
+REWARDS = ROOT / 'runtime' / 'rewards.lua'
 
 
 def assert_contains(path: Path, needle: str, message: str) -> None:

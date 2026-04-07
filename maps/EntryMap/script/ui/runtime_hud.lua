@@ -1,4 +1,4 @@
-local ui_res = require 'ui_res'
+local ui_res = require 'ui.res'
 local skin = require 'ui.skin'
 local theme = require 'ui.theme'
 local Factory = require 'ui.factory'

@@ -1,5 +1,5 @@
 local BondObjects = require 'entry_objects.bonds'
-local ui_res = require 'ui_res'
+local ui_res = require 'ui.res'
 
 local M = {}
 

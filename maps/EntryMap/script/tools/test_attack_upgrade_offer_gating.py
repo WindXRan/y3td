@@ -4,7 +4,7 @@
 from pathlib import Path
 
 
-UPGRADES = Path(__file__).resolve().parents[1] / 'entry_runtime_attack_upgrades.lua'
+UPGRADES = Path(__file__).resolve().parents[1] / 'runtime' / 'attack_upgrades.lua'
 
 
 def assert_contains(needle: str, message: str) -> None:
