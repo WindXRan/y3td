@@ -33,6 +33,8 @@ local ChallengeObjects = require 'entry_objects.challenges'
 local StageObjects = require 'entry_objects.stages'
 local StageModeObjects = require 'entry_objects.stage_modes'
 
+local MAIN_SPAWN_AREA = { x_min = 1260, x_max = 1440, y_min = -1040, y_max = 1040, z = 0 }
+
 local M = {
   debug_time_scale = DEBUG_TIME_SCALE,
   player_id = global_rules.player_id,
@@ -83,11 +85,11 @@ local M = {
   },
 
   areas = {
-    main_spawn_wave_1 = { x_min = 1200, x_max = 1480, y_min = -180, y_max = 180, z = 0 },
-    main_spawn_wave_2 = { x_min = 1200, x_max = 1480, y_min = -220, y_max = 220, z = 0 },
-    main_spawn_wave_3 = { x_min = 1220, x_max = 1500, y_min = -260, y_max = 260, z = 0 },
-    main_spawn_wave_4 = { x_min = 1240, x_max = 1520, y_min = -300, y_max = 300, z = 0 },
-    main_spawn_wave_5 = { x_min = 1260, x_max = 1540, y_min = -320, y_max = 320, z = 0 },
+    main_spawn_wave_1 = MAIN_SPAWN_AREA,
+    main_spawn_wave_2 = MAIN_SPAWN_AREA,
+    main_spawn_wave_3 = MAIN_SPAWN_AREA,
+    main_spawn_wave_4 = MAIN_SPAWN_AREA,
+    main_spawn_wave_5 = MAIN_SPAWN_AREA,
 
     boss_spawn_wave_1 = { x_min = 1120, x_max = 1260, y_min = -90, y_max = 90, z = 0 },
     boss_spawn_wave_2 = { x_min = 1140, x_max = 1280, y_min = -110, y_max = 110, z = 0 },
@@ -95,10 +97,20 @@ local M = {
     boss_spawn_wave_4 = { x_min = 1180, x_max = 1320, y_min = -150, y_max = 150, z = 0 },
     boss_spawn_wave_5 = { x_min = 1200, x_max = 1340, y_min = -170, y_max = 170, z = 0 },
 
+    mid_slow_lane_outer = { x_min = -220, x_max = 260, y_min = -520, y_max = 520, z = 0 },
+    mid_slow_lane_inner = { x_min = -760, x_max = 40, y_min = -420, y_max = 420, z = 0 },
+    hero_front_slow_lane = { x_min = -1220, x_max = -700, y_min = -320, y_max = 320, z = 0 },
+
     challenge_spawn_top = { x_min = 1180, x_max = 1450, y_min = 220, y_max = 420, z = 0 },
     challenge_spawn_mid = { x_min = 1220, x_max = 1490, y_min = -80, y_max = 120, z = 0 },
     challenge_spawn_bottom = { x_min = 1180, x_max = 1450, y_min = -420, y_max = -220, z = 0 },
     challenge_treasure_elite_spawn = { x_min = 1240, x_max = 1380, y_min = -60, y_max = 60, z = 0 },
+  },
+
+  main_enemy_slow_zones = {
+    { area_id = 'mid_slow_lane_outer', speed_factor = 0.72 },
+    { area_id = 'mid_slow_lane_inner', speed_factor = 0.52 },
+    { area_id = 'hero_front_slow_lane', speed_factor = 0.38 },
   },
 
   challenge_rules = {

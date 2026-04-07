@@ -30,6 +30,15 @@ function M.create(env)
     return STATE.enemy_info_map[unit]
   end
 
+  local function is_point_in_area(point, area)
+    if not point or not area then
+      return false
+    end
+    local x = point:get_x()
+    local y = point:get_y()
+    return x >= area.x_min and x <= area.x_max and y >= area.y_min and y <= area.y_max
+  end
+
   local function is_boss_runtime_enemy(info)
     return info and (info.kind == 'boss' or info.is_boss == true) or false
   end
@@ -82,6 +91,9 @@ function M.create(env)
     info.alive = true
     info.owner = info.owner or nil
     info.status = info.status or {}
+    info.base_move_speed = unit:get_attr('移动速度')
+    info.lane_slow_applied = false
+    info.lane_slow_factor = 1
 
     STATE.enemy_info_map = STATE.enemy_info_map or {}
     STATE.enemy_info_map[unit] = info
@@ -163,6 +175,57 @@ function M.create(env)
     end)
 
     return info
+  end
+
+  local function get_main_enemy_slow_factor(info)
+    if not info or not info.alive or info.kind ~= 'main' or not info.unit or not info.unit:is_exist() then
+      return 1
+    end
+
+    local rules = CONFIG.main_enemy_slow_zones
+    if not rules then
+      return 1
+    end
+
+    local point = info.unit:get_point()
+    local slow_factor = 1
+    for _, rule in ipairs(rules) do
+      local area = rule and CONFIG.areas and CONFIG.areas[rule.area_id] or nil
+      if area and rule.speed_factor and is_point_in_area(point, area) then
+        slow_factor = math.min(slow_factor, rule.speed_factor)
+      end
+    end
+
+    return slow_factor
+  end
+
+  local function apply_main_enemy_lane_slow(info)
+    if not info or not info.alive or info.kind ~= 'main' or not info.unit or not info.unit:is_exist() then
+      return
+    end
+
+    local base_move_speed = info.base_move_speed or info.unit:get_attr('移动速度')
+    if not base_move_speed or base_move_speed <= 0 then
+      return
+    end
+
+    local slow_factor = get_main_enemy_slow_factor(info)
+    local target_speed = math.max(1, base_move_speed * slow_factor)
+
+    if slow_factor < 1 then
+      if not info.lane_slow_applied or info.lane_slow_factor ~= slow_factor then
+        info.unit:set_attr('移动速度', target_speed)
+        info.lane_slow_applied = true
+        info.lane_slow_factor = slow_factor
+      end
+      return
+    end
+
+    if info.lane_slow_applied then
+      info.unit:set_attr('移动速度', base_move_speed)
+      info.lane_slow_applied = false
+      info.lane_slow_factor = 1
+    end
   end
 
   local function spawn_enemy(unit_id, area_id, facing, info)
@@ -430,6 +493,12 @@ function M.create(env)
 
     if not runner.boss_spawned and runner.elapsed >= runner.wave.boss_spawn_sec then
       spawn_boss(runner)
+    end
+
+    if STATE.enemy_info_map then
+      for _, info in pairs(STATE.enemy_info_map) do
+        apply_main_enemy_lane_slow(info)
+      end
     end
   end
 
