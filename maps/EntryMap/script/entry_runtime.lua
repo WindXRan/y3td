@@ -240,6 +240,7 @@ local create_bond_env
 local award_rewards
 local show_mark_choices
 local show_treasure_choices
+local show_attack_skill_loadout
 local try_open_queued_treasure_round
 local is_battle_active
 local reset_battle_state
@@ -1032,7 +1033,7 @@ local function build_attack_skill_slot_text(slot)
   return attack_skills_system.build_attack_skill_slot_text(slot)
 end
 
-local function show_attack_skill_loadout()
+show_attack_skill_loadout = function()
   return attack_skills_system.show_attack_skill_loadout()
 end
 

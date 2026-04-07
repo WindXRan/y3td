@@ -11,7 +11,7 @@ M.card = {
   width = 332,
   height = 560,
   -- stage 内左下角矩形坐标；choice_panel.lua 会先转换成中心锚点再交给 ui.factory
-  x = { 176, 514, 852 },
+  x = { 112, 514, 916 },
   y = 136,
   badge_width = 86,
   badge_height = 34,
@@ -24,7 +24,7 @@ M.actions = {
   -- stage 内左下角矩形坐标
   hide_x = 448,
   refresh_x = 720,
-  y = 52,
+  y = 36,
   width = 220,
   height = 60,
 }

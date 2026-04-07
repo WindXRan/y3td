@@ -1,14 +1,12 @@
 local ui_res = require 'ui.res'
-local skin = require 'ui.skin'
 local theme = require 'ui.theme'
 local Factory = require 'ui.factory'
 local layout = require 'ui.choice_panel_layout'
+local TextLayout = require 'ui.choice_panel_text_layout'
 
 local M = {}
 
 local IMAGE_TYPE = '图片'
-local TEXT_TYPE = '文本'
-local BUTTON_TYPE = '按钮'
 
 local BODY_COLORS = {
   green = { 86, 255, 92, 255 },
@@ -25,18 +23,21 @@ local QUALITY_PALETTES = {
     title = { 255, 210, 50, 255 },
     subtitle = { 62, 255, 68, 255 },
     frame_color = { 76, 255, 82, 255 },
+    surface = { 255, 255, 255, 255 },
   },
   rare = {
     badge = { 40, 149, 255, 255 },
     title = { 255, 210, 50, 255 },
     subtitle = { 40, 149, 255, 255 },
     frame_color = { 40, 149, 255, 255 },
+    surface = { 220, 235, 255, 255 },
   },
   epic = {
     badge = { 198, 120, 255, 255 },
     title = { 255, 210, 50, 255 },
     subtitle = { 198, 120, 255, 255 },
     frame_color = { 198, 120, 255, 255 },
+    surface = { 255, 232, 255, 255 },
   },
 }
 
@@ -71,6 +72,24 @@ local function get_panel_hint(model)
   return '点击卡片或按 1 / 2 / 3 选择'
 end
 
+local function build_badge_text(card_model)
+  local parts = {}
+  if card_model.badge_text and card_model.badge_text ~= '' then
+    parts[#parts + 1] = card_model.badge_text
+  end
+  if card_model.subtitle_text and card_model.subtitle_text ~= '' then
+    parts[#parts + 1] = card_model.subtitle_text
+  end
+  return table.concat(parts, ' ')
+end
+
+local function build_title_text(card_model)
+  if card_model.progress_text and card_model.progress_text ~= '' then
+    return string.format('%s %s', card_model.title_text or '', card_model.progress_text)
+  end
+  return card_model.title_text or ''
+end
+
 function M.create(env)
   local STATE = env.STATE
   local y3 = env.y3
@@ -78,12 +97,11 @@ function M.create(env)
 
   local create_panel = factory.create_panel
   local create_text = factory.create_text
-  local create_button = factory.create_button
+  local get_hud_metrics = factory.get_hud_metrics
   local get_hud_scale = factory.get_hud_scale
   local scaled = factory.scaled
   local set_percent_pos = factory.set_percent_pos
 
-  local choice_skin = skin.images.choice_panel or {}
   local refresh_panel
 
   local function get_hud_root()
@@ -94,47 +112,33 @@ function M.create(env)
     return hud
   end
 
-  local function is_panel_alive(panel)
-    return panel and panel.root and not panel.root:is_removed()
+  local function is_ui_alive(ui)
+    return ui and not ui:is_removed()
   end
 
-  local function set_card_visible(card, visible)
-    card.shadow:set_visible(visible)
-    card.bg:set_visible(visible)
-    card.frame:set_visible(visible)
-    card.badge_bg:set_visible(visible)
-    card.badge_text:set_visible(visible)
-    card.title_text:set_visible(visible)
-    card.progress_text:set_visible(visible)
-    card.icon_frame:set_visible(visible)
-    card.icon:set_visible(visible)
-    card.subtitle_text:set_visible(visible)
-    card.button:set_visible(visible)
-    card.button:set_button_enable(visible and not STATE.game_finished)
-    for _, line in ipairs(card.body_lines) do
-      line:set_visible(visible)
-    end
+  local function is_panel_alive(panel)
+    return panel and panel.root and is_ui_alive(panel.root)
   end
 
   local function set_action_button_state(button_ref, visible, enabled, label)
-    button_ref.shadow:set_visible(visible)
-    button_ref.bg:set_visible(visible)
+    if not button_ref or not button_ref.root or not button_ref.button then
+      return
+    end
+    button_ref.root:set_visible(visible)
     button_ref.button:set_visible(visible)
+    if button_ref.label then
+      button_ref.label:set_visible(visible)
+    end
     if not visible then
       return
     end
 
-    button_ref.button:set_text(label or '')
-    button_ref.button:set_button_enable(enabled == true)
-    if enabled == true then
-      button_ref.bg:set_image_color(58, 74, 98, 230)
-      button_ref.shadow:set_image_color(8, 12, 22, 124)
-      button_ref.button:set_text_color(245, 248, 255, 255)
+    if button_ref.label then
+      button_ref.label:set_text(label or '')
     else
-      button_ref.bg:set_image_color(42, 42, 42, 218)
-      button_ref.shadow:set_image_color(8, 12, 22, 90)
-      button_ref.button:set_text_color(142, 146, 154, 255)
+      button_ref.button:set_text(label or '')
     end
+    button_ref.button:set_button_enable(enabled == true)
   end
 
   local function get_refresh_label(refresh)
@@ -154,184 +158,96 @@ function M.create(env)
     return left + width * 0.5, bottom + height * 0.5
   end
 
-  local function create_rect_panel(parent, left, bottom, width, height, color, insets, z_order, image)
-    local center_x, center_y = rect_center(left, bottom, width, height)
-    return create_panel(parent, center_x, center_y, width, height, color, insets, z_order, image)
+  local function get_prefab_node(prefab, path)
+    if not prefab then
+      return nil
+    end
+    return prefab:get_child(path)
   end
 
-  local function create_rect_button(parent, left, bottom, width, height, label, callback, options)
-    local center_x, center_y = rect_center(left, bottom, width, height)
-    return create_button(parent, center_x, center_y, width, height, label, callback, options)
-  end
-
-  local function create_choice_card(parent, left, bottom, width, height, index, scale)
-    local shadow = create_rect_panel(
-      parent,
-      left - scaled(4, scale),
-      bottom - scaled(6, scale),
-      width + scaled(8, scale),
-      height + scaled(8, scale),
-      { 4, 8, 16, 124 },
-      theme.insets.soft,
-      9810
-    )
-    local bg = create_rect_panel(
-      parent,
-      left,
-      bottom,
-      width,
-      height,
-      { 28, 28, 30, 238 },
-      theme.insets.normal,
-      9811,
-      choice_skin.card_bg
-    )
-    local frame = create_rect_panel(
-      parent,
-      left,
-      bottom,
-      width,
-      height,
-      { 98, 102, 108, 224 },
-      theme.insets.soft,
-      9812,
-      choice_skin.card_frame_common
-    )
-    frame:set_image_color(98, 102, 108, 224)
-
-    local badge_bg = create_panel(
-      parent,
-      left + scaled(123, scale),
-      bottom + height - scaled(26, scale),
-      scaled(layout.card.badge_width, scale),
-      scaled(layout.card.badge_height, scale),
-      { 38, 38, 40, 255 },
-      theme.insets.normal,
-      9813,
-      choice_skin.badge_bg_common
-    )
-    badge_bg:set_anchor(0.5, 0.5)
-    local badge_text = create_text(
-      parent,
-      left + scaled(123, scale),
-      bottom + height - scaled(26, scale),
-      scaled(layout.card.badge_width, scale),
-      scaled(layout.card.badge_height, scale),
-      scaled(22, scale),
-      { 86, 255, 92, 255 },
-      '中',
-      '中',
-      9814
-    )
-    badge_text:set_anchor(0.5, 0.5)
-
-    local title_text = create_text(
-      parent,
-      left + scaled(166, scale),
-      bottom + height - scaled(86, scale),
-      scaled(260, scale),
-      scaled(30, scale),
-      scaled(22, scale),
-      { 255, 210, 50, 255 },
-      '中',
-      '中',
-      9814
-    )
-    title_text:set_anchor(0.5, 0.5)
-    local progress_text = create_text(
-      parent,
-      left + scaled(166, scale),
-      bottom + height - scaled(118, scale),
-      scaled(160, scale),
-      scaled(22, scale),
-      scaled(16, scale),
-      BODY_COLORS.dim,
-      '中',
-      '中',
-      9814
-    )
-    progress_text:set_anchor(0.5, 0.5)
-
-    local icon_frame = create_panel(
-      parent,
-      left + scaled(166, scale),
-      bottom + height - scaled(194, scale),
-      scaled(layout.card.icon_size + 8, scale),
-      scaled(layout.card.icon_size + 8, scale),
-      { 72, 255, 82, 255 },
-      theme.insets.soft,
-      9813,
-      choice_skin.icon_frame
-    )
-    icon_frame:set_anchor(0.5, 0.5)
-    local icon = parent:create_child(IMAGE_TYPE)
-    icon:set_ui_size(scaled(layout.card.icon_size, scale), scaled(layout.card.icon_size, scale))
-    icon:set_pos(left + scaled(166, scale), bottom + height - scaled(194, scale))
-    icon:set_anchor(0.5, 0.5)
-    icon:set_z_order(9814)
-
-    local subtitle_text = create_text(
-      parent,
-      left + scaled(166, scale),
-      bottom + height - scaled(252, scale),
-      scaled(240, scale),
-      scaled(28, scale),
-      scaled(20, scale),
-      { 86, 255, 92, 255 },
-      '中',
-      '中',
-      9814
-    )
-    subtitle_text:set_anchor(0.5, 0.5)
-
-    local body_lines = {}
-    for line_index = 1, layout.card.body_line_count, 1 do
-      local line = create_text(
-        parent,
-        left + scaled(28, scale),
-        bottom + height - scaled(308, scale) - scaled((line_index - 1) * layout.card.body_line_height, scale),
-        scaled(276, scale),
-        scaled(layout.card.body_line_height, scale),
-        scaled(16, scale),
-        BODY_COLORS.white,
-        '左',
-        '上',
-        9814
-      )
-      body_lines[#body_lines + 1] = line
+  local function create_prefab_action_button(parent, left, bottom, width, height, label, callback, index)
+    local player = env.get_player()
+    local prefab = y3.ui_prefab.create(player, 'choice_button', parent)
+    local root = prefab and prefab:get_child() or nil
+    local button = get_prefab_node(prefab, 'layout_1.button_1')
+    local label_node = get_prefab_node(prefab, 'layout_1.label_2')
+    if not root or not button then
+      return nil
     end
 
-    local button_center_x, button_center_y = rect_center(left, bottom, width, height)
-    local button = parent:create_child(BUTTON_TYPE)
-    button:set_ui_size(width, height)
-    button:set_pos(button_center_x, button_center_y)
-    button:set_anchor(0.5, 0.5)
+    local center_x, center_y = rect_center(left, bottom, width, height)
+    root:set_anchor(0.5, 0.5)
+    root:set_pos(center_x, center_y)
+    root:set_widget_relative_scale(width / layout.actions.width, height / layout.actions.height)
+    root:set_z_order(9814 + (index or 0))
+
     button:set_text('')
-    button:set_btn_status_image(1, ui_res.common.empty)
-    button:set_btn_status_image(2, ui_res.common.empty)
-    button:set_btn_status_image(3, ui_res.common.empty)
-    button:set_btn_status_image(4, ui_res.common.empty)
-    button:set_z_order(9815)
-    button:add_fast_event('左键-点击', function()
-      if env.apply_round_choice then
-        env.apply_round_choice(index)
-      end
-      refresh_panel()
-    end)
+    if label_node then
+      label_node:set_text(label or '')
+    end
+    button:add_fast_event('左键-点击', callback)
 
     return {
-      shadow = shadow,
-      bg = bg,
-      frame = frame,
-      badge_bg = badge_bg,
-      badge_text = badge_text,
-      title_text = title_text,
-      progress_text = progress_text,
-      icon_frame = icon_frame,
-      icon = icon,
-      subtitle_text = subtitle_text,
-      body_lines = body_lines,
+      prefab = prefab,
+      root = root,
       button = button,
+      label = label_node,
+    }
+  end
+
+  local function set_prefab_card_visible(card, visible)
+    if card.root then
+      card.root:set_visible(visible)
+    end
+    if card.button then
+      card.button:set_visible(visible)
+      card.button:set_button_enable(visible and not STATE.game_finished)
+    end
+  end
+
+  local function create_choice_card(parent, left, bottom, width, height, index)
+    local player = env.get_player()
+    local prefab = y3.ui_prefab.create(player, 'choice_panel', parent)
+    local root = prefab and prefab:get_child() or nil
+    if not root then
+      return nil
+    end
+
+    local scale_x = width / 550
+    local scale_y = height / 900
+    local center_x, center_y = rect_center(left, bottom, width, height)
+
+    root:set_anchor(0.5, 0.5)
+    root:set_pos(center_x, center_y)
+    root:set_widget_relative_scale(scale_x, scale_y)
+    root:set_z_order(9811 + index)
+
+    local button = get_prefab_node(prefab, 'layout_1.button')
+    if button then
+      button:set_text('')
+      button:add_fast_event('左键-点击', function()
+        if env.apply_round_choice then
+          env.apply_round_choice(index)
+        end
+        refresh_panel()
+      end)
+    end
+
+    return {
+      prefab = prefab,
+      root = root,
+      background = get_prefab_node(prefab, 'layout_1.background'),
+      decoration = get_prefab_node(prefab, 'layout_1.background.decoration'),
+      button = button,
+      icon = get_prefab_node(prefab, 'layout_1.icon'),
+      name = get_prefab_node(prefab, 'layout_1.name'),
+      rarity_background = get_prefab_node(prefab, 'layout_1.rarity_background'),
+      rarity_text = get_prefab_node(prefab, 'layout_1.rarity_background.rarity_text'),
+      desc_root = get_prefab_node(prefab, 'layout_1.desc_text'),
+      value_desc = get_prefab_node(prefab, 'layout_1.desc_text.value_desc'),
+      effect_desc = get_prefab_node(prefab, 'layout_1.desc_text.effect_desc'),
+      effect_name = get_prefab_node(prefab, 'layout_1.desc_text.effect_desc.effect_name'),
+      effect_text = get_prefab_node(prefab, 'layout_1.desc_text.effect_desc.effect_text'),
     }
   end
 
@@ -347,6 +263,7 @@ function M.create(env)
     end
 
     local scale = get_hud_scale(hud, y3)
+    local hud_width, hud_height = get_hud_metrics(hud, y3)
 
     local root = hud:create_child(IMAGE_TYPE)
     root:set_image(ui_res.common.empty)
@@ -360,17 +277,16 @@ function M.create(env)
 
     local backdrop = create_panel(
       root,
-      0,
-      0,
-      scaled(layout.panel.width + 96, scale),
-      scaled(layout.panel.height + 72, scale),
-      { 6, 10, 18, 108 },
+      hud_width * 0.5,
+      hud_height * 0.5,
+      hud_width,
+      hud_height,
+      { 96, 96, 96, 148 },
       theme.insets.large,
       9800,
-      choice_skin.overlay
+      ui_res.common.empty
     )
     backdrop:set_anchor(0.5, 0.5)
-    set_percent_pos(env.get_player(), backdrop, layout.panel.percent_x, layout.panel.percent_y)
 
     local stage = create_panel(
       root,
@@ -381,7 +297,7 @@ function M.create(env)
       { 0, 0, 0, 0 },
       theme.insets.large,
       9801,
-      choice_skin.panel_bg
+      ui_res.common.empty
     )
     stage:set_anchor(0.5, 0.5)
     set_percent_pos(env.get_player(), stage, layout.panel.percent_x, layout.panel.percent_y)
@@ -393,8 +309,7 @@ function M.create(env)
         scaled(layout.card.y, scale),
         scaled(layout.card.width, scale),
         scaled(layout.card.height, scale),
-        1,
-        scale
+        1
       ),
       create_choice_card(
         stage,
@@ -402,8 +317,7 @@ function M.create(env)
         scaled(layout.card.y, scale),
         scaled(layout.card.width, scale),
         scaled(layout.card.height, scale),
-        2,
-        scale
+        2
       ),
       create_choice_card(
         stage,
@@ -411,8 +325,7 @@ function M.create(env)
         scaled(layout.card.y, scale),
         scaled(layout.card.width, scale),
         scaled(layout.card.height, scale),
-        3,
-        scale
+        3
       ),
     }
 
@@ -444,7 +357,7 @@ function M.create(env)
     )
     hint_text:set_anchor(0.5, 0.5)
 
-    local hide_button = create_rect_button(
+    local hide_button = create_prefab_action_button(
       stage,
       scaled(layout.actions.hide_x, scale),
       scaled(layout.actions.y, scale),
@@ -457,13 +370,10 @@ function M.create(env)
         end
         refresh_panel()
       end,
-      {
-        font_size = scaled(22, scale),
-        style = 'choice_panel_action',
-      }
+      1
     )
 
-    local refresh_button = create_rect_button(
+    local refresh_button = create_prefab_action_button(
       stage,
       scaled(layout.actions.refresh_x, scale),
       scaled(layout.actions.y, scale),
@@ -476,10 +386,7 @@ function M.create(env)
         end
         refresh_panel()
       end,
-      {
-        font_size = scaled(22, scale),
-        style = 'choice_panel_action',
-      }
+      2
     )
 
     STATE.choice_panel = {
@@ -527,38 +434,93 @@ function M.create(env)
 
     for index, card in ipairs(panel.cards) do
       local card_model = model.cards and model.cards[index] or nil
-      local card_visible = card_model ~= nil
-      set_card_visible(card, card_visible)
+      local card_visible = card ~= nil and card_model ~= nil
+      if card then
+        set_prefab_card_visible(card, card_visible)
+      end
+
       if card_visible then
         local palette = get_quality_palette(card_model.quality)
-        local frame_image = choice_skin['card_frame_' .. tostring(card_model.quality or 'common')] or choice_skin.card_frame_common
-        local badge_image = choice_skin['badge_bg_' .. tostring(card_model.quality or 'common')] or choice_skin.badge_bg_common
-        card.bg:set_image_color(36, 36, 38, 236)
-        card.frame:set_image(frame_image or ui_res.common.empty)
-        card.frame:set_image_color(palette.frame_color[1], palette.frame_color[2], palette.frame_color[3], 232)
-        card.badge_bg:set_image(badge_image or ui_res.common.empty)
-        card.badge_bg:set_image_color(palette.badge[1], palette.badge[2], palette.badge[3], 255)
-        card.badge_text:set_text(card_model.badge_text or '')
-        card.badge_text:set_text_color(palette.badge[1], palette.badge[2], palette.badge[3], palette.badge[4])
-        card.title_text:set_text(card_model.title_text or '')
-        card.title_text:set_text_color(palette.title[1], palette.title[2], palette.title[3], palette.title[4])
-        card.progress_text:set_text(card_model.progress_text or '')
-        card.progress_text:set_visible(card_visible and card_model.progress_text ~= '')
-        card.icon_frame:set_image_color(palette.frame_color[1], palette.frame_color[2], palette.frame_color[3], 255)
-        card.icon:set_image(card_model.icon_res or ui_res.common.empty)
-        card.subtitle_text:set_text(card_model.subtitle_text or '')
-        card.subtitle_text:set_text_color(palette.subtitle[1], palette.subtitle[2], palette.subtitle[3], palette.subtitle[4])
-        for line_index, line in ipairs(card.body_lines) do
-          local block = card_model.body_blocks and card_model.body_blocks[line_index] or nil
-          if block then
-            local color = get_body_color(block.color)
-            line:set_visible(true)
-            line:set_text(block.text or '')
-            line:set_text_color(color[1], color[2], color[3], color[4])
-          else
-            line:set_visible(false)
-            line:set_text('')
-          end
+        local text_layout = TextLayout.build_text_layout(card_model.body_blocks)
+
+        if card.background then
+          card.background:set_image_color(
+            palette.surface[1],
+            palette.surface[2],
+            palette.surface[3],
+            255
+          )
+        end
+        if card.decoration then
+          card.decoration:set_image_color(
+            palette.frame_color[1],
+            palette.frame_color[2],
+            palette.frame_color[3],
+            220
+          )
+        end
+        if card.icon then
+          card.icon:set_image(card_model.icon_res or ui_res.common.empty)
+        end
+        if card.name then
+          card.name:set_text(build_title_text(card_model))
+          card.name:set_text_color(
+            palette.title[1],
+            palette.title[2],
+            palette.title[3],
+            palette.title[4]
+          )
+        end
+        if card.rarity_background then
+          card.rarity_background:set_image_color(
+            palette.badge[1],
+            palette.badge[2],
+            palette.badge[3],
+            255
+          )
+        end
+        if card.rarity_text then
+          card.rarity_text:set_text(build_badge_text(card_model))
+          card.rarity_text:set_text_color(22, 24, 28, 255)
+        end
+
+        if card.desc_root then
+          card.desc_root:set_visible(text_layout.value_visible or text_layout.effect_visible)
+        end
+        if card.value_desc then
+          local value_color = get_body_color(text_layout.value_color)
+          card.value_desc:set_visible(text_layout.value_visible)
+          card.value_desc:set_text(text_layout.value_text or '')
+          card.value_desc:set_text_color(
+            value_color[1],
+            value_color[2],
+            value_color[3],
+            value_color[4]
+          )
+        end
+        if card.effect_desc then
+          card.effect_desc:set_visible(text_layout.effect_visible)
+        end
+        if card.effect_name then
+          card.effect_name:set_visible(text_layout.effect_visible)
+          card.effect_name:set_text(text_layout.effect_title or '')
+          card.effect_name:set_text_color(
+            BODY_COLORS.gold[1],
+            BODY_COLORS.gold[2],
+            BODY_COLORS.gold[3],
+            BODY_COLORS.gold[4]
+          )
+        end
+        if card.effect_text then
+          local effect_color = get_body_color(text_layout.effect_color)
+          card.effect_text:set_visible(text_layout.effect_visible)
+          card.effect_text:set_text(text_layout.effect_text or '')
+          card.effect_text:set_text_color(
+            effect_color[1],
+            effect_color[2],
+            effect_color[3],
+            effect_color[4]
+          )
         end
       end
     end
