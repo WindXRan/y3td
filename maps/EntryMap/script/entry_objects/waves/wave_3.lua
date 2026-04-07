@@ -6,7 +6,7 @@ return {
       id = 'wave_3',
       index = 3,
       name = '第3波：投矛猎手',
-      main_unit_id = 134242543,
+      main_unit_id = 134280099,
       boss_unit_id = 134259608,
       spawn_area_id = 'main_spawn_wave_3',
       boss_spawn_area_id = 'boss_spawn_wave_3',

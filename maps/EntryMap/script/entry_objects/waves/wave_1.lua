@@ -6,7 +6,7 @@ return {
       id = 'wave_1',
       index = 1,
       name = '第1波：饥饿地精',
-      main_unit_id = 134241735,
+      main_unit_id = 134280097,
       boss_unit_id = 134219749,
       spawn_area_id = 'main_spawn_wave_1',
       boss_spawn_area_id = 'boss_spawn_wave_1',

@@ -6,7 +6,7 @@ return {
       id = 'wave_4',
       index = 4,
       name = '第4波：裂爪兽群',
-      main_unit_id = 134222661,
+      main_unit_id = 134280100,
       boss_unit_id = 134228855,
       spawn_area_id = 'main_spawn_wave_4',
       boss_spawn_area_id = 'boss_spawn_wave_4',

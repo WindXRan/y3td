@@ -505,8 +505,6 @@ function M.create(env)
     hero:add_state('禁止普攻')
 
     hero:add_state('禁止移动')
-    hero:add_state('禁止转向')
-    hero:set_turning_speed(0)
     hero:stop()
 
     if CONFIG.debug_time_scale < 1 then

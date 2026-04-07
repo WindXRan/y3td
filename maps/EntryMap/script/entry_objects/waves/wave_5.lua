@@ -6,7 +6,7 @@ return {
       id = 'wave_5',
       index = 5,
       name = '第5波：深渊祭仆',
-      main_unit_id = 134228855,
+      main_unit_id = 134280101,
       boss_unit_id = 134222661,
       spawn_area_id = 'main_spawn_wave_5',
       boss_spawn_area_id = 'boss_spawn_wave_5',

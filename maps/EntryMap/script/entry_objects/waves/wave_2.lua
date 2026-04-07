@@ -6,7 +6,7 @@ return {
       id = 'wave_2',
       index = 2,
       name = '第2波：腐甲步兵',
-      main_unit_id = 134224570,
+      main_unit_id = 134280098,
       boss_unit_id = 134279196,
       spawn_area_id = 'main_spawn_wave_2',
       boss_spawn_area_id = 'boss_spawn_wave_2',

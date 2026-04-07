@@ -45,6 +45,56 @@ function M.create(env)
     return math.max(1, round_number(range))
   end
   
+  local function get_basic_attack_animation_names()
+    if STATE.basic_attack_animation_names then
+      return STATE.basic_attack_animation_names
+    end
+
+    local names = {}
+    if STATE.hero and STATE.hero:is_exist() then
+      local hero_key = STATE.hero:get_key()
+      local editor_unit = hero_key and y3.object.unit[hero_key] or nil
+      local animation_items = editor_unit
+        and editor_unit.data
+        and editor_unit.data.simple_common_atk
+        and editor_unit.data.simple_common_atk.ability_animations
+        and editor_unit.data.simple_common_atk.ability_animations.items
+        or nil
+      if type(animation_items) == 'table' then
+        for _, name in ipairs(animation_items) do
+          if type(name) == 'string' and name ~= '' then
+            names[#names + 1] = name
+          end
+        end
+      end
+    end
+
+    if #names == 0 then
+      names[1] = 'attack1'
+    end
+
+    STATE.basic_attack_animation_names = names
+    return names
+  end
+
+  local function play_basic_attack_animation()
+    if not STATE.hero or not STATE.hero:is_exist() then
+      return
+    end
+
+    local names = get_basic_attack_animation_names()
+    if #names == 0 then
+      return
+    end
+
+    STATE.basic_attack_animation_index = (STATE.basic_attack_animation_index or 0) + 1
+    local index = ((STATE.basic_attack_animation_index - 1) % #names) + 1
+    local animation_name = names[index]
+    if animation_name and animation_name ~= '' then
+      STATE.hero:play_animation(animation_name, 1.0, nil, nil, false, true)
+    end
+  end
+
   local function build_basic_attack_ability_description(skill)
     if not skill then
       return '当前普攻技能。'
@@ -960,6 +1010,7 @@ function M.create(env)
       local split_count = math.max(0, round_number(get_effective_skill_value(skill, 'split_count')))
       local split_ratio = get_effective_skill_value(skill, 'split_ratio')
       local hero_point = get_hero_point()
+      play_basic_attack_animation()
       if hero_point and target and target:is_exist() and not STATE.hero:has_state('禁止转向') then
         STATE.hero:set_facing(hero_point:get_angle_with(target:get_point()), 0.08)
       end
