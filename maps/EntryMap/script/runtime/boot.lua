@@ -1377,6 +1377,12 @@ debug_tools_system = DebugToolsSystem.create({
   debug_kill_all_active_enemies = function()
     return debug_actions_system.debug_kill_all_active_enemies()
   end,
+  debug_open_attr_overview = function()
+    STATE.runtime_overview_mode = 'attr'
+    runtime_overview_system.ensure_panel()
+    runtime_overview_system.set_visible(true)
+    refresh_runtime_overview()
+  end,
   debug_grant_bond_card = function(card_id)
     return debug_actions_system.debug_grant_bond_card(card_id)
   end,

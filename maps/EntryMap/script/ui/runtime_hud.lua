@@ -108,7 +108,7 @@ function M.create(env)
           state = string.format(
             'HP %s / %s',
             format_compact(info.unit:get_hp()),
-            format_compact(info.unit:get_attr('hp_max'))
+            format_compact(info.unit:get_attr('最大生命'))
           ),
           bg = theme.palette.danger,
           text = { 255, 236, 240, 255 },
@@ -150,7 +150,7 @@ function M.create(env)
     return string.format(
       '生命 %s / %s',
       format_compact(STATE.hero:get_hp()),
-      format_compact(STATE.hero:get_attr('hp_max'))
+      format_compact(STATE.hero:get_attr('最大生命'))
     )
   end
 

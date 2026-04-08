@@ -21,7 +21,7 @@ return {
       },
       post_boss_interval_sec = scale(2.7),
       main_attr_overrides = {
-        hp_max = 1,
+        ['最大生命'] = 1,
       },
       main_spawn_hp = 1,
       main_kill_reward = { exp = 8, gold = 4, wood = 0 },

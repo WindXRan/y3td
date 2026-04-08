@@ -1,3 +1,5 @@
+local hero_attr_config = require 'entry_data.hero_attr_config'
+
 return {
   global_rules = {
     debug_time_scale_debug = 0.2,
@@ -6,23 +8,8 @@ return {
     player_id = 1,
     total_enemy_soft_cap = 40,
   },
-  hero_init_stats = {
-    attack_phy = 46,
-    attack_speed = 95,
-    critical_chance = 10,
-    critical_dmg = 25,
-    hp_max = 900,
-    vampire_phy = 5,
-  },
-  debug_hero_bonus_stats = {
-    attack_range = 100,
-    attack_phy = 72,
-    attack_speed = 60,
-    critical_chance = 10,
-    critical_dmg = 35,
-    hp_max = 1400,
-    vampire_phy = 8,
-  },
+  hero_init_stats = hero_attr_config.hero_init_stats,
+  debug_hero_bonus_stats = hero_attr_config.debug_hero_bonus_stats,
   progression_rules = {
     engine_exp_cap_level = 15,
     max_level = 60,

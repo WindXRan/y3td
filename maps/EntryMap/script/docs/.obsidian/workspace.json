@@ -1,24 +1,24 @@
 {
   "main": {
-    "id": "483690be64ae6b9d",
+    "id": "906152f1e71c8b82",
     "type": "split",
     "children": [
       {
-        "id": "0dea38c62673d267",
+        "id": "46e03a3d51ce6aa2",
         "type": "tabs",
         "children": [
           {
-            "id": "7f2bc19aea482a07",
+            "id": "8e909902470c5afd",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "design/初步设计/15-UI资源清单表模板.md",
+                "file": "内容设计/04-羁绊/羁绊图片.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "15-UI资源清单表模板"
+              "title": "羁绊图片"
             }
           }
         ]
@@ -27,15 +27,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "ef4d44ceaabbf82a",
+    "id": "a37b35bea2c8a51c",
     "type": "split",
     "children": [
       {
-        "id": "94646ebbe7cc6458",
+        "id": "7b5cd7aceebce7f9",
         "type": "tabs",
         "children": [
           {
-            "id": "e7baf0c05ff95c7f",
+            "id": "a547536653267202",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -48,7 +48,7 @@
             }
           },
           {
-            "id": "a3bfc6e0171a6e99",
+            "id": "741de1bc601f2aa2",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -65,7 +65,7 @@
             }
           },
           {
-            "id": "d67f82b0ea0af318",
+            "id": "70aa17aad511e24c",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -81,20 +81,20 @@
     "width": 300
   },
   "right": {
-    "id": "4bf815a6a7d61785",
+    "id": "12b008b272193f6d",
     "type": "split",
     "children": [
       {
-        "id": "b7e9f8b11fd3bdee",
+        "id": "b4d086857fb166f6",
         "type": "tabs",
         "children": [
           {
-            "id": "c189aaff4723290a",
+            "id": "a6949f7118f0b1ed",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "项目模块/00-项目总览/项目概览.md",
+                "file": "内容设计/04-羁绊/羁绊图片.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,25 +104,25 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "项目概览 的反向链接列表"
+              "title": "羁绊图片 的反向链接列表"
             }
           },
           {
-            "id": "d1e65d1c2c441bf0",
+            "id": "bf9a43bd9f67a399",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "项目模块/00-项目总览/项目概览.md",
+                "file": "内容设计/04-羁绊/羁绊图片.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "项目概览 的出链列表"
+              "title": "羁绊图片 的出链列表"
             }
           },
           {
-            "id": "ed2fba43d829a064",
+            "id": "164fd555b4db166c",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -137,7 +137,7 @@
             }
           },
           {
-            "id": "97f51013f3ce5189",
+            "id": "0ee0a311228fcf0f",
             "type": "leaf",
             "state": {
               "type": "all-properties",
@@ -151,18 +151,18 @@
             }
           },
           {
-            "id": "65a23be6f825b4fc",
+            "id": "971188e634aca0e1",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "项目模块/00-项目总览/项目概览.md",
+                "file": "内容设计/04-羁绊/羁绊图片.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "项目概览 的大纲"
+              "title": "羁绊图片 的大纲"
             }
           }
         ]
@@ -183,40 +183,17 @@
       "bases:新建数据库": false
     }
   },
-  "active": "7f2bc19aea482a07",
+  "active": "8e909902470c5afd",
   "lastOpenFiles": [
-    "design/初步设计/14-UI美术需求文档.md",
-    "design/初步设计/04-英雄与流派规划.md",
-    "design/初步设计/03-局外成长系统.md",
-    "design/初步设计/02-局内成长系统.md",
-    "design/初步设计/20-顶部战斗HUD单文件YAML示例.md",
-    "design/初步设计/21-底部角色操作区资源清单示例.md",
-    "design/初步设计/19-UI单文件YAML规格模板.md",
-    "design/初步设计/18-顶部战斗HUD结构标注示例.md",
-    "design/初步设计/17-顶部战斗HUD资源清单示例.md",
-    "design/初步设计/13-关卡波次配表与实现映射.md",
-    "design/初步设计/12-宝物与烙印配表与实现映射.md",
-    "design/初步设计/28-项目包装与命名方案.md",
-    "design/初步设计/11-攻击技能与羁绊配表与实现映射.md",
-    "开发进度与计划/02-战斗主循环与关卡/战斗主循环与关卡.md",
-    "开发进度与计划/开发进度与计划.md",
-    "开发进度与计划/01-启动与局外/启动与局外.md",
-    "开发进度与计划/05-长期成长与内容扩展/长期成长与内容扩展.md",
-    "开发进度与计划/04-UI与交互反馈/UI与交互反馈.md",
-    "开发进度与计划/03-构筑与奖励/构筑与奖励.md",
-    "开发进度与计划/05-长期成长与内容扩展",
-    "开发进度与计划/04-UI与交互反馈",
-    "开发进度与计划/03-构筑与奖励",
-    "开发进度与计划/02-战斗主循环与关卡",
-    "开发进度与计划/01-启动与局外",
-    "开发进度与计划",
-    "design/初步设计/01-战斗系统.md",
-    "项目模块/00-项目总览/项目概览.md",
-    "项目模块/08-局外与长期进度/局外选关与存档骨架.md",
-    "项目模块/08-局外与长期进度",
-    "项目模块/00-项目总览/代码调用总览.md",
-    "项目模块/06-触发器与编辑器资产/地图级触发器说明.md",
-    "项目模块/06-触发器与编辑器资产/编辑器导出资产说明.md",
-    "项目模块/99-流程图/整体游戏流程图.md"
+    "Pasted image 20260408215653.png",
+    "Pasted image 20260408215637.png",
+    "Pasted image 20260408215612.png",
+    "Pasted image 20260408215601.png",
+    "Pasted image 20260408215549.png",
+    "Pasted image 20260408215543.png",
+    "Pasted image 20260408215533.png",
+    "Pasted image 20260408215522.png",
+    "内容设计/04-羁绊/羁绊总表.md",
+    "内容设计/04-羁绊/羁绊图片.md"
   ]
 }

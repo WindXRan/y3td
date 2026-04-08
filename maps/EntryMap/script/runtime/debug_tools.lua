@@ -402,7 +402,7 @@ function M.create(env)
 
     local panel = hud:create_child('图片')
     panel:set_image(999)
-    panel:set_ui_size(408, 454)
+    panel:set_ui_size(408, 510)
     panel:set_relative_parent_pos('顶部', 62)
     panel:set_relative_parent_pos('右侧', 18)
     panel:set_image_color(9, 15, 23, 220)
@@ -413,12 +413,12 @@ function M.create(env)
     local header_bg = panel:create_child('图片')
     header_bg:set_image(999)
     header_bg:set_ui_size(376, 54)
-    header_bg:set_pos(204, 421)
+    header_bg:set_pos(204, 477)
     header_bg:set_image_color(22, 38, 58, 230)
 
     local title = panel:create_child('文本')
     title:set_ui_size(260, 26)
-    title:set_pos(146, 428)
+    title:set_pos(146, 484)
     title:set_text('GM 调试面板')
     title:set_font_size(24)
     title:set_text_color(245, 248, 255, 255)
@@ -426,7 +426,7 @@ function M.create(env)
 
     local subtitle = panel:create_child('文本')
     subtitle:set_ui_size(320, 22)
-    subtitle:set_pos(178, 399)
+    subtitle:set_pos(178, 455)
     subtitle:set_text('右侧速测工具栏，默认服务单机压测与功能验收')
     subtitle:set_font_size(14)
     subtitle:set_text_color(156, 178, 208, 255)
@@ -435,12 +435,12 @@ function M.create(env)
     local status_bg = panel:create_child('图片')
     status_bg:set_image(999)
     status_bg:set_ui_size(376, 120)
-    status_bg:set_pos(204, 320)
+    status_bg:set_pos(204, 376)
     status_bg:set_image_color(16, 28, 42, 235)
 
     local status_text = panel:create_child('文本')
     status_text:set_ui_size(344, 96)
-    status_text:set_pos(192, 320)
+    status_text:set_pos(192, 376)
     status_text:set_font_size(17)
     status_text:set_text_color(233, 239, 248, 255)
     status_text:set_text_alignment('左', '中')
@@ -472,16 +472,17 @@ function M.create(env)
     end
 
     local button_defs = {
-      { '帮助 / F1', 24, 204, show_debug_hotkey_help, { 58, 84, 120 } },
-      { '加资源 / F2', 204, 204, env.debug_add_test_resources, { 73, 94, 132 } },
-      { '升 3 级 / F3', 24, 148, function() env.debug_grant_levels(3) end, { 64, 88, 128 } },
-      { '解锁技能 / F4', 204, 148, env.debug_unlock_all_attack_skills, { 84, 97, 138 } },
-      { '开强化 / F5', 24, 92, env.debug_open_upgrade_panel, { 72, 102, 142 } },
-      { '抽羁绊 / F6', 204, 92, env.debug_trigger_bond_draw, { 84, 110, 150 } },
-      { '满挑战 / F7', 24, 36, env.debug_refill_challenge_charges, { 70, 112, 142 } },
-      { '刷 Boss / F8', 204, 36, env.debug_force_spawn_boss, { 110, 86, 126 } },
-      { '清全场 / F9', 24, 0, env.debug_kill_all_active_enemies, { 128, 74, 88 } },
-      { '打印状态', 204, 0, env.show_runtime_status, { 60, 92, 120 } },
+      { '帮助 / F1', 24, 260, show_debug_hotkey_help, { 58, 84, 120 } },
+      { '加资源 / F2', 204, 260, env.debug_add_test_resources, { 73, 94, 132 } },
+      { '升 3 级 / F3', 24, 204, function() env.debug_grant_levels(3) end, { 64, 88, 128 } },
+      { '解锁技能 / F4', 204, 204, env.debug_unlock_all_attack_skills, { 84, 97, 138 } },
+      { '开强化 / F5', 24, 148, env.debug_open_upgrade_panel, { 72, 102, 142 } },
+      { '抽羁绊 / F6', 204, 148, env.debug_trigger_bond_draw, { 84, 110, 150 } },
+      { '满挑战 / F7', 24, 92, env.debug_refill_challenge_charges, { 70, 112, 142 } },
+      { '刷 Boss / F8', 204, 92, env.debug_force_spawn_boss, { 110, 86, 126 } },
+      { '清全场 / F9', 24, 36, env.debug_kill_all_active_enemies, { 128, 74, 88 } },
+      { '角色属性', 204, 36, env.debug_open_attr_overview, { 74, 100, 136 } },
+      { '打印状态', 114, 0, env.show_runtime_status, { 60, 92, 120 } },
     }
 
     for _, def in ipairs(button_defs) do

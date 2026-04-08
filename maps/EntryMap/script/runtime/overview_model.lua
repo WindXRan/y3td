@@ -67,16 +67,16 @@ function M.create(env)
         '英雄：%s  HP %d/%d  攻击 %d  攻速 %d',
         get_hero_progress_text(),
         format_attr_value(STATE.hero:get_hp()),
-        format_attr_value(STATE.hero:get_attr('hp_max')),
-        format_attr_value(STATE.hero:get_attr('attack_phy')),
-        format_attr_value(STATE.hero:get_attr('attack_speed'))
+        format_attr_value(STATE.hero:get_attr('最大生命')),
+        format_attr_value(STATE.hero:get_attr('物理攻击')),
+        format_attr_value(STATE.hero:get_attr('攻击速度'))
       )
       lines[#lines + 1] = string.format(
         '暴击 %d%%  爆伤 %d%%  吸血 %d%%  射程 %d',
-        format_attr_value(STATE.hero:get_attr('critical_chance')),
-        format_attr_value(STATE.hero:get_attr('critical_dmg')),
-        format_attr_value(STATE.hero:get_attr('vampire_phy')),
-        format_attr_value(STATE.hero:get_attr('attack_range'))
+        format_attr_value(STATE.hero:get_attr('暴击率')),
+        format_attr_value(STATE.hero:get_attr('暴击伤害')),
+        format_attr_value(STATE.hero:get_attr('物理吸血')),
+        format_attr_value(STATE.hero:get_attr('攻击范围'))
       )
     else
       lines[#lines + 1] = '英雄：当前未创建'
@@ -192,17 +192,17 @@ function M.create(env)
       string.format('等级：%s', get_hero_progress_text()),
       string.format('生命：%d / %d',
         format_attr_value(STATE.hero:get_hp()),
-        format_attr_value(STATE.hero:get_attr('hp_max'))
+        format_attr_value(STATE.hero:get_attr('最大生命'))
       ),
       string.format('攻击：%d  攻速：%d  射程：%d',
-        format_attr_value(STATE.hero:get_attr('attack_phy')),
-        format_attr_value(STATE.hero:get_attr('attack_speed')),
-        format_attr_value(STATE.hero:get_attr('attack_range'))
+        format_attr_value(STATE.hero:get_attr('物理攻击')),
+        format_attr_value(STATE.hero:get_attr('攻击速度')),
+        format_attr_value(STATE.hero:get_attr('攻击范围'))
       ),
       string.format('暴击：%d%%  爆伤：%d%%  吸血：%d%%',
-        format_attr_value(STATE.hero:get_attr('critical_chance')),
-        format_attr_value(STATE.hero:get_attr('critical_dmg')),
-        format_attr_value(STATE.hero:get_attr('vampire_phy'))
+        format_attr_value(STATE.hero:get_attr('暴击率')),
+        format_attr_value(STATE.hero:get_attr('暴击伤害')),
+        format_attr_value(STATE.hero:get_attr('物理吸血'))
       ),
     }
   end

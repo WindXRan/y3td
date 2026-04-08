@@ -242,8 +242,8 @@ function M.create(env)
     end
     if info and info.spawn_hp ~= nil then
       unit:set_hp(info.spawn_hp)
-    elseif info and info.attr_overrides and info.attr_overrides.hp_max ~= nil then
-      unit:set_hp(info.attr_overrides.hp_max)
+    elseif info and info.attr_overrides and info.attr_overrides['最大生命'] ~= nil then
+      unit:set_hp(info.attr_overrides['最大生命'])
     end
     unit:set_reward_exp(0)
     unit:attack_move(STATE.defense_point)
@@ -576,7 +576,7 @@ function M.create(env)
 
     hero:set_name('守关英雄')
     set_attr_pack(hero, CONFIG.hero_init_stats)
-    hero:set_attr('attack_range', basic_attack_range or 250)
+    hero:set_attr('攻击范围', basic_attack_range or 250)
     hero:add_state('禁止普攻')
 
     hero:add_state('禁止移动')
@@ -586,7 +586,7 @@ function M.create(env)
       add_attr_pack(hero, CONFIG.debug_hero_bonus_stats)
     end
 
-    hero:set_hp(hero:get_attr('hp_max'))
+    hero:set_hp(hero:get_attr('最大生命'))
     STATE.hero_common_attack = hero:get_common_attack()
 
     hero:event('单位-死亡', function()
