@@ -426,7 +426,7 @@ local function get_line_root_def(node_def)
   return line_defs and line_defs[1] or node_def
 end
 
-local function build_line_progress_title(state, node_def)
+local function build_line_progress_values(state, node_def)
   local root_def = get_line_root_def(node_def)
   local line_defs = root_def and LINE_BY_ID[root_def.line_id] or {}
   local unlocked_count = 0
