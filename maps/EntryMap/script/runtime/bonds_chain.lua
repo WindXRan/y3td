@@ -445,6 +445,11 @@ local function build_line_progress_values(state, node_def)
   )
 end
 
+local function build_line_progress_text(state, node_def)
+  local title = build_line_progress_values(state, node_def)
+  return string.match(title, '(%d+/%d+)') or '0/0'
+end
+
 local function trim_choice_prefix(text)
   local trimmed = trim_inline_text(text)
   trimmed = trimmed:gsub('^当前：', '')
@@ -606,15 +611,15 @@ local function build_choice_entry(state, node_def, index)
     next_ids = node_def.next_ids,
     editor_skill_id = node_def.editor_skill_id,
     template = node_def.template,
-    title_text = build_line_progress_title(state, node_def),
+    title_text = node_def.display_name,
     subtitle_text = node_def.display_name,
-    progress_text = '',
+    progress_text = build_line_progress_text(state, node_def),
     current_text = current_text,
     advanced_text = advanced_text,
     next_text = next_text,
     desc_text = build_choice_desc(node_def),
     value_text = trim_choice_prefix(current_text),
-    effect_title = build_choice_effect_title(node_def),
+    effect_title = '',
     effect_text = build_choice_effect_text(node_def),
   }
 end
