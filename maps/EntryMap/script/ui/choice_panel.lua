@@ -73,14 +73,7 @@ local function get_panel_hint(model)
 end
 
 local function build_badge_text(card_model)
-  local parts = {}
-  if card_model.badge_text and card_model.badge_text ~= '' then
-    parts[#parts + 1] = card_model.badge_text
-  end
-  if card_model.subtitle_text and card_model.subtitle_text ~= '' then
-    parts[#parts + 1] = card_model.subtitle_text
-  end
-  return table.concat(parts, ' ')
+  return card_model.badge_text or ''
 end
 
 local function build_title_text(card_model)
@@ -241,6 +234,7 @@ function M.create(env)
       button = button,
       icon = get_prefab_node(prefab, 'layout_1.icon'),
       name = get_prefab_node(prefab, 'layout_1.name'),
+      subtitle_name = get_prefab_node(prefab, 'layout_1.subtitle_name'),
       rarity_background = get_prefab_node(prefab, 'layout_1.rarity_background'),
       rarity_text = get_prefab_node(prefab, 'layout_1.rarity_background.rarity_text'),
       desc_root = get_prefab_node(prefab, 'layout_1.desc_text'),
@@ -470,6 +464,19 @@ function M.create(env)
             palette.title[3],
             palette.title[4]
           )
+        end
+        if card.subtitle_name then
+          local subtitle_visible = card_model.subtitle_text and card_model.subtitle_text ~= ''
+          card.subtitle_name:set_visible(subtitle_visible)
+          if subtitle_visible then
+            card.subtitle_name:set_text(card_model.subtitle_text)
+            card.subtitle_name:set_text_color(
+              palette.subtitle[1],
+              palette.subtitle[2],
+              palette.subtitle[3],
+              palette.subtitle[4]
+            )
+          end
         end
         if card.rarity_background then
           card.rarity_background:set_image_color(

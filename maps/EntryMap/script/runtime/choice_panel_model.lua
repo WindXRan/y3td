@@ -1,4 +1,3 @@
-local BondObjects = require 'entry_objects.bonds'
 local ui_res = require 'ui.res'
 
 local M = {}
@@ -9,8 +8,6 @@ local CHOICE_BADGE_TEXT = {
   epic = 'E',
   legendary = 'L',
 }
-
-local BOND_DEFS = BondObjects.defs_by_id
 
 local function get_choice_refresh_cost(paid_count)
   if (paid_count or 0) <= 0 then
@@ -44,6 +41,28 @@ local function build_choice_text_blocks(...)
     end
   end
   return blocks
+end
+
+local function build_bond_body_blocks(choice)
+  if choice and choice.body_blocks and #choice.body_blocks > 0 then
+    return choice.body_blocks
+  end
+
+  return build_choice_text_blocks(
+    {
+      text = (choice and choice.value_text) or (choice and choice.current_text) or (choice and choice.desc_text) or '',
+      color = 'green',
+    },
+    choice and choice.effect_title and {
+      text = choice.effect_title,
+      color = 'gold',
+      kind = 'effect_title',
+    } or nil,
+    choice and choice.effect_text and {
+      text = choice.effect_text,
+      color = 'dim',
+    } or nil
+  )
 end
 
 function M.create(env)
@@ -112,8 +131,8 @@ function M.create(env)
         badge_text = is_unlock and 'N' or 'R',
         quality = is_unlock and 'rare' or 'common',
         icon_res = (upgrade and upgrade.ui_icon)
-          or (skill_def and skill_def.ui_icon)
-          or get_choice_default_icon('upgrade', is_unlock and 'rare' or 'common'),
+            or (skill_def and skill_def.ui_icon)
+            or get_choice_default_icon('upgrade', is_unlock and 'rare' or 'common'),
         title_text = is_unlock and '新技能' or (skill_def and skill_def.name) or (upgrade.tag or '强化'),
         progress_text = '',
         subtitle_text = upgrade.name,
@@ -129,33 +148,16 @@ function M.create(env)
   local function build_bond_choice_cards()
     local runtime = STATE.bond_runtime
     local cards = {}
-    local slots_full = runtime and #(runtime.slots or {}) >= 7
-    for index, card in ipairs(runtime and runtime.current_choices or {}) do
-      local bond = BOND_DEFS[card.bond_id]
-      local current_count = BondSystem.get_progress_count(STATE, card.bond_id)
-      local next_count = bond and math.min(bond.required_count, current_count + 1) or current_count
+    for index, choice in ipairs(runtime and runtime.current_choices or {}) do
       cards[#cards + 1] = {
         index = index,
-        badge_text = get_choice_badge_text(card.quality),
-        quality = card.quality or 'common',
-        icon_res = card.ui_icon or get_choice_default_icon('bond', card.quality),
-        title_text = bond and bond.name or '羁绊',
-        progress_text = bond and string.format('(%d/%d)', next_count, bond.required_count) or '',
-        subtitle_text = card.name,
-        body_blocks = build_choice_text_blocks(
-          {
-            text = card.base_effect_desc or '',
-            color = 'green',
-          },
-          bond and {
-            text = '激活套装效果：' .. tostring(bond.bond_effect_desc or ''),
-            color = 'gold',
-          } or nil,
-          slots_full and {
-            text = '羁绊位已满，选择后会自动吞噬推荐旧卡。',
-            color = 'dim',
-          } or nil
-        ),
+        badge_text = get_choice_badge_text(choice.quality),
+        quality = choice.quality or 'rare',
+        icon_res = choice.ui_icon or get_choice_default_icon('bond', choice.quality),
+        title_text = choice.title_text or choice.display_name or '羁绊节点',
+        progress_text = choice.progress_text or '',
+        subtitle_text = choice.subtitle_text or '',
+        body_blocks = build_bond_body_blocks(choice),
       }
     end
     return cards
@@ -270,7 +272,7 @@ function M.create(env)
 
     if kind == 'bond' then
       local runtime = STATE.bond_runtime
-      local round = runtime and runtime.current_round or {
+      local round = runtime and (runtime.current_offer_round or runtime.current_round) or {
         free_refresh_left = 0,
         refresh_paid_count = 0,
       }
@@ -289,7 +291,7 @@ function M.create(env)
 
     if kind == 'treasure' then
       local runtime = STATE.treasure_runtime
-      local round = runtime and runtime.current_round or {
+      local round = runtime and (runtime.current_offer_round or runtime.current_round) or {
         free_refresh_left = 3,
         refresh_paid_count = 0,
       }

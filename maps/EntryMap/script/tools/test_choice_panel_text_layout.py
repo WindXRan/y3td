@@ -39,6 +39,7 @@ def main() -> None:
         'choice_panel.layout_1.button',
         'choice_panel.layout_1.icon',
         'choice_panel.layout_1.name',
+        'choice_panel.layout_1.subtitle_name',
         'choice_panel.layout_1.rarity_background.rarity_text',
         'choice_panel.layout_1.desc_text.value_desc',
         'choice_panel.layout_1.desc_text.effect_desc.effect_name',
@@ -66,6 +67,7 @@ def main() -> None:
     assert_contains(panel_content, 'y3.ui_prefab.create(player, \'choice_button\', parent)', '底部操作按钮应改为创建 choice_button prefab')
     assert_contains(panel_content, "layout_1.label_2", '底部操作按钮应绑定占位文本节点 label_2')
     assert_contains(panel_content, "layout_1.desc_text.value_desc", '面板应绑定 value_desc 节点')
+    assert_contains(panel_content, "layout_1.subtitle_name", '面板应绑定 subtitle_name 节点')
     assert_contains(panel_content, "layout_1.desc_text.effect_desc.effect_text", '面板应绑定 effect_text 节点')
 
     assert_contains(panel_layout_content, 'y = 36', '底部按钮应整体下移到新的 y 坐标')

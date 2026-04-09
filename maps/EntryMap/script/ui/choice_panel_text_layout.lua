@@ -50,28 +50,37 @@ end
 local function split_body_blocks(body_blocks)
   local value_blocks = {}
   local effect_blocks = {}
+  local effect_title = ''
   local effect_mode = false
 
   for _, block in ipairs(body_blocks or {}) do
-    if not effect_mode and EFFECT_TRIGGER_COLORS[block.color or ''] then
+    if block.kind == 'effect_title' then
       effect_mode = true
-    end
-
-    if effect_mode then
+      effect_title = block.text or effect_title
+    elseif block.kind == 'effect' then
+      effect_mode = true
       push_text(effect_blocks, block, MAX_EFFECT_LINES)
     else
-      if not push_text(value_blocks, block, MAX_VALUE_LINES) then
+      if not effect_mode and EFFECT_TRIGGER_COLORS[block.color or ''] then
         effect_mode = true
+      end
+
+      if effect_mode then
         push_text(effect_blocks, block, MAX_EFFECT_LINES)
+      else
+        if not push_text(value_blocks, block, MAX_VALUE_LINES) then
+          effect_mode = true
+          push_text(effect_blocks, block, MAX_EFFECT_LINES)
+        end
       end
     end
   end
 
-  return value_blocks, effect_blocks
+  return value_blocks, effect_blocks, effect_title
 end
 
 function M.build_text_layout(body_blocks)
-  local value_blocks, effect_blocks = split_body_blocks(body_blocks)
+  local value_blocks, effect_blocks, effect_title = split_body_blocks(body_blocks)
 
   if #value_blocks == 0 and #effect_blocks == 0 then
     return {
@@ -92,7 +101,7 @@ function M.build_text_layout(body_blocks)
         value_text = join_text_lines(effect_blocks),
         value_color = pick_value_color(value_blocks, effect_blocks),
         effect_visible = false,
-        effect_title = '',
+        effect_title = effect_title or '',
         effect_text = '',
         effect_color = 'white',
       }
@@ -113,7 +122,7 @@ function M.build_text_layout(body_blocks)
       value_text = join_text_lines(folded_value),
       value_color = pick_value_color(folded_value, folded_effect),
       effect_visible = #folded_effect > 0,
-      effect_title = #folded_effect > 0 and '效果' or '',
+      effect_title = #folded_effect > 0 and ((effect_title and effect_title ~= '') and effect_title or '效果') or '',
       effect_text = join_text_lines(folded_effect),
       effect_color = pick_effect_color(folded_effect),
     }
@@ -124,7 +133,7 @@ function M.build_text_layout(body_blocks)
     value_text = join_text_lines(value_blocks),
     value_color = pick_value_color(value_blocks, effect_blocks),
     effect_visible = #effect_blocks > 0,
-    effect_title = #effect_blocks > 0 and '效果' or '',
+    effect_title = #effect_blocks > 0 and ((effect_title and effect_title ~= '') and effect_title or '效果') or '',
     effect_text = join_text_lines(effect_blocks),
     effect_color = pick_effect_color(effect_blocks),
   }
