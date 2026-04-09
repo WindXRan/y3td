@@ -23,6 +23,20 @@
      "5ef33a2b-5d51-42ca-8c25-e3f9cd1b430c", 
      "\u65b0\u5efa\u81ea\u5b9a\u4e49\u6a21\u5757"
     ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "bfb24852-8e01-4511-966c-c55d1ac93ac1", 
+     "resource"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "5939daf8-fbcb-49af-92d6-d136b73815c3", 
+     "tophud"
+    ]
    }
   ]
  }, 

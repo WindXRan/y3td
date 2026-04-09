@@ -11,8 +11,8 @@ function M.create(env)
   local unlock_attack_skill = env.unlock_attack_skill
   local sync_basic_attack_ability = env.sync_basic_attack_ability
   local build_attack_skill_slot_text = env.build_attack_skill_slot_text
-  local is_bond_active = env.is_bond_active
   local has_active_treasure = env.has_active_treasure
+  local collect_bond_route_tags = env.collect_bond_route_tags
   local UPGRADE_FREE_REFRESH_COUNT = 3
 
   local function get_refresh_cost(paid_count)
@@ -442,13 +442,9 @@ function M.create(env)
       end
     end
 
-    for _, bond_id in ipairs({
-      'barrage', 'hunter', 'armor_break', 'arcane', 'burn', 'cold_tide',
-      'shock', 'resonance', 'chain', 'tailwind', 'blessing', 'berserk',
-      'growth', 'fortress', 'blood_pact', 'guardian',
-    }) do
-      if is_bond_active and is_bond_active(bond_id) then
-        tags[bond_id] = true
+    if collect_bond_route_tags then
+      for tag in pairs(collect_bond_route_tags() or {}) do
+        tags[tag] = true
       end
     end
 
@@ -464,14 +460,34 @@ function M.create(env)
     return tags
   end
 
-  local function get_regular_upgrade_weight(upgrade)
+  local function get_route_match_factor(route_tags, build_tags)
+    local match_count = 0
+
+    for _, tag in ipairs(route_tags or {}) do
+      if build_tags[tag] then
+        match_count = match_count + 1
+      end
+    end
+
+    if match_count <= 0 then
+      return 1.0
+    end
+    if match_count == 1 then
+      return 1.30
+    end
+    if match_count == 2 then
+      return 1.50
+    end
+    return 1.65
+  end
+
+  local function get_regular_upgrade_weight(upgrade, build_tags)
     local base_weight = upgrade.weight or 1
     local factor = 1.0
 
     local skill_id = upgrade.skill_id
     local wave_index = get_upgrade_balance_wave_index()
     local picked_count = get_skill_regular_upgrade_pick_count(skill_id)
-    local route_tags = build_upgrade_route_tags()
 
     if picked_count > 0 then
       factor = factor * 1.20
@@ -491,12 +507,7 @@ function M.create(env)
       factor = factor * 1.50
     end
 
-    for _, tag in ipairs(upgrade.route_tags or {}) do
-      if route_tags[tag] then
-        factor = factor * 1.30
-        break
-      end
-    end
+    factor = factor * get_route_match_factor(upgrade.route_tags, build_tags)
 
     if skill_id == 'basic_attack' and wave_index <= 2 then
       factor = factor * 1.15
@@ -505,11 +516,11 @@ function M.create(env)
     return base_weight * math.min(factor, 2.5)
   end
 
-  local function get_upgrade_effective_weight(upgrade)
+  local function get_upgrade_effective_weight(upgrade, build_tags)
     if is_unlock_upgrade(upgrade) then
-      return upgrade.weight or 1
+      return (upgrade.weight or 1) * get_route_match_factor(upgrade.route_tags, build_tags)
     end
-    return get_regular_upgrade_weight(upgrade)
+    return get_regular_upgrade_weight(upgrade, build_tags)
   end
 
   local function count_distinct_skill_ids(pool)
@@ -545,11 +556,12 @@ function M.create(env)
       return nil
     end
 
+    local build_tags = build_upgrade_route_tags()
     local total_weight = 0
     local candidates = {}
     for index, upgrade in ipairs(pool) do
       if not avoid_skill_id or upgrade.skill_id ~= avoid_skill_id then
-        local weight = math.max(0.01, get_upgrade_effective_weight(upgrade))
+        local weight = math.max(0.01, get_upgrade_effective_weight(upgrade, build_tags))
         total_weight = total_weight + weight
         candidates[#candidates + 1] = {
           index = index,

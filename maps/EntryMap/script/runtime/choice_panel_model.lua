@@ -53,11 +53,6 @@ local function build_bond_body_blocks(choice)
       text = (choice and choice.value_text) or (choice and choice.current_text) or (choice and choice.desc_text) or '',
       color = 'green',
     },
-    choice and choice.effect_title and {
-      text = choice.effect_title,
-      color = 'gold',
-      kind = 'effect_title',
-    } or nil,
     choice and choice.effect_text and {
       text = choice.effect_text,
       color = 'dim',
@@ -149,6 +144,12 @@ function M.create(env)
     local runtime = STATE.bond_runtime
     local cards = {}
     for index, choice in ipairs(runtime and runtime.current_choices or {}) do
+      local title_text = choice.display_name or choice.title_text or 'bond'
+      local subtitle_text = choice.subtitle_text or ''
+      if subtitle_text == title_text then
+        subtitle_text = ''
+      end
+
       cards[#cards + 1] = {
         index = index,
         badge_text = get_choice_badge_text(choice.quality),
@@ -157,6 +158,8 @@ function M.create(env)
         title_text = choice.title_text or choice.display_name or '羁绊节点',
         progress_text = choice.progress_text or '',
         subtitle_text = choice.subtitle_text or '',
+        title_text = title_text,
+        subtitle_text = subtitle_text,
         body_blocks = build_bond_body_blocks(choice),
       }
     end

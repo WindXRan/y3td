@@ -16,6 +16,8 @@ function M.create(env)
   local grant_bond_card = env.grant_bond_card
   local grant_treasure = env.grant_treasure
   local dump_temporary_treasures = env.dump_temporary_treasures
+  local effect_debug_system = env.effect_debug_system
+  local force_trigger_effect = env.force_trigger_effect
 
   local api = {}
 
@@ -196,6 +198,84 @@ function M.create(env)
     for _, line in ipairs(lines) do
       debug_message(line)
     end
+  end
+
+  function api.debug_open_effect_debug_panel()
+    if not guard_battle() then
+      return
+    end
+    debug_message('特效调试面板已打开。')
+  end
+
+  function api.debug_select_effect(effect_id)
+    if not guard_battle() then
+      return
+    end
+    local ok, result = effect_debug_system.select_effect(effect_id)
+    debug_message(ok and ('已选中特效：' .. tostring(result)) or tostring(result))
+  end
+
+  function api.debug_mount_effect(effect_id)
+    if not guard_battle() then
+      return
+    end
+    local ok, result = effect_debug_system.mount_effect(effect_id)
+    debug_message(ok and result or result)
+  end
+
+  function api.debug_unmount_effect(effect_id)
+    if not guard_battle() then
+      return
+    end
+    local ok, result = effect_debug_system.unmount_effect(effect_id)
+    debug_message(ok and result or result)
+  end
+
+  function api.debug_clear_mounted_effects()
+    if not guard_battle() then
+      return
+    end
+    local ok, result = effect_debug_system.clear_mounted_effects()
+    debug_message(ok and result or result)
+  end
+
+  function api.debug_trigger_effect(effect_id)
+    if not guard_battle() then
+      return
+    end
+
+    local selected_id = effect_id or effect_debug_system.get_selected_effect_id()
+    local ok, snapshot_or_err = force_trigger_effect(selected_id)
+    local effect_name = selected_id or 'unknown'
+    if ok then
+      effect_debug_system.push_log(
+        'trigger',
+        selected_id,
+        'success',
+        string.format('cd=%.2f', snapshot_or_err.cooldown or 0)
+      )
+      debug_message(string.format('特效触发成功：%s', effect_name))
+      return
+    end
+
+    local reason = type(snapshot_or_err) == 'table' and snapshot_or_err.last_reason or tostring(snapshot_or_err)
+    effect_debug_system.push_log('trigger', selected_id, 'failed', reason or '')
+    debug_message(string.format('特效触发失败：%s (%s)', effect_name, tostring(reason)))
+  end
+
+  function api.debug_start_effect_observe(effect_id)
+    if not guard_battle() then
+      return
+    end
+    local ok, result = effect_debug_system.start_observe(effect_id, 10)
+    debug_message(ok and result or result)
+  end
+
+  function api.debug_print_effect_logs()
+    if not guard_battle() then
+      return
+    end
+    effect_debug_system.print_logs(8)
   end
 
   return api

@@ -10,13 +10,13 @@ function M.create(env)
   local get_player = env.get_player
   local get_hero_point = env.get_hero_point
   local get_bond_runtime_bonus = env.get_bond_runtime_bonus
-  local is_bond_active = env.is_bond_active
   local is_active_enemy = env.is_active_enemy
   local create_attack_skill_instance = env.create_attack_skill_instance
   local deal_skill_damage = env.deal_skill_damage
   local get_damage_bonus_multiplier = env.get_damage_bonus_multiplier
   local get_enemies_in_range = env.get_enemies_in_range
   local try_trigger_hunter_first_hit = env.try_trigger_hunter_first_hit
+  local notify_bond_attack_skill_cast = env.notify_bond_attack_skill_cast
   local notify_auto_active_basic_attack = env.notify_auto_active_basic_attack
   local notify_auto_active_skill_cast = env.notify_auto_active_skill_cast
 
@@ -1076,8 +1076,8 @@ function M.create(env)
       return
     end
   
-    if STATE.bond_runtime and is_bond_active('arcane') then
-      STATE.bond_runtime.arcane_empower_remaining = 3
+    if notify_bond_attack_skill_cast then
+      notify_bond_attack_skill_cast(skill, target)
     end
     if notify_auto_active_skill_cast then
       notify_auto_active_skill_cast(skill, target)
@@ -1111,6 +1111,10 @@ function M.create(env)
     end
   
     local cast_times = math.max(1, skill.repeat_count or 1)
+    local skill_echo_chance = math.max(0, get_bond_runtime_bonus('skill_echo_chance') or 0)
+    if skill_echo_chance > 0 and math.random() <= math.min(1, skill_echo_chance) then
+      cast_times = cast_times + 1
+    end
     for cast_index = 1, cast_times, 1 do
       local target = cast_index == 1 and first_target or pick_skill_target(skill)
       if not target then

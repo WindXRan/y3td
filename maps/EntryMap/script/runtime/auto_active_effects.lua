@@ -6,23 +6,49 @@ function M.create(env)
   local STATE = env.STATE
   local y3 = env.y3
   local ATTACK_SKILL_VFX = env.ATTACK_SKILL_VFX
-  local get_player = env.get_player
-  local is_bond_active = env.is_bond_active
+  local has_bond_route_tag = env.has_bond_route_tag
+  local is_debug_effect_mounted = env.is_debug_effect_mounted
   local is_active_enemy = env.is_active_enemy
   local get_enemies_in_range = env.get_enemies_in_range
   local deal_skill_damage = env.deal_skill_damage
   local heal_hero = env.heal_hero
-
   local EFFECT_LIST = EffectObjects.list
+  local MODIFIER_KEYS = {
+    stun = 117,
+    fighting_spirit = nil,
+  }
 
   local function get_runtime()
     if not STATE.auto_active_effects then
       STATE.auto_active_effects = {
         cooldowns = {},
         counters = {},
+        last_trigger_result = {},
+        last_modifier_apply = {},
+        temp_attr_bonuses = {},
+        temp_target_bonuses = {},
+        pending_skill_resets = {},
       }
     end
     return STATE.auto_active_effects
+  end
+
+  local function set_last_trigger_result(effect_id, result, reason)
+    get_runtime().last_trigger_result[effect_id] = {
+      result = result or 'none',
+      reason = reason or '',
+    }
+  end
+
+  local function record_modifier_apply(effect_id, buff_key, buff, reason)
+    if not effect_id then
+      return
+    end
+    get_runtime().last_modifier_apply[effect_id] = {
+      modifier_key = buff_key or 0,
+      success = buff ~= nil,
+      reason = reason or (buff and 'success' or 'failed'),
+    }
   end
 
   local function get_effect_cooldown(effect_id)
@@ -39,13 +65,20 @@ function M.create(env)
     return runtime.counters[effect_id]
   end
 
+  local function set_effect_counter(effect_id, value)
+    get_runtime().counters[effect_id] = value or 0
+  end
+
   local function reset_effect_counter(effect_id)
     get_runtime().counters[effect_id] = 0
   end
 
   local function is_source_active(def)
+    if def and is_debug_effect_mounted and is_debug_effect_mounted(def.id) then
+      return true
+    end
     if def.source_type == 'bond' then
-      return is_bond_active(def.source_id)
+      return has_bond_route_tag and has_bond_route_tag(def.source_id) or false
     end
     if def.source_type == 'treasure' then
       return STATE.treasure_runtime
@@ -62,18 +95,35 @@ function M.create(env)
     return false
   end
 
-  local function get_attack_damage_base()
-    if not STATE.hero or not STATE.hero:is_exist() then
+  local function get_unit_attr(unit, attr_name)
+    if not unit or not unit.is_exist or not unit:is_exist() then
       return 0
     end
-    return math.max(1, y3.helper.tonumber(STATE.hero:get_attr('物理攻击')) or 0)
+    return y3.helper.tonumber(unit:get_attr(attr_name)) or 0
+  end
+
+  local function get_attack_damage_base()
+    return math.max(1, get_unit_attr(STATE.hero, '物理攻击'))
+  end
+
+  local function get_intelligence()
+    return math.max(1, get_unit_attr(STATE.hero, '智力'))
+  end
+
+  local function get_strength()
+    return math.max(1, get_unit_attr(STATE.hero, '力量'))
   end
 
   local function get_hero_max_hp()
+    return math.max(1, get_unit_attr(STATE.hero, '最大生命'))
+  end
+
+  local function get_hero_hp_ratio()
     if not STATE.hero or not STATE.hero:is_exist() then
-      return 0
+      return 1
     end
-    return math.max(1, y3.helper.tonumber(STATE.hero:get_attr('最大生命')) or 0)
+    local max_hp = get_hero_max_hp()
+    return math.max(0, math.min(1, STATE.hero:get_hp() / max_hp))
   end
 
   local function get_target_hp_ratio(target)
@@ -82,6 +132,24 @@ function M.create(env)
     end
     local max_hp = math.max(1, y3.helper.tonumber(target:get_attr('最大生命')) or 1)
     return math.max(0, target:get_hp() / max_hp)
+  end
+
+  local function get_target_max_hp(target)
+    return math.max(1, get_unit_attr(target, '最大生命'))
+  end
+
+  local function get_initial_skill_count()
+    if not STATE.attack_skill_state or not STATE.attack_skill_state.slots then
+      return 0
+    end
+    local count = 0
+    for slot = 1, 4, 1 do
+      local skill = STATE.attack_skill_state.slots[slot]
+      if skill and skill.id ~= 'basic_attack' then
+        count = count + 1
+      end
+    end
+    return count
   end
 
   local function play_particle_on_unit(unit, effect_key, scale, time, socket)
@@ -126,6 +194,28 @@ function M.create(env)
     if STATE.hero and STATE.hero:is_exist() then
       STATE.hero:play_animation('attack1', 1.0, nil, nil, false, true)
     end
+  end
+
+  local function try_add_buff(effect_id, unit, buff_key, duration, source)
+    if not buff_key or buff_key == 0 then
+      record_modifier_apply(effect_id, buff_key, nil, 'invalid_modifier_key')
+      return nil
+    end
+    if not unit or not unit.is_exist or not unit:is_exist() or not unit.add_buff then
+      record_modifier_apply(effect_id, buff_key, nil, 'invalid_target')
+      return nil
+    end
+    local ok, buff = pcall(unit.add_buff, unit, {
+      key = buff_key,
+      source = source or STATE.hero,
+      time = duration or 0,
+    })
+    if ok then
+      record_modifier_apply(effect_id, buff_key, buff, buff and 'success' or 'nil_buff')
+      return buff
+    end
+    record_modifier_apply(effect_id, buff_key, nil, 'pcall_failed')
+    return nil
   end
 
   local function launch_projectile_to_target(vfx, target, on_finish)
@@ -229,93 +319,264 @@ function M.create(env)
     return hit_any
   end
 
-  local function trigger_chain_pulse(def)
+  local function sync_temp_attr_bonus(effect_id, attr_pack, duration)
+    local runtime = get_runtime()
+    local active = runtime.temp_attr_bonuses[effect_id]
+    if not active then
+      active = {
+        attr = {},
+        remaining = 0,
+      }
+      runtime.temp_attr_bonuses[effect_id] = active
+    end
+
+    local hero = STATE.hero
+    local seen = {}
+    if hero and hero:is_exist() then
+      for attr_name, value in pairs(attr_pack or {}) do
+        seen[attr_name] = true
+        local previous = active.attr[attr_name] or 0
+        local delta = value - previous
+        if delta ~= 0 then
+          hero:add_attr(attr_name, delta)
+        end
+        active.attr[attr_name] = value
+      end
+      for attr_name, previous in pairs(active.attr) do
+        if not seen[attr_name] and previous ~= 0 then
+          hero:add_attr(attr_name, -previous)
+          active.attr[attr_name] = nil
+        end
+      end
+    else
+      active.attr = attr_pack or {}
+    end
+    active.remaining = math.max(active.remaining or 0, duration or 0)
+  end
+
+  local function clear_temp_attr_bonus(effect_id)
+    local runtime = get_runtime()
+    local active = runtime.temp_attr_bonuses[effect_id]
+    if not active then
+      return
+    end
+
+    if STATE.hero and STATE.hero:is_exist() then
+      for attr_name, value in pairs(active.attr or {}) do
+        if value ~= 0 then
+          STATE.hero:add_attr(attr_name, -value)
+        end
+      end
+    end
+    runtime.temp_attr_bonuses[effect_id] = nil
+  end
+
+  local function apply_target_attr_bonus(effect_id, unit, attr_pack, duration)
+    if not unit or not unit:is_exist() then
+      return
+    end
+    local runtime = get_runtime()
+    runtime.temp_target_bonuses[effect_id] = runtime.temp_target_bonuses[effect_id] or {}
+    local effect_bonuses = runtime.temp_target_bonuses[effect_id]
+    local active = effect_bonuses[unit]
+    if not active then
+      active = {
+        attr = {},
+        remaining = 0,
+      }
+      effect_bonuses[unit] = active
+    end
+
+    if next(active.attr or {}) == nil then
+      for attr_name, value in pairs(attr_pack or {}) do
+        if value ~= 0 then
+          unit:add_attr(attr_name, value)
+        end
+        active.attr[attr_name] = value
+      end
+    end
+    active.remaining = math.max(active.remaining or 0, duration or 0)
+  end
+
+  local function clear_target_attr_bonus(effect_id, unit)
+    local runtime = get_runtime()
+    local effect_bonuses = runtime.temp_target_bonuses[effect_id]
+    local active = effect_bonuses and effect_bonuses[unit] or nil
+    if not active then
+      return
+    end
+    if unit and unit:is_exist() then
+      for attr_name, value in pairs(active.attr or {}) do
+        if value ~= 0 then
+          unit:add_attr(attr_name, -value)
+        end
+      end
+    end
+    effect_bonuses[unit] = nil
+  end
+
+  local function tick_temp_bonuses(dt)
+    local runtime = get_runtime()
+
+    for effect_id, active in pairs(runtime.temp_attr_bonuses) do
+      active.remaining = (active.remaining or 0) - dt
+      if active.remaining <= 0 then
+        clear_temp_attr_bonus(effect_id)
+      end
+    end
+
+    for effect_id, effect_bonuses in pairs(runtime.temp_target_bonuses) do
+      for unit, active in pairs(effect_bonuses) do
+        active.remaining = (active.remaining or 0) - dt
+        if active.remaining <= 0 or not unit or not unit:is_exist() then
+          clear_target_attr_bonus(effect_id, unit)
+        end
+      end
+      if next(effect_bonuses) == nil then
+        runtime.temp_target_bonuses[effect_id] = nil
+      end
+    end
+  end
+
+  local function tick_pending_skill_resets()
+    local runtime = get_runtime()
+    if not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
+      return
+    end
+    for skill_id, should_reset in pairs(runtime.pending_skill_resets) do
+      if should_reset then
+        local skill = STATE.attack_skill_state.by_id[skill_id]
+        if skill then
+          skill.cooldown_remaining = 0
+        end
+      end
+      runtime.pending_skill_resets[skill_id] = nil
+    end
+  end
+
+  local function trigger_spell_burst(def)
     local target = pick_nearest_enemy(def.range)
     if not target then
       return false
     end
 
+    local is_amp_active = has_bond_route_tag and has_bond_route_tag('auto_spell_burst_amp') or false
+    local burst_count = 1 + (is_amp_active and get_initial_skill_count() or 0)
+    local radius = (def.radius or 300) + (is_amp_active and 150 or 0)
+    local damage = get_intelligence() * (def.damage_ratio or 2.0)
     local vfx = ATTACK_SKILL_VFX[def.vfx]
-    local damage = get_attack_damage_base() * (def.primary_ratio or 1)
+
     play_hero_cast_animation()
-    play_particle_on_point(target:get_point(), vfx and vfx.charge_particle or nil, vfx and vfx.charge_scale or 1, vfx and vfx.charge_time or 0.2, 160)
-    y3.ltimer.wait(vfx and vfx.strike_delay or 0.12, function()
-      if not STATE.hero or not STATE.hero:is_exist() then
-        return
+    play_particle_on_unit(STATE.hero, vfx and vfx.cast_particle or nil, vfx and vfx.cast_scale or 1, vfx and vfx.cast_time or 0.2, 'origin')
+    for _ = 1, burst_count, 1 do
+      local resolved_target = pick_nearest_enemy(def.range) or target
+      if resolved_target and resolved_target:is_exist() then
+        local center = resolved_target:get_point()
+        play_particle_on_point(center, vfx and vfx.explosion_particle or vfx and vfx.impact_particle or nil, 1.15, 0.35, 12)
+        damage_enemies_in_radius(center, radius, damage, '魔法')
       end
-      play_particle_on_point(target:get_point(), vfx and vfx.impact_particle or nil, vfx and vfx.impact_scale or 1, vfx and vfx.impact_time or 0.35, 0)
-      if is_active_enemy(target) then
-        deal_skill_damage(target, damage, '法术', {
-          text_type = 'magic',
-        })
-      end
-      local bounced = 0
-      for _, unit in ipairs(get_enemies_in_range(target, def.chain_radius or 420, target, def.chain_bounces or 0)) do
-        play_particle_on_point(unit:get_point(), vfx and vfx.chain_particle or nil, vfx and vfx.chain_scale or 1, vfx and vfx.chain_time or 0.25, 0)
-        deal_skill_damage(unit, damage * (def.chain_ratio or 0.7), '法术', {
-          text_type = 'magic',
-        })
-        bounced = bounced + 1
-        if bounced >= (def.chain_bounces or 0) then
-          break
-        end
-      end
-    end)
+    end
     return true
   end
 
-  local function trigger_frost_ring(def)
+  local function trigger_haste_reset(def, context)
+    local skill = context and context.skill or nil
+    if not skill or skill.id == 'basic_attack' then
+      return false
+    end
+    if math.random() > math.max(0, math.min(1, def.chance or 0)) then
+      return false
+    end
+    get_runtime().pending_skill_resets[skill.id] = true
+    local vfx = ATTACK_SKILL_VFX[def.vfx]
+    play_particle_on_unit(STATE.hero, vfx and vfx.cast_particle or vfx and vfx.impact_particle or nil, 1.0, 0.25, 'origin')
+    return true
+  end
+
+  local function trigger_fighting_spirit_field(def)
     if not STATE.hero or not STATE.hero:is_exist() then
       return false
     end
 
     local vfx = ATTACK_SKILL_VFX[def.vfx]
-    local damage = get_attack_damage_base() * (def.damage_ratio or 1)
-    play_hero_cast_animation()
-    play_particle_on_unit(STATE.hero, vfx and vfx.cast_particle or vfx and vfx.impact_particle or nil, 1.1, 0.35, 'origin')
+    local base_damage = get_strength() * (def.damage_ratio or 0.60)
     local hit_any = false
-    for _, unit in ipairs(get_enemies_in_range(STATE.hero, def.radius or 260, nil, 18)) do
-      play_particle_on_unit(unit, vfx and vfx.impact_particle or nil, 1.0, 0.30, 'origin')
-      deal_skill_damage(unit, damage, '法术', {
-        text_type = 'magic',
-      })
-      hit_any = true
+    play_particle_on_unit(STATE.hero, vfx and vfx.cast_particle or vfx and vfx.impact_particle or nil, 1.15, 0.30, 'origin')
+
+    for _, unit in ipairs(get_enemies_in_range(STATE.hero, def.radius or 1200, nil, 30)) do
+      if is_active_enemy(unit) then
+        local extra_damage = get_target_max_hp(unit) * (def.extra_hp_ratio or 0)
+        deal_skill_damage(unit, base_damage + extra_damage, '物理', {
+          text_type = 'physics',
+        })
+
+        local armor_delta = -get_unit_attr(unit, '护甲') * (def.armor_reduction_ratio or 0)
+        local attack_delta = -get_unit_attr(unit, '物理攻击') * (def.attack_reduction_ratio or 0)
+        apply_target_attr_bonus(def.id, unit, {
+          ['护甲'] = armor_delta,
+          ['物理攻击'] = attack_delta,
+        }, 1.25)
+        try_add_buff(def.id, unit, def.modifier_key or MODIFIER_KEYS.fighting_spirit, 1.25)
+        hit_any = true
+      end
     end
     return hit_any
   end
 
-  local function trigger_ember_volley(def)
+  local function trigger_rapid_overdrive(def)
+    if math.random() > math.max(0, math.min(1, def.chance or 0)) then
+      return false
+    end
+    sync_temp_attr_bonus(def.id, {
+      ['攻击速度'] = def.attack_speed_bonus or 100,
+    }, def.duration or 5.0)
+    local vfx = ATTACK_SKILL_VFX[def.vfx]
+    play_particle_on_unit(STATE.hero, vfx and vfx.cast_particle or vfx and vfx.impact_particle or nil, 1.05, 0.25, 'origin')
+    return true
+  end
+
+  local function trigger_blood_demon_burst(def)
     if not STATE.hero or not STATE.hero:is_exist() then
       return false
     end
 
-    local vfx = ATTACK_SKILL_VFX[def.vfx]
-    local targets = get_enemies_in_range(STATE.hero, def.range or 900, nil, def.volley_count or 3)
-    if #targets == 0 then
+    local threshold_step = math.max(0.01, def.threshold_step or 0.35)
+    local missing_ratio = 1 - get_hero_hp_ratio()
+    local reached_bucket = math.floor(missing_ratio / threshold_step)
+    local last_bucket = get_runtime().counters[def.id] or 0
+    if reached_bucket <= last_bucket then
+      set_effect_counter(def.id, reached_bucket)
       return false
     end
 
-    local damage = get_attack_damage_base() * (def.damage_ratio or 1)
-    play_hero_cast_animation()
-    play_particle_on_unit(STATE.hero, vfx and vfx.cast_particle or nil, vfx and vfx.cast_scale or 1, vfx and vfx.cast_time or 0.2, 'origin')
-    for _, target in ipairs(targets) do
-      launch_projectile_to_target(vfx, target, function(impact_point)
-        local center = impact_point or (target and target:is_exist() and target:get_point() or nil)
-        if center and vfx and vfx.explosion_particle then
-          play_particle_on_point(center, vfx.explosion_particle, vfx.explosion_scale, vfx.explosion_time, 10)
-        elseif center and vfx and vfx.impact_particle then
-          play_particle_on_point(center, vfx.impact_particle, vfx.impact_scale, vfx.impact_time, 10)
-        end
-        if is_active_enemy(target) then
-          deal_skill_damage(target, damage, '物理', {
+    local vfx = ATTACK_SKILL_VFX[def.vfx]
+    local burst_times = reached_bucket - last_bucket
+    local hit_any = false
+    for _ = 1, burst_times, 1 do
+      heal_hero(get_hero_max_hp() * (def.heal_ratio or 0.20))
+      play_particle_on_unit(STATE.hero, vfx and vfx.cast_particle or vfx and vfx.impact_particle or nil, 1.2, 0.35, 'origin')
+      for _, unit in ipairs(get_enemies_in_range(STATE.hero, def.blast_radius or 320, nil, 16)) do
+        if is_active_enemy(unit) then
+          deal_skill_damage(unit, get_target_max_hp(unit) * (def.damage_ratio or 0.50), '物理', {
             text_type = 'physics',
           })
+          try_add_buff(def.id, unit, MODIFIER_KEYS.stun, 1.0)
+          apply_target_attr_bonus(def.id, unit, {
+            ['攻击速度'] = -500,
+            ['移动速度'] = -500,
+          }, 1.0)
+          hit_any = true
         end
-        if center and (def.splash_radius or 0) > 0 and (def.splash_ratio or 0) > 0 then
-          damage_enemies_in_radius(center, def.splash_radius, damage * def.splash_ratio, '物理')
-        end
-      end)
+      end
     end
+    set_effect_counter(def.id, reached_bucket)
+    return hit_any
+  end
+
+  local function trigger_charge_breaker_rally(def)
+    sync_temp_attr_bonus(def.id, def.attr or {}, def.duration or 10.0)
+    local vfx = ATTACK_SKILL_VFX[def.vfx]
+    play_particle_on_unit(STATE.hero, vfx and vfx.cast_particle or vfx and vfx.impact_particle or nil, 1.2, 0.35, 'origin')
     return true
   end
 
@@ -342,7 +603,7 @@ function M.create(env)
         play_particle_on_point(impact_point, vfx.impact_particle, vfx.impact_scale, vfx.impact_time, 18)
       end
       if is_active_enemy(target) then
-        deal_skill_damage(target, damage, '法术', {
+        deal_skill_damage(target, damage, '魔法', {
           text_type = 'magic',
         })
       end
@@ -391,7 +652,7 @@ function M.create(env)
         play_particle_on_point(impact_point, vfx.impact_particle, vfx.impact_scale, vfx.impact_time, 18)
       end
       if is_active_enemy(resolved_target) then
-        deal_skill_damage(resolved_target, damage, '法术', {
+        deal_skill_damage(resolved_target, damage, '魔法', {
           text_type = 'magic',
         })
       end
@@ -399,18 +660,47 @@ function M.create(env)
     return true
   end
 
-  local function try_trigger_effect(def, context)
-    if not def or not is_source_active(def) or get_effect_cooldown(def.id) > 0 then
+  local function get_effect_trigger_cooldown(def)
+    if not def then
+      return 0
+    end
+    if def.id == 'spell_burst' then
+      local cooldown = def.cooldown or 0
+      if has_bond_route_tag and has_bond_route_tag('auto_spell_burst_amp') then
+        cooldown = cooldown - 5
+      end
+      return math.max(1, cooldown)
+    end
+    return def.cooldown or 0
+  end
+
+  local function try_trigger_effect(def, context, options)
+    options = options or {}
+    if not def then
+      return false
+    end
+    if not options.ignore_source and not is_source_active(def) then
+      set_last_trigger_result(def.id, 'failed', 'inactive_source')
+      return false
+    end
+    if not options.ignore_cooldown and get_effect_cooldown(def.id) > 0 then
+      set_last_trigger_result(def.id, 'failed', 'cooldown')
       return false
     end
 
     local triggered = false
-    if def.id == 'chain_pulse' then
-      triggered = trigger_chain_pulse(def)
-    elseif def.id == 'frost_ring' then
-      triggered = trigger_frost_ring(def)
-    elseif def.id == 'ember_volley' then
-      triggered = trigger_ember_volley(def)
+    if def.id == 'spell_burst' then
+      triggered = trigger_spell_burst(def)
+    elseif def.id == 'haste_reset' then
+      triggered = trigger_haste_reset(def, context)
+    elseif def.id == 'fighting_spirit_field' then
+      triggered = trigger_fighting_spirit_field(def)
+    elseif def.id == 'rapid_overdrive' then
+      triggered = trigger_rapid_overdrive(def)
+    elseif def.id == 'blood_demon_burst' then
+      triggered = trigger_blood_demon_burst(def)
+    elseif def.id == 'charge_breaker_rally' then
+      triggered = trigger_charge_breaker_rally(def)
     elseif def.id == 'guardian_pulse' then
       triggered = trigger_guardian_pulse(def)
     elseif def.id == 'harvest_blade' then
@@ -424,9 +714,72 @@ function M.create(env)
     end
 
     if triggered then
-      set_effect_cooldown(def.id, def.cooldown or 0)
+      set_effect_cooldown(def.id, get_effect_trigger_cooldown(def))
+      set_last_trigger_result(def.id, 'success', '')
+    else
+      set_last_trigger_result(def.id, 'failed', 'no_target_or_condition')
     end
     return triggered
+  end
+
+  local function get_effect_runtime_snapshot(effect_id)
+    local runtime = get_runtime()
+    local def
+    for _, effect_def in ipairs(EFFECT_LIST) do
+      if effect_def.id == effect_id then
+        def = effect_def
+        break
+      end
+    end
+    local last = runtime.last_trigger_result[effect_id] or {}
+    local last_modifier_apply = clone_table(runtime.last_modifier_apply[effect_id] or {})
+    return {
+      active = def and is_source_active(def) or false,
+      cooldown = runtime.cooldowns[effect_id] or 0,
+      counter = runtime.counters[effect_id] or 0,
+      last_result = last.result or 'none',
+      last_reason = last.reason or '',
+      last_modifier_apply = last_modifier_apply,
+    }
+  end
+
+  local function clear_effect_runtime(effect_id)
+    local runtime = get_runtime()
+    runtime.cooldowns[effect_id] = nil
+    runtime.counters[effect_id] = nil
+    runtime.last_trigger_result[effect_id] = nil
+    runtime.last_modifier_apply[effect_id] = nil
+    runtime.pending_skill_resets[effect_id] = nil
+    clear_temp_attr_bonus(effect_id)
+    local target_bonuses = runtime.temp_target_bonuses[effect_id]
+    if target_bonuses then
+      for unit, _ in pairs(target_bonuses) do
+        clear_target_attr_bonus(effect_id, unit)
+      end
+      runtime.temp_target_bonuses[effect_id] = nil
+    end
+  end
+
+  local function force_trigger_effect(effect_id, context)
+    local def
+    for _, effect_def in ipairs(EFFECT_LIST) do
+      if effect_def.id == effect_id then
+        def = effect_def
+        break
+      end
+    end
+    if not def then
+      return false, 'unknown_effect'
+    end
+    local triggered = try_trigger_effect(def, context, {
+      ignore_source = true,
+      ignore_cooldown = true,
+    })
+    local snapshot = get_effect_runtime_snapshot(effect_id)
+    if triggered then
+      return true, snapshot
+    end
+    return false, snapshot
   end
 
   local function tick_cooldowns(dt)
@@ -444,6 +797,8 @@ function M.create(env)
     end
 
     tick_cooldowns(dt)
+    tick_temp_bonuses(dt)
+    tick_pending_skill_resets()
     for _, def in ipairs(EFFECT_LIST) do
       if def.trigger_type == 'periodic' then
         try_trigger_effect(def)
@@ -453,10 +808,19 @@ function M.create(env)
 
   local function handle_enemy_kill(info)
     for _, def in ipairs(EFFECT_LIST) do
-      if def.trigger_type == 'on_kill' then
-        try_trigger_effect(def, {
-          info = info,
-        })
+      if def.trigger_type == 'on_kill' and is_source_active(def) then
+        if (def.counter_required or 1) > 1 then
+          local count = add_effect_counter(def.id, 1)
+          if count >= (def.counter_required or 1) and try_trigger_effect(def, {
+            info = info,
+          }) then
+            reset_effect_counter(def.id)
+          end
+        else
+          try_trigger_effect(def, {
+            info = info,
+          })
+        end
       end
     end
   end
@@ -464,11 +828,19 @@ function M.create(env)
   local function handle_basic_attack_cast(target)
     for _, def in ipairs(EFFECT_LIST) do
       if def.trigger_type == 'on_basic_attack_count' and is_source_active(def) then
-        local count = add_effect_counter(def.id, 1)
-        if count >= (def.counter_required or 1) and try_trigger_effect(def, {
-          target = target,
-        }) then
-          reset_effect_counter(def.id)
+        if (def.counter_required or 1) > 1 then
+          local count = add_effect_counter(def.id, 1)
+          if count >= (def.counter_required or 1) and try_trigger_effect(def, {
+            target = target,
+          }) then
+            reset_effect_counter(def.id)
+          end
+        else
+          try_trigger_effect(def, {
+            target = target,
+          }, {
+            ignore_cooldown = true,
+          })
         end
       end
     end
@@ -483,6 +855,8 @@ function M.create(env)
         try_trigger_effect(def, {
           skill = skill,
           target = target,
+        }, {
+          ignore_cooldown = true,
         })
       end
     end
@@ -493,6 +867,12 @@ function M.create(env)
     handle_enemy_kill = handle_enemy_kill,
     handle_basic_attack_cast = handle_basic_attack_cast,
     handle_attack_skill_cast = handle_attack_skill_cast,
+    get_effect_defs = function()
+      return EFFECT_LIST
+    end,
+    get_effect_runtime_snapshot = get_effect_runtime_snapshot,
+    force_trigger_effect = force_trigger_effect,
+    clear_effect_runtime = clear_effect_runtime,
   }
 end
 

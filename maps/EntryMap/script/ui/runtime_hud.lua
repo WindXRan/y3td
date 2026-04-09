@@ -547,11 +547,7 @@ function M.create(env)
 
   local function is_hud_alive(runtime_hud)
     return runtime_hud
-      and runtime_hud.center_root
-      and runtime_hud.left_root
       and runtime_hud.right_root
-      and not runtime_hud.center_root:is_removed()
-      and not runtime_hud.left_root:is_removed()
       and not runtime_hud.right_root:is_removed()
       and (not runtime_hud.decision_root or not runtime_hud.decision_root:is_removed())
   end
@@ -569,37 +565,6 @@ function M.create(env)
     end
 
     local boss = get_boss_display()
-    runtime_hud.stage_text:set_text(get_stage_text())
-    runtime_hud.wave_title:set_text(get_wave_title_text())
-    runtime_hud.wave_status:set_text(get_wave_status_text())
-    runtime_hud.timer_text:set_text(string.format('战斗计时 %s', format_time(STATE.runtime_elapsed or 0)))
-
-    runtime_hud.boss_panel:set_image_color(boss.bg[1], boss.bg[2], boss.bg[3], boss.bg[4])
-    runtime_hud.boss_name:set_text(boss.name)
-    runtime_hud.boss_name:set_text_color(boss.text[1], boss.text[2], boss.text[3], boss.text[4])
-    runtime_hud.boss_state:set_text(boss.state)
-    runtime_hud.boss_state:set_text_color(boss.text[1], boss.text[2], boss.text[3], boss.text[4])
-
-    runtime_hud.gold_value:set_text(format_compact(STATE.resources and STATE.resources.gold or 0))
-    runtime_hud.wood_value:set_text(format_compact(STATE.resources and STATE.resources.wood or 0))
-    runtime_hud.skill_value:set_text(tostring(STATE.skill_points or 0))
-    runtime_hud.challenge_value:set_text(string.format(
-      '%d/%d',
-      STATE.challenge_charges or 0,
-      CONFIG.challenge_rules.max_charges or 0
-    ))
-
-    runtime_hud.hero_progress_text:set_text(env.get_hero_progress_text())
-    runtime_hud.hero_hp_text:set_text(get_hero_hp_text())
-    runtime_hud.challenge_summary_text:set_text(get_challenge_summary_text())
-    runtime_hud.hero_status_text:set_text(string.format(
-      '场上敌人 %d  试炼进行中 %d  待领奖励 %d  %s',
-      STATE.total_enemy_alive or 0,
-      env.get_active_challenge_count(),
-      env.get_reward_queue_count and env.get_reward_queue_count() or 0,
-      get_recovery_text()
-    ))
-
     local skill_ready = not STATE.game_finished
       and ((STATE.skill_points or 0) > 0 or STATE.awaiting_upgrade == true)
     local skill_highlight = (STATE.skill_points or 0) > 0 or STATE.awaiting_upgrade == true
@@ -686,6 +651,7 @@ function M.create(env)
     center_root:set_anchor(0.5, 1)
     center_root:set_relative_parent_pos('顶部', scaled(layout.top_bar.top, scale))
     set_percent_pos(env.get_player(), center_root, 43.5, 100)
+    center_root:set_visible(false)
 
     local center_glow = create_panel(
       center_root,
@@ -916,6 +882,7 @@ function M.create(env)
     left_root:set_anchor(0.5, 1)
     left_root:set_relative_parent_pos('顶部', scaled(layout.left_bar.top, scale))
     set_percent_pos(env.get_player(), left_root, 43.5, 100)
+    left_root:set_visible(false)
 
     local challenge_summary_text = create_text(
       left_root,
@@ -1299,8 +1266,6 @@ function M.create(env)
       if not is_hud_alive(runtime_hud) then
         return
       end
-      runtime_hud.center_root:set_visible(visible == true)
-      runtime_hud.left_root:set_visible(visible == true)
       runtime_hud.right_root:set_visible(visible == true)
       hide_legacy_decision_panel(runtime_hud)
     end,

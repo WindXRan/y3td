@@ -149,6 +149,8 @@ function M.create(env)
         return
       end
 
+      STATE.total_kills = (STATE.total_kills or 0) + 1
+
       if info.kind == 'boss' then
         STATE.defeated_boss_waves[info.wave.index] = true
         if info.wave.index >= #CONFIG.waves then

@@ -8,6 +8,7 @@ function M.create(env)
   local make_point = env.make_point
   local get_resource_rules = env.get_resource_rules
   local create_bond_runtime = env.create_bond_runtime
+  local create_effect_debug_runtime = env.create_effect_debug_runtime
   local create_mark_runtime = env.create_mark_runtime
   local create_treasure_runtime = env.create_treasure_runtime
   local create_skill_runtime = env.create_skill_runtime
@@ -35,6 +36,7 @@ function M.create(env)
     STATE.defense_point = make_point(CONFIG.points.defense_point)
     STATE.all_enemies = y3.unit_group.create()
     STATE.total_enemy_alive = 0
+    STATE.total_kills = 0
     STATE.current_wave_index = 0
     STATE.started_wave_count = 0
     STATE.active_wave = nil
@@ -45,6 +47,7 @@ function M.create(env)
     }
     STATE.resource_income_elapsed = 0
     STATE.bond_runtime = create_bond_runtime()
+    STATE.effect_debug_runtime = create_effect_debug_runtime()
     STATE.mark_runtime = create_mark_runtime()
     STATE.treasure_runtime = create_treasure_runtime()
     STATE.auto_active_effects = nil

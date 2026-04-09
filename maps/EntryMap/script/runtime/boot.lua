@@ -14,6 +14,7 @@ local OutgameSystem = require 'ui.outgame'
 local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
 local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
+local EffectDebugSystem = require 'runtime.effect_debug'
 local RewardSystem = require 'runtime.rewards'
 local M = {}
 local helper_signals_started = false
@@ -33,6 +34,7 @@ local runtime_loops_system
 local attack_upgrade_system
 local attack_skills_system
 local auto_active_effects_system
+local effect_debug_system
 local reward_system
 
 local function trace_boot(message)
@@ -173,6 +175,10 @@ local function create_bond_runtime()
   return BondSystem.create_runtime()
 end
 
+local function create_effect_debug_runtime()
+  return EffectDebugSystem.create_runtime()
+end
+
 local STATE = {
   hero = nil,
   hero_common_attack = nil,
@@ -180,6 +186,7 @@ local STATE = {
   defense_point = nil,
   all_enemies = nil,
   total_enemy_alive = 0,
+  total_kills = 0,
   current_wave_index = 0,
   started_wave_count = 0,
   active_wave = nil,
@@ -187,6 +194,7 @@ local STATE = {
   resources = nil,
   resource_income_elapsed = 0,
   bond_runtime = nil,
+  effect_debug_runtime = nil,
   mark_runtime = nil,
   treasure_runtime = nil,
   auto_active_effects = nil,
@@ -251,11 +259,13 @@ local create_bond_env
 local award_rewards
 local show_mark_choices
 local show_treasure_choices
+local show_attack_skill_loadout
 local try_open_queued_treasure_round
 local is_battle_active
 local reset_battle_state
 local reset_session_state
 local set_battle_hud_visible
+local refresh_runtime_overview
 
 progression_system = ProgressionSystem.create({
   STATE = STATE,
@@ -305,6 +315,9 @@ reward_system = RewardSystem.create({
   sync_basic_attack_ability = sync_basic_attack_ability,
   heal_hero = function(amount)
     return heal_hero(amount)
+  end,
+  collect_bond_route_tags = function()
+    return BondSystem.collect_route_tags(STATE)
   end,
 })
 
@@ -443,6 +456,12 @@ end
 local function update_auto_active_effects(dt)
   if auto_active_effects_system then
     auto_active_effects_system.update(dt)
+  end
+end
+
+local function update_effect_debug(dt)
+  if effect_debug_system then
+    effect_debug_system.update(dt)
   end
 end
 
@@ -594,10 +613,6 @@ local function get_combat_bonus(key)
   return get_bond_runtime_bonus(key) + get_treasure_runtime_bonus(key)
 end
 
-local function is_bond_active(bond_id)
-  return BondSystem.is_active(STATE, bond_id)
-end
-
 create_bond_env = function()
   return {
     STATE = STATE,
@@ -617,9 +632,9 @@ end
 local function get_enemies_in_range(center, radius, except_unit, max_count)
   local result = {}
   local selector = y3.selector.create()
-    :is_enemy(get_player())
-    :in_range(center, radius)
-    :sort_type('由近到远')
+      :is_enemy(get_player())
+      :in_range(center, radius)
+      :sort_type('由近到远')
 
   if max_count and max_count > 0 then
     selector:count(max_count + (except_unit and 1 or 0))
@@ -642,7 +657,7 @@ local function resolve_damage_text_type(damage_type, visual)
   end
 
   if damage_type == ATTACK_SKILL_DEFS.basic_attack.damage_type
-    or damage_type == ATTACK_SKILL_DEFS.flame_arrow.damage_type then
+      or damage_type == ATTACK_SKILL_DEFS.flame_arrow.damage_type then
     return 'physics'
   end
 
@@ -799,14 +814,14 @@ local function update_passive_resources(dt)
   local gold_per_sec = math.max(
     0,
     (rules.gold_per_sec or 0)
-      + get_bond_runtime_bonus('gold_per_sec_bonus')
-      + get_treasure_passive_income('gold')
+    + get_bond_runtime_bonus('gold_per_sec_bonus')
+    + get_treasure_passive_income('gold')
   )
   local wood_per_sec = math.max(
     0,
     (rules.wood_per_sec or 0)
-      + get_bond_runtime_bonus('wood_per_sec_bonus')
-      + get_treasure_passive_income('wood')
+    + get_bond_runtime_bonus('wood_per_sec_bonus')
+    + get_treasure_passive_income('wood')
   )
   if (gold_per_sec <= 0 and wood_per_sec <= 0) or not STATE.resources then
     return
@@ -878,9 +893,6 @@ local function show_runtime_status()
   ))
   show_attack_skill_loadout()
   BondSystem.show_loadout(create_bond_env())
-  if STATE.bond_runtime and STATE.bond_runtime.swallowed_bonds and #STATE.bond_runtime.swallowed_bonds > 0 then
-    BondSystem.show_swallowed_bonds(create_bond_env())
-  end
   show_mark_loadout()
   show_treasure_loadout()
   if get_mark_runtime().awaiting_choice then
@@ -1091,13 +1103,15 @@ attack_skills_system = AttackSkillsSystem.create({
   get_player = get_player,
   get_hero_point = get_hero_point,
   get_bond_runtime_bonus = get_bond_runtime_bonus,
-  is_bond_active = is_bond_active,
   is_active_enemy = is_active_enemy,
   create_attack_skill_instance = create_attack_skill_instance,
   deal_skill_damage = deal_skill_damage,
   get_damage_bonus_multiplier = get_damage_bonus_multiplier,
   get_enemies_in_range = get_enemies_in_range,
   try_trigger_hunter_first_hit = try_trigger_hunter_first_hit,
+  notify_bond_attack_skill_cast = function(skill, target)
+    return BondSystem.notify_attack_skill_cast(create_bond_env(), skill, target)
+  end,
   notify_auto_active_basic_attack = function(target)
     if auto_active_effects_system then
       auto_active_effects_system.handle_basic_attack_cast(target)
@@ -1113,16 +1127,45 @@ attack_skills_system = AttackSkillsSystem.create({
 auto_active_effects_system = AutoActiveEffectsSystem.create({
   STATE = STATE,
   y3 = y3,
+  str_to_modifier_key = function(name)
+    return y3.game.str_to_modifier_key(name)
+  end,
   ATTACK_SKILL_VFX = AttackSkillObjects.vfx_by_id,
   get_player = get_player,
-  is_bond_active = function(bond_id)
-    return BondSystem.is_active(STATE, bond_id)
+  has_bond_route_tag = function(tag)
+    return BondSystem.has_route_tag(STATE, tag)
+  end,
+  is_debug_effect_mounted = function(effect_id)
+    return STATE.effect_debug_runtime
+      and STATE.effect_debug_runtime.mounted_effect_ids
+      and STATE.effect_debug_runtime.mounted_effect_ids[effect_id] == true
+      or false
   end,
   is_active_enemy = is_active_enemy,
   get_enemies_in_range = get_enemies_in_range,
   deal_skill_damage = deal_skill_damage,
   heal_hero = function(amount)
     return heal_hero(amount)
+  end,
+})
+
+effect_debug_system = EffectDebugSystem.create({
+  STATE = STATE,
+  message = message,
+  get_modifier_name_by_key = function(modifier_key)
+    if not modifier_key or modifier_key == 0 then
+      return nil
+    end
+    return y3.buff.get_name_by_key(modifier_key)
+  end,
+  get_effect_defs = function()
+    return auto_active_effects_system.get_effect_defs()
+  end,
+  get_effect_runtime_snapshot = function(effect_id)
+    return auto_active_effects_system.get_effect_runtime_snapshot(effect_id)
+  end,
+  clear_effect_runtime = function(effect_id)
+    return auto_active_effects_system.clear_effect_runtime(effect_id)
   end,
 })
 
@@ -1137,13 +1180,13 @@ attack_upgrade_system = AttackUpgradeSystem.create({
   unlock_attack_skill = unlock_attack_skill,
   sync_basic_attack_ability = sync_basic_attack_ability,
   build_attack_skill_slot_text = build_attack_skill_slot_text,
-  is_bond_active = function(bond_id)
-    return BondSystem.is_active(STATE, bond_id)
+  collect_bond_route_tags = function()
+    return BondSystem.collect_route_tags(STATE)
   end,
   has_active_treasure = function(treasure_id)
     return STATE.treasure_runtime
-      and STATE.treasure_runtime.active_by_id
-      and STATE.treasure_runtime.active_by_id[treasure_id] ~= nil
+        and STATE.treasure_runtime.active_by_id
+        and STATE.treasure_runtime.active_by_id[treasure_id] ~= nil
   end,
 })
 
@@ -1173,7 +1216,7 @@ local function get_pending_round_choice_label(kind)
     return 'G 技能强化'
   end
   if kind == 'bond' then
-    return 'F 羁绊抽卡'
+    return 'F 链式羁绊'
   end
   if kind == 'mark' then
     return '烙印选择'
@@ -1211,8 +1254,11 @@ overview_model_system = OverviewModelSystem.create({
   build_bond_slot_text = function(slot)
     return BondSystem.build_slot_text(STATE, slot)
   end,
-  build_swallowed_bond_text = function(index, swallowed_bond)
-    return BondSystem.build_swallowed_bond_text(index, swallowed_bond)
+  build_bond_choice_preview_text = function(index, choice)
+    return BondSystem.build_choice_preview_text(index, choice)
+  end,
+  build_bond_progress_lines = function(max_lines)
+    return BondSystem.build_progress_lines(STATE, max_lines)
   end,
 })
 
@@ -1334,6 +1380,10 @@ debug_actions_system = DebugActionsSystem.create({
   dump_temporary_treasures = function()
     return reward_system.debug_dump_temporary_treasures()
   end,
+  effect_debug_system = effect_debug_system,
+  force_trigger_effect = function(effect_id)
+    return auto_active_effects_system.force_trigger_effect(effect_id)
+  end,
 })
 
 debug_tools_system = DebugToolsSystem.create({
@@ -1392,6 +1442,31 @@ debug_tools_system = DebugToolsSystem.create({
   debug_print_temporary_treasures = function()
     return debug_actions_system.debug_print_temporary_treasures()
   end,
+  effect_debug_system = effect_debug_system,
+  debug_open_effect_debug_panel = function()
+    return debug_actions_system.debug_open_effect_debug_panel()
+  end,
+  debug_select_effect = function(effect_id)
+    return debug_actions_system.debug_select_effect(effect_id)
+  end,
+  debug_mount_effect = function(effect_id)
+    return debug_actions_system.debug_mount_effect(effect_id)
+  end,
+  debug_unmount_effect = function(effect_id)
+    return debug_actions_system.debug_unmount_effect(effect_id)
+  end,
+  debug_clear_mounted_effects = function()
+    return debug_actions_system.debug_clear_mounted_effects()
+  end,
+  debug_trigger_effect = function(effect_id)
+    return debug_actions_system.debug_trigger_effect(effect_id)
+  end,
+  debug_start_effect_observe = function(effect_id)
+    return debug_actions_system.debug_start_effect_observe(effect_id)
+  end,
+  debug_print_effect_logs = function()
+    return debug_actions_system.debug_print_effect_logs()
+  end,
 })
 
 function M.start_wave(index)
@@ -1422,11 +1497,15 @@ local function try_treasure_entry()
   try_start_challenge('treasure_trial')
 end
 
-runtime_hud_system = require('ui.runtime_hud').create({
+runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
   STATE = STATE,
   CONFIG = CONFIG,
   y3 = y3,
   round_number = round_number,
+  get_resource_rules = get_resource_rules,
+  get_bond_runtime_bonus = get_bond_runtime_bonus,
+  get_treasure_passive_income = get_treasure_passive_income,
+  get_treasure_reward_ratio = get_treasure_reward_ratio,
   get_player = get_player,
   get_boss_name = get_boss_name,
   get_hero_level = get_hero_level,
@@ -1556,6 +1635,7 @@ session_state_system = SessionStateSystem.create({
   make_point = make_point,
   get_resource_rules = get_resource_rules,
   create_bond_runtime = create_bond_runtime,
+  create_effect_debug_runtime = create_effect_debug_runtime,
   create_mark_runtime = create_mark_runtime,
   create_treasure_runtime = create_treasure_runtime,
   create_skill_runtime = create_skill_runtime,
@@ -1619,8 +1699,8 @@ input_events_system = InputEventsSystem.create({
   try_queue_mark_node_for_level = try_queue_mark_node_for_level,
   show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
-  show_swallowed_bonds = function()
-    return BondSystem.show_swallowed_bonds(create_bond_env())
+  show_bond_progress = function()
+    return BondSystem.show_bond_progress(create_bond_env())
   end,
   ensure_runtime_overview = function()
     runtime_overview_system.ensure_panel()
@@ -1654,6 +1734,7 @@ runtime_loops_system = RuntimeLoopsSystem.create({
   battlefield_system = battlefield_system,
   update_bond_effects = update_bond_effects,
   update_auto_active_effects = update_auto_active_effects,
+  update_effect_debug = update_effect_debug,
   update_enemy_statuses = update_enemy_statuses,
   update_attack_skills = update_attack_skills,
   update_temporary_treasures = update_temporary_treasures,

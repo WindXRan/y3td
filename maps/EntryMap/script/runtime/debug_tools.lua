@@ -8,6 +8,7 @@ function M.create(env)
   local round_number = env.round_number
   local make_point = env.make_point
   local develop_command = env.develop_command
+  local effect_debug_system = env.effect_debug_system
 
   local function point_to_table(point)
     return {
@@ -341,6 +342,82 @@ function M.create(env)
     }, '\n')
   end
 
+  local function build_effect_debug_entry_label(entry)
+    local marker = entry and entry.selected and '>' or ' '
+    local mounted = entry and entry.mounted and 'ON' or 'OFF'
+    local effect_id = entry and entry.id or 'none'
+    return string.format('%s%s [%s]', marker, effect_id, mounted)
+  end
+
+  local function get_effect_debug_detail_text()
+    if not effect_debug_system then
+      return '特效调试系统未初始化'
+    end
+    return table.concat(effect_debug_system.build_selected_detail_lines(), '\n')
+  end
+
+  local function get_effect_debug_log_text()
+    if not effect_debug_system then
+      return '暂无调试日志'
+    end
+    return table.concat(effect_debug_system.get_recent_logs(8), '\n')
+  end
+
+  local function refresh_effect_debug_panel()
+    local gm_ui = STATE.gm_ui
+    local effect_ui = gm_ui and gm_ui.effect_debug or nil
+    if not effect_ui then
+      return
+    end
+
+    local panel_visible = gm_ui.visible == true and effect_ui.visible == true
+    if effect_ui.panel and not effect_ui.panel:is_removed() then
+      effect_ui.panel:set_visible(panel_visible)
+    end
+    if not panel_visible then
+      return
+    end
+
+    local entries = effect_debug_system and effect_debug_system.get_effect_list_entries() or {}
+    for index, button in ipairs(effect_ui.list_buttons or {}) do
+      local entry = entries[index]
+      if button and not button:is_removed() then
+        button:set_visible(entry ~= nil)
+        if entry then
+          button:set_text(build_effect_debug_entry_label(entry))
+        end
+      end
+    end
+
+    if effect_ui.detail_text and not effect_ui.detail_text:is_removed() then
+      effect_ui.detail_text:set_text(get_effect_debug_detail_text())
+    end
+    if effect_ui.log_text and not effect_ui.log_text:is_removed() then
+      effect_ui.log_text:set_text(get_effect_debug_log_text())
+    end
+  end
+
+  local function close_effect_debug_panel()
+    local gm_ui = STATE.gm_ui
+    if not gm_ui or not gm_ui.effect_debug then
+      return
+    end
+    gm_ui.effect_debug.visible = false
+    refresh_effect_debug_panel()
+  end
+
+  local function debug_open_effect_debug_panel()
+    local gm_ui = STATE.gm_ui
+    if not gm_ui or not gm_ui.effect_debug then
+      return
+    end
+    gm_ui.effect_debug.visible = true
+    if env.debug_open_effect_debug_panel then
+      env.debug_open_effect_debug_panel()
+    end
+    refresh_effect_debug_panel()
+  end
+
   local function refresh_gm_panel()
     local gm_ui = STATE.gm_ui
     if not gm_ui then
@@ -356,6 +433,7 @@ function M.create(env)
     if gm_ui.status_text and not gm_ui.status_text:is_removed() then
       gm_ui.status_text:set_text(get_gm_panel_status_text())
     end
+    refresh_effect_debug_panel()
   end
 
   local function toggle_gm_panel()

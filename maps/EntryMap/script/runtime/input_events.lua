@@ -10,7 +10,7 @@ function M.create(env)
   local try_queue_mark_node_for_level = env.try_queue_mark_node_for_level
   local show_upgrade_choices = env.show_upgrade_choices
   local try_bond_draw = env.try_bond_draw
-  local show_swallowed_bonds = env.show_swallowed_bonds
+  local show_bond_progress = env.show_bond_progress
   local ensure_runtime_overview = env.ensure_runtime_overview
   local show_runtime_attr_overview = env.show_runtime_attr_overview
   local refresh_runtime_overview = env.refresh_runtime_overview
@@ -63,7 +63,7 @@ function M.create(env)
       if not is_battle_active() then
         return
       end
-      show_swallowed_bonds()
+      show_bond_progress()
     end)
     y3.game:event('键盘-按下', 'B', function()
       if not is_battle_active() then

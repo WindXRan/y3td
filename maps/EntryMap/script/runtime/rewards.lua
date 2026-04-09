@@ -58,6 +58,7 @@ function M.create(env)
   local add_attr_pack = env.add_attr_pack
   local sync_basic_attack_ability = env.sync_basic_attack_ability
   local heal_hero = env.heal_hero
+  local collect_bond_route_tags = env.collect_bond_route_tags
 
   local api = {
     TREASURE_DEFS = TREASURE_DEFS,
@@ -300,6 +301,12 @@ function M.create(env)
       tags.survival = true
     end
 
+    if collect_bond_route_tags then
+      for tag in pairs(collect_bond_route_tags() or {}) do
+        tags[tag] = true
+      end
+    end
+
     return tags
   end
 
@@ -350,14 +357,22 @@ function M.create(env)
     end
   end
 
+  local function has_matching_tag(build_tags, candidate_tags)
+    for _, tag in ipairs(candidate_tags or {}) do
+      if build_tags[tag] then
+        return true
+      end
+    end
+    return false
+  end
+
   local function get_treasure_pick_weight(def, build_tags, quality_weights)
     local weight = (def.pool_weight or 1) * (quality_weights[def.quality] or 1)
 
-    for _, tag in ipairs(def.tags or {}) do
-      if build_tags[tag] then
-        weight = weight * 1.35
-        break
-      end
+    if has_matching_tag(build_tags, def.best_with_tags) then
+      weight = weight * 1.35
+    elseif has_matching_tag(build_tags, def.theme_tags or def.tags) then
+      weight = weight * 1.10
     end
 
     return math.max(0.01, weight)

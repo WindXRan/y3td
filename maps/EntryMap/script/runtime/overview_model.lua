@@ -19,7 +19,8 @@ function M.create(env)
   local get_bond_runtime_bonus = env.get_bond_runtime_bonus
   local build_attack_skill_slot_text = env.build_attack_skill_slot_text
   local build_bond_slot_text = env.build_bond_slot_text
-  local build_swallowed_bond_text = env.build_swallowed_bond_text
+  local build_bond_choice_preview_text = env.build_bond_choice_preview_text
+  local build_bond_progress_lines = env.build_bond_progress_lines
 
   local function get_active_challenge_count_value()
     local count = 0
@@ -116,17 +117,10 @@ function M.create(env)
     return lines
   end
 
-  local function build_swallowed_bond_overview_lines()
-    local runtime = STATE.bond_runtime
-    if not runtime or #(runtime.swallowed_bonds or {}) == 0 then
-      return { '当前没有已吞噬整套羁绊。' }
-    end
-
-    local lines = {}
-    local total = #runtime.swallowed_bonds
-    local start_index = math.max(1, total - 2)
-    for index = start_index, total, 1 do
-      lines[#lines + 1] = build_swallowed_bond_text(index, runtime.swallowed_bonds[index])
+  local function build_bond_progress_overview_lines()
+    local lines = build_bond_progress_lines(8)
+    if not lines or #lines == 0 then
+      return { '当前没有可显示的链路进度。' }
     end
     return lines
   end
@@ -149,7 +143,11 @@ function M.create(env)
     if pending_kind == 'upgrade' then
       lines[#lines + 1] = string.format('当前待选：技能强化，剩余技能点 %d', STATE.skill_points or 0)
     elseif pending_kind == 'bond' then
-      lines[#lines + 1] = '当前待选：羁绊三选一'
+      lines[#lines + 1] = '当前待选：链式羁绊三选一'
+      local runtime = STATE.bond_runtime
+      for index, choice in ipairs(runtime and runtime.current_choices or {}) do
+        lines[#lines + 1] = build_bond_choice_preview_text(index, choice)
+      end
     elseif pending_kind == 'treasure' then
       local runtime = get_treasure_runtime()
       if runtime.awaiting_replace and runtime.pending_replace_choice then
@@ -269,10 +267,10 @@ function M.create(env)
         format_attr_value(env.get_treasure_passive_income('gold')),
         format_attr_value(env.get_treasure_passive_income('wood'))
       ),
-      string.format('构筑计数：宝物 %d / 3  烙印 %d  吞噬羁绊 %d',
+      string.format('构筑计数：宝物 %d / 3  烙印 %d  已解锁羁绊 %d',
         get_treasure_active_count(),
         get_mark_active_count(),
-        STATE.bond_runtime and #(STATE.bond_runtime.swallowed_bonds or {}) or 0
+        STATE.bond_runtime and #(STATE.bond_runtime.owned_node_order or {}) or 0
       ),
     }
   end
@@ -307,9 +305,9 @@ function M.create(env)
             title = '待处理轮次',
             lines = build_pending_overview_lines(),
           },
-          swallowed = {
-            title = '已吞噬羁绊',
-            lines = build_swallowed_bond_overview_lines(),
+          progress = {
+            title = '链路进度',
+            lines = build_bond_progress_overview_lines(),
           },
         },
       }
@@ -332,7 +330,7 @@ function M.create(env)
           lines = build_attack_skill_overview_lines(),
         },
         bonds = {
-          title = '羁绊',
+          title = '链式羁绊',
           lines = build_bond_overview_lines(),
         },
         treasures = {
@@ -343,9 +341,9 @@ function M.create(env)
           title = '待处理轮次',
           lines = build_pending_overview_lines(),
         },
-        swallowed = {
-          title = '已吞噬羁绊',
-          lines = build_swallowed_bond_overview_lines(),
+        progress = {
+          title = '链路进度',
+          lines = build_bond_progress_overview_lines(),
         },
       },
     }
