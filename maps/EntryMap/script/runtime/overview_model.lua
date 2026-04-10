@@ -81,7 +81,7 @@ function M.create(env)
         format_attr_value(STATE.hero:get_hp()),
         format_attr_value(get_hero_attr('生命结算值')),
         format_attr_value(get_hero_attr('攻击结算值')),
-        format_attr_value(STATE.hero:get_attr('攻击速度'))
+        format_attr_value(get_hero_attr('攻击速度'))
       )
       lines[#lines + 1] = string.format(
         '暴击 %d%%  爆伤 %d%%  吸血 %d%%  射程 %d',
@@ -205,7 +205,7 @@ function M.create(env)
       ),
       string.format('攻击：%d  攻速：%d  射程：%d',
         format_attr_value(get_hero_attr('攻击结算值')),
-        format_attr_value(STATE.hero:get_attr('攻击速度')),
+        format_attr_value(get_hero_attr('攻击速度')),
         format_attr_value(get_hero_attr('攻击范围'))
       ),
       string.format('暴击：%d%%  爆伤：%d%%  吸血：%d%%',

@@ -605,8 +605,8 @@ function M.create(env)
       { '满挑战 / F7', 24, 92, env.debug_refill_challenge_charges, { 70, 112, 142 } },
       { '刷 Boss / F8', 204, 92, env.debug_force_spawn_boss, { 110, 86, 126 } },
       { '清全场 / F9', 24, 36, env.debug_kill_all_active_enemies, { 128, 74, 88 } },
-      { '角色属性', 204, 36, env.debug_open_attr_overview, { 74, 100, 136 } },
-      { '顶部属性', 24, 0, env.debug_show_attr_tip_panel, { 70, 104, 134 } },
+      { '属性对话框', 204, 36, env.debug_open_attr_overview, { 74, 100, 136 } },
+      { '输出属性', 24, 0, env.debug_show_attr_tip_panel, { 70, 104, 134 } },
       { '打印状态', 114, 0, env.show_runtime_status, { 60, 92, 120 } },
     }
 

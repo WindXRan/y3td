@@ -2,6 +2,7 @@ local battle_base = require 'entry_data.battle_base_config'
 local global_rules = battle_base.global_rules
 local hero_init_stats = battle_base.hero_init_stats
 local debug_hero_bonus_stats = battle_base.debug_hero_bonus_stats
+local debug_apply_hero_bonus_on_spawn = battle_base.debug_apply_hero_bonus_on_spawn
 local hero_progression = battle_base.progression_rules
 local resource_rules = battle_base.resource_rules
 local challenge_rules = battle_base.challenge_rules
@@ -42,6 +43,7 @@ local M = {
   total_enemy_soft_cap = global_rules.total_enemy_soft_cap,
   hero_init_stats = hero_init_stats,
   debug_hero_bonus_stats = debug_hero_bonus_stats,
+  debug_apply_hero_bonus_on_spawn = debug_apply_hero_bonus_on_spawn,
   hero_progression = hero_progression,
   resource_rules = resource_rules,
 

@@ -37,6 +37,27 @@
      "5939daf8-fbcb-49af-92d6-d136b73815c3", 
      "tophud"
     ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "2877dbfa-8d3b-44ef-ad56-7ffeecb09116", 
+     "tips"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "f69cb570-f64c-42ff-a01e-6dd7312194e0", 
+     "GameHUD"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "37f3a4f8-a297-43f5-b33a-9f2fdeaa0775", 
+     "\u65b0\u5efa\u81ea\u5b9a\u4e49\u6a21\u5757"
+    ]
    }
   ]
  }, 

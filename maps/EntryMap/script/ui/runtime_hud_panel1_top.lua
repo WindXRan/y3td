@@ -2,6 +2,25 @@ local BaseHud = require 'ui.runtime_hud'
 
 local M = {}
 
+local EVENT_FEED_COLORS = {
+  neutral = { 228, 236, 246, 255 },
+  positive = { 176, 232, 188, 255 },
+  reward = { 255, 220, 142, 255 },
+  warning = { 255, 172, 118, 255 },
+  rare = { 222, 198, 255, 255 },
+}
+
+local EVENT_FEED_LAYOUT = {
+  max_visible = 4,
+  width = 520,
+  font_size = 18,
+  line_height = 22,
+  line_gap = 4,
+  padding_x = 10,
+  left = 26,
+  bottom = 158,
+}
+
 local function resolve_ui(y3, player, path)
   local ok, ui = pcall(y3.ui.get_ui, player, path)
   if not ok or not ui then
@@ -42,6 +61,12 @@ local function make_value_proxy(node, getter)
       end
     end,
   }
+end
+
+local function set_text_rgba(node, color)
+  if is_alive(node) then
+    node:set_text_color(color[1], color[2], color[3], color[4] or 255)
+  end
 end
 
 local function normalize_ratio(value)
@@ -136,6 +161,7 @@ local function bind_panel1_top(env, runtime_hud)
   local y3 = env.y3
   local player = env.get_player()
   local top_root = resolve_ui(y3, player, 'panel_1.tophud')
+  local hud_root = resolve_ui(y3, player, 'GameHUD')
   if not top_root then
     return false
   end
@@ -178,6 +204,49 @@ local function bind_panel1_top(env, runtime_hud)
     next_sync_at = 0,
   }
   local hero_attr_system = env.hero_attr_system
+
+  local function ensure_event_feed_nodes()
+    if runtime_hud.panel1_event_feed then
+      return runtime_hud.panel1_event_feed
+    end
+
+    local parent = hud_root or top_root
+    local root_width = EVENT_FEED_LAYOUT.width
+    local root_height = EVENT_FEED_LAYOUT.max_visible * EVENT_FEED_LAYOUT.line_height
+      + (EVENT_FEED_LAYOUT.max_visible - 1) * EVENT_FEED_LAYOUT.line_gap
+      + 8
+    local root = parent:create_child('图片')
+    root:set_image(999)
+    root:set_anchor(0, 0)
+    root:set_ui_size(root_width, root_height)
+    root:set_pos(EVENT_FEED_LAYOUT.left, EVENT_FEED_LAYOUT.bottom)
+    root:set_image_color(255, 255, 255, 0)
+    root:set_z_order(9204)
+
+    local lines = {}
+    for index = 1, EVENT_FEED_LAYOUT.max_visible do
+      local text = root:create_child('文本')
+      text:set_anchor(0, 1)
+      text:set_ui_size(root_width - EVENT_FEED_LAYOUT.padding_x * 2, EVENT_FEED_LAYOUT.line_height)
+      text:set_pos(
+        EVENT_FEED_LAYOUT.padding_x,
+        root_height - 4
+          - ((index - 1) * (EVENT_FEED_LAYOUT.line_height + EVENT_FEED_LAYOUT.line_gap))
+      )
+      text:set_font_size(EVENT_FEED_LAYOUT.font_size)
+      text:set_text_alignment('左', '中')
+      text:set_z_order(9205)
+      text:set_visible(false)
+      lines[#lines + 1] = text
+    end
+
+    runtime_hud.panel1_event_feed = {
+      root = root,
+      lines = lines,
+      max_visible = EVENT_FEED_LAYOUT.max_visible,
+    }
+    return runtime_hud.panel1_event_feed
+  end
 
   local function get_hero_attr(name)
     local hero = env.STATE and env.STATE.hero
@@ -287,6 +356,31 @@ local function bind_panel1_top(env, runtime_hud)
     end
   end
 
+  local function flush_battle_event_feed()
+    local feed = ensure_event_feed_nodes()
+    local entries = env.get_battle_event_feed_entries and env.get_battle_event_feed_entries(feed.max_visible) or {}
+    local has_visible = false
+
+    for index, text_node in ipairs(feed.lines or {}) do
+      local entry = entries[index]
+      if is_alive(text_node) then
+        if entry then
+          text_node:set_text(tostring(entry.text or ''))
+          set_text_rgba(text_node, EVENT_FEED_COLORS[entry.style] or EVENT_FEED_COLORS.neutral)
+          text_node:set_visible(true)
+          has_visible = true
+        else
+          text_node:set_text('')
+          text_node:set_visible(false)
+        end
+      end
+    end
+
+    if is_alive(feed.root) then
+      feed.root:set_visible(has_visible)
+    end
+  end
+
   runtime_hud.center_root = top_root
   runtime_hud.top_root = top_root
   runtime_hud.stage_text = curlevel
@@ -336,6 +430,7 @@ local function bind_panel1_top(env, runtime_hud)
   runtime_hud.challenge_value = make_noop_text()
   runtime_hud.panel1_resource_sync = sync_resource_panels
   runtime_hud.panel1_flush_tips = flush_tips
+  runtime_hud.panel1_flush_battle_event_feed = flush_battle_event_feed
   runtime_hud.panel1_set_tip_overlay = function(text, duration)
     local overlay_text = tostring(text or '')
     if overlay_text == '' then
@@ -357,6 +452,7 @@ local function bind_panel1_top(env, runtime_hud)
   runtime_hud.panel1_top_bound = true
   sync_resource_panels(true)
   flush_tips()
+  flush_battle_event_feed()
 
   return true
 end
@@ -392,6 +488,9 @@ function M.create(env)
       end
       if hud and hud.panel1_resource_sync then
         hud.panel1_resource_sync(false)
+      end
+      if hud and hud.panel1_flush_battle_event_feed then
+        hud.panel1_flush_battle_event_feed()
       end
       return result
     end,

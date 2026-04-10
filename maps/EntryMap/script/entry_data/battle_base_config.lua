@@ -10,6 +10,7 @@ return {
   },
   hero_init_stats = hero_attr_config.hero_init_stats,
   debug_hero_bonus_stats = hero_attr_config.debug_hero_bonus_stats,
+  debug_apply_hero_bonus_on_spawn = false,
   progression_rules = {
     engine_exp_cap_level = 15,
     max_level = 60,
