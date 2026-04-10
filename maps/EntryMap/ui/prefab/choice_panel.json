@@ -705,9 +705,9 @@
                             "__tuple__": true, 
                             "items": [
                                 275.0, 
-                                623.9997, 
+                                689.0004, 
                                 50.0, 
-                                69.3333, 
+                                76.5556, 
                                 0, 
                                 0
                             ]
@@ -769,7 +769,7 @@
                             "__tuple__": true, 
                             "items": [
                                 "MSYH", 
-                                57
+                                60
                             ]
                         }, 
                         "font_color": {
@@ -842,14 +842,14 @@
                         "name": "name", 
                         "opacity": 1.0, 
                         "open_adapter": false, 
-                        "over_pattern": false, 
+                        "over_pattern": true, 
                         "pos_data": {
                             "__tuple__": true, 
                             "items": [
                                 275.0, 
-                                474.0003, 
+                                594.0, 
                                 50.0, 
-                                52.6667, 
+                                66.0, 
                                 0, 
                                 0
                             ]
@@ -869,8 +869,8 @@
                         "size": {
                             "__tuple__": true, 
                             "items": [
-                                521.6000047922134, 
-                                120.0
+                                376.0, 
+                                162.0
                             ]
                         }, 
                         "strike_through": false, 
@@ -888,7 +888,7 @@
                         "text": {
                             "__tuple__": true, 
                             "items": [
-                                "\u540d\u79f0", 
+                                "\u540d\u79f01/4\n", 
                                 false
                             ]
                         }, 
@@ -997,7 +997,7 @@
                                     "__tuple__": true, 
                                     "items": [
                                         "MSYH", 
-                                        38
+                                        42
                                     ]
                                 }, 
                                 "font_color": {
@@ -1070,15 +1070,15 @@
                                 "name": "rarity_text", 
                                 "opacity": 1.0, 
                                 "open_adapter": false, 
-                                "over_pattern": false, 
+                                "over_pattern": true, 
                                 "pos_data": {
                                     "__tuple__": true, 
                                     "items": [
-                                        56.0, 
-                                        33.0, 
+                                        70.0, 
+                                        45.0, 
                                         50.0, 
                                         50.0, 
-                                        1, 
+                                        0, 
                                         0
                                     ]
                                 }, 
@@ -1098,7 +1098,7 @@
                                     "__tuple__": true, 
                                     "items": [
                                         100, 
-                                        100
+                                        57.0
                                     ]
                                 }, 
                                 "strike_through": false, 
@@ -1180,9 +1180,9 @@
                             "__tuple__": true, 
                             "items": [
                                 275.0, 
-                                830.0007, 
+                                824.0004, 
                                 50.0, 
-                                92.2223, 
+                                91.5556, 
                                 0, 
                                 0
                             ]
@@ -1200,8 +1200,8 @@
                         "size": {
                             "__tuple__": true, 
                             "items": [
-                                112.0, 
-                                66.0
+                                140.0, 
+                                90.0
                             ]
                         }, 
                         "size_adaptive": false, 
@@ -1337,14 +1337,14 @@
                                 "name": "value_desc", 
                                 "opacity": 1.0, 
                                 "open_adapter": false, 
-                                "over_pattern": false, 
+                                "over_pattern": 4, 
                                 "pos_data": {
                                     "__tuple__": true, 
                                     "items": [
                                         175.0, 
-                                        60.0, 
+                                        90.0, 
                                         50.0, 
-                                        75.0, 
+                                        112.5, 
                                         1, 
                                         0
                                     ]
@@ -1364,8 +1364,8 @@
                                 "size": {
                                     "__tuple__": true, 
                                     "items": [
-                                        350.0, 
-                                        40.0
+                                        170.0, 
+                                        180.7164158821106
                                     ]
                                 }, 
                                 "strike_through": false, 
@@ -1383,7 +1383,7 @@
                                 "text": {
                                     "__tuple__": true, 
                                     "items": [
-                                        "\u5168\u5c5e\u6027 + 50", 
+                                        "\u5168\u5c5e\u6027 + 50\n\u5168\u5c5e\u6027 + 50\n\u5168\u5c5e\u6027 + 50\n\u5168\u5c5e\u6027 + 50\n", 
                                         false
                                     ]
                                 }, 
@@ -1556,15 +1556,15 @@
                                         "name": "effect_name", 
                                         "opacity": 1.0, 
                                         "open_adapter": false, 
-                                        "over_pattern": false, 
+                                        "over_pattern": 4, 
                                         "pos_data": {
                                             "__tuple__": true, 
                                             "items": [
-                                                175, 
-                                                100, 
-                                                50.0, 
-                                                83.3333, 
-                                                0, 
+                                                197.9999, 
+                                                101.0, 
+                                                56.5714, 
+                                                84.1667, 
+                                                1, 
                                                 0
                                             ]
                                         }, 
@@ -1583,8 +1583,8 @@
                                         "size": {
                                             "__tuple__": true, 
                                             "items": [
-                                                350.0, 
-                                                40.0
+                                                413.0, 
+                                                37.0
                                             ]
                                         }, 
                                         "strike_through": false, 
@@ -1602,7 +1602,7 @@
                                         "text": {
                                             "__tuple__": true, 
                                             "items": [
-                                                "[\u6548\u679c1]", 
+                                                "[\u6548\u679c1][\u6548\u679c1][\u6548\u679c1][\u6548\u679c1];", 
                                                 false
                                             ]
                                         }, 
@@ -1755,14 +1755,14 @@
                                         "name": "effect_text", 
                                         "opacity": 1.0, 
                                         "open_adapter": false, 
-                                        "over_pattern": false, 
+                                        "over_pattern": true, 
                                         "pos_data": {
                                             "__tuple__": true, 
                                             "items": [
-                                                175.0, 
-                                                30.0, 
-                                                50.0, 
-                                                25.0, 
+                                                182.0, 
+                                                -61.0, 
+                                                52.0, 
+                                                -50.8333, 
                                                 0, 
                                                 0
                                             ]
@@ -1782,8 +1782,8 @@
                                         "size": {
                                             "__tuple__": true, 
                                             "items": [
-                                                350.0, 
-                                                80.0
+                                                376.6865577697754, 
+                                                270.0
                                             ]
                                         }, 
                                         "strike_through": false, 
@@ -1801,7 +1801,7 @@
                                         "text": {
                                             "__tuple__": true, 
                                             "items": [
-                                                "\u6548\u679c\u63cf\u8ff0", 
+                                                "\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\u6548\u679c\u63cf\u8ff0\n", 
                                                 false
                                             ]
                                         }, 
@@ -1947,205 +1947,6 @@
                         "swallow_touches": false, 
                         "type": 7, 
                         "visible": true
-                    }, 
-                    {
-                        "adapter_option": [
-                            false, 
-                            false, 
-                            false, 
-                            false, 
-                            0, 
-                            0, 
-                            0, 
-                            0
-                        ], 
-                        "alignment": {
-                            "__tuple__": true, 
-                            "items": [
-                                2, 
-                                8
-                            ]
-                        }, 
-                        "anchor": {
-                            "__tuple__": true, 
-                            "items": [
-                                0.5, 
-                                0.5
-                            ]
-                        }, 
-                        "bold": false, 
-                        "border": false, 
-                        "can_drag": false, 
-                        "children": [], 
-                        "comp_type": "TextLabel", 
-                        "event_list": [], 
-                        "font": {
-                            "__tuple__": true, 
-                            "items": [
-                                "MSYH", 
-                                32
-                            ]
-                        }, 
-                        "font_color": {
-                            "__tuple__": true, 
-                            "items": [
-                                255, 
-                                255, 
-                                255, 
-                                255
-                            ]
-                        }, 
-                        "font_min_size": 15, 
-                        "gradient": false, 
-                        "gradient_bl_color": {
-                            "__tuple__": true, 
-                            "items": [
-                                255, 
-                                255, 
-                                255, 
-                                255
-                            ]
-                        }, 
-                        "gradient_br_color": {
-                            "__tuple__": true, 
-                            "items": [
-                                255, 
-                                255, 
-                                255, 
-                                255
-                            ]
-                        }, 
-                        "gradient_tl_color": {
-                            "__tuple__": true, 
-                            "items": [
-                                255, 
-                                255, 
-                                255, 
-                                255
-                            ]
-                        }, 
-                        "gradient_tr_color": {
-                            "__tuple__": true, 
-                            "items": [
-                                255, 
-                                255, 
-                                255, 
-                                255
-                            ]
-                        }, 
-                        "hover_child": "", 
-                        "italics": false, 
-                        "label_effect": {
-                            "__tuple__": true, 
-                            "items": [
-                                false, 
-                                false, 
-                                false, 
-                                false, 
-                                false, 
-                                false
-                            ]
-                        }, 
-                        "line_space": {
-                            "__tuple__": true, 
-                            "items": [
-                                0, 
-                                0
-                            ]
-                        }, 
-                        "name": "set_name", 
-                        "opacity": 1.0, 
-                        "open_adapter": false, 
-                        "over_pattern": false, 
-                        "pos_data": {
-                            "__tuple__": true, 
-                            "items": [
-                                275.0, 
-                                757.4004, 
-                                50.0, 
-                                84.1556, 
-                                0, 
-                                0
-                            ]
-                        }, 
-                        "prefab_sub_key": "5de2ced6-72b4-42a1-be1f-832d40b2438c", 
-                        "review_word": false, 
-                        "rotation": 0, 
-                        "scale": {
-                            "__tuple__": true, 
-                            "items": [
-                                1, 
-                                1
-                            ]
-                        }, 
-                        "scene_ui_name": null, 
-                        "shadow": false, 
-                        "size": {
-                            "__tuple__": true, 
-                            "items": [
-                                431.2000049352646, 
-                                48.79999923706055
-                            ]
-                        }, 
-                        "strike_through": false, 
-                        "strike_through_color": {
-                            "__tuple__": true, 
-                            "items": [
-                                0, 
-                                0, 
-                                0, 
-                                255
-                            ]
-                        }, 
-                        "strike_through_size": 0, 
-                        "swallow_touches": false, 
-                        "text": {
-                            "__tuple__": true, 
-                            "items": [
-                                "\u5957\u88c5\u540d\u79f0\uff080/4\uff09", 
-                                false
-                            ]
-                        }, 
-                        "text_bind": {
-                            "__tuple__": true, 
-                            "items": [
-                                null, 
-                                null
-                            ]
-                        }, 
-                        "text_border_color": {
-                            "__tuple__": true, 
-                            "items": [
-                                0, 
-                                0, 
-                                0, 
-                                255
-                            ]
-                        }, 
-                        "text_border_width": 0, 
-                        "text_format": "", 
-                        "text_italic_radius": 0.5, 
-                        "text_shadow_color": {
-                            "__tuple__": true, 
-                            "items": [
-                                123, 
-                                123, 
-                                123, 
-                                255
-                            ]
-                        }, 
-                        "text_shadow_offset": {
-                            "__tuple__": true, 
-                            "items": [
-                                0, 
-                                0
-                            ]
-                        }, 
-                        "type": 3, 
-                        "typewriter_effect": 0, 
-                        "typewriter_space": 0, 
-                        "under_line": false, 
-                        "visible": true
                     }
                 ], 
                 "clip_enabled": false, 
@@ -2169,8 +1970,8 @@
                 "pos_data": {
                     "__tuple__": true, 
                     "items": [
-                        50, 
-                        50, 
+                        50.0, 
+                        50.0, 
                         50.0, 
                         50.0, 
                         0, 

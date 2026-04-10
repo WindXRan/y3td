@@ -285,12 +285,12 @@ function M.create(env)
     end
   
     if STATE.hero and STATE.hero:is_exist() then
-      local interval = y3.helper.tonumber(STATE.hero:get_attr('攻击间隔')) or 0
+      local interval = y3.helper.tonumber(get_hero_attr('攻击间隔')) or 0
       if interval > 0 then
         return math.max(0.15, interval)
       end
   
-      local attack_speed = math.max(20, STATE.hero:get_attr('攻击速度'))
+      local attack_speed = math.max(20, get_hero_attr('攻击速度'))
       local base_interval = math.max(0.15, skill.base_cooldown or 1.7)
       return math.max(0.15, base_interval * 100 / attack_speed)
     end

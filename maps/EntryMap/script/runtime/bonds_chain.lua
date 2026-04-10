@@ -86,10 +86,10 @@ local ROOT_SET_DOC_META = {
     base_runtime = {
       kill_gold_ratio = 0.10,
     },
-    effect_text = '每秒木材 + 0.4，每秒金币 + 10',
+    effect_text = '每秒木材 + 0.5，每秒金币 + 15',
     set_runtime = {
-      wood_per_sec_bonus = 0.4,
-      gold_per_sec_bonus = 10,
+      wood_per_sec_bonus = 0.5,
+      gold_per_sec_bonus = 15,
     },
   },
   bond_magic_core = {
@@ -98,7 +98,7 @@ local ROOT_SET_DOC_META = {
     base_runtime = {
       spell_damage_bonus = 0.05,
     },
-    effect_text = '魔爆术：每 18 秒触发，对 300 范围造成 200% 智力伤害',
+    effect_text = '魔爆术：每18 秒触发，对300 范围造成 200% 智力伤害',
   },
   bond_archery_core = {
     required_count = 3,
@@ -128,9 +128,9 @@ local ROOT_SET_DOC_META = {
     base_runtime = {
       intelligence_per_second = 0.5,
     },
-    effect_text = '每秒木材 + 0.2，杀敌力量 + 0.1，杀敌敏捷 + 0.1，杀敌智力 + 0.1',
+    effect_text = '每秒木材 + 0.3，杀敌力量 + 0.1，杀敌敏捷 + 0.1，杀敌智力 + 0.1',
     set_runtime = {
-      wood_per_sec_bonus = 0.2,
+      wood_per_sec_bonus = 0.3,
       agility_on_kill = 0.1,
       strength_on_kill = 0.1,
       intelligence_on_kill = 0.1,
@@ -531,6 +531,24 @@ local function trim_inline_text(text)
   return (text:gsub('[。；;，,%s]+$', ''))
 end
 
+local function format_value_text_lines(text)
+  if type(text) ~= 'string' or text == '' then
+    return ''
+  end
+
+  local normalized = text
+  normalized = normalized:gsub('。%s*', '。\n')
+  normalized = normalized:gsub('([。])([^\n：。]+：)', '%1\n%2')
+  normalized = normalized:gsub('，', '\n')
+  normalized = normalized:gsub(',%s*', '\n')
+  normalized = normalized:gsub('；', '\n')
+  normalized = normalized:gsub(';%s*', '\n')
+  normalized = normalized:gsub('\n+', '\n')
+  normalized = normalized:gsub('^%s+', '')
+  normalized = normalized:gsub('%s+$', '')
+  return normalized
+end
+
 local MANUAL_COLOR_KEYWORDS = {
   green = {
     '自适应伤害',
@@ -583,12 +601,11 @@ local function find_manual_color_match(text, start_pos)
   return best_start, best_end, best_color
 end
 
-local function build_manual_color_segments(text, default_color)
+local function append_manual_color_segments(segments, text, default_color)
   if type(text) ~= 'string' or text == '' then
-    return nil
+    return
   end
 
-  local segments = {}
   local cursor = 1
   local length = #text
 
@@ -614,6 +631,35 @@ local function build_manual_color_segments(text, default_color)
       color = match_color,
     }
     cursor = match_end + 1
+  end
+end
+
+local function build_manual_color_segments(text, default_color)
+  if type(text) ~= 'string' or text == '' then
+    return nil
+  end
+
+  local segments = {}
+  local line_index = 0
+  for line in string.gmatch(text .. '\n', '(.-)\n') do
+    if line_index > 0 then
+      segments[#segments + 1] = {
+        text = '\n',
+        color = default_color,
+      }
+    end
+    line_index = line_index + 1
+
+    local card_name = string.match(line, '^([^：\n]+：)')
+    if card_name and card_name ~= '' then
+      segments[#segments + 1] = {
+        text = card_name,
+        color = 'gold',
+      }
+      append_manual_color_segments(segments, string.sub(line, #card_name + 1), default_color)
+    else
+      append_manual_color_segments(segments, line, default_color)
+    end
   end
 
   return segments
@@ -755,6 +801,57 @@ local function count_unlocked_nodes(state, node_ids)
   return unlocked_count
 end
 
+local function is_root_line_node(node_def)
+  if not node_def then
+    return false
+  end
+  local root_def = get_set_root_def(node_def)
+  return root_def and node_def.line_id == root_def.line_id or false
+end
+
+local function get_branch_anchor_def(node_def)
+  if not node_def or is_root_line_node(node_def) then
+    return nil
+  end
+
+  local current = node_def
+  local anchor = node_def
+  local root_def = get_set_root_def(node_def)
+  local guard = 0
+  while current and current.parent_id and guard < 16 do
+    local parent_def = NODE_BY_ID[current.parent_id]
+    if not parent_def or (root_def and parent_def.line_id == root_def.line_id) then
+      anchor = current
+      break
+    end
+    anchor = parent_def
+    current = parent_def
+    guard = guard + 1
+  end
+  return anchor
+end
+
+local function build_branch_progress_node_ids(node_def)
+  local anchor_def = get_branch_anchor_def(node_def)
+  if not anchor_def then
+    return {}
+  end
+
+  local result = {}
+  local seen = {}
+  result[#result + 1] = anchor_def.id
+  seen[anchor_def.id] = true
+
+  local line_defs = LINE_BY_ID[node_def.line_id] or {}
+  for _, def in ipairs(line_defs) do
+    if not seen[def.id] then
+      result[#result + 1] = def.id
+      seen[def.id] = true
+    end
+  end
+  return result
+end
+
 local function build_choice_progress_values(state, node_def)
   if not node_def then
     return 0, 0
@@ -762,12 +859,20 @@ local function build_choice_progress_values(state, node_def)
 
   local root_def = get_set_root_def(node_def)
   local root_meta = root_def and ROOT_SET_DOC_META[root_def.id] or nil
-  if root_def and root_meta then
+  if root_def and root_meta and is_root_line_node(node_def) then
     local unlocked_count = math.min(
       root_meta.required_count or 0,
       count_unlocked_root_set_nodes(state, root_def.id)
     )
     return unlocked_count, root_meta.required_count or 0
+  end
+
+  if node_def.parent_id then
+    local branch_node_ids = build_branch_progress_node_ids(node_def)
+    if #branch_node_ids > 0 then
+      local unlocked_count = count_unlocked_nodes(state, branch_node_ids)
+      return unlocked_count, #branch_node_ids
+    end
   end
 
   if not node_def.parent_id then
@@ -816,13 +921,19 @@ local function trim_choice_prefix(text)
   return trim_inline_text(trimmed)
 end
 
-local function build_choice_effect_title(node_def)
+local function build_choice_effect_title(state, node_def)
+  if node_def and node_def.parent_id then
+    return ''
+  end
   local root_def = get_set_root_def(node_def)
   local line_name = root_def and root_def.display_name or node_def and node_def.display_name or '未知羁绊'
   return string.format('激活[%s]套装效果：', line_name)
 end
 
 local function build_choice_effect_text(node_def)
+  if node_def and node_def.parent_id then
+    return ''
+  end
   local root_def = get_set_root_def(node_def)
   local root_meta = root_def and ROOT_SET_DOC_META[root_def.id] or nil
   if root_meta and root_meta.effect_text and root_meta.effect_text ~= '' then
@@ -831,15 +942,35 @@ local function build_choice_effect_text(node_def)
   return trim_choice_prefix(get_choice_single_text(root_def))
 end
 
-local function build_choice_body_blocks(node_def, current_text, effect_title, effect_text)
+local function build_choice_body_blocks(state, node_def, current_text, advanced_text, effect_title, effect_text)
   local body_blocks = {}
-  local value_text = trim_choice_prefix(current_text)
+  local value_text = format_value_text_lines(trim_choice_prefix(current_text))
   if value_text ~= '' then
     body_blocks[#body_blocks + 1] = {
       kind = 'value',
       text = value_text,
       color = 'green',
       segments = build_manual_color_segments(value_text, 'white'),
+    }
+  end
+  local own_effect_text = format_value_text_lines(trim_choice_prefix(advanced_text))
+  if node_def and node_def.parent_id and own_effect_text ~= '' then
+    body_blocks[#body_blocks + 1] = {
+      kind = 'effect_title',
+      text = '本卡效果：',
+      color = 'gold',
+      segments = {
+        {
+          text = '本卡效果：',
+          color = 'gold',
+        },
+      },
+    }
+    body_blocks[#body_blocks + 1] = {
+      kind = 'effect',
+      text = own_effect_text,
+      color = 'dim',
+      segments = build_manual_color_segments(own_effect_text, 'dim'),
     }
   end
   if effect_title ~= '' then
@@ -980,7 +1111,7 @@ local function build_choice_entry(state, node_def, index)
   local current_text = build_choice_current_text(node_def)
   local advanced_text = get_choice_advanced_text(node_def)
   local next_text = build_choice_next_text(node_def)
-  local effect_title = build_choice_effect_title(node_def)
+  local effect_title = build_choice_effect_title(state, node_def)
   local effect_text = build_choice_effect_text(node_def)
   local subtitle_text = node_def.display_name
   if set_root_def and set_root_def.display_name == subtitle_text then
@@ -1004,7 +1135,7 @@ local function build_choice_entry(state, node_def, index)
     template = node_def.template,
     title_text = string.format(
       '%s (%s)',
-      set_root_def and set_root_def.display_name or node_def.display_name,
+      node_def.display_name,
       progress_text
     ),
     subtitle_text = subtitle_text,
@@ -1016,7 +1147,7 @@ local function build_choice_entry(state, node_def, index)
     value_text = trim_choice_prefix(current_text),
     effect_title = effect_title,
     effect_text = effect_text,
-    body_blocks = build_choice_body_blocks(node_def, current_text, effect_title, effect_text),
+    body_blocks = build_choice_body_blocks(state, node_def, current_text, advanced_text, effect_title, effect_text),
     title_color = 'bond_red',
     subtitle_color = 'blue',
     effect_color_mode = 'auto',
@@ -1065,6 +1196,52 @@ local function apply_dynamic_bonuses(env, desired_attr, desired_runtime)
 
   local previous_attr = runtime.dynamic_node_attr_bonuses[SYSTEM_DYNAMIC_NODE_ID] or {}
 
+  do
+    local hero = state and state.hero
+    local hero_attr_system = env and env.hero_attr_system
+    if hero and hero.is_exist and hero:is_exist() then
+      local seen = {}
+      for attr_name, desired_value in pairs(desired_attr) do
+        seen[attr_name] = true
+        local delta = desired_value - (previous_attr[attr_name] or 0)
+        if delta ~= 0 then
+          if hero_attr_system and hero_attr_system.add_attr then
+            hero_attr_system.add_attr(hero, attr_name, delta)
+          else
+            hero:add_attr(attr_name, delta)
+          end
+        end
+      end
+
+      for attr_name, previous_value in pairs(previous_attr) do
+        if not seen[attr_name] and previous_value ~= 0 then
+          if hero_attr_system and hero_attr_system.add_attr then
+            hero_attr_system.add_attr(hero, attr_name, -previous_value)
+          else
+            hero:add_attr(attr_name, -previous_value)
+          end
+        end
+      end
+    end
+
+    if next(desired_attr) then
+      runtime.dynamic_node_attr_bonuses[SYSTEM_DYNAMIC_NODE_ID] = copy_bonus_pack(desired_attr)
+    else
+      runtime.dynamic_node_attr_bonuses[SYSTEM_DYNAMIC_NODE_ID] = nil
+    end
+
+    if next(desired_runtime) then
+      runtime.dynamic_node_runtime_bonuses[SYSTEM_DYNAMIC_NODE_ID] = copy_bonus_pack(desired_runtime)
+    else
+      runtime.dynamic_node_runtime_bonuses[SYSTEM_DYNAMIC_NODE_ID] = nil
+    end
+
+    if env and env.sync_basic_attack_ability then
+      env.sync_basic_attack_ability()
+    end
+    return
+  end
+
   if state.hero and state.hero:is_exist() then
     local seen = {}
     for attr_name, desired_value in pairs(desired_attr) do
@@ -1096,6 +1273,60 @@ local function apply_dynamic_bonuses(env, desired_attr, desired_runtime)
 
   if env and env.sync_basic_attack_ability then
     env.sync_basic_attack_ability()
+  end
+end
+
+local function add_attr_to_hero(env, attr_name, delta)
+  if delta == nil or delta == 0 then
+    return
+  end
+  local state = env and env.STATE
+  local hero = state and state.hero
+  if not hero or not hero.is_exist or not hero:is_exist() then
+    return
+  end
+
+  local hero_attr_system = env and env.hero_attr_system
+  if hero_attr_system and hero_attr_system.add_attr then
+    hero_attr_system.add_attr(hero, attr_name, delta)
+    return
+  end
+
+  if hero.add_attr then
+    hero:add_attr(attr_name, delta)
+  end
+end
+
+local function sync_attr_bonuses_to_hero(env)
+  local state = env and env.STATE
+  local runtime = get_runtime(state)
+  local hero = state and state.hero
+  if not runtime or not hero or not hero.is_exist or not hero:is_exist() then
+    return
+  end
+
+  runtime.synced_hero_attr_bonuses = runtime.synced_hero_attr_bonuses or {}
+  local previous = runtime.synced_hero_attr_bonuses
+  local desired = M.get_total_attr_bonuses(state)
+  local seen = {}
+
+  for attr_name, desired_value in pairs(desired) do
+    seen[attr_name] = true
+    local delta = (desired_value or 0) - (previous[attr_name] or 0)
+    add_attr_to_hero(env, attr_name, delta)
+  end
+
+  for attr_name, previous_value in pairs(previous) do
+    if not seen[attr_name] and previous_value ~= 0 then
+      add_attr_to_hero(env, attr_name, -previous_value)
+    end
+  end
+
+  runtime.synced_hero_attr_bonuses = copy_bonus_pack(desired)
+
+  local hero_attr_system = env and env.hero_attr_system
+  if hero_attr_system and hero_attr_system.rebuild_derived_attrs then
+    hero_attr_system.rebuild_derived_attrs(hero)
   end
 end
 
@@ -1150,6 +1381,7 @@ function M.create_runtime()
     applied_node_runtime_bonuses = {},
     dynamic_node_attr_bonuses = {},
     dynamic_node_runtime_bonuses = {},
+    synced_hero_attr_bonuses = {},
     hunter_hit_targets = {},
     arcane_empower_remaining = 0,
     current_offer_round = nil,
@@ -1371,6 +1603,7 @@ function M.refresh_effects(env)
   local state = env and env.STATE
   M.refresh_all_nodes(state)
   apply_dynamic_bonuses(env, {}, {})
+  sync_attr_bonuses_to_hero(env)
 end
 
 function M.update_effects(env, dt)
@@ -1390,11 +1623,7 @@ function M.update_effects(env, dt)
   for key, value in pairs(static_runtime) do
     local attr_name = PER_SECOND_ATTR_KEYS[key]
     if attr_name and value ~= 0 then
-      if hero_attr_system then
-        hero_attr_system.add_attr(state.hero, attr_name, value * dt)
-      else
-        state.hero:add_attr(attr_name, value * dt)
-      end
+      add_attr_to_hero(env, attr_name, value * dt)
     end
   end
 
@@ -1414,6 +1643,7 @@ function M.update_effects(env, dt)
   end
 
   apply_dynamic_bonuses(env, desired_attr, desired_runtime)
+  sync_attr_bonuses_to_hero(env)
 end
 
 function M.build_reward_with_bonus(env, reward)
@@ -1477,6 +1707,33 @@ function M.handle_enemy_kill(env, info)
   local runtime = get_runtime(state)
   local hero_attr_system = env and env.hero_attr_system
   if not runtime or not state.hero or not state.hero:is_exist() then
+    return
+  end
+
+  do
+    local strength_on_kill = M.get_runtime_bonus(state, 'strength_on_kill')
+    if strength_on_kill > 0 then
+      add_attr_to_hero(env, '力量', strength_on_kill)
+    end
+
+    local agility_on_kill = M.get_runtime_bonus(state, 'agility_on_kill')
+    if agility_on_kill > 0 then
+      add_attr_to_hero(env, '敏捷', agility_on_kill)
+    end
+
+    local intelligence_on_kill = M.get_runtime_bonus(state, 'intelligence_on_kill')
+    if intelligence_on_kill > 0 then
+      add_attr_to_hero(env, '智力', intelligence_on_kill)
+    end
+
+    local attack_on_kill = env.round_number(M.get_runtime_bonus(state, 'attack_on_kill'))
+    if attack_on_kill > 0 then
+      add_attr_to_hero(env, '攻击', attack_on_kill)
+    end
+
+    if hero_attr_system and hero_attr_system.rebuild_derived_attrs then
+      hero_attr_system.rebuild_derived_attrs(state.hero)
+    end
     return
   end
 
@@ -1660,6 +1917,7 @@ function M.apply_choice(env, index)
   runtime.current_offer_round = nil
   runtime.current_round = nil
   runtime.hunter_hit_targets = {}
+  sync_attr_bonuses_to_hero(env)
 
   if env and env.message then
     env.message(string.format('已解锁链式羁绊：%s。', node_def.display_name))

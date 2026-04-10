@@ -3,6 +3,7 @@ local theme = require 'ui.theme'
 local Factory = require 'ui.factory'
 local layout = require 'ui.choice_panel_layout'
 local TextLayout = require 'ui.choice_panel_text_layout'
+local TextColorizer = require 'ui.choice_panel_text_colorizer'
 
 local M = {}
 
@@ -15,6 +16,16 @@ local BODY_COLORS = {
   white = { 226, 232, 238, 255 },
   blue = { 39, 157, 255, 255 },
   dim = { 154, 154, 154, 255 },
+  bond_red = { 255, 82, 82, 255 },
+}
+
+local FONT_SIZES = {
+  badge = 18,
+  bond_title = 26,
+  subtitle = 23,
+  value = 24,
+  effect_title = 22,
+  effect_text = 18,
 }
 
 local QUALITY_PALETTES = {
@@ -77,9 +88,6 @@ local function build_badge_text(card_model)
 end
 
 local function build_title_text(card_model)
-  if card_model.progress_text and card_model.progress_text ~= '' then
-    return string.format('%s %s', card_model.title_text or '', card_model.progress_text)
-  end
   return card_model.title_text or ''
 end
 
@@ -198,6 +206,238 @@ function M.create(env)
     end
   end
 
+  local function clear_effect_highlights(card)
+    for _, node in ipairs(card.effect_highlight_nodes or {}) do
+      if node and not node:is_removed() then
+        node:remove()
+      end
+    end
+    card.effect_highlight_nodes = {}
+  end
+
+  local function apply_card_typography(card, card_model)
+    if not card then
+      return
+    end
+
+    local title_size = FONT_SIZES.bond_title
+    local subtitle_size = FONT_SIZES.subtitle
+    local value_size = FONT_SIZES.value
+    local effect_title_size = FONT_SIZES.effect_title
+    local effect_text_size = FONT_SIZES.effect_text
+
+    if card_model and card_model.kind == 'upgrade' then
+      title_size = 24
+      subtitle_size = 20
+      value_size = 20
+      effect_title_size = 20
+      effect_text_size = 18
+    end
+
+    if card.rarity_text then
+      card.rarity_text:set_font_size(FONT_SIZES.badge)
+    end
+    if card.name then
+      card.name:set_font_size(title_size)
+    end
+    if card.subtitle_name then
+      card.subtitle_name:set_font_size(subtitle_size)
+    end
+    if card.value_desc then
+      card.value_desc:set_font_size(value_size)
+    end
+    if card.effect_name then
+      card.effect_name:set_font_size(effect_title_size)
+    end
+    if card.effect_text then
+      card.effect_text:set_font_size(effect_text_size)
+    end
+  end
+
+  local function render_effect_highlights(card, effect_text, mode)
+    clear_effect_highlights(card)
+    if not card or not card.effect_desc or not card.effect_text or type(effect_text) ~= 'string' or effect_text == '' then
+      return
+    end
+
+    local lines = TextColorizer.build_highlight_lines(effect_text, 'dim', mode)
+    if #lines == 0 then
+      return
+    end
+
+    local base_x = math.floor((card.effect_text:get_relative_x() or 0) + 0.5)
+    local base_y = math.floor((card.effect_text:get_relative_y() or 0) + 0.5)
+    local line_height = 24
+    local font_size = FONT_SIZES.effect_text
+
+    for line_index, segments in ipairs(lines) do
+      local cursor_x = base_x
+      local cursor_y = base_y - ((line_index - 1) * line_height)
+      for _, segment in ipairs(segments) do
+        if segment.text and segment.text ~= '' and segment.color and segment.color ~= 'dim' then
+          local text = card.effect_desc:create_child('文本')
+          local width = math.max(24, TextColorizer.estimate_text_width(segment.text, font_size) + 8)
+          local color = get_body_color(segment.color)
+          text:set_ui_size(width, line_height)
+          text:set_pos(cursor_x, cursor_y)
+          text:set_font_size(font_size)
+          text:set_text_alignment('左', '中')
+          text:set_text(segment.text)
+          text:set_text_color(color[1], color[2], color[3], color[4])
+          text:set_z_order(9817)
+          card.effect_highlight_nodes[#card.effect_highlight_nodes + 1] = text
+        end
+        cursor_x = cursor_x + TextColorizer.estimate_text_width(segment.text or '', font_size)
+      end
+    end
+  end
+
+  local function clear_value_highlights(card)
+    for _, node in ipairs(card.value_highlight_nodes or {}) do
+      if node and not node:is_removed() then
+        node:remove()
+      end
+    end
+    card.value_highlight_nodes = {}
+  end
+
+  local function has_manual_segments(blocks, default_color)
+    for _, block in ipairs(blocks or {}) do
+      for _, segment in ipairs(block.segments or {}) do
+        if segment.color and segment.color ~= default_color then
+          return true
+        end
+      end
+    end
+    return false
+  end
+
+  local function render_manual_highlights(parent, text_node, holder, blocks, default_color)
+    if not parent or not text_node or not holder then
+      return
+    end
+
+    local node_x = math.floor((text_node:get_relative_x() or 0) + 0.5)
+    local node_y = math.floor((text_node:get_relative_y() or 0) + 0.5)
+    local node_width = math.floor((text_node:get_width() or 0) + 0.5)
+    local node_height = math.floor((text_node:get_height() or 0) + 0.5)
+    local font_size = text_node.get_font_size and text_node:get_font_size() or FONT_SIZES.effect_text
+    local line_height = font_size + 8
+    local base_x = node_x - math.floor(node_width * 0.5) + 4
+    local base_y = node_y + math.floor(node_height * 0.5) - 2
+
+    for line_index, block in ipairs(blocks or {}) do
+      local segments = block and block.segments or nil
+      if not segments or #segments == 0 then
+        segments = {
+          {
+            text = block and block.text or '',
+            color = default_color,
+          },
+        }
+      end
+
+      local cursor_x = base_x
+      local cursor_y = base_y - ((line_index - 1) * line_height)
+      for _, segment in ipairs(segments) do
+        if segment.text and segment.text ~= '' then
+          local color = get_body_color(segment.color or default_color)
+          local width = math.max(24, TextColorizer.estimate_text_width(segment.text, font_size) + 8)
+          local text = create_text(
+            parent,
+            cursor_x,
+            cursor_y,
+            width,
+            line_height,
+            font_size,
+            color,
+            '左',
+            '上',
+            9817
+          )
+          text:set_anchor(0, 1)
+          text:set_text(segment.text)
+          holder[#holder + 1] = text
+        end
+        cursor_x = cursor_x + TextColorizer.estimate_text_width(segment.text or '', font_size)
+      end
+    end
+  end
+
+  local function render_effect_highlights(card, effect_blocks)
+    clear_effect_highlights(card)
+    if not card or not card.effect_desc or not card.effect_text then
+      return
+    end
+    local node_x = math.floor((card.effect_text:get_relative_x() or 0) + 0.5)
+    local node_y = math.floor((card.effect_text:get_relative_y() or 0) + 0.5)
+    local node_width = math.floor((card.effect_text:get_width() or 0) + 0.5)
+    local node_height = math.floor((card.effect_text:get_height() or 0) + 0.5)
+    local font_size = card.effect_text.get_font_size and card.effect_text:get_font_size() or FONT_SIZES.effect_text
+    local line_height = font_size + 8
+    local rows = TextLayout.build_segment_rows({
+      left = node_x - math.floor(node_width * 0.5) + 4,
+      top = node_y + math.floor(node_height * 0.5) - 2,
+      blocks = effect_blocks or {},
+      default_color = 'dim',
+      font_size = font_size,
+      line_height = line_height,
+      estimate_width = TextColorizer.estimate_text_width,
+    })
+    for _, row in ipairs(rows) do
+      for _, segment in ipairs(row.segments or {}) do
+        local color = get_body_color(segment.color or 'dim')
+        local text = card.effect_desc:create_child('文本')
+        text:set_anchor(0, 1)
+        text:set_ui_size(segment.width, line_height)
+        text:set_pos(segment.x, segment.y)
+        text:set_font_size(font_size)
+        text:set_text_alignment('左', '中')
+        text:set_text(segment.text)
+        text:set_text_color(color[1], color[2], color[3], color[4])
+        text:set_z_order(9817)
+        card.effect_highlight_nodes[#card.effect_highlight_nodes + 1] = text
+      end
+    end
+  end
+
+  local function render_value_highlights(card, value_blocks)
+    clear_value_highlights(card)
+    if not card or not card.desc_root or not card.value_desc then
+      return
+    end
+    local node_x = math.floor((card.value_desc:get_relative_x() or 0) + 0.5)
+    local node_y = math.floor((card.value_desc:get_relative_y() or 0) + 0.5)
+    local node_width = math.floor((card.value_desc:get_width() or 0) + 0.5)
+    local node_height = math.floor((card.value_desc:get_height() or 0) + 0.5)
+    local font_size = card.value_desc.get_font_size and card.value_desc:get_font_size() or FONT_SIZES.value
+    local line_height = font_size + 8
+    local rows = TextLayout.build_segment_rows({
+      left = node_x - math.floor(node_width * 0.5) + 4,
+      top = node_y + math.floor(node_height * 0.5) - 2,
+      blocks = value_blocks or {},
+      default_color = 'white',
+      font_size = font_size,
+      line_height = line_height,
+      estimate_width = TextColorizer.estimate_text_width,
+    })
+    for _, row in ipairs(rows) do
+      for _, segment in ipairs(row.segments or {}) do
+        local color = get_body_color(segment.color or 'white')
+        local text = card.desc_root:create_child('文本')
+        text:set_anchor(0, 1)
+        text:set_ui_size(segment.width, line_height)
+        text:set_pos(segment.x, segment.y)
+        text:set_font_size(font_size)
+        text:set_text_alignment('左', '中')
+        text:set_text(segment.text)
+        text:set_text_color(color[1], color[2], color[3], color[4])
+        text:set_z_order(9817)
+        card.value_highlight_nodes[#card.value_highlight_nodes + 1] = text
+      end
+    end
+  end
+
   local function create_choice_card(parent, left, bottom, width, height, index)
     local player = env.get_player()
     local prefab = y3.ui_prefab.create(player, 'choice_panel', parent)
@@ -242,6 +482,8 @@ function M.create(env)
       effect_desc = get_prefab_node(prefab, 'layout_1.desc_text.effect_desc'),
       effect_name = get_prefab_node(prefab, 'layout_1.desc_text.effect_desc.effect_name'),
       effect_text = get_prefab_node(prefab, 'layout_1.desc_text.effect_desc.effect_text'),
+      value_highlight_nodes = {},
+      effect_highlight_nodes = {},
     }
   end
 
@@ -456,25 +698,32 @@ function M.create(env)
         if card.icon then
           card.icon:set_image(card_model.icon_res or ui_res.common.empty)
         end
+        apply_card_typography(card, card_model)
         if card.name then
+          local title_color = card_model.title_color and get_body_color(card_model.title_color) or palette.title
           card.name:set_text(build_title_text(card_model))
           card.name:set_text_color(
-            palette.title[1],
-            palette.title[2],
-            palette.title[3],
-            palette.title[4]
+            title_color[1],
+            title_color[2],
+            title_color[3],
+            title_color[4]
           )
         end
         if card.subtitle_name then
-          local subtitle_visible = card_model.subtitle_text and card_model.subtitle_text ~= ''
+          local subtitle_text = card_model.progress_text
+          if not subtitle_text or subtitle_text == '' then
+            subtitle_text = card_model.subtitle_text
+          end
+          local subtitle_color = card_model.subtitle_color and get_body_color(card_model.subtitle_color) or palette.subtitle
+          local subtitle_visible = subtitle_text and subtitle_text ~= ''
           card.subtitle_name:set_visible(subtitle_visible)
           if subtitle_visible then
-            card.subtitle_name:set_text(card_model.subtitle_text)
+            card.subtitle_name:set_text(subtitle_text)
             card.subtitle_name:set_text_color(
-              palette.subtitle[1],
-              palette.subtitle[2],
-              palette.subtitle[3],
-              palette.subtitle[4]
+              subtitle_color[1],
+              subtitle_color[2],
+              subtitle_color[3],
+              subtitle_color[4]
             )
           end
         end
@@ -496,20 +745,23 @@ function M.create(env)
         end
         if card.value_desc then
           local value_color = get_body_color(text_layout.value_color)
+          local value_has_manual_segments = has_manual_segments(text_layout.value_blocks or {}, 'white')
           card.value_desc:set_visible(text_layout.value_visible)
           card.value_desc:set_text(text_layout.value_text or '')
           card.value_desc:set_text_color(
             value_color[1],
             value_color[2],
             value_color[3],
-            value_color[4]
+            value_has_manual_segments and 8 or value_color[4]
           )
+          render_value_highlights(card, text_layout.value_blocks or {})
         end
         if card.effect_desc then
           card.effect_desc:set_visible(text_layout.effect_visible)
         end
         if card.effect_name then
-          card.effect_name:set_visible(text_layout.effect_visible)
+          local effect_name_visible = text_layout.effect_visible and text_layout.effect_title and text_layout.effect_title ~= ''
+          card.effect_name:set_visible(effect_name_visible)
           card.effect_name:set_text(text_layout.effect_title or '')
           card.effect_name:set_text_color(
             BODY_COLORS.gold[1],
@@ -520,15 +772,20 @@ function M.create(env)
         end
         if card.effect_text then
           local effect_color = get_body_color(text_layout.effect_color)
+          local effect_has_manual_segments = has_manual_segments(text_layout.effect_blocks or {}, 'dim')
           card.effect_text:set_visible(text_layout.effect_visible)
           card.effect_text:set_text(text_layout.effect_text or '')
           card.effect_text:set_text_color(
             effect_color[1],
             effect_color[2],
             effect_color[3],
-            effect_color[4]
+            effect_has_manual_segments and 8 or effect_color[4]
           )
+          render_effect_highlights(card, text_layout.effect_blocks or {})
         end
+      else
+        clear_value_highlights(card)
+        clear_effect_highlights(card)
       end
     end
 

@@ -8,6 +8,7 @@ function M.create(env)
   local make_point = env.make_point
   local get_resource_rules = env.get_resource_rules
   local create_bond_runtime = env.create_bond_runtime
+  local create_battle_event_feed_runtime = env.create_battle_event_feed_runtime
   local create_effect_debug_runtime = env.create_effect_debug_runtime
   local create_mark_runtime = env.create_mark_runtime
   local create_treasure_runtime = env.create_treasure_runtime
@@ -15,6 +16,7 @@ function M.create(env)
   local create_attack_skill_state = env.create_attack_skill_state
   local destroy_choice_panel = env.destroy_choice_panel
   local battlefield_system = env.battlefield_system
+  local hero_attr_system = env.hero_attr_system
   local get_player = env.get_player
   local get_enemy_player = env.get_enemy_player
   local create_hero = env.create_hero
@@ -47,6 +49,7 @@ function M.create(env)
     }
     STATE.resource_income_elapsed = 0
     STATE.bond_runtime = create_bond_runtime()
+    STATE.battle_event_feed = create_battle_event_feed_runtime()
     STATE.effect_debug_runtime = create_effect_debug_runtime()
     STATE.mark_runtime = create_mark_runtime()
     STATE.treasure_runtime = create_treasure_runtime()
@@ -67,6 +70,7 @@ function M.create(env)
     STATE.basic_attack_ability_bound = false
     STATE.basic_attack_ability_warned = false
     STATE.runtime_elapsed = 0
+    STATE.hero_attr_runtime = nil
     STATE.choice_panel_hidden = false
     STATE.choice_panel = nil
     STATE.game_finished = false
@@ -151,6 +155,17 @@ function M.create(env)
     get_enemy_player():set_hostility(get_player(), true)
 
     STATE.hero = create_hero()
+    if hero_attr_system and STATE.hero then
+      hero_attr_system.snapshot(STATE.hero, STATE)
+      if hero_attr_system.log_snapshot then
+        hero_attr_system.log_snapshot(
+          STATE.hero,
+          'start_selected_stage',
+          string.format('stage=%s mode=%s hp=%s', tostring(stage_id), tostring(mode_id), tostring(STATE.hero:get_hp())),
+          STATE
+        )
+      end
+    end
     initialize_hero_progression()
     setup_basic_attack_ability()
     ensure_runtime_hud()

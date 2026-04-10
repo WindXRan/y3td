@@ -43,18 +43,39 @@ local function build_choice_text_blocks(...)
   return blocks
 end
 
+local function sanitize_bond_text(text)
+  if type(text) ~= 'string' then
+    return ''
+  end
+  if string.match(text, "^b'.*\\\\x") or string.match(text, '^b".*\\\\x') then
+    return ''
+  end
+  return text
+end
+
 local function build_bond_body_blocks(choice)
   if choice and choice.body_blocks and #choice.body_blocks > 0 then
     return choice.body_blocks
   end
 
+  local value_text = sanitize_bond_text((choice and choice.value_text) or (choice and choice.current_text) or (choice and choice.desc_text) or '')
+  local effect_title = sanitize_bond_text((choice and choice.effect_title) or '')
+  local effect_text = sanitize_bond_text((choice and choice.effect_text) or '')
+
   return build_choice_text_blocks(
-    {
-      text = (choice and choice.value_text) or (choice and choice.current_text) or (choice and choice.desc_text) or '',
+    value_text ~= '' and {
+      kind = 'value',
+      text = value_text,
       color = 'green',
-    },
-    choice and choice.effect_text and {
-      text = choice.effect_text,
+    } or nil,
+    effect_title ~= '' and {
+      kind = 'effect_title',
+      text = effect_title,
+      color = 'gold',
+    } or nil,
+    effect_text ~= '' and {
+      kind = 'effect',
+      text = effect_text,
       color = 'dim',
     } or nil
   )
@@ -149,18 +170,22 @@ function M.create(env)
       if subtitle_text == title_text then
         subtitle_text = ''
       end
+      if choice.title_text and choice.title_text ~= '' then
+        title_text = choice.title_text
+      end
 
       cards[#cards + 1] = {
         index = index,
         badge_text = get_choice_badge_text(choice.quality),
         quality = choice.quality or 'rare',
         icon_res = choice.ui_icon or get_choice_default_icon('bond', choice.quality),
-        title_text = choice.title_text or choice.display_name or '羁绊节点',
-        progress_text = choice.progress_text or '',
-        subtitle_text = choice.subtitle_text or '',
         title_text = title_text,
+        progress_text = choice.progress_text or '',
         subtitle_text = subtitle_text,
         body_blocks = build_bond_body_blocks(choice),
+        title_color = choice.title_color,
+        subtitle_color = choice.subtitle_color,
+        effect_color_mode = choice.effect_color_mode,
       }
     end
     return cards

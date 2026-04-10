@@ -575,11 +575,61 @@ function M.create(env)
     return true
   end
 
+  local function resolve_hero_spawn_hp(hero)
+    if not hero then
+      return 1
+    end
+
+    local hp = hero_attr_system and hero_attr_system.get_attr(hero, '生命结算值') or 0
+    hp = tonumber(hp) or 0
+    if hp > 0 then
+      return hp
+    end
+
+    hp = hero_attr_system and hero_attr_system.get_attr(hero, '生命') or 0
+    hp = tonumber(hp) or 0
+    if hp > 0 then
+      return hp
+    end
+
+    if hero.get_attr then
+      hp = tonumber(hero:get_attr('生命')) or tonumber(hero:get_attr('最大生命')) or 0
+      if hp > 0 then
+        return hp
+      end
+    end
+
+    return 1
+  end
+
+  local function schedule_hero_spawn_attr_logs(hero)
+    if not hero_attr_system or not hero_attr_system.log_snapshot or not y3 or not y3.ltimer then
+      return
+    end
+
+    local checkpoints = { 0.1, 0.5, 1.0 }
+    for _, delay in ipairs(checkpoints) do
+      y3.ltimer.wait(delay, function()
+        if not hero or not hero.is_exist or not hero:is_exist() then
+          return
+        end
+        hero_attr_system.log_snapshot(
+          hero,
+          'create_hero_delayed_snapshot',
+          string.format('delay=%.1fs hp=%s', delay, tostring(hero:get_hp()))
+        )
+      end)
+    end
+  end
+
   function api.create_hero(basic_attack_range)
     local hero = env.get_player():create_unit(CONFIG.unit_ids.hero, STATE.hero_spawn_point, 0)
     env.get_player():select_unit(hero)
 
     hero:set_name('守关英雄')
+    if hero_attr_system and hero_attr_system.log_snapshot then
+      hero_attr_system.log_snapshot(hero, 'create_hero_before_init', string.format('basic_attack_range=%s', tostring(basic_attack_range or 250)))
+    end
     hero_attr_system.init_hero_attrs(hero, CONFIG.hero_init_stats)
     hero_attr_system.set_attr(hero, '攻击范围', basic_attack_range or 250)
     hero:add_state('禁止普攻')
@@ -587,17 +637,35 @@ function M.create(env)
     hero:add_state('禁止移动')
     hero:stop()
 
-    if CONFIG.debug_time_scale < 1 then
+    if CONFIG.debug_time_scale < 1 and CONFIG.debug_apply_hero_bonus_on_spawn == true then
       for attr_name, value in pairs(CONFIG.debug_hero_bonus_stats) do
         hero_attr_system.add_attr(hero, attr_name, value)
+      end
+      if hero_attr_system and hero_attr_system.log_snapshot then
+        hero_attr_system.log_snapshot(hero, 'create_hero_after_debug_bonus')
       end
     end
 
     hero_attr_system.rebuild_derived_attrs(hero)
+    if hero_attr_system and hero_attr_system.log_snapshot then
+      hero_attr_system.log_snapshot(hero, 'create_hero_after_rebuild')
+    end
     hero:set_hp(hero_attr_system.get_attr(hero, '生命结算值'))
     STATE.hero_common_attack = hero:get_common_attack()
+    local spawn_hp = resolve_hero_spawn_hp(hero)
+    hero:set_hp(spawn_hp)
+    if hero_attr_system and hero_attr_system.log_snapshot then
+      hero_attr_system.log_snapshot(hero, 'create_hero_after_set_hp', string.format('spawn_hp=%s current_hp=%s', tostring(spawn_hp), tostring(hero:get_hp())))
+    end
 
     hero:event('单位-死亡', function()
+      if hero_attr_system and hero_attr_system.log_snapshot then
+        hero_attr_system.log_snapshot(
+          hero,
+          'hero_dead',
+          string.format('hp=%s reason=%s', tostring(hero:get_hp()), tostring('英雄倒下。'))
+        )
+      end
       finish_game(false, '英雄倒下。')
     end)
 
@@ -606,6 +674,9 @@ function M.create(env)
     end)
 
     hero:event('单位-受到伤害后', function()
+      if hero_attr_system and hero_attr_system.log_snapshot then
+        hero_attr_system.log_snapshot(hero, 'hero_be_hurt', string.format('hp=%s', tostring(hero:get_hp())))
+      end
       if env.on_hero_be_hurt then
         env.on_hero_be_hurt()
       end
@@ -614,6 +685,8 @@ function M.create(env)
     if env.on_hero_attr_changed then
       env.on_hero_attr_changed()
     end
+
+    schedule_hero_spawn_attr_logs(hero)
 
     return hero
   end

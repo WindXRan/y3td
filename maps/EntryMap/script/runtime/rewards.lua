@@ -1203,6 +1203,7 @@ function M.create(env)
   function api.handle_hero_be_hurt()
     local runtime = api.get_treasure_runtime()
     local max_hp = 0
+    local before_hp = STATE.hero and STATE.hero:is_exist() and STATE.hero:get_hp() or 0
     if STATE.hero and STATE.hero:is_exist() then
       max_hp = hero_attr_system and hero_attr_system.get_attr(STATE.hero, '生命结算值') or STATE.hero:get_attr('生命结算值') or 0
       if (tonumber(max_hp) or 0) <= 0 then
@@ -1224,6 +1225,13 @@ function M.create(env)
           entry.expired = true
         end
       end
+    end
+    if hero_attr_system and STATE.hero and STATE.hero:is_exist() and hero_attr_system.log_snapshot then
+      hero_attr_system.log_snapshot(
+        STATE.hero,
+        'rewards_handle_hero_be_hurt',
+        string.format('before_hp=%s after_hp=%s max_hp=%s', tostring(before_hp), tostring(STATE.hero:get_hp()), tostring(max_hp))
+      )
     end
     remove_expired_temporary_buffs(function(entry)
       return entry.expired == true
