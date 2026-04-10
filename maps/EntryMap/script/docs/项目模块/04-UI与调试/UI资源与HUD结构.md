@@ -67,7 +67,7 @@
 跟候选本体绑定的图标不写在 UI 文件里，而是走业务对象上的 `ui_icon` 字段：
 
 - 攻击技能：`maps/EntryMap/script/entry_objects/attack_skills/*.lua`
-- 羁绊卡：`maps/EntryMap/script/entry_objects/bond_cards/*.lua`
+- 羁绊节点：`maps/EntryMap/script/runtime/bond_nodes.lua`
 - 宝物：`maps/EntryMap/script/entry_objects/treasures/*.lua`
 
 如果对象上暂时没有 `ui_icon`，当前 runtime 会退回到 `entry_runtime.lua` 里的默认图标，不会卡死流程。

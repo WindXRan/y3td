@@ -64,9 +64,9 @@
   - `maps/EntryMap/script/entry_runtime_attack_upgrades.lua`
   - `maps/EntryMap/script/entry_objects/attack_skills`
 - 羁绊：
-  - `maps/EntryMap/script/runtime_bonds.lua`
-  - `maps/EntryMap/script/entry_objects/bonds`
-  - `maps/EntryMap/script/entry_objects/bond_cards`
+  - `maps/EntryMap/script/runtime/bonds.lua`
+  - `maps/EntryMap/script/runtime/bonds_chain.lua`
+  - `maps/EntryMap/script/runtime/bond_nodes.lua`
 - 宝物 / 烙印 / 奖励队列：
   - `maps/EntryMap/script/entry_runtime.lua`
   - `maps/EntryMap/script/entry_runtime_rewards.lua`
@@ -106,7 +106,7 @@
   - 战场：`entry_runtime_battlefield.lua`
   - 成长：`entry_runtime_progression.lua`
   - 攻击技能：`entry_runtime_attack_skills.lua` / `entry_runtime_attack_upgrades.lua`
-  - 羁绊：`runtime_bonds.lua`
+  - 羁绊：`runtime/bonds.lua` / `runtime/bonds_chain.lua`
   - 总协调：`entry_runtime.lua`
   - 宝物 / 烙印 / 奖励队列：`entry_runtime_rewards.lua`
   - HUD：`entry_runtime_hud.lua`

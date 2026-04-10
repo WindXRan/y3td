@@ -15,8 +15,11 @@ local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
 local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
 local EffectDebugSystem = require 'runtime.effect_debug'
+local BattleEventFeedSystem = require 'runtime.battle_event_feed'
 local RewardSystem = require 'runtime.rewards'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
+local HeroAttrDefs = require 'runtime.hero_attr_defs'
+local HeroAttrPanel = require 'runtime.hero_attr_panel'
 local M = {}
 local helper_signals_started = false
 local heal_hero
@@ -177,6 +180,10 @@ local function create_bond_runtime()
   return BondSystem.create_runtime()
 end
 
+local function create_battle_event_feed_runtime()
+  return BattleEventFeedSystem.create_runtime()
+end
+
 local function create_effect_debug_runtime()
   return EffectDebugSystem.create_runtime()
 end
@@ -196,6 +203,7 @@ local STATE = {
   resources = nil,
   resource_income_elapsed = 0,
   bond_runtime = nil,
+  battle_event_feed = nil,
   effect_debug_runtime = nil,
   mark_runtime = nil,
   treasure_runtime = nil,
@@ -245,9 +253,81 @@ local function get_enemy_player()
   return y3.player(CONFIG.enemy_player_id)
 end
 
+local function infer_battle_event_style(text)
+  local content = tostring(text or '')
+  if content == '' then
+    return 'neutral'
+  end
+  if string.find(content, '获得', 1, true)
+    or string.find(content, '奖励', 1, true)
+    or string.find(content, '刷新次数', 1, true)
+    or string.find(content, '金币 +', 1, true)
+    or string.find(content, '木材 +', 1, true)
+    or string.find(content, '经验 +', 1, true) then
+    return 'reward'
+  end
+  if string.find(content, '开始', 1, true)
+    or string.find(content, '进攻', 1, true)
+    or string.find(content, '警告', 1, true)
+    or string.find(content, '失败', 1, true)
+    or string.find(content, '不足', 1, true) then
+    return 'warning'
+  end
+  if string.find(content, '稀有', 1, true)
+    or string.find(content, '史诗', 1, true)
+    or string.find(content, '1星效果触发', 1, true) then
+    return 'rare'
+  end
+  if string.find(content, '+1', 1, true)
+    or string.find(content, '恢复', 1, true)
+    or string.find(content, '升级', 1, true)
+    or string.find(content, '解锁', 1, true) then
+    return 'positive'
+  end
+  return 'neutral'
+end
+
+local function push_battle_event(text, style, duration)
+  if STATE.session_phase ~= 'battle' then
+    return nil
+  end
+  if not STATE.battle_event_feed then
+    STATE.battle_event_feed = create_battle_event_feed_runtime()
+  end
+  return BattleEventFeedSystem.push_event(STATE.battle_event_feed, text, {
+    now = STATE.runtime_elapsed or 0,
+    style = style or infer_battle_event_style(text),
+    duration = duration,
+  })
+end
+
+local function is_choice_panel_blocking_messages()
+  if STATE.session_phase ~= 'battle' or STATE.choice_panel_hidden == true then
+    return false
+  end
+  if STATE.current_upgrade_choices and #STATE.current_upgrade_choices > 0 then
+    return true
+  end
+  if STATE.bond_runtime and STATE.bond_runtime.current_choices and #STATE.bond_runtime.current_choices > 0 then
+    return true
+  end
+  if STATE.treasure_runtime then
+    if STATE.treasure_runtime.current_choices and #STATE.treasure_runtime.current_choices > 0 then
+      return true
+    end
+    if STATE.treasure_runtime.awaiting_replace and STATE.treasure_runtime.pending_replace_choice then
+      return true
+    end
+  end
+  return false
+end
+
 local function message(text)
   print(text)
-  get_player():display_message(text)
+  if not is_choice_panel_blocking_messages() then
+    get_player():display_message(text)
+  end
+  push_battle_event(text)
 end
 
 local function make_point(data)
@@ -328,6 +408,25 @@ local function snapshot_hero_attrs()
     return nil
   end
   return hero_attr_system.snapshot(STATE.hero, STATE)
+end
+
+local function build_runtime_attr_dialog_chunks()
+  local snapshot = snapshot_hero_attrs()
+  if snapshot and hero_attr_system and hero_attr_system.log_snapshot then
+    hero_attr_system.log_snapshot(STATE.hero, 'show_runtime_attr_dialog', nil, STATE)
+  end
+  return HeroAttrPanel.build_chunks(snapshot, HeroAttrDefs, function(name)
+    return hero_attr_system.get_attr(STATE.hero, name)
+  end)
+end
+
+local function show_runtime_attr_dialog()
+  local chunks = build_runtime_attr_dialog_chunks()
+  for index, text in ipairs(chunks) do
+    y3.ltimer.wait((index - 1) * 0.08, function()
+      get_player():display_message(text)
+    end)
+  end
 end
 
 reward_system = RewardSystem.create({
@@ -1465,13 +1564,10 @@ debug_tools_system = DebugToolsSystem.create({
     return debug_actions_system.debug_kill_all_active_enemies()
   end,
   debug_open_attr_overview = function()
-    STATE.runtime_overview_mode = 'attr'
-    runtime_overview_system.ensure_panel()
-    runtime_overview_system.set_visible(true)
-    refresh_runtime_overview()
+    show_runtime_attr_dialog()
   end,
   debug_show_attr_tip_panel = function()
-    show_runtime_attr_tip_panel(10)
+    show_runtime_attr_dialog()
   end,
   debug_grant_bond_card = function(card_id)
     return debug_actions_system.debug_grant_bond_card(card_id)
@@ -1517,6 +1613,10 @@ function M.finish_challenge(instance, is_success)
   return battlefield_system.finish_challenge(instance, is_success)
 end
 
+function M.push_battle_event(text, style, duration)
+  return push_battle_event(text, style, duration)
+end
+
 local function try_start_challenge(challenge_id)
   if not ensure_round_choice_available(nil) then
     return
@@ -1555,6 +1655,13 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
     return battlefield_system.get_active_challenge_count()
   end,
   get_reward_queue_count = get_reward_queue_count,
+  get_battle_event_feed_entries = function(max_visible)
+    return BattleEventFeedSystem.get_visible_entries(
+      STATE.battle_event_feed,
+      STATE.runtime_elapsed or 0,
+      max_visible
+    )
+  end,
   get_current_stage_text = function()
     if STATE.current_stage_def and STATE.current_stage_def.display_name then
       return STATE.current_stage_def.display_name
@@ -1720,6 +1827,7 @@ session_state_system = SessionStateSystem.create({
   make_point = make_point,
   get_resource_rules = get_resource_rules,
   create_bond_runtime = create_bond_runtime,
+  create_battle_event_feed_runtime = create_battle_event_feed_runtime,
   create_effect_debug_runtime = create_effect_debug_runtime,
   create_mark_runtime = create_mark_runtime,
   create_treasure_runtime = create_treasure_runtime,
@@ -1798,6 +1906,7 @@ input_events_system = InputEventsSystem.create({
   show_runtime_attr_tip_panel = function()
     show_runtime_attr_tip_panel(8)
   end,
+  show_runtime_attr_dialog = show_runtime_attr_dialog,
   refresh_runtime_overview = refresh_runtime_overview,
   try_start_challenge = try_start_challenge,
   try_treasure_entry = try_treasure_entry,
