@@ -5,6 +5,7 @@ local M = {}
 function M.create(env)
   local STATE = env.STATE
   local y3 = env.y3
+  local hero_attr_system = env.hero_attr_system
   local ATTACK_SKILL_VFX = env.ATTACK_SKILL_VFX
   local has_bond_route_tag = env.has_bond_route_tag
   local is_debug_effect_mounted = env.is_debug_effect_mounted
@@ -99,10 +100,21 @@ function M.create(env)
     if not unit or not unit.is_exist or not unit:is_exist() then
       return 0
     end
+    if hero_attr_system and unit == STATE.hero then
+      return hero_attr_system.get_attr(unit, attr_name)
+    end
     return y3.helper.tonumber(unit:get_attr(attr_name)) or 0
   end
 
   local function get_attack_damage_base()
+    local final_attack = get_unit_attr(STATE.hero, '攻击结算值')
+    if final_attack > 0 then
+      return math.max(1, final_attack)
+    end
+    local base_attack = get_unit_attr(STATE.hero, '攻击')
+    if base_attack > 0 then
+      return math.max(1, base_attack)
+    end
     return math.max(1, get_unit_attr(STATE.hero, '物理攻击'))
   end
 
@@ -115,6 +127,14 @@ function M.create(env)
   end
 
   local function get_hero_max_hp()
+    local final_hp = get_unit_attr(STATE.hero, '生命结算值')
+    if final_hp > 0 then
+      return math.max(1, final_hp)
+    end
+    local base_hp = get_unit_attr(STATE.hero, '生命')
+    if base_hp > 0 then
+      return math.max(1, base_hp)
+    end
     return math.max(1, get_unit_attr(STATE.hero, '最大生命'))
   end
 
@@ -130,12 +150,13 @@ function M.create(env)
     if not target or not target:is_exist() then
       return 1
     end
-    local max_hp = math.max(1, y3.helper.tonumber(target:get_attr('最大生命')) or 1)
+    local max_hp = math.max(1, y3.helper.tonumber(target:get_attr('生命')) or y3.helper.tonumber(target:get_attr('最大生命')) or 1)
     return math.max(0, target:get_hp() / max_hp)
   end
 
   local function get_target_max_hp(target)
-    return math.max(1, get_unit_attr(target, '最大生命'))
+    local max_hp = y3.helper.tonumber(target and target.get_attr and target:get_attr('生命')) or get_unit_attr(target, '最大生命')
+    return math.max(1, max_hp)
   end
 
   local function get_initial_skill_count()
@@ -338,13 +359,21 @@ function M.create(env)
         local previous = active.attr[attr_name] or 0
         local delta = value - previous
         if delta ~= 0 then
-          hero:add_attr(attr_name, delta)
+          if hero_attr_system then
+            hero_attr_system.add_attr(hero, attr_name, delta)
+          else
+            hero:add_attr(attr_name, delta)
+          end
         end
         active.attr[attr_name] = value
       end
       for attr_name, previous in pairs(active.attr) do
         if not seen[attr_name] and previous ~= 0 then
-          hero:add_attr(attr_name, -previous)
+          if hero_attr_system then
+            hero_attr_system.add_attr(hero, attr_name, -previous)
+          else
+            hero:add_attr(attr_name, -previous)
+          end
           active.attr[attr_name] = nil
         end
       end
@@ -352,6 +381,9 @@ function M.create(env)
       active.attr = attr_pack or {}
     end
     active.remaining = math.max(active.remaining or 0, duration or 0)
+    if hero and hero:is_exist() and hero_attr_system then
+      hero_attr_system.rebuild_derived_attrs(hero)
+    end
   end
 
   local function clear_temp_attr_bonus(effect_id)
@@ -364,8 +396,15 @@ function M.create(env)
     if STATE.hero and STATE.hero:is_exist() then
       for attr_name, value in pairs(active.attr or {}) do
         if value ~= 0 then
-          STATE.hero:add_attr(attr_name, -value)
+          if hero_attr_system then
+            hero_attr_system.add_attr(STATE.hero, attr_name, -value)
+          else
+            STATE.hero:add_attr(attr_name, -value)
+          end
         end
+      end
+      if hero_attr_system then
+        hero_attr_system.rebuild_derived_attrs(STATE.hero)
       end
     end
     runtime.temp_attr_bonuses[effect_id] = nil

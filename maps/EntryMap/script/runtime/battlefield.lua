@@ -7,6 +7,7 @@ function M.create(env)
   local message = env.message
   local design_seconds = env.design_seconds
   local random_point_in_area = env.random_point_in_area
+  local hero_attr_system = env.hero_attr_system
   local set_attr_pack = env.set_attr_pack
   local add_attr_pack = env.add_attr_pack
 
@@ -244,6 +245,8 @@ function M.create(env)
     end
     if info and info.spawn_hp ~= nil then
       unit:set_hp(info.spawn_hp)
+    elseif info and info.attr_overrides and info.attr_overrides['生命'] ~= nil then
+      unit:set_hp(info.attr_overrides['生命'])
     elseif info and info.attr_overrides and info.attr_overrides['最大生命'] ~= nil then
       unit:set_hp(info.attr_overrides['最大生命'])
     end
@@ -577,18 +580,21 @@ function M.create(env)
     env.get_player():select_unit(hero)
 
     hero:set_name('守关英雄')
-    set_attr_pack(hero, CONFIG.hero_init_stats)
-    hero:set_attr('攻击范围', basic_attack_range or 250)
+    hero_attr_system.init_hero_attrs(hero, CONFIG.hero_init_stats)
+    hero_attr_system.set_attr(hero, '攻击范围', basic_attack_range or 250)
     hero:add_state('禁止普攻')
 
     hero:add_state('禁止移动')
     hero:stop()
 
     if CONFIG.debug_time_scale < 1 then
-      add_attr_pack(hero, CONFIG.debug_hero_bonus_stats)
+      for attr_name, value in pairs(CONFIG.debug_hero_bonus_stats) do
+        hero_attr_system.add_attr(hero, attr_name, value)
+      end
     end
 
-    hero:set_hp(hero:get_attr('最大生命'))
+    hero_attr_system.rebuild_derived_attrs(hero)
+    hero:set_hp(hero_attr_system.get_attr(hero, '生命结算值'))
     STATE.hero_common_attack = hero:get_common_attack()
 
     hero:event('单位-死亡', function()
@@ -604,6 +610,10 @@ function M.create(env)
         env.on_hero_be_hurt()
       end
     end)
+
+    if env.on_hero_attr_changed then
+      env.on_hero_attr_changed()
+    end
 
     return hero
   end

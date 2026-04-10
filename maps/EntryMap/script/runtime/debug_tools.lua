@@ -10,6 +10,10 @@ function M.create(env)
   local develop_command = env.develop_command
   local effect_debug_system = env.effect_debug_system
 
+  local function format_int(value)
+    return round_number(tonumber(value) or 0)
+  end
+
   local function point_to_table(point)
     return {
       x = round_number(point:get_x()),
@@ -342,6 +346,48 @@ function M.create(env)
     }, '\n')
   end
 
+  get_gm_panel_wave_text = function()
+    local wave = env.get_current_wave()
+    if not wave then
+      return '波次：未开始'
+    end
+
+    local wave_name = wave.name or ('第' .. tostring(wave.index) .. '波')
+    return string.format('波次：%d  %s', wave.index or 0, wave_name)
+  end
+
+  get_gm_panel_boss_text = function()
+    if not STATE.active_wave or not STATE.active_wave.wave then
+      return 'Boss：等待本波开始'
+    end
+    if STATE.active_wave.boss_spawned then
+      return string.format('Boss：%s 已登场', env.get_boss_name(STATE.active_wave.wave))
+    end
+
+    local remain = math.max(0, STATE.active_wave.wave.boss_spawn_sec - STATE.active_wave.elapsed)
+    return string.format('Boss：%.1f 秒后登场', remain)
+  end
+
+  get_gm_panel_status_text = function()
+    local hero_level = env.get_hero_level()
+    local gold = STATE.resources and STATE.resources.gold or 0
+    local wood = STATE.resources and STATE.resources.wood or 0
+    local skill_points = STATE.skill_points or 0
+    local challenge_charges = STATE.challenge_charges or 0
+    local max_charges = CONFIG.challenge_rules.max_charges or 0
+    local enemy_alive = STATE.total_enemy_alive or 0
+    local challenge_count = env.get_active_challenge_count()
+
+    return table.concat({
+      get_gm_panel_wave_text(),
+      get_gm_panel_boss_text(),
+      string.format('英雄：Lv.%d    敌人数：%d', format_int(hero_level), format_int(enemy_alive)),
+      string.format('金币：%d    木材：%d', format_int(gold), format_int(wood)),
+      string.format('技能点：%d    挑战次数：%d/%d', format_int(skill_points), format_int(challenge_charges), format_int(max_charges)),
+      string.format('进行中挑战：%d', format_int(challenge_count)),
+    }, '\n')
+  end
+
   local function build_effect_debug_entry_label(entry)
     local marker = entry and entry.selected and '>' or ' '
     local mounted = entry and entry.mounted and 'ON' or 'OFF'
@@ -560,6 +606,7 @@ function M.create(env)
       { '刷 Boss / F8', 204, 92, env.debug_force_spawn_boss, { 110, 86, 126 } },
       { '清全场 / F9', 24, 36, env.debug_kill_all_active_enemies, { 128, 74, 88 } },
       { '角色属性', 204, 36, env.debug_open_attr_overview, { 74, 100, 136 } },
+      { '顶部属性', 24, 0, env.debug_show_attr_tip_panel, { 70, 104, 134 } },
       { '打印状态', 114, 0, env.show_runtime_status, { 60, 92, 120 } },
     }
 

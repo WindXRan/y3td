@@ -11,6 +11,7 @@ function M.create(env)
   local CONFIG = env.CONFIG
   local y3 = env.y3
   local round_number = env.round_number
+  local hero_attr_system = env.hero_attr_system
   local factory = Factory.create(env)
 
   local create_panel = factory.create_panel
@@ -52,6 +53,19 @@ function M.create(env)
       return text:gsub('%.0k$', 'k')
     end
     return tostring(number)
+  end
+
+  local function get_hero_attr(name, fallback_name)
+    if not STATE.hero or not STATE.hero:is_exist() then
+      return 0
+    end
+    local value = hero_attr_system and hero_attr_system.get_attr(STATE.hero, name) or STATE.hero:get_attr(name)
+    value = y3.helper.tonumber(value) or 0
+    if value > 0 or not fallback_name then
+      return value
+    end
+    local fallback = hero_attr_system and hero_attr_system.get_attr(STATE.hero, fallback_name) or STATE.hero:get_attr(fallback_name)
+    return y3.helper.tonumber(fallback) or 0
   end
 
   local function get_stage_text()
@@ -108,7 +122,7 @@ function M.create(env)
           state = string.format(
             'HP %s / %s',
             format_compact(info.unit:get_hp()),
-            format_compact(info.unit:get_attr('最大生命'))
+            format_compact(info.unit:get_attr('生命') or info.unit:get_attr('最大生命'))
           ),
           bg = theme.palette.danger,
           text = { 255, 236, 240, 255 },
@@ -150,7 +164,7 @@ function M.create(env)
     return string.format(
       '生命 %s / %s',
       format_compact(STATE.hero:get_hp()),
-      format_compact(STATE.hero:get_attr('最大生命'))
+      format_compact(get_hero_attr('生命结算值', '生命'))
     )
   end
 

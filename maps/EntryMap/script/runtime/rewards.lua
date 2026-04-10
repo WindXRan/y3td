@@ -56,6 +56,7 @@ function M.create(env)
   local message = env.message
   local round_number = env.round_number
   local add_attr_pack = env.add_attr_pack
+  local hero_attr_system = env.hero_attr_system
   local sync_basic_attack_ability = env.sync_basic_attack_ability
   local heal_hero = env.heal_hero
   local collect_bond_route_tags = env.collect_bond_route_tags
@@ -713,7 +714,7 @@ function M.create(env)
     end
 
     if runtime.active_by_id.crown_fragment then
-      aggregate.attr['物理攻击'] = (aggregate.attr['物理攻击'] or 0) + rare_count * 12 + epic_count * 24
+      aggregate.attr['攻击'] = (aggregate.attr['攻击'] or 0) + rare_count * 12 + epic_count * 24
     end
 
     return aggregate
@@ -1201,7 +1202,13 @@ function M.create(env)
 
   function api.handle_hero_be_hurt()
     local runtime = api.get_treasure_runtime()
-    local max_hp = STATE.hero and STATE.hero:get_attr('最大生命') or 0
+    local max_hp = 0
+    if STATE.hero and STATE.hero:is_exist() then
+      max_hp = hero_attr_system and hero_attr_system.get_attr(STATE.hero, '生命结算值') or STATE.hero:get_attr('生命结算值') or 0
+      if (tonumber(max_hp) or 0) <= 0 then
+        max_hp = hero_attr_system and hero_attr_system.get_attr(STATE.hero, '生命') or STATE.hero:get_attr('生命') or STATE.hero:get_attr('最大生命') or 0
+      end
+    end
     for _, entry in ipairs(runtime.temporary_buffs.active) do
       if entry.duration_type == 'charges' and (entry.remaining_charges or 0) > 0 then
         entry.remaining_charges = entry.remaining_charges - 1

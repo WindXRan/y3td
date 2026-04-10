@@ -4,6 +4,7 @@ function M.create(env)
   local STATE = env.STATE
   local CONFIG = env.CONFIG
   local round_number = env.round_number
+  local hero_attr_system = env.hero_attr_system
   local get_current_wave = env.get_current_wave
   local get_boss_name = env.get_boss_name
   local get_hero_progress_text = env.get_hero_progress_text
@@ -32,6 +33,16 @@ function M.create(env)
 
   local function format_attr_value(value)
     return round_number(value or 0)
+  end
+
+  local function get_hero_attr(name)
+    if not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then
+      return 0
+    end
+    if hero_attr_system then
+      return hero_attr_system.get_attr(STATE.hero, name)
+    end
+    return STATE.hero:get_attr(name)
   end
 
   local function build_overview_summary_lines()
@@ -68,16 +79,16 @@ function M.create(env)
         '英雄：%s  HP %d/%d  攻击 %d  攻速 %d',
         get_hero_progress_text(),
         format_attr_value(STATE.hero:get_hp()),
-        format_attr_value(STATE.hero:get_attr('最大生命')),
-        format_attr_value(STATE.hero:get_attr('物理攻击')),
+        format_attr_value(get_hero_attr('生命结算值')),
+        format_attr_value(get_hero_attr('攻击结算值')),
         format_attr_value(STATE.hero:get_attr('攻击速度'))
       )
       lines[#lines + 1] = string.format(
         '暴击 %d%%  爆伤 %d%%  吸血 %d%%  射程 %d',
-        format_attr_value(STATE.hero:get_attr('暴击率')),
-        format_attr_value(STATE.hero:get_attr('暴击伤害')),
-        format_attr_value(STATE.hero:get_attr('物理吸血')),
-        format_attr_value(STATE.hero:get_attr('攻击范围'))
+        format_attr_value(get_hero_attr('物理暴击')),
+        format_attr_value(get_hero_attr('物理暴伤')),
+        format_attr_value(get_hero_attr('物理吸血')),
+        format_attr_value(get_hero_attr('攻击范围'))
       )
     else
       lines[#lines + 1] = '英雄：当前未创建'
@@ -190,17 +201,17 @@ function M.create(env)
       string.format('等级：%s', get_hero_progress_text()),
       string.format('生命：%d / %d',
         format_attr_value(STATE.hero:get_hp()),
-        format_attr_value(STATE.hero:get_attr('最大生命'))
+        format_attr_value(get_hero_attr('生命结算值'))
       ),
       string.format('攻击：%d  攻速：%d  射程：%d',
-        format_attr_value(STATE.hero:get_attr('物理攻击')),
+        format_attr_value(get_hero_attr('攻击结算值')),
         format_attr_value(STATE.hero:get_attr('攻击速度')),
-        format_attr_value(STATE.hero:get_attr('攻击范围'))
+        format_attr_value(get_hero_attr('攻击范围'))
       ),
       string.format('暴击：%d%%  爆伤：%d%%  吸血：%d%%',
-        format_attr_value(STATE.hero:get_attr('暴击率')),
-        format_attr_value(STATE.hero:get_attr('暴击伤害')),
-        format_attr_value(STATE.hero:get_attr('物理吸血'))
+        format_attr_value(get_hero_attr('物理暴击')),
+        format_attr_value(get_hero_attr('物理暴伤')),
+        format_attr_value(get_hero_attr('物理吸血'))
       ),
     }
   end

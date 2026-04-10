@@ -23,6 +23,19 @@ function M.create(env)
   local is_active_enemy = env.is_active_enemy
   local get_enemies_in_range = env.get_enemies_in_range
   local deal_skill_damage = env.deal_skill_damage
+  local hero_attr_system = env.hero_attr_system
+
+  local function get_hero_attack_value()
+    if not STATE.hero or not STATE.hero:is_exist() then
+      return 0
+    end
+    local value = hero_attr_system and hero_attr_system.get_attr(STATE.hero, '攻击结算值') or STATE.hero:get_attr('攻击结算值')
+    value = y3.helper.tonumber(value) or 0
+    if value > 0 then
+      return value
+    end
+    return y3.helper.tonumber(hero_attr_system and hero_attr_system.get_attr(STATE.hero, '攻击') or STATE.hero:get_attr('攻击') or STATE.hero:get_attr('物理攻击')) or 0
+  end
 
   local function start_runtime_loops()
     y3.ltimer.loop(0.25, function()
@@ -76,7 +89,8 @@ function M.create(env)
         return
       end
 
-      local damage = skill.artillery_base + STATE.hero:get_attr('物理攻击') * skill.artillery_ratio
+      local attack_value = get_hero_attack_value()
+      local damage = skill.artillery_base + attack_value * skill.artillery_ratio
       for _, unit in ipairs(get_enemies_in_range(anchor, skill.artillery_radius)) do
         deal_skill_damage(unit, damage, '法术')
       end

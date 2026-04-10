@@ -169,10 +169,26 @@ local function bind_panel1_top(env, runtime_hud)
     name = '',
     state = '',
   }
+  local tip_overlay = {
+    text = nil,
+    expires_at = 0,
+  }
   local resource_refresh_interval = 1.5
   local resource_refresh_state = {
     next_sync_at = 0,
   }
+  local hero_attr_system = env.hero_attr_system
+
+  local function get_hero_attr(name)
+    local hero = env.STATE and env.STATE.hero
+    if not hero or not hero.is_exist or not hero:is_exist() then
+      return 0
+    end
+    if hero_attr_system then
+      return hero_attr_system.get_attr(hero, name)
+    end
+    return hero:get_attr(name) or 0
+  end
 
   local function get_resource_rate(kind)
     local rules = env.get_resource_rules and env.get_resource_rules() or {}
@@ -187,25 +203,19 @@ local function bind_panel1_top(env, runtime_hud)
         + (env.get_treasure_passive_income and env.get_treasure_passive_income('wood') or 0)
     end
     if kind == 'kills' then
-      local hero = env.STATE and env.STATE.hero
-      if hero and hero.is_exist and hero:is_exist() then
-        return hero:get_attr('每秒杀敌') or 0
-      end
+      return get_hero_attr('每秒杀敌')
     end
     return 0
   end
 
   local function get_resource_extra_ratio(kind)
-    local hero = env.STATE and env.STATE.hero
     local hero_attr_ratio = 0
-    if hero and hero.is_exist and hero:is_exist() then
-      if kind == 'gold' then
-        hero_attr_ratio = normalize_ratio(hero:get_attr('杀敌金币') or 0)
-      elseif kind == 'wood' then
-        hero_attr_ratio = normalize_ratio(hero:get_attr('杀敌木材') or 0)
-      elseif kind == 'kills' then
-        hero_attr_ratio = normalize_ratio(hero:get_attr('杀敌加成') or 0)
-      end
+    if kind == 'gold' then
+      hero_attr_ratio = normalize_ratio(get_hero_attr('杀敌金币'))
+    elseif kind == 'wood' then
+      hero_attr_ratio = normalize_ratio(get_hero_attr('杀敌木材'))
+    elseif kind == 'kills' then
+      hero_attr_ratio = normalize_ratio(get_hero_attr('杀敌加成'))
     end
 
     if kind == 'gold' then
@@ -263,6 +273,15 @@ local function bind_panel1_top(env, runtime_hud)
   end
 
   local function flush_tips()
+    local elapsed = env.STATE and env.STATE.runtime_elapsed or 0
+    if tip_overlay.text and (tip_overlay.expires_at or 0) > elapsed then
+      if is_alive(tips) then
+        tips:set_text(tostring(tip_overlay.text))
+      end
+      return
+    end
+    tip_overlay.text = nil
+    tip_overlay.expires_at = 0
     if is_alive(tips) then
       tips:set_text(format_tips_text(boss_state_cache.name, boss_state_cache.state))
     end
@@ -316,8 +335,28 @@ local function bind_panel1_top(env, runtime_hud)
   end)
   runtime_hud.challenge_value = make_noop_text()
   runtime_hud.panel1_resource_sync = sync_resource_panels
+  runtime_hud.panel1_flush_tips = flush_tips
+  runtime_hud.panel1_set_tip_overlay = function(text, duration)
+    local overlay_text = tostring(text or '')
+    if overlay_text == '' then
+      tip_overlay.text = nil
+      tip_overlay.expires_at = 0
+      flush_tips()
+      return
+    end
+    local elapsed = env.STATE and env.STATE.runtime_elapsed or 0
+    tip_overlay.text = overlay_text
+    tip_overlay.expires_at = elapsed + math.max(0.5, tonumber(duration) or 8)
+    flush_tips()
+  end
+  runtime_hud.panel1_clear_tip_overlay = function()
+    tip_overlay.text = nil
+    tip_overlay.expires_at = 0
+    flush_tips()
+  end
   runtime_hud.panel1_top_bound = true
   sync_resource_panels(true)
+  flush_tips()
 
   return true
 end
@@ -358,6 +397,24 @@ function M.create(env)
     end,
     set_visible = function(visible)
       return base.set_visible(visible)
+    end,
+    show_tip_panel = function(text, duration)
+      local hud = env.STATE and env.STATE.runtime_hud
+      if not hud then
+        hud = base.ensure_hud()
+        if hud then
+          bind_panel1_top(env, hud)
+        end
+      end
+      if hud and hud.panel1_set_tip_overlay then
+        hud.panel1_set_tip_overlay(text, duration)
+      end
+    end,
+    clear_tip_panel = function()
+      local hud = env.STATE and env.STATE.runtime_hud
+      if hud and hud.panel1_clear_tip_overlay then
+        hud.panel1_clear_tip_overlay()
+      end
     end,
   }
 end

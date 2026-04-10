@@ -7,6 +7,7 @@ function M.create(env)
   local message = env.message
   local ATTACK_SKILL_DEFS = env.ATTACK_SKILL_DEFS
   local ATTACK_SKILL_VFX = env.ATTACK_SKILL_VFX
+  local hero_attr_system = env.hero_attr_system
   local get_player = env.get_player
   local get_hero_point = env.get_hero_point
   local get_bond_runtime_bonus = env.get_bond_runtime_bonus
@@ -19,6 +20,19 @@ function M.create(env)
   local notify_bond_attack_skill_cast = env.notify_bond_attack_skill_cast
   local notify_auto_active_basic_attack = env.notify_auto_active_basic_attack
   local notify_auto_active_skill_cast = env.notify_auto_active_skill_cast
+
+  local function get_hero_attr(name, fallback_name)
+    if not STATE.hero or not STATE.hero:is_exist() then
+      return 0
+    end
+    local value = hero_attr_system and hero_attr_system.get_attr(STATE.hero, name) or STATE.hero:get_attr(name)
+    value = y3.helper.tonumber(value) or 0
+    if value > 0 or not fallback_name then
+      return value
+    end
+    local fallback = hero_attr_system and hero_attr_system.get_attr(STATE.hero, fallback_name) or STATE.hero:get_attr(fallback_name)
+    return y3.helper.tonumber(fallback) or 0
+  end
 
   local function get_basic_attack_skill()
     if not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
@@ -40,8 +54,8 @@ function M.create(env)
     if not STATE.hero or not STATE.hero:is_exist() then
       return ATTACK_SKILL_DEFS.basic_attack.base_range or 0
     end
-    local range = y3.helper.tonumber(STATE.hero:get_attr('攻击范围'))
-      or y3.helper.tonumber(STATE.hero:get_attr('attack_range'))
+    local range = y3.helper.tonumber(hero_attr_system and hero_attr_system.get_attr(STATE.hero, '攻击范围') or STATE.hero:get_attr('攻击范围'))
+      or y3.helper.tonumber(hero_attr_system and hero_attr_system.get_attr(STATE.hero, 'attack_range') or STATE.hero:get_attr('attack_range'))
       or ATTACK_SKILL_DEFS.basic_attack.base_range
       or 0
     return math.max(1, round_number(range))
@@ -354,7 +368,8 @@ function M.create(env)
     if not STATE.hero or not STATE.hero:is_exist() then
       return 0
     end
-    return STATE.hero:get_attr('物理攻击') * (ratio_override or skill.damage_ratio or 0)
+    local attack_value = get_hero_attr('攻击结算值', '攻击')
+    return attack_value * (ratio_override or skill.damage_ratio or 0)
   end
   
   local function clone_point(point)
@@ -536,7 +551,7 @@ function M.create(env)
             info.status.ignite = nil
           elseif ignite.tick_cd <= 0 and is_active_enemy(unit) then
             ignite.tick_cd = 1
-            deal_skill_damage(unit, STATE.hero:get_attr('物理攻击') * (ignite.tick_ratio or 0), '物理', {
+            deal_skill_damage(unit, get_hero_attr('攻击结算值', '攻击') * (ignite.tick_ratio or 0), '物理', {
               text_type = 'physics',
             })
           end

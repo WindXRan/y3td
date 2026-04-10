@@ -13,6 +13,7 @@ function M.create(env)
   local show_bond_progress = env.show_bond_progress
   local ensure_runtime_overview = env.ensure_runtime_overview
   local show_runtime_attr_overview = env.show_runtime_attr_overview
+  local show_runtime_attr_tip_panel = env.show_runtime_attr_tip_panel
   local refresh_runtime_overview = env.refresh_runtime_overview
   local try_start_challenge = env.try_start_challenge
   local try_treasure_entry = env.try_treasure_entry
@@ -77,8 +78,19 @@ function M.create(env)
         return
       end
       STATE.runtime_overview_mode = 'attr'
+      if show_runtime_attr_tip_panel then
+        show_runtime_attr_tip_panel()
+      end
       show_runtime_attr_overview()
       refresh_runtime_overview()
+    end)
+    y3.game:event('键盘-按下', 'T', function()
+      if not is_battle_active() then
+        return
+      end
+      if show_runtime_attr_tip_panel then
+        show_runtime_attr_tip_panel()
+      end
     end)
     y3.game:event('键盘-按下', 'Q', function()
       if not is_battle_active() then

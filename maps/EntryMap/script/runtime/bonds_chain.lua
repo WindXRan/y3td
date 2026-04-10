@@ -15,20 +15,20 @@ local BOND_DRAW_COST = 100
 local SYSTEM_DYNAMIC_NODE_ID = '__system__'
 
 local LEGACY_NODE_ALIASES = {
-  arcane = 'bond_magic_mage',
+  arcane = 'bond_magic_core',
   barrage = 'bond_archery_barrage',
   chain = 'bond_archery_moon_blade',
   fortress = 'bond_body_fortress',
   greed = 'bond_economy_greed',
-  growth = 'bond_growth_strength',
-  guardian = 'bond_body_life',
+  growth = 'bond_growth_core',
+  guardian = 'bond_body_core',
   hunter = 'bond_growth_demon_hunter',
   tailwind = 'bond_archery_rapid',
 }
 
 local ATTR_ALIASES_FROM_RUNTIME = {
   critical_damage_bonus = {
-    ['暴击伤害'] = 100,
+    ['物理暴伤'] = 100,
   },
   lifesteal_ratio = {
     ['物理吸血'] = 100,
@@ -55,9 +55,9 @@ local RUNTIME_ALIASES = {
 
 local PER_SECOND_ATTR_KEYS = {
   agility_per_second = '敏捷',
-  attack_per_second = '物理攻击',
+  attack_per_second = '攻击',
   intelligence_per_second = '智力',
-  max_hp_per_second = '最大生命',
+  max_hp_per_second = '生命',
   strength_per_second = '力量',
 }
 
@@ -70,8 +70,141 @@ local GROUP_LABELS = {
   magic = '法术',
 }
 
+local ROOT_SET_DOC_META = {
+  bond_body_core = {
+    required_count = 3,
+    base_text = '生命值 + 100，力量 + 50',
+    base_attr = {
+      ['生命'] = 100,
+      ['力量'] = 50,
+    },
+    effect_text = '斗气场域：每秒对 1200 范围敌人造成 60% 力量自适应伤害',
+  },
+  bond_economy_core = {
+    required_count = 3,
+    base_text = '杀敌金币 + 10%',
+    base_runtime = {
+      kill_gold_ratio = 0.10,
+    },
+    effect_text = '每秒木材 + 0.4，每秒金币 + 10',
+    set_runtime = {
+      wood_per_sec_bonus = 0.4,
+      gold_per_sec_bonus = 10,
+    },
+  },
+  bond_magic_core = {
+    required_count = 3,
+    base_text = '技能伤害 + 5%',
+    base_runtime = {
+      spell_damage_bonus = 0.05,
+    },
+    effect_text = '魔爆术：每 18 秒触发，对 300 范围造成 200% 智力伤害',
+  },
+  bond_archery_core = {
+    required_count = 3,
+    base_text = '攻击力 + 50，弹射伤害 + 5%',
+    base_attr = {
+      ['攻击'] = 50,
+      ['弹射伤害'] = 5,
+    },
+    effect_text = '穿云箭：每攻击 15 次射出 1 支，造成 300% 敏捷伤害',
+  },
+  bond_critical_core = {
+    required_count = 2,
+    base_text = '物理暴击 + 3%，魔法暴击 + 3%',
+    base_attr = {
+      ['物理暴击'] = 3,
+      ['魔法暴击'] = 3,
+    },
+    effect_text = '物理暴击 + 4%，魔法暴击 + 4%',
+    set_attr = {
+      ['物理暴击'] = 4,
+      ['魔法暴击'] = 4,
+    },
+  },
+  bond_growth_core = {
+    required_count = 4,
+    base_text = '每秒智力 + 0.5',
+    base_runtime = {
+      intelligence_per_second = 0.5,
+    },
+    effect_text = '每秒木材 + 0.2，杀敌力量 + 0.1，杀敌敏捷 + 0.1，杀敌智力 + 0.1',
+    set_runtime = {
+      wood_per_sec_bonus = 0.2,
+      agility_on_kill = 0.1,
+      strength_on_kill = 0.1,
+      intelligence_on_kill = 0.1,
+    },
+  },
+}
+
+local is_root_set_complete
+
+local GROUP_CHOICE_ORDER = {
+  'body',
+  'economy',
+  'magic',
+  'archery',
+  'critical',
+  'growth',
+}
+
+local GROUP_ROOT_IDS_BY_GROUP = {}
+local GROUP_CHOICE_DEFS = {
+  body = {
+    id = '__group_body',
+    group_id = 'body',
+    display_name = '体术',
+    quality = 'rare',
+    desc = '解锁：生命、战术、固守分支',
+  },
+  economy = {
+    id = '__group_economy',
+    group_id = 'economy',
+    display_name = '经济',
+    quality = 'rare',
+    desc = '解锁：贪婪、挑战分支',
+  },
+  magic = {
+    id = '__group_magic',
+    group_id = 'magic',
+    display_name = '法术',
+    quality = 'rare',
+    desc = '解锁：魔法师、魔能、魔术、急速、元素师分支',
+  },
+  archery = {
+    id = '__group_archery',
+    group_id = 'archery',
+    display_name = '箭术',
+    quality = 'rare',
+    desc = '解锁：广射、速攻、射术分支',
+  },
+  critical = {
+    id = '__group_critical',
+    group_id = 'critical',
+    display_name = '暴击',
+    quality = 'rare',
+    desc = '解锁：致命、大炮分支',
+  },
+  growth = {
+    id = '__group_growth',
+    group_id = 'growth',
+    display_name = '成长',
+    quality = 'rare',
+    desc = '解锁：敏捷、力量、智力分支',
+  },
+}
+
 for _, node_id in ipairs(ROOT_NODE_IDS) do
   ROOT_NODE_ID_SET[node_id] = true
+  local node_def = NODE_BY_ID[node_id]
+  if node_def and node_def.group_id then
+    GROUP_ROOT_IDS_BY_GROUP[node_def.group_id] = GROUP_ROOT_IDS_BY_GROUP[node_def.group_id] or {}
+    GROUP_ROOT_IDS_BY_GROUP[node_def.group_id][#GROUP_ROOT_IDS_BY_GROUP[node_def.group_id] + 1] = node_id
+    if GROUP_CHOICE_DEFS[node_def.group_id] and not GROUP_CHOICE_DEFS[node_def.group_id].icon then
+      GROUP_CHOICE_DEFS[node_def.group_id].icon = node_def.icon
+    end
+  end
 end
 
 local function collect_root_subtree_ids(root_id, result, seen)
@@ -206,14 +339,32 @@ local function build_runtime_alias_pack(runtime_pack)
   return result
 end
 
-local function build_static_attr_pack(node_def)
+local function build_static_attr_pack(state, node_def)
   local result = {}
+  local root_meta = node_def and node_def.parent_id == nil and ROOT_SET_DOC_META[node_def.id] or nil
+  if root_meta then
+    merge_bonus_pack(result, root_meta.base_attr)
+    merge_bonus_pack(result, build_attr_alias_pack(root_meta.base_runtime))
+    if is_root_set_complete(state, node_def.id) then
+      merge_bonus_pack(result, root_meta.set_attr)
+      merge_bonus_pack(result, build_attr_alias_pack(root_meta.set_runtime))
+    end
+    return result
+  end
   merge_bonus_pack(result, node_def and node_def.attr or {})
   merge_bonus_pack(result, build_attr_alias_pack(node_def and node_def.runtime or {}))
   return result
 end
 
-local function build_static_runtime_pack(node_def)
+local function build_static_runtime_pack(state, node_def)
+  local root_meta = node_def and node_def.parent_id == nil and ROOT_SET_DOC_META[node_def.id] or nil
+  if root_meta then
+    local result = build_runtime_alias_pack(root_meta.base_runtime or {})
+    if is_root_set_complete(state, node_def.id) then
+      merge_bonus_pack(result, build_runtime_alias_pack(root_meta.set_runtime or {}))
+    end
+    return result
+  end
   return build_runtime_alias_pack(node_def and node_def.runtime or {})
 end
 
@@ -224,8 +375,8 @@ local function ensure_node_state(runtime, node_id)
 end
 
 local function apply_static_pack(runtime, node_id, node_def)
-  runtime.applied_node_attr_bonuses[node_id] = build_static_attr_pack(node_def)
-  runtime.applied_node_runtime_bonuses[node_id] = build_static_runtime_pack(node_def)
+  runtime.applied_node_attr_bonuses[node_id] = build_static_attr_pack(runtime.state_ref, node_def)
+  runtime.applied_node_runtime_bonuses[node_id] = build_static_runtime_pack(runtime.state_ref, node_def)
 end
 
 local function clear_static_pack(runtime, node_id)
@@ -277,7 +428,47 @@ local function ensure_runtime(state)
     return nil
   end
   state.bond_runtime = state.bond_runtime or M.create_runtime()
+  state.bond_runtime.pool_node_ids = state.bond_runtime.pool_node_ids or {}
+  state.bond_runtime.state_ref = state
   return state.bond_runtime
+end
+
+local function seed_root_nodes_into_pool(runtime)
+  if not runtime then
+    return
+  end
+  runtime.pool_node_ids = runtime.pool_node_ids or {}
+  for _, node_id in ipairs(ROOT_NODE_IDS) do
+    runtime.pool_node_ids[node_id] = true
+  end
+end
+
+local function unlock_followup_nodes_into_pool(runtime, node_def)
+  if not runtime or not node_def then
+    return
+  end
+  runtime.pool_node_ids = runtime.pool_node_ids or {}
+  for _, next_id in ipairs(node_def.next_ids or {}) do
+    runtime.pool_node_ids[next_id] = true
+  end
+end
+
+local function get_group_choice_defs(state)
+  return {}
+end
+
+local function unlock_group_choice(state, group_id)
+  local runtime = ensure_runtime(state)
+  local group_def = GROUP_CHOICE_DEFS[group_id]
+  if not runtime or not group_def or runtime.unlocked_group_ids[group_id] == true then
+    return false
+  end
+
+  runtime.unlocked_group_ids[group_id] = true
+  runtime.owned_node_order[#runtime.owned_node_order + 1] = group_def.id
+  seed_root_nodes_into_pool(runtime)
+  M.rebuild_candidate_nodes(state)
+  return true
 end
 
 local function apply_unlock_rewards(state, node_def)
@@ -340,6 +531,94 @@ local function trim_inline_text(text)
   return (text:gsub('[。；;，,%s]+$', ''))
 end
 
+local MANUAL_COLOR_KEYWORDS = {
+  green = {
+    '自适应伤害',
+    '技能伤害',
+    '魔法伤害',
+    '所有伤害',
+    '物理暴伤',
+    '魔法暴伤',
+    '物理暴击',
+    '魔法暴击',
+    '攻击力',
+    '生命值',
+    '生命恢复',
+    '护甲',
+    '格挡',
+    '力量',
+    '敏捷',
+    '智力',
+    '木材',
+    '金币',
+    '经验',
+    '杀敌金币',
+    '杀敌经验',
+    '杀敌加成',
+    '每秒',
+  },
+  cyan = {
+    '%d+%.?%d*%%',
+    '%d+%.?%d*',
+  },
+}
+
+local function find_manual_color_match(text, start_pos)
+  local best_start, best_end, best_color
+
+  for _, keyword in ipairs(MANUAL_COLOR_KEYWORDS.green) do
+    local s, e = string.find(text, keyword, start_pos, true)
+    if s and (not best_start or s < best_start or (s == best_start and e > best_end)) then
+      best_start, best_end, best_color = s, e, 'green'
+    end
+  end
+
+  for _, pattern in ipairs(MANUAL_COLOR_KEYWORDS.cyan) do
+    local s, e = string.find(text, pattern, start_pos)
+    if s and (not best_start or s < best_start or (s == best_start and e > best_end)) then
+      best_start, best_end, best_color = s, e, 'cyan'
+    end
+  end
+
+  return best_start, best_end, best_color
+end
+
+local function build_manual_color_segments(text, default_color)
+  if type(text) ~= 'string' or text == '' then
+    return nil
+  end
+
+  local segments = {}
+  local cursor = 1
+  local length = #text
+
+  while cursor <= length do
+    local match_start, match_end, match_color = find_manual_color_match(text, cursor)
+    if not match_start then
+      segments[#segments + 1] = {
+        text = string.sub(text, cursor),
+        color = default_color,
+      }
+      break
+    end
+
+    if match_start > cursor then
+      segments[#segments + 1] = {
+        text = string.sub(text, cursor, match_start - 1),
+        color = default_color,
+      }
+    end
+
+    segments[#segments + 1] = {
+      text = string.sub(text, match_start, match_end),
+      color = match_color,
+    }
+    cursor = match_end + 1
+  end
+
+  return segments
+end
+
 local function build_fallback_effect_parts(node_def)
   local parts = {}
   for key, value in pairs(node_def and node_def.attr or {}) do
@@ -356,6 +635,10 @@ end
 local function get_choice_single_text(node_def)
   if not node_def then
     return ''
+  end
+  local root_meta = node_def.parent_id == nil and ROOT_SET_DOC_META[node_def.id] or nil
+  if root_meta and root_meta.base_text and root_meta.base_text ~= '' then
+    return root_meta.base_text
   end
   if type(node_def.desc) == 'table' and node_def.desc.single and node_def.desc.single ~= '' then
     return node_def.desc.single
@@ -374,6 +657,8 @@ local function get_choice_advanced_text(node_def)
 end
 
 local function build_choice_next_text(node_def)
+  return ''
+--[[
   if not node_def or not node_def.next_ids or #node_def.next_ids == 0 then
     return ''
   end
@@ -395,6 +680,7 @@ local function build_choice_next_text(node_def)
     return ''
   end
   return '后继：' .. table.concat(parts, '；')
+]]
 end
 
 local function build_choice_current_text(node_def)
@@ -426,28 +712,98 @@ local function get_line_root_def(node_def)
   return line_defs and line_defs[1] or node_def
 end
 
-local function build_line_progress_values(state, node_def)
-  local root_def = get_line_root_def(node_def)
-  local line_defs = root_def and LINE_BY_ID[root_def.line_id] or {}
-  local unlocked_count = 0
+local function get_set_root_def(node_def)
+  local current = node_def
+  local guard = 0
+  while current and current.parent_id and guard < 16 do
+    current = NODE_BY_ID[current.parent_id]
+    guard = guard + 1
+  end
+  return current or node_def
+end
 
-  for _, def in ipairs(line_defs or {}) do
-    if M.is_node_unlocked(state, def.id) then
+local function get_root_set_doc_meta(node_def)
+  local root_def = get_set_root_def(node_def)
+  return root_def and ROOT_SET_DOC_META[root_def.id] or nil
+end
+
+local function count_unlocked_root_set_nodes(state, root_id)
+  local unlocked_count = 0
+  for _, node_id in ipairs(ROOT_SUBTREE_NODE_IDS[root_id] or {}) do
+    if M.is_node_unlocked(state, node_id) then
       unlocked_count = unlocked_count + 1
     end
   end
+  return unlocked_count
+end
 
+is_root_set_complete = function(state, root_id)
+  local meta = root_id and ROOT_SET_DOC_META[root_id] or nil
+  if not meta then
+    return false
+  end
+  return count_unlocked_root_set_nodes(state, root_id) >= (meta.required_count or 0)
+end
+
+local function count_unlocked_nodes(state, node_ids)
+  local unlocked_count = 0
+  for _, node_id in ipairs(node_ids or {}) do
+    if M.is_node_unlocked(state, node_id) then
+      unlocked_count = unlocked_count + 1
+    end
+  end
+  return unlocked_count
+end
+
+local function build_choice_progress_values(state, node_def)
+  if not node_def then
+    return 0, 0
+  end
+
+  local root_def = get_set_root_def(node_def)
+  local root_meta = root_def and ROOT_SET_DOC_META[root_def.id] or nil
+  if root_def and root_meta then
+    local unlocked_count = math.min(
+      root_meta.required_count or 0,
+      count_unlocked_root_set_nodes(state, root_def.id)
+    )
+    return unlocked_count, root_meta.required_count or 0
+  end
+
+  if not node_def.parent_id then
+    local required_count = math.max(2, #(node_def.next_ids or {}))
+    local unlocked_count = count_unlocked_nodes(state, node_def.next_ids or {})
+    return unlocked_count, required_count
+  end
+
+  local line_root_def = get_line_root_def(node_def)
+  local line_defs = line_root_def and LINE_BY_ID[line_root_def.line_id] or {}
+  local line_node_ids = {}
+  for _, def in ipairs(line_defs or {}) do
+    if def.id ~= (line_root_def and line_root_def.parent_id or nil) then
+      line_node_ids[#line_node_ids + 1] = def.id
+    end
+  end
+
+  local unlocked_count = count_unlocked_nodes(state, line_node_ids)
+  local required_count = math.max(2, #line_node_ids)
+  return unlocked_count, required_count
+end
+
+local function build_line_progress_values(state, node_def)
+  local set_root_def = get_set_root_def(node_def)
+  local unlocked_count, required_count = build_choice_progress_values(state, node_def)
   return string.format(
     '%s(%d/%d)',
-    root_def and root_def.display_name or (node_def and node_def.display_name) or '未知羁绊',
+    set_root_def and set_root_def.display_name or (node_def and node_def.display_name) or '未知羁绊',
     unlocked_count,
-    #line_defs
+    required_count
   )
 end
 
 local function build_line_progress_text(state, node_def)
-  local title = build_line_progress_values(state, node_def)
-  return string.match(title, '(%d+/%d+)') or '0/0'
+  local unlocked_count, required_count = build_choice_progress_values(state, node_def)
+  return string.format('%d/%d', unlocked_count, required_count)
 end
 
 local function trim_choice_prefix(text)
@@ -461,27 +817,53 @@ local function trim_choice_prefix(text)
 end
 
 local function build_choice_effect_title(node_def)
-  local root_def = get_line_root_def(node_def)
+  local root_def = get_set_root_def(node_def)
   local line_name = root_def and root_def.display_name or node_def and node_def.display_name or '未知羁绊'
-  return string.format('激活[%s]链式效果：', line_name)
+  return string.format('激活[%s]套装效果：', line_name)
 end
 
 local function build_choice_effect_text(node_def)
-  local parts = {}
-  local advanced_text = trim_choice_prefix(get_choice_advanced_text(node_def))
-  local next_text = build_choice_next_text(node_def)
+  local root_def = get_set_root_def(node_def)
+  local root_meta = root_def and ROOT_SET_DOC_META[root_def.id] or nil
+  if root_meta and root_meta.effect_text and root_meta.effect_text ~= '' then
+    return trim_choice_prefix(root_meta.effect_text)
+  end
+  return trim_choice_prefix(get_choice_single_text(root_def))
+end
 
-  if advanced_text ~= '' then
-    parts[#parts + 1] = advanced_text
+local function build_choice_body_blocks(node_def, current_text, effect_title, effect_text)
+  local body_blocks = {}
+  local value_text = trim_choice_prefix(current_text)
+  if value_text ~= '' then
+    body_blocks[#body_blocks + 1] = {
+      kind = 'value',
+      text = value_text,
+      color = 'green',
+      segments = build_manual_color_segments(value_text, 'white'),
+    }
   end
-  if next_text ~= '' then
-    parts[#parts + 1] = next_text
+  if effect_title ~= '' then
+    body_blocks[#body_blocks + 1] = {
+      kind = 'effect_title',
+      text = effect_title,
+      color = 'gold',
+      segments = {
+        {
+          text = effect_title,
+          color = 'gold',
+        },
+      },
+    }
   end
-  if #parts == 0 then
-    parts[#parts + 1] = trim_choice_prefix(build_choice_current_text(node_def))
+  if effect_text ~= '' then
+    body_blocks[#body_blocks + 1] = {
+      kind = 'effect',
+      text = effect_text,
+      color = 'dim',
+      segments = build_manual_color_segments(effect_text, 'dim'),
+    }
   end
-
-  return table.concat(parts, '\n')
+  return body_blocks
 end
 
 local function build_def_name_list(defs, max_count)
@@ -593,9 +975,18 @@ local function build_choice_preview_segments(choice)
 end
 
 local function build_choice_entry(state, node_def, index)
+  local line_root_def = get_line_root_def(node_def) or node_def
+  local set_root_def = get_set_root_def(node_def) or node_def
   local current_text = build_choice_current_text(node_def)
   local advanced_text = get_choice_advanced_text(node_def)
   local next_text = build_choice_next_text(node_def)
+  local effect_title = build_choice_effect_title(node_def)
+  local effect_text = build_choice_effect_text(node_def)
+  local subtitle_text = node_def.display_name
+  if set_root_def and set_root_def.display_name == subtitle_text then
+    subtitle_text = ''
+  end
+  local progress_text = build_line_progress_text(state, node_def)
 
   return {
     index = index,
@@ -611,16 +1002,49 @@ local function build_choice_entry(state, node_def, index)
     next_ids = node_def.next_ids,
     editor_skill_id = node_def.editor_skill_id,
     template = node_def.template,
-    title_text = node_def.display_name,
-    subtitle_text = node_def.display_name,
-    progress_text = build_line_progress_text(state, node_def),
+    title_text = string.format(
+      '%s (%s)',
+      set_root_def and set_root_def.display_name or node_def.display_name,
+      progress_text
+    ),
+    subtitle_text = subtitle_text,
+    progress_text = '',
     current_text = current_text,
     advanced_text = advanced_text,
     next_text = next_text,
     desc_text = build_choice_desc(node_def),
     value_text = trim_choice_prefix(current_text),
+    effect_title = effect_title,
+    effect_text = effect_text,
+    body_blocks = build_choice_body_blocks(node_def, current_text, effect_title, effect_text),
+    title_color = 'bond_red',
+    subtitle_color = 'blue',
+    effect_color_mode = 'auto',
+    effect_root_id = set_root_def and set_root_def.id or node_def.id,
+    line_root_id = line_root_def and line_root_def.id or node_def.id,
+  }
+end
+
+local function build_group_choice_entry(group_def, index)
+  return {
+    index = index,
+    node_id = nil,
+    group_choice_id = group_def.id,
+    group_id = group_def.group_id,
+    display_name = group_def.display_name,
+    quality = group_def.quality or 'rare',
+    ui_icon = group_def.icon,
+    icon = group_def.icon,
+    title_text = group_def.display_name,
+    subtitle_text = '',
+    progress_text = '',
+    current_text = group_def.desc or '',
+    advanced_text = '',
+    next_text = '',
+    desc_text = group_def.desc or '',
+    value_text = group_def.desc or '',
     effect_title = '',
-    effect_text = build_choice_effect_text(node_def),
+    effect_text = '',
   }
 end
 
@@ -685,7 +1109,11 @@ local function pick_random_candidates(state, candidate_defs, count)
   while #choices < count and #pool > 0 do
     local picked_index = math.random(#pool)
     local picked = table.remove(pool, picked_index)
-    choices[#choices + 1] = build_choice_entry(state, picked, #choices + 1)
+    if picked and picked.id and string.sub(picked.id, 1, 8) == '__group_' then
+      choices[#choices + 1] = build_group_choice_entry(picked, #choices + 1)
+    else
+      choices[#choices + 1] = build_choice_entry(state, picked, #choices + 1)
+    end
   end
   return choices
 end
@@ -697,13 +1125,22 @@ local function collect_candidate_choice_entries(state)
   end
 
   M.rebuild_candidate_nodes(state)
-  return pick_random_candidates(state, M.get_candidate_nodes(state), 3)
+  local candidate_defs = {}
+  for _, node_def in ipairs(M.get_candidate_nodes(state)) do
+    candidate_defs[#candidate_defs + 1] = node_def
+  end
+  for _, group_def in ipairs(get_group_choice_defs(state)) do
+    candidate_defs[#candidate_defs + 1] = group_def
+  end
+  return pick_random_candidates(state, candidate_defs, 3)
 end
 
 function M.create_runtime()
   return {
+    state_ref = nil,
     unlocked_node_ids = {},
     active_node_ids = {},
+    pool_node_ids = {},
     candidate_node_ids = {},
     owned_node_order = {},
     line_progress = {},
@@ -764,7 +1201,19 @@ function M.collect_route_tags(state)
   end
 
   for node_id in pairs(runtime.unlocked_node_ids) do
-    append_route_tags(tags, NODE_BY_ID[node_id])
+    local node_def = NODE_BY_ID[node_id]
+    if node_def and node_def.parent_id == nil and ROOT_SET_DOC_META[node_id] then
+      for _, tag in ipairs(LEGACY_TAGS_BY_NODE_ID[node_id] or {}) do
+        tags[tag] = true
+      end
+      for _, tag in ipairs(node_def.route_tags or {}) do
+        if string.sub(tag, 1, 5) ~= 'auto_' or is_root_set_complete(state, node_id) then
+          tags[tag] = true
+        end
+      end
+    else
+      append_route_tags(tags, node_def)
+    end
   end
 
   return tags
@@ -829,20 +1278,13 @@ function M.rebuild_candidate_nodes(state)
   if not runtime then
     return {}
   end
+  runtime.state_ref = state
 
+  seed_root_nodes_into_pool(runtime)
   local candidate_node_ids = {}
-  for _, node_id in ipairs(ROOT_NODE_IDS) do
+  for node_id in pairs(runtime.pool_node_ids or {}) do
     if M.can_unlock_node(state, node_id) then
       candidate_node_ids[node_id] = true
-    end
-  end
-
-  for unlocked_node_id in pairs(runtime.unlocked_node_ids) do
-    local node_def = NODE_BY_ID[unlocked_node_id]
-    for _, next_id in ipairs(node_def and node_def.next_ids or {}) do
-      if M.can_unlock_node(state, next_id) then
-        candidate_node_ids[next_id] = true
-      end
     end
   end
 
@@ -856,16 +1298,15 @@ function M.unlock_node(state, node_id)
   if not runtime or not node_def then
     return nil, 'node_not_found'
   end
+  runtime.state_ref = state
   if not M.can_unlock_node(state, node_def.id) then
     return nil, 'node_locked'
   end
 
   runtime.unlocked_node_ids[node_def.id] = true
   runtime.owned_node_order[#runtime.owned_node_order + 1] = node_def.id
-  set_line_progress(runtime, node_def)
-  activate_node_runtime(state, node_def)
   local unlock_rewards = apply_unlock_rewards(state, node_def)
-  M.rebuild_candidate_nodes(state)
+  M.refresh_all_nodes(state)
   return node_def, unlock_rewards
 end
 
@@ -891,11 +1332,14 @@ function M.refresh_all_nodes(state)
   end
 
   runtime.line_progress = {}
+  runtime.pool_node_ids = {}
+  seed_root_nodes_into_pool(runtime)
   for node_id in pairs(runtime.unlocked_node_ids) do
     local node_def = NODE_BY_ID[node_id]
     if node_def then
       set_line_progress(runtime, node_def)
       activate_node_runtime(state, node_def)
+      unlock_followup_nodes_into_pool(runtime, node_def)
     end
   end
 
@@ -932,6 +1376,7 @@ end
 function M.update_effects(env, dt)
   local state = env and env.STATE
   local runtime = get_runtime(state)
+  local hero_attr_system = env and env.hero_attr_system
   if not runtime or not state or not state.hero or not state.hero:is_exist() then
     return
   end
@@ -939,14 +1384,22 @@ function M.update_effects(env, dt)
   local desired_attr = {}
   local desired_runtime = {}
   local static_runtime = collect_merged_bonus_packs(runtime.applied_node_runtime_bonuses)
-  local max_hp = math.max(1, env.y3.helper.tonumber(state.hero:get_attr('最大生命')) or 1)
+  local max_hp = math.max(1, hero_attr_system and hero_attr_system.get_attr(state.hero, '生命结算值') or env.y3.helper.tonumber(state.hero:get_attr('生命')) or env.y3.helper.tonumber(state.hero:get_attr('最大生命')) or 1)
   local hp_ratio = math.max(0, state.hero:get_hp() / max_hp)
 
   for key, value in pairs(static_runtime) do
     local attr_name = PER_SECOND_ATTR_KEYS[key]
     if attr_name and value ~= 0 then
-      state.hero:add_attr(attr_name, value * dt)
+      if hero_attr_system then
+        hero_attr_system.add_attr(state.hero, attr_name, value * dt)
+      else
+        state.hero:add_attr(attr_name, value * dt)
+      end
     end
+  end
+
+  if hero_attr_system then
+    hero_attr_system.rebuild_derived_attrs(state.hero)
   end
 
   if (static_runtime.low_hp_damage_bonus or 0) > 0 and hp_ratio <= 0.50 then
@@ -992,6 +1445,7 @@ end
 
 function M.try_trigger_hunter_first_hit(env, target)
   local state = env and env.STATE
+  local hero_attr_system = env and env.hero_attr_system
   local ratio = M.get_runtime_bonus(state, 'hunter_first_hit_ratio')
   if ratio <= 0 or not target or not env.is_active_enemy(target) then
     return
@@ -1010,7 +1464,7 @@ function M.try_trigger_hunter_first_hit(env, target)
   runtime.hunter_hit_targets[target] = true
   state.hero:damage({
     target = target,
-    damage = env.round_number(state.hero:get_attr('物理攻击') * ratio),
+    damage = env.round_number((hero_attr_system and hero_attr_system.get_attr(state.hero, '攻击结算值') or state.hero:get_attr('攻击') or state.hero:get_attr('物理攻击')) * ratio),
     type = env.basic_attack_damage_type,
     text_type = 'physics',
     common_attack = false,
@@ -1021,13 +1475,37 @@ end
 function M.handle_enemy_kill(env, info)
   local state = env and env.STATE
   local runtime = get_runtime(state)
+  local hero_attr_system = env and env.hero_attr_system
   if not runtime or not state.hero or not state.hero:is_exist() then
     return
   end
 
+  local strength_on_kill = M.get_runtime_bonus(state, 'strength_on_kill')
+  if strength_on_kill > 0 then
+    state.hero:add_attr('力量', strength_on_kill)
+  end
+
+  local agility_on_kill = M.get_runtime_bonus(state, 'agility_on_kill')
+  if agility_on_kill > 0 then
+    state.hero:add_attr('敏捷', agility_on_kill)
+  end
+
+  local intelligence_on_kill = M.get_runtime_bonus(state, 'intelligence_on_kill')
+  if intelligence_on_kill > 0 then
+    state.hero:add_attr('智力', intelligence_on_kill)
+  end
+
   local attack_on_kill = env.round_number(M.get_runtime_bonus(state, 'attack_on_kill'))
   if attack_on_kill > 0 then
-    state.hero:add_attr('物理攻击', attack_on_kill)
+    if hero_attr_system then
+      hero_attr_system.add_attr(state.hero, '攻击', attack_on_kill)
+    else
+      state.hero:add_attr('攻击', attack_on_kill)
+    end
+  end
+
+  if hero_attr_system then
+    hero_attr_system.rebuild_derived_attrs(state.hero)
   end
 end
 
@@ -1143,7 +1621,29 @@ function M.apply_choice(env, index)
   end
 
   local choice = runtime.current_choices and runtime.current_choices[index]
-  if not choice or not choice.node_id then
+  if not choice then
+    return false
+  end
+
+  if choice.group_id and not choice.node_id then
+    local ok = unlock_group_choice(state, choice.group_id)
+    if not ok then
+      return false
+    end
+
+    runtime.awaiting_choice = false
+    runtime.current_choices = nil
+    runtime.current_offer_round = nil
+    runtime.current_round = nil
+
+    if env and env.message then
+      env.message('bond group unlocked: ' .. tostring(choice.display_name or choice.group_id))
+    end
+    M.show_loadout(env)
+    return true
+  end
+
+  if not choice.node_id then
     return false
   end
 
@@ -1179,8 +1679,21 @@ function M.build_slot_text(state, slot)
 
   local node_id = runtime.owned_node_order[slot]
   local node_def = node_id and NODE_BY_ID[node_id] or nil
+  if not node_def and node_id and string.sub(node_id, 1, 8) == '__group_' then
+    node_def = GROUP_CHOICE_DEFS[string.sub(node_id, 9)]
+  end
   if not node_def then
     return string.format('%d号羁绊位 空', slot)
+  end
+
+  if node_id and string.sub(node_id, 1, 8) == '__group_' then
+    return string.format(
+      '%d鍙风緛缁婁綅 [%s]%s | %s',
+      slot,
+      M.get_quality_label(node_def.quality),
+      node_def.display_name,
+      node_def.desc or ''
+    )
   end
 
   local summary = build_node_summary_text(node_def)

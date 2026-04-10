@@ -16,6 +16,7 @@ local AttackSkillsSystem = require 'runtime.attack_skills'
 local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
 local EffectDebugSystem = require 'runtime.effect_debug'
 local RewardSystem = require 'runtime.rewards'
+local HeroAttrSystem = require 'runtime.hero_attr_system'
 local M = {}
 local helper_signals_started = false
 local heal_hero
@@ -36,6 +37,7 @@ local attack_skills_system
 local auto_active_effects_system
 local effect_debug_system
 local reward_system
+local hero_attr_system = HeroAttrSystem.create()
 
 local function trace_boot(message)
   print('[entry_runtime] ' .. tostring(message))
@@ -220,6 +222,7 @@ local STATE = {
   choice_panel_hidden = false,
   runtime_overview = nil,
   runtime_overview_mode = 'build',
+  hero_attr_runtime = nil,
   gm_ui = nil,
   session_phase = 'outgame',
   outgame_profile = nil,
@@ -307,11 +310,32 @@ local function add_attr_pack(unit, attr_pack)
   end
 end
 
+local function add_hero_attr_pack(unit, attr_pack)
+  if not unit or not attr_pack then
+    return
+  end
+
+  for attr_name, value in pairs(attr_pack) do
+    if value ~= nil and value ~= 0 then
+      hero_attr_system.add_attr(unit, attr_name, value)
+    end
+  end
+  hero_attr_system.rebuild_derived_attrs(unit)
+end
+
+local function snapshot_hero_attrs()
+  if not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then
+    return nil
+  end
+  return hero_attr_system.snapshot(STATE.hero, STATE)
+end
+
 reward_system = RewardSystem.create({
   STATE = STATE,
   message = message,
   round_number = round_number,
-  add_attr_pack = add_attr_pack,
+  hero_attr_system = hero_attr_system,
+  add_attr_pack = add_hero_attr_pack,
   sync_basic_attack_ability = sync_basic_attack_ability,
   heal_hero = function(amount)
     return heal_hero(amount)
@@ -619,6 +643,7 @@ create_bond_env = function()
     message = message,
     round_number = round_number,
     y3 = y3,
+    hero_attr_system = hero_attr_system,
     heal_hero = heal_hero,
     sync_basic_attack_ability = sync_basic_attack_ability,
     is_active_enemy = is_active_enemy,
@@ -668,11 +693,18 @@ local function get_target_hp_ratio(target)
   if not target or not target:is_exist() then
     return 1
   end
-  local max_hp = y3.helper.tonumber(target:get_attr('最大生命')) or 0
+  local max_hp = y3.helper.tonumber(target:get_attr('生命')) or y3.helper.tonumber(target:get_attr('最大生命')) or 0
   if max_hp <= 0 then
     return 1
   end
   return math.max(0, (target:get_hp() or 0) / max_hp)
+end
+
+local function get_unit_max_hp(unit)
+  if not unit or not unit.is_exist or not unit:is_exist() then
+    return 0
+  end
+  return y3.helper.tonumber(unit:get_attr('生命')) or y3.helper.tonumber(unit:get_attr('最大生命')) or 0
 end
 
 local function get_damage_bonus_multiplier(target, context)
@@ -731,7 +763,7 @@ local function deal_skill_damage(target, amount, damage_type, visual)
     return
   end
 
-  local final_damage = math.floor((amount or 0) * get_damage_bonus_multiplier(target, {
+  local final_damage = math.floor((amount or 0) * hero_attr_system.get_damage_multiplier(STATE.hero, damage_type or '法术', 'skill') * get_damage_bonus_multiplier(target, {
     is_skill = true,
   }))
   if final_damage <= 0 then
@@ -960,7 +992,7 @@ local function trigger_td_skills_on_hit(data)
   end
 
   if skill.execute_threshold > 0 and target:is_exist() and target:get_hp() > 0 then
-    local max_hp = target:get_attr('最大生命')
+    local max_hp = get_unit_max_hp(target)
     if max_hp > 0 and target:get_hp() / max_hp <= skill.execute_threshold then
       target:kill_by(STATE.hero)
     end
@@ -998,6 +1030,7 @@ battlefield_system = BattlefieldSystem.create({
   message = message,
   design_seconds = design_seconds,
   random_point_in_area = random_point_in_area,
+  hero_attr_system = hero_attr_system,
   set_attr_pack = set_attr_pack,
   add_attr_pack = add_attr_pack,
   get_player = get_player,
@@ -1033,6 +1066,7 @@ battlefield_system = BattlefieldSystem.create({
   on_hero_be_hurt = function()
     return reward_system.handle_hero_be_hurt()
   end,
+  on_hero_attr_changed = snapshot_hero_attrs,
   handle_challenge_success = function(instance)
     return handle_challenge_success(instance)
   end,
@@ -1098,6 +1132,7 @@ attack_skills_system = AttackSkillsSystem.create({
   y3 = y3,
   round_number = round_number,
   message = message,
+  hero_attr_system = hero_attr_system,
   ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS,
   ATTACK_SKILL_VFX = AttackSkillObjects.vfx_by_id,
   get_player = get_player,
@@ -1127,6 +1162,7 @@ attack_skills_system = AttackSkillsSystem.create({
 auto_active_effects_system = AutoActiveEffectsSystem.create({
   STATE = STATE,
   y3 = y3,
+  hero_attr_system = hero_attr_system,
   str_to_modifier_key = function(name)
     return y3.game.str_to_modifier_key(name)
   end,
@@ -1232,6 +1268,7 @@ overview_model_system = OverviewModelSystem.create({
   STATE = STATE,
   CONFIG = CONFIG,
   round_number = round_number,
+  hero_attr_system = hero_attr_system,
   get_current_wave = get_current_wave,
   get_boss_name = get_boss_name,
   get_pending_round_choice_kind = get_pending_round_choice_kind,
@@ -1433,6 +1470,9 @@ debug_tools_system = DebugToolsSystem.create({
     runtime_overview_system.set_visible(true)
     refresh_runtime_overview()
   end,
+  debug_show_attr_tip_panel = function()
+    show_runtime_attr_tip_panel(10)
+  end,
   debug_grant_bond_card = function(card_id)
     return debug_actions_system.debug_grant_bond_card(card_id)
   end,
@@ -1501,6 +1541,7 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
   STATE = STATE,
   CONFIG = CONFIG,
   y3 = y3,
+  hero_attr_system = hero_attr_system,
   round_number = round_number,
   get_resource_rules = get_resource_rules,
   get_bond_runtime_bonus = get_bond_runtime_bonus,
@@ -1607,6 +1648,49 @@ local function refresh_runtime_overview()
   end
 end
 
+local function build_attr_tip_panel_text()
+  local previous_mode = STATE.runtime_overview_mode
+  STATE.runtime_overview_mode = 'attr'
+  local model = get_runtime_overview_model and get_runtime_overview_model() or nil
+  STATE.runtime_overview_mode = previous_mode
+
+  if not model or not model.sections then
+    return '属性面板暂不可用'
+  end
+
+  local lines = {}
+  local ordered_sections = { 'summary', 'skills', 'bonds', 'treasures' }
+  for _, key in ipairs(ordered_sections) do
+    local section = model.sections[key]
+    if section and section.title and section.lines and #section.lines > 0 then
+      lines[#lines + 1] = string.format('[%s]', tostring(section.title))
+      for _, line in ipairs(section.lines) do
+        lines[#lines + 1] = tostring(line)
+        if #lines >= 8 then
+          break
+        end
+      end
+    end
+    if #lines >= 8 then
+      break
+    end
+  end
+
+  if #lines == 0 then
+    return '当前没有可显示的属性面板'
+  end
+  return table.concat(lines, '\n')
+end
+
+local function show_runtime_attr_tip_panel(duration)
+  if runtime_hud_system and runtime_hud_system.ensure_hud then
+    runtime_hud_system.ensure_hud()
+  end
+  if runtime_hud_system and runtime_hud_system.show_tip_panel then
+    runtime_hud_system.show_tip_panel(build_attr_tip_panel_text(), duration or 8)
+  end
+end
+
 set_battle_hud_visible = function(visible)
   if runtime_hud_system and runtime_hud_system.set_visible then
     runtime_hud_system.set_visible(visible)
@@ -1632,6 +1716,7 @@ session_state_system = SessionStateSystem.create({
   CONFIG = CONFIG,
   y3 = y3,
   message = message,
+  hero_attr_system = hero_attr_system,
   make_point = make_point,
   get_resource_rules = get_resource_rules,
   create_bond_runtime = create_bond_runtime,
@@ -1710,6 +1795,9 @@ input_events_system = InputEventsSystem.create({
     runtime_overview_system.ensure_panel()
     runtime_overview_system.set_visible(true)
   end,
+  show_runtime_attr_tip_panel = function()
+    show_runtime_attr_tip_panel(8)
+  end,
   refresh_runtime_overview = refresh_runtime_overview,
   try_start_challenge = try_start_challenge,
   try_treasure_entry = try_treasure_entry,
@@ -1727,6 +1815,7 @@ end
 runtime_loops_system = RuntimeLoopsSystem.create({
   STATE = STATE,
   y3 = y3,
+  hero_attr_system = hero_attr_system,
   is_battle_active = function()
     return is_battle_active()
   end,
