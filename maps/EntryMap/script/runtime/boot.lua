@@ -1671,6 +1671,9 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
   apply_round_choice = apply_round_choice,
   show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
+  show_bond_progress = function()
+    return BondSystem.show_bond_progress(create_bond_env())
+  end,
   try_start_challenge = try_start_challenge,
   try_treasure_entry = try_treasure_entry,
   has_pending_treasure_choice = has_pending_treasure_choice,

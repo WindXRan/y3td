@@ -73,6 +73,7 @@ local GROUP_LABELS = {
 local ROOT_SET_DOC_META = {
   bond_body_core = {
     required_count = 3,
+    completion_mode = 'consume_all',
     base_text = '生命值 + 100，力量 + 50',
     base_attr = {
       ['生命'] = 100,
@@ -82,6 +83,7 @@ local ROOT_SET_DOC_META = {
   },
   bond_economy_core = {
     required_count = 3,
+    completion_mode = 'consume_all',
     base_text = '杀敌金币 + 10%',
     base_runtime = {
       kill_gold_ratio = 0.10,
@@ -94,6 +96,7 @@ local ROOT_SET_DOC_META = {
   },
   bond_magic_core = {
     required_count = 3,
+    completion_mode = 'consume_all',
     base_text = '技能伤害 + 5%',
     base_runtime = {
       spell_damage_bonus = 0.05,
@@ -102,6 +105,7 @@ local ROOT_SET_DOC_META = {
   },
   bond_archery_core = {
     required_count = 3,
+    completion_mode = 'consume_all',
     base_text = '攻击力 + 50，弹射伤害 + 5%',
     base_attr = {
       ['攻击'] = 50,
@@ -111,6 +115,7 @@ local ROOT_SET_DOC_META = {
   },
   bond_critical_core = {
     required_count = 2,
+    completion_mode = 'consume_all',
     base_text = '物理暴击 + 3%，魔法暴击 + 3%',
     base_attr = {
       ['物理暴击'] = 3,
@@ -124,6 +129,7 @@ local ROOT_SET_DOC_META = {
   },
   bond_growth_core = {
     required_count = 4,
+    completion_mode = 'consume_all',
     base_text = '每秒智力 + 0.5',
     base_runtime = {
       intelligence_per_second = 0.5,
@@ -429,6 +435,12 @@ local function ensure_runtime(state)
   end
   state.bond_runtime = state.bond_runtime or M.create_runtime()
   state.bond_runtime.pool_node_ids = state.bond_runtime.pool_node_ids or {}
+  state.bond_runtime.completed_root_sets = state.bond_runtime.completed_root_sets or {}
+  state.bond_runtime.consumed_root_sets = state.bond_runtime.consumed_root_sets or {}
+  state.bond_runtime.fused_root_sets = state.bond_runtime.fused_root_sets or {}
+  state.bond_runtime.completed_root_set_modes = state.bond_runtime.completed_root_set_modes or {}
+  state.bond_runtime.completed_root_set_attr_bonuses = state.bond_runtime.completed_root_set_attr_bonuses or {}
+  state.bond_runtime.completed_root_set_runtime_bonuses = state.bond_runtime.completed_root_set_runtime_bonuses or {}
   state.bond_runtime.state_ref = state
   return state.bond_runtime
 end
@@ -439,7 +451,9 @@ local function seed_root_nodes_into_pool(runtime)
   end
   runtime.pool_node_ids = runtime.pool_node_ids or {}
   for _, node_id in ipairs(ROOT_NODE_IDS) do
-    runtime.pool_node_ids[node_id] = true
+    if not (runtime.completed_root_sets and runtime.completed_root_sets[node_id] == true) then
+      runtime.pool_node_ids[node_id] = true
+    end
   end
 end
 
@@ -773,6 +787,14 @@ local function get_root_set_doc_meta(node_def)
   return root_def and ROOT_SET_DOC_META[root_def.id] or nil
 end
 
+local function get_root_set_completion_mode(root_id)
+  local meta = root_id and ROOT_SET_DOC_META[root_id] or nil
+  if not meta then
+    return nil
+  end
+  return meta.completion_mode or 'consume_all'
+end
+
 local function count_unlocked_root_set_nodes(state, root_id)
   local unlocked_count = 0
   for _, node_id in ipairs(ROOT_SUBTREE_NODE_IDS[root_id] or {}) do
@@ -784,11 +806,107 @@ local function count_unlocked_root_set_nodes(state, root_id)
 end
 
 is_root_set_complete = function(state, root_id)
+  local runtime = get_runtime(state)
+  if runtime and runtime.completed_root_sets and runtime.completed_root_sets[root_id] == true then
+    return true
+  end
   local meta = root_id and ROOT_SET_DOC_META[root_id] or nil
   if not meta then
     return false
   end
   return count_unlocked_root_set_nodes(state, root_id) >= (meta.required_count or 0)
+end
+
+local function apply_completed_root_set_bonus_pack(target, runtime, field_name)
+  if not target or not runtime or not field_name then
+    return
+  end
+  for _, bonus_pack in pairs(runtime[field_name] or {}) do
+    merge_bonus_pack(target, bonus_pack)
+  end
+end
+
+local function remove_owned_node(runtime, node_id)
+  if not runtime or not node_id then
+    return
+  end
+  local next_owned = {}
+  for _, owned_id in ipairs(runtime.owned_node_order or {}) do
+    if owned_id ~= node_id then
+      next_owned[#next_owned + 1] = owned_id
+    end
+  end
+  runtime.owned_node_order = next_owned
+end
+
+local function persist_completed_root_set_bonuses(state, root_id)
+  local runtime = get_runtime(state)
+  if not runtime or not root_id then
+    return
+  end
+  local attr_pack = {}
+  local runtime_pack = {}
+  for _, node_id in ipairs(ROOT_SUBTREE_NODE_IDS[root_id] or { root_id }) do
+    if runtime.unlocked_node_ids[node_id] == true then
+      local node_def = NODE_BY_ID[node_id]
+      if node_def then
+        merge_bonus_pack(attr_pack, build_static_attr_pack(state, node_def))
+        merge_bonus_pack(runtime_pack, build_static_runtime_pack(state, node_def))
+      end
+    end
+  end
+  runtime.completed_root_set_attr_bonuses[root_id] = attr_pack
+  runtime.completed_root_set_runtime_bonuses[root_id] = runtime_pack
+end
+
+local function remove_root_set_nodes_from_runtime(state, root_id)
+  local runtime = get_runtime(state)
+  if not runtime or not root_id then
+    return
+  end
+
+  for _, node_id in ipairs(ROOT_SUBTREE_NODE_IDS[root_id] or {}) do
+    local node_def = NODE_BY_ID[node_id]
+    if node_def and runtime.active_node_ids[node_id] then
+      deactivate_node_runtime(state, node_def)
+    end
+    runtime.unlocked_node_ids[node_id] = nil
+    runtime.pool_node_ids[node_id] = nil
+    runtime.candidate_node_ids[node_id] = nil
+    remove_owned_node(runtime, node_id)
+  end
+end
+
+local function resolve_root_set_completion(state, root_id)
+  local runtime = get_runtime(state)
+  local mode = get_root_set_completion_mode(root_id)
+  if not runtime or not root_id or not mode then
+    return false
+  end
+  if runtime.completed_root_sets[root_id] == true then
+    return false
+  end
+  if not is_root_set_complete(state, root_id) then
+    return false
+  end
+
+  runtime.completed_root_sets[root_id] = true
+  runtime.completed_root_set_modes[root_id] = mode
+  persist_completed_root_set_bonuses(state, root_id)
+
+  if mode == 'consume_all' then
+    runtime.consumed_root_sets[root_id] = true
+    remove_root_set_nodes_from_runtime(state, root_id)
+    M.refresh_all_nodes(state)
+    return true
+  end
+
+  if mode == 'fuse_to_node' then
+    runtime.fused_root_sets[root_id] = true
+    return true
+  end
+
+  return false
 end
 
 local function count_unlocked_nodes(state, node_ids)
@@ -1014,8 +1132,22 @@ end
 
 local function build_root_progress_entry(state, root_id)
   local root_def = NODE_BY_ID[root_id]
+  local runtime = get_runtime(state)
   if not root_def then
     return nil
+  end
+
+  if runtime and runtime.completed_root_sets and runtime.completed_root_sets[root_id] == true then
+    return {
+      started = true,
+      text = string.format(
+        '%s %d/%d | %s',
+        format_root_title(root_def),
+        ROOT_SET_DOC_META[root_id] and ROOT_SET_DOC_META[root_id].required_count or 0,
+        ROOT_SET_DOC_META[root_id] and ROOT_SET_DOC_META[root_id].required_count or 0,
+        runtime.consumed_root_sets and runtime.consumed_root_sets[root_id] == true and '已吞噬完成' or '已完成'
+      ),
+    }
   end
 
   local subtree_ids = ROOT_SUBTREE_NODE_IDS[root_id] or { root_id }
@@ -1106,7 +1238,6 @@ local function build_choice_preview_segments(choice)
 end
 
 local function build_choice_entry(state, node_def, index)
-  local line_root_def = get_line_root_def(node_def) or node_def
   local set_root_def = get_set_root_def(node_def) or node_def
   local current_text = build_choice_current_text(node_def)
   local advanced_text = get_choice_advanced_text(node_def)
@@ -1114,9 +1245,6 @@ local function build_choice_entry(state, node_def, index)
   local effect_title = build_choice_effect_title(state, node_def)
   local effect_text = build_choice_effect_text(node_def)
   local subtitle_text = node_def.display_name
-  if set_root_def and set_root_def.display_name == subtitle_text then
-    subtitle_text = ''
-  end
   local progress_text = build_line_progress_text(state, node_def)
 
   return {
@@ -1135,7 +1263,7 @@ local function build_choice_entry(state, node_def, index)
     template = node_def.template,
     title_text = string.format(
       '%s (%s)',
-      node_def.display_name,
+      set_root_def and set_root_def.display_name or node_def.display_name,
       progress_text
     ),
     subtitle_text = subtitle_text,
@@ -1388,6 +1516,12 @@ function M.create_runtime()
     current_round = nil,
     current_choices = nil,
     awaiting_choice = false,
+    completed_root_sets = {},
+    consumed_root_sets = {},
+    fused_root_sets = {},
+    completed_root_set_modes = {},
+    completed_root_set_attr_bonuses = {},
+    completed_root_set_runtime_bonuses = {},
   }
 end
 
@@ -1472,6 +1606,18 @@ function M.collect_route_tags(state)
     end
   end
 
+  for root_id in pairs(runtime.completed_root_sets or {}) do
+    local root_def = NODE_BY_ID[root_id]
+    if root_def then
+      for _, tag in ipairs(LEGACY_TAGS_BY_NODE_ID[root_id] or {}) do
+        tags[tag] = true
+      end
+      for _, tag in ipairs(root_def.route_tags or {}) do
+        tags[tag] = true
+      end
+    end
+  end
+
   return tags
 end
 
@@ -1498,6 +1644,10 @@ function M.can_unlock_node(state, node_id)
   local runtime = get_runtime(state)
   local node_def = get_node_def(node_id)
   if not runtime or not node_def then
+    return false
+  end
+  local root_def = get_set_root_def(node_def)
+  if root_def and runtime.completed_root_sets and runtime.completed_root_sets[root_def.id] == true then
     return false
   end
   if runtime.unlocked_node_ids[node_def.id] then
@@ -1563,6 +1713,10 @@ function M.unlock_node(state, node_id)
   runtime.owned_node_order[#runtime.owned_node_order + 1] = node_def.id
   local unlock_rewards = apply_unlock_rewards(state, node_def)
   M.refresh_all_nodes(state)
+  local root_def = get_set_root_def(node_def)
+  if root_def then
+    resolve_root_set_completion(state, root_def.id)
+  end
   return node_def, unlock_rewards
 end
 
@@ -1610,6 +1764,7 @@ function M.get_total_attr_bonuses(state)
   end
   local result = collect_merged_bonus_packs(runtime.applied_node_attr_bonuses)
   merge_bonus_pack(result, collect_merged_bonus_packs(runtime.dynamic_node_attr_bonuses))
+  apply_completed_root_set_bonus_pack(result, runtime, 'completed_root_set_attr_bonuses')
   return result
 end
 
@@ -1620,6 +1775,7 @@ function M.get_total_runtime_bonuses(state)
   end
   local result = collect_merged_bonus_packs(runtime.applied_node_runtime_bonuses)
   merge_bonus_pack(result, collect_merged_bonus_packs(runtime.dynamic_node_runtime_bonuses))
+  apply_completed_root_set_bonus_pack(result, runtime, 'completed_root_set_runtime_bonuses')
   return result
 end
 
@@ -1641,6 +1797,7 @@ function M.update_effects(env, dt)
   local desired_attr = {}
   local desired_runtime = {}
   local static_runtime = collect_merged_bonus_packs(runtime.applied_node_runtime_bonuses)
+  merge_bonus_pack(static_runtime, collect_merged_bonus_packs(runtime.completed_root_set_runtime_bonuses))
   local max_hp = math.max(1, hero_attr_system and hero_attr_system.get_attr(state.hero, '生命结算值') or env.y3.helper.tonumber(state.hero:get_attr('生命')) or env.y3.helper.tonumber(state.hero:get_attr('最大生命')) or 1)
   local hp_ratio = math.max(0, state.hero:get_hp() / max_hp)
 

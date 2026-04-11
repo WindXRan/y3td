@@ -405,6 +405,14 @@ function M.create(env)
     return math.max(0, math.min(1, value or 0))
   end
 
+  local function count_table_keys(map)
+    local count = 0
+    for _ in pairs(map or {}) do
+      count = count + 1
+    end
+    return count
+  end
+
   local function format_percent_line(value)
     local number = y3.helper.tonumber(value) or 0
     if math.abs(number) < 0.001 then
@@ -460,7 +468,7 @@ function M.create(env)
       'F 羁绊抽取',
       'Q/W/E/R 试炼入口',
       'B 局内总览',
-      'I 已吞噬羁绊',
+      'I 羁绊进度',
     }, '\n')
   end
 
@@ -798,8 +806,8 @@ function M.create(env)
       refresh_runtime_hud()
     end)
     runtime_hud.swallowed_list_button.button:add_fast_event('左键-点击', function()
-      if env.show_swallowed_bonds then
-        env.show_swallowed_bonds()
+      if env.show_bond_progress then
+        env.show_bond_progress()
       end
       refresh_runtime_hud()
     end)
@@ -1019,7 +1027,10 @@ function M.create(env)
     )
     update_button_bundle(
       runtime_hud.swallowed_list_button,
-      string.format('吞噬 I  (%d)', STATE.bond_runtime and #(STATE.bond_runtime.swallowed_cards or {}) or 0),
+      string.format(
+        '进度 I  (%d)',
+        STATE.bond_runtime and count_table_keys(STATE.bond_runtime.completed_root_sets) or 0
+      ),
       true,
       { 58, 84, 112, 226 },
       { 8, 16, 28, 120 },
