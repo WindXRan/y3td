@@ -78,7 +78,7 @@ local ROOT_SET_DOC_META = {
       ['生命'] = 100,
       ['力量'] = 50,
     },
-    effect_text = '斗气场域：每秒对 1200 范围敌人造成 60% 力量自适应伤害',
+    effect_text = '斗气场域：每秒对周围1200范围内的敌人造成60%力量的自适应伤害',
   },
   bond_economy_core = {
     required_count = 3,
@@ -86,7 +86,7 @@ local ROOT_SET_DOC_META = {
     base_runtime = {
       kill_gold_ratio = 0.10,
     },
-    effect_text = '每秒木材 + 0.5，每秒金币 + 15',
+    effect_text = '每秒木材+0.5，每秒金币+15。',
     set_runtime = {
       wood_per_sec_bonus = 0.5,
       gold_per_sec_bonus = 15,
@@ -98,7 +98,7 @@ local ROOT_SET_DOC_META = {
     base_runtime = {
       spell_damage_bonus = 0.05,
     },
-    effect_text = '魔爆术：每18 秒触发，对300 范围造成 200% 智力伤害',
+    effect_text = '魔爆术：每隔18秒，触发1次魔爆术，对300范围内的敌人造成200%智力的自适应伤害',
   },
   bond_archery_core = {
     required_count = 3,
@@ -107,7 +107,7 @@ local ROOT_SET_DOC_META = {
       ['攻击'] = 50,
       ['弹射伤害'] = 5,
     },
-    effect_text = '穿云箭：每攻击 15 次射出 1 支，造成 300% 敏捷伤害',
+    effect_text = '穿云箭：每攻击15次，射出1支穿云箭，对直线敌人造成300%敏捷的自适应伤害',
   },
   bond_critical_core = {
     required_count = 2,
@@ -116,7 +116,7 @@ local ROOT_SET_DOC_META = {
       ['物理暴击'] = 3,
       ['魔法暴击'] = 3,
     },
-    effect_text = '物理暴击 + 4%，魔法暴击 + 4%',
+    effect_text = '物理暴击+4%，魔法暴击+4%。',
     set_attr = {
       ['物理暴击'] = 4,
       ['魔法暴击'] = 4,
@@ -128,7 +128,7 @@ local ROOT_SET_DOC_META = {
     base_runtime = {
       intelligence_per_second = 0.5,
     },
-    effect_text = '每秒木材 + 0.3，杀敌力量 + 0.1，杀敌敏捷 + 0.1，杀敌智力 + 0.1',
+    effect_text = '每秒木材+0.3，杀敌力量+0.1，杀敌敏捷+0.1，杀敌智力+0.1。',
     set_runtime = {
       wood_per_sec_bonus = 0.3,
       agility_on_kill = 0.1,
@@ -682,12 +682,12 @@ local function get_choice_single_text(node_def)
   if not node_def then
     return ''
   end
+  if type(node_def.desc) == 'table' and node_def.desc.single and node_def.desc.single ~= '' then
+    return node_def.desc.single
+  end
   local root_meta = node_def.parent_id == nil and ROOT_SET_DOC_META[node_def.id] or nil
   if root_meta and root_meta.base_text and root_meta.base_text ~= '' then
     return root_meta.base_text
-  end
-  if type(node_def.desc) == 'table' and node_def.desc.single and node_def.desc.single ~= '' then
-    return node_def.desc.single
   end
   if type(node_def.desc) == 'string' then
     return node_def.desc
@@ -957,11 +957,11 @@ local function build_choice_body_blocks(state, node_def, current_text, advanced_
   if node_def and node_def.parent_id and own_effect_text ~= '' then
     body_blocks[#body_blocks + 1] = {
       kind = 'effect_title',
-      text = '本卡效果：',
+      text = '套装效果：',
       color = 'gold',
       segments = {
         {
-          text = '本卡效果：',
+          text = '套装效果：',
           color = 'gold',
         },
       },
@@ -1970,7 +1970,7 @@ function M.build_slot_text(state, slot)
 
   if node_id and string.sub(node_id, 1, 8) == '__group_' then
     return string.format(
-      '%d鍙风緛缁婁綅 [%s]%s | %s',
+      '%d号羁绊位 [%s]%s | %s',
       slot,
       M.get_quality_label(node_def.quality),
       node_def.display_name,
