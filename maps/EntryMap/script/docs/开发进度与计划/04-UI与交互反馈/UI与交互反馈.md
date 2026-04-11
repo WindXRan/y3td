@@ -7,6 +7,8 @@
 ## Source Of Truth
 
 - `maps/EntryMap/script/entry_runtime_hud.lua`
+- `maps/EntryMap/script/ui/runtime_hud_panel1_top.lua`
+- `maps/EntryMap/script/ui/runtime_hud_v2.lua`
 - `maps/EntryMap/script/entry_runtime_debug_tools.lua`
 - `maps/EntryMap/script/entry_runtime_debug_actions.lua`
 - `maps/EntryMap/script/entry_runtime_outgame.lua`
@@ -15,7 +17,12 @@
 
 ## 已实现
 
-- `GameHUD.json` 已补齐 `hud_root` 常驻骨架，顶部战斗轴、左侧快捷区、右侧追踪区、挑战条、底部操作条都已落到编辑器节点；`runtime_hud_v2.lua` 负责文本、按钮和进度绑定。
+- `GameHUD.json` 已补齐 `hud_root` 常驻骨架，顶部战斗轴、左侧快捷区、右侧追踪区、挑战条、底部操作条都已落到编辑器节点；当前运行链路为 `runtime_hud_panel1_top.lua -> runtime_hud_v2.lua`。
+- `bottom_bg` prefab 已接入运行时主链路，接管战斗内底部角色状态栏与已有功能按钮入口。
+- `技能抽卡`、`羁绊抽卡`、`金币/木材/杀敌/宝物挑战` 已映射到现有 runtime 行为。
+- `backpack` 区域当前仍未接正式查看页，本轮保持隐藏。
+- `bottom_bg` 当前按屏幕中心基准挂载，并做了一层运行时缩放适配，避免 prefab 原始尺寸过大、位置过低而只露出顶部边缘。
+- `GameHUD` 自带的模板状态栏、英雄头像列、背包按钮与旧属性条仍存在于资源文件中，但当前已通过运行时显隐逻辑强制隐藏。
 - 局外选关页也已通过 Lua 动态挂载到 `GameHUD`，能完成章节和模式选择。
 - GM 面板、调试热键和调试命令已经接线，可用于快速验证波次、挑战、升级、羁绊和宝物链路。
 - `G`、`F`、宝物等待选轮次已经接入统一三选一面板；支持三张卡展示、点击 / 数字键选择、暂时隐藏、恢复和刷新。
@@ -30,6 +37,7 @@
 
 ## 部分实现
 
+- 默认模板 UI 仍在 `GameHUD.json` 资源内保留，现阶段依赖 Lua 运行时强制隐藏；若后续要彻底清理，还需要回收这些旧资源节点。
 - 烙印轮次目前仍是旧的文字提示 / 热键选择链路，还没接入新三选一面板。
 - `win.json`、`loss.json`、`LoadingPanel.json` 等资产已经存在，但当前主链路没有把它们接成正式结算、Loading 或完整反馈流程。
 - 设计稿里要求的候选卡详情、替换预览、构筑摘要、奖励记录等信息目前只做了最小可用提示，没有完整 UI 信息架构。

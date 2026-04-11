@@ -58,6 +58,7 @@ def main() -> None:
         'choice_panel.layout_1.background',
         'choice_panel.layout_1.button',
         'choice_panel.layout_1.icon',
+        'choice_panel.layout_1.set_name',
         'choice_panel.layout_1.name',
         'choice_panel.layout_1.rarity_background.rarity_text',
         'choice_panel.layout_1.desc_text.value_desc',

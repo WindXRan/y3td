@@ -15,17 +15,25 @@ local BODY_COLORS = {
   cyan = { 118, 248, 255, 255 },
   white = { 226, 232, 238, 255 },
   blue = { 39, 157, 255, 255 },
+  purple = { 198, 120, 255, 255 },
   dim = { 154, 154, 154, 255 },
   bond_red = { 255, 82, 82, 255 },
 }
 
 local FONT_SIZES = {
   badge = 18,
+  set_title = 26,
   bond_title = 26,
   subtitle = 23,
   value = 24,
   effect_title = 22,
   effect_text = 18,
+}
+
+local CARD_HOVER_ANIM = {
+  duration = 0.08,
+  steps = 4,
+  lift = 16,
 }
 
 local QUALITY_PALETTES = {
@@ -58,6 +66,16 @@ end
 
 local function get_quality_palette(quality)
   return QUALITY_PALETTES[quality or 'common'] or QUALITY_PALETTES.common
+end
+
+local function get_quality_value_color(quality)
+  if quality == 'epic' then
+    return BODY_COLORS.purple
+  end
+  if quality == 'rare' then
+    return BODY_COLORS.blue
+  end
+  return BODY_COLORS.green
 end
 
 local function get_panel_title(kind)
@@ -196,6 +214,72 @@ function M.create(env)
     }
   end
 
+  local function stop_card_hover_timer(card)
+    if card and card.hover_timer then
+      card.hover_timer:remove()
+      card.hover_timer = nil
+    end
+  end
+
+  local function apply_card_hover_offset(card, offset)
+    if not card then
+      return
+    end
+
+    local applied_offset = math.floor((offset or 0) + 0.5)
+    card.hover_offset = applied_offset
+
+    if card.root and not card.root:is_removed() then
+      card.root:set_pos(card.root_x, card.root_y + applied_offset)
+    end
+  end
+
+  local function reset_choice_card_transform(card)
+    if not card then
+      return
+    end
+    card.hovered = false
+    stop_card_hover_timer(card)
+    apply_card_hover_offset(card, 0)
+  end
+
+  local function set_choice_card_hover(card, hovered, immediate)
+    if not card then
+      return
+    end
+
+    local target_offset = hovered == true and (card.hover_lift or 0) or 0
+    card.hovered = hovered == true
+
+    stop_card_hover_timer(card)
+    if immediate == true then
+      apply_card_hover_offset(card, target_offset)
+      return
+    end
+
+    local start_offset = card.hover_offset or 0
+    local delta = target_offset - start_offset
+    local steps = math.max(1, card.hover_steps or CARD_HOVER_ANIM.steps)
+    if delta == 0 then
+      apply_card_hover_offset(card, target_offset)
+      return
+    end
+
+    card.hover_timer = y3.ltimer.loop_count((card.hover_duration or CARD_HOVER_ANIM.duration) / steps, steps, function(timer, count)
+      if not is_ui_alive(card.root) then
+        timer:remove()
+        card.hover_timer = nil
+        return
+      end
+
+      local progress = count / steps
+      apply_card_hover_offset(card, start_offset + (delta * progress))
+      if count >= steps then
+        card.hover_timer = nil
+      end
+    end)
+  end
+
   local function set_prefab_card_visible(card, visible)
     if card.root then
       card.root:set_visible(visible)
@@ -203,6 +287,9 @@ function M.create(env)
     if card.button then
       card.button:set_visible(visible)
       card.button:set_button_enable(visible and not STATE.game_finished)
+    end
+    if not visible then
+      reset_choice_card_transform(card)
     end
   end
 
@@ -236,6 +323,9 @@ function M.create(env)
 
     if card.rarity_text then
       card.rarity_text:set_font_size(FONT_SIZES.badge)
+    end
+    if card.set_name then
+      card.set_name:set_font_size(FONT_SIZES.set_title)
     end
     if card.name then
       card.name:set_font_size(title_size)
@@ -456,23 +546,20 @@ function M.create(env)
     root:set_z_order(9811 + index)
 
     local button = get_prefab_node(prefab, 'layout_1.button')
-    if button then
-      button:set_text('')
-      button:add_fast_event('左键-点击', function()
-        if env.apply_round_choice then
-          env.apply_round_choice(index)
-        end
-        refresh_panel()
-      end)
-    end
-
-    return {
+    local card = {
       prefab = prefab,
       root = root,
+      root_x = center_x,
+      root_y = center_y,
+      button = button,
+      hover_offset = 0,
+      hover_duration = CARD_HOVER_ANIM.duration,
+      hover_steps = CARD_HOVER_ANIM.steps,
+      hover_lift = math.max(10, math.floor((CARD_HOVER_ANIM.lift * math.min(scale_x, scale_y)) + 0.5)),
       background = get_prefab_node(prefab, 'layout_1.background'),
       decoration = get_prefab_node(prefab, 'layout_1.background.decoration'),
-      button = button,
       icon = get_prefab_node(prefab, 'layout_1.icon'),
+      set_name = get_prefab_node(prefab, 'layout_1.set_name'),
       name = get_prefab_node(prefab, 'layout_1.name'),
       subtitle_name = get_prefab_node(prefab, 'layout_1.subtitle_name'),
       rarity_background = get_prefab_node(prefab, 'layout_1.rarity_background'),
@@ -485,6 +572,24 @@ function M.create(env)
       value_highlight_nodes = {},
       effect_highlight_nodes = {},
     }
+
+    if button then
+      button:set_text('')
+      button:add_fast_event('左键-点击', function()
+        if env.apply_round_choice then
+          env.apply_round_choice(index)
+        end
+        refresh_panel()
+      end)
+      button:add_fast_event('鼠标-移入', function()
+        set_choice_card_hover(card, true)
+      end)
+      button:add_fast_event('鼠标-移出', function()
+        set_choice_card_hover(card, false)
+      end)
+    end
+
+    return card
   end
 
   local function create_choice_panel()
@@ -642,6 +747,11 @@ function M.create(env)
 
   local function destroy_panel()
     local panel = STATE.choice_panel
+    if panel and panel.cards then
+      for _, card in ipairs(panel.cards) do
+        reset_choice_card_transform(card)
+      end
+    end
     if panel and panel.root and not panel.root:is_removed() then
       panel.root:remove()
     end
@@ -658,6 +768,9 @@ function M.create(env)
     local visible = model ~= nil and STATE.session_phase == 'battle'
     panel.root:set_visible(visible)
     if not visible then
+      for _, card in ipairs(panel.cards or {}) do
+        reset_choice_card_transform(card)
+      end
       return panel
     end
 
@@ -680,12 +793,7 @@ function M.create(env)
         local text_layout = TextLayout.build_text_layout(card_model.body_blocks)
 
         if card.background then
-          card.background:set_image_color(
-            palette.surface[1],
-            palette.surface[2],
-            palette.surface[3],
-            255
-          )
+          card.background:set_image_color(255, 255, 255, 255)
         end
         if card.decoration then
           card.decoration:set_image_color(
@@ -699,6 +807,21 @@ function M.create(env)
           card.icon:set_image(card_model.icon_res or ui_res.common.empty)
         end
         apply_card_typography(card, card_model)
+        if card.set_name then
+          local set_title_text = card_model.set_title_text or ''
+          local set_title_visible = set_title_text ~= ''
+          local set_title_color = card_model.set_title_color and get_body_color(card_model.set_title_color) or palette.title
+          card.set_name:set_visible(set_title_visible)
+          if set_title_visible then
+            card.set_name:set_text(set_title_text)
+            card.set_name:set_text_color(
+              set_title_color[1],
+              set_title_color[2],
+              set_title_color[3],
+              set_title_color[4]
+            )
+          end
+        end
         if card.name then
           local title_color = card_model.title_color and get_body_color(card_model.title_color) or palette.title
           card.name:set_text(build_title_text(card_model))
@@ -744,17 +867,16 @@ function M.create(env)
           card.desc_root:set_visible(text_layout.value_visible or text_layout.effect_visible)
         end
         if card.value_desc then
-          local value_color = get_body_color(text_layout.value_color)
-          local value_has_manual_segments = has_manual_segments(text_layout.value_blocks or {}, 'white')
+          local value_color = get_quality_value_color(card_model.quality)
           card.value_desc:set_visible(text_layout.value_visible)
           card.value_desc:set_text(text_layout.value_text or '')
           card.value_desc:set_text_color(
             value_color[1],
             value_color[2],
             value_color[3],
-            value_has_manual_segments and 8 or value_color[4]
+            value_color[4]
           )
-          render_value_highlights(card, text_layout.value_blocks or {})
+          clear_value_highlights(card)
         end
         if card.effect_desc then
           card.effect_desc:set_visible(text_layout.effect_visible)
@@ -771,17 +893,16 @@ function M.create(env)
           )
         end
         if card.effect_text then
-          local effect_color = get_body_color(text_layout.effect_color)
-          local effect_has_manual_segments = has_manual_segments(text_layout.effect_blocks or {}, 'dim')
+          local effect_color = BODY_COLORS.white
           card.effect_text:set_visible(text_layout.effect_visible)
           card.effect_text:set_text(text_layout.effect_text or '')
           card.effect_text:set_text_color(
             effect_color[1],
             effect_color[2],
             effect_color[3],
-            effect_has_manual_segments and 8 or effect_color[4]
+            effect_color[4]
           )
-          render_effect_highlights(card, text_layout.effect_blocks or {})
+          clear_effect_highlights(card)
         end
       else
         clear_value_highlights(card)

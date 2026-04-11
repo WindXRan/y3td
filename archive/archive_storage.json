@@ -3,16 +3,16 @@
         "archive": {
             "1": {
                 "data_type": 4,
-                "data_value": "{\"selected_stage_id\":\"1-2\",\"last_result\":{\"is_win\":false,\"reached_wave_index\":1,\"stage_id\":\"1-1\",\"mode_id\":\"standard\"},\"stage_progress\":{\"1-2\":{\"standard_cleared\":false,\"challenge_unlocked\":false,\"standard_unlocked\":true,\"challenge_cleared\":false},\"1-3\":{\"standard_cleared\":false,\"challenge_unlocked\":false,\"standard_unlocked\":false,\"challenge_cleared\":false},\"1-1\":{\"standard_cleared\":true,\"challenge_unlocked\":true,\"standard_unlocked\":true,\"challenge_cleared\":false}},\"version\":1,\"selected_mode_id\":\"standard\"}"
+                "data_value": "{\"stage_progress\":{\"1-1\":{\"challenge_cleared\":false,\"standard_unlocked\":true,\"challenge_unlocked\":true,\"standard_cleared\":true},\"1-2\":{\"challenge_cleared\":false,\"standard_unlocked\":true,\"challenge_unlocked\":false,\"standard_cleared\":false},\"1-3\":{\"challenge_cleared\":false,\"standard_unlocked\":false,\"challenge_unlocked\":false,\"standard_cleared\":false}},\"selected_stage_id\":\"1-2\",\"selected_mode_id\":\"standard\",\"last_result\":{\"is_win\":false,\"reached_wave_index\":1,\"mode_id\":\"standard\",\"stage_id\":\"1-1\"},\"version\":1}"
             }
         },
         "platform_prop": {},
-        "role_id": -1
+        "role_id": 1
     },
     "test_account1": {
         "archive": {},
         "platform_prop": {},
-        "role_id": -2
+        "role_id": -1
     },
     "螺旋炒面": {
         "archive": {
@@ -22,6 +22,6 @@
             }
         },
         "platform_prop": {},
-        "role_id": 1
+        "role_id": -2
     }
 }

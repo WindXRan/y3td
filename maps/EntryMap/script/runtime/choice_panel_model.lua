@@ -165,13 +165,10 @@ function M.create(env)
     local runtime = STATE.bond_runtime
     local cards = {}
     for index, choice in ipairs(runtime and runtime.current_choices or {}) do
-      local title_text = choice.display_name or choice.title_text or 'bond'
-      local subtitle_text = choice.subtitle_text or ''
-      if subtitle_text == title_text then
-        subtitle_text = ''
-      end
-      if choice.title_text and choice.title_text ~= '' then
-        title_text = choice.title_text
+      local set_title_text = choice.title_text or ''
+      local name_text = choice.subtitle_text or ''
+      if not name_text or name_text == '' then
+        name_text = choice.display_name or 'bond'
       end
 
       cards[#cards + 1] = {
@@ -179,11 +176,13 @@ function M.create(env)
         badge_text = get_choice_badge_text(choice.quality),
         quality = choice.quality or 'rare',
         icon_res = choice.ui_icon or get_choice_default_icon('bond', choice.quality),
-        title_text = title_text,
-        progress_text = choice.progress_text or '',
-        subtitle_text = subtitle_text,
+        title_text = name_text,
+        set_title_text = set_title_text,
+        progress_text = '',
+        subtitle_text = '',
         body_blocks = build_bond_body_blocks(choice),
-        title_color = choice.title_color,
+        title_color = choice.subtitle_color or 'blue',
+        set_title_color = choice.title_color or 'bond_red',
         subtitle_color = choice.subtitle_color,
         effect_color_mode = choice.effect_color_mode,
       }

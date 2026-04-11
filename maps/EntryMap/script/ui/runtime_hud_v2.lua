@@ -4,6 +4,7 @@ local theme = require 'ui.theme'
 local Factory = require 'ui.factory'
 local layout = require 'ui.runtime_hud_layout'
 local RuntimeHudNodes = require 'ui.runtime_hud_nodes'
+local BondSystem = require 'runtime.bonds'
 
 local M = {}
 
@@ -21,9 +22,11 @@ function M.create(env)
   local get_hud_scale = factory.get_hud_scale
   local scaled = factory.scaled
   local runtime_skin = skin.images.runtime_hud or {}
+  local get_hero_attr
   local refresh_runtime_hud
 
   local BOND_DRAW_COST = 100
+  local EMPTY_BOND_ICON = 904138
 
   local function get_hud_root()
     local ok, hud = pcall(y3.ui.get_ui, env.get_player(), 'GameHUD')
@@ -54,7 +57,48 @@ function M.create(env)
     return tostring(number)
   end
 
-  local function get_hero_attr(name, fallback_name)
+  local function normalize_percent_value(value)
+    local number = y3.helper.tonumber(value) or 0
+    if math.abs(number) <= 1 then
+      return number * 100
+    end
+    return number
+  end
+
+  local function combine_percent_bonus(value_a, value_b)
+    return round_number(normalize_percent_value(value_a) + normalize_percent_value(value_b))
+  end
+
+  local function format_percent_bonus_text(value_a, value_b)
+    return string.format('%d%%', combine_percent_bonus(value_a, value_b))
+  end
+
+  local function format_signed_compact(value)
+    local number = round_number(value or 0)
+    if math.abs(number) < 10000 then
+      return string.format('%+d', number)
+    end
+    if number >= 0 then
+      return '+' .. format_compact(number)
+    end
+    return format_compact(number)
+  end
+
+  local function create_bottom_bg_prefab(parent)
+    local prefab = y3.ui_prefab.create(env.get_player(), 'bottom_bg', parent)
+    local root = prefab and prefab:get_child() or nil
+    if not root then
+      print('[runtime_hud_v2] create_bottom_bg_prefab failed: prefab or root missing')
+      return nil, nil
+    end
+    root:set_anchor(0.5, 0.5)
+    set_percent_pos(env.get_player(), root, 50, 36)
+    root:set_widget_relative_scale(0.72, 0.72)
+    root:set_z_order(9410)
+    return prefab, root
+  end
+
+  function get_hero_attr(name, fallback_name)
     if not STATE.hero or not STATE.hero:is_exist() then
       return 0
     end
@@ -253,9 +297,7 @@ function M.create(env)
       and is_ui_alive(runtime_hud.top_battle_cluster)
       and is_ui_alive(runtime_hud.left_shortcut_panel)
       and is_ui_alive(runtime_hud.right_tracker_panel)
-      and is_ui_alive(runtime_hud.bottom_action_bar)
-      and is_button_bundle_alive(runtime_hud.skill_button)
-      and is_button_bundle_alive(runtime_hud.bond_button)
+      and is_ui_alive(runtime_hud.bottom_bg_root)
       and (not runtime_hud.decision_root or is_ui_alive(runtime_hud.decision_root))
   end
 
@@ -300,6 +342,52 @@ function M.create(env)
     set_text_color(bundle.button, text_color or theme.palette.text)
   end
 
+  local function ensure_entry_label(entry, font_size, z_order)
+    if not entry or not entry.root or entry.label then
+      return
+    end
+    local width = round_number(entry.root:get_width() or 100)
+    local height = round_number(entry.root:get_height() or 36)
+    local label = entry.root:create_child('文本')
+    label:set_anchor(0.5, 0.5)
+    label:set_ui_size(width - 8, height - 6)
+    label:set_pos(round_number(width * 0.5), round_number(height * 0.5))
+    label:set_font_size(font_size or 14)
+    label:set_text_alignment('中', '中')
+    if z_order then
+      label:set_z_order(z_order)
+    end
+    entry.label = label
+  end
+
+  local function bind_image_entry(entry, callback)
+    if not entry or not entry.root then
+      return
+    end
+    entry.root:add_fast_event('左键-点击', function()
+      if entry.enabled == false then
+        return
+      end
+      callback()
+    end)
+  end
+
+  local function update_image_entry(entry, label, enabled, image_color, text_color)
+    if not entry or not entry.root then
+      return
+    end
+    entry.enabled = enabled == true
+    if image_color then
+      entry.root:set_image_color(image_color[1], image_color[2], image_color[3], image_color[4] or 255)
+    end
+    if entry.label then
+      entry.label:set_text(label or '')
+      if text_color then
+        entry.label:set_text_color(text_color[1], text_color[2], text_color[3], text_color[4] or 255)
+      end
+    end
+  end
+
   local function get_hero_name()
     if not STATE.hero or not STATE.hero:is_exist() then
       return '先锋英雄'
@@ -315,6 +403,33 @@ function M.create(env)
 
   local function clamp01(value)
     return math.max(0, math.min(1, value or 0))
+  end
+
+  local function format_percent_line(value)
+    local number = y3.helper.tonumber(value) or 0
+    if math.abs(number) < 0.001 then
+      return ''
+    end
+    if math.abs(number) <= 1 then
+      return string.format('%+.0f%%', number * 100)
+    end
+    return string.format('%+.0f%%', number)
+  end
+
+  local function get_hero_level_text()
+    local progress = STATE.hero_progress
+    local level = progress and progress.level or 1
+    return string.format('Lv%d', level)
+  end
+
+  local function get_attack_stat_text()
+    return format_compact(get_hero_attr('攻击'))
+  end
+
+  local function set_optional_text(node, text)
+    if node then
+      node:set_text(text or '')
+    end
   end
 
   local function get_hero_hp_ratio()
@@ -413,6 +528,85 @@ function M.create(env)
     if runtime_hud.exp_rail_fill and runtime_hud.exp_rail_fill_width and runtime_hud.exp_rail_fill_height then
       local width = math.max(6, round_number(runtime_hud.exp_rail_fill_width * get_hero_progress_ratio()))
       runtime_hud.exp_rail_fill:set_ui_size(width, runtime_hud.exp_rail_fill_height)
+    end
+  end
+
+  local function refresh_bottom_bg_stats(runtime_hud)
+    set_optional_text(runtime_hud.bottom_name, get_hero_name())
+    set_optional_text(runtime_hud.bottom_level, get_hero_level_text())
+    set_optional_text(runtime_hud.bottom_exp_text, env.get_hero_progress_text())
+    set_optional_text(runtime_hud.bottom_hp_text, get_hero_hp_text())
+
+    set_optional_text(runtime_hud.bottom_attack_value, get_attack_stat_text())
+    set_optional_text(runtime_hud.bottom_attack_percent, '攻击力')
+    set_optional_text(runtime_hud.bottom_attack_percent_bonus, format_percent_bonus_text(
+      get_hero_attr('攻击增幅'),
+      get_hero_attr('最终攻击')
+    ))
+    set_optional_text(runtime_hud.bottom_attack_value_bonus, format_signed_compact(
+      get_hero_attr('攻击结算值', '攻击') - get_hero_attr('攻击')
+    ))
+
+    set_optional_text(runtime_hud.bottom_strength_value, format_compact(get_hero_attr('力量')))
+    set_optional_text(runtime_hud.bottom_strength_percent, '力量')
+    set_optional_text(runtime_hud.bottom_strength_percent_bonus, format_percent_bonus_text(
+      get_hero_attr('力量增幅'),
+      get_hero_attr('最终力量增幅')
+    ))
+    set_optional_text(runtime_hud.bottom_strength_value_bonus, format_signed_compact(
+      get_hero_attr('最终力量', '力量') - get_hero_attr('力量')
+    ))
+
+    set_optional_text(runtime_hud.bottom_agility_value, format_compact(get_hero_attr('敏捷')))
+    set_optional_text(runtime_hud.bottom_agility_percent, '敏捷')
+    set_optional_text(runtime_hud.bottom_agility_percent_bonus, format_percent_bonus_text(
+      get_hero_attr('敏捷增幅'),
+      get_hero_attr('最终敏捷增幅')
+    ))
+    set_optional_text(runtime_hud.bottom_agility_value_bonus, format_signed_compact(
+      get_hero_attr('最终敏捷', '敏捷') - get_hero_attr('敏捷')
+    ))
+
+    set_optional_text(runtime_hud.bottom_intelligence_value, format_compact(get_hero_attr('智力')))
+    set_optional_text(runtime_hud.bottom_intelligence_percent, '智力')
+    set_optional_text(runtime_hud.bottom_intelligence_percent_bonus, format_percent_bonus_text(
+      get_hero_attr('智力增幅'),
+      get_hero_attr('最终智力增幅')
+    ))
+    set_optional_text(runtime_hud.bottom_intelligence_value_bonus, format_signed_compact(
+      get_hero_attr('最终智力', '智力') - get_hero_attr('智力')
+    ))
+
+    set_optional_text(runtime_hud.bottom_armor_value, format_compact(get_hero_attr('护甲')))
+    set_optional_text(runtime_hud.bottom_armor_percent, '护甲值')
+    set_optional_text(runtime_hud.bottom_armor_percent_bonus, format_percent_bonus_text(
+      get_hero_attr('护甲增幅'),
+      get_hero_attr('最终护甲')
+    ))
+    set_optional_text(runtime_hud.bottom_armor_value_bonus, format_signed_compact(
+      get_hero_attr('护甲结算值', '护甲') - get_hero_attr('护甲')
+    ))
+  end
+
+  local function refresh_bottom_bg_bars(runtime_hud)
+    if runtime_hud.bottom_hp_fill and runtime_hud.bottom_hp_fill_width and runtime_hud.bottom_hp_fill_height then
+      local width = math.max(6, round_number(runtime_hud.bottom_hp_fill_width * get_hero_hp_ratio()))
+      runtime_hud.bottom_hp_fill:set_ui_size(width, runtime_hud.bottom_hp_fill_height)
+    end
+    if runtime_hud.bottom_exp_fill and runtime_hud.bottom_exp_fill_width and runtime_hud.bottom_exp_fill_height then
+      local width = math.max(6, round_number(runtime_hud.bottom_exp_fill_width * get_hero_progress_ratio()))
+      runtime_hud.bottom_exp_fill:set_ui_size(width, runtime_hud.bottom_exp_fill_height)
+    end
+  end
+
+  local function refresh_bottom_bg_bond_icons(runtime_hud)
+    local bond_icons = runtime_hud.bottom_bond_icons or {}
+    for slot = 1, 7, 1 do
+      local icon_node = bond_icons[slot]
+      if icon_node then
+        local icon = BondSystem.get_slot_icon(STATE, slot) or EMPTY_BOND_ICON
+        icon_node:set_image(icon)
+      end
     end
   end
 
@@ -569,6 +763,30 @@ function M.create(env)
       env.try_treasure_entry()
       refresh_runtime_hud()
     end)
+    bind_image_entry(runtime_hud.bottom_skill_entry, function()
+      env.show_upgrade_choices()
+      refresh_runtime_hud()
+    end)
+    bind_image_entry(runtime_hud.bottom_bond_entry, function()
+      env.try_bond_draw()
+      refresh_runtime_hud()
+    end)
+    bind_image_entry(runtime_hud.bottom_gold_trial_entry, function()
+      env.try_start_challenge('gold_trial')
+      refresh_runtime_hud()
+    end)
+    bind_image_entry(runtime_hud.bottom_wood_trial_entry, function()
+      env.try_start_challenge('wood_trial')
+      refresh_runtime_hud()
+    end)
+    bind_image_entry(runtime_hud.bottom_exp_trial_entry, function()
+      env.try_start_challenge('exp_trial')
+      refresh_runtime_hud()
+    end)
+    bind_image_entry(runtime_hud.bottom_treasure_trial_entry, function()
+      env.try_treasure_entry()
+      refresh_runtime_hud()
+    end)
     runtime_hud.treasure_button.button:add_fast_event('左键-点击', function()
       env.try_treasure_entry()
       refresh_runtime_hud()
@@ -613,6 +831,20 @@ function M.create(env)
       runtime_hud.exp_rail_fill_width = round_number(runtime_hud.exp_rail_fill:get_width() or 1214)
       runtime_hud.exp_rail_fill_height = round_number(runtime_hud.exp_rail_fill:get_height() or 12)
     end
+    if runtime_hud.bottom_hp_fill then
+      runtime_hud.bottom_hp_fill_width = round_number(runtime_hud.bottom_hp_fill:get_width() or 572)
+      runtime_hud.bottom_hp_fill_height = round_number(runtime_hud.bottom_hp_fill:get_height() or 64)
+    end
+    if runtime_hud.bottom_exp_fill then
+      runtime_hud.bottom_exp_fill_width = round_number(runtime_hud.bottom_exp_fill:get_width() or 210)
+      runtime_hud.bottom_exp_fill_height = round_number(runtime_hud.bottom_exp_fill:get_height() or 18)
+    end
+    ensure_entry_label(runtime_hud.bottom_skill_entry, 16, 9412)
+    ensure_entry_label(runtime_hud.bottom_bond_entry, 16, 9412)
+    ensure_entry_label(runtime_hud.bottom_gold_trial_entry, 14, 9412)
+    ensure_entry_label(runtime_hud.bottom_wood_trial_entry, 14, 9412)
+    ensure_entry_label(runtime_hud.bottom_exp_trial_entry, 14, 9412)
+    ensure_entry_label(runtime_hud.bottom_treasure_trial_entry, 14, 9412)
     if runtime_hud.boss_panel then
       runtime_hud.boss_panel:set_image(ui_res.common.empty)
     end
@@ -662,6 +894,9 @@ function M.create(env)
     runtime_hud.hero_hp_text:set_text(get_hero_hp_text())
     runtime_hud.exp_rail_text:set_text(env.get_hero_progress_text())
     refresh_fill_bars(runtime_hud)
+    refresh_bottom_bg_stats(runtime_hud)
+    refresh_bottom_bg_bars(runtime_hud)
+    refresh_bottom_bg_bond_icons(runtime_hud)
     refresh_skill_slots(runtime_hud)
 
     local skill_ready = not STATE.game_finished
@@ -692,6 +927,22 @@ function M.create(env)
       (bond_awaiting or wood >= BOND_DRAW_COST) and { 245, 248, 255, 255 } or { 198, 210, 226, 255 }
     )
 
+    update_image_entry(
+      runtime_hud.bottom_skill_entry,
+      STATE.awaiting_upgrade and '继续选择' or string.format('技能 %d', STATE.skill_points or 0),
+      skill_ready,
+      skill_highlight and { 255, 255, 255, 255 } or { 130, 130, 130, 220 },
+      skill_highlight and { 255, 245, 220, 255 } or { 190, 190, 190, 255 }
+    )
+
+    update_image_entry(
+      runtime_hud.bottom_bond_entry,
+      bond_awaiting and '继续选择' or string.format('羁绊 %d木', BOND_DRAW_COST),
+      bond_ready,
+      bond_ready and { 255, 255, 255, 255 } or { 130, 130, 130, 220 },
+      bond_ready and { 255, 245, 220, 255 } or { 190, 190, 190, 255 }
+    )
+
     for challenge_id, button_ref in pairs(runtime_hud.challenge_buttons) do
       local status = decorate_challenge_status(challenge_id, get_challenge_button_state(challenge_id))
       update_button_bundle(
@@ -704,7 +955,52 @@ function M.create(env)
       )
     end
 
+    local gold_status = decorate_challenge_status('gold_trial', get_challenge_button_state('gold_trial'))
+    update_image_entry(
+      runtime_hud.bottom_gold_trial_entry,
+      gold_status.button_text,
+      not STATE.game_finished,
+      gold_status.bg,
+      gold_status.text
+    )
+
+    local wood_status = decorate_challenge_status('wood_trial', get_challenge_button_state('wood_trial'))
+    update_image_entry(
+      runtime_hud.bottom_wood_trial_entry,
+      wood_status.button_text,
+      not STATE.game_finished,
+      wood_status.bg,
+      wood_status.text
+    )
+
+    local exp_status = decorate_challenge_status('exp_trial', get_challenge_button_state('exp_trial'))
+    update_image_entry(
+      runtime_hud.bottom_exp_trial_entry,
+      exp_status.button_text,
+      not STATE.game_finished,
+      exp_status.bg,
+      exp_status.text
+    )
+
     local treasure_pending = env.has_pending_treasure_choice and env.has_pending_treasure_choice() or false
+    local treasure_status = decorate_challenge_status('treasure_trial', get_challenge_button_state('treasure_trial'))
+    if treasure_pending then
+      update_image_entry(
+        runtime_hud.bottom_treasure_trial_entry,
+        '宝物 继续选择',
+        true,
+        { 152, 106, 74, 235 },
+        { 255, 244, 228, 255 }
+      )
+    else
+      update_image_entry(
+        runtime_hud.bottom_treasure_trial_entry,
+        treasure_status.button_text,
+        not STATE.game_finished,
+        treasure_status.bg,
+        treasure_status.text
+      )
+    end
     update_button_bundle(
       runtime_hud.treasure_button,
       treasure_pending and '宝物入口 继续选择' or '宝物入口',
@@ -736,6 +1032,7 @@ function M.create(env)
   local function create_runtime_hud()
     local hud = get_hud_root()
     if not hud then
+      print('[runtime_hud_v2] create_runtime_hud failed: GameHUD missing')
       return nil
     end
 
@@ -751,7 +1048,26 @@ function M.create(env)
       or not bound_nodes.left_shortcut_panel
       or not bound_nodes.right_tracker_panel
       or not bound_nodes.bottom_action_bar then
+      print('[runtime_hud_v2] create_runtime_hud failed: GameHUD nodes missing')
       return nil
+    end
+
+    local bottom_prefab, bottom_root = create_bottom_bg_prefab(hud)
+    if not bottom_prefab or not bottom_root then
+      print('[runtime_hud_v2] create_runtime_hud failed: bottom_bg prefab missing')
+      return nil
+    end
+
+    RuntimeHudNodes.attach_bottom_bg(bound_nodes, bottom_prefab)
+    bound_nodes.bottom_bg_root = bottom_root
+    if bound_nodes.challenge_strip then
+      bound_nodes.challenge_strip:set_visible(false)
+    end
+    if bound_nodes.bottom_action_bar then
+      bound_nodes.bottom_action_bar:set_visible(false)
+    end
+    if bound_nodes.bottom_bg_backpack then
+      bound_nodes.bottom_bg_backpack:set_visible(false)
     end
 
     local scale = get_hud_scale(hud, y3)

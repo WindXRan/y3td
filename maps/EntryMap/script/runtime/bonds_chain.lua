@@ -1408,6 +1408,30 @@ function M.get_node_def(node_id)
   return get_node_def(node_id)
 end
 
+function M.get_slot_icon(state, slot)
+  local runtime = get_runtime(state)
+  if not runtime or not slot then
+    return nil
+  end
+
+  local node_id = runtime.owned_node_order[slot]
+  if not node_id then
+    return nil
+  end
+
+  local node_def = get_node_def(node_id)
+  if node_def and node_def.icon then
+    return node_def.icon
+  end
+
+  if string.sub(node_id, 1, 8) == '__group_' then
+    local group_def = GROUP_CHOICE_DEFS[string.sub(node_id, 9)]
+    return group_def and group_def.icon or nil
+  end
+
+  return nil
+end
+
 function M.is_node_unlocked(state, node_id)
   local runtime = get_runtime(state)
   local node_def = get_node_def(node_id)

@@ -9,7 +9,8 @@
 - 总协调：`maps/EntryMap/script/entry_runtime.lua`
 - HUD 入口：`maps/EntryMap/script/entry_runtime_hud.lua`
 - 三选一入口：`maps/EntryMap/script/entry_runtime_choice_panel.lua`
-- HUD 实现：`maps/EntryMap/script/ui/runtime_hud.lua`
+- HUD 包装层：`maps/EntryMap/script/ui/runtime_hud_panel1_top.lua`
+- HUD 主实现：`maps/EntryMap/script/ui/runtime_hud_v2.lua`
 - 三选一实现：`maps/EntryMap/script/ui/choice_panel.lua`
 - 三选一布局：`maps/EntryMap/script/ui/choice_panel_layout.lua`
 - 资源索引：`maps/EntryMap/script/ui/res.lua`
@@ -19,8 +20,9 @@
 ## 当前结构
 
 - 常驻 HUD：
-  - 由 `ui/runtime_hud.lua` 动态挂到 `GameHUD`
-  - 负责顶部战斗信息、底部入口按钮、挑战入口和资源显示
+  - 当前由 `ui/runtime_hud_panel1_top.lua` 调度，底层真实实现为 `ui/runtime_hud_v2.lua`
+  - `runtime_hud_v2.lua` 依赖 `GameHUD.json` 中的 `hud_root` 骨架节点，并在运行时额外挂载 `bottom_bg` prefab
+  - `runtime_hud_panel1_top.lua` 当前主要负责兼容旧入口，并强制隐藏 `GameHUD` 内残留的模板状态栏
 - 三选一奖励面板：
   - 由 `ui/choice_panel.lua` 动态挂到 `GameHUD`
   - 只接管 `G 技能强化`、`F 羁绊抽卡`、`宝物候选 / 替换`
@@ -32,9 +34,12 @@
 
 ## 责任边界
 
-- `ui/runtime_hud.lua`：
-  - 只负责常驻信息和入口按钮
-  - 旧 decision 分支已隐藏，不再承担三选一正文展示
+- `ui/runtime_hud_v2.lua`：
+  - 负责常驻信息和入口按钮
+  - 负责挂载 `bottom_bg` prefab，并把英雄信息、属性、按钮状态刷新到 prefab 节点
+- `ui/runtime_hud_panel1_top.lua`：
+  - 当前不再承担旧 `panel_1` 顶栏映射
+  - 主要负责隐藏 `panel_1` 与 `GameHUD` 自带模板栏，避免和新 HUD 叠层
 - `ui/choice_panel.lua`：
   - 只读当前 runtime 的待选状态
   - 负责显隐、按钮交互、三张卡内容渲染
@@ -85,3 +90,9 @@
 - 换皮不动 runtime 逻辑
 - 业务图标和 UI 壳子分层明确
 - `G / F / 宝物` 共用一套面板，不会重复接线
+
+## 当前注意事项
+
+- `GameHUD.json` 里仍保留一套模板自带的旧状态栏节点，例如主血蓝条、英雄头像列、背包按钮与旧技能/背包区。
+- 当前版本不依赖这些旧节点提供功能，而是在运行时直接隐藏，避免与 `bottom_bg` 新底栏重叠。
+- `bottom_bg` prefab 原始内容尺寸和原点都偏向大屏原稿；当前运行时已改为按屏幕中心挂载，并追加缩放适配。
