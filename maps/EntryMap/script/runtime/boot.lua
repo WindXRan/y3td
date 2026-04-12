@@ -9,7 +9,6 @@ local OverviewModelSystem = require 'runtime.overview_model'
 local SessionStateSystem = require 'runtime.session_state'
 local InputEventsSystem = require 'runtime.input_events'
 local RuntimeLoopsSystem = require 'runtime.loops'
-local RuntimeOverviewSystem = require 'ui.runtime_overview'
 local OutgameSystem = require 'ui.outgame'
 local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
@@ -29,7 +28,6 @@ local debug_tools_system
 local debug_actions_system
 local runtime_hud_system
 local choice_panel_system
-local runtime_overview_system
 local overview_model_system
 local outgame_system
 local session_state_system
@@ -1022,16 +1020,6 @@ local function show_runtime_status()
     challenge_count,
     get_reward_queue_count()
   ))
-  show_attack_skill_loadout()
-  BondSystem.show_loadout(create_bond_env())
-  show_mark_loadout()
-  show_treasure_loadout()
-  if get_mark_runtime().awaiting_choice then
-    show_mark_choices()
-  end
-  if get_treasure_runtime().awaiting_choice or get_treasure_runtime().awaiting_replace then
-    show_treasure_choices()
-  end
 end
 
 local function trigger_td_skills_on_hit(data)
@@ -1711,19 +1699,6 @@ choice_panel_system = (function()
   })
 end)()
 
-runtime_overview_system = RuntimeOverviewSystem.create({
-  STATE = STATE,
-  y3 = y3,
-  round_number = round_number,
-  get_player = get_player,
-  get_runtime_overview_model = function()
-    return get_runtime_overview_model()
-  end,
-  toggle_overview = function(force_visible)
-    return runtime_overview_system.toggle_overview(force_visible)
-  end,
-})
-
 local function ensure_runtime_hud()
   return runtime_hud_system.ensure_hud()
 end
@@ -1753,9 +1728,6 @@ local function destroy_choice_panel()
 end
 
 local function refresh_runtime_overview()
-  if runtime_overview_system and runtime_overview_system.refresh_overview then
-    runtime_overview_system.refresh_overview()
-  end
 end
 
 local function build_attr_tip_panel_text()
@@ -1807,9 +1779,6 @@ set_battle_hud_visible = function(visible)
   end
   if choice_panel_system and choice_panel_system.set_visible then
     choice_panel_system.set_visible(visible)
-  end
-  if runtime_overview_system and runtime_overview_system.set_visible and visible ~= true then
-    runtime_overview_system.set_visible(false)
   end
 end
 
@@ -1898,13 +1867,8 @@ input_events_system = InputEventsSystem.create({
   show_bond_progress = function()
     return BondSystem.show_bond_progress(create_bond_env())
   end,
-  ensure_runtime_overview = function()
-    runtime_overview_system.ensure_panel()
-    runtime_overview_system.toggle_overview()
-  end,
   show_runtime_attr_overview = function()
-    runtime_overview_system.ensure_panel()
-    runtime_overview_system.set_visible(true)
+    show_runtime_attr_dialog()
   end,
   show_runtime_attr_tip_panel = function()
     show_runtime_attr_tip_panel(8)
@@ -1969,22 +1933,6 @@ function M.bootstrap()
   debug_tools_system.ensure_gm_panel()
   outgame_system.load_profile()
   outgame_system.enter_outgame(nil)
-  message('局外选关已启动：先选择章节与模式，再进入战斗。')
-  message('开发模式坐标校准：.epos / .eset hero / .eset defense / .earea main_spawn_wave_1 280 360 / .edump')
-  message(string.format(
-    '当前临时物编：英雄=%s，1-5波主怪=%s/%s/%s/%s/%s。',
-    CONFIG.temp_unit_labels.hero,
-    CONFIG.temp_unit_labels.wave_1_main,
-    CONFIG.temp_unit_labels.wave_2_main,
-    CONFIG.temp_unit_labels.wave_3_main,
-    CONFIG.temp_unit_labels.wave_4_main,
-    CONFIG.temp_unit_labels.wave_5_main
-  ))
-  if CONFIG.debug_time_scale < 1 then
-    message(string.format('当前为调试模式，时间缩放为 %.1f 倍，便于快速验证波次与挑战流程。', CONFIG.debug_time_scale))
-    message('调试快捷键已启用：按 Ctrl+F1 查看完整说明。')
-    message('GM 调试面板已挂到右上角；也可按 Ctrl+F10 快速折叠。')
-  end
 end
 
 return M

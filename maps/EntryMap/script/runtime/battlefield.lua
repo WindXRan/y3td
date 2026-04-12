@@ -351,7 +351,6 @@ function M.create(env)
       next_spawn_sec = 0,
     }
 
-    message(string.format('%s 开始，Boss 将在 %.0f 秒后加入战场。', wave.name, design_seconds(wave.boss_spawn_sec)))
     if env.on_wave_started then
       env.on_wave_started(index)
     end

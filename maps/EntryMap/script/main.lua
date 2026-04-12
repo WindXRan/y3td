@@ -1,7 +1,7 @@
 -- 游戏启动后会自动运行此文件
 
 if y3.game.is_debug_mode() then
-  y3.config.log.toGame = true
+  y3.config.log.toGame = false
   y3.config.log.level = 'debug'
 else
   y3.config.log.toGame = false

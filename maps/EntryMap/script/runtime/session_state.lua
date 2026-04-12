@@ -172,13 +172,7 @@ function M.create(env)
     set_battle_hud_visible(true)
     refresh_runtime_hud()
 
-    message(string.format('已进入 %s %s。', stage_def.display_name, mode_def.display_name))
     if stage_def.content_source_stage_id and stage_def.content_source_stage_id ~= stage_def.stage_id then
-      message(string.format(
-        '%s 当前暂复用 %s 的战斗内容。',
-        stage_def.display_name,
-        tostring(content_source_stage_def.stage_id or stage_def.content_source_stage_id)
-      ))
     end
 
     env.start_wave(1)

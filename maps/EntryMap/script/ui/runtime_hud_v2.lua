@@ -799,12 +799,6 @@ function M.create(env)
       env.try_treasure_entry()
       refresh_runtime_hud()
     end)
-    runtime_hud.focus_clear_button.button:add_fast_event('左键-点击', function()
-      if env.toggle_overview then
-        env.toggle_overview()
-      end
-      refresh_runtime_hud()
-    end)
     runtime_hud.swallowed_list_button.button:add_fast_event('左键-点击', function()
       if env.show_bond_progress then
         env.show_bond_progress()
@@ -817,12 +811,14 @@ function M.create(env)
     prepare_button_bundle(runtime_hud.skill_button)
     prepare_button_bundle(runtime_hud.bond_button)
     prepare_button_bundle(runtime_hud.treasure_button)
-    prepare_button_bundle(runtime_hud.focus_clear_button)
     prepare_button_bundle(runtime_hud.swallowed_list_button)
     for _, bundle in pairs(runtime_hud.challenge_buttons or {}) do
       prepare_button_bundle(bundle)
     end
 
+    if runtime_hud.focus_clear_button and runtime_hud.focus_clear_button.root then
+      runtime_hud.focus_clear_button.root:set_visible(false)
+    end
     if runtime_hud.hero_portrait then
       runtime_hud.hero_portrait:set_image(ui_res.game_hud.unit_icon or ui_res.common.empty)
     end
@@ -1016,14 +1012,6 @@ function M.create(env)
       treasure_pending and { 152, 106, 74, 235 } or { 128, 90, 68, 232 },
       treasure_pending and { 46, 24, 12, 150 } or { 34, 18, 10, 130 },
       treasure_pending and { 255, 244, 228, 255 } or theme.palette.text
-    )
-    update_button_bundle(
-      runtime_hud.focus_clear_button,
-      '总览 B',
-      true,
-      { 58, 84, 112, 226 },
-      { 8, 16, 28, 120 },
-      theme.palette.text
     )
     update_button_bundle(
       runtime_hud.swallowed_list_button,

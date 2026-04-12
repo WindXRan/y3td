@@ -11,7 +11,6 @@ function M.create(env)
   local show_upgrade_choices = env.show_upgrade_choices
   local try_bond_draw = env.try_bond_draw
   local show_bond_progress = env.show_bond_progress
-  local ensure_runtime_overview = env.ensure_runtime_overview
   local show_runtime_attr_tip_panel = env.show_runtime_attr_tip_panel
   local show_runtime_attr_dialog = env.show_runtime_attr_dialog
   local try_start_challenge = env.try_start_challenge
@@ -69,8 +68,7 @@ function M.create(env)
       if not is_battle_active() then
         return
       end
-      STATE.runtime_overview_mode = 'build'
-      ensure_runtime_overview()
+      show_runtime_status()
     end)
     y3.game:event('键盘-按下', y3.const.KeyboardKey['TAB'], function()
       if not is_battle_active() then
