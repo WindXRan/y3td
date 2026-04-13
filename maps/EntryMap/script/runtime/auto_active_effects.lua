@@ -331,8 +331,12 @@ function M.create(env)
   local function damage_enemies_in_radius(center, radius, amount, damage_type, particle)
     local hit_any = false
     for _, unit in ipairs(get_enemies_in_range(center, radius or 0, nil, 24)) do
+      local text_type = 'magic'
+      if damage_type == '物理' or damage_type == 'weapon' then
+        text_type = 'physics'
+      end
       deal_skill_damage(unit, amount, damage_type, {
-        text_type = damage_type == '物理' and 'physics' or 'magic',
+        text_type = text_type,
         particle = particle,
       })
       hit_any = true

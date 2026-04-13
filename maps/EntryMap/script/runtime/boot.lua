@@ -107,6 +107,26 @@ end
 
 local ATTACK_SKILL_DEFS = AttackSkillObjects.defs_by_id
 local ATTACK_SKILL_BLUEPRINTS = AttackSkillObjects.blueprints
+
+local function resolve_damage_meta(damage)
+  if type(damage) == 'table' then
+    return {
+      damage_type = damage.damage_type or '法术',
+      damage_form = damage.damage_form or (damage.damage_type == '物理' and 'weapon' or 'spell'),
+      element = damage.element or 'none',
+      damage_label = damage.damage_label or (damage.damage_type == '物理' and '兵刃伤害' or '术法伤害'),
+    }
+  end
+
+  local legacy_damage_type = damage or '法术'
+  return {
+    damage_type = legacy_damage_type,
+    damage_form = legacy_damage_type == '物理' and 'weapon' or 'spell',
+    element = 'none',
+    damage_label = legacy_damage_type == '物理' and '兵刃伤害' or '术法伤害',
+  }
+end
+
 local function create_attack_skill_instance(skill_id, slot)
   local def = ATTACK_SKILL_DEFS[skill_id]
   return {
@@ -115,6 +135,9 @@ local function create_attack_skill_instance(skill_id, slot)
     slot = slot or def.default_slot or 0,
     summary = def.summary,
     damage_type = def.damage_type,
+    damage_form = def.damage_form,
+    element = def.element,
+    damage_label = def.damage_label,
     level = 1,
     unlocked = true,
     damage_ratio = def.base_damage_ratio or 0,
@@ -774,13 +797,12 @@ local function get_enemies_in_range(center, radius, except_unit, max_count)
   return result
 end
 
-local function resolve_damage_text_type(damage_type, visual)
+local function resolve_damage_text_type(damage_form, visual)
   if visual and visual.text_type then
     return visual.text_type
   end
 
-  if damage_type == ATTACK_SKILL_DEFS.basic_attack.damage_type
-      or damage_type == ATTACK_SKILL_DEFS.flame_arrow.damage_type then
+  if damage_form == 'weapon' then
     return 'physics'
   end
 
@@ -856,12 +878,18 @@ local function build_reward_with_bond_bonus(reward)
 end
 
 
-local function deal_skill_damage(target, amount, damage_type, visual)
+local function deal_skill_damage(target, amount, damage, visual)
   if not STATE.hero or not STATE.hero:is_exist() or not is_active_enemy(target) then
     return
   end
 
-  local final_damage = math.floor((amount or 0) * hero_attr_system.get_damage_multiplier(STATE.hero, damage_type or '法术', 'skill') * get_damage_bonus_multiplier(target, {
+  local damage_meta = resolve_damage_meta(damage)
+  local final_damage = math.floor((amount or 0) * hero_attr_system.get_damage_multiplier(
+    STATE.hero,
+    damage_meta.damage_form or damage_meta.damage_type,
+    'skill',
+    damage_meta.element
+  ) * get_damage_bonus_multiplier(target, {
     is_skill = true,
   }))
   if final_damage <= 0 then
@@ -871,8 +899,8 @@ local function deal_skill_damage(target, amount, damage_type, visual)
   STATE.hero:damage({
     target = target,
     damage = final_damage,
-    type = damage_type or '法术',
-    text_type = resolve_damage_text_type(damage_type, visual),
+    type = damage_meta.damage_type or '法术',
+    text_type = resolve_damage_text_type(damage_meta.damage_form, visual),
     text_track = visual and visual.text_track or 934269508,
     particle = visual and visual.particle or nil,
     socket = visual and visual.socket or '',
