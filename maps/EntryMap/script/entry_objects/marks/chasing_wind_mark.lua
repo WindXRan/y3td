@@ -1,6 +1,6 @@
 return {
   id = 'chasing_wind_mark',
-  name = '追风烙印',
+  name = '追风进化',
   quality = 'common',
   pool_weight = 10,
   tags = { 'basic_attack' },

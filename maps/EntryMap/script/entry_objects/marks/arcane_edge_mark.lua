@@ -1,6 +1,6 @@
 return {
   id = 'arcane_edge_mark',
-  name = '奥锋烙印',
+  name = '奥锋进化',
   quality = 'rare',
   pool_weight = 7,
   tags = { 'attack_spell', 'burst' },

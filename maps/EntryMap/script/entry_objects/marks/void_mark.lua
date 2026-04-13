@@ -1,6 +1,6 @@
 return {
   id = 'void_mark',
-  name = '虚空烙印',
+  name = '虚空进化',
   quality = 'epic',
   pool_weight = 4,
   tags = { 'attack_spell', 'boss', 'cooldown' },

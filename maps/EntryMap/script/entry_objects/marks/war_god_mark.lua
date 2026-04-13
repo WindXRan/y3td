@@ -1,6 +1,6 @@
 return {
   id = 'war_god_mark',
-  name = '战神烙印',
+  name = '战神进化',
   quality = 'epic',
   pool_weight = 4,
   tags = { 'burst', 'boss', 'basic_attack' },

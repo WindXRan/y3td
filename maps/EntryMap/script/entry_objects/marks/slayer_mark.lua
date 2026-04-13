@@ -1,6 +1,6 @@
 return {
   id = 'slayer_mark',
-  name = '弑王烙印',
+  name = '弑王进化',
   quality = 'rare',
   pool_weight = 7,
   tags = { 'boss', 'elite' },

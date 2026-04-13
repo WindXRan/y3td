@@ -106,6 +106,7 @@ local function create_skill_runtime()
 end
 
 local ATTACK_SKILL_DEFS = AttackSkillObjects.defs_by_id
+local ATTACK_SKILL_BLUEPRINTS = AttackSkillObjects.blueprints
 local function create_attack_skill_instance(skill_id, slot)
   local def = ATTACK_SKILL_DEFS[skill_id]
   return {
@@ -1295,6 +1296,8 @@ effect_debug_system = EffectDebugSystem.create({
 attack_upgrade_system = AttackUpgradeSystem.create({
   STATE = STATE,
   message = message,
+  ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS,
+  ATTACK_SKILL_BLUEPRINTS = ATTACK_SKILL_BLUEPRINTS,
   get_attack_skill = get_attack_skill,
   get_empty_attack_skill_slot = get_empty_attack_skill_slot,
   get_unlocked_attack_skill_count = get_unlocked_attack_skill_count,
@@ -1342,7 +1345,7 @@ local function get_pending_round_choice_label(kind)
     return 'F 链式羁绊'
   end
   if kind == 'mark' then
-    return '烙印选择'
+    return '进化选择'
   end
   if kind == 'treasure' then
     return '宝物选择'

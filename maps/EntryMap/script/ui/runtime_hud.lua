@@ -488,7 +488,7 @@ function M.create(env)
       return '羁绊抉择'
     end
     if kind == 'mark' then
-      return '烙印抉择'
+      return '进化抉择'
     end
     if kind == 'treasure' then
       return '宝物抉择'
@@ -504,7 +504,7 @@ function M.create(env)
       return string.format('按 %d 收下此卡', index)
     end
     if kind == 'mark' then
-      return string.format('按 %d 铭刻此印', index)
+      return string.format('按 %d 选择此进化', index)
     end
     return string.format('按 %d 确认选择', index)
   end
@@ -517,7 +517,7 @@ function M.create(env)
       return '羁绊招募进行中'
     end
     if kind == 'mark' then
-      return '烙印正在抉择'
+      return '进化正在抉择'
     end
     if kind == 'treasure' then
       return '宝物选择进行中'

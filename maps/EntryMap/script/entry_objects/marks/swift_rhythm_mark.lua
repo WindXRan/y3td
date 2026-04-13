@@ -1,6 +1,6 @@
 return {
   id = 'swift_rhythm_mark',
-  name = '迅节烙印',
+  name = '迅节进化',
   quality = 'common',
   pool_weight = 10,
   tags = { 'cooldown', 'spell_cycle' },

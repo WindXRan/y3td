@@ -1,6 +1,6 @@
 return {
   id = 'storm_mark',
-  name = '风暴烙印',
+  name = '风暴进化',
   quality = 'rare',
   pool_weight = 7,
   tags = { 'basic_attack', 'spell_cycle' },

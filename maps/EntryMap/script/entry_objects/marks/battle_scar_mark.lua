@@ -1,6 +1,6 @@
 return {
   id = 'battle_scar_mark',
-  name = '战痕烙印',
+  name = '战痕进化',
   quality = 'common',
   pool_weight = 10,
   tags = { 'attack_spell' },

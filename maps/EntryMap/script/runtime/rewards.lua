@@ -238,16 +238,16 @@ function M.create(env)
     local runtime = api.get_mark_runtime()
     local mark_id = runtime.ordered_mark_ids[slot]
     if not mark_id then
-      return string.format('烙印位 %d：空。', slot)
+      return string.format('进化位 %d：空。', slot)
     end
 
     local def = MARK_DEFS[mark_id]
     if not def then
-      return string.format('烙印位 %d：未知烙印 %s。', slot, tostring(mark_id))
+      return string.format('进化位 %d：未知进化 %s。', slot, tostring(mark_id))
     end
 
     return string.format(
-      '烙印位 %d：[%s] %s - %s',
+      '进化位 %d：[%s] %s - %s',
       slot,
       api.get_mark_quality_label(def.quality),
       def.name,
@@ -256,7 +256,7 @@ function M.create(env)
   end
 
   function api.show_mark_loadout()
-    message('烙印栏：')
+    message('进化栏：')
     local count = math.max(4, api.get_mark_active_count())
     for slot = 1, count, 1 do
       message(api.build_mark_slot_text(slot))
@@ -883,7 +883,7 @@ function M.create(env)
     if next_entry.kind == 'mark_choice' then
       local round = next_entry.round_id and mark_runtime.rounds_by_id[next_entry.round_id] or nil
       if not round then
-        message('烙印轮次数据不存在，本次奖励已跳过。')
+        message('进化轮次数据不存在，本次奖励已跳过。')
         return true
       end
 
@@ -896,7 +896,7 @@ function M.create(env)
       end
 
       if #choices == 0 then
-        message(string.format('%s：没有可用烙印候选，本轮已跳过。', round.ui_title or '烙印选择'))
+        message(string.format('%s：没有可用进化候选，本轮已跳过。', round.ui_title or '进化选择'))
         round.state = 'skipped'
         return true
       end
@@ -906,7 +906,7 @@ function M.create(env)
       mark_runtime.awaiting_choice = true
       round.state = 'pending'
 
-      message(string.format('%s：获得一次烙印 3选1。', round.ui_title or '烙印选择'))
+      message(string.format('%s：获得一次进化 3选1。', round.ui_title or '进化选择'))
       api.show_mark_choices()
       return true
     end
@@ -1086,7 +1086,7 @@ function M.create(env)
     api.sync_mark_effects()
 
     message(string.format(
-      '已获得烙印：[%s] %s。',
+      '已获得进化：[%s] %s。',
       api.get_mark_quality_label(def.quality),
       def.name
     ))
@@ -1101,7 +1101,7 @@ function M.create(env)
       return
     end
 
-    local title = runtime.current_round and runtime.current_round.ui_title or '烙印选择'
+    local title = runtime.current_round and runtime.current_round.ui_title or '进化选择'
     message(string.format('%s：按 1 / 2 / 3 选择。', title))
     for index, def in ipairs(runtime.current_choices) do
       message(build_mark_choice_text(index, def))
@@ -1296,7 +1296,7 @@ function M.create(env)
 
     local choices = pick_mark_choices(node.choice_count or 3)
     if #choices == 0 then
-      message(string.format('%s：本局没有可用烙印候选。', node.ui_title or '烙印选择'))
+      message(string.format('%s：本局没有可用进化候选。', node.ui_title or '进化选择'))
       return false
     end
 
@@ -1319,16 +1319,16 @@ function M.create(env)
       kind = 'mark_choice',
       priority = node.queue_priority or 95,
       round_id = round_id,
-      source_name = node.ui_title or '烙印选择',
+      source_name = node.ui_title or '进化选择',
     })
 
     if runtime.awaiting_choice then
-      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '烙印选择'))
+      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '进化选择'))
       return true
     end
 
     if not try_process_reward_queue() and api.get_reward_queue_count() > 0 then
-      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '烙印选择'))
+      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '进化选择'))
     end
     return true
   end

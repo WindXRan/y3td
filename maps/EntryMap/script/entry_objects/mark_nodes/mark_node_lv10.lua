@@ -3,5 +3,5 @@ return {
   trigger_level = 10,
   choice_count = 3,
   queue_priority = 95,
-  ui_title = '10级烙印选择',
+  ui_title = '10级进化选择',
 }
