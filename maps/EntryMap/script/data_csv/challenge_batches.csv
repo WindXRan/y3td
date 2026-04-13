@@ -1,5 +1,5 @@
 challenge_id,batch_index,time_sec,count
-gold_trial,1,0,10
-wood_trial,1,0,8
-exp_trial,1,0,10
-treasure_trial,1,0,5
+gold_trial,1,0,4
+wood_trial,1,0,4
+exp_trial,1,0,4
+treasure_trial,1,0,1

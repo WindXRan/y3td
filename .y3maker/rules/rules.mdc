@@ -42,7 +42,8 @@ Y3 游戏编辑器地图工程，使用 **y3-lualib** 框架。
 | Lua 代码 | `y3-lua-pipeline` |
 | 自动化测试 | `desktop-automation` |
 
-> ⭐ 所有 UI 需求走 `y3-ui-pipeline`，内部自动路由到子技能。
+> ⭐ 所有完整 UI 需求走 `y3-ui-pipeline`，内部自动路由到子技能。
+> ⭐ 明确限定为 `只生成 UI JSON` 或 `只写 UI 逻辑` 的子任务，允许直达对应子技能。
 > ⭐ 所有 Lua 需求走 `y3-lua-pipeline`，内部自动路由到子技能。
 
 ## 🔍 开发前检查（强制）

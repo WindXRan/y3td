@@ -1,35 +1,44 @@
+local CsvLoader = require 'data.csv_loader'
 local catalog = require 'data.object_tables.treasure_catalog'
 local helpers = require 'entry_objects.helpers'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
 
-local RARITY_TO_QUALITY = {
-  normal = 'common',
-  rare = 'rare',
-  epic = 'epic',
-}
+local rarity_rows = CsvLoader.read_rows('data_csv/treasure_compat_rarity_map.csv')
+local runtime_key_rows = CsvLoader.read_rows('data_csv/treasure_compat_runtime_key_map.csv')
+local tag_rule_rows = CsvLoader.read_rows('data_csv/treasure_compat_tag_rules.csv')
+local duration_rule_rows = CsvLoader.read_rows('data_csv/treasure_compat_duration_rules.csv')
+local effect_bucket_rule_rows = CsvLoader.read_rows('data_csv/treasure_compat_effect_bucket_rules.csv')
 
-local DEFAULT_POOL_WEIGHT = {
-  normal = 8,
-  rare = 6,
-  epic = 4,
-}
+local function build_scalar_map(rows, key_field, value_field)
+  local map = {}
+  for _, row in ipairs(rows or {}) do
+    local key = row[key_field]
+    if key ~= nil and key ~= '' then
+      map[key] = row[value_field]
+    end
+  end
+  return map
+end
 
-local NORMALIZED_RUNTIME_KEYS = {
-  gold = '立即金币',
-  wood = '立即木材',
-  exp = '立即经验',
-  skill_refresh_free = '技能免费刷新次数',
-  hero_refresh_free = '英雄免费刷新次数',
-  treasure_refresh_free = '宝物免费刷新次数',
-  rune_store_mode = '神符存储模式',
-  random_attr_point = '随机属性点',
-  randomize_base_stats = '重置基础三维',
-  wood_ratio = '木材翻倍',
-  wood_clear = '木材清零',
-  kill_count = '杀敌数',
-  damage_ratio = '条件伤害加成',
-  todo_effect = '待补充效果',
-}
+local RARITY_TO_QUALITY = build_scalar_map(rarity_rows, 'source_rarity', 'output_quality')
+local NORMALIZED_RUNTIME_KEYS = build_scalar_map(runtime_key_rows, 'source_key', 'output_runtime_key')
+
+local DEFAULT_POOL_WEIGHT = {}
+for _, row in ipairs(rarity_rows or {}) do
+  DEFAULT_POOL_WEIGHT[row.source_rarity] = tonumber(row.output_pool_weight) or 1
+end
+
+table.sort(tag_rule_rows, function(a, b)
+  return (tonumber(a.order_index) or 0) < (tonumber(b.order_index) or 0)
+end)
+
+table.sort(duration_rule_rows, function(a, b)
+  return (tonumber(a.order_index) or 0) < (tonumber(b.order_index) or 0)
+end)
+
+table.sort(effect_bucket_rule_rows, function(a, b)
+  return (tonumber(a.order_index) or 0) < (tonumber(b.order_index) or 0)
+end)
 
 local function add_pack_value(pack, key, value)
   if key == nil or key == '' or value == nil then
@@ -50,46 +59,56 @@ local function canonical_runtime_key(key)
   return NORMALIZED_RUNTIME_KEYS[key] or key
 end
 
-local function infer_duration_type(item, effects)
-  for _, effect in ipairs(effects or {}) do
-    if effect.scope == '30s' then
-      return 'timed', { trigger = 'immediate', duration_sec = tonumber(effect.scope:match('^(%d+)s$')) or 30 }
+local function infer_duration_type_and_treasure_type(item, effects)
+  for _, rule in ipairs(duration_rule_rows or {}) do
+    for _, effect in ipairs(effects or {}) do
+      local raw_value = tostring(effect[rule.match_field] or '')
+      local matched = false
+
+      if rule.match_type == 'equals' then
+        matched = raw_value == tostring(rule.match_value or '')
+      elseif rule.match_type == 'contains' then
+        matched = string.find(raw_value, tostring(rule.match_value or ''), 1, true) ~= nil
+      elseif rule.match_type == 'default' then
+        matched = true
+      end
+
+      if matched then
+        local duration = nil
+        if rule.output_duration_type == 'timed' then
+          duration = {
+            trigger = rule.output_trigger ~= '' and rule.output_trigger or 'immediate',
+            duration_sec = tonumber(rule.output_duration_sec) or tonumber(raw_value:match('^(%d+)s$')) or nil,
+          }
+        end
+        return rule.output_duration_type, duration, rule.output_treasure_type ~= '' and rule.output_treasure_type or nil
+      end
     end
   end
 
-  for _, effect in ipairs(effects or {}) do
-    if effect.scope == 'instant' then
-      return 'instant', nil
-    end
-  end
-
-  return 'permanent', nil
-end
-
-local function infer_treasure_type(item, duration_type)
-  if duration_type == 'timed' or duration_type == 'instant' then
-    return 'tactical_temp'
-  end
-  return 'general'
+  return 'permanent', nil, 'general'
 end
 
 local function infer_tags(item)
   local tags = {}
-  local category = tostring(item.category or '')
-  local summary = tostring(item.summary or '')
+  local seen = {}
 
-  if string.find(category, '资源获取', 1, true) or string.find(summary, '金币', 1, true) or string.find(summary, '木材', 1, true) then
-    tags[#tags + 1] = 'economy'
+  for _, rule in ipairs(tag_rule_rows or {}) do
+    local raw_value = tostring(item[rule.match_field] or '')
+    local matched = false
+
+    if rule.match_type == 'contains' then
+      matched = string.find(raw_value, tostring(rule.match_value or ''), 1, true) ~= nil
+    elseif rule.match_type == 'equals' then
+      matched = raw_value == tostring(rule.match_value or '')
+    end
+
+    if matched and rule.output_tag ~= '' and not seen[rule.output_tag] then
+      tags[#tags + 1] = rule.output_tag
+      seen[rule.output_tag] = true
+    end
   end
-  if string.find(category, '增益', 1, true) or string.find(summary, '暴击', 1, true) then
-    tags[#tags + 1] = 'skill'
-  end
-  if string.find(summary, '攻击速度', 1, true) or string.find(summary, '伤害', 1, true) then
-    tags[#tags + 1] = 'attack'
-  end
-  if string.find(summary, '生命', 1, true) or string.find(summary, '减免', 1, true) then
-    tags[#tags + 1] = 'survival'
-  end
+
   return tags
 end
 
@@ -104,24 +123,30 @@ local function build_bonus_packs(item)
 
   for _, effect in ipairs(item.effects or {}) do
     local canonical_attr = canonical_attr_name(effect.effect_key)
-    if effect.effect_type == 'passive_income' and canonical_attr then
+    local handled = false
+
+    if canonical_attr then
       add_pack_value(bonuses.attr, canonical_attr, effect.value)
-      add_pack_value(bonuses.passive_income, canonical_attr, effect.value)
-    elseif canonical_attr then
-      add_pack_value(bonuses.attr, canonical_attr, effect.value)
-    elseif effect.effect_type == 'ratio_bonus' and (effect.effect_key == 'gold' or effect.effect_key == 'wood' or effect.effect_key == 'exp') then
-      add_pack_value(bonuses.reward_ratio, effect.effect_key, effect.value)
-    elseif effect.effect_type == 'resource_gain' then
-      add_pack_value(bonuses.runtime, canonical_runtime_key(effect.effect_key), effect.value)
-    elseif effect.effect_type == 'refresh_count' then
-      add_pack_value(bonuses.runtime, canonical_runtime_key(effect.effect_key), effect.value)
-    elseif effect.effect_type == 'mechanic_toggle' then
-      add_pack_value(bonuses.runtime, canonical_runtime_key(effect.effect_key), effect.value)
-    elseif effect.effect_type == 'trigger_growth' then
-      add_pack_value(bonuses.runtime, canonical_runtime_key(effect.effect_key), effect.value)
-    elseif effect.effect_type == 'temporary_buff' or effect.effect_type == 'conditional_damage' or effect.effect_type == 'probability' or effect.effect_type == 'ratio_bonus' then
-      add_pack_value(bonuses.runtime, canonical_runtime_key(effect.effect_key), effect.value)
-    else
+    end
+
+    for _, rule in ipairs(effect_bucket_rule_rows or {}) do
+      local effect_type_match = rule.match_effect_type == effect.effect_type
+      local effect_key_match = rule.match_effect_key == '*' or rule.match_effect_key == effect.effect_key
+      local require_attr = rule.requires_canonical_attr == 'true' or rule.requires_canonical_attr == '1'
+
+      if effect_type_match and effect_key_match and (not require_attr or canonical_attr ~= nil) then
+        if rule.output_bucket == 'passive_income' and canonical_attr then
+          add_pack_value(bonuses.passive_income, canonical_attr, effect.value)
+        elseif rule.output_bucket == 'reward_ratio' then
+          add_pack_value(bonuses.reward_ratio, effect.effect_key, effect.value)
+        elseif rule.output_bucket == 'runtime' then
+          add_pack_value(bonuses.runtime, canonical_runtime_key(effect.effect_key), effect.value)
+        end
+        handled = true
+      end
+    end
+
+    if not handled and canonical_attr == nil then
       bonuses.misc_effects[#bonuses.misc_effects + 1] = effect
     end
   end
@@ -131,14 +156,15 @@ end
 
 local list = {}
 for _, item in ipairs(catalog.list or {}) do
-  local duration_type, duration = infer_duration_type(item, item.effects)
+  local duration_type, duration, treasure_type = infer_duration_type_and_treasure_type(item, item.effects)
   list[#list + 1] = {
+    order_index = item.order_index,
     id = item.id,
     name = item.name,
     quality = RARITY_TO_QUALITY[item.rarity] or 'common',
     summary = item.summary,
     pool_weight = DEFAULT_POOL_WEIGHT[item.rarity] or 1,
-    treasure_type = infer_treasure_type(item, duration_type),
+    treasure_type = treasure_type or 'general',
     duration_type = duration_type,
     duration = duration,
     source_category = item.category,

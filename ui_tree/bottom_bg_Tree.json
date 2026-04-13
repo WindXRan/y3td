@@ -1,0 +1,439 @@
+{
+  "name": "bottom_bg",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "layout_1",
+      "uid": "55c3a24c-0160-4d5d-9889-7ef6868a689a",
+      "type": 7,
+      "children": [
+        {
+          "name": "bg",
+          "uid": "ee0d10f8-2123-4059-9d3a-0416ffecdbea",
+          "type": 4
+        },
+        {
+          "name": "mid",
+          "uid": "ae4aa464-c5e5-4068-a137-26486d8bc50b",
+          "type": 7,
+          "children": [
+            {
+              "name": "进化进度条",
+              "uid": "dcbecc44-c27c-4fc1-bd1d-ca69e361ce03",
+              "type": 41,
+              "children": [
+                {
+                  "name": "progress_bg_img",
+                  "uid": "de430cae-ae8e-4685-a6fc-58073ff60349",
+                  "type": 4
+                },
+                {
+                  "name": "progress_bar_img",
+                  "uid": "dcc9072e-20b0-4a52-89c9-ffd5ddc16e3f",
+                  "type": 39
+                },
+                {
+                  "name": "progress_percent_label",
+                  "uid": "1b37cc2b-1bc5-4b2e-b94a-f565e0adee73",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "panel",
+              "uid": "93f924b8-51f4-4f0f-ba22-bafb64c12040",
+              "type": 7,
+              "children": [
+                {
+                  "name": "攻击力",
+                  "uid": "e819d67b-5830-4b5f-944c-a973f2cb03dc",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "image_5",
+                      "uid": "207291cd-0c69-4486-bb67-1d3be80afe32",
+                      "type": 4
+                    },
+                    {
+                      "name": "名称+加成百分比",
+                      "uid": "26281d90-067d-4b88-b961-96266b8677a9",
+                      "type": 3
+                    },
+                    {
+                      "name": "value",
+                      "uid": "e91b254f-115c-4b4a-b51f-9c64260c8a85",
+                      "type": 3
+                    },
+                    {
+                      "name": "百分比加成",
+                      "uid": "006805b4-6665-437e-aef2-535233f28b88",
+                      "type": 3
+                    },
+                    {
+                      "name": "数值加成",
+                      "uid": "5630fe7c-56df-40c9-ac01-228a15be1a0a",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "力量",
+                  "uid": "e901d6b8-90b1-48c3-b0f1-2137dd727677",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "image_5",
+                      "uid": "1ee606f8-2e88-4ee4-82f4-bf31418447a7",
+                      "type": 4
+                    },
+                    {
+                      "name": "percent",
+                      "uid": "f019a32d-5258-473d-aab0-7bc821eb99dd",
+                      "type": 3
+                    },
+                    {
+                      "name": "value_1",
+                      "uid": "aa477775-807c-4e1d-998f-a80b51f7186b",
+                      "type": 3
+                    },
+                    {
+                      "name": "数值加成",
+                      "uid": "45e5bf1d-cebc-4f01-8f44-9d6d7de00a83",
+                      "type": 3
+                    },
+                    {
+                      "name": "百分比加成",
+                      "uid": "1fa50bbc-ffc1-4e2f-868b-f85c8c058d41",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "敏捷",
+                  "uid": "82de8a73-5da8-4304-a4d0-cf1336e5117a",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "image_5",
+                      "uid": "e7a2df06-4eda-46f5-9346-3003d2125a3e",
+                      "type": 4
+                    },
+                    {
+                      "name": "percent",
+                      "uid": "bb54c507-0019-4259-9a0a-bcad0ddabaa5",
+                      "type": 3
+                    },
+                    {
+                      "name": "value",
+                      "uid": "d0965f02-bbdc-4f10-8afc-101756cd6fc2",
+                      "type": 3
+                    },
+                    {
+                      "name": "数值加成",
+                      "uid": "0b183670-ea9e-4755-9043-8efa99325237",
+                      "type": 3
+                    },
+                    {
+                      "name": "百分比加成",
+                      "uid": "c5952659-00bc-4c5d-8704-9dd6ac99a1b1",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "智力",
+                  "uid": "eeea0339-53e7-4c47-a32e-8788f2f1d9c4",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "image_5",
+                      "uid": "c47d0a07-09e7-4541-94da-3cb9ea23cec3",
+                      "type": 4
+                    },
+                    {
+                      "name": "percent",
+                      "uid": "472c6833-c8c5-4c7a-91c8-8a37fcb67055",
+                      "type": 3
+                    },
+                    {
+                      "name": "value",
+                      "uid": "d12d788f-f246-4732-a3f1-42fc1d063219",
+                      "type": 3
+                    },
+                    {
+                      "name": "数值加成",
+                      "uid": "9ebd9050-e516-4264-9896-b384001c7ec8",
+                      "type": 3
+                    },
+                    {
+                      "name": "百分比加成",
+                      "uid": "78e58c9f-255c-4124-b6f2-f67b6468a733",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "护甲值",
+                  "uid": "38578c70-06c8-4863-9a5e-9ed266077dfb",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "image_3",
+                      "uid": "1dd49777-1e81-4211-b716-3a04bd8a9a10",
+                      "type": 4
+                    },
+                    {
+                      "name": "percent",
+                      "uid": "42285159-8908-4ca6-964b-d9bfb4f274b8",
+                      "type": 3
+                    },
+                    {
+                      "name": "value",
+                      "uid": "79d24f42-c544-418d-866c-6e124c3da6ef",
+                      "type": 3
+                    },
+                    {
+                      "name": "数值加成",
+                      "uid": "240a3645-f3b8-4ee5-b303-ff4682cae9ac",
+                      "type": 3
+                    },
+                    {
+                      "name": "百分比加成",
+                      "uid": "3745fe9d-3b0c-4236-94ba-910dfc520860",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "头像",
+              "uid": "588c991d-5ccd-40d7-aebc-0000a3b03b1a",
+              "type": 7,
+              "children": [
+                {
+                  "name": "英雄头像",
+                  "uid": "c0bb31ee-0b4f-4579-9f0a-23c4c9369029",
+                  "type": 4
+                },
+                {
+                  "name": "头像框",
+                  "uid": "4711f7c6-3a5c-4925-82ab-17d16825e32e",
+                  "type": 4
+                },
+                {
+                  "name": "name",
+                  "uid": "075c3669-7942-47d6-b20b-50c549bb23c8",
+                  "type": 3
+                },
+                {
+                  "name": "等级",
+                  "uid": "9c85a63b-8edc-432e-acf0-67fb0ec2af7e",
+                  "type": 3
+                },
+                {
+                  "name": "血条",
+                  "uid": "63c853ad-5cf3-4fbf-a984-27bdd779abcf",
+                  "type": 41,
+                  "children": [
+                    {
+                      "name": "progress_bg_img",
+                      "uid": "5b383a8e-0fb8-42f2-b248-7660a2fb5d48",
+                      "type": 4
+                    },
+                    {
+                      "name": "progress_bar_img",
+                      "uid": "780dd2bb-b87f-4ffa-9975-a839af708e60",
+                      "type": 39
+                    },
+                    {
+                      "name": "progress_percent_label",
+                      "uid": "5a53fc20-df5b-4256-bfb6-93f76cf1ecb4",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "backpack",
+          "uid": "14120eb9-bb1e-4104-b8d4-0b343e8e1d2d",
+          "type": 7,
+          "children": [
+            {
+              "name": "物品1",
+              "uid": "b1d41c97-8ff9-40b1-b2d0-e3177afb54a0",
+              "type": 4
+            },
+            {
+              "name": "物品2",
+              "uid": "98b8c9ce-ee1c-4800-8512-61a7887769ae",
+              "type": 4
+            },
+            {
+              "name": "image_4_1_1",
+              "uid": "a67406ad-e453-4e9b-a4bf-6da89cf5d6c5",
+              "type": 4
+            },
+            {
+              "name": "image_4_1_1_1",
+              "uid": "25a9ebf4-39f6-45e3-bb60-96cfa87d48a1",
+              "type": 4
+            },
+            {
+              "name": "image_4_1",
+              "uid": "8f7e1139-9df6-4669-899e-50612d47371f",
+              "type": 4
+            },
+            {
+              "name": "image_4_1_2",
+              "uid": "05ffc159-6245-4980-85e7-fe448b8b25c9",
+              "type": 4
+            }
+          ]
+        },
+        {
+          "name": "button",
+          "uid": "a18d354f-3bf6-429b-9444-73d6a8cc25df",
+          "type": 7,
+          "children": [
+            {
+              "name": "image_4",
+              "uid": "f4535000-1a32-41ae-9574-253ff231ffe8",
+              "type": 4
+            },
+            {
+              "name": "image_4_8",
+              "uid": "312297f5-21e0-41c2-9f2a-cfec5425f717",
+              "type": 4
+            },
+            {
+              "name": "image_4_1_1",
+              "uid": "dcc6391d-8a94-40e2-afb4-40b2099ea6b3",
+              "type": 4
+            },
+            {
+              "name": "image_4_1_1_1",
+              "uid": "105e89f1-0542-4252-8d95-032a48518af8",
+              "type": 4
+            },
+            {
+              "name": "image_4_1",
+              "uid": "17f57cfb-02ab-4406-bf25-9b4560502b59",
+              "type": 4
+            },
+            {
+              "name": "image_4_1_2",
+              "uid": "bdac0b43-c55a-43d1-a3aa-d9399dbfe2ee",
+              "type": 4
+            },
+            {
+              "name": "image_4_1_1_2",
+              "uid": "dbdb9a74-3ec4-4edc-94e0-0919d42e6dcf",
+              "type": 4
+            },
+            {
+              "name": "技能抽卡",
+              "uid": "cc708b13-79c9-43e2-9914-5893817d07de",
+              "type": 4
+            },
+            {
+              "name": "羁绊抽卡",
+              "uid": "6551d5fe-0423-414b-8318-c3a601536dd5",
+              "type": 4
+            }
+          ]
+        },
+        {
+          "name": "UP",
+          "uid": "4c3b0371-4b52-4f06-a8c9-de86842eb5fa",
+          "type": 7,
+          "children": [
+            {
+              "name": "image_10",
+              "uid": "7168a191-d6d3-48cf-a190-51784d3783ad",
+              "type": 4
+            },
+            {
+              "name": "羁绊图片1",
+              "uid": "4da5c984-d1d1-47b7-a32f-8b555a1d5c2c",
+              "type": 4
+            },
+            {
+              "name": "羁绊图片2",
+              "uid": "71805085-1be8-48ed-9fb1-8e66e6664559",
+              "type": 4
+            },
+            {
+              "name": "羁绊图片3",
+              "uid": "ead040dd-c23b-481e-8158-88cbe0e9ea69",
+              "type": 4
+            },
+            {
+              "name": "羁绊图片4",
+              "uid": "483778a0-9e84-4ecb-b190-cd7eca11e10a",
+              "type": 4
+            },
+            {
+              "name": "羁绊图片5",
+              "uid": "af827ffe-8444-43fa-b753-db9aeaf02ac5",
+              "type": 4
+            },
+            {
+              "name": "羁绊图片6",
+              "uid": "902eef53-5c37-407d-87c3-f4dc600732ca",
+              "type": 4
+            },
+            {
+              "name": "羁绊图片7",
+              "uid": "504aa513-72eb-4c7a-be6e-679d96c47bb4",
+              "type": 4
+            }
+          ]
+        },
+        {
+          "name": "left",
+          "uid": "456ecee6-394d-4a4b-b945-a1531b849129",
+          "type": 7,
+          "children": [
+            {
+              "name": "image_11",
+              "uid": "a95411fe-74e1-4ea0-8239-4ec9f3c7db45",
+              "type": 4
+            }
+          ]
+        },
+        {
+          "name": "challenge",
+          "uid": "a18c8bc0-93bd-4172-a9a5-423285512873",
+          "type": 7,
+          "children": [
+            {
+              "name": "宝物挑战",
+              "uid": "2c81eeba-cc52-4dbc-b44e-ba110eed6010",
+              "type": 4
+            },
+            {
+              "name": "金币挑战",
+              "uid": "e8b0fa3c-b91d-4b5c-8ef8-91f46de10e1f",
+              "type": 4
+            },
+            {
+              "name": "杀敌挑战",
+              "uid": "4b9971b4-4bf3-4efb-8ed8-cb98865f16fb",
+              "type": 4
+            },
+            {
+              "name": "木材挑战",
+              "uid": "21646f8b-a36d-4850-a59a-c604db57ddb9",
+              "type": 4
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

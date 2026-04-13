@@ -18,9 +18,22 @@ local function to_number_if_possible(raw)
   return tonumber(raw) or raw
 end
 
+local function sort_by_order_index(rows, fallback_key)
+  table.sort(rows, function(a, b)
+    local a_order = tonumber(a.order_index) or 0
+    local b_order = tonumber(b.order_index) or 0
+    if a_order == b_order then
+      return tostring(a[fallback_key] or '') < tostring(b[fallback_key] or '')
+    end
+    return a_order < b_order
+  end)
+end
+
 local function build_bonus_attr(mark_id)
   local attr = nil
-  for _, row in ipairs(bonus_attr_groups[mark_id] or {}) do
+  local rows = bonus_attr_groups[mark_id] or {}
+  sort_by_order_index(rows, 'attr')
+  for _, row in ipairs(rows) do
     attr = attr or {}
     attr[row.attr] = to_number_if_possible(row.value)
   end
@@ -29,7 +42,9 @@ end
 
 local function build_bonus_runtime(mark_id, bucket_name)
   local bucket = nil
-  for _, row in ipairs(bonus_runtime_groups[mark_id] or {}) do
+  local rows = bonus_runtime_groups[mark_id] or {}
+  sort_by_order_index(rows, 'runtime_key')
+  for _, row in ipairs(rows) do
     if row.bucket == bucket_name then
       bucket = bucket or {}
       bucket[row.runtime_key] = to_number_if_possible(row.value)
@@ -41,7 +56,9 @@ end
 local list = {}
 for _, row in ipairs(mark_rows) do
   local tags = {}
-  for _, tag_row in ipairs(tag_groups[row.id] or {}) do
+  local grouped_tags = tag_groups[row.id] or {}
+  sort_by_order_index(grouped_tags, 'tag')
+  for _, tag_row in ipairs(grouped_tags) do
     tags[#tags + 1] = tag_row.tag
   end
 

@@ -1,5 +1,5 @@
-id,name,order_index,hotkey,duration_sec,cost_charge,spawn_area_id,reward_gold,reward_wood,reward_exp,reward_special,unit_id,boss_unit_id,guard_unit_id
-gold_trial,金币挑战,1,Q,60,1,challenge_spawn_top,260,0,0,,134242543,,
-wood_trial,木材挑战,2,W,60,1,challenge_spawn_bottom,0,90,0,,134224570,,
-exp_trial,经验挑战,3,E,60,1,challenge_spawn_mid,0,0,280,,134275571,,
-treasure_trial,宝物挑战,4,R,60,1,challenge_treasure_elite_spawn,60,30,0,,,134228855,134241735
+id,name,order_index,hotkey,duration_sec,recover_sec,cost_charge,spawn_area_id,reward_gold,reward_wood,reward_exp,reward_special,kill_reward_gold,kill_reward_wood,kill_reward_exp,kill_reward_special,unit_id,boss_unit_id,guard_unit_id
+gold_trial,金币挑战,1,Q,60,75,1,challenge_spawn_top,260,0,0,,12,0,0,,134242543,,
+wood_trial,木材挑战,2,W,60,90,1,challenge_spawn_bottom,0,90,0,,0,4,0,,134224570,,
+exp_trial,经验挑战,3,E,60,120,1,challenge_spawn_mid,0,0,280,,0,0,14,,134275571,,
+treasure_trial,宝物挑战,4,R,60,150,1,challenge_treasure_elite_spawn,60,30,0,,8,3,0,,,134228855,134241735

@@ -1,0 +1,29 @@
+{
+  "name": "choice_button",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "layout_1",
+      "uid": "af53d04e-7e34-4f3e-b04f-8e3cb747d8e5",
+      "type": 7,
+      "children": [
+        {
+          "name": "button_1",
+          "uid": "8b101a15-61ca-4a67-bae3-7d596ed10216",
+          "type": 1
+        },
+        {
+          "name": "image_3",
+          "uid": "b3556a93-987b-4481-bb4e-051160f843ef",
+          "type": 4
+        },
+        {
+          "name": "label_2",
+          "uid": "895e551b-b02d-4556-8b2d-ae8dcaa7f002",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}

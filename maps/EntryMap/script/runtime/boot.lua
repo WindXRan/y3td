@@ -16,6 +16,7 @@ local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
 local EffectDebugSystem = require 'runtime.effect_debug'
 local BattleEventFeedSystem = require 'runtime.battle_event_feed'
 local RewardSystem = require 'runtime.rewards'
+local GearUpgrades = require 'runtime.gear_upgrades'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
 local HeroAttrPanel = require 'runtime.hero_attr_panel'
@@ -371,6 +372,7 @@ local reset_battle_state
 local reset_session_state
 local set_battle_hud_visible
 local refresh_runtime_overview
+local mainline_task_system
 
 progression_system = ProgressionSystem.create({
   STATE = STATE,
@@ -463,6 +465,20 @@ reward_system = RewardSystem.create({
   end,
   collect_bond_route_tags = function()
     return BondSystem.collect_route_tags(STATE)
+  end,
+})
+
+mainline_task_system = require('runtime.mainline_tasks').create({
+  STATE = STATE,
+  CONFIG = CONFIG,
+  round_number = round_number,
+  message = message,
+  add_hero_attr_pack = add_hero_attr_pack,
+  award_rewards = function(reward, source_text, silent)
+    return award_rewards(reward, source_text, silent)
+  end,
+  queue_treasure_round = function(source_type, source_name)
+    return reward_system.queue_treasure_round(source_type, source_name)
   end,
 })
 
@@ -1035,8 +1051,27 @@ local function show_runtime_status()
     challenge_count = challenge_count + 1
   end
 
+  local challenge_charge_text = ''
+  if STATE.challenge_charge_map then
+    local parts = {}
+    for _, challenge_id in ipairs({ 'gold_trial', 'wood_trial', 'exp_trial', 'treasure_trial' }) do
+      local def = CONFIG.challenges and CONFIG.challenges[challenge_id]
+      if def then
+        parts[#parts + 1] = string.format(
+          '%s %d/%d',
+          tostring(def.hotkey or challenge_id),
+          tonumber(STATE.challenge_charge_map[challenge_id]) or 0,
+          CONFIG.challenge_rules.max_charges or 0
+        )
+      end
+    end
+    challenge_charge_text = table.concat(parts, ' ')
+  else
+    challenge_charge_text = string.format('%d/%d', STATE.challenge_charges, CONFIG.challenge_rules.max_charges)
+  end
+
   message(string.format(
-    '状态：%s，%s，英雄 %s，敌人数 %d，金币 %d，木材 %d，技能点 %d，挑战次数 %d/%d，进行中挑战 %d，待领奖励 %d。',
+    '状态：%s，%s，英雄 %s，敌人数 %d，金币 %d，木材 %d，技能点 %d，挑战次数 %s，进行中挑战 %d，待领奖励 %d。',
     wave_text,
     boss_text,
     get_hero_progress_text(),
@@ -1044,8 +1079,7 @@ local function show_runtime_status()
     STATE.resources.gold,
     STATE.resources.wood,
     STATE.skill_points,
-    STATE.challenge_charges,
-    CONFIG.challenge_rules.max_charges,
+    challenge_charge_text,
     challenge_count,
     get_reward_queue_count()
   ))
@@ -1169,6 +1203,9 @@ battlefield_system = BattlefieldSystem.create({
   end,
   on_wave_started = function(wave_index)
     return reward_system.handle_wave_started(wave_index)
+  end,
+  on_mainline_task_cleared = function(task)
+    return mainline_task_system.handle_task_cleared(task)
   end,
   on_boss_spawned = function(boss_info)
     return reward_system.handle_boss_spawned(boss_info)
@@ -1682,10 +1719,17 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
     )
   end,
   get_current_stage_text = function()
+    local mainline_summary = mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary()
+    if mainline_summary and mainline_summary.title_text then
+      return mainline_summary.title_text
+    end
     if STATE.current_stage_def and STATE.current_stage_def.display_name then
       return STATE.current_stage_def.display_name
     end
     return '主线 1-1'
+  end,
+  get_mainline_task_summary = function()
+    return mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary() or nil
   end,
   apply_round_choice = apply_round_choice,
   show_upgrade_choices = show_upgrade_choices,
@@ -1842,6 +1886,9 @@ session_state_system = SessionStateSystem.create({
   get_enemy_player = get_enemy_player,
   create_hero = create_hero,
   initialize_hero_progression = initialize_hero_progression,
+  ensure_gear_runtime = function(state, config)
+    return GearUpgrades.ensure_runtime(state, config)
+  end,
   setup_basic_attack_ability = setup_basic_attack_ability,
   ensure_runtime_hud = ensure_runtime_hud,
   set_battle_hud_visible = function(visible)

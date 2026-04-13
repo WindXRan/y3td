@@ -1,5 +1,5 @@
-mark_id,attr,value
-chasing_wind_mark,攻击速度,14
-slayer_mark,伤害加成,6
-storm_mark,攻击速度,20
-war_god_mark,伤害加成,12
+mark_id,order_index,attr,value
+chasing_wind_mark,1,攻击速度,14
+slayer_mark,1,伤害加成,6
+storm_mark,1,攻击速度,20
+war_god_mark,1,伤害加成,12

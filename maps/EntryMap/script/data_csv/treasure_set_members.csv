@@ -1,4 +1,4 @@
-set_id,treasure_id,member_order
+set_id,treasure_id,order_index
 set_kill,ITEM_001,1
 set_kill,ITEM_002,2
 set_kill,ITEM_003,3

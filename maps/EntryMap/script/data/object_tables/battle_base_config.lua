@@ -1,5 +1,6 @@
 local CsvLoader = require 'data.csv_loader'
 local hero_attr_config = require 'data.object_tables.hero_attr_config'
+local hero_level_progression = require 'data.object_tables.hero_level_progression'
 
 local function parse_scalar(raw)
   if raw == 'true' then
@@ -30,6 +31,7 @@ return {
   debug_hero_bonus_stats = hero_attr_config.debug_hero_bonus_stats,
   debug_apply_hero_bonus_on_spawn = flags.debug_apply_hero_bonus_on_spawn == true,
   progression_rules = groups.progression_rules or {},
+  hero_level_progression = hero_level_progression,
   resource_rules = groups.resource_rules or {},
   challenge_rules = groups.challenge_rules or {},
 }

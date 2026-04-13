@@ -25,6 +25,8 @@ assert(item_010 and item_010.bonuses and item_010.bonuses.runtime, 'expected ITE
 assert(item_010.bonuses.runtime['技能免费刷新次数'] == 1, 'expected ITEM_010 技能免费刷新次数 to map to 1')
 assert(item_010.bonuses.runtime['英雄免费刷新次数'] == 1, 'expected ITEM_010 英雄免费刷新次数 to map to 1')
 assert(item_010.bonuses.runtime['宝物免费刷新次数'] == 1, 'expected ITEM_010 宝物免费刷新次数 to map to 1')
+assert(type(item_010.tags) == 'table', 'expected ITEM_010 tags table')
+assert(item_010.tags[1] == 'utility', 'expected ITEM_010 utility tag to come from compat tag rules')
 
 local item_014 = compat.by_id.ITEM_014
 assert(item_014 and item_014.bonuses and item_014.bonuses.runtime, 'expected ITEM_014 bonuses.runtime')

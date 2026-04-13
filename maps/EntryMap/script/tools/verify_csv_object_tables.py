@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 import sys
 
 
@@ -14,6 +15,25 @@ def require_files(label: str, relative_paths: list[str]) -> None:
     print(f"[OK] {label}")
 
 
+def run_check(label: str, command: list[str]) -> None:
+    result = subprocess.run(
+        command,
+        cwd=ROOT.parent.parent.parent,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    if result.returncode != 0:
+        sys.stdout.write(result.stdout)
+        sys.stderr.write(result.stderr)
+        print(f"[FAIL] {label}")
+        sys.exit(result.returncode or 1)
+    sys.stdout.write(result.stdout)
+    print(f"[OK] {label}")
+
+
 require_files(
     "csv foundation files present",
     [
@@ -25,7 +45,10 @@ require_files(
         "data/object_tables/stages.lua",
         "data/object_tables/stage_modes.lua",
         "data/object_tables/hero_attr_config.lua",
+        "data/object_tables/hero_level_progression.lua",
+        "data/object_tables/gear_upgrade_config.lua",
         "data/object_tables/battle_base_config.lua",
+        "data/object_tables/outgame_attr_bonus_config.lua",
     ],
 )
 
@@ -74,10 +97,15 @@ require_files(
         "data_csv/stages.csv",
         "data_csv/stage_modes.csv",
         "data_csv/stage_mode_links.csv",
-        "data_csv/panel_default_attrs.csv",
+        "data_csv/hero_attr_config.csv",
         "data_csv/hero_init_stats.csv",
-        "data_csv/debug_hero_bonus_stats.csv",
+        "data_csv/hero_level_progression.csv",
+        "data_csv/gear_upgrade_slots.csv",
+        "data_csv/gear_upgrade_levels.csv",
         "data_csv/battle_base_rules.csv",
+        "data_csv/battlefield_scene_config.csv",
+        "data_csv/choice_panel_config.csv",
+        "data_csv/outgame_attr_bonuses.csv",
     ],
 )
 
@@ -88,6 +116,51 @@ require_files(
         "data_csv/evolution_pool_rules.csv",
         "data/object_tables/evolution_nodes.lua",
     ],
+)
+
+run_check(
+    "treasure catalog consistency smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_treasure_catalog_consistency_smoke.lua"],
+)
+
+run_check(
+    "marks catalog consistency smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_marks_catalog_consistency_smoke.lua"],
+)
+
+run_check(
+    "stages catalog consistency smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_stages_catalog_consistency_smoke.lua"],
+)
+
+run_check(
+    "waves challenges catalog consistency smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_waves_challenges_catalog_consistency_smoke.lua"],
+)
+
+run_check(
+    "bond catalog consistency smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_bond_catalog_consistency_smoke.lua"],
+)
+
+run_check(
+    "hero level progression csv loader smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_hero_level_progression_csv_loader_smoke.lua"],
+)
+
+run_check(
+    "gear upgrade config csv loader smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_gear_upgrade_config_csv_loader_smoke.lua"],
+)
+
+run_check(
+    "outgame attr bonus config csv loader smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_outgame_attr_bonus_config_csv_loader_smoke.lua"],
+)
+
+run_check(
+    "config catalog consistency smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_config_catalog_consistency_smoke.lua"],
 )
 
 print("[OK] static CSV migration checks passed")

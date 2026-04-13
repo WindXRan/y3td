@@ -26,6 +26,54 @@ function M.create(env)
 
   local BOND_DRAW_COST = 100
 
+  local function get_challenge_charge_count(challenge_id)
+    if STATE.challenge_charge_map and STATE.challenge_charge_map[challenge_id] ~= nil then
+      return tonumber(STATE.challenge_charge_map[challenge_id]) or 0
+    end
+    return tonumber(STATE.challenge_charges) or 0
+  end
+
+  local function get_challenge_recover_sec(challenge_id)
+    local def = CONFIG.challenges and CONFIG.challenges[challenge_id]
+    local recover_sec = def and tonumber(def.recover_sec)
+    if recover_sec and recover_sec > 0 then
+      return recover_sec
+    end
+    return CONFIG.challenge_rules.recover_sec or 0
+  end
+
+  local function get_challenge_recover_remain(challenge_id)
+    local max_charges = CONFIG.challenge_rules.max_charges or 0
+    local charges = get_challenge_charge_count(challenge_id)
+    if charges >= max_charges then
+      return 0
+    end
+    local elapsed = STATE.challenge_recover_elapsed_map and STATE.challenge_recover_elapsed_map[challenge_id] or STATE.challenge_recover_elapsed or 0
+    return math.max(0, get_challenge_recover_sec(challenge_id) - (tonumber(elapsed) or 0))
+  end
+
+  local function get_total_challenge_charge_count()
+    if STATE.challenge_charge_map then
+      local total = 0
+      for _, charges in pairs(STATE.challenge_charge_map) do
+        total = total + (tonumber(charges) or 0)
+      end
+      return total
+    end
+    return tonumber(STATE.challenge_charges) or 0
+  end
+
+  local function get_total_challenge_charge_max()
+    if STATE.challenge_charge_map then
+      local count = 0
+      for _ in pairs(STATE.challenge_charge_map) do
+        count = count + 1
+      end
+      return count * (CONFIG.challenge_rules.max_charges or 0)
+    end
+    return CONFIG.challenge_rules.max_charges or 0
+  end
+
   local function get_hud_root()
     local ok, hud = pcall(y3.ui.get_ui, env.get_player(), 'GameHUD')
     if not ok or not hud then
@@ -146,15 +194,17 @@ function M.create(env)
   end
 
   local function get_recovery_text()
-    local max_charges = CONFIG.challenge_rules.max_charges or 0
-    if (STATE.challenge_charges or 0) >= max_charges then
-      return '恢复已满'
+    local shortest = nil
+    for challenge_id in pairs(CONFIG.challenges or {}) do
+      local remain = get_challenge_recover_remain(challenge_id)
+      if remain > 0 and (shortest == nil or remain < shortest) then
+        shortest = remain
+      end
     end
-    local remain = math.max(
-      0,
-      (CONFIG.challenge_rules.recover_sec or 0) - (STATE.challenge_recover_elapsed or 0)
-    )
-    return string.format('下次恢复 %s', format_time(remain))
+    if not shortest then
+      return '各挑战恢复已满'
+    end
+    return string.format('下次恢复 %s', format_time(shortest))
   end
 
   local function get_hero_hp_text()
@@ -182,22 +232,23 @@ function M.create(env)
       local instance = STATE.active_challenges[challenge_id]
       local remain = math.max(0, (def.duration_sec or 0) - (instance.elapsed or 0))
       return {
-        summary = string.format('%s %s', def.hotkey or '?', format_time(remain)),
+        summary = string.format('%s %d/%d %s', def.hotkey or '?', get_challenge_charge_count(challenge_id), CONFIG.challenge_rules.max_charges or 0, format_time(remain)),
         bg = theme.palette.success,
         text = { 240, 248, 226, 255 },
       }
     end
 
-    if (STATE.challenge_charges or 0) < (def.cost_charge or 1) then
+    local charges = get_challenge_charge_count(challenge_id)
+    if charges < (def.cost_charge or 1) then
       return {
-        summary = string.format('%s 缺次', def.hotkey or '?'),
+        summary = string.format('%s %d/%d 缺次', def.hotkey or '?', charges, CONFIG.challenge_rules.max_charges or 0),
         bg = { 92, 66, 42, 210 },
         text = { 248, 228, 198, 255 },
       }
     end
 
     return {
-      summary = string.format('%s 可进', def.hotkey or '?'),
+      summary = string.format('%s %d/%d 可进', def.hotkey or '?', charges, CONFIG.challenge_rules.max_charges or 0),
       bg = theme.palette.accent,
       text = { 236, 244, 255, 255 },
     }
@@ -546,7 +597,7 @@ function M.create(env)
       return result
     end
 
-    if (STATE.challenge_charges or 0) < (def and def.cost_charge or 1) then
+    if get_challenge_charge_count(challenge_id) < (def and def.cost_charge or 1) then
       result.summary = string.format('%s 次数不足', hotkey)
       result.button_text = string.format('%s 次数不足', name)
       result.shadow = { 58, 34, 12, 140 }

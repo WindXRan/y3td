@@ -1,0 +1,825 @@
+{
+    "adapt_mode": 2,
+    "anim_data": {},
+    "auto_create": true,
+    "children": [
+        {
+            "children": [
+                {
+                    "children": [],
+                    "event_list": [],
+                    "name": "image_panel_bg",
+                    "open_adapter": true,
+                    "adapter_option": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "pos_data": {
+                        "__tuple__": true,
+                        "items": [
+                            250.0,
+                            380.0,
+                            50.0,
+                            50.0,
+                            1,
+                            1
+                        ]
+                    },
+                    "prefab_sub_key": null,
+                    "scene_ui_name": null,
+                    "size": [
+                        500.0,
+                        760.0
+                    ],
+                    "type": 4,
+                    "uid": "a3930973-b33b-4692-905a-2b49a1b15e73",
+                    "image": 906555
+                },
+                {
+                    "children": [],
+                    "event_list": [],
+                    "name": "image_icon_frame",
+                    "open_adapter": true,
+                    "adapter_option": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        22.0,
+                        592.0,
+                        14.0,
+                        340.0
+                    ],
+                    "pos_data": {
+                        "__tuple__": true,
+                        "items": [
+                            87.0,
+                            665.0,
+                            17.4,
+                            87.5,
+                            1,
+                            1
+                        ]
+                    },
+                    "prefab_sub_key": null,
+                    "scene_ui_name": null,
+                    "size": [
+                        146.0,
+                        146.0
+                    ],
+                    "type": 4,
+                    "uid": "c8c8930c-1365-4114-b4b0-e1524c8cd420",
+                    "image": 132000
+                },
+                {
+                    "children": [],
+                    "event_list": [],
+                    "name": "image_item_icon",
+                    "open_adapter": true,
+                    "adapter_option": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        38.0,
+                        608.0,
+                        30.0,
+                        356.0
+                    ],
+                    "pos_data": {
+                        "__tuple__": true,
+                        "items": [
+                            87.0,
+                            665.0,
+                            17.4,
+                            87.5,
+                            1,
+                            1
+                        ]
+                    },
+                    "prefab_sub_key": null,
+                    "scene_ui_name": null,
+                    "size": [
+                        114.0,
+                        114.0
+                    ],
+                    "type": 4,
+                    "uid": "b7562ba9-64e2-4e3c-b04b-58e2f7b42b33",
+                    "image": 100061
+                },
+                {
+                    "children": [],
+                    "event_list": [],
+                    "name": "label_effect_body",
+                    "open_adapter": true,
+                    "adapter_option": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        340.0,
+                        206.0,
+                        14.0,
+                        164.0
+                    ],
+                    "pos_data": {
+                        "__tuple__": true,
+                        "items": [
+                            175.0,
+                            313.0,
+                            35.0,
+                            41.1842,
+                            1,
+                            1
+                        ]
+                    },
+                    "prefab_sub_key": null,
+                    "scene_ui_name": null,
+                    "size": [
+                        322.0,
+                        214.0
+                    ],
+                    "type": 3,
+                    "uid": "04b897b8-b10e-48a3-bdd6-7ab87cbe0c05",
+                    "text": {
+                        "__tuple__": true,
+                        "items": [
+                            "购买后下次登入获得：\\n珍藏积分+298\\n传说密钥+20\\n攻击增幅+8%\\n生命增幅+8%\\n护甲增幅+8%",
+                            false
+                        ]
+                    },
+                    "font": {
+                        "__tuple__": true,
+                        "items": [
+                            "",
+                            16
+                        ]
+                    },
+                    "font_color": [
+                        241,
+                        241,
+                        241,
+                        255
+                    ],
+                    "font_min_size": 12,
+                    "over_pattern": 2,
+                    "alignment": {
+                        "__tuple__": true,
+                        "items": [
+                            1,
+                            16
+                        ]
+                    },
+                    "shadow": true,
+                    "text_shadow_color": {
+                        "__tuple__": true,
+                        "items": [
+                            0,
+                            0,
+                            0,
+                            180
+                        ]
+                    }
+                },
+                {
+                    "children": [],
+                    "event_list": [],
+                    "name": "label_special_body",
+                    "open_adapter": true,
+                    "adapter_option": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        620.0,
+                        56.0,
+                        14.0,
+                        78.0
+                    ],
+                    "pos_data": {
+                        "__tuple__": true,
+                        "items": [
+                            218.0,
+                            98.0,
+                            43.6,
+                            12.8947,
+                            1,
+                            1
+                        ]
+                    },
+                    "prefab_sub_key": null,
+                    "scene_ui_name": null,
+                    "size": [
+                        408.0,
+                        84.0
+                    ],
+                    "type": 3,
+                    "uid": "372434f8-99e4-464f-b1e7-907e1e0fd8b6",
+                    "text": {
+                        "__tuple__": true,
+                        "items": [
+                            "神秘商店每提升一个等级，杀敌加成+8%（上限可获得32%），在神秘商店中每消耗2000杀敌购买商品，最终伤害+1%（上限可获得10%）",
+                            false
+                        ]
+                    },
+                    "font": {
+                        "__tuple__": true,
+                        "items": [
+                            "",
+                            16
+                        ]
+                    },
+                    "font_color": [
+                        241,
+                        241,
+                        241,
+                        255
+                    ],
+                    "font_min_size": 12,
+                    "over_pattern": 2,
+                    "alignment": {
+                        "__tuple__": true,
+                        "items": [
+                            1,
+                            16
+                        ]
+                    },
+                    "shadow": true,
+                    "text_shadow_color": {
+                        "__tuple__": true,
+                        "items": [
+                            0,
+                            0,
+                            0,
+                            180
+                        ]
+                    }
+                },
+                {
+                    "children": [],
+                    "event_list": [],
+                    "name": "label_item_name",
+                    "open_adapter": true,
+                    "adapter_option": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        184.0,
+                        534.0,
+                        14.0,
+                        226.0
+                    ],
+                    "pos_data": {
+                        "__tuple__": true,
+                        "items": [
+                            144.0,
+                            555.0,
+                            28.8,
+                            73.0263,
+                            1,
+                            1
+                        ]
+                    },
+                    "prefab_sub_key": null,
+                    "scene_ui_name": null,
+                    "size": [
+                        260.0,
+                        42.0
+                    ],
+                    "type": 3,
+                    "uid": "6acba336-17bd-4bb5-aa36-e60cba4a1be3",
+                    "text": {
+                        "__tuple__": true,
+                        "items": [
+                            "交易能手",
+                            false
+                        ]
+                    },
+                    "font": {
+                        "__tuple__": true,
+                        "items": [
+                            "",
+                            28
+                        ]
+                    },
+                    "font_color": [
+                        255,
+                        155,
+                        31,
+                        255
+                    ],
+                    "font_min_size": 24,
+                    "over_pattern": 2,
+                    "alignment": {
+                        "__tuple__": true,
+                        "items": [
+                            1,
+                            8
+                        ]
+                    },
+                    "shadow": true,
+                    "text_shadow_color": {
+                        "__tuple__": true,
+                        "items": [
+                            0,
+                            0,
+                            0,
+                            180
+                        ]
+                    }
+                },
+                {
+                    "children": [],
+                    "event_list": [],
+                    "name": "label_get_way_value",
+                    "open_adapter": true,
+                    "adapter_option": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        226.0,
+                        500.0,
+                        122.0,
+                        188.0
+                    ],
+                    "pos_data": {
+                        "__tuple__": true,
+                        "items": [
+                            217.0,
+                            517.0,
+                            43.4,
+                            68.0263,
+                            1,
+                            1
+                        ]
+                    },
+                    "prefab_sub_key": null,
+                    "scene_ui_name": null,
+                    "size": [
+                        190.0,
+                        34.0
+                    ],
+                    "type": 3,
+                    "uid": "6d2f877e-a6dd-48e9-b745-c962381c961f",
+                    "text": {
+                        "__tuple__": true,
+                        "items": [
+                            "商城购买",
+                            false
+                        ]
+                    },
+                    "font": {
+                        "__tuple__": true,
+                        "items": [
+                            "",
+                            18
+                        ]
+                    },
+                    "font_color": [
+                        242,
+                        242,
+                        242,
+                        255
+                    ],
+                    "font_min_size": 14,
+                    "over_pattern": 2,
+                    "alignment": {
+                        "__tuple__": true,
+                        "items": [
+                            1,
+                            8
+                        ]
+                    },
+                    "shadow": true,
+                    "text_shadow_color": {
+                        "__tuple__": true,
+                        "items": [
+                            0,
+                            0,
+                            0,
+                            180
+                        ]
+                    }
+                },
+                {
+                    "children": [],
+                    "event_list": [],
+                    "name": "label_active_value",
+                    "open_adapter": true,
+                    "adapter_option": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        260.0,
+                        466.0,
+                        122.0,
+                        188.0
+                    ],
+                    "pos_data": {
+                        "__tuple__": true,
+                        "items": [
+                            217.0,
+                            483.0,
+                            43.4,
+                            63.5526,
+                            1,
+                            1
+                        ]
+                    },
+                    "prefab_sub_key": null,
+                    "scene_ui_name": null,
+                    "size": [
+                        190.0,
+                        34.0
+                    ],
+                    "type": 3,
+                    "uid": "7f447f78-02d5-43a8-aba8-7cc3ec409757",
+                    "text": {
+                        "__tuple__": true,
+                        "items": [
+                            "未激活",
+                            false
+                        ]
+                    },
+                    "font": {
+                        "__tuple__": true,
+                        "items": [
+                            "",
+                            18
+                        ]
+                    },
+                    "font_color": [
+                        75,
+                        75,
+                        75,
+                        255
+                    ],
+                    "font_min_size": 14,
+                    "over_pattern": 2,
+                    "alignment": {
+                        "__tuple__": true,
+                        "items": [
+                            1,
+                            8
+                        ]
+                    },
+                    "shadow": true,
+                    "text_shadow_color": {
+                        "__tuple__": true,
+                        "items": [
+                            0,
+                            0,
+                            0,
+                            180
+                        ]
+                    }
+                },
+                {
+                    "children": [],
+                    "event_list": [],
+                    "name": "label_effect_title",
+                    "open_adapter": true,
+                    "adapter_option": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        302.0,
+                        424.0,
+                        14.0,
+                        306.0
+                    ],
+                    "pos_data": {
+                        "__tuple__": true,
+                        "items": [
+                            104.0,
+                            441.0,
+                            20.8,
+                            58.0263,
+                            1,
+                            1
+                        ]
+                    },
+                    "prefab_sub_key": null,
+                    "scene_ui_name": null,
+                    "size": [
+                        180.0,
+                        34.0
+                    ],
+                    "type": 3,
+                    "uid": "9a5730e1-dc90-49de-8d2d-8f928cd48677",
+                    "text": {
+                        "__tuple__": true,
+                        "items": [
+                            "激活效果",
+                            false
+                        ]
+                    },
+                    "font": {
+                        "__tuple__": true,
+                        "items": [
+                            "",
+                            20
+                        ]
+                    },
+                    "font_color": [
+                        243,
+                        193,
+                        49,
+                        255
+                    ],
+                    "font_min_size": 16,
+                    "over_pattern": 2,
+                    "alignment": {
+                        "__tuple__": true,
+                        "items": [
+                            1,
+                            8
+                        ]
+                    },
+                    "shadow": true,
+                    "text_shadow_color": {
+                        "__tuple__": true,
+                        "items": [
+                            0,
+                            0,
+                            0,
+                            180
+                        ]
+                    }
+                },
+                {
+                    "children": [],
+                    "event_list": [],
+                    "name": "label_special_title",
+                    "open_adapter": true,
+                    "adapter_option": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        584.0,
+                        142.0,
+                        14.0,
+                        366.0
+                    ],
+                    "pos_data": {
+                        "__tuple__": true,
+                        "items": [
+                            74.0,
+                            159.0,
+                            14.8,
+                            20.9211,
+                            1,
+                            1
+                        ]
+                    },
+                    "prefab_sub_key": null,
+                    "scene_ui_name": null,
+                    "size": [
+                        120.0,
+                        34.0
+                    ],
+                    "type": 3,
+                    "uid": "57ec37c4-7545-4a33-a7aa-60a71098f16e",
+                    "text": {
+                        "__tuple__": true,
+                        "items": [
+                            "[特效]",
+                            false
+                        ]
+                    },
+                    "font": {
+                        "__tuple__": true,
+                        "items": [
+                            "",
+                            18
+                        ]
+                    },
+                    "font_color": [
+                        255,
+                        240,
+                        165,
+                        255
+                    ],
+                    "font_min_size": 14,
+                    "over_pattern": 2,
+                    "alignment": {
+                        "__tuple__": true,
+                        "items": [
+                            1,
+                            8
+                        ]
+                    },
+                    "shadow": true,
+                    "text_shadow_color": {
+                        "__tuple__": true,
+                        "items": [
+                            0,
+                            0,
+                            0,
+                            180
+                        ]
+                    }
+                },
+                {
+                    "children": [],
+                    "event_list": [],
+                    "name": "label_get_way_title",
+                    "open_adapter": true,
+                    "adapter_option": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        226.0,
+                        500.0,
+                        14.0,
+                        376.0
+                    ],
+                    "pos_data": {
+                        "__tuple__": true,
+                        "items": [
+                            69.0,
+                            517.0,
+                            13.8,
+                            68.0263,
+                            1,
+                            1
+                        ]
+                    },
+                    "prefab_sub_key": null,
+                    "scene_ui_name": null,
+                    "size": [
+                        110.0,
+                        34.0
+                    ],
+                    "type": 3,
+                    "uid": "59e922c1-6798-4350-9e1a-3985372bdb1e",
+                    "text": {
+                        "__tuple__": true,
+                        "items": [
+                            "获取方式：",
+                            false
+                        ]
+                    },
+                    "font": {
+                        "__tuple__": true,
+                        "items": [
+                            "",
+                            18
+                        ]
+                    },
+                    "font_color": [
+                        243,
+                        193,
+                        49,
+                        255
+                    ],
+                    "font_min_size": 14,
+                    "over_pattern": 2,
+                    "alignment": {
+                        "__tuple__": true,
+                        "items": [
+                            1,
+                            8
+                        ]
+                    },
+                    "shadow": true,
+                    "text_shadow_color": {
+                        "__tuple__": true,
+                        "items": [
+                            0,
+                            0,
+                            0,
+                            180
+                        ]
+                    }
+                },
+                {
+                    "children": [],
+                    "event_list": [],
+                    "name": "label_active_title",
+                    "open_adapter": true,
+                    "adapter_option": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        260.0,
+                        466.0,
+                        14.0,
+                        376.0
+                    ],
+                    "pos_data": {
+                        "__tuple__": true,
+                        "items": [
+                            69.0,
+                            483.0,
+                            13.8,
+                            63.5526,
+                            1,
+                            1
+                        ]
+                    },
+                    "prefab_sub_key": null,
+                    "scene_ui_name": null,
+                    "size": [
+                        110.0,
+                        34.0
+                    ],
+                    "type": 3,
+                    "uid": "9fafca5d-3c40-42c7-aa52-c8dbe9c356d4",
+                    "text": {
+                        "__tuple__": true,
+                        "items": [
+                            "是否激活：",
+                            false
+                        ]
+                    },
+                    "font": {
+                        "__tuple__": true,
+                        "items": [
+                            "",
+                            18
+                        ]
+                    },
+                    "font_color": [
+                        243,
+                        193,
+                        49,
+                        255
+                    ],
+                    "font_min_size": 14,
+                    "over_pattern": 2,
+                    "alignment": {
+                        "__tuple__": true,
+                        "items": [
+                            1,
+                            8
+                        ]
+                    },
+                    "shadow": true,
+                    "text_shadow_color": {
+                        "__tuple__": true,
+                        "items": [
+                            0,
+                            0,
+                            0,
+                            180
+                        ]
+                    }
+                }
+            ],
+            "event_list": [],
+            "name": "panel_shop_item_detail",
+            "open_adapter": true,
+            "adapter_option": [
+                false,
+                false,
+                false,
+                false,
+                16.0,
+                304.0,
+                20.0,
+                1400.0
+            ],
+            "pos_data": {
+                "__tuple__": true,
+                "items": [
+                    270.0,
+                    684.0,
+                    14.0625,
+                    63.3333,
+                    1,
+                    1
+                ]
+            },
+            "prefab_sub_key": null,
+            "scene_ui_name": null,
+            "size": [
+                500.0,
+                760.0
+            ],
+            "type": 7,
+            "uid": "a7e5ed2b-8b44-43c1-a160-e5610dadd264"
+        }
+    ],
+    "name": "ShopItemDetailPanel",
+    "opacity": 1.0,
+    "script_name": "",
+    "type": 2,
+    "ui_anims": [],
+    "uid": "bea2ea16-5932-4d1c-815e-22c49d611e65",
+    "visible": true,
+    "zorder": 300
+}

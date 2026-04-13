@@ -26,10 +26,24 @@ local function to_number_if_possible(raw)
   return raw
 end
 
+local function sort_by_order_index(rows)
+  table.sort(rows, function(a, b)
+    local a_order = tonumber(a.order_index) or 0
+    local b_order = tonumber(b.order_index) or 0
+    if a_order == b_order then
+      return tostring(a.id or a.set_id or a.treasure_id or a.effect_key or '') < tostring(b.id or b.set_id or b.treasure_id or b.effect_key or '')
+    end
+    return a_order < b_order
+  end)
+end
+
 local function build_effects(rows)
   local effects = {}
   for _, row in ipairs(rows or {}) do
     effects[#effects + 1] = {
+      order_index = tonumber(row.order_index) or 0,
+      treasure_id = row.treasure_id,
+      set_id = row.set_id,
       effect_type = row.effect_type,
       effect_key = row.effect_key,
       op = row.op,
@@ -39,12 +53,14 @@ local function build_effects(rows)
       notes = row.notes ~= '' and row.notes or nil,
     }
   end
+  sort_by_order_index(effects)
   return effects
 end
 
 local list = {}
 for _, row in ipairs(treasure_rows) do
   list[#list + 1] = {
+    order_index = tonumber(row.order_index) or 0,
     id = row.id,
     name = row.name,
     category = row.category,
@@ -56,6 +72,7 @@ for _, row in ipairs(treasure_rows) do
     effects = build_effects(effect_groups[row.id]),
   }
 end
+sort_by_order_index(list)
 
 local sets = {}
 for _, row in ipairs(set_rows) do
@@ -63,14 +80,15 @@ for _, row in ipairs(set_rows) do
   for _, member in ipairs(set_member_groups[row.set_id] or {}) do
     members[#members + 1] = {
       treasure_id = member.treasure_id,
-      member_order = tonumber(member.member_order) or 0,
+      order_index = tonumber(member.order_index) or 0,
     }
   end
   table.sort(members, function(a, b)
-    return a.member_order < b.member_order
+    return a.order_index < b.order_index
   end)
 
   sets[#sets + 1] = {
+    order_index = tonumber(row.order_index) or 0,
     id = row.set_id,
     set_id = row.set_id,
     name = row.set_name,
@@ -81,6 +99,7 @@ for _, row in ipairs(set_rows) do
     effects = build_effects(set_effect_groups[row.set_id]),
   }
 end
+sort_by_order_index(sets)
 
 return {
   list = list,

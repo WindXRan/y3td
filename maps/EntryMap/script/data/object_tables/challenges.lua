@@ -25,12 +25,13 @@ local function to_optional_number(raw)
   return tonumber(raw) or raw
 end
 
-local function build_reward(row)
+local function build_reward(row, prefix)
+  prefix = prefix or 'reward_'
   return {
-    gold = tonumber(row.reward_gold) or 0,
-    wood = tonumber(row.reward_wood) or 0,
-    exp = tonumber(row.reward_exp) or 0,
-    special = row.reward_special ~= '' and row.reward_special or nil,
+    gold = tonumber(row[prefix .. 'gold']) or 0,
+    wood = tonumber(row[prefix .. 'wood']) or 0,
+    exp = tonumber(row[prefix .. 'exp']) or 0,
+    special = row[prefix .. 'special'] ~= '' and row[prefix .. 'special'] or nil,
   }
 end
 
@@ -64,9 +65,11 @@ for _, row in ipairs(challenge_rows) do
     name = row.name,
     hotkey = row.hotkey ~= '' and row.hotkey or nil,
     duration_sec = scale(tonumber(row.duration_sec) or 0),
+    recover_sec = scale(tonumber(row.recover_sec) or 0),
     cost_charge = tonumber(row.cost_charge) or 0,
     spawn_area_id = row.spawn_area_id,
-    reward = build_reward(row),
+    reward = build_reward(row, 'reward_'),
+    kill_reward = build_reward(row, 'kill_reward_'),
     unit_id = to_optional_number(row.unit_id),
     boss_unit_id = to_optional_number(row.boss_unit_id),
     guard_unit_id = to_optional_number(row.guard_unit_id),

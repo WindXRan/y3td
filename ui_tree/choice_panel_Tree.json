@@ -75,6 +75,11 @@
               ]
             }
           ]
+        },
+        {
+          "name": "set_name",
+          "uid": "5de2ced6-72b4-42a1-be1f-832d40b2438c",
+          "type": 3
         }
       ]
     }

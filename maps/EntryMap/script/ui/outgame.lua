@@ -24,6 +24,9 @@ function M.create(env)
   local STAGES_BY_ID = CONFIG.stages and CONFIG.stages.by_id or {}
   local MODES_BY_ID = CONFIG.stage_modes and CONFIG.stage_modes.by_id or {}
   local SAVE_SLOT = CONFIG.save_slots and CONFIG.save_slots.outgame_profile or 1
+  local OUTGAME_ATTR_BONUS_BY_STAGE_MODE = CONFIG.outgame_attr_bonus_config
+    and CONFIG.outgame_attr_bonus_config.by_stage_mode
+    or {}
 
   local api = {}
 
@@ -208,6 +211,57 @@ function M.create(env)
     return dirty
   end
 
+  local function merge_bonus_stats(target, source)
+    for attr_name, value in pairs(source or {}) do
+      local number = tonumber(value)
+      if attr_name ~= nil and attr_name ~= '' and number ~= nil and number ~= 0 then
+        target[attr_name] = (target[attr_name] or 0) + number
+      end
+    end
+  end
+
+  local function are_same_bonus_stats(left, right)
+    left = type(left) == 'table' and left or {}
+    right = type(right) == 'table' and right or {}
+
+    for key, value in pairs(left) do
+      if (tonumber(value) or value) ~= (tonumber(right[key]) or right[key]) then
+        return false
+      end
+    end
+    for key, value in pairs(right) do
+      if (tonumber(value) or value) ~= (tonumber(left[key]) or left[key]) then
+        return false
+      end
+    end
+    return true
+  end
+
+  local function rebuild_hero_attr_bonus_stats(profile)
+    local rebuilt = {}
+
+    for _, stage_def in ipairs(STAGE_LIST) do
+      local stage_id = stage_def.stage_id
+      local progress = get_stage_progress(profile, stage_id)
+      local stage_rules = OUTGAME_ATTR_BONUS_BY_STAGE_MODE[stage_id]
+      if progress and stage_rules then
+        if progress.standard_cleared == true then
+          merge_bonus_stats(rebuilt, stage_rules.standard)
+        end
+        if progress.challenge_cleared == true then
+          merge_bonus_stats(rebuilt, stage_rules.challenge)
+        end
+      end
+    end
+
+    if are_same_bonus_stats(profile.hero_attr_bonus_stats, rebuilt) then
+      return false
+    end
+
+    profile.hero_attr_bonus_stats = rebuilt
+    return true
+  end
+
   local function ensure_profile_defaults(profile)
     local dirty = false
 
@@ -223,11 +277,19 @@ function M.create(env)
       profile.last_result = {}
       dirty = true
     end
+    if type(profile.hero_attr_bonus_stats) ~= 'table' then
+      profile.hero_attr_bonus_stats = {}
+      dirty = true
+    end
 
     for _, stage_def in ipairs(STAGE_LIST) do
       if ensure_stage_progress_defaults(profile, stage_def.stage_id) then
         dirty = true
       end
+    end
+
+    if rebuild_hero_attr_bonus_stats(profile) then
+      dirty = true
     end
 
     local last_result = profile.last_result
@@ -1456,6 +1518,8 @@ function M.create(env)
       end
     end
 
+    rebuild_hero_attr_bonus_stats(profile)
+
     mark_profile_dirty()
   end
 
@@ -1496,6 +1560,8 @@ function M.create(env)
   function api.get_profile()
     return load_profile()
   end
+
+  api.rebuild_hero_attr_bonus_stats = rebuild_hero_attr_bonus_stats
 
   return api
 end

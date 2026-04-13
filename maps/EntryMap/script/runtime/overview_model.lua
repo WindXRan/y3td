@@ -31,6 +31,28 @@ function M.create(env)
     return count
   end
 
+  local function get_challenge_charge_total()
+    if STATE.challenge_charge_map then
+      local total = 0
+      for _, charges in pairs(STATE.challenge_charge_map) do
+        total = total + (tonumber(charges) or 0)
+      end
+      return total
+    end
+    return STATE.challenge_charges or 0
+  end
+
+  local function get_challenge_charge_max_total()
+    if STATE.challenge_charge_map then
+      local count = 0
+      for _ in pairs(STATE.challenge_charge_map) do
+        count = count + 1
+      end
+      return count * (CONFIG.challenge_rules.max_charges or 0)
+    end
+    return CONFIG.challenge_rules.max_charges or 0
+  end
+
   local function format_attr_value(value)
     return round_number(value or 0)
   end
@@ -102,8 +124,8 @@ function M.create(env)
     )
     lines[#lines + 1] = string.format(
       '挑战：%d/%d  进行中 %d  待领奖励 %d  敌人数 %d',
-      STATE.challenge_charges or 0,
-      CONFIG.challenge_rules.max_charges or 0,
+      get_challenge_charge_total(),
+      get_challenge_charge_max_total(),
       get_active_challenge_count_value(),
       get_reward_queue_count(),
       STATE.total_enemy_alive or 0
