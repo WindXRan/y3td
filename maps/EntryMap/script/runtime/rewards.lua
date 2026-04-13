@@ -21,6 +21,7 @@ local TREASURE_DEFS = TreasureObjects.by_id
 local MARK_DEF_LIST = MarkObjects.list
 local MARK_DEFS = MarkObjects.by_id
 local MARK_NODES_BY_LEVEL = MarkNodeObjects.by_level
+local MARK_POOL_RULES = MarkNodeObjects.pool_rules_by_id or {}
 
 local function clone_reward(reward)
   if not reward then
@@ -450,12 +451,14 @@ function M.create(env)
     return choices
   end
 
-  local function build_available_mark_defs()
+  local function build_available_mark_defs(pool_rule, used_ids)
     local runtime = api.get_mark_runtime()
     local result = {}
 
     for _, def in ipairs(MARK_DEF_LIST) do
-      if not runtime.owned_mark_ids[def.id] then
+      local excluded_by_owned = pool_rule and pool_rule.exclude_owned and runtime.owned_mark_ids[def.id]
+      local excluded_by_round = pool_rule and pool_rule.same_round_no_repeat and used_ids and used_ids[def.id]
+      if not excluded_by_owned and not excluded_by_round then
         result[#result + 1] = def
       end
     end
@@ -505,23 +508,109 @@ function M.create(env)
     return pool[#pool]
   end
 
-  local function pick_mark_choices(choice_count)
-    local available = build_available_mark_defs()
-    if #available == 0 then
-      return {}
+  local function build_mark_defs_by_quality(pool_rule, used_ids)
+    local available = build_available_mark_defs(pool_rule, used_ids)
+    local by_quality = {
+      common = {},
+      rare = {},
+      epic = {},
+    }
+
+    for _, def in ipairs(available) do
+      local quality = def.quality or 'common'
+      by_quality[quality] = by_quality[quality] or {}
+      by_quality[quality][#by_quality[quality] + 1] = def
     end
 
+    return available, by_quality
+  end
+
+  local function roll_mark_quality(pool_rule, allow_high_quality_only)
+    local weights = {
+      common = allow_high_quality_only and 0 or (pool_rule.common_weight or 0),
+      rare = pool_rule.rare_weight or 0,
+      epic = pool_rule.epic_weight or 0,
+    }
+
+    local total_weight = weights.common + weights.rare + weights.epic
+    if total_weight <= 0 then
+      if allow_high_quality_only then
+        return 'rare'
+      end
+      return 'common'
+    end
+
+    local roll = math.random() * total_weight
+    local passed = weights.common
+    if roll <= passed then
+      return 'common'
+    end
+
+    passed = passed + weights.rare
+    if roll <= passed then
+      return 'rare'
+    end
+
+    return 'epic'
+  end
+
+  local function pick_mark_choices_for_rule(pool_rule_id, requested_choice_count)
+    local pool_rule = MARK_POOL_RULES[pool_rule_id]
+    assert(pool_rule and pool_rule.enabled, string.format('missing enabled mark pool rule: %s', tostring(pool_rule_id)))
+
+    local choice_count = requested_choice_count or pool_rule.choice_count or 3
     local choices = {}
-    while #choices < choice_count and #available > 0 do
-      local picked = pick_weighted_mark(available)
+    local used_ids = {}
+    local has_high_quality = false
+
+    while #choices < choice_count do
+      local remaining_slots = choice_count - #choices
+      local need_high_quality = pool_rule.guarantee_high_quality and not has_high_quality and remaining_slots == 1
+      local available, by_quality = build_mark_defs_by_quality(pool_rule, used_ids)
+      if #available <= 0 then
+        break
+      end
+
+      local target_quality = roll_mark_quality(pool_rule, need_high_quality)
+      local quality_pool = by_quality[target_quality] or {}
+
+      if #quality_pool <= 0 then
+        if need_high_quality then
+          quality_pool = (#(by_quality.rare or {}) > 0 and by_quality.rare)
+            or (#(by_quality.epic or {}) > 0 and by_quality.epic)
+            or available
+        else
+          quality_pool = available
+        end
+      end
+
+      local picked = pick_weighted_mark(quality_pool)
       if not picked then
         break
       end
+
       choices[#choices + 1] = picked
-      remove_mark_def(available, picked.id)
+      used_ids[picked.id] = true
+      if picked.quality == 'rare' or picked.quality == 'epic' then
+        has_high_quality = true
+      end
     end
 
     return choices
+  end
+
+  local function pick_mark_choices(choice_count)
+    local default_node = MARK_NODES_BY_LEVEL[10]
+    local default_rule_id = default_node and default_node.pool_rule_id or 'mark_pool_global'
+    local available = build_available_mark_defs(MARK_POOL_RULES[default_rule_id], {})
+    if #available == 0 then
+      return {}
+    end
+    return pick_mark_choices_for_rule(default_rule_id, choice_count)
+  end
+
+  function api.debug_pick_mark_choices_for_rule(pool_rule_id, choice_count)
+    return pick_mark_choices_for_rule(pool_rule_id, choice_count)
   end
 
   function api.get_treasure_reward_ratio(key)
@@ -1294,7 +1383,7 @@ function M.create(env)
 
     runtime.triggered_node_ids[node.id] = true
 
-    local choices = pick_mark_choices(node.choice_count or 3)
+    local choices = pick_mark_choices_for_rule(node.pool_rule_id, node.choice_count or 3)
     if #choices == 0 then
       message(string.format('%s：本局没有可用进化候选。', node.ui_title or '进化选择'))
       return false

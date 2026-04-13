@@ -80,4 +80,13 @@ require_files(
     ],
 )
 
+require_files(
+    "evolution node csv files present",
+    [
+        "data_csv/evolution_nodes.csv",
+        "data_csv/evolution_pool_rules.csv",
+        "data/object_tables/evolution_nodes.lua",
+    ],
+)
+
 print("[OK] static CSV migration checks passed")
