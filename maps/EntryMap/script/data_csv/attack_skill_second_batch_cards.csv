@@ -1,0 +1,111 @@
+skill_id,bucket,seq,card_id,card_name,lane,rarity,summary
+sword_wave,common,1,sword_wave_damage,剑压增幅,damage,普通,剑气伤害 +60%。
+sword_wave,common,2,sword_wave_frequency,迅斩回息,frequency,普通,冷却 -20%。
+sword_wave,common,3,sword_wave_function,裂锋,function,普通,穿透 +2。
+sword_wave,excellent,1,sword_wave_range,长风破,range,优秀,飞行距离 +70%。
+sword_wave,excellent,2,sword_wave_count,双锋并出,count,优秀,数量 +1，单道伤害 -20%。
+sword_wave,excellent,3,sword_wave_form,回旋剑压,form,优秀,释放后延迟回斩 1 次，回斩造成 70% 原伤害。
+sword_wave,rare,1,sword_wave_state,断筋剑痕,state,稀有,命中后附加破甲，使目标受到金行剑罡伤害 +15%，持续 4 秒。
+sword_wave,rare,2,sword_wave_elite,斩钢,elite,稀有,对精英与 Boss 额外造成 +80% 伤害。
+sword_wave,rare,3,sword_wave_trigger,真空裂隙,trigger,稀有,命中 3 名以上敌人时，在路径末端追加 1 道小型裂斩。
+sword_wave,legendary,1,sword_wave_legend,崩山剑气,legendary,传奇,剑气宽度大幅提升，基础伤害 +120%，并在终点落下 1 次重压震击。
+arcane_laser,common,1,arcane_laser_damage,激光增幅,damage,普通,奥术激光总伤害 +60%。
+arcane_laser,common,2,arcane_laser_frequency,虚空聚焦,frequency,普通,冷却 -18%。
+arcane_laser,common,3,arcane_laser_function,稳相束流,function,普通,持续时间 +0.8 秒。
+arcane_laser,excellent,1,arcane_laser_range,长距照射,range,优秀,照射长度 +65%。
+arcane_laser,excellent,2,arcane_laser_count,棱镜副束,count,优秀,结束时额外分裂 1 束副激光，副激光造成 65% 伤害。
+arcane_laser,excellent,3,arcane_laser_form,扫射激光,form,优秀,释放期间自动横扫，覆盖更大的扇形区域。
+arcane_laser,rare,1,arcane_laser_state,奥术灼烧,state,稀有,命中附加 4 秒奥术灼烧。
+arcane_laser,rare,2,arcane_laser_elite,裂核照射,elite,稀有,对同一目标持续照射 0.8 秒后，后续段伤害 +90%。
+arcane_laser,rare,3,arcane_laser_trigger,崩解余辉,trigger,稀有,照射结束时，对路径上每个命中过的敌人各追加 1 次小型爆裂。
+arcane_laser,legendary,1,arcane_laser_legend,崩解射流,legendary,传奇,激光可穿透全路径，持续时间 +100%，并对同一目标逐段增伤。
+arcane_ray,common,1,arcane_ray_damage,射线增幅,damage,普通,奥术射线伤害 +60%。
+arcane_ray,common,2,arcane_ray_frequency,速构棱镜,frequency,普通,冷却 -20%。
+arcane_ray,common,3,arcane_ray_function,贯通延伸,function,普通,穿透 +2。
+arcane_ray,excellent,1,arcane_ray_range,虚空拉伸,range,优秀,射线长度 +70%。
+arcane_ray,excellent,2,arcane_ray_count,射线齐发,count,优秀,额外发射 1 束射线，单束伤害 -20%。
+arcane_ray,excellent,3,arcane_ray_form,次元棱镜,form,优秀,主射线命中后向两侧各分叉 1 条短射线。
+arcane_ray,rare,1,arcane_ray_state,奥术崩裂,state,稀有,命中会施加脆化，使目标受到金行灵束伤害 +18%，持续 4 秒。
+arcane_ray,rare,2,arcane_ray_elite,湮灭射线,elite,稀有,首个命中目标额外承受 100% 攻击的金行灵束伤害。
+arcane_ray,rare,3,arcane_ray_trigger,裂界追光,trigger,稀有,击杀敌人时，对其身后延伸再释放 1 次短射线。
+arcane_ray,legendary,1,arcane_ray_legend,虚空射线,legendary,传奇,奥术射线伤害 +120%，并无视部分护甲与魔抗。
+frost_nova,common,1,frost_nova_damage,新星增幅,damage,普通,冰霜新星伤害 +60%。
+frost_nova,common,2,frost_nova_frequency,寒息轮转,frequency,普通,冷却 -18%。
+frost_nova,common,3,frost_nova_function,冻结延长,function,普通,冻结时间 +0.8 秒。
+frost_nova,excellent,1,frost_nova_range,寒潮扩张,range,优秀,范围 +60%。
+frost_nova,excellent,2,frost_nova_count,低温回响,count,优秀,额外释放 1 次回响新星，回响造成 65% 伤害。
+frost_nova,excellent,3,frost_nova_form,冰爆碎片,form,优秀,释放后向外飞出 8 枚冰片。
+frost_nova,rare,1,frost_nova_state,冻伤蔓延,state,稀有,被冻结敌人向周围扩散 1 层冻伤。
+frost_nova,rare,2,frost_nova_elite,寒狱压制,elite,稀有,对精英与 Boss 额外造成 +80% 伤害，且减速效果强化。
+frost_nova,rare,3,frost_nova_trigger,碎冰连爆,trigger,稀有,冻结目标死亡时，在原地触发 1 次小型冰爆。
+frost_nova,legendary,1,frost_nova_legend,极寒领域,legendary,传奇,释放后原地形成 4 秒极寒领域，持续冻结并追加冰爆。
+chain_lightning,common,1,chain_lightning_damage,链击增幅,damage,普通,闪电链伤害 +60%。
+chain_lightning,common,2,chain_lightning_frequency,高频放电,frequency,普通,冷却 -20%。
+chain_lightning,common,3,chain_lightning_function,连锁扩展,function,普通,弹射次数 +3。
+chain_lightning,excellent,1,chain_lightning_range,导链延伸,range,优秀,弹射距离 +60%。
+chain_lightning,excellent,2,chain_lightning_count,双重导链,count,优秀,额外释放 1 次雷链，单条伤害 -20%。
+chain_lightning,excellent,3,chain_lightning_form,超载电流,form,优秀,弹射完成后在末端额外引爆 1 次电爆。
+chain_lightning,rare,1,chain_lightning_state,感电扩散,state,稀有,命中附加感电，使目标受到木行伤害 +18%。
+chain_lightning,rare,2,chain_lightning_elite,高压导体,elite,稀有,对精英与 Boss 命中时额外追加 1 段高压雷击。
+chain_lightning,rare,3,chain_lightning_trigger,回流电弧,trigger,稀有,命中 5 次以上时，从终点向起点回弹 1 次。
+chain_lightning,legendary,1,chain_lightning_legend,永续雷链,legendary,传奇,后续弹射不再衰减伤害，并在感电目标间优先传播。
+earthquake,common,1,earthquake_damage,震波增幅,damage,普通,地震伤害 +60%。
+earthquake,common,2,earthquake_frequency,地脉回震,frequency,普通,冷却 -18%。
+earthquake,common,3,earthquake_function,震荡减速,function,普通,减速效果 +25%。
+earthquake,excellent,1,earthquake_range,震域扩张,range,优秀,作用范围 +60%。
+earthquake,excellent,2,earthquake_count,裂地余波,count,优秀,结束后追加 1 次余波，余波造成 70% 伤害。
+earthquake,excellent,3,earthquake_form,岩刺突起,form,优秀,中心生成岩刺带，持续造成土行震罡伤害。
+earthquake,rare,1,earthquake_state,断层压制,state,稀有,命中后施加破势，目标造成的移动速度降低。
+earthquake,rare,2,earthquake_elite,重压地鸣,elite,稀有,首次命中精英与 Boss 时附带 0.6 秒击飞并额外 +80% 伤害。
+earthquake,rare,3,earthquake_trigger,崩裂追击,trigger,稀有,每命中 6 名敌人，在最外环追加 1 圈裂地冲击。
+earthquake,legendary,1,earthquake_legend,山崩,legendary,传奇,地震进阶为连续裂地，基础伤害 +120%，并在持续期间反复掀起岩浪。
+tornado,common,1,tornado_damage,风刃增幅,damage,普通,龙卷风总伤害 +60%。
+tornado,common,2,tornado_frequency,风脉轮转,frequency,普通,冷却 -18%。
+tornado,common,3,tornado_function,风压牵引,function,普通,拉扯力度 +50%。
+tornado,excellent,1,tornado_range,龙卷扩张,range,优秀,范围 +50%。
+tornado,excellent,2,tornado_count,双生龙卷,count,优秀,额外召唤 1 个龙卷风，单个伤害 -20%。
+tornado,excellent,3,tornado_form,切割风眼,form,优秀,中心区域额外造成高频切割伤害。
+tornado,rare,1,tornado_state,风蚀,state,稀有,被卷入敌人受到木行伤害 +18%。
+tornado,rare,2,tornado_elite,飓压猎杀,elite,稀有,对精英与 Boss 的拉扯减半，但伤害额外 +90%。
+tornado,rare,3,tornado_trigger,风尾回扫,trigger,稀有,龙卷结束时在终点留下 1 次回扫风刃。
+tornado,legendary,1,tornado_legend,风王之眼,legendary,传奇,龙卷风持续期间自动追踪高威胁目标，并获得额外切割层。
+electro_net,common,1,electro_net_damage,电网增幅,damage,普通,电磁网伤害 +60%。
+electro_net,common,2,electro_net_frequency,充能回路,frequency,普通,冷却 -18%。
+electro_net,common,3,electro_net_function,束缚延长,function,普通,束缚时间 +0.8 秒。
+electro_net,excellent,1,electro_net_range,电网扩张,range,优秀,范围 +60%。
+electro_net,excellent,2,electro_net_count,网格增殖,count,优秀,额外生成 1 张小型电磁网，小网造成 65% 伤害。
+electro_net,excellent,3,electro_net_form,连锁电弧,form,优秀,网中的敌人会向邻近目标释放电弧。
+electro_net,rare,1,electro_net_state,电荷囚笼,state,稀有,被束缚目标附加感电，受到木行伤害 +20%。
+electro_net,rare,2,electro_net_elite,高压电网,elite,稀有,对精英与 Boss 造成 +80% 伤害，并提高束缚期间的段伤。
+electro_net,rare,3,electro_net_trigger,过载短路,trigger,稀有,束缚结束时引爆电场，对区域内敌人造成 1 次爆炸。
+electro_net,legendary,1,electro_net_legend,禁锢领域,legendary,传奇,电磁网进阶为持续领域，区域内敌人反复受到束缚与电击。
+meteor,common,1,meteor_damage,陨石增幅,damage,普通,陨石伤害 +60%。
+meteor,common,2,meteor_frequency,坠星预热,frequency,普通,冷却 -16%。
+meteor,common,3,meteor_function,震荡冲击,function,普通,命中附带 0.8 秒击飞。
+meteor,excellent,1,meteor_range,陨火扩张,range,优秀,爆炸范围 +60%。
+meteor,excellent,2,meteor_count,双星坠落,count,优秀,额外召唤 1 颗陨石，单颗伤害 -20%。
+meteor,excellent,3,meteor_form,熔岩碎片,form,优秀,落地后飞散 6 枚熔岩碎片。
+meteor,rare,1,meteor_state,燃烧地带,state,稀有,落点形成 4 秒熔岩地带。
+meteor,rare,2,meteor_elite,天坠处决,elite,稀有,对高生命目标额外造成 +90% 伤害。
+meteor,rare,3,meteor_trigger,余震流火,trigger,稀有,命中 5 名以上敌人时，额外降下 1 颗小陨火。
+meteor,legendary,1,meteor_legend,灭世陨星,legendary,传奇,陨石伤害 +120%，落地后持续喷发火浪，成为终盘爆发主核。
+hurricane,common,1,hurricane_damage,风暴增幅,damage,普通,飓风总伤害 +60%。
+hurricane,common,2,hurricane_frequency,风场轮转,frequency,普通,冷却 -18%。
+hurricane,common,3,hurricane_function,狂岚牵引,function,普通,聚怪力度 +50%。
+hurricane,excellent,1,hurricane_range,飓风扩张,range,优秀,范围 +55%。
+hurricane,excellent,2,hurricane_count,双生飓风,count,优秀,额外生成 1 道飓风，单道伤害 -20%。
+hurricane,excellent,3,hurricane_form,风刃切割,form,优秀,边缘区域追加高频风刃切割。
+hurricane,rare,1,hurricane_state,裂风标记,state,稀有,被卷入敌人受到木行伤害 +18%。
+hurricane,rare,2,hurricane_elite,风暴围猎,elite,稀有,对精英与 Boss 造成 +85% 伤害。
+hurricane,rare,3,hurricane_trigger,乱流回环,trigger,稀有,持续结束时在原地再留下一圈短时乱流。
+hurricane,legendary,1,hurricane_legend,裂界飓风,legendary,传奇,飓风持续时间 +100%，切割层数大幅提高，并强化聚怪能力。
+fireball,common,1,fireball_damage,火球增幅,damage,普通,火球伤害 +60%。
+fireball,common,2,fireball_frequency,炎核回转,frequency,普通,冷却 -20%。
+fireball,common,3,fireball_function,灼烧附着,function,普通,命中附加 4 秒持续燃烧。
+fireball,excellent,1,fireball_range,爆裂扩张,range,优秀,爆炸范围 +60%。
+fireball,excellent,2,fireball_count,双生火球,count,优秀,额外发射 1 枚火球，单枚伤害 -20%。
+fireball,excellent,3,fireball_form,余焰飞弹,form,优秀,爆炸后飞散 6 枚余焰飞弹。
+fireball,rare,1,fireball_state,爆燃火种,state,稀有,燃烧中的敌人死亡时扩散燃烧。
+fireball,rare,2,fireball_elite,炎核处决,elite,稀有,对低生命精英与 Boss 造成 +100% 额外伤害。
+fireball,rare,3,fireball_trigger,烈焰回响,trigger,稀有,每第 3 次命中时，在目标点追加 1 次小型回响爆炸。
+fireball,legendary,1,fireball_legend,末日炎星,legendary,传奇,火球伤害 +120%，爆炸半径大幅提高，并强化灼烧收尾能力。

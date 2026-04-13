@@ -7,7 +7,8 @@ import csv
 
 ROOT = Path(__file__).resolve().parents[1]
 ATTACK_SKILLS_CSV = ROOT / "data_csv" / "attack_skills.csv"
-BLUEPRINTS = ROOT / "entry_objects" / "attack_skill_blueprints" / "second_batch_skills.lua"
+SECOND_BATCH_SKILLS_CSV = ROOT / "data_csv" / "attack_skill_second_batch_skills.csv"
+BLUEPRINTS_OBJECT_TABLE = ROOT / "data" / "object_tables" / "attack_skill_second_batch_blueprints.lua"
 
 
 def read_csv_rows(path: Path):
@@ -24,10 +25,16 @@ def test_attack_skills_csv_exposes_structured_damage_fields():
 
 
 def test_second_batch_blueprints_use_structured_damage_metadata():
-    content = BLUEPRINTS.read_text(encoding="utf-8")
-    assert "damage_form =" in content, "second batch blueprints must define damage_form"
-    assert "element =" in content, "second batch blueprints must define element"
-    assert "damage_label =" in content, "second batch blueprints must define damage_label"
+    rows = read_csv_rows(SECOND_BATCH_SKILLS_CSV)
+    first = rows[0]
+    assert "damage_form" in first, "second batch skills csv must expose damage_form"
+    assert "element" in first, "second batch skills csv must expose element"
+    assert "damage_label" in first, "second batch skills csv must expose damage_label"
+
+    content = BLUEPRINTS_OBJECT_TABLE.read_text(encoding="utf-8")
+    assert "damage_form = row.damage_form" in content, "second batch blueprints object table must map damage_form"
+    assert "element = row.element" in content, "second batch blueprints object table must map element"
+    assert "damage_label = row.damage_label" in content, "second batch blueprints object table must map damage_label"
 
 
 def main() -> None:
