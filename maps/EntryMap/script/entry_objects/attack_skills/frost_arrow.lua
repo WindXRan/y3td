@@ -1,8 +1,11 @@
 local M = {
     id = 'frost_arrow',
-    name = '寒冰箭',
-    summary = '射出 1 支寒冰箭，造成冰系魔法伤害并短暂击退目标。',
+    name = '寒泉箭',
+    summary = '射出 1 支寒泉箭，造成水行寒煞伤害并短暂击退目标。',
     damage_type = '法术',
+    damage_form = 'spell',
+    element = 'water',
+    damage_label = '水行寒煞',
     base_damage_ratio = 1.7,
     base_cooldown = 4.8,
     base_range = 920,

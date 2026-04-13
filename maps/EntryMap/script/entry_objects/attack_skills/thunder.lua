@@ -1,8 +1,11 @@
 local M = {
     id = 'thunder',
-    name = '天雷',
-    summary = '召唤 1 道天雷打击目标，造成电系魔法伤害。',
+    name = '乙木天雷',
+    summary = '召唤 1 道乙木天雷打击目标，造成木行天雷伤害。',
     damage_type = '法术',
+    damage_form = 'spell',
+    element = 'wood',
+    damage_label = '木行天雷',
     base_damage_ratio = 2.0,
     base_cooldown = 5.5,
     base_range = 950,
