@@ -22,7 +22,8 @@ ATTACK_SKILLS = ROOT / 'script' / 'runtime' / 'attack_skills.lua'
 ATTACK_UPGRADES = ROOT / 'script' / 'runtime' / 'attack_upgrades.lua'
 AUTO_ACTIVE_EFFECTS = ROOT / 'script' / 'runtime' / 'auto_active_effects.lua'
 HERO_ATTR_DEFS = ROOT / 'script' / 'runtime' / 'hero_attr_defs.lua'
-AUTO_ACTIVE_EFFECT_DEFS = ROOT / 'script' / 'entry_objects' / 'auto_active_effects.lua'
+CSV_AUTO_ACTIVE_EFFECTS = ROOT / 'script' / 'data_csv' / 'auto_active_effects.csv'
+CSV_AUTO_ACTIVE_EFFECT_ATTR = ROOT / 'script' / 'data_csv' / 'auto_active_effect_attr.csv'
 BOND_ABILITY_CONFIG = ROOT / 'script' / 'tools' / 'bond_node_ability_config.json'
 CSV_BOND_ROOT_SETS = ROOT / 'script' / 'data_csv' / 'bond_root_sets.csv'
 CSV_BOND_NODES = ROOT / 'script' / 'data_csv' / 'bond_nodes.csv'
@@ -223,21 +224,21 @@ def main() -> None:
             "assert(defs.bond_magic_trick.next_ids[1] == 'bond_magic_trick_mastery', 'doc: 魔术应至少拆成两张卡') "
             "assert(defs.bond_magic_elementalist.next_ids[1] == 'bond_magic_elementalist_storm', 'doc: 元素师应按文档拆成三张卡') "
             "assert(defs.bond_magic_mage.next_ids[1] == 'bond_magic_mage_flame', 'doc: 魔法师应按文档拆成三张卡') "
-            "assert(defs.bond_magic_mage_flame.display_name == '火焰魔法', 'doc: 魔法师第二张卡名称应与总表一致') "
-            "assert(defs.bond_magic_mage_frost.display_name == '寒冰魔法', 'doc: 魔法师第三张卡名称应与总表一致') "
+            "assert(defs.bond_magic_mage_flame.display_name == '赤炎灵法', 'doc: 魔法师第二张卡名称应与总表一致') "
+            "assert(defs.bond_magic_mage_frost.display_name == '寒泉灵法', 'doc: 魔法师第三张卡名称应与总表一致') "
             "assert(defs.bond_magic_arcane_power_staff.display_name == '魔法权杖', 'doc: 魔能分支补卡名称应与总表一致') "
             "assert(defs.bond_magic_trick_mastery.display_name == '魔爆掌握', 'doc: 魔术分支补卡名称应与总表一致') "
             "assert(defs.bond_magic_haste_cooldown.display_name == '冷缩', 'doc: 急速第二张卡名称应与总表一致') "
             "assert(defs.bond_magic_haste_charge.display_name == '充能', 'doc: 急速第三张卡名称应与总表一致') "
-            "assert(defs.bond_magic_elementalist_storm.display_name == '风暴元素', 'doc: 元素师第二张卡名称应与总表一致') "
-            "assert(defs.bond_magic_elementalist_lightning.display_name == '闪电元素', 'doc: 元素师第三张卡名称应与总表一致') "
-            "assert(string.find(defs.bond_magic_mage.desc.single, '奥术魔法', 1, true) ~= nil and string.find(defs.bond_magic_mage.desc.single, '火焰魔法', 1, true) == nil, 'doc: 魔法师起始节点只应展示第一张卡') "
+            "assert(defs.bond_magic_elementalist_storm.display_name == '青木真意', 'doc: 元素师第二张卡名称应与总表一致') "
+            "assert(defs.bond_magic_elementalist_lightning.display_name == '金行真意', 'doc: 元素师第三张卡名称应与总表一致') "
+            "assert(string.find(defs.bond_magic_mage.desc.single, '金行灵法', 1, true) ~= nil and string.find(defs.bond_magic_mage.desc.single, '赤炎灵法', 1, true) == nil, 'doc: 魔法师起始节点只应展示第一张卡') "
             "assert(string.find(defs.bond_magic_arcane_power.desc.single, '魔法外衣', 1, true) ~= nil and string.find(defs.bond_magic_arcane_power.desc.single, '魔法权杖', 1, true) == nil, 'doc: 魔能起始节点只应展示第一张卡') "
             "assert(string.find(defs.bond_magic_trick.desc.single, '魔爆能量', 1, true) ~= nil and string.find(defs.bond_magic_trick.desc.single, '魔爆掌握', 1, true) == nil, 'doc: 魔术起始节点只应展示第一张卡') "
             "assert(string.find(defs.bond_magic_haste.desc.single, '灵智', 1, true) ~= nil and string.find(defs.bond_magic_haste.desc.single, '冷缩', 1, true) == nil, 'doc: 急速起始节点只应展示第一张卡') "
-            "assert(string.find(defs.bond_magic_elementalist.desc.single, '大地元素', 1, true) ~= nil and string.find(defs.bond_magic_elementalist.desc.single, '风暴元素', 1, true) == nil, 'doc: 元素师起始节点只应展示第一张卡') "
-            "assert(string.find(defs.bond_magic_mage.desc.single, '奥术魔法', 1, true) ~= nil, '魔法师节点应同步总表中的卡牌描述') "
-            "assert(string.find(defs.bond_magic_mage.desc.advanced, '魔法互通', 1, true) ~= nil, '魔法师节点应同步总表中的套装效果') "
+            "assert(string.find(defs.bond_magic_elementalist.desc.single, '厚土真意', 1, true) ~= nil and string.find(defs.bond_magic_elementalist.desc.single, '青木真意', 1, true) == nil, 'doc: 元素师起始节点只应展示第一张卡') "
+            "assert(string.find(defs.bond_magic_mage.desc.single, '金行灵法', 1, true) ~= nil, '魔法师节点应同步总表中的卡牌描述') "
+            "assert(string.find(defs.bond_magic_mage.desc.advanced, '五行流转', 1, true) ~= nil, '魔法师节点应同步总表中的套装效果') "
             "assert(defs.bond_economy_greed.display_name == '贪婪') "
             "assert(defs.bond_economy_core.next_ids[1] == 'bond_economy_core_exp', 'xmind: 经济应先接杀敌经验') "
             "assert(defs.bond_economy_core_reward.parent_id == 'bond_economy_core_exp', 'xmind: 杀敌加成应接在杀敌经验后面') "
@@ -307,9 +308,9 @@ def main() -> None:
             "assert(string.find(defs.bond_body_charge_breaker.desc.advanced, '每击杀200名敌人触发', 1, true) ~= nil and string.find(defs.bond_body_charge_breaker.desc.advanced, '继续补齐', 1, true) == nil, '陷阵套装文案应同步总表正式效果') "
             "assert((string.find(defs.bond_body_blood_oath.desc.advanced, '生命值+500', 1, true) ~= nil or string.find(defs.bond_body_blood_oath.desc.advanced, '生命值 +500', 1, true) ~= nil) and string.find(defs.bond_body_blood_oath.desc.advanced, '继续补齐', 1, true) == nil, '血誓套装文案应同步总表正式效果') "
             "assert(string.find(defs.bond_body_blood_demon.desc.advanced, '每损失35%最大生命值', 1, true) ~= nil and string.find(defs.bond_body_blood_demon.desc.advanced, '继续补齐', 1, true) == nil, '血魔套装文案应同步总表正式效果') "
-            "assert(string.find(defs.bond_magic_mage_flame.desc.advanced, '魔法互通', 1, true) ~= nil and string.find(defs.bond_magic_mage_flame.desc.advanced, '继续补齐', 1, true) == nil, '魔法师中间节点也应展示正式套装效果') "
+            "assert(string.find(defs.bond_magic_mage_flame.desc.advanced, '五行流转', 1, true) ~= nil and string.find(defs.bond_magic_mage_flame.desc.advanced, '继续补齐', 1, true) == nil, '魔法师中间节点也应展示正式套装效果') "
             "assert(string.find(defs.bond_magic_haste_cooldown.desc.advanced, '立即重置该技能冷却', 1, true) ~= nil and string.find(defs.bond_magic_haste_cooldown.desc.advanced, '继续补齐', 1, true) == nil, '急速中间节点也应展示正式套装效果') "
-            "assert(string.find(defs.bond_magic_elementalist_storm.desc.advanced, '另外2种15%的伤害增幅', 1, true) ~= nil and string.find(defs.bond_magic_elementalist_storm.desc.advanced, '继续补齐', 1, true) == nil, '元素师中间节点也应展示正式套装效果') "
+            "assert(string.find(defs.bond_magic_elementalist_storm.desc.advanced, '五行相参', 1, true) ~= nil and string.find(defs.bond_magic_elementalist_storm.desc.advanced, '继续补齐', 1, true) == nil, '元素师中间节点也应展示正式套装效果') "
             "assert(string.find(defs.bond_economy_greed_coin.desc.advanced, '随机吞噬4张', 1, true) ~= nil and string.find(defs.bond_economy_greed_coin.desc.advanced, '继续补齐', 1, true) == nil, '贪婪中间节点也应展示正式套装效果') "
             "assert(string.find(defs.bond_economy_challenge_exp_hunter.desc.advanced, '挑战伤害+15%', 1, true) == nil and string.find(defs.bond_economy_challenge_exp_hunter.desc.advanced, '继续补齐', 1, true) == nil, '挑战中间节点文案不应再宣称未实现的挑战伤害效果') "
             "assert(string.find(defs.bond_body_life_blessing.desc.advanced, '生命增幅+5%', 1, true) ~= nil and string.find(defs.bond_body_life_blessing.desc.advanced, '继续补齐', 1, true) == nil, '生命中间节点也应展示正式套装效果') "
@@ -590,7 +591,7 @@ def main() -> None:
             "}) "
             "local treasure_runtime = reward_api.get_treasure_runtime() "
             "for treasure_id in pairs(reward_api.TREASURE_DEFS) do "
-            "if treasure_id ~= 'echo_codex' and treasure_id ~= 'heart_guard_mirror' then "
+            "if treasure_id ~= 'ITEM_004' then "
             "treasure_runtime.discarded_treasure_ids[treasure_id] = true "
             "end "
             "end "
@@ -602,7 +603,7 @@ def main() -> None:
             "local treasure_choices = reward_api.pick_treasure_choices(1) "
             "math.random = old_random "
             "assert(#treasure_choices == 1) "
-            "assert(treasure_choices[1].id == 'heart_guard_mirror') "
+            "assert(treasure_choices[1].id == 'ITEM_004') "
             "local compatibility_state = { bond_runtime = bonds.create_runtime() } "
             "assert(bonds.unlock_node(compatibility_state, 'bond_magic_core')) "
             "assert(bonds.unlock_node(compatibility_state, 'bond_magic_core_amp')) "
@@ -803,7 +804,8 @@ def main() -> None:
     attack_skills_content = ATTACK_SKILLS.read_text(encoding='utf-8')
     attack_upgrades_content = ATTACK_UPGRADES.read_text(encoding='utf-8')
     auto_active_effects_content = AUTO_ACTIVE_EFFECTS.read_text(encoding='utf-8')
-    auto_active_effect_defs_content = AUTO_ACTIVE_EFFECT_DEFS.read_text(encoding='utf-8')
+    auto_active_effect_defs_csv_content = CSV_AUTO_ACTIVE_EFFECTS.read_text(encoding='utf-8')
+    auto_active_effect_attr_csv_content = CSV_AUTO_ACTIVE_EFFECT_ATTR.read_text(encoding='utf-8')
     rewards_content = REWARDS.read_text(encoding='utf-8')
     ability_config_content = BOND_ABILITY_CONFIG.read_text(encoding='utf-8')
 
@@ -850,7 +852,9 @@ def main() -> None:
     assert_not_contains(auto_active_effects_content, "str_to_modifier_key and str_to_modifier_key('", 'auto_active_effects.lua should not resolve modifier keys from localized names during module create')
     assert_not_contains(boot_content, '  is_bond_active = is_bond_active,', 'boot.lua should not inject env.is_bond_active into attack_skills anymore')
     assert_contains(boot_content, 'str_to_modifier_key', 'boot.lua should wire modifier key lookup for auto effects')
-    assert_contains(auto_active_effect_defs_content, "modifier_key = 201365014", 'auto_active_effect defs should bind fighting spirit debuff resource id')
+    assert_contains(auto_active_effect_defs_csv_content, 'fighting_spirit_field,bond,auto_fighting_spirit,periodic,1.0,,1200,0.60', 'auto_active_effects csv should expose fighting spirit row')
+    assert_contains(auto_active_effect_defs_csv_content, '201365014', 'auto_active_effects csv should bind fighting spirit debuff resource id')
+    assert_contains(auto_active_effect_attr_csv_content, 'charge_breaker_rally,攻击速度,50', 'auto_active_effect_attr csv should expose charge breaker attack speed bonus')
     assert FIGHTING_SPIRIT_MODIFIER.exists(), 'fighting spirit modifier resource should exist'
     assert_contains(rewards_content, 'best_with_tags', 'rewards.lua should read best_with_tags for treasure weighting')
 
