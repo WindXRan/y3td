@@ -1,0 +1,10 @@
+id,order_index,name,quality,pool_weight,summary
+battle_scar_mark,1,战痕烙印,common,10,所有攻击技能伤害 +12%。
+swift_rhythm_mark,2,迅节烙印,common,10,所有攻击技能冷却缩减 8%。
+hunter_king_mark,3,猎王烙印,common,10,对精英与 Boss 伤害 +15%。
+chasing_wind_mark,4,追风烙印,common,10,普攻节奏提升，普攻伤害 +15%。
+arcane_edge_mark,5,奥锋烙印,rare,7,所有攻击技能伤害 +20%，攻击技能射程 +60。
+slayer_mark,6,弑王烙印,rare,7,对精英与 Boss 伤害 +24%，并获得伤害加成 +6%。
+storm_mark,7,风暴烙印,rare,7,攻击速度 +20%，所有攻击技能冷却缩减 10%；攻击技能释放后追加 1 次星火回响。
+war_god_mark,8,战神烙印,epic,4,伤害加成 +12%，普攻伤害 +20%，攻击技能伤害 +20%；每 8 次普攻触发 1 次血怒践踏。
+void_mark,9,虚空烙印,epic,4,所有攻击技能伤害 +28%，冷却缩减 12%，对精英与 Boss 伤害 +12%。
