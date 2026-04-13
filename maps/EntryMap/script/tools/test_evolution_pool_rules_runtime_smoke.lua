@@ -46,4 +46,16 @@ for _, def in ipairs(next_picks) do
   assert(def.id ~= picks[1].id, 'owned evolutions should be excluded')
 end
 
+for _, def in pairs(api.MARK_DEFS) do
+  if def.quality == 'rare' or def.quality == 'epic' then
+    runtime.owned_mark_ids[def.id] = true
+  end
+end
+
+local fallback_picks = api.debug_pick_mark_choices_for_rule('mark_pool_global', 3)
+assert(#fallback_picks == 3, 'fallback picks should still return 3 evolutions when only commons remain')
+for _, def in ipairs(fallback_picks) do
+  assert(def.quality == 'common', 'fallback picks should use remaining common evolutions when high-quality pool is empty')
+end
+
 print('evolution pool rules runtime smoke ok')
