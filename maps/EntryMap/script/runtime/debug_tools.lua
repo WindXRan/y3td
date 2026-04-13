@@ -286,7 +286,7 @@ function M.create(env)
     })
 
     develop_command.register('ETREASURE', {
-      desc = '直接获得指定宝物，如 .etreasure battle_horn [replace_slot]',
+      desc = '直接获得指定宝物，如 .etreasure ITEM_004 [replace_slot]',
       onCommand = function(treasure_id, replace_slot)
         if not treasure_id or treasure_id == '' then
           message('用法：.etreasure <treasure_id> [replace_slot]')

@@ -623,51 +623,6 @@ function M.create(env)
     return true
   end
 
-  local function trigger_guardian_pulse(def)
-    if not STATE.hero or not STATE.hero:is_exist() then
-      return false
-    end
-    local vfx = ATTACK_SKILL_VFX[def.vfx]
-    play_particle_on_unit(STATE.hero, vfx and vfx.cast_particle or vfx and vfx.impact_particle or nil, 1.15, 0.40, 'origin')
-    heal_hero(get_hero_max_hp() * (def.heal_ratio or 0.08))
-    return true
-  end
-
-  local function trigger_harvest_blade(def)
-    local target = pick_nearest_enemy(def.range)
-    if not target then
-      return false
-    end
-
-    local vfx = ATTACK_SKILL_VFX[def.vfx]
-    local damage = get_attack_damage_base() * (def.damage_ratio or 1)
-    launch_projectile_to_target(vfx, target, function(impact_point)
-      if impact_point and vfx and vfx.impact_particle then
-        play_particle_on_point(impact_point, vfx.impact_particle, vfx.impact_scale, vfx.impact_time, 18)
-      end
-      if is_active_enemy(target) then
-        deal_skill_damage(target, damage, '魔法', {
-          text_type = 'magic',
-        })
-      end
-    end)
-    return true
-  end
-
-  local function trigger_coin_burst(def)
-    local target = pick_low_hp_enemy(def.range, def.hp_threshold) or pick_nearest_enemy(def.range)
-    if not target then
-      return false
-    end
-
-    local vfx = ATTACK_SKILL_VFX[def.vfx]
-    local center = target:get_point()
-    local damage = get_attack_damage_base() * (def.damage_ratio or 1)
-    play_particle_on_point(center, vfx and vfx.explosion_particle or vfx and vfx.impact_particle or nil, 1.1, 0.40, 12)
-    damage_enemies_in_radius(center, def.radius or 220, damage, '物理')
-    return true
-  end
-
   local function trigger_bloodrage_stomp(def)
     if not STATE.hero or not STATE.hero:is_exist() then
       return false
@@ -744,12 +699,6 @@ function M.create(env)
       triggered = trigger_blood_demon_burst(def)
     elseif def.id == 'charge_breaker_rally' then
       triggered = trigger_charge_breaker_rally(def)
-    elseif def.id == 'guardian_pulse' then
-      triggered = trigger_guardian_pulse(def)
-    elseif def.id == 'harvest_blade' then
-      triggered = trigger_harvest_blade(def)
-    elseif def.id == 'coin_burst' then
-      triggered = trigger_coin_burst(def)
     elseif def.id == 'bloodrage_stomp' then
       triggered = trigger_bloodrage_stomp(def)
     elseif def.id == 'starfire_echo' then

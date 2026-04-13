@@ -857,6 +857,7 @@ def main() -> None:
     assert_contains(auto_active_effect_attr_csv_content, 'charge_breaker_rally,攻击速度,50', 'auto_active_effect_attr csv should expose charge breaker attack speed bonus')
     assert FIGHTING_SPIRIT_MODIFIER.exists(), 'fighting spirit modifier resource should exist'
     assert_contains(rewards_content, 'best_with_tags', 'rewards.lua should read best_with_tags for treasure weighting')
+    assert_not_contains(rewards_content, 'crown_fragment', 'rewards.lua should not keep legacy treasure id special cases')
 
     print('runtime bonds chain smoke ok')
 

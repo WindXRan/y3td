@@ -73,6 +73,26 @@ local function infer_treasure_type(item, duration_type)
   return 'general'
 end
 
+local function infer_tags(item)
+  local tags = {}
+  local category = tostring(item.category or '')
+  local summary = tostring(item.summary or '')
+
+  if string.find(category, '资源获取', 1, true) or string.find(summary, '金币', 1, true) or string.find(summary, '木材', 1, true) then
+    tags[#tags + 1] = 'economy'
+  end
+  if string.find(category, '增益', 1, true) or string.find(summary, '暴击', 1, true) then
+    tags[#tags + 1] = 'skill'
+  end
+  if string.find(summary, '攻击速度', 1, true) or string.find(summary, '伤害', 1, true) then
+    tags[#tags + 1] = 'attack'
+  end
+  if string.find(summary, '生命', 1, true) or string.find(summary, '减免', 1, true) then
+    tags[#tags + 1] = 'survival'
+  end
+  return tags
+end
+
 local function build_bonus_packs(item)
   local bonuses = {
     attr = {},
@@ -124,7 +144,7 @@ for _, item in ipairs(catalog.list or {}) do
     source_category = item.category,
     set_id = item.set_id,
     notes = item.notes,
-    tags = {},
+    tags = infer_tags(item),
     theme_tags = {},
     best_with_tags = {},
     timing_tags = duration_type == 'timed' and { 'timed' } or { duration_type },

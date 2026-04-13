@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ATTACK_SKILLS_INIT = ROOT / 'entry_objects' / 'attack_skills' / 'init.lua'
+ATTACK_SKILLS_OBJECT_TABLE = ROOT / 'data' / 'object_tables' / 'attack_skills.lua'
 BOOT = ROOT / 'runtime' / 'boot.lua'
 UPGRADES = ROOT / 'runtime' / 'attack_upgrades.lua'
 
@@ -19,13 +20,18 @@ def assert_contains(path: Path, needle: str, message: str) -> None:
 def main() -> None:
     assert_contains(
         ATTACK_SKILLS_INIT,
-        "local SecondBatchBlueprints = require 'entry_objects.attack_skill_blueprints.second_batch_skills'",
-        'attack_skills init 没有加载第二批攻击技能蓝图',
+        "return require 'data.object_tables.attack_skills'",
+        'attack_skills init 没有桥接到 csv object table',
     )
     assert_contains(
-        ATTACK_SKILLS_INIT,
+        ATTACK_SKILLS_OBJECT_TABLE,
+        "local SecondBatchBlueprints = require 'entry_objects.attack_skill_blueprints.second_batch_skills'",
+        'attack_skills object table 没有加载第二批攻击技能蓝图',
+    )
+    assert_contains(
+        ATTACK_SKILLS_OBJECT_TABLE,
         'blueprints = SecondBatchBlueprints',
-        'attack_skills init 没有导出第二批技能蓝图对象',
+        'attack_skills object table 没有导出第二批技能蓝图对象',
     )
     assert_contains(
         BOOT,

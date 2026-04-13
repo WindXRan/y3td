@@ -294,13 +294,19 @@ function M.create(env)
     end
 
     local runtime = api.get_treasure_runtime()
-    if runtime.active_by_id.coin_casket or runtime.active_by_id.harvest_flask then
-      tags.economy = true
-    end
-    if runtime.active_by_id.field_bandage
-      or runtime.active_by_id.heart_guard_mirror
-      or runtime.active_by_id.dragonblood_ring then
-      tags.survival = true
+    for treasure_id, _ in pairs(runtime.active_by_id or {}) do
+      local def = TREASURE_DEFS[treasure_id]
+      if def then
+        for _, tag in ipairs(def.tags or {}) do
+          tags[tag] = true
+        end
+        if def.bonuses and (def.bonuses.reward_ratio or def.bonuses.passive_income) then
+          tags.economy = true
+        end
+        if def.bonuses and def.bonuses.attr and (def.bonuses.attr['最大生命'] or def.bonuses.attr['伤害减免']) then
+          tags.survival = true
+        end
+      end
     end
 
     if collect_bond_route_tags then
@@ -800,10 +806,6 @@ function M.create(env)
           aggregate.attr['伤害减免'] = (aggregate.attr['伤害减免'] or 0) + 12
         end
       end
-    end
-
-    if runtime.active_by_id.crown_fragment then
-      aggregate.attr['攻击'] = (aggregate.attr['攻击'] or 0) + rare_count * 12 + epic_count * 24
     end
 
     return aggregate

@@ -485,15 +485,6 @@ function M.create(env)
       end
     end
 
-    for _, treasure_id in ipairs({
-      'hunter_badge', 'feather_quiver', 'echo_codex',
-      'gale_tailfeather', 'thunder_pin', 'time_rift_hourglass',
-    }) do
-      if has_active_treasure and has_active_treasure(treasure_id) then
-        tags[treasure_id] = true
-      end
-    end
-
     return tags
   end
 

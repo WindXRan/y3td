@@ -1,0 +1,12 @@
+skill_id,evolution_id,evolution_name,evolution_summary
+sword_wave,mountain_breaker_wave,崩山剑气,剑气进阶为宽幅重压斩，成为中后期直线清场主核。
+arcane_laser,disintegration_stream,崩解射流,激光进阶为持续崩解流，擅长撕开高密敌群与高血量目标。
+arcane_ray,void_ray,虚空射线,射线进阶为高爆发湮灭束，专长贯通高威胁目标。
+frost_nova,glacial_domain,极寒领域,新星进阶为持续冰域，兼顾近身保命与控场输出。
+chain_lightning,eternal_thunder_chain,永续雷链,雷链进阶为终盘扩散核，后续弹射稳定清场。
+earthquake,landslide,山崩,地震进阶为多段裂地核心，兼顾压制与补刀。
+tornado,eye_of_storm_king,风王之眼,龙卷进阶为追踪型压制核，承担中后期持续切割。
+electro_net,forbidden_field,禁锢领域,电磁网进阶为禁锢场，负责稳定定怪与电场压制。
+meteor,worldfall_meteor,灭世陨星,陨石进阶为终盘高爆发主核，承担清场与斩首双职责。
+hurricane,rift_hurricane,裂界飓风,飓风进阶为高覆盖聚怪核，承担持续场的终盘上限。
+fireball,doomsday_firestar,末日炎星,火球进阶为高频爆裂核，兼顾直伤与灼烧收尾。
