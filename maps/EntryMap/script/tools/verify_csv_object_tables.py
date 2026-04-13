@@ -21,6 +21,7 @@ require_files(
         "data/object_tables/treasure_catalog.lua",
         "data/object_tables/bond_nodes.lua",
         "data/object_tables/marks.lua",
+        "data/object_tables/evolutions.lua",
         "data/object_tables/stages.lua",
         "data/object_tables/stage_modes.lua",
         "data/object_tables/hero_attr_config.lua",
