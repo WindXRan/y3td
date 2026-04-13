@@ -1,4 +1,5 @@
 local helpers = require 'entry_objects.helpers'
+local SecondBatchBlueprints = require 'entry_objects.attack_skill_blueprints.second_batch_skills'
 
 local module_paths = {
   'entry_objects.attack_skills.basic_attack',
@@ -17,4 +18,6 @@ return {
   list = list,
   defs_by_id = defs_by_id,
   vfx_by_id = vfx_by_id,
+  blueprints = SecondBatchBlueprints,
+  blueprint_by_id = helpers.list_to_map(SecondBatchBlueprints.list),
 }

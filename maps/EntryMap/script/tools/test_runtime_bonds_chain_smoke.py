@@ -24,6 +24,8 @@ AUTO_ACTIVE_EFFECTS = ROOT / 'script' / 'runtime' / 'auto_active_effects.lua'
 HERO_ATTR_DEFS = ROOT / 'script' / 'runtime' / 'hero_attr_defs.lua'
 AUTO_ACTIVE_EFFECT_DEFS = ROOT / 'script' / 'entry_objects' / 'auto_active_effects.lua'
 BOND_ABILITY_CONFIG = ROOT / 'script' / 'tools' / 'bond_node_ability_config.json'
+CSV_BOND_ROOT_SETS = ROOT / 'script' / 'data_csv' / 'bond_root_sets.csv'
+CSV_BOND_NODES = ROOT / 'script' / 'data_csv' / 'bond_nodes.csv'
 FIGHTING_SPIRIT_MODIFIER = ROOT / 'editor_table' / 'modifierall' / '201365014.json'
 LEGACY_BONDS_DIR = ROOT / 'script' / 'entry_objects' / 'bonds'
 LEGACY_BOND_CARDS_DIR = ROOT / 'script' / 'entry_objects' / 'bond_cards'
@@ -253,7 +255,7 @@ def main() -> None:
             "assert(defs.bond_economy_challenge.display_name == '挑战') "
             "assert(defs.bond_economy_challenge.parent_id == 'bond_economy_core_reward', 'xmind: 挑战应接在基础经济链完成后') "
             "assert(string.find(defs.bond_economy_challenge.desc.single, '猎人', 1, true) ~= nil, '挑战节点应同步文档中的猎人卡牌文案') "
-            "assert(string.find(defs.bond_economy_challenge.desc.advanced, '挑战伤害', 1, true) ~= nil, '挑战节点应同步文档中的挑战套装效果') "
+            "assert(string.find(defs.bond_economy_challenge.desc.advanced, '挑战伤害', 1, true) == nil, '挑战节点文案不应再宣称未实现的挑战伤害效果') "
             "assert(defs.bond_body_life_blessing.display_name == '生命祝福', 'doc: 生命第二张卡名称应与总表一致') "
             "assert(defs.bond_body_life_power.display_name == '生命之力', 'doc: 生命第三张卡名称应与总表一致') "
             "assert(string.find(defs.bond_body_life_power.desc.advanced, '生命增幅', 1, true) ~= nil, '生命终卡应同步总表中的生命套装效果') "
@@ -309,7 +311,7 @@ def main() -> None:
             "assert(string.find(defs.bond_magic_haste_cooldown.desc.advanced, '立即重置该技能冷却', 1, true) ~= nil and string.find(defs.bond_magic_haste_cooldown.desc.advanced, '继续补齐', 1, true) == nil, '急速中间节点也应展示正式套装效果') "
             "assert(string.find(defs.bond_magic_elementalist_storm.desc.advanced, '另外2种15%的伤害增幅', 1, true) ~= nil and string.find(defs.bond_magic_elementalist_storm.desc.advanced, '继续补齐', 1, true) == nil, '元素师中间节点也应展示正式套装效果') "
             "assert(string.find(defs.bond_economy_greed_coin.desc.advanced, '随机吞噬4张', 1, true) ~= nil and string.find(defs.bond_economy_greed_coin.desc.advanced, '继续补齐', 1, true) == nil, '贪婪中间节点也应展示正式套装效果') "
-            "assert(string.find(defs.bond_economy_challenge_exp_hunter.desc.advanced, '挑战伤害+15%', 1, true) ~= nil and string.find(defs.bond_economy_challenge_exp_hunter.desc.advanced, '继续补齐', 1, true) == nil, '挑战中间节点也应展示正式套装效果') "
+            "assert(string.find(defs.bond_economy_challenge_exp_hunter.desc.advanced, '挑战伤害+15%', 1, true) == nil and string.find(defs.bond_economy_challenge_exp_hunter.desc.advanced, '继续补齐', 1, true) == nil, '挑战中间节点文案不应再宣称未实现的挑战伤害效果') "
             "assert(string.find(defs.bond_body_life_blessing.desc.advanced, '生命增幅+5%', 1, true) ~= nil and string.find(defs.bond_body_life_blessing.desc.advanced, '继续补齐', 1, true) == nil, '生命中间节点也应展示正式套装效果') "
             "assert((string.find(defs.bond_body_blood_oath_blade.desc.advanced, '生命值+500', 1, true) ~= nil or string.find(defs.bond_body_blood_oath_blade.desc.advanced, '生命值 +500', 1, true) ~= nil) and string.find(defs.bond_body_blood_oath_blade.desc.advanced, '继续补齐', 1, true) == nil, '血誓中间节点也应展示正式套装效果') "
             "assert(string.find(defs.bond_body_blood_demon_satan.desc.advanced, '每损失35%最大生命值', 1, true) ~= nil and string.find(defs.bond_body_blood_demon_satan.desc.advanced, '继续补齐', 1, true) == nil, '血魔中间节点也应展示正式套装效果') "
@@ -344,11 +346,11 @@ def main() -> None:
             "local node = assert(bonds.unlock_node(state, 'bond_growth_agility')) "
             "assert(node.id == 'bond_growth_agility') "
             "assert((state.resources.wood or 0) == 50, '敏捷节点应在解锁时发放木材 +50') "
-            "local slot_text = bonds.build_slot_text(state, 5) "
+            "local slot_text = bonds.build_slot_text(state, 1) "
             "assert(string.find(slot_text, '+100', 1, true) ~= nil, 'slot text should include current effect summary') "
             "local progress_lines = bonds.build_progress_lines(state, 6) "
             "assert(#progress_lines > 0, 'bond progress lines should not be empty') "
-            "assert(string.find(progress_lines[1], '5/37', 1, true) ~= nil, 'bond progress lines should include subtree progress') "
+            "assert(string.find(progress_lines[1], '4/4', 1, true) ~= nil and string.find(progress_lines[1], '已吞噬完成', 1, true) ~= nil, 'bond progress lines should show completed base-chain progress after root set consumption') "
             "assert(bonds.can_unlock_node(state, 'bond_growth_demon_hunter') == false) "
             "assert(bonds.can_unlock_node(state, 'bond_growth_agility_grant') == true) "
             "local hero = { attrs = { ['最大生命'] = 1000 }, hp = 1000 } "
@@ -378,50 +380,64 @@ def main() -> None:
             "assert((bonds.get_runtime_bonus(state, 'all_damage_bonus') or 0) == 0) "
             "assert(state.bond_runtime.arcane_empower_remaining == 0) "
             "old_random = math.random "
-            "math.random = function(_) return 1 end "
+            "math.random = function(a, b) if a and b then return a end return 0 end "
             "local root_draw_state = { bond_runtime = bonds.create_runtime(), resources = { wood = 999 }, bond_draw_count = 0 } "
             "assert(bonds.try_draw({ STATE = root_draw_state, message = function() end })) "
             "local root_choice = assert(root_draw_state.bond_runtime.current_choices[1]) "
-            "assert(root_choice.node_id == 'bond_body_core', 'first bond draw should start from xmind top-level root nodes') "
-            "assert(root_choice.display_name == '体术', 'top-level root should use xmind main chain label') "
-            "assert(root_choice.title_text == '体术 (0/3)', 'root choice title should include set progress in the screenshot format') "
-            "assert(root_choice.progress_text == '', 'bond choice progress should move into the title instead of subtitle') "
-            "assert(root_choice.subtitle_text == '体术', 'root choice subtitle should show the node name under the icon') "
+            "assert(root_choice.node_id == nil and root_choice.group_id == 'body', 'first bond draw should start from group choices before root nodes') "
+            "assert(root_choice.display_name == '体术', 'first group choice should use body group label') "
+            "assert(root_choice.title_text == '体术 (未开启)', 'group choice title should show unopened status') "
+            "assert(root_choice.progress_text == '未开启', 'group choice should expose unopened progress state') "
+            "assert(root_choice.subtitle_text == '主链分组', 'group choice subtitle should explain the card type') "
             "assert(root_choice.title_color == 'bond_red', 'bond title should use the configured red title color') "
-            "assert(string.find(root_choice.current_text, '利刃', 1, true) ~= nil, 'root choice top block should keep the card name') "
-            "assert(string.find(root_choice.current_text, '斗气场域', 1, true) == nil, 'root choice top block should no longer reuse set-effect text') "
-            "assert(string.find(root_choice.body_blocks[1].text or '', '利刃：', 1, true) ~= nil, 'root choice body block should include the card name prefix') "
-            "assert(string.find(root_choice.body_blocks[1].text or '', '攻击力+50', 1, true) ~= nil, 'root choice body block should include the card effect text') "
-            "assert(root_choice.body_blocks[1].segments ~= nil and #root_choice.body_blocks[1].segments > 1, 'root choice value text should carry manual color segments') "
-            "assert(root_choice.effect_title == '激活[体术]套装效果：', 'root choice should use set-effect title instead of branch preview title') "
-            "assert(string.find(root_choice.effect_text, '斗气场域', 1, true) ~= nil, 'root choice should show set-effect text instead of follow-up branch names') "
-            "assert(root_choice.body_blocks[3].segments ~= nil and #root_choice.body_blocks[3].segments > 1, 'root choice effect text should carry manual color segments') "
+            "assert(string.find(root_choice.current_text, '解锁：', 1, true) ~= nil, 'group choice body should explain the unlocked routes') "
+            "assert(string.find(root_choice.effect_text, '开放[体术]主链根节点', 1, true) ~= nil, 'group choice should describe unlocking the group root chain') "
             "assert(bonds.apply_choice({ STATE = root_draw_state, message = function() end }, 1)) "
-            "assert(bonds.has_route_tag(root_draw_state, 'auto_fighting_spirit') == false, 'unlocking only the root card should not immediately activate the body set effect') "
-            "assert(bonds.can_unlock_node(root_draw_state, 'bond_body_core_momentum') == true, 'unlocking body root should first expose remaining base body cards') "
-            "local candidate_defs = bonds.get_candidate_nodes(root_draw_state) "
+            "assert(bonds.can_unlock_node(root_draw_state, 'bond_body_core') == true, 'unlocking body group should expose the body root node first') "
+            "local body_root_state = { bond_runtime = bonds.create_runtime(), resources = { wood = 999 }, bond_draw_count = 0 } "
+            "body_root_state.bond_runtime.unlocked_group_ids.body = true "
+            "body_root_state.bond_runtime.unlocked_group_ids.economy = true "
+            "body_root_state.bond_runtime.unlocked_group_ids.magic = true "
+            "body_root_state.bond_runtime.unlocked_group_ids.archery = true "
+            "body_root_state.bond_runtime.unlocked_group_ids.critical = true "
+            "body_root_state.bond_runtime.unlocked_group_ids.growth = true "
+            "assert(bonds.try_draw({ STATE = body_root_state, message = function() end })) "
+            "local body_root_choice = assert(body_root_state.bond_runtime.current_choices[1]) "
+            "assert(body_root_choice.node_id == 'bond_body_core', 'after unlocking body group the first root card should be body core') "
+            "assert(body_root_choice.title_text == '体术 (0/3)', 'root choice title should include set progress in the screenshot format') "
+            "assert(body_root_choice.progress_text == '', 'bond choice progress should move into the title instead of subtitle') "
+            "assert(body_root_choice.subtitle_text == '体术', 'root choice subtitle should show the node name under the icon') "
+            "assert(string.find(body_root_choice.current_text, '利刃', 1, true) ~= nil, 'root choice top block should keep the card name') "
+            "assert(string.find(body_root_choice.current_text, '斗气场域', 1, true) == nil, 'root choice top block should no longer reuse set-effect text') "
+            "assert(string.find(body_root_choice.body_blocks[1].text or '', '利刃：', 1, true) ~= nil, 'root choice body block should include the card name prefix') "
+            "assert(string.find(body_root_choice.body_blocks[1].text or '', '攻击力+50', 1, true) ~= nil, 'root choice body block should include the card effect text') "
+            "assert(body_root_choice.body_blocks[1].segments ~= nil and #body_root_choice.body_blocks[1].segments > 1, 'root choice value text should carry manual color segments') "
+            "assert(body_root_choice.effect_title == '激活[体术]套装效果：', 'root choice should use set-effect title instead of branch preview title') "
+            "assert(string.find(body_root_choice.effect_text, '斗气场域', 1, true) ~= nil, 'root choice should show set-effect text instead of follow-up branch names') "
+            "assert(body_root_choice.body_blocks[3].segments ~= nil and #body_root_choice.body_blocks[3].segments > 1, 'root choice effect text should carry manual color segments') "
+            "assert(bonds.apply_choice({ STATE = body_root_state, message = function() end }, 1)) "
+            "assert(bonds.has_route_tag(body_root_state, 'auto_fighting_spirit') == false, 'unlocking only the root card should not immediately activate the body set effect') "
+            "assert(bonds.can_unlock_node(body_root_state, 'bond_body_core_momentum') == true, 'unlocking body root should first expose remaining base body cards') "
+            "local candidate_defs = bonds.get_candidate_nodes(body_root_state) "
             "local momentum_index = nil "
             "for i, def in ipairs(candidate_defs) do "
             "if def.id == 'bond_body_core_momentum' then momentum_index = i break end "
             "end "
             "assert(momentum_index ~= nil, 'body root unlock should expose momentum candidate') "
             "local old_random_for_tactics = math.random "
-            "math.random = function(n) "
-            "if n == #candidate_defs then return momentum_index end "
-            "return 1 "
-            "end "
-            "assert(bonds.try_draw({ STATE = root_draw_state, message = function() end })) "
+            "math.random = function(a, b) if a and b then return a end return 0.999 end "
+            "assert(bonds.try_draw({ STATE = body_root_state, message = function() end })) "
             "math.random = old_random_for_tactics "
-            "local momentum_choice = assert(root_draw_state.bond_runtime.current_choices[1]) "
+            "local momentum_choice = assert(body_root_state.bond_runtime.current_choices[1]) "
             "assert(momentum_choice.node_id == 'bond_body_core_momentum', 'forced body draw should pick bond_body_core_momentum first') "
             "assert(string.find(momentum_choice.title_text or '', '体术', 1, true) ~= nil, 'momentum choice title should show the set name above the icon') "
             "assert(string.find(momentum_choice.title_text or '', '1/3', 1, true) ~= nil, 'momentum choice title should show set progress above the icon') "
             "assert((momentum_choice.subtitle_text or '') == '气势', 'momentum choice subtitle should show the node name under the icon') "
-            "assert(bonds.unlock_node(root_draw_state, 'bond_body_core_momentum')) "
-            "assert(bonds.has_route_tag(root_draw_state, 'auto_fighting_spirit') == false, 'body set should still require enough cards after picking only one base card') "
-            "assert(bonds.unlock_node(root_draw_state, 'bond_body_core_vitality')) "
-            "assert(bonds.has_route_tag(root_draw_state, 'auto_fighting_spirit') == true, 'body set should activate after reaching the doc-based required count') "
-            "assert(bonds.can_unlock_node(root_draw_state, 'bond_body_life') == false and bonds.can_unlock_node(root_draw_state, 'bond_body_tactics') == false and bonds.can_unlock_node(root_draw_state, 'bond_body_fortress') == false, 'consume_all root set should stop exposing follow-up body branches by default') "
+            "assert(bonds.unlock_node(body_root_state, 'bond_body_core_momentum')) "
+            "assert(bonds.has_route_tag(body_root_state, 'auto_fighting_spirit') == false, 'body set should still require enough cards after picking only one base card') "
+            "assert(bonds.unlock_node(body_root_state, 'bond_body_core_vitality')) "
+            "assert(bonds.has_route_tag(body_root_state, 'auto_fighting_spirit') == true, 'body set should activate after reaching the doc-based required count') "
+            "assert(bonds.can_unlock_node(body_root_state, 'bond_body_life') == true and bonds.can_unlock_node(body_root_state, 'bond_body_tactics') == true and bonds.can_unlock_node(body_root_state, 'bond_body_fortress') == true, 'completing the base body set should expose follow-up body branches') "
             "math.random = old_random "
             "local growth_draw_state = { bond_runtime = bonds.create_runtime(), resources = { wood = 999 }, bond_draw_count = 0 } "
             "assert(bonds.unlock_node(growth_draw_state, 'bond_growth_core')) "
@@ -431,19 +447,19 @@ def main() -> None:
             "assert(bonds.unlock_node(growth_draw_state, 'bond_growth_core_strength_up')) "
             "assert(bonds.unlock_node(growth_draw_state, 'bond_growth_core_attack_up')) "
             "assert(growth_draw_state.bond_runtime.completed_root_sets['bond_growth_core'] == true, 'growth base chain should complete the root set') "
-            "assert(bonds.can_unlock_node(growth_draw_state, 'bond_growth_agility') == false, 'consume_all root set should not expose agility branch by default') "
+            "assert(bonds.can_unlock_node(growth_draw_state, 'bond_growth_agility') == true, 'completing the base growth set should expose agility branch') "
             "local archery_state = { bond_runtime = bonds.create_runtime(), resources = { wood = 999 }, bond_draw_count = 0 } "
             "assert(bonds.unlock_node(archery_state, 'bond_archery_core')) "
             "assert(bonds.unlock_node(archery_state, 'bond_archery_core_burst')) "
             "assert(bonds.unlock_node(archery_state, 'bond_archery_core_stance')) "
             "assert(archery_state.bond_runtime.completed_root_sets['bond_archery_core'] == true, 'archery base chain should complete the root set') "
-            "assert(bonds.can_unlock_node(archery_state, 'bond_archery_barrage') == false, 'consume_all root set should not expose archery branches by default') "
+            "assert(bonds.can_unlock_node(archery_state, 'bond_archery_barrage') == true, 'completing the base archery set should expose archery branches') "
             "local magic_draw_state = { bond_runtime = bonds.create_runtime(), resources = { wood = 999 }, bond_draw_count = 0 } "
             "assert(bonds.unlock_node(magic_draw_state, 'bond_magic_core')) "
             "assert(bonds.unlock_node(magic_draw_state, 'bond_magic_core_amp')) "
             "assert(bonds.unlock_node(magic_draw_state, 'bond_magic_core_essence')) "
             "assert(magic_draw_state.bond_runtime.completed_root_sets['bond_magic_core'] == true, 'magic base chain should complete the root set') "
-            "assert(bonds.can_unlock_node(magic_draw_state, 'bond_magic_haste') == false, 'consume_all root set should not expose magic branches by default') "
+            "assert(bonds.can_unlock_node(magic_draw_state, 'bond_magic_haste') == true, 'completing the base magic set should expose magic branches') "
             "local consume_state = { bond_runtime = bonds.create_runtime(), resources = { wood = 0 } } "
             "assert(bonds.unlock_node(consume_state, 'bond_body_core')) "
             "assert(bonds.unlock_node(consume_state, 'bond_body_core_momentum')) "
@@ -472,10 +488,18 @@ def main() -> None:
             "assert(bonds.unlock_node(growth_state, 'bond_growth_core')) "
             "assert(math.abs(bonds.get_runtime_bonus(growth_state, 'intelligence_per_second') - 0.5) < 0.0001, '成长根节点应先给文档单件成长属性') "
             "assert((bonds.get_runtime_bonus(growth_state, 'wood_per_sec_bonus') or 0) == 0, '成长根节点未凑齐前不应直接给套装资源收益') "
+            "local group_entry_state = { bond_runtime = bonds.create_runtime(), resources = { wood = 0 } } "
+            "local group_entries = bonds.get_available_group_choice_entries(group_entry_state) "
+            "assert(#group_entries == 6, 'group choice entries should expose all unopened groups') "
             "local draw_state = { bond_runtime = bonds.create_runtime(), resources = { wood = 999 }, bond_draw_count = 0 } "
             "old_random = math.random "
             "math.random = function(_) return 1 end "
             "assert(bonds.try_draw({ STATE = draw_state, message = function() end })) "
+            "local saw_group_choice = false "
+            "for _, choice in ipairs(draw_state.bond_runtime.current_choices or {}) do "
+            "  if choice.group_id and not choice.node_id then saw_group_choice = true end "
+            "end "
+            "assert(saw_group_choice == true, 'bond draw should include group choices when include_group_choices is enabled') "
             "assert(bonds.apply_choice({ STATE = draw_state, message = function() end }, 1)) "
             "assert(bonds.try_draw({ STATE = draw_state, message = function() end })) "
             "local draw_choice = assert(draw_state.bond_runtime.current_choices[1]) "
@@ -773,6 +797,8 @@ def main() -> None:
     boot_content = BOOT.read_text(encoding='utf-8')
     bonds_chain_content = BONDS_CHAIN.read_text(encoding='utf-8')
     bond_nodes_content = NODE_DEFS.read_text(encoding='utf-8')
+    bond_root_sets_csv_content = CSV_BOND_ROOT_SETS.read_text(encoding='utf-8')
+    bond_nodes_csv_content = CSV_BOND_NODES.read_text(encoding='utf-8')
     input_events_content = INPUT_EVENTS.read_text(encoding='utf-8')
     attack_skills_content = ATTACK_SKILLS.read_text(encoding='utf-8')
     attack_upgrades_content = ATTACK_UPGRADES.read_text(encoding='utf-8')
@@ -796,18 +822,19 @@ def main() -> None:
     assert_contains(bonds_chain_content, 'function M.show_bond_progress', 'bonds_chain.lua should expose bond progress output')
     assert_contains(bonds_chain_content, 'build_manual_color_segments', 'bonds_chain.lua should build manual colored text segments from doc text')
     assert_contains(BONDS_CHAIN.read_text(encoding='utf-8'), 'segments = build_manual_color_segments', 'bonds_chain.lua should attach manual color segments onto body blocks')
-    assert_contains(bonds_chain_content, '斗气场域：每秒对周围1200范围内的敌人造成60%力量的自适应伤害', 'bonds_chain.lua should align body root effect text with doc wording')
-    assert_contains(bonds_chain_content, '魔爆术：每隔18秒，触发1次魔爆术，对300范围内的敌人造成200%智力的自适应伤害', 'bonds_chain.lua should align magic root effect text with doc wording')
-    assert_contains(bonds_chain_content, '穿云箭：每攻击15次，射出1支穿云箭，对直线敌人造成300%敏捷的自适应伤害', 'bonds_chain.lua should align archery root effect text with doc wording')
+    assert_contains(bond_root_sets_csv_content, '斗气场域：每秒对周围1200范围内的敌人造成60%力量的自适应伤害', 'bond_root_sets.csv should align body root effect text with doc wording')
+    assert_contains(bond_root_sets_csv_content, '魔爆术：每隔18秒，触发1次魔爆术，对300范围内的敌人造成200%智力的自适应伤害', 'bond_root_sets.csv should align magic root effect text with doc wording')
+    assert_contains(bond_root_sets_csv_content, '穿云箭：每攻击15次，射出1支穿云箭，对直线敌人造成300%敏捷的自适应伤害', 'bond_root_sets.csv should align archery root effect text with doc wording')
+    assert_not_contains(bond_nodes_csv_content, '挑战伤害+15%，所有挑战冷却时间减少。', 'bond challenge line text should not claim unimplemented challenge bonuses')
     assert_not_contains(bonds_chain_content, '每18 秒触发，对300 范围造成 200% 智力伤害', 'bonds_chain.lua should not keep abbreviated magic root effect text')
     assert_not_contains(bonds_chain_content, '每攻击 15 次射出 1 支，造成 300% 敏捷伤害', 'bonds_chain.lua should not keep abbreviated archery root effect text')
     assert_not_contains(bonds_chain_content, 'function M.show_swallowed_bonds', 'bonds_chain.lua should not keep swallowed progress output')
     assert_not_contains(bonds_chain_content, 'function M.build_swallowed_bond_text', 'bonds_chain.lua should remove swallowed bond text helper')
     assert_not_contains(bonds_chain_content, 'swallowed_bonds = {},', 'bonds_chain.lua should not keep swallowed bond runtime field')
-    assert_contains(bond_nodes_content, "display_name = '猎魔人'", 'bond_nodes.lua should expose xmind growth chain naming')
-    assert_contains(bond_nodes_content, "display_name = '多重箭'", 'bond_nodes.lua should expose archery chain naming')
-    assert_contains(bond_nodes_content, "display_name = '元素师'", 'bond_nodes.lua should expose magic chain naming')
-    assert_contains(bond_nodes_content, "display_name = '陷阵'", 'bond_nodes.lua should expose body chain naming')
+    assert_contains(bond_nodes_csv_content, 'bond_growth_demon_hunter,猎魔人,', 'bond_nodes.csv should expose xmind growth chain naming')
+    assert_contains(bond_nodes_csv_content, 'bond_archery_multishot,多重箭,', 'bond_nodes.csv should expose archery chain naming')
+    assert_contains(bond_nodes_csv_content, 'bond_magic_elementalist,元素师,', 'bond_nodes.csv should expose magic chain naming')
+    assert_contains(bond_nodes_csv_content, 'bond_body_charge_breaker,陷阵,', 'bond_nodes.csv should expose body chain naming')
     assert_contains(ability_config_content, '"name": "敏捷"', 'bond ability config should mirror new root node name')
     assert_contains(ability_config_content, '"name": "猎魔人"', 'bond ability config should mirror growth branch name')
     assert_contains(ability_config_content, '"name": "元素师"', 'bond ability config should mirror magic branch name')

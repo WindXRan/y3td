@@ -1,0 +1,5 @@
+id,trigger_level,choice_count,pool_rule_id,queue_priority,ui_title
+mark_node_lv10,10,3,mark_pool_global,95,10级进化选择
+mark_node_lv20,20,3,mark_pool_global,95,20级进化选择
+mark_node_lv30,30,3,mark_pool_global,95,30级进化选择
+mark_node_lv40,40,3,mark_pool_global,95,40级进化选择

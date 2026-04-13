@@ -1,0 +1,3 @@
+runtime_key,attr_name,factor
+critical_damage_bonus,物理暴伤,100
+lifesteal_ratio,物理吸血,100

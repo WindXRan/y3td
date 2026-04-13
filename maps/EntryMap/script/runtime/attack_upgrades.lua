@@ -3,6 +3,8 @@ local M = {}
 function M.create(env)
   local STATE = env.STATE
   local message = env.message
+  local ATTACK_SKILL_DEFS = env.ATTACK_SKILL_DEFS or {}
+  local ATTACK_SKILL_BLUEPRINTS = env.ATTACK_SKILL_BLUEPRINTS or { list = {} }
   local get_attack_skill = env.get_attack_skill
   local get_empty_attack_skill_slot = env.get_empty_attack_skill_slot
   local get_unlocked_attack_skill_count = env.get_unlocked_attack_skill_count
@@ -51,6 +53,37 @@ function M.create(env)
       return get_attack_skill(def.skill_id) ~= nil
     end
     return def
+  end
+
+  local function build_blueprint_unlock_upgrades()
+    local upgrades = {}
+
+    for _, blueprint in ipairs(ATTACK_SKILL_BLUEPRINTS.list or {}) do
+      if not ATTACK_SKILL_DEFS[blueprint.id] then
+        goto continue
+      end
+
+      upgrades[#upgrades + 1] = unlock_upgrade({
+        key = 'unlock_' .. blueprint.id,
+        skill_id = blueprint.id,
+        name = blueprint.name,
+        desc = string.format('装配到空余攻击技能位。定位：%s。', blueprint.archetype or '攻击技能'),
+        route_tags = { blueprint.id },
+        can_offer = function()
+          return get_empty_attack_skill_slot() ~= nil and not get_attack_skill(blueprint.id)
+        end,
+        apply = function()
+          local skill, slot, is_new = unlock_attack_skill(blueprint.id)
+          if skill and is_new then
+            message(string.format('已装配 %d 号位攻击技能：%s。', slot, skill.name))
+          end
+        end,
+      })
+
+      ::continue::
+    end
+
+    return upgrades
   end
 
   local ATTACK_UPGRADE_DEFS = {
@@ -378,6 +411,10 @@ function M.create(env)
       end,
     }),
   }
+
+  for _, upgrade in ipairs(build_blueprint_unlock_upgrades()) do
+    ATTACK_UPGRADE_DEFS[#ATTACK_UPGRADE_DEFS + 1] = upgrade
+  end
 
   local function is_unlock_upgrade(upgrade)
     return upgrade and type(upgrade.key) == 'string' and string.sub(upgrade.key, 1, 7) == 'unlock_'

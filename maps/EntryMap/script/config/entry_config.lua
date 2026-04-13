@@ -33,6 +33,8 @@ local WaveObjects = require 'entry_objects.waves'
 local ChallengeObjects = require 'entry_objects.challenges'
 local StageObjects = require 'entry_objects.stages'
 local StageModeObjects = require 'entry_objects.stage_modes'
+local TreasureCatalogObjects = require 'entry_objects.treasure_catalog'
+local TreasureCatalogCompatObjects = require 'data.object_tables.treasure_catalog_compat'
 
 local MAIN_SPAWN_AREA = { x_min = 1260, x_max = 1440, y_min = -1040, y_max = 1040, z = 0 }
 
@@ -130,6 +132,8 @@ local M = {
   challenges = ChallengeObjects.by_id,
   stages = StageObjects,
   stage_modes = StageModeObjects,
+  treasure_catalog = TreasureCatalogObjects,
+  treasure_catalog_compat = TreasureCatalogCompatObjects,
 }
 
 for _, wave in ipairs(M.waves) do
