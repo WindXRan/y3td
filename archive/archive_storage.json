@@ -3,7 +3,7 @@
         "archive": {
             "1": {
                 "data_type": 4,
-                "data_value": "{\"stage_progress\":{\"1-3\":{\"standard_cleared\":false,\"standard_unlocked\":false,\"challenge_cleared\":false,\"challenge_unlocked\":false},\"1-1\":{\"standard_cleared\":true,\"standard_unlocked\":true,\"challenge_cleared\":false,\"challenge_unlocked\":true},\"1-2\":{\"standard_cleared\":false,\"standard_unlocked\":true,\"challenge_cleared\":false,\"challenge_unlocked\":false}},\"last_result\":{\"is_win\":false,\"stage_id\":\"1-1\",\"mode_id\":\"standard\",\"reached_wave_index\":1},\"selected_mode_id\":\"standard\",\"version\":1,\"selected_stage_id\":\"1-2\"}"
+                "data_value": "{\"version\":1,\"stage_progress\":{\"1-1\":{\"challenge_unlocked\":true,\"standard_unlocked\":true,\"challenge_cleared\":false,\"standard_cleared\":true},\"1-3\":{\"challenge_unlocked\":false,\"standard_unlocked\":false,\"challenge_cleared\":false,\"standard_cleared\":false},\"1-2\":{\"challenge_unlocked\":false,\"standard_unlocked\":true,\"challenge_cleared\":false,\"standard_cleared\":false}},\"last_result\":{\"reached_wave_index\":1,\"stage_id\":\"1-1\",\"is_win\":false,\"mode_id\":\"standard\"},\"selected_stage_id\":\"1-2\",\"selected_mode_id\":\"standard\"}"
             }
         },
         "platform_prop": {},
