@@ -127,9 +127,9 @@ function M.create(env)
     end
     local wave_index = math.max(0, STATE.current_wave_index or 0)
     if wave_index <= 0 then
-      return '主线 1-1'
+      return '章节 1-1'
     end
-    return string.format('主线 1-%d', wave_index)
+    return string.format('章节 1-%d', wave_index)
   end
 
   local function get_wave_title_text()

@@ -261,7 +261,7 @@ def build_top_cluster(parent):
     add(
         stage_chip,
         text_node("stage_label", 14, 6, 58, 14, 174, 42, "章节", font_size=10, rgba=(158, 184, 214, 255), h_align=1),
-        text_node("stage_text", 14, 18, 146, 18, 174, 42, "主线 1-1", font_size=13, h_align=1),
+        text_node("stage_text", 14, 18, 146, 18, 174, 42, "章节 1-1", font_size=13, h_align=1),
     )
 
     timer_block = panel("timer_block", 228, 14, 304, 48, w, h, bg_rgba=(16, 28, 45, 226))

@@ -1,4 +1,5 @@
 local BaseHud = require 'ui.runtime_hud_v2'
+local UIStyle = require 'ui.style'
 
 local M = {}
 
@@ -39,6 +40,13 @@ local function set_text_rgba(node, color)
   if is_alive(node) and color then
     node:set_text_color(color[1], color[2], color[3], color[4] or 255)
   end
+end
+
+local function set_checkbox_selected(node, selected)
+  if not is_alive(node) or not GameAPI or not GameAPI.set_checkbox_selected then
+    return
+  end
+  GameAPI.set_checkbox_selected(node.player.handle, node.handle, selected == true)
 end
 
 local function make_text_proxy(node, transform)
@@ -193,15 +201,96 @@ local function clear_panel1_top_bindings(runtime_hud)
   runtime_hud.panel1_tip_overlay_timer = nil
 end
 
+local function resolve_tracker_nodes(env, runtime_hud)
+  local y3 = env.y3
+  local player = env.get_player()
+  runtime_hud.right_tracker_panel = resolve_ui(y3, player, 'MainlineTaskPanel')
+  runtime_hud.tracker_title = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_title')
+  runtime_hud.tracker_objective = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_objective')
+  runtime_hud.tracker_progress = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_progress')
+  runtime_hud.tracker_reward_label = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_reward_label')
+  runtime_hud.tracker_reward = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_reward')
+  runtime_hud.tracker_hint = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_hint')
+  runtime_hud.auto_task_checkbox = resolve_ui(y3, player, 'MainlineTaskPanel.auto_task_checkbox')
+  runtime_hud.auto_task_label = resolve_ui(y3, player, 'MainlineTaskPanel.auto_task_label')
+end
+
+local function get_task_panel_summary(env)
+  local tracker_state = env.battle_objective_runtime and env.battle_objective_runtime.get_tracker_state and env.battle_objective_runtime.get_tracker_state() or nil
+  if tracker_state and tracker_state.auto_track_enabled == false and tracker_state.snapshot_summary then
+    return tracker_state.snapshot_summary, tracker_state
+  end
+  local summary = env.battle_objective_runtime and env.battle_objective_runtime.get_summary and env.battle_objective_runtime.get_summary() or nil
+  return summary, tracker_state
+end
+
+local function build_reward_text(summary)
+  if not summary or not summary.reward_line_texts or #summary.reward_line_texts == 0 then
+    return '暂无'
+  end
+  return table.concat(summary.reward_line_texts, '\n')
+end
+
+local function build_tracker_hint(summary, tracker_state)
+  if tracker_state and tracker_state.auto_track_enabled == false then
+    return '目标追踪已关闭，面板停留在最近一次战斗目标'
+  end
+  if summary and summary.current_count ~= nil and summary.target_count ~= nil and summary.current_count >= summary.target_count and summary.target_count > 0 then
+    return '当前战斗目标已完成，面板正在切换下一条目标'
+  end
+  return '目标追踪已开启，面板跟随当前战斗目标'
+end
+
+local function refresh_tracker_panel(env, runtime_hud)
+  resolve_tracker_nodes(env, runtime_hud)
+  if runtime_hud.right_tracker_panel and not runtime_hud.right_tracker_panel:is_removed() then
+    runtime_hud.right_tracker_panel:set_visible(true)
+  end
+
+  local summary, tracker_state = get_task_panel_summary(env)
+  local auto_track_enabled = not tracker_state or tracker_state.auto_track_enabled ~= false
+
+  if is_alive(runtime_hud.tracker_title) then
+    UIStyle.apply_text(runtime_hud.tracker_title, 'runtime_hud.panel1.tracker_title', summary and summary.title_text or '战斗目标')
+  end
+  if is_alive(runtime_hud.tracker_objective) then
+    UIStyle.apply_text(runtime_hud.tracker_objective, 'runtime_hud.panel1.tracker_objective', summary and '目标：' or '目标：暂无')
+  end
+  if is_alive(runtime_hud.tracker_progress) then
+    UIStyle.apply_text(runtime_hud.tracker_progress, 'runtime_hud.panel1.tracker_progress', summary and summary.progress_text or '当前无战斗目标')
+  end
+  if is_alive(runtime_hud.tracker_reward_label) then
+    UIStyle.apply_text(runtime_hud.tracker_reward_label, 'runtime_hud.panel1.tracker_reward_label', '奖励：')
+  end
+  if is_alive(runtime_hud.tracker_reward) then
+    UIStyle.apply_text(runtime_hud.tracker_reward, 'runtime_hud.panel1.tracker_reward', build_reward_text(summary))
+  end
+  if is_alive(runtime_hud.tracker_hint) then
+    UIStyle.apply_text(runtime_hud.tracker_hint, 'runtime_hud.panel1.tracker_hint', build_tracker_hint(summary, tracker_state))
+  end
+  if is_alive(runtime_hud.auto_task_label) then
+    UIStyle.apply_text(runtime_hud.auto_task_label, 'runtime_hud.panel1.auto_task_label', '目标追踪')
+  end
+  if is_alive(runtime_hud.auto_task_checkbox) then
+    set_checkbox_selected(runtime_hud.auto_task_checkbox, auto_track_enabled)
+    if not runtime_hud.auto_task_checkbox_bound then
+      runtime_hud.auto_task_checkbox_bound = true
+      runtime_hud.auto_task_checkbox:add_fast_event('左键-点击', function()
+        if env.battle_objective_runtime and env.battle_objective_runtime.toggle_auto_track then
+          env.battle_objective_runtime.toggle_auto_track()
+          refresh_tracker_panel(env, runtime_hud)
+        end
+      end)
+    end
+  end
+end
+
 local function bind_panel1_top(env, runtime_hud)
   if runtime_hud.top_battle_cluster and not runtime_hud.top_battle_cluster:is_removed() then
     runtime_hud.top_battle_cluster:set_visible(false)
   end
   if runtime_hud.left_shortcut_panel and not runtime_hud.left_shortcut_panel:is_removed() then
     runtime_hud.left_shortcut_panel:set_visible(false)
-  end
-  if runtime_hud.right_tracker_panel and not runtime_hud.right_tracker_panel:is_removed() then
-    runtime_hud.right_tracker_panel:set_visible(false)
   end
 
   local y3 = env.y3
@@ -235,6 +324,7 @@ local function bind_panel1_top(env, runtime_hud)
   runtime_hud.boss_state = make_boss_state_proxy(runtime_hud)
 
   flush_panel1_boss(runtime_hud)
+  refresh_tracker_panel(env, runtime_hud)
   return true
 end
 
@@ -260,6 +350,7 @@ function M.create(env)
       local result = base.refresh_hud()
       if hud and hud.panel1_top_bound then
         flush_panel1_boss(hud)
+        refresh_tracker_panel(env, hud)
       end
       return result
     end,

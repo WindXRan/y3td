@@ -10,7 +10,6 @@ local SessionStateSystem = require 'runtime.session_state'
 local InputEventsSystem = require 'runtime.input_events'
 local RuntimeLoopsSystem = require 'runtime.loops'
 local OutgameSystem = require 'ui.outgame'
-local AudioSystem = require 'runtime.audio'
 local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
 local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
@@ -30,7 +29,6 @@ local debug_tools_system
 local debug_actions_system
 local runtime_hud_system
 local choice_panel_system
-local swallowed_panel_system
 local overview_model_system
 local outgame_system
 local session_state_system
@@ -42,7 +40,6 @@ local auto_active_effects_system
 local effect_debug_system
 local reward_system
 local hero_attr_system = HeroAttrSystem.create()
-local audio_system
 
 local function trace_boot(message)
   print('[entry_runtime] ' .. tostring(message))
@@ -253,7 +250,6 @@ local STATE = {
   runtime_elapsed = 0,
   runtime_hud = nil,
   choice_panel = nil,
-  swallow_panel = nil,
   choice_panel_hidden = false,
   runtime_overview = nil,
   runtime_overview_mode = 'build',
@@ -278,43 +274,6 @@ end
 
 local function get_enemy_player()
   return y3.player(CONFIG.enemy_player_id)
-end
-
-audio_system = AudioSystem.create({
-  STATE = STATE,
-  y3 = y3,
-  get_player = get_player,
-  trace = trace_boot,
-})
-
-local function ensure_music_loop()
-  if audio_system and audio_system.ensure_music_loop then
-    return audio_system.ensure_music_loop()
-  end
-end
-
-local function play_ui_click()
-  if audio_system and audio_system.play_ui_click then
-    return audio_system.play_ui_click()
-  end
-end
-
-local function play_panel_open()
-  if audio_system and audio_system.play_panel_open then
-    return audio_system.play_panel_open()
-  end
-end
-
-local function play_confirm()
-  if audio_system and audio_system.play_confirm then
-    return audio_system.play_confirm()
-  end
-end
-
-local function play_victory()
-  if audio_system and audio_system.play_victory then
-    return audio_system.play_victory()
-  end
 end
 
 local function infer_battle_event_style(text)
@@ -390,8 +349,8 @@ local function message(text)
   print(text)
   if not is_choice_panel_blocking_messages() then
     get_player():display_message(text)
+    push_battle_event(text)
   end
-  push_battle_event(text)
 end
 
 local function make_point(data)
@@ -815,21 +774,6 @@ local function get_combat_bonus(key)
   return get_bond_runtime_bonus(key) + get_treasure_runtime_bonus(key)
 end
 
-local function normalize_ratio_value(value)
-  local number = y3.helper.tonumber(value) or 0
-  if math.abs(number) > 1 then
-    return number / 100
-  end
-  return number
-end
-
-local function get_hero_runtime_attr(name)
-  if not STATE.hero or not STATE.hero:is_exist() then
-    return 0
-  end
-  return y3.helper.tonumber(hero_attr_system.get_attr(STATE.hero, name)) or 0
-end
-
 create_bond_env = function()
   return {
     STATE = STATE,
@@ -1084,7 +1028,7 @@ end
 
 local function show_runtime_status()
   if STATE.session_phase ~= 'battle' then
-    local stage_name = STATE.current_stage_def and STATE.current_stage_def.display_name or '未选择'
+    local stage_name = STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) or '未选择'
     local mode_name = STATE.current_mode_def and STATE.current_mode_def.display_name or '标准模式'
     message(string.format('当前处于局外选关阶段：%s %s。', stage_name, mode_name))
     return
@@ -1166,45 +1110,29 @@ local function trigger_td_skills_on_hit(data)
     end
   end
 
-  local runtime_chain_bounces = math.max(0, round_number(skill.chain_bounces or 0))
-  local runtime_chain_chance = math.max(0, normalize_ratio_value(skill.chain_chance or 0))
-  local runtime_chain_ratio = math.max(0, normalize_ratio_value(skill.chain_ratio or 0))
-  if runtime_chain_bounces > 0 and runtime_chain_chance > 0 and runtime_chain_ratio > 0 and math.random() <= runtime_chain_chance then
+  if skill.chain_bounces > 0 and skill.chain_chance > 0 and math.random() <= skill.chain_chance then
     local bounced = 0
-    for _, unit in ipairs(get_enemies_in_range(target, skill.chain_radius, target, runtime_chain_bounces)) do
-      deal_skill_damage(unit, data.damage * runtime_chain_ratio, '法术', {
+    for _, unit in ipairs(get_enemies_in_range(target, skill.chain_radius, target, skill.chain_bounces)) do
+      deal_skill_damage(unit, data.damage * skill.chain_ratio, '法术', {
         text_type = 'magic',
         particle = AttackSkillObjects.vfx_by_id.thunder.chain_particle,
       })
       bounced = bounced + 1
-      if bounced >= runtime_chain_bounces then
+      if bounced >= skill.chain_bounces then
         break
       end
     end
   end
 
-  local bond_chain_bounces = math.max(0, round_number(
-    get_bond_runtime_bonus('chain_bounces') + get_hero_runtime_attr('弹射次数')
-  ))
-  local bond_chain_ratio = 0
-  if bond_chain_bounces > 0 then
-    bond_chain_ratio = 0.30 + math.max(0,
-      normalize_ratio_value(get_bond_runtime_bonus('chain_ratio'))
-      + normalize_ratio_value(get_hero_runtime_attr('弹射伤害'))
-    )
-  end
+  local bond_chain_bounces = math.max(0, round_number(get_bond_runtime_bonus('chain_bounces')))
+  local bond_chain_ratio = math.max(0, get_bond_runtime_bonus('chain_ratio'))
   if bond_chain_bounces > 0 and bond_chain_ratio > 0 then
     local bounced = 0
     for _, unit in ipairs(get_enemies_in_range(target, math.max(skill.chain_radius or 0, 420), target, bond_chain_bounces)) do
-      STATE.hero:damage({
-        target = unit,
-        damage = math.floor((data.damage or 0) * bond_chain_ratio),
-        type = ATTACK_SKILL_DEFS.basic_attack.damage_type,
-        text_type = 'physics',
-        text_track = 934269508,
-        particle = AttackSkillObjects.vfx_by_id.basic_attack.impact_particle,
-        common_attack = false,
-        no_miss = true,
+      deal_skill_damage(unit, data.damage * bond_chain_ratio, '法术', {
+        text_type = 'magic',
+        particle = AttackSkillObjects.vfx_by_id.thunder.chain_particle,
+        skip_hunter_first_hit = true,
       })
       bounced = bounced + 1
       if bounced >= bond_chain_bounces then
@@ -1232,9 +1160,6 @@ local function handle_challenge_success(instance)
 end
 
 local function handle_battle_finished(result)
-  if result and result.is_win then
-    play_victory()
-  end
   if battlefield_system and battlefield_system.cleanup_battle_units then
     battlefield_system.cleanup_battle_units()
   end
@@ -1278,6 +1203,15 @@ battlefield_system = BattlefieldSystem.create({
   end,
   on_wave_started = function(wave_index)
     return reward_system.handle_wave_started(wave_index)
+  end,
+  on_mainline_task_wave_started = function(wave_index)
+    return mainline_task_system.handle_wave_started(wave_index)
+  end,
+  on_mainline_task_enemy_killed = function(info)
+    return mainline_task_system.handle_enemy_killed(info)
+  end,
+  on_mainline_task_wave_cleared = function()
+    return mainline_task_system.handle_wave_cleared()
   end,
   on_mainline_task_cleared = function(task)
     return mainline_task_system.handle_task_cleared(task)
@@ -1768,34 +1702,12 @@ local function try_treasure_entry()
   try_start_challenge('treasure_trial')
 end
 
-local function show_bond_progress()
-  if swallowed_panel_system and swallowed_panel_system.toggle_panel then
-    local visible = swallowed_panel_system.toggle_panel()
-    if visible ~= nil then
-      return visible
-    end
-  end
-  return BondSystem.show_bond_progress(create_bond_env())
-end
-
-swallowed_panel_system = require('ui.swallow_panel').create({
-  STATE = STATE,
-  y3 = y3,
-  message = message,
-  get_player = get_player,
-  get_consumed_bond_entries = function(max_entries)
-    return BondSystem.get_consumed_node_entries(STATE, max_entries)
-  end,
-})
-
 runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
   STATE = STATE,
   CONFIG = CONFIG,
   y3 = y3,
   hero_attr_system = hero_attr_system,
   round_number = round_number,
-  play_ui_click = play_ui_click,
-  play_confirm = play_confirm,
   get_resource_rules = get_resource_rules,
   get_bond_runtime_bonus = get_bond_runtime_bonus,
   get_treasure_passive_income = get_treasure_passive_income,
@@ -1815,23 +1727,66 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
       max_visible
     )
   end,
+  stage_runtime = {
+    get_current_stage_text = function()
+      if STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) then
+        return STATE.current_stage_def.display_label or STATE.current_stage_def.display_name
+      end
+      return '第1关'
+    end,
+    start_selected_stage = function(stage_id, mode_id)
+      return session_state_system.start_selected_stage(stage_id, mode_id)
+    end,
+  },
+  battle_objective_runtime = {
+    get_summary = function()
+      return mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary() or nil
+    end,
+    get_tracker_state = function()
+      return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or nil
+    end,
+    toggle_auto_track = function()
+      return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or nil
+    end,
+  },
+  mainline_runtime = {
+    get_summary = function()
+      return mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary() or nil
+    end,
+    get_tracker_state = function()
+      return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or nil
+    end,
+    toggle_auto_track = function()
+      return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or nil
+    end,
+  },
   get_current_stage_text = function()
-    local mainline_summary = mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary()
-    if mainline_summary and mainline_summary.title_text then
-      return mainline_summary.title_text
+    if STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) then
+      return STATE.current_stage_def.display_label or STATE.current_stage_def.display_name
     end
-    if STATE.current_stage_def and STATE.current_stage_def.display_name then
-      return STATE.current_stage_def.display_name
-    end
-    return '主线 1-1'
+    return '第1关'
   end,
   get_mainline_task_summary = function()
     return mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary() or nil
   end,
+  get_mainline_task_tracker_state = function()
+    return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or nil
+  end,
+  toggle_mainline_task_auto_track = function()
+    return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or nil
+  end,
   apply_round_choice = apply_round_choice,
   show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
-  show_bond_progress = show_bond_progress,
+  show_bond_progress = function()
+    return BondSystem.show_bond_progress(create_bond_env())
+  end,
+  build_latest_bond_tip_payload = function()
+    return BondSystem.build_latest_owned_tip_payload(STATE)
+  end,
+  build_bond_slot_tip_payload = function(slot)
+    return BondSystem.build_slot_tip_payload(STATE, slot)
+  end,
   try_start_challenge = try_start_challenge,
   try_treasure_entry = try_treasure_entry,
   has_pending_treasure_choice = has_pending_treasure_choice,
@@ -1862,8 +1817,6 @@ choice_panel_system = (function()
     y3 = y3,
     round_number = round_number,
     get_player = get_player,
-    play_ui_click = play_ui_click,
-    play_confirm = play_confirm,
     get_current_choice_panel_model = choice_panel_model_system.get_current_choice_panel_model,
     apply_round_choice = apply_round_choice,
     hide_current_choice_panel = choice_panel_model_system.hide_current_choice_panel,
@@ -1952,9 +1905,6 @@ set_battle_hud_visible = function(visible)
   if choice_panel_system and choice_panel_system.set_visible then
     choice_panel_system.set_visible(visible)
   end
-  if swallowed_panel_system and swallowed_panel_system.set_visible and visible ~= true then
-    swallowed_panel_system.set_visible(false)
-  end
 end
 
 local function create_hero()
@@ -2022,8 +1972,6 @@ outgame_system = OutgameSystem.create({
   message = message,
   round_number = round_number,
   get_player = get_player,
-  play_ui_click = play_ui_click,
-  ensure_music_loop = ensure_music_loop,
   start_selected_stage = function(stage_id, mode_id)
     return session_state_system.start_selected_stage(stage_id, mode_id)
   end,
@@ -2044,7 +1992,9 @@ input_events_system = InputEventsSystem.create({
   try_queue_mark_node_for_level = try_queue_mark_node_for_level,
   show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
-  show_bond_progress = show_bond_progress,
+  show_bond_progress = function()
+    return BondSystem.show_bond_progress(create_bond_env())
+  end,
   show_runtime_attr_overview = function()
     show_runtime_attr_dialog()
   end,
@@ -2060,9 +2010,6 @@ input_events_system = InputEventsSystem.create({
   show_debug_hotkey_help = show_debug_hotkey_help,
   debug_actions_system = debug_actions_system,
   debug_tools_system = debug_tools_system,
-  play_ui_click = play_ui_click,
-  play_panel_open = play_panel_open,
-  play_confirm = play_confirm,
 })
 
 local function register_runtime_events()
@@ -2089,11 +2036,6 @@ runtime_loops_system = RuntimeLoopsSystem.create({
   set_battle_hud_visible = set_battle_hud_visible,
   refresh_runtime_hud = refresh_runtime_hud,
   refresh_choice_panel = refresh_choice_panel,
-  refresh_swallow_panel = function()
-    if swallowed_panel_system and swallowed_panel_system.refresh_panel then
-      swallowed_panel_system.refresh_panel()
-    end
-  end,
   refresh_runtime_overview = refresh_runtime_overview,
   outgame_system = outgame_system,
   debug_tools_system = debug_tools_system,
@@ -2112,7 +2054,6 @@ function M.bootstrap()
   end
 
   ensure_helper_signals()
-  ensure_music_loop()
   reset_session_state()
   register_runtime_events()
   register_dev_commands()
