@@ -1,13 +1,10 @@
 local CsvLoader = require 'data.csv_loader'
+local AttrEffect = require 'data.object_tables.attreffect'
 local helpers = require 'entry_objects.helpers'
 
 local mark_rows = CsvLoader.read_rows('data_csv/marks.csv')
-local bonus_attr_rows = CsvLoader.read_rows('data_csv/mark_bonus_attr.csv')
-local bonus_runtime_rows = CsvLoader.read_rows('data_csv/mark_bonus_runtime.csv')
 local tag_rows = CsvLoader.read_rows('data_csv/mark_tags.csv')
-
-local bonus_attr_groups = CsvLoader.group_by(bonus_attr_rows, 'mark_id')
-local bonus_runtime_groups = CsvLoader.group_by(bonus_runtime_rows, 'mark_id')
+local bonus_groups = AttrEffect.by_source.mark or {}
 local tag_groups = CsvLoader.group_by(tag_rows, 'mark_id')
 
 local function to_number_if_possible(raw)
@@ -29,28 +26,18 @@ local function sort_by_order_index(rows, fallback_key)
   end)
 end
 
-local function build_bonus_attr(mark_id)
-  local attr = nil
-  local rows = bonus_attr_groups[mark_id] or {}
-  sort_by_order_index(rows, 'attr')
-  for _, row in ipairs(rows) do
-    attr = attr or {}
-    attr[row.attr] = to_number_if_possible(row.value)
+local function clone_number_map(source)
+  local result = nil
+  for key, value in pairs(source or {}) do
+    result = result or {}
+    result[key] = tonumber(value) or 0
   end
-  return attr
+  return result
 end
 
-local function build_bonus_runtime(mark_id, bucket_name)
-  local bucket = nil
-  local rows = bonus_runtime_groups[mark_id] or {}
-  sort_by_order_index(rows, 'runtime_key')
-  for _, row in ipairs(rows) do
-    if row.bucket == bucket_name then
-      bucket = bucket or {}
-      bucket[row.runtime_key] = to_number_if_possible(row.value)
-    end
-  end
-  return bucket
+local function build_bonus_bucket(mark_id, bucket_name)
+  local bucket = bonus_groups[mark_id]
+  return clone_number_map(bucket and bucket[bucket_name] or nil)
 end
 
 local list = {}
@@ -71,9 +58,9 @@ for _, row in ipairs(mark_rows) do
     summary = row.summary,
     tags = tags,
     bonuses = {
-      attr = build_bonus_attr(row.id),
-      runtime = build_bonus_runtime(row.id, 'runtime'),
-      attack_skill = build_bonus_runtime(row.id, 'attack_skill'),
+      attr = build_bonus_bucket(row.id, 'attr'),
+      runtime = build_bonus_bucket(row.id, 'runtime'),
+      attack_skill = build_bonus_bucket(row.id, 'attack_skill'),
     },
   }
 end
