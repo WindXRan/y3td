@@ -16,6 +16,10 @@ function M.create(env)
   end
 
   local function get_hero_max_level()
+    local level_table = CONFIG.hero_level_progression
+    if level_table and type(level_table.max_level) == 'number' and level_table.max_level > 0 then
+      return math.max(1, level_table.max_level)
+    end
     local rules = get_hero_progression_rules()
     return math.max(1, rules.max_level or 60)
   end
@@ -44,6 +48,12 @@ function M.create(env)
   end
 
   local function get_hero_next_level_exp(level)
+    local level_table = CONFIG.hero_level_progression
+    local level_row = level_table and level_table.by_level and level_table.by_level[level] or nil
+    if level_row and level_row.exp_to_next ~= nil then
+      return math.max(0, level_row.exp_to_next)
+    end
+
     if level >= get_hero_max_level() then
       return 0
     end

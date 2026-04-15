@@ -21,6 +21,7 @@ local TREASURE_DEFS = TreasureObjects.by_id
 local MARK_DEF_LIST = MarkObjects.list
 local MARK_DEFS = MarkObjects.by_id
 local MARK_NODES_BY_LEVEL = MarkNodeObjects.by_level
+local MARK_POOL_RULES = MarkNodeObjects.pool_rules_by_id or {}
 
 local function clone_reward(reward)
   if not reward then
@@ -238,16 +239,16 @@ function M.create(env)
     local runtime = api.get_mark_runtime()
     local mark_id = runtime.ordered_mark_ids[slot]
     if not mark_id then
-      return string.format('烙印位 %d：空。', slot)
+      return string.format('进化位 %d：空。', slot)
     end
 
     local def = MARK_DEFS[mark_id]
     if not def then
-      return string.format('烙印位 %d：未知烙印 %s。', slot, tostring(mark_id))
+      return string.format('进化位 %d：未知进化 %s。', slot, tostring(mark_id))
     end
 
     return string.format(
-      '烙印位 %d：[%s] %s - %s',
+      '进化位 %d：[%s] %s - %s',
       slot,
       api.get_mark_quality_label(def.quality),
       def.name,
@@ -256,7 +257,7 @@ function M.create(env)
   end
 
   function api.show_mark_loadout()
-    message('烙印栏：')
+    message('进化栏：')
     local count = math.max(4, api.get_mark_active_count())
     for slot = 1, count, 1 do
       message(api.build_mark_slot_text(slot))
@@ -293,13 +294,19 @@ function M.create(env)
     end
 
     local runtime = api.get_treasure_runtime()
-    if runtime.active_by_id.coin_casket or runtime.active_by_id.harvest_flask then
-      tags.economy = true
-    end
-    if runtime.active_by_id.field_bandage
-      or runtime.active_by_id.heart_guard_mirror
-      or runtime.active_by_id.dragonblood_ring then
-      tags.survival = true
+    for treasure_id, _ in pairs(runtime.active_by_id or {}) do
+      local def = TREASURE_DEFS[treasure_id]
+      if def then
+        for _, tag in ipairs(def.tags or {}) do
+          tags[tag] = true
+        end
+        if def.bonuses and (def.bonuses.reward_ratio or def.bonuses.passive_income) then
+          tags.economy = true
+        end
+        if def.bonuses and def.bonuses.attr and (def.bonuses.attr['最大生命'] or def.bonuses.attr['伤害减免']) then
+          tags.survival = true
+        end
+      end
     end
 
     if collect_bond_route_tags then
@@ -450,12 +457,14 @@ function M.create(env)
     return choices
   end
 
-  local function build_available_mark_defs()
+  local function build_available_mark_defs(pool_rule, used_ids)
     local runtime = api.get_mark_runtime()
     local result = {}
 
     for _, def in ipairs(MARK_DEF_LIST) do
-      if not runtime.owned_mark_ids[def.id] then
+      local excluded_by_owned = pool_rule and pool_rule.exclude_owned and runtime.owned_mark_ids[def.id]
+      local excluded_by_round = pool_rule and pool_rule.same_round_no_repeat and used_ids and used_ids[def.id]
+      if not excluded_by_owned and not excluded_by_round then
         result[#result + 1] = def
       end
     end
@@ -505,23 +514,109 @@ function M.create(env)
     return pool[#pool]
   end
 
-  local function pick_mark_choices(choice_count)
-    local available = build_available_mark_defs()
-    if #available == 0 then
-      return {}
+  local function build_mark_defs_by_quality(pool_rule, used_ids)
+    local available = build_available_mark_defs(pool_rule, used_ids)
+    local by_quality = {
+      common = {},
+      rare = {},
+      epic = {},
+    }
+
+    for _, def in ipairs(available) do
+      local quality = def.quality or 'common'
+      by_quality[quality] = by_quality[quality] or {}
+      by_quality[quality][#by_quality[quality] + 1] = def
     end
 
+    return available, by_quality
+  end
+
+  local function roll_mark_quality(pool_rule, allow_high_quality_only)
+    local weights = {
+      common = allow_high_quality_only and 0 or (pool_rule.common_weight or 0),
+      rare = pool_rule.rare_weight or 0,
+      epic = pool_rule.epic_weight or 0,
+    }
+
+    local total_weight = weights.common + weights.rare + weights.epic
+    if total_weight <= 0 then
+      if allow_high_quality_only then
+        return 'rare'
+      end
+      return 'common'
+    end
+
+    local roll = math.random() * total_weight
+    local passed = weights.common
+    if roll <= passed then
+      return 'common'
+    end
+
+    passed = passed + weights.rare
+    if roll <= passed then
+      return 'rare'
+    end
+
+    return 'epic'
+  end
+
+  local function pick_mark_choices_for_rule(pool_rule_id, requested_choice_count)
+    local pool_rule = MARK_POOL_RULES[pool_rule_id]
+    assert(pool_rule and pool_rule.enabled, string.format('missing enabled mark pool rule: %s', tostring(pool_rule_id)))
+
+    local choice_count = requested_choice_count or pool_rule.choice_count or 3
     local choices = {}
-    while #choices < choice_count and #available > 0 do
-      local picked = pick_weighted_mark(available)
+    local used_ids = {}
+    local has_high_quality = false
+
+    while #choices < choice_count do
+      local remaining_slots = choice_count - #choices
+      local need_high_quality = pool_rule.guarantee_high_quality and not has_high_quality and remaining_slots == 1
+      local available, by_quality = build_mark_defs_by_quality(pool_rule, used_ids)
+      if #available <= 0 then
+        break
+      end
+
+      local target_quality = roll_mark_quality(pool_rule, need_high_quality)
+      local quality_pool = by_quality[target_quality] or {}
+
+      if #quality_pool <= 0 then
+        if need_high_quality then
+          quality_pool = (#(by_quality.rare or {}) > 0 and by_quality.rare)
+            or (#(by_quality.epic or {}) > 0 and by_quality.epic)
+            or available
+        else
+          quality_pool = available
+        end
+      end
+
+      local picked = pick_weighted_mark(quality_pool)
       if not picked then
         break
       end
+
       choices[#choices + 1] = picked
-      remove_mark_def(available, picked.id)
+      used_ids[picked.id] = true
+      if picked.quality == 'rare' or picked.quality == 'epic' then
+        has_high_quality = true
+      end
     end
 
     return choices
+  end
+
+  local function pick_mark_choices(choice_count)
+    local default_node = MARK_NODES_BY_LEVEL[10]
+    local default_rule_id = default_node and default_node.pool_rule_id or 'mark_pool_global'
+    local available = build_available_mark_defs(MARK_POOL_RULES[default_rule_id], {})
+    if #available == 0 then
+      return {}
+    end
+    return pick_mark_choices_for_rule(default_rule_id, choice_count)
+  end
+
+  function api.debug_pick_mark_choices_for_rule(pool_rule_id, choice_count)
+    return pick_mark_choices_for_rule(pool_rule_id, choice_count)
   end
 
   function api.get_treasure_reward_ratio(key)
@@ -713,10 +808,6 @@ function M.create(env)
       end
     end
 
-    if runtime.active_by_id.crown_fragment then
-      aggregate.attr['攻击'] = (aggregate.attr['攻击'] or 0) + rare_count * 12 + epic_count * 24
-    end
-
     return aggregate
   end
 
@@ -883,7 +974,7 @@ function M.create(env)
     if next_entry.kind == 'mark_choice' then
       local round = next_entry.round_id and mark_runtime.rounds_by_id[next_entry.round_id] or nil
       if not round then
-        message('烙印轮次数据不存在，本次奖励已跳过。')
+        message('进化轮次数据不存在，本次奖励已跳过。')
         return true
       end
 
@@ -896,7 +987,7 @@ function M.create(env)
       end
 
       if #choices == 0 then
-        message(string.format('%s：没有可用烙印候选，本轮已跳过。', round.ui_title or '烙印选择'))
+        message(string.format('%s：没有可用进化候选，本轮已跳过。', round.ui_title or '进化选择'))
         round.state = 'skipped'
         return true
       end
@@ -906,7 +997,7 @@ function M.create(env)
       mark_runtime.awaiting_choice = true
       round.state = 'pending'
 
-      message(string.format('%s：获得一次烙印 3选1。', round.ui_title or '烙印选择'))
+      message(string.format('%s：获得一次进化 3选1。', round.ui_title or '进化选择'))
       api.show_mark_choices()
       return true
     end
@@ -1086,7 +1177,7 @@ function M.create(env)
     api.sync_mark_effects()
 
     message(string.format(
-      '已获得烙印：[%s] %s。',
+      '已获得进化：[%s] %s。',
       api.get_mark_quality_label(def.quality),
       def.name
     ))
@@ -1101,7 +1192,7 @@ function M.create(env)
       return
     end
 
-    local title = runtime.current_round and runtime.current_round.ui_title or '烙印选择'
+    local title = runtime.current_round and runtime.current_round.ui_title or '进化选择'
     message(string.format('%s：按 1 / 2 / 3 选择。', title))
     for index, def in ipairs(runtime.current_choices) do
       message(build_mark_choice_text(index, def))
@@ -1294,9 +1385,9 @@ function M.create(env)
 
     runtime.triggered_node_ids[node.id] = true
 
-    local choices = pick_mark_choices(node.choice_count or 3)
+    local choices = pick_mark_choices_for_rule(node.pool_rule_id, node.choice_count or 3)
     if #choices == 0 then
-      message(string.format('%s：本局没有可用烙印候选。', node.ui_title or '烙印选择'))
+      message(string.format('%s：本局没有可用进化候选。', node.ui_title or '进化选择'))
       return false
     end
 
@@ -1319,16 +1410,16 @@ function M.create(env)
       kind = 'mark_choice',
       priority = node.queue_priority or 95,
       round_id = round_id,
-      source_name = node.ui_title or '烙印选择',
+      source_name = node.ui_title or '进化选择',
     })
 
     if runtime.awaiting_choice then
-      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '烙印选择'))
+      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '进化选择'))
       return true
     end
 
     if not try_process_reward_queue() and api.get_reward_queue_count() > 0 then
-      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '烙印选择'))
+      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '进化选择'))
     end
     return true
   end

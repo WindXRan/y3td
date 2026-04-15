@@ -486,13 +486,25 @@ function M.create()
     api.rebuild_derived_attrs(hero)
   end
 
-  function api.get_damage_multiplier(hero, damage_kind, source_kind)
+  function api.get_damage_multiplier(hero, damage_kind, source_kind, element)
     local multiplier = 1
 
-    if damage_kind == '物理' then
+    if damage_kind == '物理' or damage_kind == 'weapon' then
       multiplier = multiplier * (1 + normalize_ratio(api.get_attr(hero, '物理伤害')))
-    elseif damage_kind == '魔法' or damage_kind == '法术' then
+    elseif damage_kind == '魔法' or damage_kind == '法术' or damage_kind == 'spell' or damage_kind == 'dot' or damage_kind == 'summon' then
       multiplier = multiplier * (1 + normalize_ratio(api.get_attr(hero, '魔法伤害')))
+    end
+
+    if element == 'metal' then
+      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(hero, '金行伤害')))
+    elseif element == 'wood' then
+      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(hero, '木行伤害')))
+    elseif element == 'water' then
+      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(hero, '水行伤害')))
+    elseif element == 'fire' then
+      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(hero, '火行伤害')))
+    elseif element == 'earth' then
+      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(hero, '土行伤害')))
     end
 
     if source_kind == 'normal_attack' then

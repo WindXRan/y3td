@@ -1,26 +1,15 @@
 local ui_res = require 'ui.res'
+local ChoicePanelConfig = require 'data.object_tables.choice_panel_config'
 
 local M = {}
 
-local CHOICE_BADGE_TEXT = {
-  common = 'N',
-  rare = 'R',
-  epic = 'E',
-  legendary = 'L',
-}
-
 local function get_choice_refresh_cost(paid_count)
-  if (paid_count or 0) <= 0 then
-    return 40
-  end
-  if paid_count == 1 then
-    return 80
-  end
-  return 100
+  local index = math.max(0, tonumber(paid_count) or 0)
+  return ChoicePanelConfig.refresh_costs[index] or ChoicePanelConfig.refresh_cost_default or 0
 end
 
 local function get_choice_badge_text(quality)
-  return CHOICE_BADGE_TEXT[quality or 'common'] or 'N'
+  return ChoicePanelConfig.badge_text_by_quality[quality or 'common'] or 'N'
 end
 
 local function get_choice_default_icon(kind, quality)

@@ -1,0 +1,8 @@
+record_type,key,subkey,value
+refresh_cost,0,,40
+refresh_cost,1,,80
+refresh_cost,2,,100
+badge_text,common,,N
+badge_text,rare,,R
+badge_text,epic,,E
+badge_text,legendary,,L

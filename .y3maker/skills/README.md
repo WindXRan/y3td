@@ -20,10 +20,13 @@
 | "生成单位/物品/技能/Buff/投射物" | **y3-obj-gen** (v5.2) | JSON | - | `editor_table/` |
 | "修改物编属性/技能属性/Buff属性" | **y3-obj-edit** | JSON | - | `editor_table/` |
 | "做个UI/面板/界面/HUD/血条/技能栏" | **y3-ui-pipeline** ⭐ | JSON + Lua | → y3-ui-generator, y3-ui-official | - |
+| "只生成UI JSON/创建画板/用y3-ui-generator" | **y3-ui-generator** | JSON | - | `maps/EntryMap/ui/` |
+| "只写UI逻辑/接点击悬停/显示隐藏" | **y3-ui-official** | Lua | - | `script/ui/` |
 | "写Lua逻辑代码" | **y3-lua-pipeline** | Lua | - | `script/` |
 | "自动化测试/自动点击/UI自动化" | **desktop-automation** 🖱️ | 坐标+操作 | MCP y3editor + desktop-automation | Editor MCP 获取控件坐标 |
 
 > ⭐ **UI 统一入口**：所有 UI 相关需求都走 `y3-ui-pipeline`，内部自动路由。
+> ⭐ 只有当用户明确把任务限定成 `UI 资源生成` 或 `UI 逻辑子任务` 时，才直达子技能。
 
 ## ⚡ 常用命令速查
 
@@ -49,7 +52,9 @@ py -3 gen_ui_tree.py <workspace_path>
   ├─ "做一个XX游戏" → y3-game-spec（规划后分发）
   ├─ 需要物编数据 → y3-obj-gen
   ├─ 修改物编属性 → y3-obj-edit
-  ├─ UI/界面/面板 → y3-ui-pipeline（内部再路由）
+  ├─ UI/界面/面板 → y3-ui-pipeline（默认入口，内部再路由）
+  ├─ 只生成 UI JSON/创建画板 → y3-ui-generator
+  ├─ 只写 UI 交互/显示隐藏/接事件 → y3-ui-official
   ├─ Lua逻辑代码 → y3-lua-pipeline
   └─ 自动化测试/点击 → desktop-automation
 ```
@@ -170,6 +175,7 @@ y3.const.KeyboardKey['1']
 | 文档 | 说明 |
 |------|------|
 | `skills/y3-ui-generator/references/` | UI JSON 生成参考 |
+| `knowledge/UI系统/UI技能自动路由规范.md` | UI 技能触发边界 |
 | `skills/y3-lua-pipeline/references/*.md` | Lua API 参考（player/unit/ability 等） |
 | `skills/desktop-automation/SKILL.md` | 桌面自动化流程（Editor MCP + 点击脚本） |
 

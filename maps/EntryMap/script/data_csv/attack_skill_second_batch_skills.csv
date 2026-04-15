@@ -1,0 +1,12 @@
+id,name,damage_type,damage_form,element,damage_label,archetype,damage_ratio,cooldown,pierce,duration,radius,bounce
+sword_wave,剑气,金行剑罡,weapon,metal,金行剑罡,直线贯穿清怪,1.60,4.5,2,,,
+arcane_laser,奥术激光,金行灵光,spell,metal,金行灵光,持续照射压制,0.90,8.0,,1.5,,
+arcane_ray,奥术射线,金行灵束,spell,metal,金行灵束,长线穿透爆发,2.00,6.0,3,,,
+frost_nova,冰霜新星,水行寒潮,spell,water,水行寒潮,近身爆发控场,1.50,8.5,,,260,
+chain_lightning,闪电链,木行雷链,spell,wood,木行雷链,连锁清怪扩散,1.20,5.5,,,,5
+earthquake,地震,土行震罡,weapon,earth,土行震罡,范围爆发减速,2.20,9.0,,,280,
+tornado,龙卷风,木行罡风,spell,wood,木行罡风,移动压制拖拽,0.80,8.0,,4.0,,
+electro_net,电磁网,木行雷网,spell,wood,木行雷网,范围束缚控制,1.40,8.0,,,240,
+meteor,陨石,火行陨炎,spell,fire,火行陨炎,高爆发范围终结,3.00,10.0,,,300,
+hurricane,飓风,木行飓流,spell,wood,木行飓流,聚怪切割持续场,1.00,8.5,,3.5,,
+fireball,火球,火行炎术,spell,fire,火行炎术,点面兼顾爆炸,1.80,4.8,,,200,

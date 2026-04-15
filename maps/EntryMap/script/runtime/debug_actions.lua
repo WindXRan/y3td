@@ -124,13 +124,18 @@ function M.create(env)
     if not guard_battle() then
       return
     end
-    STATE.challenge_charges = CONFIG.challenge_rules.max_charges
+    STATE.challenge_charge_map = STATE.challenge_charge_map or {}
+    STATE.challenge_recover_elapsed_map = STATE.challenge_recover_elapsed_map or {}
+
+    local total = 0
+    for challenge_id in pairs(CONFIG.challenges or {}) do
+      STATE.challenge_charge_map[challenge_id] = CONFIG.challenge_rules.max_charges
+      STATE.challenge_recover_elapsed_map[challenge_id] = 0
+      total = total + (CONFIG.challenge_rules.max_charges or 0)
+    end
+    STATE.challenge_charges = total
     STATE.challenge_recover_elapsed = 0
-    debug_message(string.format(
-      'Challenge charges refilled: %d/%d.',
-      STATE.challenge_charges,
-      CONFIG.challenge_rules.max_charges
-    ))
+    debug_message('All challenge charges refilled to max.')
   end
 
   function api.debug_force_spawn_boss()

@@ -2,25 +2,6 @@ local BaseHud = require 'ui.runtime_hud_v2'
 
 local M = {}
 
-local EVENT_FEED_COLORS = {
-  neutral = { 228, 236, 246, 255 },
-  positive = { 176, 232, 188, 255 },
-  reward = { 255, 220, 142, 255 },
-  warning = { 255, 172, 118, 255 },
-  rare = { 222, 198, 255, 255 },
-}
-
-local EVENT_FEED_LAYOUT = {
-  max_visible = 4,
-  width = 520,
-  font_size = 18,
-  line_height = 22,
-  line_gap = 4,
-  padding_x = 10,
-  left = 26,
-  bottom = 158,
-}
-
 local function resolve_ui(y3, player, path)
   local ok, ui = pcall(y3.ui.get_ui, player, path)
   if not ok or not ui then
@@ -29,21 +10,22 @@ local function resolve_ui(y3, player, path)
   return ui
 end
 
-local function hide_panel1_root(env)
+local function is_alive(ui)
+  return ui and (not ui.is_removed or not ui:is_removed())
+end
+
+local function set_panel1_top_visible(env, visible)
   local y3 = env.y3
   local player = env.get_player()
   local panel1 = resolve_ui(y3, player, 'panel_1')
-  if panel1 then
-    panel1:set_visible(false)
-  end
   local top_root = resolve_ui(y3, player, 'panel_1.tophud')
-  if top_root then
-    top_root:set_visible(false)
-  end
-end
 
-local function is_alive(ui)
-  return ui and (not ui.is_removed or not ui:is_removed())
+  if panel1 then
+    panel1:set_visible(visible == true)
+  end
+  if top_root then
+    top_root:set_visible(visible == true)
+  end
 end
 
 local function make_noop_text()
@@ -53,33 +35,23 @@ local function make_noop_text()
   }
 end
 
+local function set_text_rgba(node, color)
+  if is_alive(node) and color then
+    node:set_text_color(color[1], color[2], color[3], color[4] or 255)
+  end
+end
+
 local function make_text_proxy(node, transform)
   return {
     set_text = function(_, text)
-      if node and not node:is_removed() then
-        node:set_text(transform and transform(text) or text)
-      end
-    end,
-    set_text_color = function() end,
-  }
-end
-
-local function make_value_proxy(node, getter)
-  return {
-    set_text = function() end,
-    set_text_color = function() end,
-    sync = function()
       if is_alive(node) then
-        node:set_text(tostring(getter() or ''))
+        node:set_text(transform and transform(text) or text or '')
       end
     end,
+    set_text_color = function(_, color)
+      set_text_rgba(node, color)
+    end,
   }
-end
-
-local function set_text_rgba(node, color)
-  if is_alive(node) then
-    node:set_text_color(color[1], color[2], color[3], color[4] or 255)
-  end
 end
 
 local function normalize_ratio(value)
@@ -88,31 +60,6 @@ local function normalize_ratio(value)
     return number / 100
   end
   return number
-end
-
-local function format_compact_number(value)
-  local number = tonumber(value) or 0
-  local abs_number = math.abs(number)
-  if abs_number >= 1000000 then
-    local text = string.format('%.1fm', number / 1000000)
-    return text:gsub('%.0m$', 'm')
-  end
-  if abs_number >= 10000 then
-    local text = string.format('%.1fk', number / 1000)
-    return text:gsub('%.0k$', 'k')
-  end
-  if math.abs(number - math.floor(number)) < 0.001 then
-    return tostring(math.floor(number))
-  end
-  return string.format('%.1f', number)
-end
-
-local function format_percent_text(value)
-  local ratio = normalize_ratio(value)
-  if math.abs(ratio) < 0.0001 then
-    return ''
-  end
-  return string.format('%+.0f', ratio * 100)
 end
 
 local function format_wave_time_text(text)
@@ -166,18 +113,129 @@ local function format_tips_text(name, state)
   return boss_state
 end
 
-local function bind_panel1_top(env, runtime_hud)
-  hide_panel1_root(env)
-  if runtime_hud then
-    runtime_hud.panel1_top_bound = false
-    runtime_hud.panel1_event_feed = nil
-    runtime_hud.panel1_resource_sync = nil
-    runtime_hud.panel1_flush_tips = nil
-    runtime_hud.panel1_flush_battle_event_feed = nil
-    runtime_hud.panel1_set_tip_overlay = nil
-    runtime_hud.panel1_clear_tip_overlay = nil
+local function format_game_time_text(text)
+  local value = tostring(text or '')
+  value = value:gsub('^战斗计时%s*', '')
+  if value == '' then
+    return '00：00'
   end
-  return false
+  return value:gsub(':', '：')
+end
+
+local function flush_panel1_boss(runtime_hud)
+  if not runtime_hud then
+    return
+  end
+  if is_alive(runtime_hud.panel1_tips_node) then
+    local tips_text = runtime_hud.panel1_tip_overlay_text or format_tips_text(
+      runtime_hud.panel1_boss_name_text,
+      runtime_hud.panel1_boss_state_text
+    )
+    runtime_hud.panel1_tips_node:set_text(tips_text)
+  end
+  if is_alive(runtime_hud.panel1_wavetime_node) then
+    runtime_hud.panel1_wavetime_node:set_text(format_wave_time_text(runtime_hud.panel1_boss_state_text))
+  end
+  set_text_rgba(runtime_hud.panel1_tips_node, runtime_hud.panel1_boss_color)
+  set_text_rgba(runtime_hud.panel1_wavetime_node, runtime_hud.panel1_boss_color)
+end
+
+local function clear_tip_overlay(runtime_hud)
+  if not runtime_hud then
+    return
+  end
+  if runtime_hud.panel1_tip_overlay_timer then
+    runtime_hud.panel1_tip_overlay_timer:remove()
+    runtime_hud.panel1_tip_overlay_timer = nil
+  end
+  runtime_hud.panel1_tip_overlay_text = nil
+  flush_panel1_boss(runtime_hud)
+end
+
+local function make_boss_name_proxy(runtime_hud)
+  return {
+    set_text = function(_, text)
+      runtime_hud.panel1_boss_name_text = tostring(text or '')
+      flush_panel1_boss(runtime_hud)
+    end,
+    set_text_color = function(_, color)
+      runtime_hud.panel1_boss_color = color
+      flush_panel1_boss(runtime_hud)
+    end,
+  }
+end
+
+local function make_boss_state_proxy(runtime_hud)
+  return {
+    set_text = function(_, text)
+      runtime_hud.panel1_boss_state_text = tostring(text or '')
+      flush_panel1_boss(runtime_hud)
+    end,
+    set_text_color = function(_, color)
+      runtime_hud.panel1_boss_color = color
+      flush_panel1_boss(runtime_hud)
+    end,
+  }
+end
+
+local function clear_panel1_top_bindings(runtime_hud)
+  if not runtime_hud then
+    return
+  end
+  clear_tip_overlay(runtime_hud)
+  runtime_hud.panel1_top_bound = false
+  runtime_hud.panel1_tips_node = nil
+  runtime_hud.panel1_wavetime_node = nil
+  runtime_hud.panel1_boss_name_text = nil
+  runtime_hud.panel1_boss_state_text = nil
+  runtime_hud.panel1_boss_color = nil
+  runtime_hud.panel1_tip_overlay_text = nil
+  runtime_hud.panel1_tip_overlay_timer = nil
+end
+
+local function bind_panel1_top(env, runtime_hud)
+  if runtime_hud.top_battle_cluster and not runtime_hud.top_battle_cluster:is_removed() then
+    runtime_hud.top_battle_cluster:set_visible(false)
+  end
+  if runtime_hud.left_shortcut_panel and not runtime_hud.left_shortcut_panel:is_removed() then
+    runtime_hud.left_shortcut_panel:set_visible(false)
+  end
+  if runtime_hud.right_tracker_panel and not runtime_hud.right_tracker_panel:is_removed() then
+    runtime_hud.right_tracker_panel:set_visible(false)
+  end
+
+  local y3 = env.y3
+  local player = env.get_player()
+  local wave_node = resolve_ui(y3, player, 'panel_1.tophud.layout_2.wave')
+  local wavetime_node = resolve_ui(y3, player, 'panel_1.tophud.layout_2.wavetime')
+  local tips_node = resolve_ui(y3, player, 'panel_1.tophud.layout_2.tips')
+  local curlevel_node = resolve_ui(y3, player, 'panel_1.tophud.layout_2.curlevel')
+  local gametime_node = resolve_ui(y3, player, 'panel_1.tophud.layout_2.gametime')
+
+  if not wave_node or not wavetime_node or not tips_node or not curlevel_node or not gametime_node then
+    clear_panel1_top_bindings(runtime_hud)
+    set_panel1_top_visible(env, false)
+    return false
+  end
+
+  set_panel1_top_visible(env, true)
+  runtime_hud.panel1_top_bound = true
+  runtime_hud.panel1_tips_node = tips_node
+  runtime_hud.panel1_wavetime_node = wavetime_node
+  runtime_hud.panel1_boss_name_text = runtime_hud.panel1_boss_name_text or ''
+  runtime_hud.panel1_boss_state_text = runtime_hud.panel1_boss_state_text or ''
+  runtime_hud.panel1_boss_color = runtime_hud.panel1_boss_color or { 255, 255, 255, 255 }
+
+  runtime_hud.stage_text = make_text_proxy(curlevel_node)
+  runtime_hud.wave_title = make_text_proxy(wave_node)
+  runtime_hud.wave_status = make_noop_text()
+  runtime_hud.timer_text = make_text_proxy(gametime_node, format_game_time_text)
+  runtime_hud.boss_panel = nil
+  runtime_hud.boss_name = make_boss_name_proxy(runtime_hud)
+  runtime_hud.boss_state = make_boss_state_proxy(runtime_hud)
+
+  flush_panel1_boss(runtime_hud)
+  return true
 end
 
 function M.create(env)
@@ -185,42 +243,28 @@ function M.create(env)
 
   return {
     ensure_hud = function()
-      hide_panel1_root(env)
       local hud = base.ensure_hud()
       if not hud then
+        set_panel1_top_visible(env, false)
         return nil
       end
-      if bind_panel1_top(env, hud) then
-        base.refresh_hud()
-      end
+      bind_panel1_top(env, hud)
+      base.refresh_hud()
       return hud
     end,
     refresh_hud = function()
       local hud = env.STATE and env.STATE.runtime_hud
-      hide_panel1_root(env)
       if hud then
         bind_panel1_top(env, hud)
       end
       local result = base.refresh_hud()
-      if hud and hud.gold_value and hud.gold_value.sync then
-        hud.gold_value:sync()
-      end
-      if hud and hud.wood_value and hud.wood_value.sync then
-        hud.wood_value:sync()
-      end
-      if hud and hud.skill_value and hud.skill_value.sync then
-        hud.skill_value:sync()
-      end
-      if hud and hud.panel1_resource_sync then
-        hud.panel1_resource_sync(false)
-      end
-      if hud and hud.panel1_flush_battle_event_feed then
-        hud.panel1_flush_battle_event_feed()
+      if hud and hud.panel1_top_bound then
+        flush_panel1_boss(hud)
       end
       return result
     end,
     set_visible = function(visible)
-      hide_panel1_root(env)
+      set_panel1_top_visible(env, visible == true)
       return base.set_visible(visible)
     end,
     show_tip_panel = function(text, duration)
@@ -231,14 +275,21 @@ function M.create(env)
           bind_panel1_top(env, hud)
         end
       end
-      if hud and hud.panel1_set_tip_overlay then
-        hud.panel1_set_tip_overlay(text, duration)
+      if hud and hud.panel1_tips_node and is_alive(hud.panel1_tips_node) then
+        clear_tip_overlay(hud)
+        hud.panel1_tip_overlay_text = text or ''
+        flush_panel1_boss(hud)
+        if (tonumber(duration) or 0) > 0 then
+          hud.panel1_tip_overlay_timer = env.y3.ltimer.wait(duration, function()
+            clear_tip_overlay(hud)
+          end)
+        end
       end
     end,
     clear_tip_panel = function()
       local hud = env.STATE and env.STATE.runtime_hud
-      if hud and hud.panel1_clear_tip_overlay then
-        hud.panel1_clear_tip_overlay()
+      if hud and hud.panel1_top_bound then
+        clear_tip_overlay(hud)
       end
     end,
   }

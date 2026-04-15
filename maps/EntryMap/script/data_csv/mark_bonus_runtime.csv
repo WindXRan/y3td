@@ -1,0 +1,17 @@
+mark_id,order_index,bucket,runtime_key,value
+battle_scar_mark,1,runtime,skill_damage_bonus,0.12
+swift_rhythm_mark,1,attack_skill,cooldown_reduction,0.08
+hunter_king_mark,1,runtime,boss_damage_bonus,0.15
+hunter_king_mark,2,runtime,elite_damage_bonus,0.15
+chasing_wind_mark,1,runtime,normal_attack_damage_bonus,0.15
+arcane_edge_mark,1,runtime,skill_damage_bonus,0.20
+arcane_edge_mark,2,attack_skill,range_bonus,60
+slayer_mark,1,runtime,boss_damage_bonus,0.24
+slayer_mark,2,runtime,elite_damage_bonus,0.24
+storm_mark,1,attack_skill,cooldown_reduction,0.10
+war_god_mark,1,runtime,normal_attack_damage_bonus,0.20
+war_god_mark,2,runtime,skill_damage_bonus,0.20
+void_mark,1,runtime,skill_damage_bonus,0.28
+void_mark,2,runtime,boss_damage_bonus,0.12
+void_mark,3,runtime,elite_damage_bonus,0.12
+void_mark,4,attack_skill,cooldown_reduction,0.12

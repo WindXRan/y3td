@@ -1,0 +1,18 @@
+key,value
+version,2026-04-12
+status,design_in_repo
+note,第二批通用攻击技能正式设计蓝图。当前为文档与配表约束源，尚未直接接入 runtime 抽卡与施法逻辑。
+fixed_base_slot,普攻
+free_attack_skill_slots,4
+total_attack_skills,5
+slot_notation,1 个固定基础位 + 4 个自由攻击技能位
+target_duration_minutes,30
+level_cap,none
+xp_curve,front_fast_back_slow
+first_legend_window,15-20 分钟
+card_notation,9 张强化牌 + 1 张终局牌
+rarity_plan_common,3
+rarity_plan_excellent,3
+rarity_plan_rare,3
+rarity_plan_legendary,1
+atomicity,除传奇牌外，单张卡默认只承载一类核心成长方向。

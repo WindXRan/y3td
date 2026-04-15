@@ -1,4 +1,5 @@
 local M = {}
+M.enabled = false
 
 local LOG_ATTR_ORDER = {
   '攻击',
@@ -54,6 +55,9 @@ function M.build_summary(label, snapshot, extra)
 end
 
 function M.emit(label, snapshot, extra)
+  if M.enabled ~= true then
+    return
+  end
   local line = M.build_summary(label, snapshot, extra)
   if log and log.info then
     log.info(line)

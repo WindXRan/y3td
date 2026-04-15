@@ -31,6 +31,28 @@ function M.create(env)
     return count
   end
 
+  local function get_challenge_charge_total()
+    if STATE.challenge_charge_map then
+      local total = 0
+      for _, charges in pairs(STATE.challenge_charge_map) do
+        total = total + (tonumber(charges) or 0)
+      end
+      return total
+    end
+    return STATE.challenge_charges or 0
+  end
+
+  local function get_challenge_charge_max_total()
+    if STATE.challenge_charge_map then
+      local count = 0
+      for _ in pairs(STATE.challenge_charge_map) do
+        count = count + 1
+      end
+      return count * (CONFIG.challenge_rules.max_charges or 0)
+    end
+    return CONFIG.challenge_rules.max_charges or 0
+  end
+
   local function format_attr_value(value)
     return round_number(value or 0)
   end
@@ -102,8 +124,8 @@ function M.create(env)
     )
     lines[#lines + 1] = string.format(
       '挑战：%d/%d  进行中 %d  待领奖励 %d  敌人数 %d',
-      STATE.challenge_charges or 0,
-      CONFIG.challenge_rules.max_charges or 0,
+      get_challenge_charge_total(),
+      get_challenge_charge_max_total(),
       get_active_challenge_count_value(),
       get_reward_queue_count(),
       STATE.total_enemy_alive or 0
@@ -172,7 +194,7 @@ function M.create(env)
       end
     elseif pending_kind == 'mark' then
       local runtime = get_mark_runtime()
-      lines[#lines + 1] = string.format('当前待选：%s', runtime.current_round and runtime.current_round.ui_title or '烙印选择')
+      lines[#lines + 1] = string.format('当前待选：%s', runtime.current_round and runtime.current_round.ui_title or '进化选择')
     else
       lines[#lines + 1] = '当前没有进行中的待选轮次。'
     end
@@ -278,7 +300,7 @@ function M.create(env)
         format_attr_value(env.get_treasure_passive_income('gold')),
         format_attr_value(env.get_treasure_passive_income('wood'))
       ),
-      string.format('构筑计数：宝物 %d / 3  烙印 %d  已解锁羁绊 %d',
+      string.format('构筑计数：宝物 %d / 3  进化 %d  已解锁羁绊 %d',
         get_treasure_active_count(),
         get_mark_active_count(),
         STATE.bond_runtime and #(STATE.bond_runtime.owned_node_order or {}) or 0
@@ -345,7 +367,7 @@ function M.create(env)
           lines = build_bond_overview_lines(),
         },
         treasures = {
-          title = '宝物与烙印',
+          title = '宝物与进化',
           lines = build_treasure_and_mark_overview_lines(),
         },
         pending = {

@@ -1,0 +1,517 @@
+{
+  "name": "panel_2",
+  "uid": "d917e963-6312-447c-a105-0cf4765e889b",
+  "type": 2,
+  "children": [
+    {
+      "name": "GameHUD",
+      "uid": "5e70809f-d40e-4678-845b-a2a8161396c4",
+      "type": 7,
+      "children": [
+        {
+          "name": "layout_3",
+          "uid": "493ccc09-51d1-46d7-940e-5ec0c3f19950",
+          "type": 7,
+          "children": [
+            {
+              "name": "diban",
+              "uid": "ffe85f4a-5745-4c15-af18-c53c017da55c",
+              "type": 4
+            },
+            {
+              "name": "inventory",
+              "uid": "d2ed42cd-a9c6-405d-a609-d039336ac185",
+              "type": 7,
+              "children": [
+                {
+                  "name": "equip_slot_bg_1",
+                  "uid": "de45a2af-f565-493d-8ce4-d4c465da1d07",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "equip_slot_1",
+                      "uid": "dfeade38-4020-4776-aa9e-f8eede3fca23",
+                      "type": 20,
+                      "children": [
+                        {
+                          "name": "bg",
+                          "uid": "fb348c72-452e-4c02-92be-7ac9be957fe7",
+                          "type": 4
+                        },
+                        {
+                          "name": "icon",
+                          "uid": "434de3c0-ce54-44d7-b90d-0c48d504285f",
+                          "type": 4
+                        },
+                        {
+                          "name": "stack",
+                          "uid": "321e73dd-8a6b-4db6-bdd4-b87fafafb694",
+                          "type": 3
+                        },
+                        {
+                          "name": "hot_key_bg",
+                          "uid": "662b1139-55c4-4ceb-af44-87f56be3df5c",
+                          "type": 4,
+                          "children": [
+                            {
+                              "name": "hot_key",
+                              "uid": "539001a4-3665-4ee0-b61b-19a55f0dc242",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "cd",
+                          "uid": "38beab90-209d-4f3a-8a7a-a38693cc33bc",
+                          "type": 5
+                        },
+                        {
+                          "name": "disable",
+                          "uid": "b229451b-9b48-47d6-87ac-1f3ed6fa577f",
+                          "type": 4
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "equip_slot_bg_2",
+                  "uid": "6a1bb98f-eb98-414d-aa1d-beac942da7bb",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "equip_slot_1",
+                      "uid": "67c1e4be-dff0-480d-b934-241f8bf36c83",
+                      "type": 20,
+                      "children": [
+                        {
+                          "name": "bg",
+                          "uid": "35cf62b1-b502-4197-a7cd-093f1b2a3093",
+                          "type": 4
+                        },
+                        {
+                          "name": "icon",
+                          "uid": "9bef488a-fb7d-49ad-b711-d619bb2d8ac3",
+                          "type": 4
+                        },
+                        {
+                          "name": "stack",
+                          "uid": "b7f5f347-55ac-4209-83c9-0a9af8620aa8",
+                          "type": 3
+                        },
+                        {
+                          "name": "hot_key_bg",
+                          "uid": "6aa815e9-a16e-4ff5-9779-4af738ef8271",
+                          "type": 4,
+                          "children": [
+                            {
+                              "name": "hot_key",
+                              "uid": "49e41a1e-1851-4061-9072-3d57f8d479d7",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "cd",
+                          "uid": "3ac3d8a7-1b36-4a0b-9d80-253f8a8b262e",
+                          "type": 5
+                        },
+                        {
+                          "name": "disable",
+                          "uid": "df659af2-a85a-438c-9e3a-0ec7141783e6",
+                          "type": 4
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "equip_slot_bg_3",
+                  "uid": "37ef1abc-fbd7-4d84-ad16-75cbb818e455",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "equip_slot_1",
+                      "uid": "00a87eb9-7f6a-47e2-b893-c90d1b02f855",
+                      "type": 20,
+                      "children": [
+                        {
+                          "name": "bg",
+                          "uid": "5e557420-89f6-4930-aaed-22b6357d4893",
+                          "type": 4
+                        },
+                        {
+                          "name": "icon",
+                          "uid": "e9d23fc2-89e3-4bcb-a044-e8d453e0040f",
+                          "type": 4
+                        },
+                        {
+                          "name": "stack",
+                          "uid": "591f1622-df25-4601-a703-b77c3500b2ad",
+                          "type": 3
+                        },
+                        {
+                          "name": "hot_key_bg",
+                          "uid": "6db2ba0a-16cb-477e-9abe-51867a9ff6a7",
+                          "type": 4,
+                          "children": [
+                            {
+                              "name": "hot_key",
+                              "uid": "9393c030-c381-4783-8163-12e59ba1ab2b",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "cd",
+                          "uid": "acc6ebda-a5b0-448d-9f09-942c46d41b15",
+                          "type": 5
+                        },
+                        {
+                          "name": "disable",
+                          "uid": "9f551634-d6db-4704-94d3-6a73c82dd1b6",
+                          "type": 4
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "equip_slot_bg_4",
+                  "uid": "553fb10d-ae31-4d34-8ac4-f3653377c28c",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "equip_slot_1",
+                      "uid": "650a4ef5-ad48-48a9-aa69-4b20cff974c0",
+                      "type": 20,
+                      "children": [
+                        {
+                          "name": "bg",
+                          "uid": "c1dfaa15-e720-4537-bd94-de3870ee1432",
+                          "type": 4
+                        },
+                        {
+                          "name": "icon",
+                          "uid": "b0ad4d1f-461d-41e1-ba3f-a497cf981177",
+                          "type": 4
+                        },
+                        {
+                          "name": "stack",
+                          "uid": "6e45fe65-5390-463c-91d7-e4636aa776e2",
+                          "type": 3
+                        },
+                        {
+                          "name": "hot_key_bg",
+                          "uid": "267c7603-a6cc-465f-85d0-572c1df5a68a",
+                          "type": 4,
+                          "children": [
+                            {
+                              "name": "hot_key",
+                              "uid": "6ba47d81-6856-4f1e-8466-43135fde13e3",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "cd",
+                          "uid": "f8fa94ea-45d7-489d-98d2-b7ce70f88895",
+                          "type": 5
+                        },
+                        {
+                          "name": "disable",
+                          "uid": "cddc3452-9c6a-46b5-baa4-566894e9181e",
+                          "type": 4
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "equip_slot_bg_5",
+                  "uid": "ca2b5f67-16db-434c-9c24-be0ffd262c04",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "equip_slot_1",
+                      "uid": "64d16b47-558b-4605-b155-abf0149818a3",
+                      "type": 20,
+                      "children": [
+                        {
+                          "name": "bg",
+                          "uid": "7627e308-fc36-4055-bc3b-405fde1b42f7",
+                          "type": 4
+                        },
+                        {
+                          "name": "icon",
+                          "uid": "54d4da83-db71-45a0-bc46-e6206aadc4f7",
+                          "type": 4
+                        },
+                        {
+                          "name": "stack",
+                          "uid": "3e47e042-aeea-4bab-9bee-8162ef0e18d9",
+                          "type": 3
+                        },
+                        {
+                          "name": "hot_key_bg",
+                          "uid": "37ae02db-a91c-4d22-a677-181fcf0c74a8",
+                          "type": 4,
+                          "children": [
+                            {
+                              "name": "hot_key",
+                              "uid": "b3901c85-624d-4831-8d03-0e0eac644cb9",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "cd",
+                          "uid": "39a20b19-010e-40fd-af94-3deda3fbcf6d",
+                          "type": 5
+                        },
+                        {
+                          "name": "disable",
+                          "uid": "5ed5c9e4-e3e4-4650-bfa6-4ecd5347794e",
+                          "type": 4
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "equip_slot_bg_6",
+                  "uid": "4ed0edfe-67de-4409-9eb8-3b857bcb6a81",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "equip_slot_1",
+                      "uid": "8eb1adc5-9036-4121-96c7-f7823e496872",
+                      "type": 20,
+                      "children": [
+                        {
+                          "name": "bg",
+                          "uid": "106f5ed3-d943-407a-a78e-36afd903ac9b",
+                          "type": 4
+                        },
+                        {
+                          "name": "icon",
+                          "uid": "8d62c7a3-2f8d-4a42-a863-c8875dc72503",
+                          "type": 4
+                        },
+                        {
+                          "name": "stack",
+                          "uid": "cc9e3d1a-af1e-449e-a1fb-5d956ef1185f",
+                          "type": 3
+                        },
+                        {
+                          "name": "hot_key_bg",
+                          "uid": "0f74e356-917e-499f-b185-fefdc5cb85f6",
+                          "type": 4,
+                          "children": [
+                            {
+                              "name": "hot_key",
+                              "uid": "e5783d15-6eef-42aa-a397-3f882a6a8d16",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "cd",
+                          "uid": "027238a6-af4b-44e2-9b54-683c80c974bb",
+                          "type": 5
+                        },
+                        {
+                          "name": "disable",
+                          "uid": "8b30d325-0c81-4ee0-a6e8-dc45252dd03f",
+                          "type": 4
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "image_4",
+              "uid": "f8fdf851-7af9-465a-967e-6b7e0b3eeb1d",
+              "type": 4
+            },
+            {
+              "name": "main_hp_bar",
+              "uid": "f0b50c7e-b3d5-46ef-94cf-e5cf7c59867a",
+              "type": 5
+            },
+            {
+              "name": "hp_value",
+              "uid": "3c97864c-8059-4f18-ba59-e89ad7db4389",
+              "type": 3
+            },
+            {
+              "name": "hp_recover",
+              "uid": "026ab9a2-cc9e-460a-87a4-9c79816d0762",
+              "type": 3
+            },
+            {
+              "name": "exp",
+              "uid": "1506e7cb-ea36-4062-85b8-7ad4cf590d05",
+              "type": 5
+            },
+            {
+              "name": "zuobian",
+              "uid": "bd0a273d-289c-4c49-8674-5593d3716b63",
+              "type": 7,
+              "children": [
+                {
+                  "name": "mingjie",
+                  "uid": "f9bffa51-b7b4-4d62-919f-e57d03970760",
+                  "type": 4
+                },
+                {
+                  "name": "liliang",
+                  "uid": "a0c705f3-64a7-4e8a-ac4d-1eb07a85e91d",
+                  "type": 4
+                },
+                {
+                  "name": "fangyu",
+                  "uid": "c59d77ef-cc9d-4d4c-9bd7-c264d46bf54a",
+                  "type": 4
+                },
+                {
+                  "name": "gongji",
+                  "uid": "aa180330-7f2e-445a-93d8-c49614218071",
+                  "type": 4
+                },
+                {
+                  "name": "zhili",
+                  "uid": "f6aa34c6-4b76-4adf-9dfa-e55b006b2d92",
+                  "type": 4
+                },
+                {
+                  "name": "gongji_text",
+                  "uid": "e3e055ba-ead2-46f0-bab7-92e680f6e56a",
+                  "type": 3
+                },
+                {
+                  "name": "fangyu_text",
+                  "uid": "316a693c-d0e2-488d-b567-a916a1a8c6e9",
+                  "type": 3
+                },
+                {
+                  "name": "liliang_text",
+                  "uid": "c49d413b-9f9c-4cc4-87c4-e82614ba3838",
+                  "type": 3
+                },
+                {
+                  "name": "mingjie_text",
+                  "uid": "1924088f-d47c-4a83-a82e-552d6d2cda37",
+                  "type": 3
+                },
+                {
+                  "name": "zhili_text",
+                  "uid": "bc9be7ef-616f-4ccf-b1fa-ac9facb60819",
+                  "type": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "jiban_list",
+          "uid": "6c82d705-007b-463d-aa88-2e858dbe6e19",
+          "type": 10,
+          "children": [
+            {
+              "name": "jiban",
+              "uid": "2fe6c19f-cc6c-45fa-8407-bae3e25e1717",
+              "type": 4
+            },
+            {
+              "name": "jiban_1",
+              "uid": "db9f8a51-fb64-450e-990f-c268d0c23112",
+              "type": 4
+            },
+            {
+              "name": "jiban_2",
+              "uid": "edb6019b-2343-42e4-a4ba-180e06be6e94",
+              "type": 4
+            },
+            {
+              "name": "jiban_3",
+              "uid": "c87cd7cb-333c-4b3f-893a-130455b08839",
+              "type": 4
+            },
+            {
+              "name": "jiban_4",
+              "uid": "5b50bbdc-0ec8-4a28-82d4-bcb36cdf5001",
+              "type": 4
+            },
+            {
+              "name": "jiban_5",
+              "uid": "ad48ef1b-1b58-4c6b-b98f-0a51a4159ec1",
+              "type": 4
+            },
+            {
+              "name": "jiban_6",
+              "uid": "f433da63-0ea8-49c8-b030-e0ad8c24bf12",
+              "type": 4
+            },
+            {
+              "name": "jiban_7",
+              "uid": "deb27208-aa3c-43f9-b14f-4343a349a7a0",
+              "type": 4
+            }
+          ]
+        },
+        {
+          "name": "skill_list",
+          "uid": "b4eca19f-cf6b-48ff-b0dd-37cc128ba4ae",
+          "type": 10,
+          "children": [
+            {
+              "name": "jiban",
+              "uid": "141f195f-cae9-4582-9a7f-9c1b853e2c23",
+              "type": 4
+            },
+            {
+              "name": "jiban_1",
+              "uid": "5ed99c8a-f182-4024-9a11-ef2d4288144f",
+              "type": 4
+            },
+            {
+              "name": "jiban_2",
+              "uid": "9270f02b-ed4e-4815-983d-34926d17f698",
+              "type": 4
+            },
+            {
+              "name": "jiban_3",
+              "uid": "9da6d8f6-47b7-485d-8ef0-942870ac80ac",
+              "type": 4
+            }
+          ]
+        },
+        {
+          "name": "zhudong_list",
+          "uid": "cb1edc99-e436-46e9-b80b-c802d85f9334",
+          "type": 10,
+          "children": [
+            {
+              "name": "zhudong",
+              "uid": "59065f3e-cba5-4af7-b8a3-23cc2754efdd",
+              "type": 4
+            },
+            {
+              "name": "zhudong_1",
+              "uid": "dd0e6550-9408-4971-9a21-54c98de3ab93",
+              "type": 4
+            },
+            {
+              "name": "zhudong_2",
+              "uid": "f7552ddc-0996-4e8e-9b81-a49e9629362e",
+              "type": 4
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

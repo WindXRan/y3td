@@ -1,8 +1,11 @@
 local M = {
     id = 'arcane_arrow',
-    name = '奥术箭',
-    summary = '射出 1 支奥术箭，造成能量魔法伤害。',
+    name = '青木灵矢',
+    summary = '射出 1 支青木灵矢，造成木行灵矢伤害。',
     damage_type = '法术',
+    damage_form = 'spell',
+    element = 'wood',
+    damage_label = '木行灵矢',
     base_damage_ratio = 0.8,
     base_cooldown = 2.0,
     base_range = 900,

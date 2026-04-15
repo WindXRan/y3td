@@ -33,6 +33,7 @@ def main() -> None:
         "package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path "
         "local cfg = require('entry_data.hero_attr_config') "
         "assert(cfg.hero_init_stats['攻击白字'] == 46) "
+        "assert(cfg.hero_init_stats['攻击范围'] == 1400) "
         "assert(cfg.hero_init_stats['攻击绿字'] == 0) "
         "assert(cfg.hero_init_stats['生命白字'] == 900) "
         "assert(cfg.hero_init_stats['生命绿字'] == 0) "

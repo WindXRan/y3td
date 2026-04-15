@@ -1,0 +1,38 @@
+treasure_id,order_index,effect_type,effect_key,op,value,scope,condition,notes
+ITEM_001,1,ratio_bonus,杀敌加成,add,0.20,permanent,,杀敌加成
+ITEM_002,1,ratio_bonus,杀敌金币,add,0.20,permanent,,杀敌金币加成
+ITEM_003,1,ratio_bonus,杀敌经验,add,0.20,permanent,,杀敌经验加成
+ITEM_004,1,temporary_buff,物理暴击,add,0.50,30s,,神符持续 30 秒
+ITEM_004,2,temporary_buff,魔法暴击,add,0.50,30s,,神符持续 30 秒
+ITEM_005,1,temporary_buff,攻击速度,add,200,30s,,神符持续 30 秒
+ITEM_006,1,resource_gain,gold,add,20000,instant,,立即获得金币
+ITEM_007,1,resource_gain,gold,add,5000,instant,,立即获得金币
+ITEM_007,2,refresh_count,treasure_refresh_free,add,1,instant,,宝物免费刷新次数
+ITEM_008,1,mechanic_toggle,rune_store_mode,set,1,permanent,,神符改为入包
+ITEM_009,1,trigger_growth,力量增幅,add,0.05,per_trigger,on_rune_trigger,每次触发神符效果生效
+ITEM_009,2,trigger_growth,敏捷增幅,add,0.05,per_trigger,on_rune_trigger,每次触发神符效果生效
+ITEM_009,3,trigger_growth,智力增幅,add,0.05,per_trigger,on_rune_trigger,每次触发神符效果生效
+ITEM_010,1,refresh_count,skill_refresh_free,add,1,instant,,技能免费刷新次数
+ITEM_010,2,refresh_count,hero_refresh_free,add,1,instant,,英雄免费刷新次数
+ITEM_010,3,refresh_count,treasure_refresh_free,add,1,instant,,宝物免费刷新次数
+ITEM_011,1,trigger_growth,random_attr_point,add,1,per_trigger,on_spend_500_gold,每消耗 500 金币触发一次
+ITEM_012,1,ratio_bonus,力量增幅,add,0.20,instant,,重分配前先增幅
+ITEM_012,2,ratio_bonus,敏捷增幅,add,0.20,instant,,重分配前先增幅
+ITEM_012,3,ratio_bonus,智力增幅,add,0.20,instant,,重分配前先增幅
+ITEM_012,4,mechanic_toggle,randomize_base_stats,set,1,instant,,三维重新随机分配
+ITEM_013,1,probability,力量增幅,add,0.25,instant,0.50,正面结果
+ITEM_013,2,probability,敏捷增幅,add,0.25,instant,0.50,正面结果
+ITEM_013,3,probability,智力增幅,add,0.25,instant,0.50,正面结果
+ITEM_013,4,probability,力量增幅,add,-0.15,instant,0.50,负面结果
+ITEM_013,5,probability,敏捷增幅,add,-0.15,instant,0.50,负面结果
+ITEM_013,6,probability,智力增幅,add,-0.15,instant,0.50,负面结果
+ITEM_014,1,probability,wood_ratio,add,1.00,instant,0.55,木材翻倍
+ITEM_014,2,probability,wood_clear,set,1,instant,0.45,木材清零
+ITEM_015,1,ratio_bonus,魔法暴伤,add,0.20,permanent,,魔法暴伤
+ITEM_016,1,ratio_bonus,物理暴伤,add,0.20,permanent,,物理暴伤
+ITEM_017,1,flat_bonus,kill_count,add,600,instant,,直接增加杀敌数
+ITEM_018,1,ratio_bonus,力量增幅,add,0.10,permanent,,力量增幅
+ITEM_019,1,ratio_bonus,敏捷增幅,add,0.10,permanent,,敏捷增幅
+ITEM_020,1,ratio_bonus,智力增幅,add,0.10,permanent,,智力增幅
+ITEM_021,1,conditional_damage,damage_ratio,add,0.15,permanent,target_hp_gt_0.70,攻坚效果
+ITEM_022,1,conditional_damage,damage_ratio,add,0.15,permanent,target_hp_lte_0.30,压制效果

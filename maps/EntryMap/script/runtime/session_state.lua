@@ -21,6 +21,7 @@ function M.create(env)
   local get_enemy_player = env.get_enemy_player
   local create_hero = env.create_hero
   local initialize_hero_progression = env.initialize_hero_progression
+  local ensure_gear_runtime = env.ensure_gear_runtime
   local setup_basic_attack_ability = env.setup_basic_attack_ability
   local ensure_runtime_hud = env.ensure_runtime_hud
   local set_battle_hud_visible = env.set_battle_hud_visible
@@ -28,6 +29,21 @@ function M.create(env)
 
   local function is_battle_active()
     return STATE.session_phase == 'battle' and STATE.game_finished ~= true
+  end
+
+  local function reset_challenge_charge_state()
+    STATE.challenge_charge_map = {}
+    STATE.challenge_recover_elapsed_map = {}
+
+    local total = 0
+    for challenge_id in pairs(CONFIG.challenges or {}) do
+      STATE.challenge_charge_map[challenge_id] = CONFIG.challenge_rules.initial_charges
+      STATE.challenge_recover_elapsed_map[challenge_id] = 0
+      total = total + (CONFIG.challenge_rules.initial_charges or 0)
+    end
+
+    STATE.challenge_charges = total
+    STATE.challenge_recover_elapsed = 0
   end
 
   local function reset_battle_state()
@@ -63,8 +79,7 @@ function M.create(env)
     STATE.skill_runtime = create_skill_runtime()
     STATE.attack_skill_state = create_attack_skill_state()
     STATE.reward_queue = {}
-    STATE.challenge_charges = CONFIG.challenge_rules.initial_charges
-    STATE.challenge_recover_elapsed = 0
+    reset_challenge_charge_state()
     STATE.bond_draw_count = 0
     STATE.defeated_boss_waves = {}
     STATE.basic_attack_ability_bound = false
@@ -155,6 +170,9 @@ function M.create(env)
     get_enemy_player():set_hostility(get_player(), true)
 
     STATE.hero = create_hero()
+    if ensure_gear_runtime then
+      ensure_gear_runtime(STATE, CONFIG.gear_upgrade_config)
+    end
     if hero_attr_system and STATE.hero then
       hero_attr_system.snapshot(STATE.hero, STATE)
       if hero_attr_system.log_snapshot then
@@ -172,13 +190,7 @@ function M.create(env)
     set_battle_hud_visible(true)
     refresh_runtime_hud()
 
-    message(string.format('已进入 %s %s。', stage_def.display_name, mode_def.display_name))
     if stage_def.content_source_stage_id and stage_def.content_source_stage_id ~= stage_def.stage_id then
-      message(string.format(
-        '%s 当前暂复用 %s 的战斗内容。',
-        stage_def.display_name,
-        tostring(content_source_stage_def.stage_id or stage_def.content_source_stage_id)
-      ))
     end
 
     env.start_wave(1)

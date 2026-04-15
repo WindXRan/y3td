@@ -1,0 +1,41 @@
+{
+  "name": "resource",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "layout_1",
+      "uid": "7100d051-21ae-4960-abf9-b9b044fca35f",
+      "type": 7,
+      "children": [
+        {
+          "name": "floor",
+          "uid": "81ee3cef-99bc-49c8-89a0-e6b9af0e0fe8",
+          "type": 4,
+          "children": [
+            {
+              "name": "icon",
+              "uid": "e1dd2b5a-d30f-48eb-81cd-afff1ca63b15",
+              "type": 4
+            },
+            {
+              "name": "persecondadd",
+              "uid": "a500060e-f277-437d-886a-11498db2bc2c",
+              "type": 3
+            },
+            {
+              "name": "num",
+              "uid": "5cd97d79-2217-42bb-8e6f-bddaefdf2206",
+              "type": 3
+            },
+            {
+              "name": "extraadd",
+              "uid": "1bc3faa0-e883-448d-8050-e662ec4633c5",
+              "type": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

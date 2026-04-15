@@ -13,6 +13,67 @@ function M.create(env)
 
   local api = {}
 
+  local function get_challenge_recover_sec(challenge_id)
+    local def = CONFIG.challenges and CONFIG.challenges[challenge_id]
+    local recover_sec = def and tonumber(def.recover_sec)
+    if recover_sec and recover_sec > 0 then
+      return recover_sec
+    end
+    return CONFIG.challenge_rules.recover_sec or 0
+  end
+
+  local function refresh_legacy_challenge_summary()
+    local total_charges = 0
+    local min_remain = nil
+    local has_partial = false
+    local max_charges = CONFIG.challenge_rules.max_charges or 0
+
+    for challenge_id in pairs(CONFIG.challenges or {}) do
+      local charges = STATE.challenge_charge_map and STATE.challenge_charge_map[challenge_id]
+      charges = tonumber(charges) or 0
+      total_charges = total_charges + charges
+
+      if charges < max_charges then
+        has_partial = true
+        local recover_sec = get_challenge_recover_sec(challenge_id)
+        local elapsed = STATE.challenge_recover_elapsed_map and STATE.challenge_recover_elapsed_map[challenge_id] or 0
+        local remain = math.max(0, recover_sec - (tonumber(elapsed) or 0))
+        if min_remain == nil or remain < min_remain then
+          min_remain = remain
+        end
+      end
+    end
+
+    STATE.challenge_charges = total_charges
+    STATE.challenge_recover_elapsed = has_partial and (min_remain or 0) or 0
+  end
+
+  local function get_challenge_charge_count(challenge_id)
+    if STATE.challenge_charge_map and STATE.challenge_charge_map[challenge_id] ~= nil then
+      return tonumber(STATE.challenge_charge_map[challenge_id]) or 0
+    end
+    return tonumber(STATE.challenge_charges) or 0
+  end
+
+  local function set_challenge_charge_count(challenge_id, value)
+    STATE.challenge_charge_map = STATE.challenge_charge_map or {}
+    STATE.challenge_charge_map[challenge_id] = math.max(0, tonumber(value) or 0)
+    refresh_legacy_challenge_summary()
+  end
+
+  local function get_challenge_recover_elapsed(challenge_id)
+    if STATE.challenge_recover_elapsed_map and STATE.challenge_recover_elapsed_map[challenge_id] ~= nil then
+      return tonumber(STATE.challenge_recover_elapsed_map[challenge_id]) or 0
+    end
+    return tonumber(STATE.challenge_recover_elapsed) or 0
+  end
+
+  local function set_challenge_recover_elapsed(challenge_id, value)
+    STATE.challenge_recover_elapsed_map = STATE.challenge_recover_elapsed_map or {}
+    STATE.challenge_recover_elapsed_map[challenge_id] = math.max(0, tonumber(value) or 0)
+    refresh_legacy_challenge_summary()
+  end
+
   local function has_unit_data(unit_id)
     return unit_id ~= nil and y3.object.unit[unit_id] and y3.object.unit[unit_id].data ~= nil
   end
@@ -139,6 +200,8 @@ function M.create(env)
           end
         elseif info.kind == 'boss' then
           env.award_rewards(env.build_reward_with_bond_bonus(info.reward), get_boss_name(info.wave), false)
+        elseif info.kind == 'challenge' and info.reward then
+          env.award_rewards(env.build_reward_with_bond_bonus(info.reward), nil, true)
         end
       end
 
@@ -153,6 +216,9 @@ function M.create(env)
       STATE.total_kills = (STATE.total_kills or 0) + 1
 
       if info.kind == 'boss' then
+        if env.on_mainline_task_cleared then
+          env.on_mainline_task_cleared()
+        end
         STATE.defeated_boss_waves[info.wave.index] = true
         if info.wave.index >= #CONFIG.waves then
           finish_game(true, '击败最终 Boss。')
@@ -351,7 +417,6 @@ function M.create(env)
       next_spawn_sec = 0,
     }
 
-    message(string.format('%s 开始，Boss 将在 %.0f 秒后加入战场。', wave.name, design_seconds(wave.boss_spawn_sec)))
     if env.on_wave_started then
       env.on_wave_started(index)
     end
@@ -396,7 +461,7 @@ function M.create(env)
           owner = instance,
           is_boss = true,
           is_elite = true,
-          reward = nil,
+          reward = instance.def.kill_reward,
         })
         instance.infos[#instance.infos + 1] = boss_info
         for _ = 1, batch.count - 1, 1 do
@@ -404,7 +469,7 @@ function M.create(env)
             kind = 'challenge',
             owner = instance,
             is_elite = true,
-            reward = nil,
+            reward = instance.def.kill_reward,
           })
           instance.infos[#instance.infos + 1] = info
         end
@@ -414,7 +479,7 @@ function M.create(env)
             kind = 'challenge',
             owner = instance,
             is_elite = true,
-            reward = nil,
+            reward = instance.def.kill_reward,
           })
           instance.infos[#instance.infos + 1] = info
         end
@@ -424,7 +489,7 @@ function M.create(env)
         local info = spawn_enemy(instance.def.unit_id, instance.def.spawn_area_id, 180.0, {
           kind = 'challenge',
           owner = instance,
-          reward = nil,
+          reward = instance.def.kill_reward,
         })
         instance.infos[#instance.infos + 1] = info
       end
@@ -454,15 +519,16 @@ function M.create(env)
       return
     end
 
-    if STATE.challenge_charges < def.cost_charge then
+    if get_challenge_charge_count(challenge_id) < def.cost_charge then
       message('挑战次数不足。')
       return
     end
 
-    local recharge_was_full = STATE.challenge_charges >= CONFIG.challenge_rules.max_charges
-    STATE.challenge_charges = STATE.challenge_charges - def.cost_charge
+    local current_charges = get_challenge_charge_count(challenge_id)
+    local recharge_was_full = current_charges >= (CONFIG.challenge_rules.max_charges or 0)
+    set_challenge_charge_count(challenge_id, current_charges - def.cost_charge)
     if recharge_was_full then
-      STATE.challenge_recover_elapsed = 0
+      set_challenge_recover_elapsed(challenge_id, 0)
     end
 
     local instance = {
@@ -547,17 +613,23 @@ function M.create(env)
       return
     end
 
-    if STATE.challenge_charges >= CONFIG.challenge_rules.max_charges then
-      STATE.challenge_recover_elapsed = 0
-      return
-    end
+    local max_charges = CONFIG.challenge_rules.max_charges or 0
 
-    STATE.challenge_recover_elapsed = STATE.challenge_recover_elapsed + dt
-    while STATE.challenge_charges < CONFIG.challenge_rules.max_charges
-      and STATE.challenge_recover_elapsed >= CONFIG.challenge_rules.recover_sec do
-      STATE.challenge_recover_elapsed = STATE.challenge_recover_elapsed - CONFIG.challenge_rules.recover_sec
-      STATE.challenge_charges = STATE.challenge_charges + 1
-      message(string.format('挑战次数 +1，当前 %d/%d。', STATE.challenge_charges, CONFIG.challenge_rules.max_charges))
+    for challenge_id, def in pairs(CONFIG.challenges or {}) do
+      local recover_sec = get_challenge_recover_sec(challenge_id)
+      local current = get_challenge_charge_count(challenge_id)
+      if current >= max_charges then
+        set_challenge_recover_elapsed(challenge_id, 0)
+      else
+        local elapsed = get_challenge_recover_elapsed(challenge_id) + dt
+        while current < max_charges and elapsed >= recover_sec do
+          elapsed = elapsed - recover_sec
+          current = current + 1
+          set_challenge_charge_count(challenge_id, current)
+          message(string.format('%s 次数 +1，当前 %d/%d。', def.name or challenge_id, current, max_charges))
+        end
+        set_challenge_recover_elapsed(challenge_id, elapsed)
+      end
     end
   end
 
@@ -602,6 +674,24 @@ function M.create(env)
     return 1
   end
 
+  local function build_hero_entry_stats()
+    local result = {}
+
+    for attr_name, value in pairs(CONFIG.hero_init_stats or {}) do
+      result[attr_name] = value
+    end
+
+    local profile = STATE.outgame_profile
+    local bonus_stats = profile and profile.hero_attr_bonus_stats or nil
+    for attr_name, value in pairs(bonus_stats or {}) do
+      local base_value = tonumber(result[attr_name]) or 0
+      local bonus_value = tonumber(value) or 0
+      result[attr_name] = base_value + bonus_value
+    end
+
+    return result
+  end
+
   local function schedule_hero_spawn_attr_logs(hero)
     if not hero_attr_system or not hero_attr_system.log_snapshot or not y3 or not y3.ltimer then
       return
@@ -625,13 +715,14 @@ function M.create(env)
   function api.create_hero(basic_attack_range)
     local hero = env.get_player():create_unit(CONFIG.unit_ids.hero, STATE.hero_spawn_point, 0)
     env.get_player():select_unit(hero)
+    local hero_entry_stats = build_hero_entry_stats()
 
     hero:set_name('守关英雄')
     if hero_attr_system and hero_attr_system.log_snapshot then
       hero_attr_system.log_snapshot(hero, 'create_hero_before_init', string.format('basic_attack_range=%s', tostring(basic_attack_range or 250)))
     end
-    hero_attr_system.init_hero_attrs(hero, CONFIG.hero_init_stats)
-    hero_attr_system.set_attr(hero, '攻击范围', basic_attack_range or 250)
+    hero_attr_system.init_hero_attrs(hero, hero_entry_stats)
+    hero_attr_system.set_attr(hero, '攻击范围', tonumber(hero_entry_stats['攻击范围']) or basic_attack_range or 1400)
     hero:add_state('禁止普攻')
 
     hero:add_state('禁止移动')

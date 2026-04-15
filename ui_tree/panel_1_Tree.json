@@ -1,5 +1,56 @@
 {
   "name": "panel_1",
   "uid": "bfa58868-0dd0-4bcb-9ec5-39a28a69b624",
-  "type": 2
+  "type": 2,
+  "children": [
+    {
+      "name": "tophud",
+      "uid": "c5a71f4f-8d97-4627-980f-65b068a426bb",
+      "type": 7,
+      "children": [
+        {
+          "name": "layout_2",
+          "uid": "5e6f6c23-6133-40f8-8648-9a89eb590fcf",
+          "type": 7,
+          "children": [
+            {
+              "name": "image_3",
+              "uid": "da21c3d2-4b07-432c-87df-698dac2f2467",
+              "type": 4
+            },
+            {
+              "name": "image_3_1",
+              "uid": "968f5f3e-3327-4754-8b23-1e94ec3aa509",
+              "type": 4
+            },
+            {
+              "name": "wave",
+              "uid": "bcfdea87-f490-45f5-946e-4230ec3a546b",
+              "type": 3
+            },
+            {
+              "name": "wavetime",
+              "uid": "34274527-9bd0-4656-bff5-92949530da7a",
+              "type": 3
+            },
+            {
+              "name": "tips",
+              "uid": "d95028ae-6d25-4bf4-b24c-aa61f362a878",
+              "type": 3
+            },
+            {
+              "name": "curlevel",
+              "uid": "a9b240ee-a65b-4aa6-963f-9f886cb780c3",
+              "type": 3
+            },
+            {
+              "name": "gametime",
+              "uid": "6c8163a7-f701-4624-b538-f53744817e0d",
+              "type": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

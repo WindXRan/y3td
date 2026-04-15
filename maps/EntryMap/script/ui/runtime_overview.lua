@@ -178,7 +178,7 @@ function M.create(env)
       summary = create_section(root, scaled(36, scale), scaled(494, scale), scaled(592, scale), scaled(178, scale), '战况摘要'),
       skills = create_section(root, scaled(36, scale), scaled(260, scale), scaled(592, scale), scaled(214, scale), '攻击技能'),
       bonds = create_section(root, scaled(36, scale), scaled(34, scale), scaled(592, scale), scaled(206, scale), '链式羁绊'),
-      treasures = create_section(root, scaled(672, scale), scaled(494, scale), scaled(592, scale), scaled(178, scale), '宝物与烙印'),
+      treasures = create_section(root, scaled(672, scale), scaled(494, scale), scaled(592, scale), scaled(178, scale), '宝物与进化'),
       pending = create_section(root, scaled(672, scale), scaled(260, scale), scaled(592, scale), scaled(214, scale), '待处理轮次'),
       progress = create_section(root, scaled(672, scale), scaled(34, scale), scaled(592, scale), scaled(206, scale), '链路进度'),
     }

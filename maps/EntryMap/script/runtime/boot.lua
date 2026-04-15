@@ -9,7 +9,6 @@ local OverviewModelSystem = require 'runtime.overview_model'
 local SessionStateSystem = require 'runtime.session_state'
 local InputEventsSystem = require 'runtime.input_events'
 local RuntimeLoopsSystem = require 'runtime.loops'
-local RuntimeOverviewSystem = require 'ui.runtime_overview'
 local OutgameSystem = require 'ui.outgame'
 local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
@@ -17,6 +16,7 @@ local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
 local EffectDebugSystem = require 'runtime.effect_debug'
 local BattleEventFeedSystem = require 'runtime.battle_event_feed'
 local RewardSystem = require 'runtime.rewards'
+local GearUpgrades = require 'runtime.gear_upgrades'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
 local HeroAttrPanel = require 'runtime.hero_attr_panel'
@@ -29,7 +29,6 @@ local debug_tools_system
 local debug_actions_system
 local runtime_hud_system
 local choice_panel_system
-local runtime_overview_system
 local overview_model_system
 local outgame_system
 local session_state_system
@@ -108,6 +107,27 @@ local function create_skill_runtime()
 end
 
 local ATTACK_SKILL_DEFS = AttackSkillObjects.defs_by_id
+local ATTACK_SKILL_BLUEPRINTS = AttackSkillObjects.blueprints
+
+local function resolve_damage_meta(damage)
+  if type(damage) == 'table' then
+    return {
+      damage_type = damage.damage_type or '法术',
+      damage_form = damage.damage_form or (damage.damage_type == '物理' and 'weapon' or 'spell'),
+      element = damage.element or 'none',
+      damage_label = damage.damage_label or (damage.damage_type == '物理' and '兵刃伤害' or '术法伤害'),
+    }
+  end
+
+  local legacy_damage_type = damage or '法术'
+  return {
+    damage_type = legacy_damage_type,
+    damage_form = legacy_damage_type == '物理' and 'weapon' or 'spell',
+    element = 'none',
+    damage_label = legacy_damage_type == '物理' and '兵刃伤害' or '术法伤害',
+  }
+end
+
 local function create_attack_skill_instance(skill_id, slot)
   local def = ATTACK_SKILL_DEFS[skill_id]
   return {
@@ -116,6 +136,9 @@ local function create_attack_skill_instance(skill_id, slot)
     slot = slot or def.default_slot or 0,
     summary = def.summary,
     damage_type = def.damage_type,
+    damage_form = def.damage_form,
+    element = def.element,
+    damage_label = def.damage_label,
     level = 1,
     unlocked = true,
     damage_ratio = def.base_damage_ratio or 0,
@@ -349,6 +372,7 @@ local reset_battle_state
 local reset_session_state
 local set_battle_hud_visible
 local refresh_runtime_overview
+local mainline_task_system
 
 progression_system = ProgressionSystem.create({
   STATE = STATE,
@@ -441,6 +465,20 @@ reward_system = RewardSystem.create({
   end,
   collect_bond_route_tags = function()
     return BondSystem.collect_route_tags(STATE)
+  end,
+})
+
+mainline_task_system = require('runtime.mainline_tasks').create({
+  STATE = STATE,
+  CONFIG = CONFIG,
+  round_number = round_number,
+  message = message,
+  add_hero_attr_pack = add_hero_attr_pack,
+  award_rewards = function(reward, source_text, silent)
+    return award_rewards(reward, source_text, silent)
+  end,
+  queue_treasure_round = function(source_type, source_name)
+    return reward_system.queue_treasure_round(source_type, source_name)
   end,
 })
 
@@ -775,13 +813,12 @@ local function get_enemies_in_range(center, radius, except_unit, max_count)
   return result
 end
 
-local function resolve_damage_text_type(damage_type, visual)
+local function resolve_damage_text_type(damage_form, visual)
   if visual and visual.text_type then
     return visual.text_type
   end
 
-  if damage_type == ATTACK_SKILL_DEFS.basic_attack.damage_type
-      or damage_type == ATTACK_SKILL_DEFS.flame_arrow.damage_type then
+  if damage_form == 'weapon' then
     return 'physics'
   end
 
@@ -857,12 +894,18 @@ local function build_reward_with_bond_bonus(reward)
 end
 
 
-local function deal_skill_damage(target, amount, damage_type, visual)
+local function deal_skill_damage(target, amount, damage, visual)
   if not STATE.hero or not STATE.hero:is_exist() or not is_active_enemy(target) then
     return
   end
 
-  local final_damage = math.floor((amount or 0) * hero_attr_system.get_damage_multiplier(STATE.hero, damage_type or '法术', 'skill') * get_damage_bonus_multiplier(target, {
+  local damage_meta = resolve_damage_meta(damage)
+  local final_damage = math.floor((amount or 0) * hero_attr_system.get_damage_multiplier(
+    STATE.hero,
+    damage_meta.damage_form or damage_meta.damage_type,
+    'skill',
+    damage_meta.element
+  ) * get_damage_bonus_multiplier(target, {
     is_skill = true,
   }))
   if final_damage <= 0 then
@@ -872,8 +915,8 @@ local function deal_skill_damage(target, amount, damage_type, visual)
   STATE.hero:damage({
     target = target,
     damage = final_damage,
-    type = damage_type or '法术',
-    text_type = resolve_damage_text_type(damage_type, visual),
+    type = damage_meta.damage_type or '法术',
+    text_type = resolve_damage_text_type(damage_meta.damage_form, visual),
     text_track = visual and visual.text_track or 934269508,
     particle = visual and visual.particle or nil,
     socket = visual and visual.socket or '',
@@ -1008,8 +1051,27 @@ local function show_runtime_status()
     challenge_count = challenge_count + 1
   end
 
+  local challenge_charge_text = ''
+  if STATE.challenge_charge_map then
+    local parts = {}
+    for _, challenge_id in ipairs({ 'gold_trial', 'wood_trial', 'exp_trial', 'treasure_trial' }) do
+      local def = CONFIG.challenges and CONFIG.challenges[challenge_id]
+      if def then
+        parts[#parts + 1] = string.format(
+          '%s %d/%d',
+          tostring(def.hotkey or challenge_id),
+          tonumber(STATE.challenge_charge_map[challenge_id]) or 0,
+          CONFIG.challenge_rules.max_charges or 0
+        )
+      end
+    end
+    challenge_charge_text = table.concat(parts, ' ')
+  else
+    challenge_charge_text = string.format('%d/%d', STATE.challenge_charges, CONFIG.challenge_rules.max_charges)
+  end
+
   message(string.format(
-    '状态：%s，%s，英雄 %s，敌人数 %d，金币 %d，木材 %d，技能点 %d，挑战次数 %d/%d，进行中挑战 %d，待领奖励 %d。',
+    '状态：%s，%s，英雄 %s，敌人数 %d，金币 %d，木材 %d，技能点 %d，挑战次数 %s，进行中挑战 %d，待领奖励 %d。',
     wave_text,
     boss_text,
     get_hero_progress_text(),
@@ -1017,21 +1079,10 @@ local function show_runtime_status()
     STATE.resources.gold,
     STATE.resources.wood,
     STATE.skill_points,
-    STATE.challenge_charges,
-    CONFIG.challenge_rules.max_charges,
+    challenge_charge_text,
     challenge_count,
     get_reward_queue_count()
   ))
-  show_attack_skill_loadout()
-  BondSystem.show_loadout(create_bond_env())
-  show_mark_loadout()
-  show_treasure_loadout()
-  if get_mark_runtime().awaiting_choice then
-    show_mark_choices()
-  end
-  if get_treasure_runtime().awaiting_choice or get_treasure_runtime().awaiting_replace then
-    show_treasure_choices()
-  end
 end
 
 local function trigger_td_skills_on_hit(data)
@@ -1152,6 +1203,9 @@ battlefield_system = BattlefieldSystem.create({
   end,
   on_wave_started = function(wave_index)
     return reward_system.handle_wave_started(wave_index)
+  end,
+  on_mainline_task_cleared = function(task)
+    return mainline_task_system.handle_task_cleared(task)
   end,
   on_boss_spawned = function(boss_info)
     return reward_system.handle_boss_spawned(boss_info)
@@ -1307,6 +1361,8 @@ effect_debug_system = EffectDebugSystem.create({
 attack_upgrade_system = AttackUpgradeSystem.create({
   STATE = STATE,
   message = message,
+  ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS,
+  ATTACK_SKILL_BLUEPRINTS = ATTACK_SKILL_BLUEPRINTS,
   get_attack_skill = get_attack_skill,
   get_empty_attack_skill_slot = get_empty_attack_skill_slot,
   get_unlocked_attack_skill_count = get_unlocked_attack_skill_count,
@@ -1354,7 +1410,7 @@ local function get_pending_round_choice_label(kind)
     return 'F 链式羁绊'
   end
   if kind == 'mark' then
-    return '烙印选择'
+    return '进化选择'
   end
   if kind == 'treasure' then
     return '宝物选择'
@@ -1663,10 +1719,17 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
     )
   end,
   get_current_stage_text = function()
+    local mainline_summary = mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary()
+    if mainline_summary and mainline_summary.title_text then
+      return mainline_summary.title_text
+    end
     if STATE.current_stage_def and STATE.current_stage_def.display_name then
       return STATE.current_stage_def.display_name
     end
     return '主线 1-1'
+  end,
+  get_mainline_task_summary = function()
+    return mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary() or nil
   end,
   apply_round_choice = apply_round_choice,
   show_upgrade_choices = show_upgrade_choices,
@@ -1711,19 +1774,6 @@ choice_panel_system = (function()
   })
 end)()
 
-runtime_overview_system = RuntimeOverviewSystem.create({
-  STATE = STATE,
-  y3 = y3,
-  round_number = round_number,
-  get_player = get_player,
-  get_runtime_overview_model = function()
-    return get_runtime_overview_model()
-  end,
-  toggle_overview = function(force_visible)
-    return runtime_overview_system.toggle_overview(force_visible)
-  end,
-})
-
 local function ensure_runtime_hud()
   return runtime_hud_system.ensure_hud()
 end
@@ -1753,9 +1803,6 @@ local function destroy_choice_panel()
 end
 
 local function refresh_runtime_overview()
-  if runtime_overview_system and runtime_overview_system.refresh_overview then
-    runtime_overview_system.refresh_overview()
-  end
 end
 
 local function build_attr_tip_panel_text()
@@ -1808,9 +1855,6 @@ set_battle_hud_visible = function(visible)
   if choice_panel_system and choice_panel_system.set_visible then
     choice_panel_system.set_visible(visible)
   end
-  if runtime_overview_system and runtime_overview_system.set_visible and visible ~= true then
-    runtime_overview_system.set_visible(false)
-  end
 end
 
 local function create_hero()
@@ -1842,6 +1886,9 @@ session_state_system = SessionStateSystem.create({
   get_enemy_player = get_enemy_player,
   create_hero = create_hero,
   initialize_hero_progression = initialize_hero_progression,
+  ensure_gear_runtime = function(state, config)
+    return GearUpgrades.ensure_runtime(state, config)
+  end,
   setup_basic_attack_ability = setup_basic_attack_ability,
   ensure_runtime_hud = ensure_runtime_hud,
   set_battle_hud_visible = function(visible)
@@ -1898,13 +1945,8 @@ input_events_system = InputEventsSystem.create({
   show_bond_progress = function()
     return BondSystem.show_bond_progress(create_bond_env())
   end,
-  ensure_runtime_overview = function()
-    runtime_overview_system.ensure_panel()
-    runtime_overview_system.toggle_overview()
-  end,
   show_runtime_attr_overview = function()
-    runtime_overview_system.ensure_panel()
-    runtime_overview_system.set_visible(true)
+    show_runtime_attr_dialog()
   end,
   show_runtime_attr_tip_panel = function()
     show_runtime_attr_tip_panel(8)
@@ -1969,22 +2011,6 @@ function M.bootstrap()
   debug_tools_system.ensure_gm_panel()
   outgame_system.load_profile()
   outgame_system.enter_outgame(nil)
-  message('局外选关已启动：先选择章节与模式，再进入战斗。')
-  message('开发模式坐标校准：.epos / .eset hero / .eset defense / .earea main_spawn_wave_1 280 360 / .edump')
-  message(string.format(
-    '当前临时物编：英雄=%s，1-5波主怪=%s/%s/%s/%s/%s。',
-    CONFIG.temp_unit_labels.hero,
-    CONFIG.temp_unit_labels.wave_1_main,
-    CONFIG.temp_unit_labels.wave_2_main,
-    CONFIG.temp_unit_labels.wave_3_main,
-    CONFIG.temp_unit_labels.wave_4_main,
-    CONFIG.temp_unit_labels.wave_5_main
-  ))
-  if CONFIG.debug_time_scale < 1 then
-    message(string.format('当前为调试模式，时间缩放为 %.1f 倍，便于快速验证波次与挑战流程。', CONFIG.debug_time_scale))
-    message('调试快捷键已启用：按 Ctrl+F1 查看完整说明。')
-    message('GM 调试面板已挂到右上角；也可按 Ctrl+F10 快速折叠。')
-  end
 end
 
 return M

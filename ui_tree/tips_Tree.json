@@ -1,0 +1,26 @@
+{
+  "name": "tips",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "layout_3",
+      "uid": "102af470-4533-496c-9f55-63ab9ef18012",
+      "type": 7,
+      "children": [
+        {
+          "name": "image_4",
+          "uid": "bfc42302-e5d0-4929-9842-ae64b81a3b5e",
+          "type": 4,
+          "children": [
+            {
+              "name": "label_2",
+              "uid": "847de9a0-e879-48bb-be01-88a335060619",
+              "type": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

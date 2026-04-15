@@ -124,6 +124,27 @@ function M.create(env)
     message('[DEBUG] ' .. text)
   end
 
+  local function build_challenge_charge_text()
+    local max_charges = CONFIG.challenge_rules.max_charges or 0
+    if not STATE.challenge_charge_map then
+      return string.format('%d/%d', format_int(STATE.challenge_charges or 0), format_int(max_charges))
+    end
+
+    local parts = {}
+    for _, challenge_id in ipairs({ 'gold_trial', 'wood_trial', 'exp_trial', 'treasure_trial' }) do
+      local def = CONFIG.challenges and CONFIG.challenges[challenge_id]
+      if def then
+        parts[#parts + 1] = string.format(
+          '%s %d/%d',
+          tostring(def.hotkey or challenge_id),
+          format_int(STATE.challenge_charge_map[challenge_id] or 0),
+          format_int(max_charges)
+        )
+      end
+    end
+    return table.concat(parts, '  ')
+  end
+
   local function show_debug_hotkey_help()
     debug_message('Ctrl+F1：显示调试快捷键说明')
     debug_message('Ctrl+F2：补 500 金币 / 300 木材 / 5 技能点')
@@ -286,7 +307,7 @@ function M.create(env)
     })
 
     develop_command.register('ETREASURE', {
-      desc = '直接获得指定宝物，如 .etreasure battle_horn [replace_slot]',
+      desc = '直接获得指定宝物，如 .etreasure ITEM_004 [replace_slot]',
       onCommand = function(treasure_id, replace_slot)
         if not treasure_id or treasure_id == '' then
           message('用法：.etreasure <treasure_id> [replace_slot]')
@@ -331,8 +352,6 @@ function M.create(env)
     local gold = STATE.resources and STATE.resources.gold or 0
     local wood = STATE.resources and STATE.resources.wood or 0
     local skill_points = STATE.skill_points or 0
-    local challenge_charges = STATE.challenge_charges or 0
-    local max_charges = CONFIG.challenge_rules.max_charges or 0
     local enemy_alive = STATE.total_enemy_alive or 0
     local challenge_count = env.get_active_challenge_count()
 
@@ -341,7 +360,7 @@ function M.create(env)
       get_gm_panel_boss_text(),
       string.format('英雄：Lv.%d    敌人数：%d', hero_level, enemy_alive),
       string.format('金币：%d    木材：%d', gold, wood),
-      string.format('技能点：%d    挑战次数：%d/%d', skill_points, challenge_charges, max_charges),
+      string.format('技能点：%d    挑战次数：%s', skill_points, build_challenge_charge_text()),
       string.format('进行中挑战：%d', challenge_count),
     }, '\n')
   end
@@ -373,8 +392,6 @@ function M.create(env)
     local gold = STATE.resources and STATE.resources.gold or 0
     local wood = STATE.resources and STATE.resources.wood or 0
     local skill_points = STATE.skill_points or 0
-    local challenge_charges = STATE.challenge_charges or 0
-    local max_charges = CONFIG.challenge_rules.max_charges or 0
     local enemy_alive = STATE.total_enemy_alive or 0
     local challenge_count = env.get_active_challenge_count()
 
@@ -383,7 +400,7 @@ function M.create(env)
       get_gm_panel_boss_text(),
       string.format('英雄：Lv.%d    敌人数：%d', format_int(hero_level), format_int(enemy_alive)),
       string.format('金币：%d    木材：%d', format_int(gold), format_int(wood)),
-      string.format('技能点：%d    挑战次数：%d/%d', format_int(skill_points), format_int(challenge_charges), format_int(max_charges)),
+      string.format('技能点：%d    挑战次数：%s', format_int(skill_points), build_challenge_charge_text()),
       string.format('进行中挑战：%d', format_int(challenge_count)),
     }, '\n')
   end

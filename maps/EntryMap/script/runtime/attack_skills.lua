@@ -776,7 +776,7 @@ function M.create(env)
           return
         end
         for _, unit in ipairs(get_enemies_in_range(center, burst_radius)) do
-          deal_skill_damage(unit, damage * burst_ratio, skill.damage_type, {
+          deal_skill_damage(unit, damage * burst_ratio, skill, {
             particle = vfx.impact_particle,
           })
         end
@@ -788,7 +788,7 @@ function M.create(env)
       end
   
       if is_active_enemy(target) then
-        deal_skill_damage(target, damage, skill.damage_type)
+        deal_skill_damage(target, damage, skill)
         trigger_arcane_burst(center or target)
         remaining_hits = remaining_hits - 1
       end
@@ -798,7 +798,7 @@ function M.create(env)
       end
   
       for _, unit in ipairs(get_enemies_in_range(center or target, 320, target, remaining_hits)) do
-        deal_skill_damage(unit, damage, skill.damage_type, {
+        deal_skill_damage(unit, damage, skill, {
           particle = vfx.impact_particle,
         })
         trigger_arcane_burst(unit:get_point())
@@ -811,7 +811,7 @@ function M.create(env)
       if secondary_targets > 0 then
         local hit_count = 0
         for _, unit in ipairs(get_enemies_in_range(center or target, 360, target, secondary_targets)) do
-          deal_skill_damage(unit, damage, skill.damage_type, {
+          deal_skill_damage(unit, damage, skill, {
             particle = vfx.impact_particle,
           })
           trigger_arcane_burst(unit:get_point())
@@ -850,7 +850,7 @@ function M.create(env)
       end
   
       if is_active_enemy(target) then
-        deal_skill_damage(target, get_skill_damage(skill), skill.damage_type)
+        deal_skill_damage(target, get_skill_damage(skill), skill)
         apply_ignite(target)
       end
   
@@ -863,7 +863,7 @@ function M.create(env)
       end
   
       for _, unit in ipairs(get_enemies_in_range(center or target, skill.explosion_radius)) do
-        deal_skill_damage(unit, explosion_damage, skill.damage_type, {
+        deal_skill_damage(unit, explosion_damage, skill, {
           particle = vfx.explosion_particle,
         })
         apply_ignite(unit)
@@ -897,7 +897,7 @@ function M.create(env)
   
       if is_active_enemy(target) then
         local damage_multiplier = get_enemy_status(target, 'frost_lock') and (1 + shatter_bonus) or 1
-        deal_skill_damage(target, damage * damage_multiplier, skill.damage_type)
+        deal_skill_damage(target, damage * damage_multiplier, skill)
         apply_frost_arrow_control(skill, target)
         remaining_hits = remaining_hits - 1
       end
@@ -915,7 +915,7 @@ function M.create(env)
         target
       )) do
         local damage_multiplier = get_enemy_status(unit, 'frost_lock') and (1 + shatter_bonus) or 1
-        deal_skill_damage(unit, damage * damage_multiplier, skill.damage_type, {
+        deal_skill_damage(unit, damage * damage_multiplier, skill, {
           particle = vfx.impact_particle,
         })
         apply_frost_arrow_control(skill, unit)
@@ -928,7 +928,7 @@ function M.create(env)
       if shard_count > 0 and shard_ratio > 0 then
         local hit_count = 0
         for _, unit in ipairs(get_enemies_in_range(center or target, 300, target, shard_count)) do
-          deal_skill_damage(unit, damage * shard_ratio, skill.damage_type, {
+          deal_skill_damage(unit, damage * shard_ratio, skill, {
             particle = vfx.impact_particle,
           })
           hit_count = hit_count + 1
@@ -983,14 +983,14 @@ function M.create(env)
           return
         end
         for _, unit in ipairs(get_enemies_in_range(center, field_radius)) do
-          deal_skill_damage(unit, damage * field_ratio, skill.damage_type, {
+          deal_skill_damage(unit, damage * field_ratio, skill, {
             particle = vfx.chain_particle,
           })
         end
       end
 
       if is_active_enemy(target) then
-        deal_skill_damage(target, damage * get_shock_multiplier(target), skill.damage_type, {
+        deal_skill_damage(target, damage * get_shock_multiplier(target), skill, {
           particle = vfx.impact_particle,
         })
         apply_shock(target)
@@ -1004,7 +1004,7 @@ function M.create(env)
       local hit_count = 0
       for _, unit in ipairs(get_enemies_in_range(strike_center, 420, target, extra_targets)) do
         play_particle_on_point(unit:get_point(), vfx.chain_particle, vfx.chain_scale, vfx.chain_time, 0)
-        deal_skill_damage(unit, damage * get_shock_multiplier(unit), skill.damage_type, {
+        deal_skill_damage(unit, damage * get_shock_multiplier(unit), skill, {
           particle = vfx.chain_particle,
         })
         apply_shock(unit)
@@ -1060,7 +1060,7 @@ function M.create(env)
             target,
             multishot_count
           )) do
-            deal_skill_damage(unit, damage * multishot_ratio, skill.damage_type, {
+            deal_skill_damage(unit, damage * multishot_ratio, skill, {
               text_type = 'physics',
               skip_hunter_first_hit = true,
             })
