@@ -38,6 +38,7 @@ require_files(
     "csv foundation files present",
     [
         "data/csv_loader.lua",
+        "data/object_tables/attreffect.lua",
         "data/object_tables/treasure_catalog.lua",
         "data/object_tables/bond_nodes.lua",
         "data/object_tables/marks.lua",
@@ -49,6 +50,7 @@ require_files(
         "data/object_tables/gear_upgrade_config.lua",
         "data/object_tables/battle_base_config.lua",
         "data/object_tables/outgame_attr_bonus_config.lua",
+        "tools/test_attreffect_csv_loader_smoke.lua",
     ],
 )
 
@@ -90,6 +92,7 @@ require_files(
 require_files(
     "second batch csv files present",
     [
+        "data_csv/attreffect.csv",
         "data_csv/marks.csv",
         "data_csv/mark_bonus_attr.csv",
         "data_csv/mark_bonus_runtime.csv",
@@ -116,6 +119,11 @@ require_files(
         "data_csv/evolution_pool_rules.csv",
         "data/object_tables/evolution_nodes.lua",
     ],
+)
+
+run_check(
+    "attreffect csv loader smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_attreffect_csv_loader_smoke.lua"],
 )
 
 run_check(
