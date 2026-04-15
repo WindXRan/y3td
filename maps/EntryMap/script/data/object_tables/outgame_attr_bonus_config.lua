@@ -1,24 +1,30 @@
-local CsvLoader = require 'data.csv_loader'
+local AttrEffect = require 'data.object_tables.attreffect'
 
-local rows = CsvLoader.read_rows('data_csv/outgame_attr_bonuses.csv')
+local rows = AttrEffect.by_source.outgame_bonus or {}
 
 local list = {}
 local by_stage_mode = {}
 
-for _, row in ipairs(rows) do
-  local entry = {
-    stage_id = row.stage_id,
-    mode_id = row.mode_id,
-    order_index = tonumber(row.order_index) or 0,
-    attr_name = row.attr_name,
-    value = tonumber(row.value) or 0,
-  }
-  list[#list + 1] = entry
+for source_id, bucket in pairs(rows) do
+  local stage_id, mode_id = tostring(source_id):match('^(.-):(.-)$')
+  assert(stage_id ~= nil and mode_id ~= nil, 'invalid outgame_bonus source_id: ' .. tostring(source_id))
 
-  by_stage_mode[entry.stage_id] = by_stage_mode[entry.stage_id] or {}
-  by_stage_mode[entry.stage_id][entry.mode_id] = by_stage_mode[entry.stage_id][entry.mode_id] or {}
-  local bucket = by_stage_mode[entry.stage_id][entry.mode_id]
-  bucket[entry.attr_name] = (bucket[entry.attr_name] or 0) + entry.value
+  by_stage_mode[stage_id] = by_stage_mode[stage_id] or {}
+  by_stage_mode[stage_id][mode_id] = by_stage_mode[stage_id][mode_id] or {}
+
+  for _, row in ipairs(bucket.ordered or {}) do
+    if row.effect_kind == 'attr' then
+      local entry = {
+        stage_id = stage_id,
+        mode_id = mode_id,
+        order_index = row.order_index,
+        attr_name = row.effect_key,
+        value = row.value,
+      }
+      list[#list + 1] = entry
+      by_stage_mode[stage_id][mode_id][row.effect_key] = (by_stage_mode[stage_id][mode_id][row.effect_key] or 0) + row.value
+    end
+  end
 end
 
 table.sort(list, function(a, b)

@@ -248,4 +248,12 @@ mark,void_mark,4,attack_skill,cooldown_reduction,0.12
 mark,war_god_mark,1,attr,伤害加成,12
 mark,war_god_mark,2,runtime,normal_attack_damage_bonus,0.20
 mark,war_god_mark,3,runtime,skill_damage_bonus,0.20
+outgame_bonus,1-1:challenge,3,attr,攻击范围,50
 outgame_bonus,1-1:standard,1,attr,攻击白字,6
+outgame_bonus,1-1:standard,2,attr,生命白字,120
+outgame_bonus,1-2:challenge,6,attr,攻击范围,80
+outgame_bonus,1-2:standard,4,attr,攻击白字,8
+outgame_bonus,1-2:standard,5,attr,生命白字,180
+outgame_bonus,1-3:challenge,9,attr,攻击范围,120
+outgame_bonus,1-3:standard,7,attr,攻击白字,10
+outgame_bonus,1-3:standard,8,attr,生命白字,240
