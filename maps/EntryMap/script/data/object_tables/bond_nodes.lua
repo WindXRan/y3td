@@ -1,11 +1,8 @@
 local CsvLoader = require 'data.csv_loader'
+local AttrEffect = require 'data.object_tables.attreffect'
 
 local node_rows = CsvLoader.read_rows('data_csv/bond_nodes.csv')
-local attr_rows = CsvLoader.read_rows('data_csv/bond_node_attr.csv')
-local runtime_rows = CsvLoader.read_rows('data_csv/bond_node_runtime.csv')
-
-local attr_groups = CsvLoader.group_by(attr_rows, 'node_id')
-local runtime_groups = CsvLoader.group_by(runtime_rows, 'node_id')
+local bond_effects = AttrEffect.by_source.bond_node or {}
 
 local function split_pipe_list(raw)
   if raw == nil or raw == '' then
@@ -19,15 +16,27 @@ local function split_pipe_list(raw)
   return result
 end
 
-local function build_number_map(rows, key_field)
+local function clone_number_map(source)
   local result = {}
-  for _, row in ipairs(rows or {}) do
-    local key = row[key_field]
-    if key and key ~= '' then
-      result[key] = tonumber(row.value) or 0
-    end
+  for key, value in pairs(source or {}) do
+    result[key] = tonumber(value) or 0
   end
   return result
+end
+
+local function build_unlock_rewards(effect_bucket)
+  local resource = effect_bucket and effect_bucket.resource or nil
+  local rewards = {}
+  if resource and resource.gold ~= nil then
+    rewards.gold = tonumber(resource.gold) or 0
+  end
+  if resource and resource.wood ~= nil then
+    rewards.wood = tonumber(resource.wood) or 0
+  end
+  if resource and resource.exp ~= nil then
+    rewards.exp = tonumber(resource.exp) or 0
+  end
+  return rewards
 end
 
 local function node(def)
@@ -46,16 +55,7 @@ end
 local list = {}
 
 for _, row in ipairs(node_rows) do
-  local unlock_rewards = {}
-  if row.unlock_gold ~= '' then
-    unlock_rewards.gold = tonumber(row.unlock_gold) or 0
-  end
-  if row.unlock_wood ~= '' then
-    unlock_rewards.wood = tonumber(row.unlock_wood) or 0
-  end
-  if row.unlock_exp ~= '' then
-    unlock_rewards.exp = tonumber(row.unlock_exp) or 0
-  end
+  local effect_bucket = bond_effects[row.id] or {}
 
   list[#list + 1] = node({
     id = row.id,
@@ -70,9 +70,9 @@ for _, row in ipairs(node_rows) do
     quality = row.quality ~= '' and row.quality or 'rare',
     icon = row.icon ~= '' and (tonumber(row.icon) or row.icon) or nil,
     editor_skill_id = row.editor_skill_id ~= '' and (tonumber(row.editor_skill_id) or row.editor_skill_id) or nil,
-    unlock_rewards = unlock_rewards,
-    attr = build_number_map(attr_groups[row.id], 'attr_name'),
-    runtime = build_number_map(runtime_groups[row.id], 'runtime_key'),
+    unlock_rewards = build_unlock_rewards(effect_bucket),
+    attr = clone_number_map(effect_bucket.attr),
+    runtime = clone_number_map(effect_bucket.runtime),
     desc = {
       single = row.desc_single ~= '' and row.desc_single or nil,
       advanced = row.desc_advanced ~= '' and row.desc_advanced or nil,

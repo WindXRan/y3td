@@ -1,5 +1,6 @@
 package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
+local attreffect = require 'data.object_tables.attreffect'
 local bond_nodes = require 'data.object_tables.bond_nodes'
 local bond_root_sets = require 'data.object_tables.bond_root_sets'
 local bond_draw_config = require 'data.object_tables.bond_draw_config'
@@ -7,6 +8,19 @@ local bond_draw_config = require 'data.object_tables.bond_draw_config'
 assert(type(bond_nodes.list) == 'table', 'bond_nodes.list should be a table')
 assert(type(bond_root_sets.list) == 'table', 'bond_root_sets.list should be a table')
 assert(type(bond_draw_config.group_choice_defs) == 'table', 'bond_draw_config.group_choice_defs should be a table')
+
+local vitality_effects = attreffect.by_source.bond_node and attreffect.by_source.bond_node['bond_body_core_vitality']
+assert(vitality_effects ~= nil, 'expected bond vitality effect rows in attreffect')
+assert(vitality_effects.attr['力量'] == 50, 'expected bond vitality strength effect')
+assert(vitality_effects.attr['生命'] == 100, 'expected bond vitality hp effect')
+
+local momentum_effects = attreffect.by_source.bond_node and attreffect.by_source.bond_node['bond_body_core_momentum']
+assert(momentum_effects ~= nil, 'expected bond momentum effect rows in attreffect')
+assert(momentum_effects.runtime['all_damage_bonus'] == 0.04, 'expected momentum runtime bonus')
+
+local strength_effects = attreffect.by_source.bond_node and attreffect.by_source.bond_node['bond_growth_strength']
+assert(strength_effects ~= nil, 'expected bond strength effect rows in attreffect')
+assert(strength_effects.resource['wood'] == 50, 'expected bond unlock wood reward in attreffect')
 
 local root_set_ids = {}
 for _, root_set in ipairs(bond_root_sets.list or {}) do

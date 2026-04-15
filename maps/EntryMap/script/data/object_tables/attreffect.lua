@@ -57,6 +57,7 @@ local VALID_ATTACK_SKILL_KEYS = {
 local COMPAT_ATTR_KEYS = {
   ['伤害加成'] = true,
   ['杀敌数'] = true,
+  ['技能急速'] = true,
 }
 
 local function validate_attr_key(key)
