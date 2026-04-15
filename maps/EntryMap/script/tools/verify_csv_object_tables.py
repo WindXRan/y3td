@@ -58,8 +58,6 @@ require_files(
     "bond csv files present",
     [
         "data_csv/bond_nodes.csv",
-        "data_csv/bond_node_attr.csv",
-        "data_csv/bond_node_runtime.csv",
         "data_csv/bond_node_aliases.csv",
         "data_csv/bond_pick_rules.csv",
         "data_csv/bond_pick_weights.csv",
@@ -75,6 +73,7 @@ require_files(
         "data_csv/bond_runtime_attr_aliases.csv",
         "data_csv/bond_manual_color_keywords.csv",
         "data_csv/bond_per_second_attr_keys.csv",
+        "data_csv/attreffect.csv",
     ],
 )
 
@@ -94,8 +93,6 @@ require_files(
     [
         "data_csv/attreffect.csv",
         "data_csv/marks.csv",
-        "data_csv/mark_bonus_attr.csv",
-        "data_csv/mark_bonus_runtime.csv",
         "data_csv/mark_tags.csv",
         "data_csv/stages.csv",
         "data_csv/stage_modes.csv",
@@ -108,7 +105,6 @@ require_files(
         "data_csv/battle_base_rules.csv",
         "data_csv/battlefield_scene_config.csv",
         "data_csv/choice_panel_config.csv",
-        "data_csv/outgame_attr_bonuses.csv",
     ],
 )
 
@@ -134,6 +130,21 @@ run_check(
 run_check(
     "marks catalog consistency smoke executed",
     ["lua", "maps/EntryMap/script/tools/test_marks_catalog_consistency_smoke.lua"],
+)
+
+run_check(
+    "mainline task rewards csv loader smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_mainline_task_rewards_csv_loader_smoke.lua"],
+)
+
+run_check(
+    "mainline task runtime smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_mainline_task_runtime_smoke.lua"],
+)
+
+run_check(
+    "mainline task rewards damage vocab static executed",
+    ["py", "-3", "maps/EntryMap/script/tools/test_mainline_task_rewards_damage_vocab_static.py"],
 )
 
 run_check(

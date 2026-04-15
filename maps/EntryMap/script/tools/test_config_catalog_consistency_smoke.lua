@@ -1,6 +1,7 @@
 package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
 local CsvLoader = require 'data.csv_loader'
+local attreffect = require 'data.object_tables.attreffect'
 local waves = require 'data.object_tables.waves'
 local challenges = require 'data.object_tables.challenges'
 local battlefield_scene_config = require 'data.object_tables.battlefield_scene_config'
@@ -14,7 +15,6 @@ local hero_level_progression_rows = CsvLoader.read_rows('data_csv/hero_level_pro
 local battle_base_rows = CsvLoader.read_rows('data_csv/battle_base_rules.csv')
 local choice_panel_rows = CsvLoader.read_rows('data_csv/choice_panel_config.csv')
 local battlefield_scene_rows = CsvLoader.read_rows('data_csv/battlefield_scene_config.csv')
-local outgame_attr_bonus_rows = CsvLoader.read_rows('data_csv/outgame_attr_bonuses.csv')
 local gear_upgrade_slot_rows = CsvLoader.read_rows('data_csv/gear_upgrade_slots.csv')
 local gear_upgrade_level_rows = CsvLoader.read_rows('data_csv/gear_upgrade_levels.csv')
 
@@ -77,18 +77,17 @@ for _, mode in ipairs(stage_modes.list or {}) do
 end
 
 local seen_outgame_attr_bonus_keys = {}
-for _, row in ipairs(outgame_attr_bonus_rows) do
-  assert(row.stage_id ~= nil and row.stage_id ~= '', 'expected outgame_attr_bonuses stage_id')
-  assert(stage_ids[row.stage_id] == true, 'expected outgame_attr_bonuses stage_id to exist: ' .. tostring(row.stage_id))
-  assert(row.mode_id ~= nil and row.mode_id ~= '', 'expected outgame_attr_bonuses mode_id')
-  assert(mode_ids[row.mode_id] == true, 'expected outgame_attr_bonuses mode_id to exist: ' .. tostring(row.mode_id))
-  assert(row.order_index ~= nil and row.order_index ~= '', 'expected outgame_attr_bonuses order_index')
-  assert(row.attr_name ~= nil and row.attr_name ~= '', 'expected outgame_attr_bonuses attr_name')
-  assert(hero_attr_defs.by_name[row.attr_name] ~= nil, 'expected outgame_attr_bonuses attr_name to exist: ' .. tostring(row.attr_name))
-  assert(row.value ~= nil and row.value ~= '', 'expected outgame_attr_bonuses value')
-  local scoped_key = row.stage_id .. '::' .. row.mode_id .. '::' .. row.attr_name
-  assert(seen_outgame_attr_bonus_keys[scoped_key] == nil, 'expected unique outgame_attr_bonuses scoped key: ' .. scoped_key)
-  seen_outgame_attr_bonus_keys[scoped_key] = true
+for source_id, bucket in pairs(attreffect.by_source.outgame_bonus or {}) do
+  local stage_id, mode_id = tostring(source_id):match('^(.-):(.-)$')
+  assert(stage_id ~= nil and stage_ids[stage_id] == true, 'expected outgame_bonus stage to exist: ' .. tostring(source_id))
+  assert(mode_id ~= nil and mode_ids[mode_id] == true, 'expected outgame_bonus mode to exist: ' .. tostring(source_id))
+  for _, row in ipairs(bucket.ordered or {}) do
+    assert(row.effect_kind == 'attr', 'expected outgame_bonus rows to stay attr-only')
+    assert(hero_attr_defs.by_name[row.effect_key] ~= nil, 'expected outgame attr key to exist: ' .. tostring(row.effect_key))
+    local scoped_key = stage_id .. '::' .. mode_id .. '::' .. row.effect_key
+    assert(seen_outgame_attr_bonus_keys[scoped_key] == nil, 'expected unique outgame_bonus scoped key: ' .. scoped_key)
+    seen_outgame_attr_bonus_keys[scoped_key] = true
+  end
 end
 
 local seen_gear_slots = {}

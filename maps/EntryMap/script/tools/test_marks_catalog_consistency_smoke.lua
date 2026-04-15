@@ -6,13 +6,10 @@ local marks = require 'data.object_tables.marks'
 
 assert(type(marks) == 'table', 'marks should return a table')
 assert(type(marks.list) == 'table', 'marks.list should be a table')
+assert(type(attreffect.list) == 'table', 'attreffect.list should be a table')
 
-local attr_rows = CsvLoader.read_rows('data_csv/mark_bonus_attr.csv')
-local runtime_rows = CsvLoader.read_rows('data_csv/mark_bonus_runtime.csv')
 local tag_rows = CsvLoader.read_rows('data_csv/mark_tags.csv')
 
-assert(attr_rows[1] ~= nil and attr_rows[1].order_index ~= nil and attr_rows[1].order_index ~= '', 'expected mark_bonus_attr order_index')
-assert(runtime_rows[1] ~= nil and runtime_rows[1].order_index ~= nil and runtime_rows[1].order_index ~= '', 'expected mark_bonus_runtime order_index')
 assert(tag_rows[1] ~= nil and tag_rows[1].order_index ~= nil and tag_rows[1].order_index ~= '', 'expected mark_tags order_index')
 
 local storm_effects = attreffect.by_source.mark and attreffect.by_source.mark['storm_mark']
