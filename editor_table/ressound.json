@@ -1,1 +1,11 @@
-{}
+{
+    "134223345": {
+        "Format": "ogg", 
+        "SoundPath": "134223345", 
+        "default_editor_id": 134223345, 
+        "describe": "", 
+        "key": "134223345", 
+        "name": "SFX_UI_Click_D", 
+        "uid": "res_sound_134223345"
+    }
+}

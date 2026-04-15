@@ -7,14 +7,35 @@
     "__tuple__": true, 
     "items": [
      "bfa58868-0dd0-4bcb-9ec5-39a28a69b624", 
-     "panel_1"
+     "top"
     ]
    }, 
    {
     "__tuple__": true, 
     "items": [
-     "d917e963-6312-447c-a105-0cf4765e889b", 
-     "panel_2"
+     "d32051a3-0908-4abc-a8b9-61365fdec708", 
+     "CardSetEffectTipPanel"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "d5e1196c-e380-4cf3-964c-8ad3da08591d", 
+     "MainlineTaskPanel"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "e9f1b912-8be1-45a8-9acb-6674fd7df3d8", 
+     "\u81ea\u8d70\u68cb\u56fe\u9274_UI"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "35274c25-43dc-428d-9e1c-0e4135e65b74", 
+     "\u7269\u54c1\u8bf4\u660e"
     ]
    }, 
    {
@@ -22,6 +43,20 @@
     "items": [
      "bea2ea16-5932-4d1c-815e-22c49d611e65", 
      "ShopItemDetailPanel"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "970943c1-8d78-405e-ac37-896598c03a2d", 
+     "bottom_bg"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "7029d6cb-b7c1-4fc6-936d-f2b5c6f67bef", 
+     "\u80cc\u5305\u7cfb\u7edf"
     ]
    }
   ]

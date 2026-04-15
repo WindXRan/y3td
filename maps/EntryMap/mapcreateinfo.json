@@ -4,5 +4,25 @@
         3
     ], 
     "lua_script_preset": "y3", 
-    "object_template_preset": "default"
+    "object_template_preset": "default", 
+    "plugin_name_index": {
+        "4ef95f14-7b10-479f-bbce-18881e9f08e6": [
+            "tY9rCzh1EfG9gnWyv+tFV+", 
+            "tY9vUTh1EfGKb3Wyv+tFV3", 
+            "tY9xYzh1EfGYtnWyv+tFV4", 
+            "tY9y8jh1EfGd-HWyv+tFVz"
+        ], 
+        "7842bf22-0b60-4fe1-bd70-13179c880b49": [
+            "BD6efzmHEfG+QK8vlGLNbZ", 
+            "BD6hMjmHEfGweK8vlGLNbY", 
+            "BD6iHDmHEfGtn68vlGLNbY", 
+            "BD6i-TmHEfG+zK8vlGLNbR"
+        ], 
+        "a0b4094d-ccda-431e-b7ca-9b9f4b58f9c5": [
+            "idE1qzi1EfGKzt+XyC-aAK", 
+            "idFKhDi1EfGaZ9+XyC-aAF", 
+            "idFbKji1EfGnTt+XyC-aAP", 
+            "idFpwDi1EfGNCN+XyC-aAA"
+        ]
+    }
 }

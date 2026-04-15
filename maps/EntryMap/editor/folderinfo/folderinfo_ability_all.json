@@ -314,6 +314,42 @@
     "9b1tTC89EfGfDw+W-YeSBB", 
     "Common Attacks"
    ]
+  }, 
+  {
+   "__tuple__": true, 
+   "items": [
+    "/2147483647", 
+    32, 
+    "tnM9jjh1EfG3ZnWyv+tFV7", 
+    "War3HUD"
+   ]
+  }, 
+  {
+   "__tuple__": true, 
+   "items": [
+    "/2147483647", 
+    33, 
+    "imoNGji1EfG+jN+XyC-aAH", 
+    "\u81ea\u8d70\u68cb\u56fe\u9274_\u6280\u80fd"
+   ]
+  }, 
+  {
+   "__tuple__": true, 
+   "items": [
+    "/2147483647/imoNGji1EfG+jN+XyC-aAH", 
+    0, 
+    "imoROzi1EfG0z9+XyC-aAO", 
+    "\u81ea\u8d70\u68cb\u56fe\u9274_\u5355\u4f4d\u6280\u80fd"
+   ]
+  }, 
+  {
+   "__tuple__": true, 
+   "items": [
+    "/2147483647/imoNGji1EfG+jN+XyC-aAH", 
+    1, 
+    "inFNazi1EfGsId+XyC-aAC", 
+    "\u81ea\u8d70\u68cb\u56fe\u9274_\u9886\u8896\u6280\u80fd"
+   ]
   }
  ], 
  "d": {
@@ -2009,6 +2045,125 @@
    "items": [
     2147483647, 
     31
+   ]
+  }, 
+  "134231271": {
+   "__tuple__": true, 
+   "items": [
+    "tnM9jjh1EfG3ZnWyv+tFV7", 
+    0
+   ]
+  }, 
+  "134248646": {
+   "__tuple__": true, 
+   "items": [
+    "tnM9jjh1EfG3ZnWyv+tFV7", 
+    1
+   ]
+  }, 
+  "134234237": {
+   "__tuple__": true, 
+   "items": [
+    "tnM9jjh1EfG3ZnWyv+tFV7", 
+    2
+   ]
+  }, 
+  "134254265": {
+   "__tuple__": true, 
+   "items": [
+    "tnM9jjh1EfG3ZnWyv+tFV7", 
+    3
+   ]
+  }, 
+  "134252545": {
+   "__tuple__": true, 
+   "items": [
+    "tnM9jjh1EfG3ZnWyv+tFV7", 
+    4
+   ]
+  }, 
+  "134239790": {
+   "__tuple__": true, 
+   "items": [
+    "tnM9jjh1EfG3ZnWyv+tFV7", 
+    5
+   ]
+  }, 
+  "134258304": {
+   "__tuple__": true, 
+   "items": [
+    "tnM9jjh1EfG3ZnWyv+tFV7", 
+    6
+   ]
+  }, 
+  "134243535": {
+   "__tuple__": true, 
+   "items": [
+    "imoROzi1EfG0z9+XyC-aAO", 
+    0
+   ]
+  }, 
+  "134245698": {
+   "__tuple__": true, 
+   "items": [
+    "imoROzi1EfG0z9+XyC-aAO", 
+    1
+   ]
+  }, 
+  "134254807": {
+   "__tuple__": true, 
+   "items": [
+    "imoROzi1EfG0z9+XyC-aAO", 
+    2
+   ]
+  }, 
+  "134235234": {
+   "__tuple__": true, 
+   "items": [
+    "imoROzi1EfG0z9+XyC-aAO", 
+    3
+   ]
+  }, 
+  "134221716": {
+   "__tuple__": true, 
+   "items": [
+    "inFNazi1EfGsId+XyC-aAC", 
+    0
+   ]
+  }, 
+  "134282172": {
+   "__tuple__": true, 
+   "items": [
+    "inFNazi1EfGsId+XyC-aAC", 
+    1
+   ]
+  }, 
+  "134279401": {
+   "__tuple__": true, 
+   "items": [
+    "inFNazi1EfGsId+XyC-aAC", 
+    2
+   ]
+  }, 
+  "134275233": {
+   "__tuple__": true, 
+   "items": [
+    "inFNazi1EfGsId+XyC-aAC", 
+    3
+   ]
+  }, 
+  "134280752": {
+   "__tuple__": true, 
+   "items": [
+    "inFNazi1EfGsId+XyC-aAC", 
+    4
+   ]
+  }, 
+  "134258246": {
+   "__tuple__": true, 
+   "items": [
+    "inFNazi1EfGsId+XyC-aAC", 
+    5
    ]
   }
  }

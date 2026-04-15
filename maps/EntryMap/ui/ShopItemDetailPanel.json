@@ -9,35 +9,63 @@
                 false, 
                 false, 
                 false, 
-                16.0, 
-                304.0, 
+                16.0004, 
+                303.9996, 
                 20.0, 
                 1400.0
             ], 
             "children": [
                 {
+                    "adapter_option": [
+                        false, 
+                        false, 
+                        false, 
+                        false, 
+                        0.1818, 
+                        -9.8182, 
+                        -19.5454, 
+                        -5.5454
+                    ], 
+                    "cap_insets": {
+                        "__tuple__": true, 
+                        "items": [
+                            45, 
+                            62, 
+                            45, 
+                            62
+                        ]
+                    }, 
                     "children": [], 
+                    "color": [
+                        0, 
+                        0, 
+                        0, 
+                        254
+                    ], 
                     "event_list": [], 
-                    "image": 906555, 
+                    "image": 907031, 
                     "name": "image_panel_bg", 
                     "open_adapter": true, 
                     "pos_data": {
                         "__tuple__": true, 
                         "items": [
-                            250.0, 
-                            380.0, 
-                            50.0, 
-                            50.0, 
+                            243.0, 
+                            375.0, 
+                            48.6, 
+                            49.3421, 
                             1, 
                             1
                         ]
                     }, 
                     "prefab_sub_key": null, 
                     "scene_ui_name": null, 
-                    "size": [
-                        500.0, 
-                        760.0
-                    ], 
+                    "size": {
+                        "__tuple__": true, 
+                        "items": [
+                            525.0909, 
+                            769.6363
+                        ]
+                    }, 
                     "type": 4, 
                     "uid": "a3930973-b33b-4692-905a-2b49a1b15e73"
                 }, 
@@ -88,9 +116,24 @@
                         30.0, 
                         356.0
                     ], 
+                    "cap_insets": {
+                        "__tuple__": true, 
+                        "items": [
+                            118, 
+                            109, 
+                            118, 
+                            109
+                        ]
+                    }, 
                     "children": [], 
+                    "color": [
+                        11, 
+                        0, 
+                        0, 
+                        254
+                    ], 
                     "event_list": [], 
-                    "image": 100061, 
+                    "image": 132093, 
                     "name": "image_item_icon", 
                     "open_adapter": true, 
                     "pos_data": {
@@ -860,6 +903,6 @@
     "type": 2, 
     "ui_anims": [], 
     "uid": "bea2ea16-5932-4d1c-815e-22c49d611e65", 
-    "visible": true, 
+    "visible": false, 
     "zorder": 300
 }

@@ -10,6 +10,7 @@ local SessionStateSystem = require 'runtime.session_state'
 local InputEventsSystem = require 'runtime.input_events'
 local RuntimeLoopsSystem = require 'runtime.loops'
 local OutgameSystem = require 'ui.outgame'
+local AudioSystem = require 'runtime.audio'
 local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
 local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
@@ -41,6 +42,7 @@ local auto_active_effects_system
 local effect_debug_system
 local reward_system
 local hero_attr_system = HeroAttrSystem.create()
+local audio_system
 
 local function trace_boot(message)
   print('[entry_runtime] ' .. tostring(message))
@@ -276,6 +278,43 @@ end
 
 local function get_enemy_player()
   return y3.player(CONFIG.enemy_player_id)
+end
+
+audio_system = AudioSystem.create({
+  STATE = STATE,
+  y3 = y3,
+  get_player = get_player,
+  trace = trace_boot,
+})
+
+local function ensure_music_loop()
+  if audio_system and audio_system.ensure_music_loop then
+    return audio_system.ensure_music_loop()
+  end
+end
+
+local function play_ui_click()
+  if audio_system and audio_system.play_ui_click then
+    return audio_system.play_ui_click()
+  end
+end
+
+local function play_panel_open()
+  if audio_system and audio_system.play_panel_open then
+    return audio_system.play_panel_open()
+  end
+end
+
+local function play_confirm()
+  if audio_system and audio_system.play_confirm then
+    return audio_system.play_confirm()
+  end
+end
+
+local function play_victory()
+  if audio_system and audio_system.play_victory then
+    return audio_system.play_victory()
+  end
 end
 
 local function infer_battle_event_style(text)
@@ -776,6 +815,21 @@ local function get_combat_bonus(key)
   return get_bond_runtime_bonus(key) + get_treasure_runtime_bonus(key)
 end
 
+local function normalize_ratio_value(value)
+  local number = y3.helper.tonumber(value) or 0
+  if math.abs(number) > 1 then
+    return number / 100
+  end
+  return number
+end
+
+local function get_hero_runtime_attr(name)
+  if not STATE.hero or not STATE.hero:is_exist() then
+    return 0
+  end
+  return y3.helper.tonumber(hero_attr_system.get_attr(STATE.hero, name)) or 0
+end
+
 create_bond_env = function()
   return {
     STATE = STATE,
@@ -1112,29 +1166,45 @@ local function trigger_td_skills_on_hit(data)
     end
   end
 
-  if skill.chain_bounces > 0 and skill.chain_chance > 0 and math.random() <= skill.chain_chance then
+  local runtime_chain_bounces = math.max(0, round_number(skill.chain_bounces or 0))
+  local runtime_chain_chance = math.max(0, normalize_ratio_value(skill.chain_chance or 0))
+  local runtime_chain_ratio = math.max(0, normalize_ratio_value(skill.chain_ratio or 0))
+  if runtime_chain_bounces > 0 and runtime_chain_chance > 0 and runtime_chain_ratio > 0 and math.random() <= runtime_chain_chance then
     local bounced = 0
-    for _, unit in ipairs(get_enemies_in_range(target, skill.chain_radius, target, skill.chain_bounces)) do
-      deal_skill_damage(unit, data.damage * skill.chain_ratio, '法术', {
+    for _, unit in ipairs(get_enemies_in_range(target, skill.chain_radius, target, runtime_chain_bounces)) do
+      deal_skill_damage(unit, data.damage * runtime_chain_ratio, '法术', {
         text_type = 'magic',
         particle = AttackSkillObjects.vfx_by_id.thunder.chain_particle,
       })
       bounced = bounced + 1
-      if bounced >= skill.chain_bounces then
+      if bounced >= runtime_chain_bounces then
         break
       end
     end
   end
 
-  local bond_chain_bounces = math.max(0, round_number(get_bond_runtime_bonus('chain_bounces')))
-  local bond_chain_ratio = math.max(0, get_bond_runtime_bonus('chain_ratio'))
+  local bond_chain_bounces = math.max(0, round_number(
+    get_bond_runtime_bonus('chain_bounces') + get_hero_runtime_attr('弹射次数')
+  ))
+  local bond_chain_ratio = 0
+  if bond_chain_bounces > 0 then
+    bond_chain_ratio = 0.30 + math.max(0,
+      normalize_ratio_value(get_bond_runtime_bonus('chain_ratio'))
+      + normalize_ratio_value(get_hero_runtime_attr('弹射伤害'))
+    )
+  end
   if bond_chain_bounces > 0 and bond_chain_ratio > 0 then
     local bounced = 0
     for _, unit in ipairs(get_enemies_in_range(target, math.max(skill.chain_radius or 0, 420), target, bond_chain_bounces)) do
-      deal_skill_damage(unit, data.damage * bond_chain_ratio, '法术', {
-        text_type = 'magic',
-        particle = AttackSkillObjects.vfx_by_id.thunder.chain_particle,
-        skip_hunter_first_hit = true,
+      STATE.hero:damage({
+        target = unit,
+        damage = math.floor((data.damage or 0) * bond_chain_ratio),
+        type = ATTACK_SKILL_DEFS.basic_attack.damage_type,
+        text_type = 'physics',
+        text_track = 934269508,
+        particle = AttackSkillObjects.vfx_by_id.basic_attack.impact_particle,
+        common_attack = false,
+        no_miss = true,
       })
       bounced = bounced + 1
       if bounced >= bond_chain_bounces then
@@ -1162,6 +1232,9 @@ local function handle_challenge_success(instance)
 end
 
 local function handle_battle_finished(result)
+  if result and result.is_win then
+    play_victory()
+  end
   if battlefield_system and battlefield_system.cleanup_battle_units then
     battlefield_system.cleanup_battle_units()
   end
@@ -1721,6 +1794,8 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
   y3 = y3,
   hero_attr_system = hero_attr_system,
   round_number = round_number,
+  play_ui_click = play_ui_click,
+  play_confirm = play_confirm,
   get_resource_rules = get_resource_rules,
   get_bond_runtime_bonus = get_bond_runtime_bonus,
   get_treasure_passive_income = get_treasure_passive_income,
@@ -1787,6 +1862,8 @@ choice_panel_system = (function()
     y3 = y3,
     round_number = round_number,
     get_player = get_player,
+    play_ui_click = play_ui_click,
+    play_confirm = play_confirm,
     get_current_choice_panel_model = choice_panel_model_system.get_current_choice_panel_model,
     apply_round_choice = apply_round_choice,
     hide_current_choice_panel = choice_panel_model_system.hide_current_choice_panel,
@@ -1945,6 +2022,8 @@ outgame_system = OutgameSystem.create({
   message = message,
   round_number = round_number,
   get_player = get_player,
+  play_ui_click = play_ui_click,
+  ensure_music_loop = ensure_music_loop,
   start_selected_stage = function(stage_id, mode_id)
     return session_state_system.start_selected_stage(stage_id, mode_id)
   end,
@@ -1981,6 +2060,9 @@ input_events_system = InputEventsSystem.create({
   show_debug_hotkey_help = show_debug_hotkey_help,
   debug_actions_system = debug_actions_system,
   debug_tools_system = debug_tools_system,
+  play_ui_click = play_ui_click,
+  play_panel_open = play_panel_open,
+  play_confirm = play_confirm,
 })
 
 local function register_runtime_events()
@@ -2030,6 +2112,7 @@ function M.bootstrap()
   end
 
   ensure_helper_signals()
+  ensure_music_loop()
   reset_session_state()
   register_runtime_events()
   register_dev_commands()

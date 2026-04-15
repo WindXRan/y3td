@@ -34,6 +34,56 @@ function M.create(env)
     return y3.helper.tonumber(fallback) or 0
   end
 
+  local function normalize_ratio(value)
+    local number = y3.helper.tonumber(value) or 0
+    if math.abs(number) > 1 then
+      return number / 100
+    end
+    return number
+  end
+
+  local function get_hero_attr_ratio(name, fallback_name)
+    return normalize_ratio(get_hero_attr(name, fallback_name))
+  end
+
+  local function get_basic_attack_multishot_bonus()
+    local count = math.max(0, round_number(
+      get_bond_runtime_bonus('multishot_count') + get_hero_attr('多重数量')
+    ))
+    if count <= 0 then
+      return 0, 0
+    end
+
+    local ratio = 0.30 + math.max(0,
+      normalize_ratio(get_bond_runtime_bonus('multishot_ratio'))
+      + get_hero_attr_ratio('多重伤害')
+    )
+    return count, ratio
+  end
+
+  local function get_basic_attack_runtime_chain_stats()
+    local skill_runtime = STATE.skill_runtime or {}
+    local count = math.max(0, round_number(skill_runtime.chain_bounces or 0))
+    local chance = math.max(0, normalize_ratio(skill_runtime.chain_chance or 0))
+    local ratio = math.max(0, normalize_ratio(skill_runtime.chain_ratio or 0))
+    return count, chance, ratio
+  end
+
+  local function get_basic_attack_bonus_chain_stats()
+    local count = math.max(0, round_number(
+      get_bond_runtime_bonus('chain_bounces') + get_hero_attr('弹射次数')
+    ))
+    if count <= 0 then
+      return 0, 0
+    end
+
+    local ratio = 0.30 + math.max(0,
+      normalize_ratio(get_bond_runtime_bonus('chain_ratio'))
+      + get_hero_attr_ratio('弹射伤害')
+    )
+    return count, ratio
+  end
+
   local function get_basic_attack_skill()
     if not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
       return nil
@@ -120,6 +170,10 @@ function M.create(env)
       string.format('当前普攻：造成 %.0f%% 攻击的物理伤害。', (skill.damage_ratio or 0) * 100),
       string.format('当前射程：%d。', get_current_basic_attack_range()),
     }
+
+    local multishot_count, multishot_ratio = get_basic_attack_multishot_bonus()
+    local runtime_chain_count, runtime_chain_chance, runtime_chain_ratio = get_basic_attack_runtime_chain_stats()
+    local bonus_chain_count, bonus_chain_ratio = get_basic_attack_bonus_chain_stats()
   
     if STATE.skill_runtime and STATE.skill_runtime.normal_attack_bonus_ratio > 0 then
       lines[#lines + 1] = string.format(
@@ -136,12 +190,28 @@ function M.create(env)
       )
     end
   
-    if STATE.skill_runtime and STATE.skill_runtime.chain_bounces > 0 and STATE.skill_runtime.chain_chance > 0 then
+    if runtime_chain_count > 0 and runtime_chain_chance > 0 and runtime_chain_ratio > 0 then
       lines[#lines + 1] = string.format(
         '弹射：%.0f%% 概率弹射 %d 个目标，造成 %.0f%% 法术伤害。',
-        STATE.skill_runtime.chain_chance * 100,
-        STATE.skill_runtime.chain_bounces,
-        STATE.skill_runtime.chain_ratio * 100
+        runtime_chain_chance * 100,
+        runtime_chain_count,
+        runtime_chain_ratio * 100
+      )
+    end
+
+    if multishot_count > 0 and multishot_ratio > 0 then
+      lines[#lines + 1] = string.format(
+        '多重：额外命中 %d 个目标，造成 %.0f%% 伤害。',
+        multishot_count,
+        multishot_ratio * 100
+      )
+    end
+
+    if bonus_chain_count > 0 and bonus_chain_ratio > 0 then
+      lines[#lines + 1] = string.format(
+        '月刃：命中后额外弹射 %d 个目标，造成 %.0f%% 伤害。',
+        bonus_chain_count,
+        bonus_chain_ratio * 100
       )
     end
   
@@ -1022,8 +1092,7 @@ function M.create(env)
     if skill.id == 'basic_attack' then
       local vfx = ATTACK_SKILL_VFX.basic_attack
       local damage = get_skill_damage(skill)
-      local multishot_count = math.max(0, round_number(get_bond_runtime_bonus('multishot_count')))
-      local multishot_ratio = math.max(0, get_bond_runtime_bonus('multishot_ratio'))
+      local multishot_count, multishot_ratio = get_basic_attack_multishot_bonus()
       local split_count = math.max(0, round_number(get_effective_skill_value(skill, 'split_count')))
       local split_ratio = get_effective_skill_value(skill, 'split_ratio')
       local hero_point = get_hero_point()
@@ -1060,10 +1129,10 @@ function M.create(env)
             target,
             multishot_count
           )) do
-            deal_skill_damage(unit, damage * multishot_ratio, skill, {
+            deal_basic_attack_damage(skill, unit, damage * multishot_ratio, {
               text_type = 'physics',
-              skip_hunter_first_hit = true,
             })
+            apply_armor_break_on_hit(unit)
             hit_count = hit_count + 1
             if hit_count >= multishot_count then
               break

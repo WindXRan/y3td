@@ -10,6 +10,8 @@ function M.create(env)
   local CONFIG = env.CONFIG
   local y3 = env.y3
   local message = env.message
+  local play_ui_click = env.play_ui_click
+  local ensure_music_loop = env.ensure_music_loop
   local factory = Factory.create(env)
 
   local create_panel = factory.create_panel
@@ -27,6 +29,9 @@ function M.create(env)
   local OUTGAME_ATTR_BONUS_BY_STAGE_MODE = CONFIG.outgame_attr_bonus_config
     and CONFIG.outgame_attr_bonus_config.by_stage_mode
     or {}
+  local STAGE_PAGE_SIZE = 3
+  local CHAPTER_LIST = {}
+  local STAGES_BY_CHAPTER = {}
 
   local api = {}
 
@@ -59,8 +64,80 @@ function M.create(env)
     return root
   end
 
+  local function parse_stage_id(stage_id)
+    local chapter_text, stage_text = tostring(stage_id or ''):match('^(%d+)%-(%d+)$')
+    return tonumber(chapter_text), tonumber(stage_text)
+  end
+
+  local function get_stage_display_text(stage_def, fallback_stage_id)
+    if stage_def and stage_def.display_name and stage_def.display_name ~= '' then
+      return stage_def.display_name
+    end
+    return tostring(fallback_stage_id or '未命名章节')
+  end
+
+  for _, stage_def in ipairs(STAGE_LIST) do
+    local chapter_id = select(1, parse_stage_id(stage_def.stage_id))
+    chapter_id = chapter_id or 1
+    if not STAGES_BY_CHAPTER[chapter_id] then
+      STAGES_BY_CHAPTER[chapter_id] = {}
+      CHAPTER_LIST[#CHAPTER_LIST + 1] = chapter_id
+    end
+    STAGES_BY_CHAPTER[chapter_id][#STAGES_BY_CHAPTER[chapter_id] + 1] = stage_def
+  end
+
+  table.sort(CHAPTER_LIST)
+
+  local function get_chapter_stage_list(chapter_id)
+    return STAGES_BY_CHAPTER[chapter_id] or {}
+  end
+
+  local function get_chapter_name(chapter_id)
+    local chapter_stages = get_chapter_stage_list(chapter_id)
+    local first_stage = chapter_stages[1]
+    local chapter_name = tostring(get_stage_display_text(first_stage, chapter_id)):match('^(.-)%-%d+$')
+    if chapter_name and chapter_name ~= '' then
+      return chapter_name
+    end
+    return string.format('第%d章', tonumber(chapter_id) or 1)
+  end
+
+  local function get_stage_page_count(chapter_id)
+    local chapter_stages = get_chapter_stage_list(chapter_id)
+    return math.max(1, math.ceil(#chapter_stages / STAGE_PAGE_SIZE))
+  end
+
+  local function get_stage_page_index(stage_id)
+    local _, stage_index = parse_stage_id(stage_id)
+    if not stage_index or stage_index <= 0 then
+      return 1
+    end
+    return math.max(1, math.floor((stage_index - 1) / STAGE_PAGE_SIZE) + 1)
+  end
+
+  local function get_page_stage_defs(stage_id)
+    local chapter_id = select(1, parse_stage_id(stage_id))
+    chapter_id = chapter_id or CHAPTER_LIST[1] or 1
+
+    local chapter_stages = get_chapter_stage_list(chapter_id)
+    local page_index = get_stage_page_index(stage_id)
+    local page_count = get_stage_page_count(chapter_id)
+    local start_index = ((page_index - 1) * STAGE_PAGE_SIZE) + 1
+    local visible_stages = {}
+
+    for offset = 0, STAGE_PAGE_SIZE - 1 do
+      local stage_def = chapter_stages[start_index + offset]
+      if not stage_def then
+        break
+      end
+      visible_stages[#visible_stages + 1] = stage_def
+    end
+
+    return chapter_id, page_index, page_count, visible_stages
+  end
+
   local function get_stage_count_text()
-    return string.format('已接入章节 %d / %d', #STAGE_LIST, #STAGE_LIST)
+    return string.format('已接入 %d 章 / %d 关', #CHAPTER_LIST, #STAGE_LIST)
   end
 
   local function is_stage_supported_mode(stage_def, mode_id)
@@ -397,6 +474,32 @@ function M.create(env)
     return true
   end
 
+  local function set_selected_chapter(chapter_id)
+    local chapter_stages = get_chapter_stage_list(chapter_id)
+    local target_stage = chapter_stages[1]
+    if not target_stage then
+      return false
+    end
+    return set_selected_stage(target_stage.stage_id)
+  end
+
+  local function step_stage_page(direction)
+    local profile = load_profile()
+    local selected_stage_id = STATE.selected_stage_id or profile.selected_stage_id or get_first_stage_id()
+    local chapter_id, page_index, page_count = get_page_stage_defs(selected_stage_id)
+    local target_page = math.max(1, math.min(page_count, page_index + direction))
+    if target_page == page_index then
+      return false
+    end
+
+    local chapter_stages = get_chapter_stage_list(chapter_id)
+    local target_stage = chapter_stages[((target_page - 1) * STAGE_PAGE_SIZE) + 1]
+    if not target_stage then
+      return false
+    end
+    return set_selected_stage(target_stage.stage_id)
+  end
+
   local function get_stage_status_text(profile, stage_def)
     local progress = get_stage_progress(profile, stage_def.stage_id)
     if not progress or not progress.standard_unlocked then
@@ -462,7 +565,7 @@ function M.create(env)
     local outcome = result.is_win and '胜利' or '失败'
     local stage_def = STAGES_BY_ID[result.stage_id]
     local mode_def = MODES_BY_ID[result.mode_id]
-    local stage_name = stage_def and stage_def.display_name or tostring(result.stage_id)
+    local stage_name = get_stage_display_text(stage_def, result.stage_id)
     local mode_name = mode_def and mode_def.display_name or tostring(result.mode_id)
     local reached_wave = math.max(0, result.reached_wave_index or 0)
 
@@ -477,7 +580,8 @@ function M.create(env)
 
   local function get_detail_meta_text(stage_id, mode_id)
     local mode_name = MODES_BY_ID[mode_id] and MODES_BY_ID[mode_id].display_name or tostring(mode_id)
-    return string.format('战前简报：章节 %s / %s', tostring(stage_id), mode_name)
+    local chapter_id = select(1, parse_stage_id(stage_id))
+    return string.format('战前简报：%s / %s', get_chapter_name(chapter_id), mode_name)
   end
 
   local function get_profile_status_text()
@@ -510,7 +614,7 @@ function M.create(env)
     if stage_def.content_source_stage_id ~= stage_def.stage_id then
       return string.format('将进入 %s，当前使用 %s 规则进行验证。', mode_def.display_name, stage_def.content_source_stage_id)
     end
-    return string.format('将进入 %s 的 %s，请确认后开始。', stage_def.display_name, mode_def.display_name)
+    return string.format('将进入 %s 的 %s，请确认后开始。', get_stage_display_text(stage_def, stage_id), mode_def.display_name)
   end
 
   local function is_outgame_ui_alive(ui)
@@ -519,6 +623,18 @@ function M.create(env)
       and not ui.root:is_removed()
       and ui.stage_cards
       and ui.detail_panel
+  end
+
+  local function set_stage_card_visible(card, visible)
+    if not card then
+      return
+    end
+    if card.bg then
+      card.bg:set_visible(visible == true)
+    end
+    if card.button then
+      card.button:set_visible(visible == true)
+    end
   end
 
   local function refresh_ui()
@@ -537,83 +653,148 @@ function M.create(env)
       return
     end
 
+    local active_chapter_id, active_page_index, active_page_count, visible_stage_defs = get_page_stage_defs(selected_stage_id)
+    local visible_slots = {}
+    for slot_index, stage_def in ipairs(visible_stage_defs) do
+      visible_slots[stage_def.stage_id] = slot_index
+    end
+
     for _, stage_def in ipairs(STAGE_LIST) do
       local card = ui.stage_cards[stage_def.stage_id]
-      local selected = stage_def.stage_id == selected_stage_id
-      local unlocked = is_standard_unlocked(profile, stage_def.stage_id)
-      local status_text = get_stage_status_text(profile, stage_def)
-
-      if selected then
-        card.bg:set_image_color(42, 92, 158, 238)
-        if card.frame then
-          card.frame:set_image_color(116, 190, 255, 188)
-        end
-        if card.icon then
-          card.icon:set_image_color(238, 246, 255, 255)
-        end
-        card.line:set_image_color(96, 170, 255, 255)
-        if card.badge_bg then
-          card.badge_bg:set_image_color(82, 146, 226, 236)
-        end
-        if card.badge then
-          card.badge:set_text('当前')
-          card.badge:set_text_color(245, 248, 255, 255)
-        end
-        card.title:set_text_color(245, 248, 255, 255)
-        card.note:set_text_color(214, 232, 248, 255)
-      elseif unlocked then
-        card.bg:set_image_color(20, 34, 54, 226)
-        if card.frame then
-          card.frame:set_image_color(90, 146, 212, 126)
-        end
-        if card.icon then
-          card.icon:set_image_color(204, 226, 255, 240)
-        end
-        card.line:set_image_color(60, 110, 170, 188)
-        if card.badge_bg then
-          card.badge_bg:set_image_color(58, 92, 136, 220)
-        end
-        if card.badge then
-          card.badge:set_text('开放')
-          card.badge:set_text_color(230, 240, 252, 255)
-        end
-        card.title:set_text_color(236, 244, 255, 255)
-        card.note:set_text_color(182, 201, 224, 255)
+      local slot_index = visible_slots[stage_def.stage_id]
+      if not slot_index then
+        set_stage_card_visible(card, false)
       else
-        card.bg:set_image_color(16, 24, 36, 218)
-        if card.frame then
-          card.frame:set_image_color(92, 102, 118, 96)
-        end
-        if card.icon then
-          card.icon:set_image_color(148, 158, 174, 214)
-        end
-        card.line:set_image_color(74, 78, 92, 156)
-        if card.badge_bg then
-          card.badge_bg:set_image_color(64, 68, 78, 210)
-        end
-        if card.badge then
-          card.badge:set_text('未开')
-          card.badge:set_text_color(214, 206, 186, 255)
-        end
-        card.title:set_text_color(188, 198, 214, 255)
-        card.note:set_text_color(132, 146, 168, 255)
-      end
+        local y = ui.stage_card_y - (slot_index - 1) * ui.stage_card_step
+        card.bg:set_pos(ui.stage_card_x, y)
+        card.button:set_pos(ui.stage_card_x, y)
+        set_stage_card_visible(card, true)
+        local selected = stage_def.stage_id == selected_stage_id
+        local unlocked = is_standard_unlocked(profile, stage_def.stage_id)
+        local status_text = get_stage_status_text(profile, stage_def)
 
-      card.title:set_text(stage_def.display_name)
-      card.note:set_text(stage_def.preview_note or '')
-      card.status:set_text(status_text)
-      if unlocked then
-        card.status:set_text_color(210, 228, 242, 255)
-      else
-        card.status:set_text_color(176, 160, 132, 255)
+        if selected then
+          card.bg:set_image_color(42, 92, 158, 238)
+          if card.frame then
+            card.frame:set_image_color(116, 190, 255, 188)
+          end
+          if card.icon then
+            card.icon:set_image_color(238, 246, 255, 255)
+          end
+          card.line:set_image_color(96, 170, 255, 255)
+          if card.badge_bg then
+            card.badge_bg:set_image_color(82, 146, 226, 236)
+          end
+          if card.badge then
+            card.badge:set_text('当前')
+            card.badge:set_text_color(245, 248, 255, 255)
+          end
+          card.title:set_text_color(245, 248, 255, 255)
+          card.note:set_text_color(214, 232, 248, 255)
+        elseif unlocked then
+          card.bg:set_image_color(20, 34, 54, 226)
+          if card.frame then
+            card.frame:set_image_color(90, 146, 212, 126)
+          end
+          if card.icon then
+            card.icon:set_image_color(204, 226, 255, 240)
+          end
+          card.line:set_image_color(60, 110, 170, 188)
+          if card.badge_bg then
+            card.badge_bg:set_image_color(58, 92, 136, 220)
+          end
+          if card.badge then
+            card.badge:set_text('开放')
+            card.badge:set_text_color(230, 240, 252, 255)
+          end
+          card.title:set_text_color(236, 244, 255, 255)
+          card.note:set_text_color(182, 201, 224, 255)
+        else
+          card.bg:set_image_color(16, 24, 36, 218)
+          if card.frame then
+            card.frame:set_image_color(92, 102, 118, 96)
+          end
+          if card.icon then
+            card.icon:set_image_color(148, 158, 174, 214)
+          end
+          card.line:set_image_color(74, 78, 92, 156)
+          if card.badge_bg then
+            card.badge_bg:set_image_color(64, 68, 78, 210)
+          end
+          if card.badge then
+            card.badge:set_text('未开')
+            card.badge:set_text_color(214, 206, 186, 255)
+          end
+          card.title:set_text_color(188, 198, 214, 255)
+          card.note:set_text_color(132, 146, 168, 255)
+        end
+
+        card.title:set_text(get_stage_display_text(stage_def, stage_def.stage_id))
+        card.note:set_text(stage_def.preview_note or '')
+        card.status:set_text(status_text)
+        if unlocked then
+          card.status:set_text_color(210, 228, 242, 255)
+        else
+          card.status:set_text_color(176, 160, 132, 255)
+        end
       end
     end
 
-    ui.detail_title:set_text(selected_stage_def.display_name)
+    for _, chapter_id in ipairs(CHAPTER_LIST) do
+      local button_ref = ui.chapter_buttons and ui.chapter_buttons[chapter_id] or nil
+      if button_ref then
+        local selected = chapter_id == active_chapter_id
+        button_ref.button:set_text(get_chapter_name(chapter_id))
+        if selected then
+          button_ref.bg:set_image_color(54, 108, 172, 236)
+          button_ref.shadow:set_image_color(18, 42, 74, 148)
+          button_ref.button:set_text_color(245, 248, 255, 255)
+        else
+          button_ref.bg:set_image_color(44, 62, 90, 220)
+          button_ref.shadow:set_image_color(8, 18, 34, 110)
+          button_ref.button:set_text_color(220, 232, 246, 255)
+        end
+      end
+    end
+
+    if ui.page_prev_button then
+      local can_prev = active_page_index > 1
+      ui.page_prev_button.button:set_button_enable(can_prev)
+      if can_prev then
+        ui.page_prev_button.bg:set_image_color(44, 62, 90, 220)
+        ui.page_prev_button.shadow:set_image_color(8, 18, 34, 110)
+        ui.page_prev_button.button:set_text_color(220, 232, 246, 255)
+      else
+        ui.page_prev_button.bg:set_image_color(34, 38, 48, 196)
+        ui.page_prev_button.shadow:set_image_color(8, 10, 18, 96)
+        ui.page_prev_button.button:set_text_color(160, 170, 184, 255)
+      end
+    end
+
+    if ui.page_next_button then
+      local can_next = active_page_index < active_page_count
+      ui.page_next_button.button:set_button_enable(can_next)
+      if can_next then
+        ui.page_next_button.bg:set_image_color(44, 62, 90, 220)
+        ui.page_next_button.shadow:set_image_color(8, 18, 34, 110)
+        ui.page_next_button.button:set_text_color(220, 232, 246, 255)
+      else
+        ui.page_next_button.bg:set_image_color(34, 38, 48, 196)
+        ui.page_next_button.shadow:set_image_color(8, 10, 18, 96)
+        ui.page_next_button.button:set_text_color(160, 170, 184, 255)
+      end
+    end
+
+    if ui.stage_page_text then
+      ui.stage_page_text:set_text(string.format('第 %d / %d 页', active_page_index, active_page_count))
+    end
+    ui.stage_list_hint:set_text(string.format('%s · 关卡分页', get_chapter_name(active_chapter_id)))
+
+    ui.detail_title:set_text(get_stage_display_text(selected_stage_def, selected_stage_id))
     ui.detail_note:set_text(selected_stage_def.preview_note or '')
     ui.detail_status:set_text(build_start_hint(profile, selected_stage_id, selected_mode_id))
     ui.last_result:set_text(format_last_result(profile))
-    ui.stage_badge.text:set_text('当前章节 ' .. tostring(selected_stage_id))
+    ui.stage_badge.text:set_text('当前选择 ' .. get_stage_display_text(selected_stage_def, selected_stage_id))
     if ui.detail_meta then
       ui.detail_meta:set_text(get_detail_meta_text(selected_stage_id, selected_mode_id))
     end
@@ -986,6 +1167,87 @@ function M.create(env)
     )
     stage_list_divider:set_anchor(0.5, 0.5)
 
+    local chapter_buttons = {}
+    local chapter_button_width = scaled(62, scale)
+    local chapter_button_height = scaled(32, scale)
+    local chapter_button_start_x = scaled(44, scale)
+    local chapter_button_step = scaled(76, scale)
+    for index, chapter_id in ipairs(CHAPTER_LIST) do
+      chapter_buttons[chapter_id] = create_button(
+        stage_list_panel,
+        chapter_button_start_x + ((index - 1) * chapter_button_step),
+        scaled(432, scale),
+        chapter_button_width,
+        chapter_button_height,
+        get_chapter_name(chapter_id),
+        function()
+          if set_selected_chapter(chapter_id) then
+            refresh_ui()
+          end
+        end,
+        {
+          font_size = scaled(11, scale),
+          style = 'outgame_mode_secondary',
+          shadow_offset_y = 2,
+          shadow_grow = 6,
+        }
+      )
+    end
+
+    local stage_page_text = create_text(
+      stage_list_panel,
+      scaled(207, scale),
+      scaled(42, scale),
+      scaled(160, scale),
+      scaled(18, scale),
+      scaled(12, scale),
+      theme.palette.text_soft,
+      '中',
+      '中',
+      30002
+    )
+    stage_page_text:set_text('第 1 / 1 页')
+
+    local page_prev_button = create_button(
+      stage_list_panel,
+      scaled(84, scale),
+      scaled(42, scale),
+      scaled(86, scale),
+      scaled(30, scale),
+      '上一页',
+      function()
+        if step_stage_page(-1) then
+          refresh_ui()
+        end
+      end,
+      {
+        font_size = scaled(11, scale),
+        style = 'outgame_mode_secondary',
+        shadow_offset_y = 2,
+        shadow_grow = 6,
+      }
+    )
+
+    local page_next_button = create_button(
+      stage_list_panel,
+      scaled(330, scale),
+      scaled(42, scale),
+      scaled(86, scale),
+      scaled(30, scale),
+      '下一页',
+      function()
+        if step_stage_page(1) then
+          refresh_ui()
+        end
+      end,
+      {
+        font_size = scaled(11, scale),
+        style = 'outgame_mode_secondary',
+        shadow_offset_y = 2,
+        shadow_grow = 6,
+      }
+    )
+
     local detail_panel = create_panel(
       content_root,
       scaled(layout.detail.x, scale),
@@ -1273,13 +1535,14 @@ function M.create(env)
     mode_hint:set_text('请选择章节与模式，确认当前局的入口配置。')
 
     local stage_cards = {}
-    local card_y = scaled(layout.stage_list.card_y, scale)
-    local card_step = scaled(layout.stage_list.card_step, scale)
+    local stage_card_x = scaled(layout.stage_list.card_x, scale)
+    local stage_card_y = scaled(layout.stage_list.card_y - 74, scale)
+    local stage_card_step = scaled(layout.stage_list.card_step, scale)
     for index, stage_def in ipairs(STAGE_LIST) do
-      local y = card_y - (index - 1) * card_step
+      local y = stage_card_y - (index - 1) * stage_card_step
       local card_bg = create_panel(
         stage_list_panel,
-        scaled(layout.stage_list.card_x, scale),
+        stage_card_x,
         y,
         scaled(layout.stage_list.card_width, scale),
         scaled(layout.stage_list.card_height, scale),
@@ -1329,7 +1592,7 @@ function M.create(env)
         scaled(layout.stage_list.card_width, scale),
         scaled(layout.stage_list.card_height, scale)
       )
-      card_button:set_pos(scaled(layout.stage_list.card_x, scale), y)
+      card_button:set_pos(stage_card_x, y)
       card_button:set_text('')
       card_button:set_btn_status_image(1, 999)
       card_button:set_btn_status_image(2, 999)
@@ -1337,6 +1600,9 @@ function M.create(env)
       card_button:set_btn_status_image(4, 999)
       card_button:set_z_order(30004)
       card_button:add_fast_event('左键-点击', function()
+        if play_ui_click then
+          play_ui_click()
+        end
         if set_selected_stage(stage_def.stage_id) then
           refresh_ui()
         end
@@ -1427,6 +1693,13 @@ function M.create(env)
       stage_list_panel = stage_list_panel,
       detail_panel = detail_panel,
       stage_cards = stage_cards,
+      chapter_buttons = chapter_buttons,
+      page_prev_button = page_prev_button,
+      page_next_button = page_next_button,
+      stage_page_text = stage_page_text,
+      stage_card_x = stage_card_x,
+      stage_card_y = stage_card_y,
+      stage_card_step = stage_card_step,
       detail_title = detail_title,
       detail_note = detail_note,
       detail_status = detail_status,
@@ -1477,6 +1750,9 @@ function M.create(env)
 
     STATE.session_phase = 'outgame'
     STATE.game_finished = true
+    if ensure_music_loop then
+      ensure_music_loop()
+    end
     env.set_battle_hud_visible(false)
     ensure_ui()
     refresh_ui()

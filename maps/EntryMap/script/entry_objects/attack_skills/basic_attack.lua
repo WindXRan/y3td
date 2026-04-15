@@ -2,7 +2,7 @@ local M = {
     id = 'basic_attack',
     name = '普攻',
     default_slot = 1,
-    summary = '发射 1 支箭矢，造成 100% 攻击的金行箭罡伤害。',
+    summary = '凝出 1 道金行剑罡，造成 100% 攻击的金行箭罡伤害。',
     damage_type = '物理',
     damage_form = 'weapon',
     element = 'metal',
@@ -13,13 +13,16 @@ local M = {
   }
 
 M.vfx = {
-    projectile_key = 134257292,
-    projectile_speed = 1100,
-    projectile_time = 2.2,
-    target_distance = 55,
+    projectile_key = 134222874,
+    projectile_speed = 1320,
+    projectile_time = 1.8,
+    target_distance = 48,
+    cast_particle = 102820,
+    cast_scale = 0.50,
+    cast_time = 0.10,
     impact_particle = 102820,
-    impact_scale = 0.60,
-    impact_time = 0.18,
+    impact_scale = 0.75,
+    impact_time = 0.22,
   }
 
 return M

@@ -1,6 +1,82 @@
 {
     "b": [], 
-    "c": [], 
+    "c": [
+        {
+            "__tuple__": true, 
+            "items": [
+                "74jGeWQ7Ee+yupNvux9K2K", 
+                {
+                    "default": 0.0, 
+                    "desc": "War3_\u653b\u51fb\u529b", 
+                    "desc_bit": 1, 
+                    "key": "74jGeWQ7Ee+yupNvux9K2K", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "FWhbDmUVEe+nv4W9-PWzrb", 
+                {
+                    "default": 0.0, 
+                    "desc": "War3_\u62a4\u7532", 
+                    "desc_bit": 1, 
+                    "key": "FWhbDmUVEe+nv4W9-PWzrb", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "yxI3TGUVEe+nLYW9-PWzrb", 
+                {
+                    "default": 0.0, 
+                    "desc": "War3_\u529b\u91cf", 
+                    "desc_bit": 1, 
+                    "key": "yxI3TGUVEe+nLYW9-PWzrb", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "pDTF-WUXEe+-c4W9-PWzrV", 
+                {
+                    "default": 0.0, 
+                    "desc": "War3_\u654f\u6377", 
+                    "desc_bit": 1, 
+                    "key": "pDTF-WUXEe+-c4W9-PWzrV", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "qSxWUGUXEe+GAIW9-PWzrT", 
+                {
+                    "default": 0.0, 
+                    "desc": "War3_\u667a\u529b", 
+                    "desc_bit": 1, 
+                    "key": "qSxWUGUXEe+GAIW9-PWzrT", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }
+    ], 
     "p": [
         {
             "__tuple__": true, 

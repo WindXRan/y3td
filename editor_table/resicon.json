@@ -1,18 +1,1818 @@
 {
-    "ui/134237012": {
-        "default_editor_id": 134237012, 
+    "ui/134218135": {
+        "default_editor_id": 134218135, 
         "describe": "", 
-        "key": "ui/134237012", 
-        "name": "\u65b0\u5bf9\u8bdd", 
-        "path": "ui/134237012", 
-        "uid": "res_icon_ui/134237012"
+        "key": "ui/134218135", 
+        "name": "image (82)", 
+        "path": "ui/134218135", 
+        "uid": "res_icon_ui/134218135"
     }, 
-    "ui/134277454": {
-        "default_editor_id": 134277454, 
+    "ui/134218572": {
+        "default_editor_id": 134218572, 
         "describe": "", 
-        "key": "ui/134277454", 
-        "name": "{38280D24-68AE-4B0F-A62B-6E26D5B04DC0}", 
-        "path": "ui/134277454", 
-        "uid": "res_icon_ui/134277454"
+        "key": "ui/134218572", 
+        "name": "img_shop_details_bg", 
+        "path": "ui/134218572", 
+        "uid": "res_icon_ui/134218572"
+    }, 
+    "ui/134218604": {
+        "default_editor_id": 134218604, 
+        "describe": "", 
+        "key": "ui/134218604", 
+        "name": "5", 
+        "path": "ui/134218604", 
+        "uid": "res_icon_ui/134218604"
+    }, 
+    "ui/134218911": {
+        "default_editor_id": 134218911, 
+        "describe": "", 
+        "key": "ui/134218911", 
+        "name": "\u9886\u4e3b\u9009\u4e2d\u6846", 
+        "path": "ui/134218911", 
+        "uid": "res_icon_ui/134218911"
+    }, 
+    "ui/134218915": {
+        "default_editor_id": 134218915, 
+        "describe": "", 
+        "key": "ui/134218915", 
+        "name": "\u673a\u7532", 
+        "path": "ui/134218915", 
+        "uid": "res_icon_ui/134218915"
+    }, 
+    "ui/134219140": {
+        "default_editor_id": 134219140, 
+        "describe": "", 
+        "key": "ui/134219140", 
+        "name": "\u795e\u79d8", 
+        "path": "ui/134219140", 
+        "uid": "res_icon_ui/134219140"
+    }, 
+    "ui/134219465": {
+        "default_editor_id": 134219465, 
+        "describe": "", 
+        "key": "ui/134219465", 
+        "name": "\u4eba\u7269\u7b49\u7ea7\u5e95\u6846", 
+        "path": "ui/134219465", 
+        "uid": "res_icon_ui/134219465"
+    }, 
+    "ui/134219821": {
+        "default_editor_id": 134219821, 
+        "describe": "", 
+        "key": "ui/134219821", 
+        "name": "img_touxiangkuang_faguang1", 
+        "path": "ui/134219821", 
+        "uid": "res_icon_ui/134219821"
+    }, 
+    "ui/134220193": {
+        "default_editor_id": 134220193, 
+        "describe": "", 
+        "key": "ui/134220193", 
+        "name": "icon_xiulifei_32", 
+        "path": "ui/134220193", 
+        "uid": "res_icon_ui/134220193"
+    }, 
+    "ui/134220400": {
+        "default_editor_id": 134220400, 
+        "describe": "", 
+        "key": "ui/134220400", 
+        "name": "\u5229\u7ef4\u5766\u5934\u50cf", 
+        "path": "ui/134220400", 
+        "uid": "res_icon_ui/134220400"
+    }, 
+    "ui/134220606": {
+        "default_editor_id": 134220606, 
+        "describe": "", 
+        "key": "ui/134220606", 
+        "name": "HUD_zs3_dwn", 
+        "path": "ui/134220606", 
+        "uid": "res_icon_ui/134220606"
+    }, 
+    "ui/134220666": {
+        "default_editor_id": 134220666, 
+        "describe": "", 
+        "key": "ui/134220666", 
+        "name": "1", 
+        "path": "ui/134220666", 
+        "uid": "res_icon_ui/134220666"
+    }, 
+    "ui/134220731": {
+        "default_editor_id": 134220731, 
+        "describe": "", 
+        "key": "ui/134220731", 
+        "name": "\u5206\u5272\u7ebf2", 
+        "path": "ui/134220731", 
+        "uid": "res_icon_ui/134220731"
+    }, 
+    "ui/134220773": {
+        "default_editor_id": 134220773, 
+        "describe": "", 
+        "key": "ui/134220773", 
+        "name": "ZM_btn_zm_hov", 
+        "path": "ui/134220773", 
+        "uid": "res_icon_ui/134220773"
+    }, 
+    "ui/134222287": {
+        "default_editor_id": 134222287, 
+        "describe": "", 
+        "key": "ui/134222287", 
+        "name": "HUD_zs3_hov", 
+        "path": "ui/134222287", 
+        "uid": "res_icon_ui/134222287"
+    }, 
+    "ui/134222835": {
+        "default_editor_id": 134222835, 
+        "describe": "", 
+        "key": "ui/134222835", 
+        "name": "\u9886\u8896\u7ecf\u9a8c", 
+        "path": "ui/134222835", 
+        "uid": "res_icon_ui/134222835"
+    }, 
+    "ui/134222881": {
+        "default_editor_id": 134222881, 
+        "describe": "", 
+        "key": "ui/134222881", 
+        "name": "ZM_kpzs_1", 
+        "path": "ui/134222881", 
+        "uid": "res_icon_ui/134222881"
+    }, 
+    "ui/134222930": {
+        "default_editor_id": 134222930, 
+        "describe": "", 
+        "key": "ui/134222930", 
+        "name": "PGC_DM6_icon_xuan", 
+        "path": "ui/134222930", 
+        "uid": "res_icon_ui/134222930"
+    }, 
+    "ui/134223394": {
+        "default_editor_id": 134223394, 
+        "describe": "", 
+        "key": "ui/134223394", 
+        "name": "bnt_kuang_liang", 
+        "path": "ui/134223394", 
+        "uid": "res_icon_ui/134223394"
+    }, 
+    "ui/134223766": {
+        "default_editor_id": 134223766, 
+        "describe": "", 
+        "key": "ui/134223766", 
+        "name": "choice-card-shell", 
+        "path": "ui/134223766", 
+        "uid": "res_icon_ui/134223766"
+    }, 
+    "ui/134224101": {
+        "default_editor_id": 134224101, 
+        "describe": "", 
+        "key": "ui/134224101", 
+        "name": "bg_warehouse_2", 
+        "path": "ui/134224101", 
+        "uid": "res_icon_ui/134224101"
+    }, 
+    "ui/134224886": {
+        "default_editor_id": 134224886, 
+        "describe": "", 
+        "key": "ui/134224886", 
+        "name": "\u9752\u5e74\u63b7\u77db\u5175\u5934\u50cf", 
+        "path": "ui/134224886", 
+        "uid": "res_icon_ui/134224886"
+    }, 
+    "ui/134225014": {
+        "default_editor_id": 134225014, 
+        "describe": "", 
+        "key": "ui/134225014", 
+        "name": "img_shuiping_xuanzhong 1", 
+        "path": "ui/134225014", 
+        "uid": "res_icon_ui/134225014"
+    }, 
+    "ui/134225112": {
+        "default_editor_id": 134225112, 
+        "describe": "", 
+        "key": "ui/134225112", 
+        "name": "icon_yellow_backpack_nml", 
+        "path": "ui/134225112", 
+        "uid": "res_icon_ui/134225112"
+    }, 
+    "ui/134225446": {
+        "default_editor_id": 134225446, 
+        "describe": "", 
+        "key": "ui/134225446", 
+        "name": "HUD_zs3_nml", 
+        "path": "ui/134225446", 
+        "uid": "res_icon_ui/134225446"
+    }, 
+    "ui/134225541": {
+        "default_editor_id": 134225541, 
+        "describe": "", 
+        "key": "ui/134225541", 
+        "name": "bnt_kuang_nml", 
+        "path": "ui/134225541", 
+        "uid": "res_icon_ui/134225541"
+    }, 
+    "ui/134225574": {
+        "default_editor_id": 134225574, 
+        "describe": "", 
+        "key": "ui/134225574", 
+        "name": "02", 
+        "path": "ui/134225574", 
+        "uid": "res_icon_ui/134225574"
+    }, 
+    "ui/134225591": {
+        "default_editor_id": 134225591, 
+        "describe": "", 
+        "key": "ui/134225591", 
+        "name": "img_jianzao_kuang", 
+        "path": "ui/134225591", 
+        "uid": "res_icon_ui/134225591"
+    }, 
+    "ui/134225954": {
+        "default_editor_id": 134225954, 
+        "describe": "", 
+        "key": "ui/134225954", 
+        "name": "RL_sp_zy_04 1", 
+        "path": "ui/134225954", 
+        "uid": "res_icon_ui/134225954"
+    }, 
+    "ui/134226035": {
+        "default_editor_id": 134226035, 
+        "describe": "", 
+        "key": "ui/134226035", 
+        "name": "\u5929\u8d4b\u5206\u5272\u7ebf", 
+        "path": "ui/134226035", 
+        "uid": "res_icon_ui/134226035"
+    }, 
+    "ui/134226290": {
+        "default_editor_id": 134226290, 
+        "describe": "", 
+        "key": "ui/134226290", 
+        "name": "\u901a\u7528\u7ecf\u9a8c", 
+        "path": "ui/134226290", 
+        "uid": "res_icon_ui/134226290"
+    }, 
+    "ui/134226696": {
+        "default_editor_id": 134226696, 
+        "describe": "", 
+        "key": "ui/134226696", 
+        "name": "img_prop_frame", 
+        "path": "ui/134226696", 
+        "uid": "res_icon_ui/134226696"
+    }, 
+    "ui/134227227": {
+        "default_editor_id": 134227227, 
+        "describe": "", 
+        "key": "ui/134227227", 
+        "name": "icon_1", 
+        "path": "ui/134227227", 
+        "uid": "res_icon_ui/134227227"
+    }, 
+    "ui/134227826": {
+        "default_editor_id": 134227826, 
+        "describe": "", 
+        "key": "ui/134227826", 
+        "name": "icon_shu_32", 
+        "path": "ui/134227826", 
+        "uid": "res_icon_ui/134227826"
+    }, 
+    "ui/134227948": {
+        "default_editor_id": 134227948, 
+        "describe": "", 
+        "key": "ui/134227948", 
+        "name": "ZM_btn_zm_hov_1", 
+        "path": "ui/134227948", 
+        "uid": "res_icon_ui/134227948"
+    }, 
+    "ui/134228181": {
+        "default_editor_id": 134228181, 
+        "describe": "", 
+        "key": "ui/134228181", 
+        "name": "04", 
+        "path": "ui/134228181", 
+        "uid": "res_icon_ui/134228181"
+    }, 
+    "ui/134228727": {
+        "default_editor_id": 134228727, 
+        "describe": "", 
+        "key": "ui/134228727", 
+        "name": "PGC_DM6_bingzhong_fashu", 
+        "path": "ui/134228727", 
+        "uid": "res_icon_ui/134228727"
+    }, 
+    "ui/134229262": {
+        "default_editor_id": 134229262, 
+        "describe": "", 
+        "key": "ui/134229262", 
+        "name": "\u5c0f\u7ea2\u5e3d\u5934\u50cf\u76ae\u80a4", 
+        "path": "ui/134229262", 
+        "uid": "res_icon_ui/134229262"
+    }, 
+    "ui/134229436": {
+        "default_editor_id": 134229436, 
+        "describe": "", 
+        "key": "ui/134229436", 
+        "name": "btn_yellow_small_dwn", 
+        "path": "ui/134229436", 
+        "uid": "res_icon_ui/134229436"
+    }, 
+    "ui/134230119": {
+        "default_editor_id": 134230119, 
+        "describe": "", 
+        "key": "ui/134230119", 
+        "name": "\u84dd6-2", 
+        "path": "ui/134230119", 
+        "uid": "res_icon_ui/134230119"
+    }, 
+    "ui/134230600": {
+        "default_editor_id": 134230600, 
+        "describe": "", 
+        "key": "ui/134230600", 
+        "name": "\u673a\u7532_1", 
+        "path": "ui/134230600", 
+        "uid": "res_icon_ui/134230600"
+    }, 
+    "ui/134230937": {
+        "default_editor_id": 134230937, 
+        "describe": "", 
+        "key": "ui/134230937", 
+        "name": "PGC_DM6_icon_gj", 
+        "path": "ui/134230937", 
+        "uid": "res_icon_ui/134230937"
+    }, 
+    "ui/134231562": {
+        "default_editor_id": 134231562, 
+        "describe": "", 
+        "key": "ui/134231562", 
+        "name": "ZM_btn_zc_nml_1", 
+        "path": "ui/134231562", 
+        "uid": "res_icon_ui/134231562"
+    }, 
+    "ui/134231595": {
+        "default_editor_id": 134231595, 
+        "describe": "", 
+        "key": "ui/134231595", 
+        "name": "\u9886\u4e3b\u6846", 
+        "path": "ui/134231595", 
+        "uid": "res_icon_ui/134231595"
+    }, 
+    "ui/134231610": {
+        "default_editor_id": 134231610, 
+        "describe": "", 
+        "key": "ui/134231610", 
+        "name": "PGC_DM6_img_sxdi", 
+        "path": "ui/134231610", 
+        "uid": "res_icon_ui/134231610"
+    }, 
+    "ui/134231743": {
+        "default_editor_id": 134231743, 
+        "describe": "", 
+        "key": "ui/134231743", 
+        "name": "icon_grey_nml", 
+        "path": "ui/134231743", 
+        "uid": "res_icon_ui/134231743"
+    }, 
+    "ui/134232169": {
+        "default_editor_id": 134232169, 
+        "describe": "", 
+        "key": "ui/134232169", 
+        "name": "ZM_guanbi_dwn", 
+        "path": "ui/134232169", 
+        "uid": "res_icon_ui/134232169"
+    }, 
+    "ui/134232402": {
+        "default_editor_id": 134232402, 
+        "describe": "", 
+        "key": "ui/134232402", 
+        "name": "icon_ren_32", 
+        "path": "ui/134232402", 
+        "uid": "res_icon_ui/134232402"
+    }, 
+    "ui/134232722": {
+        "default_editor_id": 134232722, 
+        "describe": "", 
+        "key": "ui/134232722", 
+        "name": "img_mouse_right_32", 
+        "path": "ui/134232722", 
+        "uid": "res_icon_ui/134232722"
+    }, 
+    "ui/134233417": {
+        "default_editor_id": 134233417, 
+        "describe": "", 
+        "key": "ui/134233417", 
+        "name": "\u9635\u8425\u6846", 
+        "path": "ui/134233417", 
+        "uid": "res_icon_ui/134233417"
+    }, 
+    "ui/134233907": {
+        "default_editor_id": 134233907, 
+        "describe": "", 
+        "key": "ui/134233907", 
+        "name": "img_jineng_zhudong", 
+        "path": "ui/134233907", 
+        "uid": "res_icon_ui/134233907"
+    }, 
+    "ui/134234087": {
+        "default_editor_id": 134234087, 
+        "describe": "", 
+        "key": "ui/134234087", 
+        "name": "\u5929\u542f\u56db\u9a91\u58eb\uff0d\u6218\u4e89\u5934\u50cf", 
+        "path": "ui/134234087", 
+        "uid": "res_icon_ui/134234087"
+    }, 
+    "ui/134234200": {
+        "default_editor_id": 134234200, 
+        "describe": "", 
+        "key": "ui/134234200", 
+        "name": "img_close_hov", 
+        "path": "ui/134234200", 
+        "uid": "res_icon_ui/134234200"
+    }, 
+    "ui/134234410": {
+        "default_editor_id": 134234410, 
+        "describe": "", 
+        "key": "ui/134234410", 
+        "name": "\u56fe\u9274\u9875\u7b7e\u9009\u62e9\u5e95\u7eb9", 
+        "path": "ui/134234410", 
+        "uid": "res_icon_ui/134234410"
+    }, 
+    "ui/134236066": {
+        "default_editor_id": 134236066, 
+        "describe": "", 
+        "key": "ui/134236066", 
+        "name": "ZM_kpzs_4", 
+        "path": "ui/134236066", 
+        "uid": "res_icon_ui/134236066"
+    }, 
+    "ui/134236091": {
+        "default_editor_id": 134236091, 
+        "describe": "", 
+        "key": "ui/134236091", 
+        "name": "ZM_kpzs_6", 
+        "path": "ui/134236091", 
+        "uid": "res_icon_ui/134236091"
+    }, 
+    "ui/134236618": {
+        "default_editor_id": 134236618, 
+        "describe": "", 
+        "key": "ui/134236618", 
+        "name": "\u5206\u5272\u7ebf", 
+        "path": "ui/134236618", 
+        "uid": "res_icon_ui/134236618"
+    }, 
+    "ui/134237341": {
+        "default_editor_id": 134237341, 
+        "describe": "", 
+        "key": "ui/134237341", 
+        "name": "image (83)", 
+        "path": "ui/134237341", 
+        "uid": "res_icon_ui/134237341"
+    }, 
+    "ui/134237582": {
+        "default_editor_id": 134237582, 
+        "describe": "", 
+        "key": "ui/134237582", 
+        "name": "4", 
+        "path": "ui/134237582", 
+        "uid": "res_icon_ui/134237582"
+    }, 
+    "ui/134238033": {
+        "default_editor_id": 134238033, 
+        "describe": "", 
+        "key": "ui/134238033", 
+        "name": "\u9886\u4e3b\u5361\u724c\u68461", 
+        "path": "ui/134238033", 
+        "uid": "res_icon_ui/134238033"
+    }, 
+    "ui/134238945": {
+        "default_editor_id": 134238945, 
+        "describe": "", 
+        "key": "ui/134238945", 
+        "name": "choice-panel-art-sheet", 
+        "path": "ui/134238945", 
+        "uid": "res_icon_ui/134238945"
+    }, 
+    "ui/134239219": {
+        "default_editor_id": 134239219, 
+        "describe": "", 
+        "key": "ui/134239219", 
+        "name": "tips_bg7", 
+        "path": "ui/134239219", 
+        "uid": "res_icon_ui/134239219"
+    }, 
+    "ui/134239629": {
+        "default_editor_id": 134239629, 
+        "describe": "", 
+        "key": "ui/134239629", 
+        "name": "ZM_guanbi_nml", 
+        "path": "ui/134239629", 
+        "uid": "res_icon_ui/134239629"
+    }, 
+    "ui/134240296": {
+        "default_editor_id": 134240296, 
+        "describe": "", 
+        "key": "ui/134240296", 
+        "name": "img_close_jinyong", 
+        "path": "ui/134240296", 
+        "uid": "res_icon_ui/134240296"
+    }, 
+    "ui/134240603": {
+        "default_editor_id": 134240603, 
+        "describe": "", 
+        "key": "ui/134240603", 
+        "name": "540170\u5934\u50cf", 
+        "path": "ui/134240603", 
+        "uid": "res_icon_ui/134240603"
+    }, 
+    "ui/134240673": {
+        "default_editor_id": 134240673, 
+        "describe": "", 
+        "key": "ui/134240673", 
+        "name": "\u5b97\u6559", 
+        "path": "ui/134240673", 
+        "uid": "res_icon_ui/134240673"
+    }, 
+    "ui/134241430": {
+        "default_editor_id": 134241430, 
+        "describe": "", 
+        "key": "ui/134241430", 
+        "name": "HUD_bp_xinxidi_3", 
+        "path": "ui/134241430", 
+        "uid": "res_icon_ui/134241430"
+    }, 
+    "ui/134241526": {
+        "default_editor_id": 134241526, 
+        "describe": "", 
+        "key": "ui/134241526", 
+        "name": "\u5de6\u65b9\u5411\u6807", 
+        "path": "ui/134241526", 
+        "uid": "res_icon_ui/134241526"
+    }, 
+    "ui/134242767": {
+        "default_editor_id": 134242767, 
+        "describe": "", 
+        "key": "ui/134242767", 
+        "name": "image (78)", 
+        "path": "ui/134242767", 
+        "uid": "res_icon_ui/134242767"
+    }, 
+    "ui/134242781": {
+        "default_editor_id": 134242781, 
+        "describe": "", 
+        "key": "ui/134242781", 
+        "name": "ZM_btn_sl_nml_2", 
+        "path": "ui/134242781", 
+        "uid": "res_icon_ui/134242781"
+    }, 
+    "ui/134242808": {
+        "default_editor_id": 134242808, 
+        "describe": "", 
+        "key": "ui/134242808", 
+        "name": "btn_blue_small_nml", 
+        "path": "ui/134242808", 
+        "uid": "res_icon_ui/134242808"
+    }, 
+    "ui/134242910": {
+        "default_editor_id": 134242910, 
+        "describe": "", 
+        "key": "ui/134242910", 
+        "name": "img_shuzi4", 
+        "path": "ui/134242910", 
+        "uid": "res_icon_ui/134242910"
+    }, 
+    "ui/134243288": {
+        "default_editor_id": 134243288, 
+        "describe": "", 
+        "key": "ui/134243288", 
+        "name": "skill_empty", 
+        "path": "ui/134243288", 
+        "uid": "res_icon_ui/134243288"
+    }, 
+    "ui/134243553": {
+        "default_editor_id": 134243553, 
+        "describe": "", 
+        "key": "ui/134243553", 
+        "name": "ZM_btn_zm_dwn", 
+        "path": "ui/134243553", 
+        "uid": "res_icon_ui/134243553"
+    }, 
+    "ui/134243945": {
+        "default_editor_id": 134243945, 
+        "describe": "", 
+        "key": "ui/134243945", 
+        "name": "dm6_sign_in_prize_bg", 
+        "path": "ui/134243945", 
+        "uid": "res_icon_ui/134243945"
+    }, 
+    "ui/134244150": {
+        "default_editor_id": 134244150, 
+        "describe": "", 
+        "key": "ui/134244150", 
+        "name": "image (77)", 
+        "path": "ui/134244150", 
+        "uid": "res_icon_ui/134244150"
+    }, 
+    "ui/134244416": {
+        "default_editor_id": 134244416, 
+        "describe": "", 
+        "key": "ui/134244416", 
+        "name": "7", 
+        "path": "ui/134244416", 
+        "uid": "res_icon_ui/134244416"
+    }, 
+    "ui/134244504": {
+        "default_editor_id": 134244504, 
+        "describe": "", 
+        "key": "ui/134244504", 
+        "name": "0", 
+        "path": "ui/134244504", 
+        "uid": "res_icon_ui/134244504"
+    }, 
+    "ui/134245485": {
+        "default_editor_id": 134245485, 
+        "describe": "", 
+        "key": "ui/134245485", 
+        "name": "btn_yellow_small_nml", 
+        "path": "ui/134245485", 
+        "uid": "res_icon_ui/134245485"
+    }, 
+    "ui/134245526": {
+        "default_editor_id": 134245526, 
+        "describe": "", 
+        "key": "ui/134245526", 
+        "name": "Snipaste_2024-08-29_14-27-10", 
+        "path": "ui/134245526", 
+        "uid": "res_icon_ui/134245526"
+    }, 
+    "ui/134245544": {
+        "default_editor_id": 134245544, 
+        "describe": "", 
+        "key": "ui/134245544", 
+        "name": "img_buff_kuang", 
+        "path": "ui/134245544", 
+        "uid": "res_icon_ui/134245544"
+    }, 
+    "ui/134245810": {
+        "default_editor_id": 134245810, 
+        "describe": "", 
+        "key": "ui/134245810", 
+        "name": "image (80)", 
+        "path": "ui/134245810", 
+        "uid": "res_icon_ui/134245810"
+    }, 
+    "ui/134246136": {
+        "default_editor_id": 134246136, 
+        "describe": "", 
+        "key": "ui/134246136", 
+        "name": "\u866b\u65cf", 
+        "path": "ui/134246136", 
+        "uid": "res_icon_ui/134246136"
+    }, 
+    "ui/134246233": {
+        "default_editor_id": 134246233, 
+        "describe": "", 
+        "key": "ui/134246233", 
+        "name": "\u795e\u79d8_1", 
+        "path": "ui/134246233", 
+        "uid": "res_icon_ui/134246233"
+    }, 
+    "ui/134246366": {
+        "default_editor_id": 134246366, 
+        "describe": "", 
+        "key": "ui/134246366", 
+        "name": "\u9886\u4e3b\u5e95\u677f1", 
+        "path": "ui/134246366", 
+        "uid": "res_icon_ui/134246366"
+    }, 
+    "ui/134247858": {
+        "default_editor_id": 134247858, 
+        "describe": "", 
+        "key": "ui/134247858", 
+        "name": "choice-action-button", 
+        "path": "ui/134247858", 
+        "uid": "res_icon_ui/134247858"
+    }, 
+    "ui/134248001": {
+        "default_editor_id": 134248001, 
+        "describe": "", 
+        "key": "ui/134248001", 
+        "name": "ZM_kapai_2", 
+        "path": "ui/134248001", 
+        "uid": "res_icon_ui/134248001"
+    }, 
+    "ui/134248035": {
+        "default_editor_id": 134248035, 
+        "describe": "", 
+        "key": "ui/134248035", 
+        "name": "tips", 
+        "path": "ui/134248035", 
+        "uid": "res_icon_ui/134248035"
+    }, 
+    "ui/134249267": {
+        "default_editor_id": 134249267, 
+        "describe": "", 
+        "key": "ui/134249267", 
+        "name": "red", 
+        "path": "ui/134249267", 
+        "uid": "res_icon_ui/134249267"
+    }, 
+    "ui/134249503": {
+        "default_editor_id": 134249503, 
+        "describe": "", 
+        "key": "ui/134249503", 
+        "name": "\u5e1d\u56fd", 
+        "path": "ui/134249503", 
+        "uid": "res_icon_ui/134249503"
+    }, 
+    "ui/134249708": {
+        "default_editor_id": 134249708, 
+        "describe": "", 
+        "key": "ui/134249708", 
+        "name": "icon_yellow_right_nml", 
+        "path": "ui/134249708", 
+        "uid": "res_icon_ui/134249708"
+    }, 
+    "ui/134249985": {
+        "default_editor_id": 134249985, 
+        "describe": "", 
+        "key": "ui/134249985", 
+        "name": "ZM_btn_sl_hov_1", 
+        "path": "ui/134249985", 
+        "uid": "res_icon_ui/134249985"
+    }, 
+    "ui/134249990": {
+        "default_editor_id": 134249990, 
+        "describe": "", 
+        "key": "ui/134249990", 
+        "name": "3", 
+        "path": "ui/134249990", 
+        "uid": "res_icon_ui/134249990"
+    }, 
+    "ui/134250742": {
+        "default_editor_id": 134250742, 
+        "describe": "", 
+        "key": "ui/134250742", 
+        "name": "tab_line", 
+        "path": "ui/134250742", 
+        "uid": "res_icon_ui/134250742"
+    }, 
+    "ui/134251028": {
+        "default_editor_id": 134251028, 
+        "describe": "", 
+        "key": "ui/134251028", 
+        "name": "img_shuzi5", 
+        "path": "ui/134251028", 
+        "uid": "res_icon_ui/134251028"
+    }, 
+    "ui/134251378": {
+        "default_editor_id": 134251378, 
+        "describe": "", 
+        "key": "ui/134251378", 
+        "name": "img_shop_details_content_bg", 
+        "path": "ui/134251378", 
+        "uid": "res_icon_ui/134251378"
+    }, 
+    "ui/134251993": {
+        "default_editor_id": 134251993, 
+        "describe": "", 
+        "key": "ui/134251993", 
+        "name": "\u4e2d\u7acb", 
+        "path": "ui/134251993", 
+        "uid": "res_icon_ui/134251993"
+    }, 
+    "ui/134252047": {
+        "default_editor_id": 134252047, 
+        "describe": "", 
+        "key": "ui/134252047", 
+        "name": "ZM_tcdi_3", 
+        "path": "ui/134252047", 
+        "uid": "res_icon_ui/134252047"
+    }, 
+    "ui/134252230": {
+        "default_editor_id": 134252230, 
+        "describe": "", 
+        "key": "ui/134252230", 
+        "name": "\u866b\u65cf_1", 
+        "path": "ui/134252230", 
+        "uid": "res_icon_ui/134252230"
+    }, 
+    "ui/134252236": {
+        "default_editor_id": 134252236, 
+        "describe": "", 
+        "key": "ui/134252236", 
+        "name": "Snipaste_2025-01-10_14-51-50", 
+        "path": "ui/134252236", 
+        "uid": "res_icon_ui/134252236"
+    }, 
+    "ui/134252301": {
+        "default_editor_id": 134252301, 
+        "describe": "", 
+        "key": "ui/134252301", 
+        "name": "ZM_kp_hui", 
+        "path": "ui/134252301", 
+        "uid": "res_icon_ui/134252301"
+    }, 
+    "ui/134252412": {
+        "default_editor_id": 134252412, 
+        "describe": "", 
+        "key": "ui/134252412", 
+        "name": "01", 
+        "path": "ui/134252412", 
+        "uid": "res_icon_ui/134252412"
+    }, 
+    "ui/134252919": {
+        "default_editor_id": 134252919, 
+        "describe": "", 
+        "key": "ui/134252919", 
+        "name": "Rectangle", 
+        "path": "ui/134252919", 
+        "uid": "res_icon_ui/134252919"
+    }, 
+    "ui/134253260": {
+        "default_editor_id": 134253260, 
+        "describe": "", 
+        "key": "ui/134253260", 
+        "name": "ZM_kp_jin", 
+        "path": "ui/134253260", 
+        "uid": "res_icon_ui/134253260"
+    }, 
+    "ui/134253341": {
+        "default_editor_id": 134253341, 
+        "describe": "", 
+        "key": "ui/134253341", 
+        "name": "icon_jinbi_32", 
+        "path": "ui/134253341", 
+        "uid": "res_icon_ui/134253341"
+    }, 
+    "ui/134253463": {
+        "default_editor_id": 134253463, 
+        "describe": "", 
+        "key": "ui/134253463", 
+        "name": "\u4eba\u7269", 
+        "path": "ui/134253463", 
+        "uid": "res_icon_ui/134253463"
+    }, 
+    "ui/134253560": {
+        "default_editor_id": 134253560, 
+        "describe": "", 
+        "key": "ui/134253560", 
+        "name": "img_kuang_ming", 
+        "path": "ui/134253560", 
+        "uid": "res_icon_ui/134253560"
+    }, 
+    "ui/134254185": {
+        "default_editor_id": 134254185, 
+        "describe": "", 
+        "key": "ui/134254185", 
+        "name": "img_shuzi2", 
+        "path": "ui/134254185", 
+        "uid": "res_icon_ui/134254185"
+    }, 
+    "ui/134254296": {
+        "default_editor_id": 134254296, 
+        "describe": "", 
+        "key": "ui/134254296", 
+        "name": "img_close_dwn", 
+        "path": "ui/134254296", 
+        "uid": "res_icon_ui/134254296"
+    }, 
+    "ui/134254505": {
+        "default_editor_id": 134254505, 
+        "describe": "", 
+        "key": "ui/134254505", 
+        "name": "img_shuzi3", 
+        "path": "ui/134254505", 
+        "uid": "res_icon_ui/134254505"
+    }, 
+    "ui/134254687": {
+        "default_editor_id": 134254687, 
+        "describe": "", 
+        "key": "ui/134254687", 
+        "name": "Snipaste_2024-08-29_14-27-47", 
+        "path": "ui/134254687", 
+        "uid": "res_icon_ui/134254687"
+    }, 
+    "ui/134254765": {
+        "default_editor_id": 134254765, 
+        "describe": "", 
+        "key": "ui/134254765", 
+        "name": "\u53f3\u65b9\u5411\u6807", 
+        "path": "ui/134254765", 
+        "uid": "res_icon_ui/134254765"
+    }, 
+    "ui/134254859": {
+        "default_editor_id": 134254859, 
+        "describe": "", 
+        "key": "ui/134254859", 
+        "name": "image (84)", 
+        "path": "ui/134254859", 
+        "uid": "res_icon_ui/134254859"
+    }, 
+    "ui/134254902": {
+        "default_editor_id": 134254902, 
+        "describe": "", 
+        "key": "ui/134254902", 
+        "name": "ZM_btn_zm_dwn_1", 
+        "path": "ui/134254902", 
+        "uid": "res_icon_ui/134254902"
+    }, 
+    "ui/134255080": {
+        "default_editor_id": 134255080, 
+        "describe": "", 
+        "key": "ui/134255080", 
+        "name": "ZM_kezhi_1", 
+        "path": "ui/134255080", 
+        "uid": "res_icon_ui/134255080"
+    }, 
+    "ui/134255757": {
+        "default_editor_id": 134255757, 
+        "describe": "", 
+        "key": "ui/134255757", 
+        "name": "PGC_DM6_wanjiakuang_huang", 
+        "path": "ui/134255757", 
+        "uid": "res_icon_ui/134255757"
+    }, 
+    "ui/134255974": {
+        "default_editor_id": 134255974, 
+        "describe": "", 
+        "key": "ui/134255974", 
+        "name": "ZM_kp_hong", 
+        "path": "ui/134255974", 
+        "uid": "res_icon_ui/134255974"
+    }, 
+    "ui/134255995": {
+        "default_editor_id": 134255995, 
+        "describe": "", 
+        "key": "ui/134255995", 
+        "name": "\u6218\u6597\u529b", 
+        "path": "ui/134255995", 
+        "uid": "res_icon_ui/134255995"
+    }, 
+    "ui/134256408": {
+        "default_editor_id": 134256408, 
+        "describe": "", 
+        "key": "ui/134256408", 
+        "name": "06", 
+        "path": "ui/134256408", 
+        "uid": "res_icon_ui/134256408"
+    }, 
+    "ui/134257037": {
+        "default_editor_id": 134257037, 
+        "describe": "", 
+        "key": "ui/134257037", 
+        "name": "choice-panel-shell", 
+        "path": "ui/134257037", 
+        "uid": "res_icon_ui/134257037"
+    }, 
+    "ui/134257181": {
+        "default_editor_id": 134257181, 
+        "describe": "", 
+        "key": "ui/134257181", 
+        "name": "ZM_btn_sl_nml", 
+        "path": "ui/134257181", 
+        "uid": "res_icon_ui/134257181"
+    }, 
+    "ui/134257454": {
+        "default_editor_id": 134257454, 
+        "describe": "", 
+        "key": "ui/134257454", 
+        "name": "\u51c6\u5907\u5206\u5272\u7ebf", 
+        "path": "ui/134257454", 
+        "uid": "res_icon_ui/134257454"
+    }, 
+    "ui/134257679": {
+        "default_editor_id": 134257679, 
+        "describe": "", 
+        "key": "ui/134257679", 
+        "name": "PGC_DM6_xuetiaodi", 
+        "path": "ui/134257679", 
+        "uid": "res_icon_ui/134257679"
+    }, 
+    "ui/134257741": {
+        "default_editor_id": 134257741, 
+        "describe": "", 
+        "key": "ui/134257741", 
+        "name": "PGC_DM6_kpzt_suo", 
+        "path": "ui/134257741", 
+        "uid": "res_icon_ui/134257741"
+    }, 
+    "ui/134257779": {
+        "default_editor_id": 134257779, 
+        "describe": "", 
+        "key": "ui/134257779", 
+        "name": "Rectangle-1", 
+        "path": "ui/134257779", 
+        "uid": "res_icon_ui/134257779"
+    }, 
+    "ui/134258012": {
+        "default_editor_id": 134258012, 
+        "describe": "", 
+        "key": "ui/134258012", 
+        "name": "tips", 
+        "path": "ui/134258012", 
+        "uid": "res_icon_ui/134258012"
+    }, 
+    "ui/134258576": {
+        "default_editor_id": 134258576, 
+        "describe": "", 
+        "key": "ui/134258576", 
+        "name": "ZM_kpzs_2", 
+        "path": "ui/134258576", 
+        "uid": "res_icon_ui/134258576"
+    }, 
+    "ui/134258685": {
+        "default_editor_id": 134258685, 
+        "describe": "", 
+        "key": "ui/134258685", 
+        "name": "\u6280\u80fd\u63cf\u8ff0", 
+        "path": "ui/134258685", 
+        "uid": "res_icon_ui/134258685"
+    }, 
+    "ui/134258900": {
+        "default_editor_id": 134258900, 
+        "describe": "", 
+        "key": "ui/134258900", 
+        "name": "choice-card-shell_1", 
+        "path": "ui/134258900", 
+        "uid": "res_icon_ui/134258900"
+    }, 
+    "ui/134259827": {
+        "default_editor_id": 134259827, 
+        "describe": "", 
+        "key": "ui/134259827", 
+        "name": "ZM_btn_zm_nml_1", 
+        "path": "ui/134259827", 
+        "uid": "res_icon_ui/134259827"
+    }, 
+    "ui/134260223": {
+        "default_editor_id": 134260223, 
+        "describe": "", 
+        "key": "ui/134260223", 
+        "name": "img_jindutiaobig_lan", 
+        "path": "ui/134260223", 
+        "uid": "res_icon_ui/134260223"
+    }, 
+    "ui/134260357": {
+        "default_editor_id": 134260357, 
+        "describe": "", 
+        "key": "ui/134260357", 
+        "name": "\u6295\u964d\u6846", 
+        "path": "ui/134260357", 
+        "uid": "res_icon_ui/134260357"
+    }, 
+    "ui/134260496": {
+        "default_editor_id": 134260496, 
+        "describe": "", 
+        "key": "ui/134260496", 
+        "name": "img_jiantou", 
+        "path": "ui/134260496", 
+        "uid": "res_icon_ui/134260496"
+    }, 
+    "ui/134260586": {
+        "default_editor_id": 134260586, 
+        "describe": "", 
+        "key": "ui/134260586", 
+        "name": "\u5b97\u6559_1", 
+        "path": "ui/134260586", 
+        "uid": "res_icon_ui/134260586"
+    }, 
+    "ui/134261174": {
+        "default_editor_id": 134261174, 
+        "describe": "", 
+        "key": "ui/134261174", 
+        "name": "ZM_btn_zc_dwn_2", 
+        "path": "ui/134261174", 
+        "uid": "res_icon_ui/134261174"
+    }, 
+    "ui/134261213": {
+        "default_editor_id": 134261213, 
+        "describe": "", 
+        "key": "ui/134261213", 
+        "name": "\u4e2d\u7acb_1", 
+        "path": "ui/134261213", 
+        "uid": "res_icon_ui/134261213"
+    }, 
+    "ui/134261605": {
+        "default_editor_id": 134261605, 
+        "describe": "", 
+        "key": "ui/134261605", 
+        "name": "\u5723\u5973\u8d1e\u5fb7\u5934\u50cf", 
+        "path": "ui/134261605", 
+        "uid": "res_icon_ui/134261605"
+    }, 
+    "ui/134262398": {
+        "default_editor_id": 134262398, 
+        "describe": "", 
+        "key": "ui/134262398", 
+        "name": "ZM_kpzs_3", 
+        "path": "ui/134262398", 
+        "uid": "res_icon_ui/134262398"
+    }, 
+    "ui/134262555": {
+        "default_editor_id": 134262555, 
+        "describe": "", 
+        "key": "ui/134262555", 
+        "name": "img_dikuang_jinbi", 
+        "path": "ui/134262555", 
+        "uid": "res_icon_ui/134262555"
+    }, 
+    "ui/134262593": {
+        "default_editor_id": 134262593, 
+        "describe": "", 
+        "key": "ui/134262593", 
+        "name": "ZM_btn_zm_nml", 
+        "path": "ui/134262593", 
+        "uid": "res_icon_ui/134262593"
+    }, 
+    "ui/134262594": {
+        "default_editor_id": 134262594, 
+        "describe": "", 
+        "key": "ui/134262594", 
+        "name": "\u64cd\u4f5c\u6307\u5357\u56fe\u50cf\u9884\u7559\u6846", 
+        "path": "ui/134262594", 
+        "uid": "res_icon_ui/134262594"
+    }, 
+    "ui/134262693": {
+        "default_editor_id": 134262693, 
+        "describe": "", 
+        "key": "ui/134262693", 
+        "name": "bg_jinbi 1", 
+        "path": "ui/134262693", 
+        "uid": "res_icon_ui/134262693"
+    }, 
+    "ui/134263581": {
+        "default_editor_id": 134263581, 
+        "describe": "", 
+        "key": "ui/134263581", 
+        "name": "Snipaste_2025-01-15_15-55-29", 
+        "path": "ui/134263581", 
+        "uid": "res_icon_ui/134263581"
+    }, 
+    "ui/134263721": {
+        "default_editor_id": 134263721, 
+        "describe": "", 
+        "key": "ui/134263721", 
+        "name": "\u5e1d\u56fd\u8f7b\u9a91\u5175\u5934\u50cf", 
+        "path": "ui/134263721", 
+        "uid": "res_icon_ui/134263721"
+    }, 
+    "ui/134263758": {
+        "default_editor_id": 134263758, 
+        "describe": "", 
+        "key": "ui/134263758", 
+        "name": "ZM_guanbi_hov", 
+        "path": "ui/134263758", 
+        "uid": "res_icon_ui/134263758"
+    }, 
+    "ui/134263926": {
+        "default_editor_id": 134263926, 
+        "describe": "", 
+        "key": "ui/134263926", 
+        "name": "ZM_kpzs_5", 
+        "path": "ui/134263926", 
+        "uid": "res_icon_ui/134263926"
+    }, 
+    "ui/134264555": {
+        "default_editor_id": 134264555, 
+        "describe": "", 
+        "key": "ui/134264555", 
+        "name": "img_attack", 
+        "path": "ui/134264555", 
+        "uid": "res_icon_ui/134264555"
+    }, 
+    "ui/134264598": {
+        "default_editor_id": 134264598, 
+        "describe": "", 
+        "key": "ui/134264598", 
+        "name": "6", 
+        "path": "ui/134264598", 
+        "uid": "res_icon_ui/134264598"
+    }, 
+    "ui/134264735": {
+        "default_editor_id": 134264735, 
+        "describe": "", 
+        "key": "ui/134264735", 
+        "name": "PGC_DM6_icon_gs", 
+        "path": "ui/134264735", 
+        "uid": "res_icon_ui/134264735"
+    }, 
+    "ui/134264743": {
+        "default_editor_id": 134264743, 
+        "describe": "", 
+        "key": "ui/134264743", 
+        "name": "ZM_zydi_2", 
+        "path": "ui/134264743", 
+        "uid": "res_icon_ui/134264743"
+    }, 
+    "ui/134264913": {
+        "default_editor_id": 134264913, 
+        "describe": "", 
+        "key": "ui/134264913", 
+        "name": "img_fast", 
+        "path": "ui/134264913", 
+        "uid": "res_icon_ui/134264913"
+    }, 
+    "ui/134265244": {
+        "default_editor_id": 134265244, 
+        "describe": "", 
+        "key": "ui/134265244", 
+        "name": "img_shop_details_line", 
+        "path": "ui/134265244", 
+        "uid": "res_icon_ui/134265244"
+    }, 
+    "ui/134265666": {
+        "default_editor_id": 134265666, 
+        "describe": "", 
+        "key": "ui/134265666", 
+        "name": "skill_small_empty", 
+        "path": "ui/134265666", 
+        "uid": "res_icon_ui/134265666"
+    }, 
+    "ui/134265804": {
+        "default_editor_id": 134265804, 
+        "describe": "", 
+        "key": "ui/134265804", 
+        "name": "ZM_biaozhu_1", 
+        "path": "ui/134265804", 
+        "uid": "res_icon_ui/134265804"
+    }, 
+    "ui/134266502": {
+        "default_editor_id": 134266502, 
+        "describe": "", 
+        "key": "ui/134266502", 
+        "name": "img_kuang_shangbu", 
+        "path": "ui/134266502", 
+        "uid": "res_icon_ui/134266502"
+    }, 
+    "ui/134266691": {
+        "default_editor_id": 134266691, 
+        "describe": "", 
+        "key": "ui/134266691", 
+        "name": "\u73a9\u5bb6\u5e95\u677f", 
+        "path": "ui/134266691", 
+        "uid": "res_icon_ui/134266691"
+    }, 
+    "ui/134266861": {
+        "default_editor_id": 134266861, 
+        "describe": "", 
+        "key": "ui/134266861", 
+        "name": "\u5c3c\u53e4\u62c9\u65af\u5c06\u519b\u5934\u50cf", 
+        "path": "ui/134266861", 
+        "uid": "res_icon_ui/134266861"
+    }, 
+    "ui/134268904": {
+        "default_editor_id": 134268904, 
+        "describe": "", 
+        "key": "ui/134268904", 
+        "name": "PGC_DM6_icon_fw", 
+        "path": "ui/134268904", 
+        "uid": "res_icon_ui/134268904"
+    }, 
+    "ui/134269669": {
+        "default_editor_id": 134269669, 
+        "describe": "", 
+        "key": "ui/134269669", 
+        "name": "Snipaste_2025-01-10_14-48-08", 
+        "path": "ui/134269669", 
+        "uid": "res_icon_ui/134269669"
+    }, 
+    "ui/134269910": {
+        "default_editor_id": 134269910, 
+        "describe": "", 
+        "key": "ui/134269910", 
+        "name": "\u5929\u8d4b\u5206\u5272\u7ebf - left", 
+        "path": "ui/134269910", 
+        "uid": "res_icon_ui/134269910"
+    }, 
+    "ui/134270247": {
+        "default_editor_id": 134270247, 
+        "describe": "", 
+        "key": "ui/134270247", 
+        "name": "\u91d1\u5e012", 
+        "path": "ui/134270247", 
+        "uid": "res_icon_ui/134270247"
+    }, 
+    "ui/134270263": {
+        "default_editor_id": 134270263, 
+        "describe": "", 
+        "key": "ui/134270263", 
+        "name": "03", 
+        "path": "ui/134270263", 
+        "uid": "res_icon_ui/134270263"
+    }, 
+    "ui/134270486": {
+        "default_editor_id": 134270486, 
+        "describe": "", 
+        "key": "ui/134270486", 
+        "name": "\u6280\u80fd\u68462", 
+        "path": "ui/134270486", 
+        "uid": "res_icon_ui/134270486"
+    }, 
+    "ui/134270624": {
+        "default_editor_id": 134270624, 
+        "describe": "", 
+        "key": "ui/134270624", 
+        "name": "img_shop_details_initiative_bg", 
+        "path": "ui/134270624", 
+        "uid": "res_icon_ui/134270624"
+    }, 
+    "ui/134271828": {
+        "default_editor_id": 134271828, 
+        "describe": "", 
+        "key": "ui/134271828", 
+        "name": "img_shuzi7", 
+        "path": "ui/134271828", 
+        "uid": "res_icon_ui/134271828"
+    }, 
+    "ui/134272066": {
+        "default_editor_id": 134272066, 
+        "describe": "", 
+        "key": "ui/134272066", 
+        "name": "PGC_DM6_icon_sm", 
+        "path": "ui/134272066", 
+        "uid": "res_icon_ui/134272066"
+    }, 
+    "ui/134272163": {
+        "default_editor_id": 134272163, 
+        "describe": "", 
+        "key": "ui/134272163", 
+        "name": "ZM_kp_lan", 
+        "path": "ui/134272163", 
+        "uid": "res_icon_ui/134272163"
+    }, 
+    "ui/134272567": {
+        "default_editor_id": 134272567, 
+        "describe": "", 
+        "key": "ui/134272567", 
+        "name": "img_close", 
+        "path": "ui/134272567", 
+        "uid": "res_icon_ui/134272567"
+    }, 
+    "ui/134272735": {
+        "default_editor_id": 134272735, 
+        "describe": "", 
+        "key": "ui/134272735", 
+        "name": "ZM_kp_zi", 
+        "path": "ui/134272735", 
+        "uid": "res_icon_ui/134272735"
+    }, 
+    "ui/134273094": {
+        "default_editor_id": 134273094, 
+        "describe": "", 
+        "key": "ui/134273094", 
+        "name": "PGC_DM6_wenbenkuang1", 
+        "path": "ui/134273094", 
+        "uid": "res_icon_ui/134273094"
+    }, 
+    "ui/134274086": {
+        "default_editor_id": 134274086, 
+        "describe": "", 
+        "key": "ui/134274086", 
+        "name": "\u6280\u80fd\u68463", 
+        "path": "ui/134274086", 
+        "uid": "res_icon_ui/134274086"
+    }, 
+    "ui/134274195": {
+        "default_editor_id": 134274195, 
+        "describe": "", 
+        "key": "ui/134274195", 
+        "name": "bg", 
+        "path": "ui/134274195", 
+        "uid": "res_icon_ui/134274195"
+    }, 
+    "ui/134274626": {
+        "default_editor_id": 134274626, 
+        "describe": "", 
+        "key": "ui/134274626", 
+        "name": "hero_hover", 
+        "path": "ui/134274626", 
+        "uid": "res_icon_ui/134274626"
+    }, 
+    "ui/134275090": {
+        "default_editor_id": 134275090, 
+        "describe": "", 
+        "key": "ui/134275090", 
+        "name": "\u804c\u4e1a\u5e95\u677f", 
+        "path": "ui/134275090", 
+        "uid": "res_icon_ui/134275090"
+    }, 
+    "ui/134275186": {
+        "default_editor_id": 134275186, 
+        "describe": "", 
+        "key": "ui/134275186", 
+        "name": "btn_blue_small_hov", 
+        "path": "ui/134275186", 
+        "uid": "res_icon_ui/134275186"
+    }, 
+    "ui/134275239": {
+        "default_editor_id": 134275239, 
+        "describe": "", 
+        "key": "ui/134275239", 
+        "name": "img_shuzi6", 
+        "path": "ui/134275239", 
+        "uid": "res_icon_ui/134275239"
+    }, 
+    "ui/134275264": {
+        "default_editor_id": 134275264, 
+        "describe": "", 
+        "key": "ui/134275264", 
+        "name": "\u526f\u8840\u6761\u7dd1\u8272", 
+        "path": "ui/134275264", 
+        "uid": "res_icon_ui/134275264"
+    }, 
+    "ui/134275447": {
+        "default_editor_id": 134275447, 
+        "describe": "", 
+        "key": "ui/134275447", 
+        "name": "bg_black", 
+        "path": "ui/134275447", 
+        "uid": "res_icon_ui/134275447"
+    }, 
+    "ui/134275505": {
+        "default_editor_id": 134275505, 
+        "describe": "", 
+        "key": "ui/134275505", 
+        "name": "RL_sp_zy_02", 
+        "path": "ui/134275505", 
+        "uid": "res_icon_ui/134275505"
+    }, 
+    "ui/134275595": {
+        "default_editor_id": 134275595, 
+        "describe": "", 
+        "key": "ui/134275595", 
+        "name": "\u5e95\u6761\u9ed1", 
+        "path": "ui/134275595", 
+        "uid": "res_icon_ui/134275595"
+    }, 
+    "ui/134276172": {
+        "default_editor_id": 134276172, 
+        "describe": "", 
+        "key": "ui/134276172", 
+        "name": "img_attack_speed", 
+        "path": "ui/134276172", 
+        "uid": "res_icon_ui/134276172"
+    }, 
+    "ui/134276218": {
+        "default_editor_id": 134276218, 
+        "describe": "", 
+        "key": "ui/134276218", 
+        "name": "RL_sp_zy_01", 
+        "path": "ui/134276218", 
+        "uid": "res_icon_ui/134276218"
+    }, 
+    "ui/134276882": {
+        "default_editor_id": 134276882, 
+        "describe": "", 
+        "key": "ui/134276882", 
+        "name": "PGC_DM6_icon_zhandou", 
+        "path": "ui/134276882", 
+        "uid": "res_icon_ui/134276882"
+    }, 
+    "ui/134277125": {
+        "default_editor_id": 134277125, 
+        "describe": "", 
+        "key": "ui/134277125", 
+        "name": "image (81)", 
+        "path": "ui/134277125", 
+        "uid": "res_icon_ui/134277125"
+    }, 
+    "ui/134278408": {
+        "default_editor_id": 134278408, 
+        "describe": "", 
+        "key": "ui/134278408", 
+        "name": "btn_yellow_small_dis", 
+        "path": "ui/134278408", 
+        "uid": "res_icon_ui/134278408"
+    }, 
+    "ui/134278424": {
+        "default_editor_id": 134278424, 
+        "describe": "", 
+        "key": "ui/134278424", 
+        "name": "\u5e1d\u56fd_1", 
+        "path": "ui/134278424", 
+        "uid": "res_icon_ui/134278424"
+    }, 
+    "ui/134278720": {
+        "default_editor_id": 134278720, 
+        "describe": "", 
+        "key": "ui/134278720", 
+        "name": "ZM_kp_lv", 
+        "path": "ui/134278720", 
+        "uid": "res_icon_ui/134278720"
+    }, 
+    "ui/134278859": {
+        "default_editor_id": 134278859, 
+        "describe": "", 
+        "key": "ui/134278859", 
+        "name": "Snipaste_2024-08-29_14-24-03", 
+        "path": "ui/134278859", 
+        "uid": "res_icon_ui/134278859"
+    }, 
+    "ui/134279005": {
+        "default_editor_id": 134279005, 
+        "describe": "", 
+        "key": "ui/134279005", 
+        "name": "HUD_bp_xinxidi_2", 
+        "path": "ui/134279005", 
+        "uid": "res_icon_ui/134279005"
+    }, 
+    "ui/134279449": {
+        "default_editor_id": 134279449, 
+        "describe": "", 
+        "key": "ui/134279449", 
+        "name": "image (79)", 
+        "path": "ui/134279449", 
+        "uid": "res_icon_ui/134279449"
+    }, 
+    "ui/134279816": {
+        "default_editor_id": 134279816, 
+        "describe": "", 
+        "key": "ui/134279816", 
+        "name": "ZM_btn_sl_dwn_1", 
+        "path": "ui/134279816", 
+        "uid": "res_icon_ui/134279816"
+    }, 
+    "ui/134280717": {
+        "default_editor_id": 134280717, 
+        "describe": "", 
+        "key": "ui/134280717", 
+        "name": "RL_sp_zy_03", 
+        "path": "ui/134280717", 
+        "uid": "res_icon_ui/134280717"
+    }, 
+    "ui/134281119": {
+        "default_editor_id": 134281119, 
+        "describe": "", 
+        "key": "ui/134281119", 
+        "name": "\u9886\u4e3b\u5e95\u677f", 
+        "path": "ui/134281119", 
+        "uid": "res_icon_ui/134281119"
+    }, 
+    "ui/134281545": {
+        "default_editor_id": 134281545, 
+        "describe": "", 
+        "key": "ui/134281545", 
+        "name": "05", 
+        "path": "ui/134281545", 
+        "uid": "res_icon_ui/134281545"
+    }, 
+    "ui/134281707": {
+        "default_editor_id": 134281707, 
+        "describe": "", 
+        "key": "ui/134281707", 
+        "name": "ZM_btn_sl_hov", 
+        "path": "ui/134281707", 
+        "uid": "res_icon_ui/134281707"
+    }, 
+    "ui/134281829": {
+        "default_editor_id": 134281829, 
+        "describe": "", 
+        "key": "ui/134281829", 
+        "name": "ZM_btn_zc_hov_2", 
+        "path": "ui/134281829", 
+        "uid": "res_icon_ui/134281829"
+    }, 
+    "ui/134281957": {
+        "default_editor_id": 134281957, 
+        "describe": "", 
+        "key": "ui/134281957", 
+        "name": "Rectangle-2", 
+        "path": "ui/134281957", 
+        "uid": "res_icon_ui/134281957"
+    }, 
+    "ui/134282277": {
+        "default_editor_id": 134282277, 
+        "describe": "", 
+        "key": "ui/134282277", 
+        "name": "btn_blue_small_dwn", 
+        "path": "ui/134282277", 
+        "uid": "res_icon_ui/134282277"
+    }, 
+    "ui/134282465": {
+        "default_editor_id": 134282465, 
+        "describe": "", 
+        "key": "ui/134282465", 
+        "name": "ZM_btn_sl_dwn", 
+        "path": "ui/134282465", 
+        "uid": "res_icon_ui/134282465"
+    }, 
+    "ui/134282651": {
+        "default_editor_id": 134282651, 
+        "describe": "", 
+        "key": "ui/134282651", 
+        "name": "bg_warehouse_3", 
+        "path": "ui/134282651", 
+        "uid": "res_icon_ui/134282651"
+    }, 
+    "ui/134283003": {
+        "default_editor_id": 134283003, 
+        "describe": "", 
+        "key": "ui/134283003", 
+        "name": "ZM_tips_1 1", 
+        "path": "ui/134283003", 
+        "uid": "res_icon_ui/134283003"
+    }, 
+    "ui/134283022": {
+        "default_editor_id": 134283022, 
+        "describe": "", 
+        "key": "ui/134283022", 
+        "name": "2", 
+        "path": "ui/134283022", 
+        "uid": "res_icon_ui/134283022"
+    }, 
+    "ui/17c1895d-beda-49c4-b061-88557c6ecda1": {
+        "default_editor_id": 134259536, 
+        "describe": "", 
+        "key": "ui/17c1895d-beda-49c4-b061-88557c6ecda1", 
+        "name": "img_shop_details_initiative_bg_2", 
+        "path": "ui/17c1895d-beda-49c4-b061-88557c6ecda1", 
+        "uid": "res_icon_ui/17c1895d-beda-49c4-b061-88557c6ecda1"
+    }, 
+    "ui/2047d7bb-3e66-41c4-9067-a094a910472b": {
+        "default_editor_id": 134269594, 
+        "describe": "", 
+        "key": "ui/2047d7bb-3e66-41c4-9067-a094a910472b", 
+        "name": "%ID300540000_2", 
+        "path": "ui/2047d7bb-3e66-41c4-9067-a094a910472b", 
+        "uid": "res_icon_ui/2047d7bb-3e66-41c4-9067-a094a910472b"
+    }, 
+    "ui/2d1abc3f-cc0e-4672-8fd9-4857ba6de6ae": {
+        "default_editor_id": 134230620, 
+        "describe": "", 
+        "key": "ui/2d1abc3f-cc0e-4672-8fd9-4857ba6de6ae", 
+        "name": "img_shop_details_initiative_bg_1", 
+        "path": "ui/2d1abc3f-cc0e-4672-8fd9-4857ba6de6ae", 
+        "uid": "res_icon_ui/2d1abc3f-cc0e-4672-8fd9-4857ba6de6ae"
+    }, 
+    "ui/300540000": {
+        "default_editor_id": 300540000, 
+        "describe": "", 
+        "key": "ui/300540000", 
+        "name": "%ID300540000", 
+        "path": "ui/300540000", 
+        "uid": "res_icon_ui/300540000"
+    }, 
+    "ui/355c2b6c-fee1-44d1-be1f-203e20446053": {
+        "default_editor_id": 134222677, 
+        "describe": "", 
+        "key": "ui/355c2b6c-fee1-44d1-be1f-203e20446053", 
+        "name": "img_shop_details_bg_1", 
+        "path": "ui/355c2b6c-fee1-44d1-be1f-203e20446053", 
+        "uid": "res_icon_ui/355c2b6c-fee1-44d1-be1f-203e20446053"
+    }, 
+    "ui/3d1e2833-e67b-4898-9f64-e726e9065100": {
+        "default_editor_id": 134244831, 
+        "describe": "", 
+        "key": "ui/3d1e2833-e67b-4898-9f64-e726e9065100", 
+        "name": "img_attack_speed_1", 
+        "path": "ui/3d1e2833-e67b-4898-9f64-e726e9065100", 
+        "uid": "res_icon_ui/3d1e2833-e67b-4898-9f64-e726e9065100"
+    }, 
+    "ui/4507c601-50cf-404f-9684-b2d750437a6c": {
+        "default_editor_id": 134221377, 
+        "describe": "", 
+        "key": "ui/4507c601-50cf-404f-9684-b2d750437a6c", 
+        "name": "img_defense_2", 
+        "path": "ui/4507c601-50cf-404f-9684-b2d750437a6c", 
+        "uid": "res_icon_ui/4507c601-50cf-404f-9684-b2d750437a6c"
+    }, 
+    "ui/459fab11-1b73-41be-8330-d26a22c6298d": {
+        "default_editor_id": 134221237, 
+        "describe": "", 
+        "key": "ui/459fab11-1b73-41be-8330-d26a22c6298d", 
+        "name": "img_shop_details_content_bg_2", 
+        "path": "ui/459fab11-1b73-41be-8330-d26a22c6298d", 
+        "uid": "res_icon_ui/459fab11-1b73-41be-8330-d26a22c6298d"
+    }, 
+    "ui/5e707c80-28c0-4219-9f5f-fb7ebe7056a7": {
+        "default_editor_id": 134257674, 
+        "describe": "", 
+        "key": "ui/5e707c80-28c0-4219-9f5f-fb7ebe7056a7", 
+        "name": "img_prop_frame_1", 
+        "path": "ui/5e707c80-28c0-4219-9f5f-fb7ebe7056a7", 
+        "uid": "res_icon_ui/5e707c80-28c0-4219-9f5f-fb7ebe7056a7"
+    }, 
+    "ui/65c49b76-676c-437c-a1d3-64f6f71f84ab": {
+        "default_editor_id": 134279223, 
+        "describe": "", 
+        "key": "ui/65c49b76-676c-437c-a1d3-64f6f71f84ab", 
+        "name": "icon_1_1", 
+        "path": "ui/65c49b76-676c-437c-a1d3-64f6f71f84ab", 
+        "uid": "res_icon_ui/65c49b76-676c-437c-a1d3-64f6f71f84ab"
+    }, 
+    "ui/6e9dfe5d-3574-4765-82fb-c1a594295179": {
+        "default_editor_id": 134269775, 
+        "describe": "", 
+        "key": "ui/6e9dfe5d-3574-4765-82fb-c1a594295179", 
+        "name": "img_attack_speed_2", 
+        "path": "ui/6e9dfe5d-3574-4765-82fb-c1a594295179", 
+        "uid": "res_icon_ui/6e9dfe5d-3574-4765-82fb-c1a594295179"
+    }, 
+    "ui/7ebb7cbb-c16d-4879-9d92-73fb6816988a": {
+        "default_editor_id": 134228710, 
+        "describe": "", 
+        "key": "ui/7ebb7cbb-c16d-4879-9d92-73fb6816988a", 
+        "name": "icon_1_2", 
+        "path": "ui/7ebb7cbb-c16d-4879-9d92-73fb6816988a", 
+        "uid": "res_icon_ui/7ebb7cbb-c16d-4879-9d92-73fb6816988a"
+    }, 
+    "ui/88338fe2-6627-401a-a42f-a421b1f69c81": {
+        "default_editor_id": 134257744, 
+        "describe": "", 
+        "key": "ui/88338fe2-6627-401a-a42f-a421b1f69c81", 
+        "name": "img_shop_details_content_bg_1", 
+        "path": "ui/88338fe2-6627-401a-a42f-a421b1f69c81", 
+        "uid": "res_icon_ui/88338fe2-6627-401a-a42f-a421b1f69c81"
+    }, 
+    "ui/8a7a96c6-cdc7-4f55-af9e-8ea10439f23c": {
+        "default_editor_id": 134235634, 
+        "describe": "", 
+        "key": "ui/8a7a96c6-cdc7-4f55-af9e-8ea10439f23c", 
+        "name": "img_attack_2", 
+        "path": "ui/8a7a96c6-cdc7-4f55-af9e-8ea10439f23c", 
+        "uid": "res_icon_ui/8a7a96c6-cdc7-4f55-af9e-8ea10439f23c"
+    }, 
+    "ui/8c7b55a9-4d48-4834-b032-40ef15ea47bc": {
+        "default_editor_id": 134233772, 
+        "describe": "", 
+        "key": "ui/8c7b55a9-4d48-4834-b032-40ef15ea47bc", 
+        "name": "img_prop_frame_2", 
+        "path": "ui/8c7b55a9-4d48-4834-b032-40ef15ea47bc", 
+        "uid": "res_icon_ui/8c7b55a9-4d48-4834-b032-40ef15ea47bc"
+    }, 
+    "ui/8f7e1da1-603c-4372-9667-cfcafb5dfde4": {
+        "default_editor_id": 134247724, 
+        "describe": "", 
+        "key": "ui/8f7e1da1-603c-4372-9667-cfcafb5dfde4", 
+        "name": "\u7ea26-2", 
+        "path": "ui/8f7e1da1-603c-4372-9667-cfcafb5dfde4", 
+        "uid": "res_icon_ui/8f7e1da1-603c-4372-9667-cfcafb5dfde4"
+    }, 
+    "ui/a435ca96-8610-4658-8a0d-88e2535a4c80": {
+        "default_editor_id": 134255511, 
+        "describe": "", 
+        "key": "ui/a435ca96-8610-4658-8a0d-88e2535a4c80", 
+        "name": "img_fast_1", 
+        "path": "ui/a435ca96-8610-4658-8a0d-88e2535a4c80", 
+        "uid": "res_icon_ui/a435ca96-8610-4658-8a0d-88e2535a4c80"
+    }, 
+    "ui/ac7ddfcf-2fa5-4a93-a98b-340001717514": {
+        "default_editor_id": 134249835, 
+        "describe": "", 
+        "key": "ui/ac7ddfcf-2fa5-4a93-a98b-340001717514", 
+        "name": "\u7d2b5-1", 
+        "path": "ui/ac7ddfcf-2fa5-4a93-a98b-340001717514", 
+        "uid": "res_icon_ui/ac7ddfcf-2fa5-4a93-a98b-340001717514"
+    }, 
+    "ui/ad11c3b5-69f9-4829-9ef6-1039bafc8f70": {
+        "default_editor_id": 134250888, 
+        "describe": "", 
+        "key": "ui/ad11c3b5-69f9-4829-9ef6-1039bafc8f70", 
+        "name": "img_defense_1", 
+        "path": "ui/ad11c3b5-69f9-4829-9ef6-1039bafc8f70", 
+        "uid": "res_icon_ui/ad11c3b5-69f9-4829-9ef6-1039bafc8f70"
+    }, 
+    "ui/ba4bed6c-2406-407c-85d1-d893d4929ee9": {
+        "default_editor_id": 134222882, 
+        "describe": "", 
+        "key": "ui/ba4bed6c-2406-407c-85d1-d893d4929ee9", 
+        "name": "img_fast_2", 
+        "path": "ui/ba4bed6c-2406-407c-85d1-d893d4929ee9", 
+        "uid": "res_icon_ui/ba4bed6c-2406-407c-85d1-d893d4929ee9"
+    }, 
+    "ui/c4c3d8f6-eab0-4ab3-aa99-9908e25a09a3": {
+        "default_editor_id": 134252224, 
+        "describe": "", 
+        "key": "ui/c4c3d8f6-eab0-4ab3-aa99-9908e25a09a3", 
+        "name": "img_shop_details_line_1", 
+        "path": "ui/c4c3d8f6-eab0-4ab3-aa99-9908e25a09a3", 
+        "uid": "res_icon_ui/c4c3d8f6-eab0-4ab3-aa99-9908e25a09a3"
+    }, 
+    "ui/cf047871-d693-434b-a58f-63c99f12c3ab": {
+        "default_editor_id": 134281108, 
+        "describe": "", 
+        "key": "ui/cf047871-d693-434b-a58f-63c99f12c3ab", 
+        "name": "img_attack_1", 
+        "path": "ui/cf047871-d693-434b-a58f-63c99f12c3ab", 
+        "uid": "res_icon_ui/cf047871-d693-434b-a58f-63c99f12c3ab"
+    }, 
+    "ui/d483f4d9-c03d-4e18-ab6c-a6fa42402adf": {
+        "default_editor_id": 134275326, 
+        "describe": "", 
+        "key": "ui/d483f4d9-c03d-4e18-ab6c-a6fa42402adf", 
+        "name": "%ID300540000_1", 
+        "path": "ui/d483f4d9-c03d-4e18-ab6c-a6fa42402adf", 
+        "uid": "res_icon_ui/d483f4d9-c03d-4e18-ab6c-a6fa42402adf"
+    }, 
+    "ui/e865bad9-52c9-4802-8fa3-6a9a3b7035bb": {
+        "default_editor_id": 134271832, 
+        "describe": "", 
+        "key": "ui/e865bad9-52c9-4802-8fa3-6a9a3b7035bb", 
+        "name": "img_shop_details_line_2", 
+        "path": "ui/e865bad9-52c9-4802-8fa3-6a9a3b7035bb", 
+        "uid": "res_icon_ui/e865bad9-52c9-4802-8fa3-6a9a3b7035bb"
+    }, 
+    "ui/f995395b-e445-4032-a291-9be0aab0c5b8": {
+        "default_editor_id": 134271479, 
+        "describe": "", 
+        "key": "ui/f995395b-e445-4032-a291-9be0aab0c5b8", 
+        "name": "img_defense", 
+        "path": "ui/f995395b-e445-4032-a291-9be0aab0c5b8", 
+        "uid": "res_icon_ui/f995395b-e445-4032-a291-9be0aab0c5b8"
     }
 }

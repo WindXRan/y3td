@@ -20,6 +20,25 @@ function M.create(env)
   local show_debug_hotkey_help = env.show_debug_hotkey_help
   local debug_actions_system = env.debug_actions_system
   local debug_tools_system = env.debug_tools_system
+  local play_ui_click = env.play_ui_click
+  local play_panel_open = env.play_panel_open
+  local play_confirm = env.play_confirm
+
+  local function has_pending_round_choice()
+    if STATE.awaiting_upgrade then
+      return true
+    end
+    if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice then
+      return true
+    end
+    if STATE.mark_runtime and STATE.mark_runtime.awaiting_choice then
+      return true
+    end
+    if STATE.treasure_runtime and (STATE.treasure_runtime.awaiting_choice or STATE.treasure_runtime.awaiting_replace) then
+      return true
+    end
+    return false
+  end
 
   local function register_runtime_events()
     if STATE.events_registered then
@@ -50,11 +69,17 @@ function M.create(env)
       if not is_battle_active() then
         return
       end
+      if play_panel_open then
+        play_panel_open()
+      end
       show_upgrade_choices()
     end)
     y3.game:event('键盘-按下', 'F', function()
       if not is_battle_active() then
         return
+      end
+      if play_panel_open then
+        play_panel_open()
       end
       try_bond_draw()
     end)
@@ -62,17 +87,26 @@ function M.create(env)
       if not is_battle_active() then
         return
       end
+      if play_ui_click then
+        play_ui_click()
+      end
       show_bond_progress()
     end)
     y3.game:event('键盘-按下', 'B', function()
       if not is_battle_active() then
         return
       end
+      if play_ui_click then
+        play_ui_click()
+      end
       show_runtime_status()
     end)
     y3.game:event('键盘-按下', y3.const.KeyboardKey['TAB'], function()
       if not is_battle_active() then
         return
+      end
+      if play_panel_open then
+        play_panel_open()
       end
       if show_runtime_attr_dialog then
         show_runtime_attr_dialog()
@@ -81,6 +115,9 @@ function M.create(env)
     y3.game:event('键盘-按下', 'T', function()
       if not is_battle_active() then
         return
+      end
+      if play_panel_open then
+        play_panel_open()
       end
       if show_runtime_attr_dialog then
         show_runtime_attr_dialog()
@@ -92,11 +129,17 @@ function M.create(env)
       if not is_battle_active() then
         return
       end
+      if play_ui_click then
+        play_ui_click()
+      end
       try_start_challenge('gold_trial')
     end)
     y3.game:event('键盘-按下', 'W', function()
       if not is_battle_active() then
         return
+      end
+      if play_ui_click then
+        play_ui_click()
       end
       try_start_challenge('wood_trial')
     end)
@@ -104,11 +147,17 @@ function M.create(env)
       if not is_battle_active() then
         return
       end
+      if play_ui_click then
+        play_ui_click()
+      end
       try_start_challenge('exp_trial')
     end)
     y3.game:event('键盘-按下', 'R', function()
       if not is_battle_active() then
         return
+      end
+      if play_ui_click then
+        play_ui_click()
       end
       try_treasure_entry()
     end)
@@ -117,17 +166,26 @@ function M.create(env)
       if not is_battle_active() then
         return
       end
+      if has_pending_round_choice() and play_confirm then
+        play_confirm()
+      end
       apply_round_choice(1)
     end)
     y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_2'], function()
       if not is_battle_active() then
         return
       end
+      if has_pending_round_choice() and play_confirm then
+        play_confirm()
+      end
       apply_round_choice(2)
     end)
     y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_3'], function()
       if not is_battle_active() then
         return
+      end
+      if has_pending_round_choice() and play_confirm then
+        play_confirm()
       end
       apply_round_choice(3)
     end)

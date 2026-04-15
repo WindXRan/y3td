@@ -1,0 +1,165 @@
+{
+    "action": [
+        {
+            "action_type": "CALL_TRIGGER_FUNC", 
+            "args_list": [
+                {
+                    "arg_type": 100177, 
+                    "args_list": [], 
+                    "op_arg": [], 
+                    "op_arg_enable": [], 
+                    "sub_type": "aae9228bbeb711efb65b2768f53e0d0d"
+                }
+            ], 
+            "bp": false, 
+            "call_rt_arg_idxes": [], 
+            "element_id": 222769176000002, 
+            "enable": true
+        }, 
+        {
+            "action_type": "CALL_TRIGGER_FUNC", 
+            "args_list": [
+                {
+                    "arg_type": 100177, 
+                    "args_list": [], 
+                    "op_arg": [], 
+                    "op_arg_enable": [], 
+                    "sub_type": "d42a4491e58e11ed913f00ff8fde3c7e"
+                }
+            ], 
+            "bp": false, 
+            "call_rt_arg_idxes": [], 
+            "element_id": 222769176000003, 
+            "enable": true
+        }, 
+        [
+            1362164197, 
+            "玩家初始化", 
+            222769176, 
+            "action_type"
+        ], 
+        {
+            "action_type": "PICK_PLAYER_DO_ACTION", 
+            "args_list": [
+                {
+                    "arg_type": 100027, 
+                    "args_list": [], 
+                    "sub_type": "ALL_PLAYER"
+                }, 
+                {
+                    "arg_type": 100022, 
+                    "args_list": [
+                        {
+                            "action_type": "SET_ENTITY_KV", 
+                            "args_list": [
+                                {
+                                    "arg_type": 100025, 
+                                    "args_list": [], 
+                                    "sub_type": "PICKED_PLAYER"
+                                }, 
+                                {
+                                    "arg_type": 100003, 
+                                    "args_list": [
+                                        "关键词ui表"
+                                    ], 
+                                    "sub_type": 1
+                                }, 
+                                {
+                                    "arg_type": 100011, 
+                                    "args_list": [], 
+                                    "sub_type": "GET_NEW_TABLE"
+                                }
+                            ], 
+                            "bp": false, 
+                            "element_id": 222769176000004, 
+                            "enable": true
+                        }, 
+                        [
+                            1255413435, 
+                            "玩家图鉴UI初始化", 
+                            222769176, 
+                            "action_type"
+                        ], 
+                        {
+                            "action_type": "CALL_TRIGGER_FUNC", 
+                            "args_list": [
+                                {
+                                    "arg_type": 100177, 
+                                    "args_list": [
+                                        {
+                                            "arg_type": 100025, 
+                                            "args_list": [], 
+                                            "sub_type": "PICKED_PLAYER"
+                                        }
+                                    ], 
+                                    "op_arg": [], 
+                                    "op_arg_enable": [], 
+                                    "sub_type": "3b4b718031ac11eebfe600ff8fde3c7e"
+                                }
+                            ], 
+                            "bp": false, 
+                            "call_rt_arg_idxes": [], 
+                            "element_id": 222769176000005, 
+                            "enable": true
+                        }, 
+                        {
+                            "action_type": "CALL_TRIGGER_FUNC", 
+                            "args_list": [
+                                {
+                                    "arg_type": 100177, 
+                                    "args_list": [
+                                        {
+                                            "arg_type": 100025, 
+                                            "args_list": [], 
+                                            "sub_type": "PICKED_PLAYER"
+                                        }
+                                    ], 
+                                    "op_arg": [], 
+                                    "op_arg_enable": [], 
+                                    "sub_type": "43db9160bdb011ef81c0374f96a2e4ad"
+                                }
+                            ], 
+                            "bp": false, 
+                            "call_rt_arg_idxes": [], 
+                            "element_id": 222769176000006, 
+                            "enable": true
+                        }
+                    ], 
+                    "sub_type": 1
+                }
+            ], 
+            "bp": false, 
+            "element_id": 222769176000007, 
+            "enable": true
+        }
+    ], 
+    "call_enabled": true, 
+    "condition": [], 
+    "enabled": true, 
+    "event": [
+        {
+            "args_list": [], 
+            "element_id": 222769176000001, 
+            "enable": true, 
+            "event_type": "INIT_FINISHED"
+        }
+    ], 
+    "group_id": "iduUnzi1EfGqgd+XyC-aAC", 
+    "p_trigger_id": null, 
+    "trigger_id": 222769176, 
+    "trigger_name": "初始化设置", 
+    "valid": true, 
+    "var_data": [
+        {
+            "INTEGER": {
+                "图鉴容量": 0
+            }
+        }, 
+        {
+            "图鉴容量": 0
+        }, 
+        [
+            "图鉴容量"
+        ]
+    ]
+}

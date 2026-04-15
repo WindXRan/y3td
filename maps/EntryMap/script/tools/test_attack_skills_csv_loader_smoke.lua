@@ -15,7 +15,7 @@ local basic_attack = mod.defs_by_id.basic_attack
 assert(basic_attack, 'expected basic_attack to exist')
 assert(basic_attack.default_slot == 1, 'expected basic_attack default_slot to match')
 assert(basic_attack.base_range == 760, 'expected basic_attack base_range to match')
-assert(mod.vfx_by_id.basic_attack.projectile_key == 134257292, 'expected basic_attack projectile_key to match')
+assert(mod.vfx_by_id.basic_attack.projectile_key == 134222874, 'expected basic_attack projectile_key to match')
 
 local flame_arrow = mod.defs_by_id.flame_arrow
 assert(flame_arrow, 'expected flame_arrow to exist')

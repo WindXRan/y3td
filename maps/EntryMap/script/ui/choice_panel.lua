@@ -112,6 +112,8 @@ end
 function M.create(env)
   local STATE = env.STATE
   local y3 = env.y3
+  local play_ui_click = env.play_ui_click
+  local play_confirm = env.play_confirm
   local factory = Factory.create(env)
 
   local create_panel = factory.create_panel
@@ -204,7 +206,12 @@ function M.create(env)
     if label_node then
       label_node:set_text(label or '')
     end
-    button:add_fast_event('左键-点击', callback)
+    button:add_fast_event('左键-点击', function()
+      if play_ui_click then
+        play_ui_click()
+      end
+      callback()
+    end)
 
     return {
       prefab = prefab,
@@ -576,6 +583,11 @@ function M.create(env)
     if button then
       button:set_text('')
       button:add_fast_event('左键-点击', function()
+        if play_confirm then
+          play_confirm()
+        elseif play_ui_click then
+          play_ui_click()
+        end
         if env.apply_round_choice then
           env.apply_round_choice(index)
         end

@@ -10,6 +10,8 @@ function M.create(env)
   local STATE = env.STATE
   local CONFIG = env.CONFIG
   local y3 = env.y3
+  local play_ui_click = env.play_ui_click
+  local play_confirm = env.play_confirm
   local round_number = env.round_number
   local hero_attr_system = env.hero_attr_system
   local factory = Factory.create(env)
@@ -482,6 +484,11 @@ function M.create(env)
     button:set_btn_status_image(4, ui_res.common.empty)
     button:set_z_order(9456)
     button:add_fast_event('左键-点击', function()
+      if play_confirm then
+        play_confirm()
+      elseif play_ui_click then
+        play_ui_click()
+      end
       if env.apply_round_choice then
         env.apply_round_choice(index)
         refresh_runtime_hud()

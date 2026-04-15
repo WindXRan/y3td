@@ -5,5 +5,117 @@
    "dc7edfab-7741-4b9b-9292-33491623f24e", 
    "test config"
   ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "47257deb-7916-42a6-a4c8-ec38c16d5cb8", 
+   "\u5546\u54c1\u8868"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "1fdb747e-ac1b-41c8-a127-ebc9bc2d08ee", 
+   "\u5c5e\u6027\u6761\u76ee\u914d\u7f6e"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "b4bacdbd-e366-4d98-883d-de2464b4c56d", 
+   "\u5c5e\u6027\u8868"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "c12eda15-dde1-4c00-8eb1-b95731373126", 
+   "\u6280\u80fd\u8868"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "328598bc-b979-49d5-825f-66a0c256660b", 
+   "\u7269\u54c1\u8868"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "308de828-5a3c-40bb-b486-006fc1296c71", 
+   "\u7269\u54c1\u8bf4\u660e_\u5e38\u91cf\u8868"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "ef996d19-7dee-4708-86de-77d82d31f721", 
+   "\u5175\u79cd\u4fe1\u606f\u8868"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "3f5cdce3-6138-4581-98d8-dc80510c3c5a", 
+   "\u5355\u4f4d\u56fe\u9274\u8868"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "4558a549-e97e-4c4c-b71f-e1844573d521", 
+   "\u5361\u724c\u6807\u7b7e\u4fe1\u606f\u8868"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "b9799266-abe0-418f-aa03-c3ec018ce147", 
+   "\u56fe\u9274\u5175\u79cd\u6309\u94ae"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "8b7e3db8-b150-4864-8235-b24c4179f62c", 
+   "\u56fe\u9274\u661f\u7ea7\u6309\u94ae"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "6d0098e3-5738-400b-8df7-f3a13028a230", 
+   "\u56fe\u9274\u9635\u8425\u6309\u94ae"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "546e85d1-48f0-4c4c-8edc-e4b0be1c845f", 
+   "\u6280\u80fd\u56fe\u9274\u8868"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "bff33270-318c-4045-99a9-da5e0e71731e", 
+   "\u661f\u7ea7\u4fe1\u606f\u8868"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "7711b56d-1ea3-4732-83c1-b47bab01136c", 
+   "\u9635\u8425\u4fe1\u606f\u8868"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "a7548560-49eb-4942-a81b-c7c4a26b684d", 
+   "\u7269\u54c1\u914d\u7f6e\u8868"
+  ]
  }
 ]

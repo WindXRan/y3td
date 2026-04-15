@@ -1,0 +1,97 @@
+{
+    "action": [
+        {
+            "action_type": "SET_VARIABLE", 
+            "args_list": [
+                {
+                    "arg_type": 100030, 
+                    "args_list": [
+                        [
+                            "PLAYER", 
+                            "玩家", 
+                            "local"
+                        ]
+                    ], 
+                    "sub_type": 1
+                }, 
+                {
+                    "arg_type": 100025, 
+                    "args_list": [], 
+                    "sub_type": "TRIGGER_PLAYER"
+                }
+            ], 
+            "bp": false, 
+            "element_id": 138883098000002, 
+            "enable": true
+        }, 
+        {
+            "action_type": "CALL_TRIGGER_FUNC", 
+            "args_list": [
+                {
+                    "arg_type": 100177, 
+                    "args_list": [
+                        {
+                            "arg_type": 100025, 
+                            "args_list": [
+                                [
+                                    "PLAYER", 
+                                    "玩家", 
+                                    "local"
+                                ]
+                            ], 
+                            "sub_type": "VARIABLE"
+                        }
+                    ], 
+                    "op_arg": [
+                        null
+                    ], 
+                    "op_arg_enable": [
+                        false
+                    ], 
+                    "sub_type": "7e0f5d403d9d11eea2b600ff8fde3c7e"
+                }
+            ], 
+            "bp": false, 
+            "call_rt_arg_idxes": [], 
+            "element_id": 138883098000003, 
+            "enable": true
+        }
+    ], 
+    "call_enabled": true, 
+    "condition": [], 
+    "enabled": true, 
+    "event": [
+        {
+            "args_list": [
+                {
+                    "arg_type": 100067, 
+                    "args_list": [
+                        "图鉴切换为军团"
+                    ], 
+                    "sub_type": 1
+                }
+            ], 
+            "element_id": 138883098000001, 
+            "enable": true, 
+            "event_type": "TRIGGER_COMPONENT_EVENT"
+        }
+    ], 
+    "group_id": "ieIFazi1EfGFQ9+XyC-aAH", 
+    "p_trigger_id": null, 
+    "trigger_id": 138883098, 
+    "trigger_name": "切换图鉴为军团", 
+    "valid": true, 
+    "var_data": [
+        {
+            "PLAYER": {
+                "玩家": 0
+            }
+        }, 
+        {
+            "玩家": 0
+        }, 
+        [
+            "玩家"
+        ]
+    ]
+}

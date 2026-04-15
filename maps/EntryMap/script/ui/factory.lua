@@ -10,6 +10,7 @@ local BUTTON_TYPE = '按钮'
 
 function M.create(env)
   local round_number = env.round_number
+  local play_ui_click = env.play_ui_click
 
   local api = {}
 
@@ -138,6 +139,9 @@ function M.create(env)
     button:set_btn_status_image(4, status_images.disabled or ui_res.common_tip.btn_blue_disabled)
     button:set_z_order(opts.button_z or 9702)
     button:add_fast_event('左键-点击', function()
+      if play_ui_click then
+        play_ui_click()
+      end
       callback()
     end)
 

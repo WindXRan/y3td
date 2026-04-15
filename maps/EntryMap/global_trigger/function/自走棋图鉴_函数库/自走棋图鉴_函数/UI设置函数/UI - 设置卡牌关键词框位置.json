@@ -1,0 +1,242 @@
+{
+    "action": [
+        [
+            2085182756, 
+            "这个是tips位置设置，有用的", 
+            1581723668, 
+            "action_type"
+        ], 
+        {
+            "action_type": "SET_VARIABLE", 
+            "args_list": [
+                {
+                    "arg_type": 100030, 
+                    "args_list": [
+                        [
+                            "FLOAT", 
+                            "x", 
+                            "local"
+                        ]
+                    ], 
+                    "sub_type": 1
+                }, 
+                {
+                    "arg_type": 100000, 
+                    "args_list": [
+                        108.5
+                    ], 
+                    "sub_type": 1
+                }
+            ], 
+            "bp": false, 
+            "element_id": 1581723668000001, 
+            "enable": true
+        }, 
+        {
+            "action_type": "SET_VARIABLE", 
+            "args_list": [
+                {
+                    "arg_type": 100030, 
+                    "args_list": [
+                        [
+                            "FLOAT", 
+                            "y", 
+                            "local"
+                        ]
+                    ], 
+                    "sub_type": 1
+                }, 
+                {
+                    "arg_type": 100000, 
+                    "args_list": [
+                        {
+                            "arg_type": 100000, 
+                            "args_list": [
+                                400.0
+                            ], 
+                            "sub_type": 1
+                        }, 
+                        {
+                            "arg_type": 100017, 
+                            "args_list": [
+                                "-"
+                            ], 
+                            "sub_type": 1
+                        }, 
+                        {
+                            "arg_type": 100000, 
+                            "args_list": [
+                                {
+                                    "arg_type": 100002, 
+                                    "args_list": [
+                                        [
+                                            "INTEGER", 
+                                            "序号", 
+                                            "local"
+                                        ]
+                                    ], 
+                                    "sub_type": 6
+                                }, 
+                                {
+                                    "arg_type": 100017, 
+                                    "args_list": [
+                                        "*"
+                                    ], 
+                                    "sub_type": 1
+                                }, 
+                                {
+                                    "arg_type": 100000, 
+                                    "args_list": [
+                                        140.0
+                                    ], 
+                                    "sub_type": 1
+                                }
+                            ], 
+                            "sub_type": "ARITHMETIC_OPERATION"
+                        }
+                    ], 
+                    "sub_type": "ARITHMETIC_OPERATION"
+                }
+            ], 
+            "bp": false, 
+            "element_id": 1581723668000002, 
+            "enable": true
+        }, 
+        {
+            "action_type": "SET_UI_COMP_POSITION_NO_TRANS", 
+            "args_list": [
+                {
+                    "arg_type": 100025, 
+                    "args_list": [
+                        [
+                            "PLAYER", 
+                            "玩家", 
+                            "local"
+                        ]
+                    ], 
+                    "sub_type": "VARIABLE"
+                }, 
+                {
+                    "arg_type": 100070, 
+                    "args_list": [
+                        {
+                            "arg_type": 1001558, 
+                            "args_list": [
+                                [
+                                    "UI_PREFAB_INSTANCE", 
+                                    "关键词ui", 
+                                    "local"
+                                ]
+                            ], 
+                            "sub_type": "VARIABLE"
+                        }, 
+                        {
+                            "arg_type": 100003, 
+                            "args_list": [
+                                ""
+                            ], 
+                            "sub_type": 1
+                        }
+                    ], 
+                    "sub_type": "GET_UI_PREFAB_CHILD_BY_PATH"
+                }, 
+                {
+                    "arg_type": 100000, 
+                    "args_list": [
+                        [
+                            "FLOAT", 
+                            "x", 
+                            "local"
+                        ]
+                    ], 
+                    "sub_type": 2
+                }, 
+                {
+                    "arg_type": 100000, 
+                    "args_list": [
+                        [
+                            "FLOAT", 
+                            "y", 
+                            "local"
+                        ]
+                    ], 
+                    "sub_type": 2
+                }
+            ], 
+            "bp": false, 
+            "element_id": 1581723668000003, 
+            "enable": true
+        }
+    ], 
+    "call_enabled": true, 
+    "condition": [], 
+    "enabled": true, 
+    "event": [], 
+    "func_category": "t_function", 
+    "func_comment": "", 
+    "func_des": "UI - 设置{玩家}的卡牌关键词框{关键词ui}位置为序号{序号},参考位置", 
+    "func_id": "accc7d8021f911eea79100ff8fde3c7e", 
+    "func_name": "UI - 设置卡牌关键词框位置", 
+    "func_param_list": [
+        {
+            "__tuple__": true, 
+            "items": [
+                "关键词ui", 
+                true
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "序号", 
+                true
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "玩家", 
+                true
+            ]
+        }
+    ], 
+    "group_id": "ig6OBji1EfGSKt+XyC-aAH", 
+    "is_func": true, 
+    "is_official_func": false, 
+    "p_trigger_id": null, 
+    "trigger_id": 1581723668, 
+    "trigger_name": "UI - 设置卡牌关键词框位置", 
+    "valid": true, 
+    "var_data": [
+        {
+            "FLOAT": {
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            "INTEGER": {
+                "序号": 0
+            }, 
+            "PLAYER": {
+                "玩家": 0
+            }, 
+            "UI_COMP": {}, 
+            "UI_PREFAB_INSTANCE": {
+                "关键词ui": ""
+            }
+        }, 
+        {
+            "x": 0, 
+            "y": 0, 
+            "关键词ui": 0, 
+            "序号": 0, 
+            "玩家": 0
+        }, 
+        [
+            "x", 
+            "y", 
+            "关键词ui", 
+            "序号", 
+            "玩家"
+        ]
+    ]
+}
