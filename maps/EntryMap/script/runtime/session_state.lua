@@ -46,8 +46,18 @@ function M.create(env)
     STATE.challenge_recover_elapsed = 0
   end
 
+  local function cleanup_swallow_panel()
+    local panel = STATE.swallow_panel
+    local root = panel and panel.root or nil
+    if root and root.remove and (not root.is_removed or not root:is_removed()) then
+      root:remove()
+    end
+    STATE.swallow_panel = nil
+  end
+
   local function reset_battle_state()
     destroy_choice_panel()
+    cleanup_swallow_panel()
     STATE.hero = nil
     STATE.hero_common_attack = nil
     STATE.hero_spawn_point = make_point(CONFIG.points.hero_spawn)

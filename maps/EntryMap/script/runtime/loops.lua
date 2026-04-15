@@ -17,6 +17,7 @@ function M.create(env)
   local set_battle_hud_visible = env.set_battle_hud_visible
   local refresh_runtime_hud = env.refresh_runtime_hud
   local refresh_choice_panel = env.refresh_choice_panel
+  local refresh_swallow_panel = env.refresh_swallow_panel
   local refresh_runtime_overview = env.refresh_runtime_overview
   local outgame_system = env.outgame_system
   local debug_tools_system = env.debug_tools_system
@@ -58,6 +59,9 @@ function M.create(env)
         set_battle_hud_visible(true)
         refresh_runtime_hud()
         refresh_choice_panel()
+        if refresh_swallow_panel then
+          refresh_swallow_panel()
+        end
         refresh_runtime_overview()
         return
       end

@@ -761,6 +761,21 @@ local function remove_root_set_nodes_from_runtime(state, root_id)
   end
 end
 
+local function push_consumed_root_set_order(runtime, root_id)
+  if not runtime or not root_id then
+    return
+  end
+
+  runtime.consumed_root_set_order = runtime.consumed_root_set_order or {}
+  for index = #runtime.consumed_root_set_order, 1, -1 do
+    if runtime.consumed_root_set_order[index] == root_id then
+      table.remove(runtime.consumed_root_set_order, index)
+      break
+    end
+  end
+  table.insert(runtime.consumed_root_set_order, 1, root_id)
+end
+
 local function resolve_root_set_completion(state, root_id)
   local runtime = get_runtime(state)
   local mode = get_root_set_completion_mode(root_id)
@@ -780,6 +795,7 @@ local function resolve_root_set_completion(state, root_id)
 
   if mode == 'consume_all' then
     runtime.consumed_root_sets[root_id] = true
+    push_consumed_root_set_order(runtime, root_id)
     remove_root_set_nodes_from_runtime(state, root_id)
     M.refresh_all_nodes(state)
     return true
@@ -1129,6 +1145,8 @@ local function build_root_overview_entry(state, root_id)
     started = started,
     completed = completed,
     consumed = consumed,
+    icon = root_def.icon,
+    quality = root_def.quality,
     unlocked_count = #unlocked_defs,
     total_count = #subtree_ids,
     required_count = required_count,
@@ -1500,6 +1518,7 @@ function M.create_runtime()
     awaiting_choice = false,
     completed_root_sets = {},
     consumed_root_sets = {},
+    consumed_root_set_order = {},
     fused_root_sets = {},
     completed_root_set_modes = {},
     completed_root_set_attr_bonuses = {},
@@ -2258,6 +2277,93 @@ function M.get_root_overview_entries(state)
     result[#result + 1] = entry
   end
   return result
+end
+
+function M.get_consumed_root_entries(state, max_entries)
+  local runtime = get_runtime(state)
+  if not runtime or not runtime.consumed_root_sets then
+    return {}
+  end
+
+  local ordered_ids = {}
+  local seen = {}
+
+  for _, root_id in ipairs(runtime.consumed_root_set_order or {}) do
+    if runtime.consumed_root_sets[root_id] == true and not seen[root_id] then
+      seen[root_id] = true
+      ordered_ids[#ordered_ids + 1] = root_id
+    end
+  end
+
+  for root_id, consumed in pairs(runtime.consumed_root_sets) do
+    if consumed == true and not seen[root_id] then
+      seen[root_id] = true
+      ordered_ids[#ordered_ids + 1] = root_id
+    end
+  end
+
+  local limit = math.max(1, max_entries or #ordered_ids)
+  local result = {}
+  for _, root_id in ipairs(ordered_ids) do
+    if #result >= limit then
+      break
+    end
+    local entry = build_root_overview_entry(state, root_id)
+    if entry and entry.consumed then
+      result[#result + 1] = entry
+    end
+  end
+  return result
+end
+
+function M.get_consumed_node_entries(state, max_entries)
+  local runtime = get_runtime(state)
+  if not runtime or not runtime.consumed_root_sets then
+    return {}
+  end
+
+  local ordered_root_ids = {}
+  local seen_root = {}
+
+  for _, root_id in ipairs(runtime.consumed_root_set_order or {}) do
+    if runtime.consumed_root_sets[root_id] == true and not seen_root[root_id] then
+      seen_root[root_id] = true
+      ordered_root_ids[#ordered_root_ids + 1] = root_id
+    end
+  end
+
+  for root_id, consumed in pairs(runtime.consumed_root_sets) do
+    if consumed == true and not seen_root[root_id] then
+      seen_root[root_id] = true
+      ordered_root_ids[#ordered_root_ids + 1] = root_id
+    end
+  end
+
+  local entries = {}
+  local limit = math.max(1, max_entries or 9999)
+  for _, root_id in ipairs(ordered_root_ids) do
+    local node_ids = ROOT_SET_PROGRESS_NODE_IDS[root_id] or { root_id }
+    local root_def = NODE_BY_ID[root_id]
+    for _, node_id in ipairs(node_ids) do
+      if #entries >= limit then
+        return entries
+      end
+      local node_def = NODE_BY_ID[node_id]
+      if node_def then
+        entries[#entries + 1] = {
+          root_id = root_id,
+          node_id = node_id,
+          display_name = node_def.display_name,
+          icon = node_def.icon,
+          quality = node_def.quality,
+          group_id = node_def.group_id,
+          root_display_name = root_def and root_def.display_name or '',
+        }
+      end
+    end
+  end
+
+  return entries
 end
 
 function M.show_bond_progress(env)

@@ -29,6 +29,7 @@ local debug_tools_system
 local debug_actions_system
 local runtime_hud_system
 local choice_panel_system
+local swallowed_panel_system
 local overview_model_system
 local outgame_system
 local session_state_system
@@ -250,6 +251,7 @@ local STATE = {
   runtime_elapsed = 0,
   runtime_hud = nil,
   choice_panel = nil,
+  swallow_panel = nil,
   choice_panel_hidden = false,
   runtime_overview = nil,
   runtime_overview_mode = 'build',
@@ -1693,6 +1695,26 @@ local function try_treasure_entry()
   try_start_challenge('treasure_trial')
 end
 
+local function show_bond_progress()
+  if swallowed_panel_system and swallowed_panel_system.toggle_panel then
+    local visible = swallowed_panel_system.toggle_panel()
+    if visible ~= nil then
+      return visible
+    end
+  end
+  return BondSystem.show_bond_progress(create_bond_env())
+end
+
+swallowed_panel_system = require('ui.swallow_panel').create({
+  STATE = STATE,
+  y3 = y3,
+  message = message,
+  get_player = get_player,
+  get_consumed_bond_entries = function(max_entries)
+    return BondSystem.get_consumed_node_entries(STATE, max_entries)
+  end,
+})
+
 runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
   STATE = STATE,
   CONFIG = CONFIG,
@@ -1734,9 +1756,7 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
   apply_round_choice = apply_round_choice,
   show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
-  show_bond_progress = function()
-    return BondSystem.show_bond_progress(create_bond_env())
-  end,
+  show_bond_progress = show_bond_progress,
   try_start_challenge = try_start_challenge,
   try_treasure_entry = try_treasure_entry,
   has_pending_treasure_choice = has_pending_treasure_choice,
@@ -1855,6 +1875,9 @@ set_battle_hud_visible = function(visible)
   if choice_panel_system and choice_panel_system.set_visible then
     choice_panel_system.set_visible(visible)
   end
+  if swallowed_panel_system and swallowed_panel_system.set_visible and visible ~= true then
+    swallowed_panel_system.set_visible(false)
+  end
 end
 
 local function create_hero()
@@ -1942,9 +1965,7 @@ input_events_system = InputEventsSystem.create({
   try_queue_mark_node_for_level = try_queue_mark_node_for_level,
   show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
-  show_bond_progress = function()
-    return BondSystem.show_bond_progress(create_bond_env())
-  end,
+  show_bond_progress = show_bond_progress,
   show_runtime_attr_overview = function()
     show_runtime_attr_dialog()
   end,
@@ -1986,6 +2007,11 @@ runtime_loops_system = RuntimeLoopsSystem.create({
   set_battle_hud_visible = set_battle_hud_visible,
   refresh_runtime_hud = refresh_runtime_hud,
   refresh_choice_panel = refresh_choice_panel,
+  refresh_swallow_panel = function()
+    if swallowed_panel_system and swallowed_panel_system.refresh_panel then
+      swallowed_panel_system.refresh_panel()
+    end
+  end,
   refresh_runtime_overview = refresh_runtime_overview,
   outgame_system = outgame_system,
   debug_tools_system = debug_tools_system,
