@@ -1,5 +1,6 @@
 package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
+local attreffect = require 'data.object_tables.attreffect'
 local mod = require 'data.object_tables.mainline_task_rewards'
 
 assert(type(mod) == 'table', 'mainline_task_rewards object table should return a table')
@@ -8,7 +9,12 @@ assert(type(mod.by_id) == 'table', 'mod.by_id should be a table')
 assert(#mod.list == 40, 'expected 40 mainline task rewards')
 
 local task_11 = mod.by_id['1-1']
+local task_effects_11 = attreffect.by_source.mainline_task and attreffect.by_source.mainline_task['1-1']
 assert(task_11, 'expected 1-1 task to exist')
+assert(task_effects_11 ~= nil, 'expected 1-1 numeric task rows in attreffect')
+assert(task_effects_11.attr['攻击范围'] == 100, 'expected canonical attr key for 1-1 in attreffect')
+assert(task_effects_11.attr['生命'] == 100, 'expected canonical hp key for 1-1 in attreffect')
+assert(task_effects_11.resource['wood'] == 50, 'expected 1-1 resource row in attreffect')
 assert(task_11.title_text == '主线1-1', 'expected 1-1 title to match')
 assert(task_11.objective_text == '击杀小鬼', 'expected 1-1 objective_text to match')
 assert(task_11.target_count == 3, 'expected 1-1 target_count to match')
@@ -42,7 +48,11 @@ assert(task_21.reward_lines[2].key == 'kill_count', 'expected 2-1 reward line 2 
 assert(task_21.reward_lines[2].value == 300, 'expected 2-1 reward line 2 value')
 
 local task_25 = mod.by_id['2-5']
+local task_effects_25 = attreffect.by_source.mainline_task and attreffect.by_source.mainline_task['2-5']
 assert(task_25, 'expected 2-5 task to exist')
+assert(task_effects_25 ~= nil, 'expected 2-5 numeric task rows in attreffect')
+assert(task_effects_25.attr['每秒金币'] == 10, 'expected canonical gold-per-sec key for 2-5 in attreffect')
+assert(task_effects_25.attr['每秒杀敌'] == 1, 'expected canonical kill-per-sec key for 2-5 in attreffect')
 assert(task_25.target_count == 1, 'expected 2-5 target_count to match')
 assert(task_25.reward_lines[1].key == 'gold_per_sec', 'expected 2-5 reward line 1 key')
 assert(task_25.reward_lines[2].key == 'kill_per_sec', 'expected 2-5 reward line 2 key')
@@ -62,10 +72,14 @@ assert(task_31.reward_lines[2].key == 'strength_growth_pct', 'expected 3-1 rewar
 assert(task_31.reward_lines[2].value == 3, 'expected 3-1 reward line 2 value')
 
 local task_35 = mod.by_id['3-5']
+local task_effects_35 = attreffect.by_source.mainline_task and attreffect.by_source.mainline_task['3-5']
 assert(task_35, 'expected 3-5 task to exist')
+assert(task_effects_35 ~= nil, 'expected 3-5 numeric task rows in attreffect')
+assert(task_effects_35.state['skill_point'] == 1, 'expected canonical skill_point state for 3-5 in attreffect')
 assert(task_35.target_count == 1, 'expected 3-5 target_count to match')
 assert(task_35.reward_lines[1].key == 'exp', 'expected 3-5 reward line 1 key')
 assert(task_35.reward_lines[1].value == 1000, 'expected 3-5 reward line 1 value')
+assert(task_35.reward_lines[3].type == 'special', 'expected 3-5 state row to be adapted back into special reward_lines')
 assert(task_35.reward_lines[3].key == 'skill_point', 'expected 3-5 reward line 3 key')
 assert(task_35.reward_lines[3].value == 1, 'expected 3-5 reward line 3 value')
 
