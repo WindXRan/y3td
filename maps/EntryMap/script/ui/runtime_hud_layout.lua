@@ -26,15 +26,15 @@ M.bottom_bar = {
 }
 
 M.decision_panel = {
-  width = 1040,
-  height = 246,
-  percent_y = 61,
-  badge_width = 64,
-  badge_height = 20,
-  option_width = 312,
-  option_height = 126,
-  option_y = 44,
-  option_x = { 22, 364, 706 },
+  width = 1128,
+  height = 274,
+  percent_y = 60,
+  badge_width = 72,
+  badge_height = 24,
+  option_width = 336,
+  option_height = 144,
+  option_y = 50,
+  option_x = { 24, 396, 768 },
 }
 
 return M

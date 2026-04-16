@@ -5,6 +5,18 @@ local SLOT_ORDER = { 'weapon' }
 local SLOT_LABELS = {
   weapon = '成长武器',
 }
+local DIRECT_ATTR_KEYS = {
+  ['物理攻击'] = { is_percent = false },
+  ['法术攻击'] = { is_percent = false },
+  ['攻击速度'] = { is_percent = true },
+  ['暴击率'] = { is_percent = true },
+  ['暴击伤害'] = { is_percent = true },
+  ['生命值'] = { is_percent = false },
+  ['生命恢复'] = { is_percent = false },
+  ['护甲'] = { is_percent = false },
+  ['魔法抗性'] = { is_percent = false },
+  ['移动速度'] = { is_percent = false },
+}
 
 local MAX_LEVEL = 100
 local AFFIX_NODE_INTERVAL = 10
@@ -69,12 +81,71 @@ local function is_affix_node(level, config)
 end
 
 local function ensure_item(runtime, slot)
+  local slot_cfg = runtime.config and runtime.config.slots and runtime.config.slots[slot] or nil
   runtime.items[slot] = runtime.items[slot] or {
     slot = slot,
     level = 1,
     affixes = {},
+    item_key = slot_cfg and slot_cfg.item_key or nil,
   }
+  if runtime.items[slot].item_key == nil and slot_cfg and slot_cfg.item_key ~= nil then
+    runtime.items[slot].item_key = slot_cfg.item_key
+  end
   return runtime.items[slot]
+end
+
+local function format_number(value)
+  if math.type and math.type(value) == 'integer' then
+    return tostring(value)
+  end
+  if value == math.floor(value) then
+    return tostring(math.floor(value))
+  end
+  return string.format('%.2f', value):gsub('0+$', ''):gsub('%.+$', '')
+end
+
+local function format_attr_value(value, attr_cfg)
+  if attr_cfg and attr_cfg.is_percent then
+    return string.format('%s%%', format_number(value * 100))
+  end
+  return format_number(value)
+end
+
+local function build_attr_lines(item_key, item_api)
+  if not item_key or not item_api or not item_api.attr_pick_by_key or not item_api.get_attribute_by_key then
+    return { '当前无直接属性增幅' }
+  end
+
+  local picked = item_api.attr_pick_by_key(item_key) or {}
+  local lines = {}
+  for _, key in ipairs(picked) do
+    local attr_cfg = DIRECT_ATTR_KEYS[key]
+    if attr_cfg then
+      local value = tonumber(item_api.get_attribute_by_key(item_key, key)) or 0
+      if value ~= 0 then
+        lines[#lines + 1] = string.format('%s +%s', key, format_attr_value(value, attr_cfg))
+      end
+    end
+  end
+
+  if #lines == 0 then
+    return { '当前无直接属性增幅' }
+  end
+  return lines
+end
+
+local function build_affix_lines(item)
+  local lines = {}
+  for _, affix in ipairs(item.affixes or {}) do
+    local display_name = affix.display_name or affix.id
+    if display_name then
+      lines[#lines + 1] = tostring(display_name)
+    end
+  end
+  if #lines == 0 then
+    return { '暂无词缀' }
+  end
+  return lines
 end
 
 function M.ensure_runtime(state, config)
@@ -205,6 +276,57 @@ function M.build_slot_text(state, slot)
     #item.affixes,
     next_cost
   )
+end
+
+function M.build_tip_payload(state, slot, config, item_api)
+  local runtime = M.ensure_runtime(state, config)
+  local item = ensure_item(runtime, slot)
+  local slot_cfg = get_slot_config(slot, runtime.config)
+  local item_key = item.item_key or slot_cfg and slot_cfg.item_key or nil
+  local cost = M.get_upgrade_cost(slot, item.level, runtime.config) or 0
+  local name = item_key and item_api and item_api.get_name_by_key and item_api.get_name_by_key(item_key) or nil
+  local icon_res = item_key and item_api and item_api.get_icon_id_by_key and item_api.get_icon_id_by_key(item_key) or nil
+
+  return {
+    title_text = name or (SLOT_LABELS[slot] or tostring(slot)),
+    subtitle_text = string.format('%s Lv.%d', SLOT_LABELS[slot] or tostring(slot), item.level),
+    cost_text = cost > 0 and string.format('升级所需：%d 金币', cost) or '升级所需：已满级',
+    icon_res = icon_res,
+    attr_lines = build_attr_lines(item_key, item_api),
+    affix_lines = build_affix_lines(item),
+  }
+end
+
+function M.sync_items_to_hero(state, hero, config)
+  if not state or not hero then
+    return false
+  end
+
+  local runtime = M.ensure_runtime(state, config)
+  local synced = false
+
+  for _, slot in ipairs(SLOT_ORDER) do
+    local item = ensure_item(runtime, slot)
+    local slot_cfg = get_slot_config(slot, runtime.config)
+    local item_key = item.item_key or slot_cfg and slot_cfg.item_key or nil
+
+    if item_key ~= nil then
+      if hero.get_bar_cnt and hero.set_bar_cnt then
+        local bar_cnt = tonumber(hero:get_bar_cnt()) or 0
+        if bar_cnt < 1 then
+          hero:set_bar_cnt(1)
+        end
+      end
+
+      local has_item = hero.has_item_by_key and hero:has_item_by_key(item_key) or false
+      if not has_item and hero.add_item then
+        hero:add_item(item_key, '物品栏')
+        synced = true
+      end
+    end
+  end
+
+  return synced
 end
 
 return M

@@ -22,6 +22,7 @@ function M.create(env)
   local create_hero = env.create_hero
   local initialize_hero_progression = env.initialize_hero_progression
   local ensure_gear_runtime = env.ensure_gear_runtime
+  local sync_gear_items_to_hero = env.sync_gear_items_to_hero
   local setup_basic_attack_ability = env.setup_basic_attack_ability
   local ensure_runtime_hud = env.ensure_runtime_hud
   local set_battle_hud_visible = env.set_battle_hud_visible
@@ -182,6 +183,9 @@ function M.create(env)
     STATE.hero = create_hero()
     if ensure_gear_runtime then
       ensure_gear_runtime(STATE, CONFIG.gear_upgrade_config)
+    end
+    if sync_gear_items_to_hero and STATE.hero then
+      sync_gear_items_to_hero(STATE, STATE.hero, CONFIG.gear_upgrade_config)
     end
     if hero_attr_system and STATE.hero then
       hero_attr_system.snapshot(STATE.hero, STATE)

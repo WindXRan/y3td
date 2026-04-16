@@ -8,6 +8,7 @@ RUNTIME_HUD_PATH = ROOT / "ui" / "runtime_hud.lua"
 RUNTIME_HUD_PANEL1_TOP_PATH = ROOT / "ui" / "runtime_hud_panel1_top.lua"
 STAGES_CSV_PATH = ROOT / "data_csv" / "stages.csv"
 PANEL_JSON_PATH = ROOT.parent / "ui" / "MainlineTaskPanel.json"
+PANEL_TREE_PATH = ROOT.parent / "ui_tree" / "MainlineTaskPanel_Tree.json"
 
 
 def read_text(path: Path) -> str:
@@ -31,12 +32,24 @@ def find_node_text(node: dict, name: str):
     return None
 
 
+def has_node(node: dict, name: str) -> bool:
+    if not isinstance(node, dict):
+        return False
+    if node.get("name") == name:
+        return True
+    for child in node.get("children", []):
+        if has_node(child, name):
+            return True
+    return False
+
+
 def test_runtime_copy_uses_chapter_and_battle_objective_language() -> None:
     boot = read_text(BOOT_PATH)
     runtime_hud = read_text(RUNTIME_HUD_PATH)
     panel1_top = read_text(RUNTIME_HUD_PANEL1_TOP_PATH)
     stages_csv = read_text(STAGES_CSV_PATH)
     panel_json = json.loads(read_text(PANEL_JSON_PATH))
+    panel_tree = json.loads(read_text(PANEL_TREE_PATH))
 
     assert "battle_objective_runtime = {" in boot
 
@@ -44,9 +57,9 @@ def test_runtime_copy_uses_chapter_and_battle_objective_language() -> None:
     assert "string.format('章节 1-%d', wave_index)" in runtime_hud
     assert "主线 1-" not in runtime_hud
 
-    assert "战斗目标" in panel1_top
+    assert "爬塔挑战" in panel1_top
     assert "目标：" in panel1_top
-    assert "当前无战斗目标" in panel1_top
+    assert "当前无层数挑战" in panel1_top
     assert "目标追踪" in panel1_top
     assert "自动任务" not in panel1_top
     assert "主线任务" not in panel1_top
@@ -54,8 +67,11 @@ def test_runtime_copy_uses_chapter_and_battle_objective_language() -> None:
     assert "章节 1-1" in stages_csv
     assert "主线 1-1" not in stages_csv
 
-    assert find_node_text(panel_json, "auto_task_label") == "目标追踪"
-    assert find_node_text(panel_json, "tracker_hint") == "目标追踪已开启"
+    assert panel_json.get("name") == "MainlineTaskPanel"
+    assert has_node(panel_tree, "tracker_shortcut_chip_label")
+    assert has_node(panel_tree, "tracker_shortcut_chip_key")
+    assert has_node(panel_tree, "tracker_shortcut_chip_arrow")
+    assert has_node(panel_tree, "tracker_card_border")
 
 
 if __name__ == "__main__":

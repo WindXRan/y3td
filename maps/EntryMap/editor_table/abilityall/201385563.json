@@ -150,7 +150,7 @@
         "items": []
     }, 
     "customized_pointer_sfx": 100000, 
-    "description": -835530628, 
+    "description": 623056049, 
     "enable_customized_pointer_sfx": false, 
     "end_sfx_list": {
         "__tuple__": true, 
@@ -195,7 +195,7 @@
         "__tuple__": true, 
         "items": []
     }, 
-    "name": 1563318477, 
+    "name": 587024115, 
     "need_turn_to_target": true, 
     "pick_count": 1, 
     "player_props_cost": {}, 

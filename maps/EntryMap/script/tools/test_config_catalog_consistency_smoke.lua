@@ -99,6 +99,7 @@ for _, row in ipairs(gear_upgrade_slot_rows) do
   assert(row.display_name ~= nil and row.display_name ~= '', 'expected gear_upgrade_slots display_name')
   assert(row.max_level ~= nil and row.max_level ~= '', 'expected gear_upgrade_slots max_level')
   assert(row.affix_choice_count ~= nil and row.affix_choice_count ~= '', 'expected gear_upgrade_slots affix_choice_count')
+  assert(row.item_key ~= nil and row.item_key ~= '', 'expected gear_upgrade_slots item_key')
 end
 assert(seen_gear_slots.weapon == true, 'expected gear_upgrade_slots to keep weapon slot')
 assert(next(seen_gear_slots, 'weapon') == nil, 'expected gear_upgrade_slots to keep only one slot')

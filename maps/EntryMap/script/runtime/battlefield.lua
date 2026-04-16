@@ -305,7 +305,14 @@ function M.create(env)
 
   local function spawn_enemy(unit_id, area_id, facing, info)
     local spawn_point = random_point_in_area(area_id)
-    local unit = y3.unit.create_unit(env.get_enemy_player(), unit_id, spawn_point, facing or 180.0)
+    local ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), unit_id, spawn_point, facing or 180.0)
+    if not ok or not unit_or_err then
+      if message then
+        message(string.format('刷怪失败：单位 %s 创建失败，请检查物编/模型资源是否已加载。', tostring(unit_id)))
+      end
+      return nil
+    end
+    local unit = unit_or_err
     if info and info.attr_overrides then
       set_attr_pack(unit, info.attr_overrides)
     end
@@ -360,7 +367,7 @@ function M.create(env)
     batch_count = math.min(batch_count, soft_cap_left, wave_cap_left)
 
     for _ = 1, batch_count, 1 do
-      spawn_enemy(wave.main_unit_id, wave.spawn_area_id, 180.0, {
+      local info = spawn_enemy(wave.main_unit_id, wave.spawn_area_id, 180.0, {
         kind = 'main',
         owner = runner,
         wave = wave,
@@ -368,6 +375,9 @@ function M.create(env)
         spawn_hp = wave.main_spawn_hp,
         reward = wave.main_kill_reward,
       })
+      if not info then
+        break
+      end
     end
   end
 
@@ -385,6 +395,10 @@ function M.create(env)
       wave = runner.wave,
       reward = runner.wave.boss_kill_reward,
     })
+    if not runner.boss_info then
+      runner.boss_spawned = false
+      return
+    end
     if env.on_boss_spawned then
       env.on_boss_spawned(runner.boss_info)
     end
@@ -397,6 +411,29 @@ function M.create(env)
         info.unit:remove()
       end
     end
+  end
+
+  local function create_challenge_instance(def, instance_id)
+    local instance = {
+      id = instance_id or def.id,
+      def = def,
+      elapsed = 0,
+      active = true,
+      alive_count = 0,
+      dead_count = 0,
+      infos = {},
+      spawned_batches = {},
+      all_batches_spawned = false,
+      spawn_failed = false,
+      mainline_task_id = def.mainline_task_id,
+    }
+    STATE.active_challenges[instance.id] = instance
+
+    message(string.format('%s 开始，持续 %.0f 秒。', def.name, design_seconds(def.duration_sec)))
+    if env.on_challenge_started then
+      env.on_challenge_started(instance)
+    end
+    return instance
   end
 
   function api.start_wave(index)
@@ -453,6 +490,7 @@ function M.create(env)
       return
     end
     instance.spawned_batches[batch_index] = true
+    local spawned_any = false
 
     if instance.def.id == 'treasure_trial' then
       if batch_index == 1 then
@@ -463,7 +501,10 @@ function M.create(env)
           is_elite = true,
           reward = instance.def.kill_reward,
         })
-        instance.infos[#instance.infos + 1] = boss_info
+        if boss_info then
+          instance.infos[#instance.infos + 1] = boss_info
+          spawned_any = true
+        end
         for _ = 1, batch.count - 1, 1 do
           local info = spawn_enemy(instance.def.guard_unit_id, instance.def.spawn_area_id, 180.0, {
             kind = 'challenge',
@@ -471,7 +512,10 @@ function M.create(env)
             is_elite = true,
             reward = instance.def.kill_reward,
           })
-          instance.infos[#instance.infos + 1] = info
+          if info then
+            instance.infos[#instance.infos + 1] = info
+            spawned_any = true
+          end
         end
       else
         for _ = 1, batch.count, 1 do
@@ -481,7 +525,10 @@ function M.create(env)
             is_elite = true,
             reward = instance.def.kill_reward,
           })
-          instance.infos[#instance.infos + 1] = info
+          if info then
+            instance.infos[#instance.infos + 1] = info
+            spawned_any = true
+          end
         end
       end
     else
@@ -491,8 +538,17 @@ function M.create(env)
           owner = instance,
           reward = instance.def.kill_reward,
         })
-        instance.infos[#instance.infos + 1] = info
+        if info then
+          instance.infos[#instance.infos + 1] = info
+          spawned_any = true
+        end
       end
+    end
+
+    if not spawned_any then
+      instance.spawn_failed = true
+      api.finish_challenge(instance, false)
+      return
     end
 
     if batch_index >= #instance.def.batches then
@@ -531,23 +587,46 @@ function M.create(env)
       set_challenge_recover_elapsed(challenge_id, 0)
     end
 
-    local instance = {
-      id = def.id,
-      def = def,
-      elapsed = 0,
-      active = true,
-      alive_count = 0,
-      dead_count = 0,
-      infos = {},
-      spawned_batches = {},
-      all_batches_spawned = false,
-    }
-    STATE.active_challenges[challenge_id] = instance
+    create_challenge_instance(def, challenge_id)
+  end
 
-    message(string.format('%s 开始，持续 %.0f 秒。', def.name, design_seconds(def.duration_sec)))
-    if env.on_challenge_started then
-      env.on_challenge_started(instance)
+  function api.start_mainline_task_challenge(task)
+    if STATE.game_finished or STATE.session_phase ~= 'battle' then
+      return nil
     end
+    if not task or not task.id then
+      return nil
+    end
+
+    if not task.spawn_unit_id or not task.spawn_area_id then
+      return nil
+    end
+
+    local instance_id = 'mainline_task:' .. tostring(task.id)
+    if STATE.active_challenges[instance_id] then
+      return nil
+    end
+
+    local target_count = math.max(1, tonumber(task.target_count) or 1)
+    local def = {
+      id = instance_id,
+      mainline_task_id = task.id,
+      name = task.title_text or task.id,
+      duration_sec = tonumber(task.time_limit) or 60,
+      spawn_area_id = task.spawn_area_id,
+      reward = { gold = 0, wood = 0, exp = 0, special = nil },
+      kill_reward = { gold = 0, wood = 0, exp = 0, special = nil },
+      unit_id = task.spawn_unit_id,
+      boss_unit_id = nil,
+      guard_unit_id = nil,
+      batches = {
+        {
+          time_sec = 0,
+          count = target_count,
+        },
+      },
+    }
+    return create_challenge_instance(def, instance_id)
   end
 
   function api.update_wave(dt)
@@ -599,7 +678,7 @@ function M.create(env)
           end
         end
 
-        if instance.active and instance.all_batches_spawned and instance.alive_count <= 0 then
+        if instance.active and not instance.spawn_failed and instance.all_batches_spawned and instance.alive_count <= 0 then
           api.finish_challenge(instance, true)
         elseif instance.active and instance.elapsed >= instance.def.duration_sec then
           api.finish_challenge(instance, false)
@@ -834,6 +913,16 @@ function M.create(env)
       end
       if challenge.guard_unit_id then
         check_unit('challenge.' .. key .. '.guard_unit_id', challenge.guard_unit_id)
+      end
+    end
+    for _, task in ipairs(CONFIG.mainline_task_rewards and CONFIG.mainline_task_rewards.list or {}) do
+      if task.spawn_unit_id ~= nil then
+        check_unit('mainline_task[' .. tostring(task.id) .. '].spawn_unit_id', task.spawn_unit_id)
+      else
+        missing[#missing + 1] = string.format('mainline_task[%s].spawn_unit_id: 未配置', tostring(task.id))
+      end
+      if not task.spawn_area_id or not (CONFIG.areas and CONFIG.areas[task.spawn_area_id]) then
+        missing[#missing + 1] = string.format('mainline_task[%s].spawn_area_id: %s', tostring(task.id), tostring(task.spawn_area_id))
       end
     end
 

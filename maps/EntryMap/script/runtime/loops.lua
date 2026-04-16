@@ -12,6 +12,7 @@ function M.create(env)
   local update_enemy_statuses = env.update_enemy_statuses
   local update_attack_skills = env.update_attack_skills
   local update_temporary_treasures = env.update_temporary_treasures
+  local update_mainline_task = env.update_mainline_task
   local ensure_runtime_hud = env.ensure_runtime_hud
   local ensure_choice_panel = env.ensure_choice_panel
   local set_battle_hud_visible = env.set_battle_hud_visible
@@ -46,6 +47,9 @@ function M.create(env)
         battlefield_system.update_wave(0.25)
         battlefield_system.update_challenges(0.25)
         battlefield_system.update_challenge_charges(0.25)
+        if update_mainline_task then
+          update_mainline_task(0.25)
+        end
         update_bond_effects(0.25)
         update_auto_active_effects(0.25)
         if update_effect_debug then

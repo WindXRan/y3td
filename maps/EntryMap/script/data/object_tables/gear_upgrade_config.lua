@@ -15,6 +15,7 @@ for _, row in ipairs(slot_rows) do
     display_name = row.display_name,
     max_level = tonumber(row.max_level) or 0,
     affix_choice_count = tonumber(row.affix_choice_count) or 0,
+    item_key = tonumber(row.item_key) or row.item_key,
   }
 end
 

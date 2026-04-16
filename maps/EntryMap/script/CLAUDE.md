@@ -100,7 +100,7 @@
 
 ## 修改原则
 
-- 先判断需求属于哪层：
+- 先判断需求属于哪层：，,，
   - 规则配置：`entry_config.lua`
   - 静态对象：`entry_objects/*`
   - 战场：`entry_runtime_battlefield.lua`

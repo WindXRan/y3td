@@ -58,6 +58,13 @@ local LEGACY_SPECIAL_KEY_BY_STATE = {
   hero_card_count = 'hero_card',
 }
 
+local function to_optional_number(raw)
+  if raw == nil or raw == '' then
+    return nil
+  end
+  return tonumber(raw) or raw
+end
+
 local function build_reward_lines(row)
   local lines = {}
   for index = 1, 3 do
@@ -133,6 +140,10 @@ for _, row in ipairs(rows) do
     title_text = row.title_text,
     objective_text = row.objective_text,
     target_count = tonumber(row.target_count) or 0,
+    time_limit = tonumber(row.time_limit) or 60,
+    spawn_unit_id = to_optional_number(row.spawn_unit_id),
+    spawn_area_id = row.spawn_area_id ~= '' and row.spawn_area_id or nil,
+    is_boss_task = row.is_boss_task == 'true',
     reward_lines = build_reward_lines(row),
   }
 end

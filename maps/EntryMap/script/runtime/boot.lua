@@ -480,6 +480,9 @@ mainline_task_system = require('runtime.mainline_tasks').create({
   queue_treasure_round = function(source_type, source_name)
     return reward_system.queue_treasure_round(source_type, source_name)
   end,
+  start_mainline_task_challenge = function(task)
+    return battlefield_system and battlefield_system.start_mainline_task_challenge and battlefield_system.start_mainline_task_challenge(task) or nil
+  end,
 })
 
 local function create_treasure_runtime()
@@ -1223,6 +1226,9 @@ battlefield_system = BattlefieldSystem.create({
     return reward_system.handle_challenge_started(instance)
   end,
   on_challenge_finished = function(instance, is_success)
+    if mainline_task_system and mainline_task_system.handle_challenge_finished then
+      mainline_task_system.handle_challenge_finished(instance, is_success)
+    end
     return reward_system.handle_challenge_finished(instance, is_success)
   end,
   on_hero_be_hurt = function()
@@ -1745,6 +1751,9 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
     get_tracker_state = function()
       return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or nil
     end,
+    start_current_task_challenge = function()
+      return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
+    end,
     toggle_auto_track = function()
       return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or nil
     end,
@@ -1755,6 +1764,9 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
     end,
     get_tracker_state = function()
       return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or nil
+    end,
+    start_current_task_challenge = function()
+      return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
     end,
     toggle_auto_track = function()
       return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or nil
@@ -1772,6 +1784,9 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
   get_mainline_task_tracker_state = function()
     return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or nil
   end,
+  start_current_task_challenge = function()
+    return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
+  end,
   toggle_mainline_task_auto_track = function()
     return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or nil
   end,
@@ -1786,6 +1801,19 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
   end,
   build_bond_slot_tip_payload = function(slot)
     return BondSystem.build_slot_tip_payload(STATE, slot)
+  end,
+  build_growth_weapon_tip_payload = function()
+    return GearUpgrades.build_tip_payload(STATE, 'weapon', CONFIG.gear_upgrade_config, y3.item)
+  end,
+  get_growth_weapon_item_key = function()
+    local slot_cfg = CONFIG.gear_upgrade_config
+      and CONFIG.gear_upgrade_config.slots
+      and CONFIG.gear_upgrade_config.slots.weapon
+      or nil
+    return slot_cfg and slot_cfg.item_key or nil
+  end,
+  build_attack_skill_slot_text = function(slot)
+    return attack_skills_system.build_attack_skill_slot_text(slot)
   end,
   try_start_challenge = try_start_challenge,
   try_treasure_entry = try_treasure_entry,
@@ -1939,6 +1967,9 @@ session_state_system = SessionStateSystem.create({
   ensure_gear_runtime = function(state, config)
     return GearUpgrades.ensure_runtime(state, config)
   end,
+  sync_gear_items_to_hero = function(state, hero, config)
+    return GearUpgrades.sync_items_to_hero(state, hero, config)
+  end,
   setup_basic_attack_ability = setup_basic_attack_ability,
   ensure_runtime_hud = ensure_runtime_hud,
   set_battle_hud_visible = function(visible)
@@ -1972,9 +2003,17 @@ outgame_system = OutgameSystem.create({
   message = message,
   round_number = round_number,
   get_player = get_player,
-  start_selected_stage = function(stage_id, mode_id)
-    return session_state_system.start_selected_stage(stage_id, mode_id)
-  end,
+  stage_runtime = {
+    get_current_stage_text = function()
+      if STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) then
+        return STATE.current_stage_def.display_label or STATE.current_stage_def.display_name
+      end
+      return '第1关'
+    end,
+    start_selected_stage = function(stage_id, mode_id)
+      return session_state_system.start_selected_stage(stage_id, mode_id)
+    end,
+  },
   set_battle_hud_visible = function(visible)
     return set_battle_hud_visible(visible)
   end,
@@ -2003,6 +2042,9 @@ input_events_system = InputEventsSystem.create({
   end,
   show_runtime_attr_dialog = show_runtime_attr_dialog,
   refresh_runtime_overview = refresh_runtime_overview,
+  start_current_task_challenge = function()
+    return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
+  end,
   try_start_challenge = try_start_challenge,
   try_treasure_entry = try_treasure_entry,
   apply_round_choice = apply_round_choice,
@@ -2031,6 +2073,9 @@ runtime_loops_system = RuntimeLoopsSystem.create({
   update_enemy_statuses = update_enemy_statuses,
   update_attack_skills = update_attack_skills,
   update_temporary_treasures = update_temporary_treasures,
+  update_mainline_task = function(dt)
+    return mainline_task_system and mainline_task_system.update and mainline_task_system.update(dt) or nil
+  end,
   ensure_runtime_hud = ensure_runtime_hud,
   ensure_choice_panel = ensure_choice_panel,
   set_battle_hud_visible = set_battle_hud_visible,

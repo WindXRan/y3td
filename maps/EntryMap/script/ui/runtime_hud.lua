@@ -1,23 +1,48 @@
 local ui_res = require 'ui.res'
 local skin = require 'ui.skin'
 local theme = require 'ui.theme'
+local UIStyle = require 'ui.style'
 local Factory = require 'ui.factory'
 local layout = require 'ui.runtime_hud_layout'
+local BondTipPanel = require 'ui.bond_tip_panel'
+local GrowthWeaponItemTip = require 'ui.growth_weapon_item_tip'
 
 local M = {}
+
+local BOND_SLOT_QUALITY_COLORS = {
+  common = { 68, 162, 88, 255 },
+  rare = { 72, 126, 210, 255 },
+  epic = { 164, 108, 216, 255 },
+  legendary = { 224, 172, 86, 255 },
+}
+
+local function resolve_ui(y3, player, path)
+  local ok, ui = pcall(y3.ui.get_ui, player, path)
+  if not ok or not ui then
+    return nil
+  end
+  return ui
+end
 
 function M.create(env)
   local STATE = env.STATE
   local CONFIG = env.CONFIG
   local y3 = env.y3
-  local play_ui_click = env.play_ui_click
-  local play_confirm = env.play_confirm
   local round_number = env.round_number
   local hero_attr_system = env.hero_attr_system
   local factory = Factory.create(env)
+  local bond_tip_panel = BondTipPanel.create({
+    y3 = y3,
+    get_player = env.get_player,
+  })
+  local growth_weapon_tip = GrowthWeaponItemTip.create({
+    y3 = y3,
+    get_player = env.get_player,
+  })
 
   local create_panel = factory.create_panel
   local create_text = factory.create_text
+  local create_styled_text = factory.create_styled_text
   local create_button = factory.create_button
   local set_percent_pos = factory.set_percent_pos
   local get_hud_metrics = factory.get_hud_metrics
@@ -25,8 +50,6 @@ function M.create(env)
   local scaled = factory.scaled
   local runtime_skin = skin.images.runtime_hud or {}
   local refresh_runtime_hud
-
-  local BOND_DRAW_COST = 100
 
   local function get_challenge_charge_count(challenge_id)
     if STATE.challenge_charge_map and STATE.challenge_charge_map[challenge_id] ~= nil then
@@ -119,8 +142,8 @@ function M.create(env)
   end
 
   local function get_stage_text()
-    if env.get_current_stage_text then
-      local text = env.get_current_stage_text()
+    if env.stage_runtime and env.stage_runtime.get_current_stage_text then
+      local text = env.stage_runtime.get_current_stage_text()
       if text and text ~= '' then
         return text
       end
@@ -195,20 +218,6 @@ function M.create(env)
     }
   end
 
-  local function get_recovery_text()
-    local shortest = nil
-    for challenge_id in pairs(CONFIG.challenges or {}) do
-      local remain = get_challenge_recover_remain(challenge_id)
-      if remain > 0 and (shortest == nil or remain < shortest) then
-        shortest = remain
-      end
-    end
-    if not shortest then
-      return '各挑战恢复已满'
-    end
-    return string.format('下次恢复 %s', format_time(shortest))
-  end
-
   local function get_hero_hp_text()
     if not STATE.hero or not STATE.hero:is_exist() then
       return '生命 0 / 0'
@@ -220,53 +229,6 @@ function M.create(env)
     )
   end
 
-  local function get_challenge_button_state(challenge_id)
-    local def = CONFIG.challenges and CONFIG.challenges[challenge_id]
-    if not def then
-      return {
-        summary = '?',
-        bg = theme.palette.surface_soft,
-        text = theme.palette.text,
-      }
-    end
-
-    if STATE.active_challenges and STATE.active_challenges[challenge_id] then
-      local instance = STATE.active_challenges[challenge_id]
-      local remain = math.max(0, (def.duration_sec or 0) - (instance.elapsed or 0))
-      return {
-        summary = string.format('%s %d/%d %s', def.hotkey or '?', get_challenge_charge_count(challenge_id), CONFIG.challenge_rules.max_charges or 0, format_time(remain)),
-        bg = theme.palette.success,
-        text = { 240, 248, 226, 255 },
-      }
-    end
-
-    local charges = get_challenge_charge_count(challenge_id)
-    if charges < (def.cost_charge or 1) then
-      return {
-        summary = string.format('%s %d/%d 缺次', def.hotkey or '?', charges, CONFIG.challenge_rules.max_charges or 0),
-        bg = { 92, 66, 42, 210 },
-        text = { 248, 228, 198, 255 },
-      }
-    end
-
-    return {
-      summary = string.format('%s %d/%d 可进', def.hotkey or '?', charges, CONFIG.challenge_rules.max_charges or 0),
-      bg = theme.palette.accent,
-      text = { 236, 244, 255, 255 },
-    }
-  end
-
-  local function get_challenge_summary_text()
-    local parts = {}
-    for _, challenge_id in ipairs({ 'gold_trial', 'wood_trial', 'exp_trial', 'treasure_trial' }) do
-      parts[#parts + 1] = get_challenge_button_state(challenge_id).summary
-    end
-    local reward_queue_count = env.get_reward_queue_count and env.get_reward_queue_count() or 0
-    if reward_queue_count > 0 then
-      parts[#parts + 1] = string.format('待奖 %d', reward_queue_count)
-    end
-    return table.concat(parts, '   ')
-  end
 
   local function create_stat_text(parent, x, y, width, label, value, label_color, value_color, align, scale)
     local label_text = create_text(
@@ -484,11 +446,6 @@ function M.create(env)
     button:set_btn_status_image(4, ui_res.common.empty)
     button:set_z_order(9456)
     button:add_fast_event('左键-点击', function()
-      if play_confirm then
-        play_confirm()
-      elseif play_ui_click then
-        play_ui_click()
-      end
       if env.apply_round_choice then
         env.apply_round_choice(index)
         refresh_runtime_hud()
@@ -583,45 +540,92 @@ function M.create(env)
     return '抉择进行中'
   end
 
-  local function decorate_challenge_status(challenge_id, status)
-    local def = CONFIG.challenges and CONFIG.challenges[challenge_id]
-    local name = (def and def.display_name) or def and def.name or def and def.hotkey or '?'
-    local hotkey = def and def.hotkey or '?'
-    local result = {
-      summary = status.summary,
-      bg = status.bg,
-      text = status.text,
-      button_text = name,
-      shadow = { 6, 10, 18, 110 },
-    }
-
-    if STATE.active_challenges and STATE.active_challenges[challenge_id] then
-      local instance = STATE.active_challenges[challenge_id]
-      local remain = math.max(0, (def.duration_sec or 0) - (instance.elapsed or 0))
-      result.summary = string.format('%s 进行中 %s', hotkey, format_time(remain))
-      result.button_text = string.format('%s %s', name, format_time(remain))
-      result.shadow = { 22, 54, 28, 150 }
-      return result
-    end
-
-    if get_challenge_charge_count(challenge_id) < (def and def.cost_charge or 1) then
-      result.summary = string.format('%s 次数不足', hotkey)
-      result.button_text = string.format('%s 次数不足', name)
-      result.shadow = { 58, 34, 12, 140 }
-      return result
-    end
-
-    result.summary = string.format('%s 可进入', hotkey)
-    result.button_text = string.format('%s 可进入', name)
-    result.shadow = { 16, 42, 72, 150 }
-    return result
-  end
-
   local function is_hud_alive(runtime_hud)
     return runtime_hud
-      and runtime_hud.right_root
-      and not runtime_hud.right_root:is_removed()
+      and runtime_hud.center_root
+      and not runtime_hud.center_root:is_removed()
       and (not runtime_hud.decision_root or not runtime_hud.decision_root:is_removed())
+  end
+
+  local function hide_bond_tip()
+    if bond_tip_panel and bond_tip_panel.hide then
+      bond_tip_panel.hide()
+    end
+  end
+
+  local function hide_growth_weapon_tip()
+    if growth_weapon_tip and growth_weapon_tip.hide then
+      growth_weapon_tip.hide()
+    end
+  end
+
+  local function show_growth_weapon_tip(anchor_ui)
+    if not anchor_ui or not env.build_growth_weapon_tip_payload then
+      hide_growth_weapon_tip()
+      return
+    end
+    local payload = env.build_growth_weapon_tip_payload()
+    if not payload then
+      hide_growth_weapon_tip()
+      return
+    end
+    growth_weapon_tip.show_for_anchor(anchor_ui, payload)
+  end
+
+  local function get_hero_bar_item(slot)
+    if not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then
+      return nil
+    end
+    return STATE.hero:get_item_by_slot(y3.const.SlotType.BAR, slot)
+      or STATE.hero:get_item_by_slot(y3.const.SlotType.BAR, slot - 1)
+  end
+
+  local function is_growth_weapon_item(item)
+    local item_key = env.get_growth_weapon_item_key and env.get_growth_weapon_item_key() or nil
+    return item and item_key and item.get_key and item:get_key() == item_key
+  end
+
+  local function bind_default_item_slot_hover(runtime_hud)
+    runtime_hud.default_item_slots = runtime_hud.default_item_slots or {}
+    for slot = 1, 6 do
+      if runtime_hud.default_item_slots[slot] == nil then
+        local slot_ui = resolve_ui(y3, env.get_player(), string.format('GameHUD.main.goods.equip_slot_bg_%d.goods', slot))
+        runtime_hud.default_item_slots[slot] = slot_ui or false
+        if slot_ui then
+          slot_ui:add_fast_event('鼠标-移入', function()
+            local item = get_hero_bar_item(slot)
+            if is_growth_weapon_item(item) then
+              show_growth_weapon_tip(slot_ui)
+            else
+              hide_growth_weapon_tip()
+            end
+          end)
+          slot_ui:add_fast_event('鼠标-移出', function()
+            hide_growth_weapon_tip()
+          end)
+          slot_ui:add_fast_event('左键-点击', function()
+            hide_growth_weapon_tip()
+          end)
+        end
+      end
+    end
+  end
+
+  local function show_latest_bond_tip(anchor_ui)
+    if not anchor_ui or not env.build_latest_bond_tip_payload then
+      hide_bond_tip()
+      return
+    end
+    local payload = env.build_latest_bond_tip_payload()
+    if not payload then
+      hide_bond_tip()
+      return
+    end
+    bond_tip_panel.show_for_anchor(anchor_ui, payload)
+  end
+
+  local function get_bond_slot_frame_color(quality)
+    return BOND_SLOT_QUALITY_COLORS[quality or 'common'] or BOND_SLOT_QUALITY_COLORS.common
   end
 
   local function hide_legacy_decision_panel(runtime_hud)
@@ -636,61 +640,63 @@ function M.create(env)
       return
     end
 
-    local boss = get_boss_display()
-    local skill_ready = not STATE.game_finished
-      and ((STATE.skill_points or 0) > 0 or STATE.awaiting_upgrade == true)
-    local skill_highlight = (STATE.skill_points or 0) > 0 or STATE.awaiting_upgrade == true
-    runtime_hud.skill_button.button:set_button_enable(skill_ready)
-    runtime_hud.skill_button.button:set_text(
-      STATE.awaiting_upgrade
-        and '技能 G 继续选择'
-        or string.format('技能 G  剩余 %d 点', STATE.skill_points or 0)
-    )
-    if skill_highlight then
-      runtime_hud.skill_button.bg:set_image_color(56, 128, 206, 235)
-      runtime_hud.skill_button.shadow:set_image_color(20, 44, 82, 156)
-      runtime_hud.skill_button.button:set_text_color(245, 248, 255, 255)
-    else
-      runtime_hud.skill_button.bg:set_image_color(58, 84, 112, 212)
-      runtime_hud.skill_button.shadow:set_image_color(6, 10, 18, 110)
-      runtime_hud.skill_button.button:set_text_color(196, 212, 230, 255)
+    for slot = 1, 7 do
+      local slot_ui = runtime_hud.bond_slot_icons and runtime_hud.bond_slot_icons[slot] or nil
+      if slot_ui then
+        local payload = env.build_bond_slot_tip_payload and env.build_bond_slot_tip_payload(slot) or nil
+        slot_ui.payload = payload
+        slot_ui.count:set_text(tostring(slot))
+        slot_ui.count:set_visible(true)
+        if payload then
+          local color = get_bond_slot_frame_color(payload.quality)
+          slot_ui.shadow:set_visible(true)
+          slot_ui.frame:set_visible(true)
+          slot_ui.icon:set_visible(true)
+          slot_ui.frame:set_image_color(color[1], color[2], color[3], color[4])
+          slot_ui.icon:set_image(payload.icon_res or ui_res.common.empty)
+          slot_ui.icon:set_image_color(255, 255, 255, 255)
+          slot_ui.count:set_text_color(236, 242, 250, 255)
+        else
+          slot_ui.shadow:set_visible(false)
+          slot_ui.frame:set_visible(true)
+          slot_ui.icon:set_visible(true)
+          slot_ui.frame:set_image_color(54, 72, 98, 196)
+          slot_ui.icon:set_image(ui_res.common.empty)
+          slot_ui.icon:set_image_color(72, 88, 112, 220)
+          slot_ui.count:set_text_color(132, 148, 174, 255)
+        end
+      end
     end
 
-    local bond_awaiting = STATE.bond_runtime and STATE.bond_runtime.awaiting_choice == true
-    local wood = STATE.resources and STATE.resources.wood or 0
-    local bond_ready = not STATE.game_finished and (bond_awaiting or wood >= BOND_DRAW_COST)
-    runtime_hud.bond_button.button:set_button_enable(bond_ready)
-    runtime_hud.bond_button.button:set_text(
-      bond_awaiting
-        and '羁绊 F 继续选择'
-        or string.format('羁绊 F  消耗 %d 木', BOND_DRAW_COST)
-    )
-    if bond_awaiting or wood >= BOND_DRAW_COST then
-      runtime_hud.bond_button.bg:set_image_color(92, 112, 152, 235)
-      runtime_hud.bond_button.shadow:set_image_color(18, 34, 58, 148)
-      runtime_hud.bond_button.button:set_text_color(245, 248, 255, 255)
-    else
-      runtime_hud.bond_button.bg:set_image_color(62, 72, 92, 208)
-      runtime_hud.bond_button.shadow:set_image_color(6, 10, 18, 110)
-      runtime_hud.bond_button.button:set_text_color(198, 210, 226, 255)
+    for slot = 1, 4 do
+      local slot_nodes = runtime_hud.skill_slots and runtime_hud.skill_slots[slot] or nil
+      if slot_nodes then
+        local slot_text = env.build_attack_skill_slot_text and env.build_attack_skill_slot_text(slot) or string.format('%d号位 空', slot)
+        local title_text = slot_text
+        local meta_text = ''
+        local separator_start = string.find(slot_text, ' | ', 1, true)
+        if separator_start then
+          title_text = string.sub(slot_text, 1, separator_start - 1)
+          meta_text = string.sub(slot_text, separator_start + 3)
+        end
+
+        if slot_nodes.text then
+          slot_nodes.text:set_text(title_text)
+        end
+        if slot_nodes.meta then
+          slot_nodes.meta:set_text(meta_text ~= '' and meta_text or '已装配')
+        end
+      end
     end
 
-    for challenge_id, button_ref in pairs(runtime_hud.challenge_buttons) do
-      local status = decorate_challenge_status(challenge_id, get_challenge_button_state(challenge_id))
-      button_ref.button:set_text(status.button_text or '')
-      button_ref.bg:set_image_color(status.bg[1], status.bg[2], status.bg[3], status.bg[4])
-      button_ref.button:set_text_color(status.text[1], status.text[2], status.text[3], status.text[4])
-      button_ref.shadow:set_image_color(status.shadow[1], status.shadow[2], status.shadow[3], status.shadow[4])
-    end
-
-    local treasure_pending = env.has_pending_treasure_choice and env.has_pending_treasure_choice() or false
-    local treasure_button = runtime_hud.challenge_buttons.treasure_trial
-    if treasure_pending and treasure_button then
-      treasure_button.button:set_button_enable(true)
-      treasure_button.button:set_text('宝物 R 继续选择')
-      treasure_button.bg:set_image_color(152, 106, 74, 235)
-      treasure_button.shadow:set_image_color(46, 24, 12, 150)
-      treasure_button.button:set_text_color(255, 244, 228, 255)
+    local growth_slot = runtime_hud.growth_weapon_slot
+    if growth_slot then
+      local payload = env.build_growth_weapon_tip_payload and env.build_growth_weapon_tip_payload() or nil
+      if payload then
+        if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and growth_slot.set_ui_unit_slot then
+          growth_slot:set_ui_unit_slot(STATE.hero, y3.const.SlotType.BAR, 0)
+        end
+      end
     end
     hide_legacy_decision_panel(runtime_hud)
   end
@@ -1005,21 +1011,6 @@ function M.create(env)
       9402
     )
 
-    local right_root = create_panel(
-      hud,
-      0,
-      0,
-      scaled(layout.bottom_bar.width, scale),
-      scaled(layout.bottom_bar.height, scale),
-      { 9, 16, 27, 182 },
-      theme.insets.normal,
-      9400,
-      runtime_skin.bottom_bar
-    )
-    right_root:set_anchor(0.5, 0)
-    right_root:set_relative_parent_pos('底部', scaled(layout.bottom_bar.bottom, scale))
-    set_percent_pos(env.get_player(), right_root, 50, 0)
-
     local decision_root = create_panel(
       hud,
       0,
@@ -1045,19 +1036,16 @@ function M.create(env)
       runtime_skin.decision_header_line
     )
     decision_header_line:set_anchor(0.5, 0.5)
-    local decision_caption = create_text(
+    local decision_caption = create_styled_text(
       decision_root,
       scaled(90, scale),
       scaled(212, scale),
       scaled(140, scale),
       scaled(18, scale),
-      scaled(11, scale),
-      { 132, 168, 208, 255 },
-      nil,
-      nil,
+      'runtime_hud.decision.caption',
+      '当前抉择',
       9442
     )
-    decision_caption:set_text('当前抉择')
 
     local decision_logo = create_panel(
       decision_root,
@@ -1071,40 +1059,34 @@ function M.create(env)
       runtime_skin.decision_logo
     )
     decision_logo:set_anchor(0.5, 0.5)
-    local decision_title = create_text(
+    local decision_title = create_styled_text(
       decision_root,
       scaled(520, scale),
       scaled(212, scale),
       scaled(820, scale),
       scaled(24, scale),
-      scaled(22, scale),
-      theme.palette.text,
-      '中',
-      '中',
+      'runtime_hud.decision.title',
+      '',
       9442
     )
-    local decision_subtitle = create_text(
+    local decision_subtitle = create_styled_text(
       decision_root,
       scaled(520, scale),
       scaled(184, scale),
       scaled(860, scale),
       scaled(18, scale),
-      scaled(12, scale),
-      theme.palette.text_soft,
-      '中',
-      '中',
+      'runtime_hud.decision.subtitle',
+      '',
       9442
     )
-    local decision_hint = create_text(
+    local decision_hint = create_styled_text(
       decision_root,
       scaled(520, scale),
       scaled(22, scale),
       scaled(860, scale),
       scaled(16, scale),
-      scaled(11, scale),
-      theme.palette.text_muted,
-      '中',
-      '中',
+      'runtime_hud.decision.hint',
+      '',
       9442
     )
     local decision_options = {
@@ -1138,160 +1120,118 @@ function M.create(env)
     }
     decision_root:set_visible(false)
 
-    local skill_button = create_button(
-      right_root,
-      scaled(568, scale),
-      scaled(28, scale),
-      scaled(118, scale),
-      scaled(30, scale),
-      '技能 G',
-      function()
-        env.show_upgrade_choices()
-        refresh_runtime_hud()
-      end,
-      {
-        font_size = scaled(12, scale),
-        style = 'runtime_action',
-        bg_color = { 58, 84, 112, 224 },
+    local bond_slot_bar = create_panel(
+      hud,
+      0,
+      0,
+      scaled(312, scale),
+      scaled(44, scale),
+      { 9, 16, 27, 188 },
+      theme.insets.normal,
+      9400,
+      runtime_skin.bottom_bar
+    )
+    UIStyle.apply_text(wave_title, 'runtime_hud.wave_title', get_wave_title_text())
+    bond_slot_bar:set_anchor(0.5, 0)
+    bond_slot_bar:set_relative_parent_pos('底部', scaled(194, scale))
+    set_percent_pos(env.get_player(), bond_slot_bar, 50, 0)
+    bond_slot_bar:set_visible(false)
+
+    local bond_slot_label = create_styled_text(
+      bond_slot_bar,
+      scaled(18, scale),
+      scaled(31, scale),
+      scaled(96, scale),
+      scaled(12, scale),
+      'runtime_hud.bond_slot_label',
+      '已拥有羁绊',
+      9402
+    )
+
+    local bond_slot_icons = {}
+
+    for slot = 1, 7 do
+      local slot_x = scaled(116 + (slot - 1) * 28, scale)
+      local shadow = create_panel(
+        bond_slot_bar,
+        slot_x,
+        scaled(20, scale),
+        scaled(24, scale),
+        scaled(24, scale),
+        { 4, 8, 16, 132 },
+        theme.insets.soft,
+        9401
+      )
+      shadow:set_anchor(0.5, 0.5)
+
+      local frame = create_panel(
+        bond_slot_bar,
+        slot_x,
+        scaled(22, scale),
+        scaled(24, scale),
+        scaled(24, scale),
+        { 54, 72, 98, 255 },
+        theme.insets.soft,
+        9402
+      )
+      frame:set_anchor(0.5, 0.5)
+      frame:set_intercepts_operations(true)
+
+      local icon = create_panel(
+        bond_slot_bar,
+        slot_x,
+        scaled(22, scale),
+        scaled(20, scale),
+        scaled(20, scale),
+        { 255, 255, 255, 255 },
+        { 4, 4, 4, 4 },
+        9403
+      )
+      icon:set_anchor(0.5, 0.5)
+      icon:set_intercepts_operations(false)
+
+      local count = create_text(
+        bond_slot_bar,
+        slot_x + scaled(8, scale),
+        scaled(8, scale),
+        scaled(12, scale),
+        scaled(10, scale),
+        scaled(8, scale),
+        { 190, 206, 228, 255 },
+        '中',
+        '中',
+        9404
+      )
+      count:set_anchor(0.5, 0.5)
+      count:set_text(tostring(slot))
+
+      bond_slot_icons[slot] = {
+        shadow = shadow,
+        frame = frame,
+        icon = icon,
+        count = count,
+        payload = nil,
       }
-    )
-    local bond_button = create_button(
-      right_root,
-      scaled(446, scale),
-      scaled(28, scale),
-      scaled(114, scale),
-      scaled(30, scale),
-      '羁绊 F',
-      function()
-        env.try_bond_draw()
-        refresh_runtime_hud()
-      end,
-      {
-        font_size = scaled(12, scale),
-        style = 'runtime_action',
-        bg_color = { 84, 100, 132, 224 },
-      }
-    )
 
-    local challenge_buttons = {
-      gold_trial = create_button(
-        right_root,
-        scaled(72, scale),
-        scaled(28, scale),
-        scaled(88, scale),
-        scaled(30, scale),
-        '金币 Q',
-        function()
-          env.try_start_challenge('gold_trial')
-          refresh_runtime_hud()
-        end,
-        {
-          font_size = scaled(11, scale),
-          style = 'runtime_trial_gold',
-          bg_color = { 126, 104, 52, 224 },
-        }
-      ),
-      wood_trial = create_button(
-        right_root,
-        scaled(170, scale),
-        scaled(28, scale),
-        scaled(88, scale),
-        scaled(30, scale),
-        '木材 W',
-        function()
-          env.try_start_challenge('wood_trial')
-          refresh_runtime_hud()
-        end,
-        {
-          font_size = scaled(11, scale),
-          style = 'runtime_trial_wood',
-          bg_color = { 74, 118, 86, 224 },
-        }
-      ),
-      exp_trial = create_button(
-        right_root,
-        scaled(268, scale),
-        scaled(28, scale),
-        scaled(88, scale),
-        scaled(30, scale),
-        '经验 E',
-        function()
-          env.try_start_challenge('exp_trial')
-          refresh_runtime_hud()
-        end,
-        {
-          font_size = scaled(11, scale),
-          style = 'runtime_trial_exp',
-          bg_color = { 74, 98, 146, 224 },
-        }
-      ),
-      treasure_trial = create_button(
-        right_root,
-        scaled(366, scale),
-        scaled(28, scale),
-        scaled(72, scale),
-        scaled(30, scale),
-        '宝物 R',
-        function()
-          env.try_treasure_entry()
-          refresh_runtime_hud()
-        end,
-        {
-          font_size = scaled(11, scale),
-          style = 'runtime_trial_treasure',
-          bg_color = { 128, 90, 68, 224 },
-        }
-      ),
-    }
-    local trial_label = create_text(
-      right_root,
-      scaled(76, scale),
-      scaled(50, scale),
-      scaled(120, scale),
-      scaled(12, scale),
-      scaled(10, scale),
-      { 164, 186, 214, 255 },
-      nil,
-      nil,
-      9402
-    )
-    trial_label:set_text('试炼入口')
-    trial_label:set_text('试炼入口')
-    local action_label = create_text(
-      right_root,
-      scaled(456, scale),
-      scaled(50, scale),
-      scaled(140, scale),
-      scaled(12, scale),
-      scaled(10, scale),
-      { 164, 186, 214, 255 },
-      nil,
-      nil,
-      9402
-    )
-    action_label:set_text('成长操作')
+      frame:add_fast_event('鼠标-移入', function()
+        if bond_slot_icons[slot].payload then
+          bond_tip_panel.show_for_anchor(frame, bond_slot_icons[slot].payload)
+        else
+          hide_bond_tip()
+        end
+      end)
+      frame:add_fast_event('鼠标-移出', function()
+        hide_bond_tip()
+      end)
+      frame:add_fast_event('左键-点击', function()
+        hide_bond_tip()
+      end)
+    end
 
-    action_label:set_text('成长操作')
-    local viewport_notice = create_text(
-      right_root,
-      scaled(14, scale),
-      scaled(50, scale),
-      scaled(180, scale),
-      scaled(12, scale),
-      scaled(10, scale),
-      { 114, 142, 176, 255 },
-      '左',
-      '中',
-      9402
-    )
-    viewport_notice:set_text('界面就绪')
-
-    viewport_notice:set_text('战斗监测中')
     STATE.runtime_hud = {
       center_root = center_root,
       center_glow = center_glow,
       left_root = left_root,
-      right_root = right_root,
       stage_text = stage_text,
       wave_title = wave_title,
       wave_status = wave_status,
@@ -1314,14 +1254,49 @@ function M.create(env)
       decision_subtitle = decision_subtitle,
       decision_hint = decision_hint,
       decision_options = decision_options,
-      skill_button = skill_button,
-      bond_button = bond_button,
-      challenge_buttons = challenge_buttons,
-      trial_label = trial_label,
-      action_label = action_label,
-      viewport_notice = viewport_notice,
+      bond_slot_bar = bond_slot_bar,
+      bond_slot_label = bond_slot_label,
+      bond_slot_icons = bond_slot_icons,
+      growth_weapon_slot = resolve_ui(y3, env.get_player(), 'GameHUD.main.inventory.equip_slot_bg_1.equip_slot_1'),
+      skill_slots = {
+        [1] = {
+          root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_1'),
+          text = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_1.skill_slot_1_text'),
+          meta = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_1.skill_slot_1_meta'),
+        },
+        [2] = {
+          root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_2'),
+          text = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_2.skill_slot_2_text'),
+          meta = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_2.skill_slot_2_meta'),
+        },
+        [3] = {
+          root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_3'),
+          text = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_3.skill_slot_3_text'),
+          meta = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_3.skill_slot_3_meta'),
+        },
+        [4] = {
+          root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_4'),
+          text = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_4.skill_slot_4_text'),
+          meta = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_4.skill_slot_4_meta'),
+        },
+      },
     }
 
+    if STATE.runtime_hud.growth_weapon_slot then
+      STATE.runtime_hud.growth_weapon_slot:set_equip_slot_use_operation('无')
+      STATE.runtime_hud.growth_weapon_slot:set_equip_slot_drag_operation('无')
+      STATE.runtime_hud.growth_weapon_slot:add_fast_event('鼠标-移入', function()
+        show_growth_weapon_tip(STATE.runtime_hud.growth_weapon_slot)
+      end)
+      STATE.runtime_hud.growth_weapon_slot:add_fast_event('鼠标-移出', function()
+        hide_growth_weapon_tip()
+      end)
+      STATE.runtime_hud.growth_weapon_slot:add_fast_event('左键-点击', function()
+        hide_growth_weapon_tip()
+      end)
+    end
+
+    bind_default_item_slot_hover(STATE.runtime_hud)
     refresh_runtime_hud()
     return STATE.runtime_hud
   end
@@ -1338,7 +1313,11 @@ function M.create(env)
       if not is_hud_alive(runtime_hud) then
         return
       end
-      runtime_hud.right_root:set_visible(visible == true)
+      hide_bond_tip()
+      hide_growth_weapon_tip()
+      if runtime_hud.bond_slot_bar and not runtime_hud.bond_slot_bar:is_removed() then
+        runtime_hud.bond_slot_bar:set_visible(false)
+      end
       hide_legacy_decision_panel(runtime_hud)
     end,
   }

@@ -8,6 +8,7 @@ assert(type(cfg.levels_by_level) == 'table', 'gear_upgrade_config.levels_by_leve
 
 assert(cfg.slots.focus == nil, 'focus slot should be removed')
 assert(cfg.slots.emblem == nil, 'emblem slot should be removed')
+assert(cfg.slots.weapon.item_key == 134250249, 'weapon item_key should point at the configured growth weapon item')
 assert(cfg.slots.weapon.max_level == 100, 'weapon max_level should be 100')
 assert(cfg.slots.weapon.affix_choice_count == 3, 'weapon affix_choice_count should be 3')
 assert(cfg.levels_by_level[1].gold_cost == 100, 'level 1 cost should stay 100')

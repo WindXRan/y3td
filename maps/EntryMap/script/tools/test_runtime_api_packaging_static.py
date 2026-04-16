@@ -26,6 +26,22 @@ def test_boot_exposes_split_runtime_packages() -> None:
     assert "toggle_auto_track = function()" in boot
 
 
+def test_outgame_boot_wires_stage_runtime_package() -> None:
+    boot = read_text(BOOT_PATH)
+
+    outgame_create_index = boot.find("outgame_system = OutgameSystem.create({")
+    assert outgame_create_index != -1, "boot.lua should create the outgame system"
+
+    input_events_index = boot.find("input_events_system = InputEventsSystem.create({", outgame_create_index)
+    if input_events_index == -1:
+        input_events_index = len(boot)
+
+    outgame_create_block = boot[outgame_create_index:input_events_index]
+    assert "stage_runtime = {" in outgame_create_block
+    assert "start_selected_stage = function(stage_id, mode_id)" in outgame_create_block
+    assert "get_current_stage_text = function()" in outgame_create_block
+
+
 def test_consumers_use_split_runtime_packages() -> None:
     runtime_hud = read_text(RUNTIME_HUD_PATH)
     runtime_hud_panel1_top = read_text(RUNTIME_HUD_PANEL1_TOP_PATH)

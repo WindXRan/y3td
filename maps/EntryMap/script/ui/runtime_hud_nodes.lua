@@ -34,18 +34,6 @@ local function resolve_prefab_node(prefab, path)
   return ui
 end
 
-local function bind_image_entry(prefab, path)
-  local root = resolve_prefab_node(prefab, path)
-  if not root then
-    return nil
-  end
-  return {
-    root = root,
-    label = nil,
-    enabled = true,
-  }
-end
-
 function M.resolve(env)
   local y3 = env.y3
   local player = env.get_player()
@@ -160,13 +148,6 @@ function M.resolve_bottom_bg(prefab)
     bottom_armor_percent = resolve_prefab_node(prefab, 'layout_1.mid.panel.护甲值.percent'),
     bottom_armor_percent_bonus = resolve_prefab_node(prefab, 'layout_1.mid.panel.护甲值.百分比加成'),
     bottom_armor_value_bonus = resolve_prefab_node(prefab, 'layout_1.mid.panel.护甲值.数值加成'),
-
-    bottom_skill_entry = bind_image_entry(prefab, 'layout_1.button.技能抽卡'),
-    bottom_bond_entry = bind_image_entry(prefab, 'layout_1.button.羁绊抽卡'),
-    bottom_gold_trial_entry = bind_image_entry(prefab, 'layout_1.challenge.金币挑战'),
-    bottom_wood_trial_entry = bind_image_entry(prefab, 'layout_1.challenge.木材挑战'),
-    bottom_exp_trial_entry = bind_image_entry(prefab, 'layout_1.challenge.杀敌挑战'),
-    bottom_treasure_trial_entry = bind_image_entry(prefab, 'layout_1.challenge.宝物挑战'),
 
     bottom_bond_icons = {
       resolve_prefab_node(prefab, 'layout_1.UP.羁绊图片1'),

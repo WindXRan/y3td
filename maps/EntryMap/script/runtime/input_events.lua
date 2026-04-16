@@ -13,6 +13,7 @@ function M.create(env)
   local show_bond_progress = env.show_bond_progress
   local show_runtime_attr_tip_panel = env.show_runtime_attr_tip_panel
   local show_runtime_attr_dialog = env.show_runtime_attr_dialog
+  local start_current_task_challenge = env.start_current_task_challenge
   local try_start_challenge = env.try_start_challenge
   local try_treasure_entry = env.try_treasure_entry
   local apply_round_choice = env.apply_round_choice
@@ -123,6 +124,14 @@ function M.create(env)
         show_runtime_attr_dialog()
       elseif show_runtime_attr_tip_panel then
         show_runtime_attr_tip_panel()
+      end
+    end)
+    y3.game:event('键盘-按下', 'C', function()
+      if not is_battle_active() then
+        return
+      end
+      if start_current_task_challenge then
+        start_current_task_challenge()
       end
     end)
     y3.game:event('键盘-按下', 'Q', function()

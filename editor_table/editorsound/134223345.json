@@ -1,0 +1,16 @@
+{
+    "Format": "ogg", 
+    "IsCustom": true, 
+    "SoundPath": "134223345", 
+    "custom_editor_type": "custom_editor_sound", 
+    "describe": "", 
+    "key": 134223345, 
+    "md5": "cd5420183b25bfd369c0e0655fd9ec91", 
+    "name": "SFX_UI_Click_D", 
+    "res_name": "SFX_UI_Click_D.ogg", 
+    "res_type": "kkres", 
+    "source": "code_Source_Import", 
+    "sub_type": "sound", 
+    "uid": 134223345, 
+    "version": 1
+}

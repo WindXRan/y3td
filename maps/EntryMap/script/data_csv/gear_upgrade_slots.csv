@@ -1,2 +1,2 @@
-slot,order_index,display_name,max_level,affix_choice_count
-weapon,1,成长武器,100,3
+slot,order_index,display_name,max_level,affix_choice_count,item_key
+weapon,1,成长武器,100,3,134250249

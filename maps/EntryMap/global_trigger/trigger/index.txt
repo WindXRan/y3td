@@ -3,6 +3,5 @@
     "UI.folder": 1, 
     "War3控制台_触发器.folder": 2, 
     "物品说明_触发器.folder": 3, 
-    "物品说明_触发器_Import.folder": 5, 
     "自走棋图鉴_触发器.folder": 4
 }

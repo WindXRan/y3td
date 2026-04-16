@@ -76,9 +76,9 @@ function M.create(env)
 
     local lines = {}
     local wave = get_current_wave()
-    lines[#lines + 1] = string.format(
-      '章节：%s / %s',
-      STATE.current_stage_def and STATE.current_stage_def.display_name or '未命名章节',
+      lines[#lines + 1] = string.format(
+      '层数：%s / %s',
+      STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) or '未命名章节',
       STATE.current_mode_def and STATE.current_mode_def.display_name or '未命名模式'
     )
     lines[#lines + 1] = string.format('波次：%s', wave and wave.name or '未开始')
