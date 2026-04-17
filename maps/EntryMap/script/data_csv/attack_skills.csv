@@ -1,5 +1,5 @@
 id,name,default_slot,summary,damage_type,damage_form,element,damage_label,base_damage_ratio,base_cooldown,base_range,base_pierce,base_pierce_width,base_control_lock_time,base_knockback_distance,base_knockback_speed,base_explosion_ratio,base_explosion_radius,base_extra_targets,base_repeat_count
-basic_attack,普攻,1,凝出 1 道金行剑罡，造成 100% 攻击的金行箭罡伤害。,物理,weapon,metal,金行箭罡,1.0,1.6,760,,,,,,,,,
+basic_attack,普攻,1,凝出 1 道御剑剑罡，造成 110% 攻击的金行剑罡伤害。,物理,weapon,metal,金行剑罡,1.1,1.25,760,,,,,,,,,
 arcane_arrow,青木灵矢,,射出 1 支青木灵矢，造成木行灵矢伤害。,法术,spell,wood,木行灵矢,0.8,2.0,900,1,,,,,,,,
 flame_arrow,赤炎箭,,射出 1 支赤炎箭，命中后爆炸造成火行爆炎伤害。,物理,weapon,fire,火行爆炎,2.2,6.2,900,,,,,,1.8,220,,
 frost_arrow,寒泉箭,,射出 1 支寒泉箭，造成水行寒煞伤害并短暂击退目标。,法术,spell,water,水行寒煞,1.7,4.8,920,0,95,0.20,90,880,,,,

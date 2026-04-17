@@ -17,6 +17,7 @@ local EffectDebugSystem = require 'runtime.effect_debug'
 local BattleEventFeedSystem = require 'runtime.battle_event_feed'
 local RewardSystem = require 'runtime.rewards'
 local GearUpgrades = require 'runtime.gear_upgrades'
+local AudioSystem = require 'runtime.audio'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
 local HeroAttrPanel = require 'runtime.hero_attr_panel'
@@ -39,6 +40,7 @@ local attack_skills_system
 local auto_active_effects_system
 local effect_debug_system
 local reward_system
+local audio_system
 local hero_attr_system = HeroAttrSystem.create()
 
 local function trace_boot(message)
@@ -474,6 +476,13 @@ reward_system = RewardSystem.create({
   end,
 })
 
+audio_system = AudioSystem.create({
+  STATE = STATE,
+  y3 = y3,
+  get_player = get_player,
+  trace = trace_boot,
+})
+
 mainline_task_system = require('runtime.mainline_tasks').create({
   STATE = STATE,
   CONFIG = CONFIG,
@@ -845,11 +854,42 @@ local function get_target_hp_ratio(target)
   return math.max(0, (target:get_hp() or 0) / max_hp)
 end
 
+local function get_unit_point_snapshot(unit)
+  if not unit or not unit.is_exist or not unit:is_exist() then
+    return nil
+  end
+  local point = unit:get_point()
+  if not point or not point.move then
+    return nil
+  end
+  return point:move()
+end
+
 local function get_unit_max_hp(unit)
   if not unit or not unit.is_exist or not unit:is_exist() then
     return 0
   end
   return y3.helper.tonumber(unit:get_attr('生命')) or y3.helper.tonumber(unit:get_attr('最大生命')) or 0
+end
+
+local function normalize_ratio(value)
+  local number = y3.helper.tonumber(value) or 0
+  if math.abs(number) > 1 then
+    return number / 100
+  end
+  return number
+end
+
+local function get_hero_attr_value(name)
+  if not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then
+    return 0
+  end
+  local value = hero_attr_system and hero_attr_system.get_attr(STATE.hero, name) or STATE.hero:get_attr(name)
+  return y3.helper.tonumber(value) or 0
+end
+
+local function get_hero_attr_ratio(name)
+  return normalize_ratio(get_hero_attr_value(name))
 end
 
 local function get_damage_bonus_multiplier(target, context)
@@ -1104,6 +1144,17 @@ local function trigger_td_skills_on_hit(data)
   if not is_active_enemy(target) then
     return
   end
+  local chain_center = get_unit_point_snapshot(target) or target
+  local basic_attack_def = ATTACK_SKILL_DEFS.basic_attack or {
+    damage_type = '物理',
+    damage_form = 'weapon',
+    element = 'metal',
+    damage_label = '金行剑罡',
+  }
+  local basic_attack_vfx = AttackSkillObjects.vfx_by_id.basic_attack or {}
+  local basic_chain_particle = basic_attack_vfx.chain_particle
+    or basic_attack_vfx.impact_particle
+    or AttackSkillObjects.vfx_by_id.thunder.chain_particle
 
   if skill.normal_attack_bonus_ratio > 0 then
     deal_skill_damage(target, data.damage * skill.normal_attack_bonus_ratio, '物理', {
@@ -1121,10 +1172,9 @@ local function trigger_td_skills_on_hit(data)
 
   if skill.chain_bounces > 0 and skill.chain_chance > 0 and math.random() <= skill.chain_chance then
     local bounced = 0
-    for _, unit in ipairs(get_enemies_in_range(target, skill.chain_radius, target, skill.chain_bounces)) do
-      deal_skill_damage(unit, data.damage * skill.chain_ratio, '法术', {
-        text_type = 'magic',
-        particle = AttackSkillObjects.vfx_by_id.thunder.chain_particle,
+    for _, unit in ipairs(get_enemies_in_range(chain_center, skill.chain_radius, target, skill.chain_bounces)) do
+      deal_skill_damage(unit, data.damage * skill.chain_ratio, basic_attack_def, {
+        particle = basic_chain_particle,
       })
       bounced = bounced + 1
       if bounced >= skill.chain_bounces then
@@ -1133,14 +1183,23 @@ local function trigger_td_skills_on_hit(data)
     end
   end
 
-  local bond_chain_bounces = math.max(0, round_number(get_bond_runtime_bonus('chain_bounces')))
-  local bond_chain_ratio = math.max(0, get_bond_runtime_bonus('chain_ratio'))
+  local bond_chain_bounces = math.max(0, round_number(
+    get_bond_runtime_bonus('chain_bounces') + get_hero_attr_value('弹射次数')
+  ))
+  local bond_chain_ratio = 0.30 + math.max(0,
+    normalize_ratio(get_bond_runtime_bonus('chain_ratio'))
+    + get_hero_attr_ratio('弹射伤害')
+  )
   if bond_chain_bounces > 0 and bond_chain_ratio > 0 then
     local bounced = 0
-    for _, unit in ipairs(get_enemies_in_range(target, math.max(skill.chain_radius or 0, 420), target, bond_chain_bounces)) do
-      deal_skill_damage(unit, data.damage * bond_chain_ratio, '法术', {
-        text_type = 'magic',
-        particle = AttackSkillObjects.vfx_by_id.thunder.chain_particle,
+    for _, unit in ipairs(get_enemies_in_range(
+      chain_center,
+      math.max(skill.chain_radius or 0, 420),
+      target,
+      bond_chain_bounces
+    )) do
+      deal_skill_damage(unit, data.damage * bond_chain_ratio, basic_attack_def, {
+        particle = basic_chain_particle,
         skip_hunter_first_hit = true,
       })
       bounced = bounced + 1
@@ -1206,6 +1265,9 @@ battlefield_system = BattlefieldSystem.create({
   end,
   heal_hero = function(amount)
     return heal_hero(amount)
+  end,
+  play_enemy_death_sound = function(unit, info)
+    return audio_system and audio_system.play_enemy_death and audio_system.play_enemy_death(unit, info and info.kind == 'boss') or nil
   end,
   on_hero_damage = function(data)
     return trigger_td_skills_on_hit(data)
@@ -1331,6 +1393,9 @@ attack_skills_system = AttackSkillsSystem.create({
       auto_active_effects_system.handle_attack_skill_cast(skill, target)
     end
   end,
+  play_basic_attack_sound = function(source_unit)
+    return audio_system and audio_system.play_basic_attack and audio_system.play_basic_attack(source_unit) or nil
+  end,
 })
 
 auto_active_effects_system = AutoActiveEffectsSystem.create({
@@ -1428,7 +1493,7 @@ local function get_pending_round_choice_label(kind)
     return 'G 技能强化'
   end
   if kind == 'bond' then
-    return 'F 链式羁绊'
+    return 'F 仙缘感应'
   end
   if kind == 'mark' then
     return '进化选择'
@@ -2023,6 +2088,12 @@ outgame_system = OutgameSystem.create({
       return session_state_system.start_selected_stage(stage_id, mode_id)
     end,
   },
+  play_ui_click = function()
+    return audio_system and audio_system.play_ui_click and audio_system.play_ui_click() or nil
+  end,
+  ensure_music_loop = function()
+    return audio_system and audio_system.ensure_music_loop and audio_system.ensure_music_loop() or nil
+  end,
   set_battle_hud_visible = function(visible)
     return set_battle_hud_visible(visible)
   end,
@@ -2114,7 +2185,7 @@ function M.bootstrap()
   start_runtime_loops()
   debug_tools_system.ensure_gm_panel()
   outgame_system.load_profile()
-  outgame_system.enter_outgame(nil)
+  outgame_system.enter_outgame()
 end
 
 return M

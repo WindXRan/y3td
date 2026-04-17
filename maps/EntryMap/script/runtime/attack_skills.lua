@@ -20,6 +20,7 @@ function M.create(env)
   local notify_bond_attack_skill_cast = env.notify_bond_attack_skill_cast
   local notify_auto_active_basic_attack = env.notify_auto_active_basic_attack
   local notify_auto_active_skill_cast = env.notify_auto_active_skill_cast
+  local play_basic_attack_sound = env.play_basic_attack_sound
 
   local function get_hero_attr(name, fallback_name)
     if not STATE.hero or not STATE.hero:is_exist() then
@@ -192,10 +193,11 @@ function M.create(env)
   
     if runtime_chain_count > 0 and runtime_chain_chance > 0 and runtime_chain_ratio > 0 then
       lines[#lines + 1] = string.format(
-        '弹射：%.0f%% 概率弹射 %d 个目标，造成 %.0f%% 法术伤害。',
+        '弹射：%.0f%% 概率弹射 %d 个目标，造成 %.0f%% %s伤害。',
         runtime_chain_chance * 100,
         runtime_chain_count,
-        runtime_chain_ratio * 100
+        runtime_chain_ratio * 100,
+        skill.damage_label or '额外'
       )
     end
 
@@ -353,19 +355,19 @@ function M.create(env)
     if not skill then
       return 0.6
     end
+    local effective_base_interval = math.max(0.15, (skill.base_cooldown or 1.7) * (1 - math.max(0, skill.cooldown_reduction or 0)))
   
     if STATE.hero and STATE.hero:is_exist() then
-      local interval = y3.helper.tonumber(get_hero_attr('攻击间隔')) or 0
-      if interval > 0 then
-        return math.max(0.15, interval)
+      local interval_offset = y3.helper.tonumber(get_hero_attr('攻击间隔')) or 0
+      if interval_offset >= 0.3 then
+        return math.max(0.15, interval_offset)
       end
   
-      local attack_speed = math.max(20, get_hero_attr('攻击速度'))
-      local base_interval = math.max(0.15, skill.base_cooldown or 1.7)
-      return math.max(0.15, base_interval * 100 / attack_speed)
+      local attack_speed = math.max(20, get_hero_attr('攻击速度') + (skill.attack_speed_bonus or 0))
+      return math.max(0.15, effective_base_interval * 100 / attack_speed + interval_offset)
     end
   
-    return math.max(0.15, get_skill_current_cooldown(skill))
+    return effective_base_interval
   end
   
   local function build_attack_skill_slot_text(slot)
@@ -809,7 +811,10 @@ function M.create(env)
       type = skill.damage_type,
       ability = STATE.hero_common_attack and STATE.hero_common_attack:is_exist() and STATE.hero_common_attack or nil,
       text_type = options and options.text_type or 'physics',
-      text_track = 934269508,
+      text_track = options and options.text_track or 934269508,
+      particle = options and options.particle or nil,
+      socket = options and options.socket or '',
+      pos_socket = options and options.pos_socket or '',
       common_attack = options and options.common_attack == true or false,
       no_miss = true,
     })
@@ -1097,6 +1102,9 @@ function M.create(env)
       local split_ratio = get_effective_skill_value(skill, 'split_ratio')
       local hero_point = get_hero_point()
       play_basic_attack_animation()
+      if play_basic_attack_sound then
+        play_basic_attack_sound(STATE.hero)
+      end
       if notify_auto_active_basic_attack then
         notify_auto_active_basic_attack(target)
       end
@@ -1108,6 +1116,11 @@ function M.create(env)
         if STATE.game_finished or not STATE.hero or not STATE.hero:is_exist() then
           return
         end
+
+        local splash_center = impact_point or get_unit_point_snapshot(target) or target
+        local extra_hit_particle = vfx.chain_particle or vfx.impact_particle
+        local extra_hit_scale = vfx.chain_scale or math.max(0.55, (vfx.impact_scale or 0.75) * 0.8)
+        local extra_hit_time = vfx.chain_time or math.max(0.15, (vfx.impact_time or 0.22) * 0.8)
   
         if impact_point and vfx.impact_particle then
           play_particle_on_point(impact_point, vfx.impact_particle, vfx.impact_scale, vfx.impact_time, 18)
@@ -1124,13 +1137,18 @@ function M.create(env)
         if multishot_count > 0 and multishot_ratio > 0 then
           local hit_count = 0
           for _, unit in ipairs(get_enemies_in_range(
-            target,
+            splash_center,
             math.max(260, get_current_basic_attack_range() * 0.45),
             target,
             multishot_count
           )) do
+            local extra_center = get_unit_point_snapshot(unit) or unit:get_point()
+            if extra_center and extra_hit_particle then
+              play_particle_on_point(extra_center, extra_hit_particle, extra_hit_scale, extra_hit_time, 16)
+            end
             deal_basic_attack_damage(skill, unit, damage * multishot_ratio, {
               text_type = 'physics',
+              particle = extra_hit_particle,
             })
             apply_armor_break_on_hit(unit)
             hit_count = hit_count + 1
@@ -1143,12 +1161,18 @@ function M.create(env)
         if split_count > 0 and split_ratio > 0 then
           local split_hits = 0
           for _, unit in ipairs(get_enemies_in_range(
-            target,
+            splash_center,
             math.max(260, get_current_basic_attack_range() * 0.45),
             target,
             split_count
           )) do
-            deal_basic_attack_damage(skill, unit, damage * split_ratio)
+            local extra_center = get_unit_point_snapshot(unit) or unit:get_point()
+            if extra_center and extra_hit_particle then
+              play_particle_on_point(extra_center, extra_hit_particle, extra_hit_scale, extra_hit_time, 16)
+            end
+            deal_basic_attack_damage(skill, unit, damage * split_ratio, {
+              particle = extra_hit_particle,
+            })
             apply_armor_break_on_hit(unit)
             split_hits = split_hits + 1
             if split_hits >= split_count then

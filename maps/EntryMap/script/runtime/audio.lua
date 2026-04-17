@@ -5,6 +5,9 @@ local AUDIO_IDS = {
   ui_click = '134223345', -- SFX_UI_Click_D
   ui_open = '201387287', -- 打开背包
   ui_confirm = '201387323', -- 胜利
+  basic_attack = '134257538', -- 弓箭攻击（3D）
+  enemy_death_heavy = '134257420', -- AOE 重击（3D）
+  enemy_death_burst = '134257799', -- AOE 爆裂（3D）
 }
 
 function M.create(env)
@@ -72,6 +75,36 @@ function M.create(env)
     return sound
   end
 
+  local function play_for_unit(audio_id, unit, options)
+    if not unit or not unit.is_exist or not unit:is_exist() then
+      return play_for_player(audio_id, options)
+    end
+
+    local player = get_player and get_player() or nil
+    if not player then
+      return nil
+    end
+
+    local audio_key = resolve_audio_key(audio_id)
+    if not audio_key then
+      return nil
+    end
+
+    local sound = y3.sound.play_with_object(player, audio_key, unit, {
+      loop = options and options.loop == true or false,
+      fade_in = options and options.fade_in or 0,
+      fade_out = options and options.fade_out or 0,
+      ensure = options and options.ensure == true or false,
+      offset_x = options and options.offset_x or 0,
+      offset_y = options and options.offset_y or 0,
+      offset_z = options and options.offset_z or 0,
+    })
+    if sound and options and options.volume then
+      sound:set_volume(player, options.volume)
+    end
+    return sound
+  end
+
   local function ensure_music_loop()
     local runtime = get_runtime()
     if runtime.bgm_sound then
@@ -111,12 +144,35 @@ function M.create(env)
     })
   end
 
+  local function play_basic_attack(unit)
+    return play_for_unit(AUDIO_IDS.basic_attack, unit, {
+      volume = 66,
+    })
+  end
+
+  local function play_enemy_death(unit, is_boss)
+    local primary = play_for_unit(AUDIO_IDS.enemy_death_heavy, unit, {
+      volume = is_boss and 100 or 92,
+      ensure = true,
+      offset_z = 45,
+    })
+
+    play_for_unit(AUDIO_IDS.enemy_death_burst, unit, {
+      volume = is_boss and 94 or 82,
+      offset_z = 65,
+    })
+
+    return primary
+  end
+
   return {
     ensure_music_loop = ensure_music_loop,
     play_ui_click = play_ui_click,
     play_panel_open = play_panel_open,
     play_confirm = play_confirm,
     play_victory = play_victory,
+    play_basic_attack = play_basic_attack,
+    play_enemy_death = play_enemy_death,
   }
 end
 

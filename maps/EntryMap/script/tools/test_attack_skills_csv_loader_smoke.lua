@@ -15,7 +15,13 @@ local basic_attack = mod.defs_by_id.basic_attack
 assert(basic_attack, 'expected basic_attack to exist')
 assert(basic_attack.default_slot == 1, 'expected basic_attack default_slot to match')
 assert(basic_attack.base_range == 760, 'expected basic_attack base_range to match')
+assert(basic_attack.base_cooldown == 1.25, 'expected basic_attack base_cooldown to match')
+assert(basic_attack.damage_label == '金行剑罡', 'expected basic_attack damage label to match')
 assert(mod.vfx_by_id.basic_attack.projectile_key == 134222874, 'expected basic_attack projectile_key to match')
+assert(mod.vfx_by_id.basic_attack.cast_particle == 102740, 'expected basic_attack cast_particle to match')
+assert(mod.vfx_by_id.basic_attack.impact_particle == 102731, 'expected basic_attack impact_particle to match')
+assert(mod.vfx_by_id.basic_attack.chain_particle == 102877, 'expected basic_attack chain_particle to match')
+assert(mod.vfx_by_id.basic_attack.impact_particle ~= mod.vfx_by_id.arcane_arrow.impact_particle, 'basic attack should no longer share the same impact fx as arcane_arrow')
 
 local flame_arrow = mod.defs_by_id.flame_arrow
 assert(flame_arrow, 'expected flame_arrow to exist')

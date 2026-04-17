@@ -10,6 +10,7 @@ function M.create(env)
   local hero_attr_system = env.hero_attr_system
   local set_attr_pack = env.set_attr_pack
   local add_attr_pack = env.add_attr_pack
+  local play_enemy_death_sound = env.play_enemy_death_sound
 
   local api = {}
 
@@ -117,6 +118,219 @@ function M.create(env)
     return string.format('第%d波Boss', wave.index)
   end
 
+  local function clone_point(point)
+    if not point or not point.move then
+      return nil
+    end
+    return point:move()
+  end
+
+  local function get_unit_point_snapshot(unit)
+    if not unit or not unit.is_exist or not unit:is_exist() then
+      return nil
+    end
+    return clone_point(unit:get_point())
+  end
+
+  local function create_point_particle(effect_key, point, angle, scale, time, height, color, anim_speed)
+    if not effect_key or not point then
+      return nil
+    end
+
+    local ok, particle = pcall(y3.particle.create, {
+      type = effect_key,
+      target = point,
+      angle = angle or 0,
+      scale = scale or 1.0,
+      time = time or 0.30,
+      height = height or 0,
+      immediate = true,
+    })
+    if not ok or not particle then
+      return nil
+    end
+
+    particle:set_facing(angle or 0)
+    if color then
+      particle:set_color(color[1], color[2], color[3], color[4])
+    end
+    if anim_speed then
+      particle:set_animation_speed(anim_speed)
+    end
+    return particle
+  end
+
+  local function spray_particle_line(particle, angle, distance, speed)
+    if not particle or not particle.mover_line then
+      return
+    end
+
+    pcall(function()
+      particle:mover_line({
+        angle = angle,
+        distance = distance,
+        speed = speed,
+        terrain_block = false,
+        face_angle = true,
+      })
+    end)
+  end
+
+  local function resolve_enemy_death_reaction_profile(info)
+    if info and info.kind == 'boss' then
+      return {
+        corpse_distance = 110,
+        corpse_speed = 720,
+        remove_delay = 1.35,
+        burst_scale = 1.28,
+        burst_time = 0.48,
+        mist_scale = 1.02,
+        mist_time = 0.78,
+        trail_scale = 0.78,
+        trail_time = 0.86,
+        trail_distance = 140,
+        trail_speed = 760,
+        pool_scale = 1.12,
+        pool_time = 1.18,
+        shock_scale = 0.96,
+        shock_time = 0.92,
+      }
+    end
+
+    return {
+      corpse_distance = 180,
+      corpse_speed = 980,
+      remove_delay = 1.05,
+      burst_scale = 0.98,
+      burst_time = 0.40,
+      mist_scale = 0.78,
+      mist_time = 0.62,
+      trail_scale = 0.62,
+      trail_time = 0.72,
+      trail_distance = 185,
+      trail_speed = 980,
+      pool_scale = 0.86,
+      pool_time = 0.96,
+      shock_scale = 0.76,
+      shock_time = 0.72,
+    }
+  end
+
+  local function play_enemy_death_reaction(unit, info, data)
+    if not unit or not unit.is_exist or not unit:is_exist() then
+      return 0.30
+    end
+
+    local death_point = get_unit_point_snapshot(unit)
+    if not death_point then
+      return 0.30
+    end
+
+    local profile = resolve_enemy_death_reaction_profile(info)
+    local death_angle = unit:get_facing()
+    local source_unit = data and data.source_unit or nil
+    if source_unit and source_unit.is_exist and source_unit:is_exist() then
+      local source_point = get_unit_point_snapshot(source_unit)
+      if source_point then
+        death_angle = source_point:get_angle_with(death_point)
+      end
+    end
+
+    if play_enemy_death_sound then
+      play_enemy_death_sound(unit, info)
+    end
+
+    unit:stop()
+    pcall(function()
+      unit:mover_line({
+        angle = death_angle,
+        distance = profile.corpse_distance,
+        speed = profile.corpse_speed,
+        terrain_block = false,
+        face_angle = false,
+      })
+    end)
+
+    local blood_burst = create_point_particle(
+      102702,
+      death_point,
+      death_angle,
+      profile.burst_scale,
+      profile.burst_time,
+      26,
+      { 255, 32, 24, 220 },
+      1.28
+    )
+    if blood_burst then
+      blood_burst:set_rotate(0, 0, death_angle)
+    end
+
+    local blood_shock = create_point_particle(
+      102706,
+      death_point,
+      death_angle,
+      profile.shock_scale,
+      profile.shock_time,
+      12,
+      { 190, 18, 18, 200 },
+      1.12
+    )
+    if blood_shock then
+      blood_shock:set_rotate(0, 0, death_angle)
+    end
+
+    local blood_mist = create_point_particle(
+      102877,
+      death_point,
+      death_angle,
+      profile.mist_scale,
+      profile.mist_time,
+      20,
+      { 110, 8, 8, 190 },
+      1.12
+    )
+    if blood_mist then
+      spray_particle_line(blood_mist, death_angle, math.max(50, profile.trail_distance * 0.55), math.max(320, profile.trail_speed * 0.55))
+    end
+
+    local blood_pool = create_point_particle(
+      102705,
+      death_point,
+      death_angle,
+      profile.pool_scale,
+      profile.pool_time,
+      8,
+      { 148, 12, 12, 190 },
+      0.96
+    )
+    if blood_pool then
+      blood_pool:set_rotate(0, 0, death_angle)
+    end
+
+    for _, spray in ipairs({
+      { angle = death_angle - 18, scale = profile.trail_scale * 0.72, distance = profile.trail_distance * 0.76, speed = profile.trail_speed * 0.82 },
+      { angle = death_angle - 7, scale = profile.trail_scale * 0.90, distance = profile.trail_distance * 0.92, speed = profile.trail_speed * 0.94 },
+      { angle = death_angle + 5, scale = profile.trail_scale, distance = profile.trail_distance, speed = profile.trail_speed },
+      { angle = death_angle + 17, scale = profile.trail_scale * 0.82, distance = profile.trail_distance * 0.88, speed = profile.trail_speed * 0.88 },
+    }) do
+      local blood_trail = create_point_particle(
+        102820,
+        death_point,
+        spray.angle,
+        spray.scale,
+        profile.trail_time,
+        52,
+        { 205, 18, 18, 220 },
+        1.36
+      )
+      if blood_trail then
+        spray_particle_line(blood_trail, spray.angle, spray.distance, spray.speed)
+      end
+    end
+
+    return profile.remove_delay or 0.55
+  end
+
   local function finish_game(is_win, reason)
     if STATE.game_finished then
       return
@@ -208,10 +422,12 @@ function M.create(env)
       return true
     end
 
-    unit:event('单位-死亡', function()
+    unit:event('单位-死亡', function(_, data)
       if not info.remove_runtime(true) then
         return
       end
+
+      local corpse_remove_delay = play_enemy_death_reaction(unit, info, data)
 
       STATE.total_kills = (STATE.total_kills or 0) + 1
 
@@ -242,7 +458,7 @@ function M.create(env)
 
       env.handle_bond_enemy_kill(info)
 
-      y3.ltimer.wait(0.3, function()
+      y3.ltimer.wait(corpse_remove_delay, function()
         if unit and unit:is_exist() then
           unit:remove()
         end
