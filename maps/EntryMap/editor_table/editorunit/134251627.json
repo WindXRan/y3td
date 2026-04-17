@@ -55,8 +55,11 @@
         "__tuple__": true, 
         "items": []
     }, 
-    "build_time": 0, 
-    "build_upgrade_list": [], 
+    "build_time": 5, 
+    "build_upgrade_list": {
+        "__tuple__": true, 
+        "items": []
+    }, 
     "buy_res_list": {
         "__tuple__": true, 
         "items": []

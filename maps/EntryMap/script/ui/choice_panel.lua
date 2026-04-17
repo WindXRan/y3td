@@ -10,7 +10,9 @@ local TextColorizer = require 'ui.choice_panel_text_colorizer'
 local M = {}
 
 local IMAGE_TYPE = '图片'
-local BOND_CHOICE_PREFAB = 'bond_choice_card'
+local ITEM_DESC_PREFAB = '物品说明'
+local ITEM_DESC_DESIGN_WIDTH = 304
+local ITEM_DESC_DESIGN_HEIGHT = 260
 
 local BODY_COLORS = {
   green = { 86, 255, 92, 255 },
@@ -42,21 +44,21 @@ local CARD_HOVER_ANIM = {
 local QUALITY_PALETTES = {
   common = {
     badge = { 62, 255, 68, 255 },
-    title = { 255, 210, 50, 255 },
+    title = { 120, 255, 126, 255 },
     subtitle = { 62, 255, 68, 255 },
     frame_color = { 76, 255, 82, 255 },
     surface = { 255, 255, 255, 255 },
   },
   rare = {
     badge = { 40, 149, 255, 255 },
-    title = { 255, 210, 50, 255 },
+    title = { 138, 203, 255, 255 },
     subtitle = { 40, 149, 255, 255 },
     frame_color = { 40, 149, 255, 255 },
     surface = { 220, 235, 255, 255 },
   },
   epic = {
     badge = { 198, 120, 255, 255 },
-    title = { 255, 210, 50, 255 },
+    title = { 226, 174, 255, 255 },
     subtitle = { 198, 120, 255, 255 },
     frame_color = { 198, 120, 255, 255 },
     surface = { 255, 232, 255, 255 },
@@ -114,6 +116,9 @@ local function get_panel_title(kind)
   if kind == 'bond' then
     return '羁绊抽卡'
   end
+  if kind == 'mark' then
+    return '进化选择'
+  end
   if kind == 'treasure_replace' then
     return '替换宝物'
   end
@@ -123,7 +128,17 @@ local function get_panel_title(kind)
   return '三选一奖励'
 end
 
+local function resolve_panel_title(model)
+  if model and model.panel_title and model.panel_title ~= '' then
+    return model.panel_title
+  end
+  return get_panel_title(model and model.kind or nil)
+end
+
 local function get_panel_hint(model)
+  if model and model.hint_text and model.hint_text ~= '' then
+    return model.hint_text
+  end
   if model and model.kind == 'treasure_replace' then
     return '点击一张卡，指定要被替换的宝物位'
   end
@@ -138,10 +153,36 @@ local function build_title_text(card_model)
   return card_model.title_text or ''
 end
 
+local function get_choice_panel_renderer_signature(model)
+  local signatures = {}
+  for index = 1, 3 do
+    local card_model = model and model.cards and model.cards[index] or nil
+    if not card_model then
+      signatures[index] = 'none'
+    elseif card_model.use_item_desc_card == true then
+      signatures[index] = 'item_desc'
+    else
+      signatures[index] = 'default'
+    end
+  end
+  return table.concat(signatures, '|')
+end
+
+local function trim_inline_text(text)
+  if type(text) ~= 'string' then
+    return ''
+  end
+  local value = text:gsub('\r', '')
+  value = value:gsub('^%s+', '')
+  value = value:gsub('%s+$', '')
+  return value
+end
+
 function M.create(env)
   local STATE = env.STATE
   local y3 = env.y3
   local factory = Factory.create(env)
+  local ITEM_DESC_DEBUG = true
 
   local create_panel = factory.create_panel
   local create_text = factory.create_text
@@ -154,6 +195,9 @@ function M.create(env)
   local bond_tip_panel = BondTipPanel.create(env)
 
   local refresh_panel
+  local set_text_node
+  local clear_value_highlights
+  local clear_effect_highlights
 
   local function get_hud_root()
     local ok, hud = pcall(y3.ui.get_ui, env.get_player(), 'GameHUD')
@@ -213,14 +257,357 @@ function M.create(env)
     if not prefab then
       return nil
     end
-    return prefab:get_child(path)
+    local ok, node = pcall(prefab.get_child, prefab, path)
+    if ok and node then
+      return node
+    end
+    return nil
+  end
+
+  local function get_prefab_node_any(prefab, paths)
+    for _, path in ipairs(paths or {}) do
+      local node = get_prefab_node(prefab, path)
+      if node then
+        return node
+      end
+    end
+    return nil
   end
 
   local function get_node_child(node, path)
     if not node then
       return nil
     end
-    return node:get_child(path)
+    local ok, child = pcall(node.get_child, node, path)
+    if ok and child then
+      return child
+    end
+    return nil
+  end
+
+  local function get_node_name(node)
+    if not node or not node.get_name then
+      return 'nil'
+    end
+    local ok, name = pcall(node.get_name, node)
+    if ok and name and name ~= '' then
+      return tostring(name)
+    end
+    return 'unknown'
+  end
+
+  local function debug_item_desc(message)
+    if not ITEM_DESC_DEBUG then
+      return
+    end
+    if log and log.info then
+      log.info('[choice_panel.item_desc] ' .. tostring(message))
+      return
+    end
+    print('[choice_panel.item_desc] ' .. tostring(message))
+  end
+
+  local function debug_choice_panel_lifecycle(message)
+    if log and log.info then
+      log.info('[choice_panel.lifecycle] ' .. tostring(message))
+      return
+    end
+    print('[choice_panel.lifecycle] ' .. tostring(message))
+  end
+
+  debug_choice_panel_lifecycle('create')
+
+  local function split_ui_path(path)
+    local segments = {}
+    if type(path) ~= 'string' or path == '' then
+      return segments
+    end
+    for segment in string.gmatch(path, '[^.]+') do
+      if segment ~= '' then
+        segments[#segments + 1] = segment
+      end
+    end
+    return segments
+  end
+
+  local function find_descendant_by_chain(node, segments, index)
+    if not node or not segments or #segments == 0 then
+      return nil
+    end
+    index = index or 1
+    if index > #segments then
+      return node
+    end
+
+    local children = node.get_childs and node:get_childs() or nil
+    if not children or #children == 0 then
+      return nil
+    end
+
+    for _, child in ipairs(children) do
+      if child and get_node_name(child) == segments[index] then
+        local matched = find_descendant_by_chain(child, segments, index + 1)
+        if matched then
+          return matched
+        end
+      end
+    end
+
+    for _, child in ipairs(children) do
+      local matched = find_descendant_by_chain(child, segments, index)
+      if matched then
+        return matched
+      end
+    end
+
+    return nil
+  end
+
+  local function summarize_item_desc_line(line)
+    if type(line) == 'table' then
+      local title = trim_inline_text(line.title or line.text or '')
+      local body = trim_inline_text(line.body or line.desc or '')
+      if title ~= '' and body ~= '' then
+        return title .. ':' .. body
+      end
+      return title ~= '' and title or body
+    end
+    return trim_inline_text(tostring(line or ''))
+  end
+
+  local function summarize_item_desc_lines(lines, limit)
+    local values = {}
+    for index, line in ipairs(lines or {}) do
+      local text = summarize_item_desc_line(line)
+      if text ~= '' then
+        values[#values + 1] = text
+      end
+      if limit and index >= limit then
+        break
+      end
+    end
+    return table.concat(values, ' | ')
+  end
+
+  local function get_item_desc_prefab_node(prefab, wrapper_root, root, paths, debug_key, card_index)
+    local node = get_prefab_node_any(prefab, paths)
+    if node then
+      return node
+    end
+    node = get_prefab_node_any(wrapper_root, paths)
+    if node then
+      return node
+    end
+    node = get_prefab_node_any(root, paths)
+    if node then
+      return node
+    end
+
+    for _, base in ipairs({ wrapper_root, root }) do
+      for _, path in ipairs(paths or {}) do
+        local segments = split_ui_path(path)
+        node = find_descendant_by_chain(base, segments, 1)
+        if node then
+          debug_item_desc(string.format(
+            'card=%s key=%s fallback_chain=%s base=%s node=%s',
+            tostring(card_index or '?'),
+            tostring(debug_key or '?'),
+            path,
+            get_node_name(base),
+            get_node_name(node)
+          ))
+          return node
+        end
+      end
+    end
+
+    if debug_key then
+      debug_item_desc(string.format(
+        'card=%s key=%s missing paths=%s wrapper=%s root=%s',
+        tostring(card_index or '?'),
+        tostring(debug_key),
+        table.concat(paths or {}, ' || '),
+        get_node_name(wrapper_root),
+        get_node_name(root)
+      ))
+    end
+    return nil
+  end
+
+  local function build_fallback_item_desc_payload(card_model)
+    local text_layout = TextLayout.build_text_layout(card_model and card_model.body_blocks or {})
+    local attr_lines = {}
+    local affix_lines = {}
+
+    for _, block in ipairs(text_layout.value_blocks or {}) do
+      if block and block.text and block.text ~= '' then
+        attr_lines[#attr_lines + 1] = block.text
+      end
+    end
+
+    if text_layout.effect_text and text_layout.effect_text ~= '' then
+      affix_lines[#affix_lines + 1] = {
+        title = text_layout.effect_title ~= '' and text_layout.effect_title or '效果说明',
+        body = text_layout.effect_text,
+      }
+    end
+
+    return {
+      title_text = build_title_text(card_model),
+      subtitle_text = card_model and (card_model.subtitle_text or card_model.progress_text) or '',
+      cost_text = card_model and card_model.badge_text or '',
+      icon_res = card_model and card_model.icon_res or nil,
+      attr_lines = attr_lines,
+      affix_lines = affix_lines,
+    }
+  end
+
+  local function set_item_desc_list_lines(entries, lines, title_key, body_key, opts)
+    local min_visible_rows = opts and opts.min_visible_rows or 0
+    local placeholder_text = opts and opts.placeholder_text or ''
+    for index, entry in ipairs(entries or {}) do
+      local line = lines and lines[index] or nil
+      local title_text = ''
+      local body_text = ''
+
+      if type(line) == 'table' then
+        title_text = tostring(line.title or line[title_key] or line.text or '')
+        body_text = tostring(line.body or line[body_key] or line.desc or '')
+      elseif line ~= nil then
+        title_text = tostring(line)
+      elseif index <= min_visible_rows then
+        title_text = placeholder_text
+      end
+
+      set_text_node(entry and entry[title_key] or nil, title_text)
+      if body_key then
+        set_text_node(entry and entry[body_key] or nil, body_text)
+      end
+      if entry and entry.icon then
+        entry.icon:set_visible(type(line) == 'table' and line.icon_res ~= nil)
+        if type(line) == 'table' and line.icon_res ~= nil then
+          entry.icon:set_image(line.icon_res)
+        end
+      end
+      if entry and entry.root then
+        entry.root:set_visible(title_text ~= '' or body_text ~= '')
+      end
+    end
+  end
+
+  local function build_item_desc_list_nodes(attr_root, descr_root)
+    local attr_nodes = {}
+    local descr_nodes = {}
+
+    for row = 1, 6 do
+      attr_nodes[row] = {
+        root = attr_root and get_node_child(attr_root, tostring(row)) or nil,
+      }
+      attr_nodes[row].text = attr_nodes[row].root and get_node_child(attr_nodes[row].root, 'text') or nil
+      attr_nodes[row].icon = attr_nodes[row].root and get_node_child(attr_nodes[row].root, 'icon') or nil
+    end
+
+    for row = 1, 3 do
+      descr_nodes[row] = {
+        root = descr_root and get_node_child(descr_root, tostring(row)) or nil,
+      }
+      descr_nodes[row].title_TEXT = descr_nodes[row].root and get_node_child(descr_nodes[row].root, 'title_TEXT') or nil
+      descr_nodes[row].descr_TEXT = descr_nodes[row].root and get_node_child(descr_nodes[row].root, 'descr_TEXT') or nil
+    end
+
+    return attr_nodes, descr_nodes
+  end
+
+  local function resolve_item_desc_card_nodes(card)
+    if not card or not card.prefab then
+      return false
+    end
+
+    local card_index = card.index or (card.model and card.model.index) or '?'
+    local prefab = card.prefab
+    local wrapper_root = card.wrapper_root
+    local root = card.item_desc_content_root or card.root
+    local attr_root = get_item_desc_prefab_node(prefab, wrapper_root, root, {
+      'layout_15.shopTip.attr_LIST',
+      'shopTip.attr_LIST',
+      '物品说明.layout_15.shopTip.attr_LIST',
+      '物品说明.shopTip.attr_LIST',
+      '物品说明.物品说明.shopTip.attr_LIST',
+      'attr_LIST',
+    }, 'attr_root', card_index)
+    local descr_root = get_item_desc_prefab_node(prefab, wrapper_root, root, {
+      'layout_15.shopTip.descr_LIST',
+      'shopTip.descr_LIST',
+      '物品说明.layout_15.shopTip.descr_LIST',
+      '物品说明.shopTip.descr_LIST',
+      '物品说明.物品说明.shopTip.descr_LIST',
+      'descr_LIST',
+    }, 'descr_root', card_index)
+
+    card.item_desc_attr_root = attr_root
+    card.item_desc_descr_root = descr_root
+    card.item_desc_title = get_item_desc_prefab_node(prefab, wrapper_root, root, {
+      'layout_15.shopTip.basic.title.title_TEXT',
+      'shopTip.basic.title.title_TEXT',
+      '物品说明.layout_15.shopTip.basic.title.title_TEXT',
+      '物品说明.shopTip.basic.title.title_TEXT',
+      '物品说明.物品说明.shopTip.basic.title.title_TEXT',
+      'basic.title.title_TEXT',
+    }, 'title', card_index)
+    card.item_desc_subtitle = get_item_desc_prefab_node(prefab, wrapper_root, root, {
+      'layout_15.shopTip.basic.title.subtitle_TEXT',
+      'shopTip.basic.title.subtitle_TEXT',
+      '物品说明.layout_15.shopTip.basic.title.subtitle_TEXT',
+      '物品说明.shopTip.basic.title.subtitle_TEXT',
+      '物品说明.物品说明.shopTip.basic.title.subtitle_TEXT',
+      'basic.title.subtitle_TEXT',
+    }, 'subtitle', card_index)
+    card.item_desc_icon = get_item_desc_prefab_node(prefab, wrapper_root, root, {
+      'layout_15.shopTip.basic.avatar.icon',
+      'shopTip.basic.avatar.icon',
+      '物品说明.layout_15.shopTip.basic.avatar.icon',
+      '物品说明.shopTip.basic.avatar.icon',
+      '物品说明.物品说明.shopTip.basic.avatar.icon',
+      'basic.avatar.icon',
+    }, 'icon', card_index)
+    card.item_desc_note_root = get_item_desc_prefab_node(prefab, wrapper_root, root, {
+      'layout_15.shopTip.note',
+      'shopTip.note',
+      '物品说明.layout_15.shopTip.note',
+      '物品说明.shopTip.note',
+      '物品说明.物品说明.shopTip.note',
+      'note',
+    }, 'note_root', card_index)
+    card.item_desc_note = get_item_desc_prefab_node(prefab, wrapper_root, root, {
+      'layout_15.shopTip.note.note_TEXT',
+      'shopTip.note.note_TEXT',
+      '物品说明.layout_15.shopTip.note.note_TEXT',
+      '物品说明.shopTip.note.note_TEXT',
+      '物品说明.物品说明.shopTip.note.note_TEXT',
+      'note.note_TEXT',
+    }, 'note_text', card_index)
+    card.item_desc_attr_nodes, card.item_desc_descr_nodes = build_item_desc_list_nodes(attr_root, descr_root)
+
+    local ready = card.item_desc_title ~= nil
+      or card.item_desc_subtitle ~= nil
+      or card.item_desc_icon ~= nil
+      or card.item_desc_note ~= nil
+      or attr_root ~= nil
+      or descr_root ~= nil
+
+    debug_item_desc(string.format(
+      'resolve card=%s ready=%s title=%s subtitle=%s icon=%s note=%s attr_root=%s descr_root=%s',
+      tostring(card_index),
+      tostring(ready),
+      get_node_name(card.item_desc_title),
+      get_node_name(card.item_desc_subtitle),
+      get_node_name(card.item_desc_icon),
+      get_node_name(card.item_desc_note),
+      get_node_name(attr_root),
+      get_node_name(descr_root)
+    ))
+
+    return ready
   end
 
   local function create_prefab_action_button(parent, left, bottom, width, height, label, callback, index)
@@ -347,6 +734,9 @@ function M.create(env)
   end
 
   local function set_prefab_card_visible(card, visible)
+    if card.wrapper_root then
+      card.wrapper_root:set_visible(visible)
+    end
     if card.root then
       card.root:set_visible(visible)
     end
@@ -359,7 +749,7 @@ function M.create(env)
     end
   end
 
-  local function set_text_node(node, text, target_key, opts)
+  set_text_node = function(node, text, target_key, opts)
     if not node then
       return
     end
@@ -372,7 +762,101 @@ function M.create(env)
     node:set_visible(value ~= '')
   end
 
-  local function clear_effect_highlights(card)
+  local function render_item_desc_card(card, card_model)
+    if not card then
+      return
+    end
+
+    local resolved = resolve_item_desc_card_nodes(card)
+    if not resolved then
+      card.item_desc_retry_count = (card.item_desc_retry_count or 0) + 1
+      if card.item_desc_retry_count <= 2 then
+        debug_item_desc(string.format(
+          'render_defer card=%s retry=%d',
+          tostring(card_model and card_model.index or card.index or '?'),
+          card.item_desc_retry_count
+        ))
+        y3.ltimer.wait(0, function()
+          if not card or not card.model or not is_ui_alive(card.root) then
+            return
+          end
+          render_item_desc_card(card, card.model)
+        end)
+      end
+      return
+    end
+    card.item_desc_retry_count = 0
+
+    local payload = (card_model and card_model.item_desc_payload) or build_fallback_item_desc_payload(card_model)
+    debug_item_desc(string.format(
+      'render card=%s kind=%s title=%s subtitle=%s cost=%s attr_count=%d affix_count=%d attr_preview=%s affix_preview=%s title_node=%s subtitle_node=%s note_node=%s',
+      tostring(card_model and card_model.index or '?'),
+      tostring(card_model and card_model.kind or 'default'),
+      trim_inline_text(payload.title_text or ''),
+      trim_inline_text(payload.subtitle_text or ''),
+      trim_inline_text(payload.cost_text or ''),
+      #(payload.attr_lines or {}),
+      #(payload.affix_lines or {}),
+      summarize_item_desc_lines(payload.attr_lines, 2),
+      summarize_item_desc_lines(payload.affix_lines, 1),
+      get_node_name(card.item_desc_title),
+      get_node_name(card.item_desc_subtitle),
+      get_node_name(card.item_desc_note)
+    ))
+    local palette = get_quality_palette(card_model and card_model.quality or 'common')
+    local title_color = card_model and card_model.title_color and get_body_color(card_model.title_color) or palette.title
+    local subtitle_color = card_model and card_model.subtitle_color and get_body_color(card_model.subtitle_color) or palette.subtitle
+
+    set_text_node(card.item_desc_title, payload.title_text or '')
+    if card.item_desc_title then
+      card.item_desc_title:set_text_color(
+        title_color[1],
+        title_color[2],
+        title_color[3],
+        title_color[4]
+      )
+    end
+
+    local subtitle_parts = {}
+    local subtitle_text = trim_inline_text(payload.subtitle_text or '')
+    local cost_text = trim_inline_text(payload.cost_text or '')
+    if subtitle_text ~= '' then
+      subtitle_parts[#subtitle_parts + 1] = subtitle_text
+    end
+    if cost_text ~= '' then
+      subtitle_parts[#subtitle_parts + 1] = cost_text
+    end
+    set_text_node(card.item_desc_subtitle, table.concat(subtitle_parts, '  '))
+    if card.item_desc_subtitle then
+      card.item_desc_subtitle:set_text_color(
+        subtitle_color[1],
+        subtitle_color[2],
+        subtitle_color[3],
+        subtitle_color[4]
+      )
+    end
+
+    if card.item_desc_icon then
+      card.item_desc_icon:set_image(payload.icon_res or ui_res.common.empty)
+      card.item_desc_icon:set_visible(payload.icon_res ~= nil)
+    end
+
+    local note_text = trim_inline_text(payload.note_text or '')
+    set_text_node(card.item_desc_note, note_text)
+    if card.item_desc_note_root then
+      card.item_desc_note_root:set_visible(note_text ~= '')
+    end
+
+    set_item_desc_list_lines(card.item_desc_attr_nodes, payload.attr_lines, 'text', nil, {
+      min_visible_rows = 4,
+      placeholder_text = ' ',
+    })
+    set_item_desc_list_lines(card.item_desc_descr_nodes, payload.affix_lines, 'title_TEXT', 'descr_TEXT')
+    clear_value_highlights(card)
+    clear_effect_highlights(card)
+  end
+
+  clear_effect_highlights = function(card)
     for _, node in ipairs(card.effect_highlight_nodes or {}) do
       if node and not node:is_removed() then
         node:remove()
@@ -461,7 +945,7 @@ function M.create(env)
     end
   end
 
-  local function clear_value_highlights(card)
+  clear_value_highlights = function(card)
     for _, node in ipairs(card.value_highlight_nodes or {}) do
       if node and not node:is_removed() then
         node:remove()
@@ -621,7 +1105,9 @@ function M.create(env)
     end)
     node:add_fast_event('鼠标-移入', function()
       set_choice_card_hover(card, true)
-      bond_tip_panel.show_for_card(card, card.model)
+      if card and card.uses_item_desc_renderer ~= true then
+        bond_tip_panel.show_for_card(card, card.model)
+      end
     end)
     node:add_fast_event('鼠标-移出', function()
       set_choice_card_hover(card, false)
@@ -629,7 +1115,108 @@ function M.create(env)
     end)
   end
 
+  local function create_item_desc_choice_card(parent, left, bottom, width, height, index, card_model)
+    local player = env.get_player()
+    local prefab = y3.ui_prefab.create(player, ITEM_DESC_PREFAB, parent)
+    local wrapper_root = prefab and prefab:get_child() or nil
+    local card_root = get_item_desc_prefab_node(prefab, wrapper_root, nil, {
+      'layout_15',
+      '物品说明.layout_15',
+      '物品说明.物品说明.layout_15',
+    }, 'card_root', index)
+    local content_root = get_item_desc_prefab_node(prefab, wrapper_root, card_root, {
+      'layout_15.shopTip',
+      'shopTip',
+      '物品说明.layout_15.shopTip',
+      '物品说明.shopTip',
+      '物品说明.物品说明.shopTip',
+    }, 'root', index)
+    if not wrapper_root or not card_root or not content_root then
+      return nil
+    end
+
+    local tip_position = get_item_desc_prefab_node(prefab, wrapper_root, card_root, {
+      'layout_15.TipPosition',
+      'TipPosition',
+      '物品说明.layout_15.TipPosition',
+      '物品说明.TipPosition',
+      '物品说明.物品说明.TipPosition',
+    }, 'tip_position', index)
+    if tip_position then
+      tip_position:set_visible(false)
+    end
+
+    local center_x, center_y = rect_center(left, bottom, width, height)
+    local scale = math.min(width / ITEM_DESC_DESIGN_WIDTH, height / ITEM_DESC_DESIGN_HEIGHT)
+    wrapper_root:set_anchor(0.5, 0.5)
+    wrapper_root:set_pos(center_x, center_y)
+    wrapper_root:set_widget_relative_scale(scale, scale)
+    wrapper_root:set_z_order(9811 + index)
+    wrapper_root:set_intercepts_operations(true)
+
+    card_root:set_anchor(0.5, 0.5)
+    card_root:set_pos(0, 0)
+    card_root:set_intercepts_operations(true)
+
+    local card = {
+      prefab = prefab,
+      prefab_name = ITEM_DESC_PREFAB,
+      index = index,
+      wrapper_root = wrapper_root,
+      root = wrapper_root,
+      item_desc_card_root = card_root,
+      item_desc_content_root = content_root,
+      root_x = center_x,
+      root_y = center_y,
+      button = nil,
+      hover_offset = 0,
+      hover_duration = CARD_HOVER_ANIM.duration,
+      hover_steps = CARD_HOVER_ANIM.steps,
+      hover_lift = math.max(10, math.floor((CARD_HOVER_ANIM.lift * math.min(width / ITEM_DESC_DESIGN_WIDTH, height / ITEM_DESC_DESIGN_HEIGHT)) + 0.5)),
+      uses_item_desc_renderer = true,
+      uses_default_renderer = false,
+      item_desc_title = nil,
+      item_desc_subtitle = nil,
+      item_desc_icon = nil,
+      item_desc_note_root = nil,
+      item_desc_note = nil,
+      item_desc_attr_root = nil,
+      item_desc_descr_root = nil,
+      item_desc_attr_nodes = {},
+      item_desc_descr_nodes = {},
+      item_desc_retry_count = 0,
+      value_highlight_nodes = {},
+      effect_highlight_nodes = {},
+      model = card_model,
+    }
+
+    resolve_item_desc_card_nodes(card)
+    debug_item_desc(string.format(
+      'create card=%d wrapper=%s card_root=%s content_root=%s attr_root=%s descr_root=%s title=%s subtitle=%s icon=%s note=%s',
+      index,
+      get_node_name(wrapper_root),
+      get_node_name(card_root),
+      get_node_name(content_root),
+      get_node_name(card.item_desc_attr_root),
+      get_node_name(card.item_desc_descr_root),
+      get_node_name(card.item_desc_title),
+      get_node_name(card.item_desc_subtitle),
+      get_node_name(card.item_desc_icon),
+      get_node_name(card.item_desc_note)
+    ))
+
+    bind_choice_card_events(card_root, card, index)
+    return card
+  end
+
   local function create_choice_card(parent, left, bottom, width, height, index, card_model, fallback_prefab_name)
+    if card_model and card_model.use_item_desc_card == true then
+      local item_desc_card = create_item_desc_choice_card(parent, left, bottom, width, height, index, card_model)
+      if item_desc_card then
+        return item_desc_card
+      end
+    end
+
     local player = env.get_player()
     local prefab_name = (card_model and card_model.render_prefab) or fallback_prefab_name or 'choice_panel'
     local prefab = y3.ui_prefab.create(player, prefab_name, parent)
@@ -640,11 +1227,6 @@ function M.create(env)
 
     local design_width = 550
     local design_height = 900
-    if prefab_name == BOND_CHOICE_PREFAB then
-      local bond_layout = layout.bond or {}
-      design_width = bond_layout.design_width or 300
-      design_height = bond_layout.design_height or 445
-    end
 
     local scale_x = width / design_width
     local scale_y = height / design_height
@@ -669,50 +1251,22 @@ function M.create(env)
       hover_lift = math.max(10, math.floor((CARD_HOVER_ANIM.lift * math.min(scale_x, scale_y)) + 0.5)),
       value_highlight_nodes = {},
       effect_highlight_nodes = {},
+      uses_default_renderer = true,
     }
 
-    if prefab_name == BOND_CHOICE_PREFAB then
-      card.background = get_prefab_node(prefab, 'layout_1.image_panel_bg')
-      card.bottom_shade = get_prefab_node(prefab, 'layout_1.image_bottom_shade')
-      card.item_frame = get_prefab_node(prefab, 'layout_1.image_item_frame')
-      card.icon = get_prefab_node(prefab, 'layout_1.image_item_icon')
-      card.bonus_area = get_prefab_node(prefab, 'layout_1.layout_bonus_area')
-      card.bonus_lines = {
-        get_node_child(card.bonus_area, 'label_bonus_1'),
-        get_node_child(card.bonus_area, 'label_bonus_2'),
-        get_node_child(card.bonus_area, 'label_bonus_3'),
-      }
-      card.effect_area = get_prefab_node(prefab, 'layout_1.layout_effect_area')
-      card.effect_index = get_node_child(card.effect_area, 'label_effect_index')
-      card.effect_name = get_node_child(card.effect_area, 'label_effect_name')
-      card.effect_body = get_node_child(card.effect_area, 'label_effect_body')
-      card.set_title = get_node_child(card.effect_area, 'label_set_title')
-      card.set_body = {
-        get_node_child(card.effect_area, 'label_set_body'),
-        get_node_child(card.effect_area, 'label_set_body_2'),
-        get_node_child(card.effect_area, 'label_set_body_3'),
-      }
-      card.set_name = get_prefab_node(prefab, 'layout_1.label_set_name')
-      card.set_progress = get_prefab_node(prefab, 'layout_1.label_set_progress')
-      card.item_name = get_prefab_node(prefab, 'layout_1.label_item_name')
-      card.rarity_text = get_prefab_node(prefab, 'layout_1.label_quality_badge')
-      card.uses_default_renderer = false
-    else
-      card.background = get_prefab_node(prefab, 'layout_1.background')
-      card.decoration = get_prefab_node(prefab, 'layout_1.background.decoration')
-      card.icon = get_prefab_node(prefab, 'layout_1.icon')
-      card.set_name = get_prefab_node(prefab, 'layout_1.set_name')
-      card.name = get_prefab_node(prefab, 'layout_1.name')
-      card.subtitle_name = get_prefab_node(prefab, 'layout_1.subtitle_name')
-      card.rarity_background = get_prefab_node(prefab, 'layout_1.rarity_background')
-      card.rarity_text = get_prefab_node(prefab, 'layout_1.rarity_background.rarity_text')
-      card.desc_root = get_prefab_node(prefab, 'layout_1.desc_text')
-      card.value_desc = get_prefab_node(prefab, 'layout_1.desc_text.value_desc')
-      card.effect_desc = get_prefab_node(prefab, 'layout_1.desc_text.effect_desc')
-      card.effect_name = get_prefab_node(prefab, 'layout_1.desc_text.effect_desc.effect_name')
-      card.effect_text = get_prefab_node(prefab, 'layout_1.desc_text.effect_desc.effect_text')
-      card.uses_default_renderer = true
-    end
+    card.background = get_prefab_node(prefab, 'layout_1.background')
+    card.decoration = get_prefab_node(prefab, 'layout_1.background.decoration')
+    card.icon = get_prefab_node(prefab, 'layout_1.icon')
+    card.set_name = get_prefab_node(prefab, 'layout_1.set_name')
+    card.name = get_prefab_node(prefab, 'layout_1.name')
+    card.subtitle_name = get_prefab_node(prefab, 'layout_1.subtitle_name')
+    card.rarity_background = get_prefab_node(prefab, 'layout_1.rarity_background')
+    card.rarity_text = get_prefab_node(prefab, 'layout_1.rarity_background.rarity_text')
+    card.desc_root = get_prefab_node(prefab, 'layout_1.desc_text')
+    card.value_desc = get_prefab_node(prefab, 'layout_1.desc_text.value_desc')
+    card.effect_desc = get_prefab_node(prefab, 'layout_1.desc_text.effect_desc')
+    card.effect_name = get_prefab_node(prefab, 'layout_1.desc_text.effect_desc.effect_name')
+    card.effect_text = get_prefab_node(prefab, 'layout_1.desc_text.effect_desc.effect_text')
 
     if button then
       button:set_text('')
@@ -724,262 +1278,16 @@ function M.create(env)
     return card
   end
 
-  local function create_bond_choice_card(parent, left, bottom, width, height, index)
-    local center_x, center_y = rect_center(left, bottom, width, height)
-    local bond_layout = layout.bond or {}
-    local card_images = get_choice_panel_images()
-    local design_width = bond_layout.design_width or 300
-    local design_height = bond_layout.design_height or 445
-    local scale_x = width / design_width
-    local scale_y = height / design_height
-    local scale = math.min(scale_x, scale_y)
-
-    local function px(value)
-      return value * scale_x
-    end
-
-    local function py(value)
-      return value * scale_y
-    end
-
-    local function create_card_panel(node_parent, x, y, w, h, color, z_order)
-      local panel = create_panel(
-        node_parent,
-        px(x),
-        py(y),
-        px(w),
-        py(h),
-        color,
-        theme.insets.soft,
-        z_order,
-        ui_res.common.empty
-      )
-      panel:set_anchor(0.5, 0.5)
-      return panel
-    end
-
-    local function create_card_text(node_parent, x, y, w, h, font_size, color, align, z_order)
-      local text = create_text(
-        node_parent,
-        px(x),
-        py(y),
-        px(w),
-        py(h),
-        math.max(10, math.floor((font_size * scale) + 0.5)),
-        color,
-        align or '中',
-        '中',
-        z_order
-      )
-      text:set_anchor(0.5, 0.5)
-      return text
-    end
-
-    local function create_card_text_left(node_parent, left, y, w, h, font_size, color, v_align, z_order)
-      local text = create_text(
-        node_parent,
-        px(left),
-        py(y),
-        px(w),
-        py(h),
-        math.max(10, math.floor((font_size * scale) + 0.5)),
-        color,
-        '左',
-        v_align or '中',
-        z_order
-      )
-      text:set_anchor(0, 0.5)
-      return text
-    end
-
-    local root = create_card_panel(parent, center_x / scale_x, center_y / scale_y, design_width, design_height, { 0, 0, 0, 0 }, 9811 + index)
-    root:set_pos(center_x, center_y)
-    root:set_ui_size(width, height)
-    root:set_image_color(255, 255, 255, 0)
-    root:set_intercepts_operations(true)
-
-    local card = {
-      prefab = nil,
-      root = root,
-      root_x = center_x,
-      root_y = center_y,
-      hover_offset = 0,
-      hover_duration = CARD_HOVER_ANIM.duration,
-      hover_steps = CARD_HOVER_ANIM.steps,
-      hover_lift = math.max(10, math.floor((CARD_HOVER_ANIM.lift * scale) + 0.5)),
-      background = create_card_panel(
-        root,
-        design_width * 0.5,
-        design_height * 0.5,
-        bond_layout.background_width or design_width,
-        bond_layout.background_height or design_height,
-        { 255, 255, 255, 255 },
-        9812
-      ),
-      decoration = create_card_panel(
-        root,
-        design_width * 0.5,
-        design_height * 0.5,
-        bond_layout.frame_width or (design_width - 8),
-        bond_layout.frame_height or (design_height - 8),
-        { 255, 255, 255, 255 },
-        9813
-      ),
-      item_frame = create_card_panel(
-        root,
-        design_width * 0.5,
-        bond_layout.icon_frame_y or 288,
-        bond_layout.icon_frame_size or 90,
-        bond_layout.icon_frame_size or 90,
-        { 255, 255, 255, 255 },
-        9813
-      ),
-      icon = create_card_panel(
-        root,
-        design_width * 0.5,
-        bond_layout.icon_frame_y or 288,
-        bond_layout.icon_size or 72,
-        bond_layout.icon_size or 72,
-        { 255, 255, 255, 255 },
-        9814
-      ),
-      set_name = create_card_text(
-        root,
-        design_width * 0.5,
-        bond_layout.set_name_y or 374,
-        bond_layout.set_name_width or 190,
-        bond_layout.set_name_height or 34,
-        28,
-        BODY_COLORS.gold,
-        '中',
-        9815
-      ),
-      set_progress = create_card_text(
-        root,
-        design_width * 0.5,
-        bond_layout.set_progress_y or 346,
-        bond_layout.set_progress_width or 132,
-        bond_layout.set_progress_height or 22,
-        18,
-        BODY_COLORS.dim,
-        '中',
-        9815
-      ),
-      item_name = create_card_text(
-        root,
-        bond_layout.content_left or 38,
-        bond_layout.item_name_y or 238,
-        bond_layout.content_width or bond_layout.item_name_width or 224,
-        bond_layout.item_name_height or 34,
-        18,
-        BODY_COLORS.blue,
-        '左',
-        9815
-      ),
-      rarity_text = create_card_text(
-        root,
-        design_width * 0.5,
-        bond_layout.badge_y or 414,
-        bond_layout.badge_width or 88,
-        bond_layout.badge_height or 28,
-        24,
-        BODY_COLORS.blue,
-        '中',
-        9815
-      ),
-      bonus_area = create_card_panel(
-        root,
-        design_width * 0.5,
-        bond_layout.bonus_area_y or 182,
-        bond_layout.bonus_width or 224,
-        72,
-        { 0, 0, 0, 0 },
-        9814
-      ),
-      effect_area = create_card_panel(
-        root,
-        design_width * 0.5,
-        bond_layout.effect_area_y or 84,
-        bond_layout.effect_area_width or 244,
-        bond_layout.effect_area_height or 126,
-        { 0, 0, 0, 0 },
-        9814
-      ),
-      uses_default_renderer = false,
-      value_highlight_nodes = {},
-      effect_highlight_nodes = {},
-    }
-
-    if card.item_frame then
-      card.item_frame:set_image(card_images.icon_frame or ui_res.hero_prefab.panel_frame)
-      card.item_frame:set_image_color(255, 255, 255, 255)
-    end
-
-    if card.background then
-      card.background:set_image(card_images.card_bg or ui_res.hero_prefab.panel_bg)
-      card.background:set_image_color(255, 255, 255, 255)
-    end
-    if card.decoration then
-      card.decoration:set_image(get_card_frame_image('common'))
-      card.decoration:set_image_color(255, 255, 255, 220)
-    end
-
-    card.bonus_lines = {
-      create_card_text_left(card.bonus_area, bond_layout.bonus_area_left or 38, 61, bond_layout.content_width or bond_layout.bonus_width or 224, bond_layout.bonus_line_height or 18, 17, BODY_COLORS.green, '中', 9815),
-      create_card_text_left(card.bonus_area, bond_layout.bonus_area_left or 38, 39, bond_layout.content_width or bond_layout.bonus_width or 224, bond_layout.bonus_line_height or 18, 17, BODY_COLORS.green, '中', 9815),
-      create_card_text_left(card.bonus_area, bond_layout.bonus_area_left or 38, 17, bond_layout.content_width or bond_layout.bonus_width or 224, bond_layout.bonus_line_height or 18, 17, BODY_COLORS.green, '中', 9815),
-    }
-    for _, bonus_node in ipairs(card.bonus_lines) do
-      bonus_node:set_text_alignment('左', '中')
-      bonus_node:set_anchor(0, 0.5)
-    end
-
-    card.effect_index = create_card_text_left(card.effect_area, bond_layout.effect_stack_left or 38, bond_layout.effect_index_y or 110, bond_layout.content_width or bond_layout.effect_index_width or 224, bond_layout.effect_index_height or 18, 17, BODY_COLORS.gold, '中', 9815)
-    card.effect_name = create_card_text_left(card.effect_area, bond_layout.effect_stack_left or 38, bond_layout.effect_name_y or 90, bond_layout.content_width or bond_layout.effect_name_width or 224, bond_layout.effect_name_height or 18, 14, BODY_COLORS.white, '中', 9815)
-    card.effect_body = create_card_text_left(card.effect_area, bond_layout.effect_stack_left or 38, bond_layout.effect_body_y or 86, bond_layout.content_width or bond_layout.effect_body_width or 224, bond_layout.effect_body_height or 38, 14, BODY_COLORS.white, '上', 9815)
-    card.set_title = create_card_text_left(card.effect_area, bond_layout.effect_stack_left or 38, bond_layout.set_title_y or 42, bond_layout.content_width or bond_layout.set_title_width or 224, bond_layout.set_title_height or 18, 17, BODY_COLORS.gold, '中', 9815)
-    card.set_body = {
-      create_card_text_left(card.effect_area, bond_layout.effect_stack_left or 38, 20, bond_layout.content_width or bond_layout.set_body_width or 224, bond_layout.set_body_height or 16, 13, BODY_COLORS.green, '上', 9815),
-      create_card_text_left(card.effect_area, bond_layout.effect_stack_left or 38, 4, bond_layout.content_width or bond_layout.set_body_width or 224, bond_layout.set_body_height or 16, 13, BODY_COLORS.green, '上', 9815),
-      create_card_text_left(card.effect_area, bond_layout.effect_stack_left or 38, -12, bond_layout.content_width or bond_layout.set_body_width or 224, bond_layout.set_body_height or 16, 13, BODY_COLORS.green, '上', 9815),
-    }
-    for _, text_node in ipairs({
-      card.effect_index,
-      card.effect_name,
-      card.effect_body,
-      card.set_title,
-      card.set_body[1],
-      card.set_body[2],
-      card.set_body[3],
-    }) do
-      if text_node then
-        text_node:set_text_alignment('左', '中')
-      end
-    end
-    if card.item_name then
-      card.item_name:set_text_alignment('左', '中')
-      card.item_name:set_anchor(0, 0.5)
-    end
-    card.effect_body:set_text_alignment('左', '上')
-    card.effect_index:set_anchor(0, 0.5)
-    card.effect_name:set_anchor(0, 0.5)
-    card.set_title:set_anchor(0, 0.5)
-    for _, body_node in ipairs(card.set_body) do
-      body_node:set_text_alignment('左', '上')
-      body_node:set_anchor(0, 0.5)
-    end
-
-    bind_choice_card_events(root, card, index)
-    return card
-  end
-
   local function create_choice_panel()
+    debug_choice_panel_lifecycle('create_panel')
     local hud = get_hud_root()
     if not hud then
+      debug_choice_panel_lifecycle('create_panel no_hud')
       return nil
     end
 
     if is_panel_alive(STATE.choice_panel) then
+      debug_choice_panel_lifecycle('create_panel reuse_existing')
       refresh_panel()
       return STATE.choice_panel
     end
@@ -1043,8 +1351,6 @@ function M.create(env)
     stage_shell:set_image_color(255, 255, 255, 0)
 
     local model = env.get_current_choice_panel_model and env.get_current_choice_panel_model() or nil
-    local use_bond_cards = model and model.kind == 'bond'
-    local card_prefab_name = use_bond_cards and BOND_CHOICE_PREFAB or 'choice_panel'
 
     local cards = {
       create_choice_card(
@@ -1054,8 +1360,7 @@ function M.create(env)
         scaled(layout.card.width, scale),
         scaled(layout.card.height, scale),
         1,
-        model and model.cards and model.cards[1] or nil,
-        card_prefab_name
+        model and model.cards and model.cards[1] or nil
       ),
       create_choice_card(
         stage,
@@ -1064,8 +1369,7 @@ function M.create(env)
         scaled(layout.card.width, scale),
         scaled(layout.card.height, scale),
         2,
-        model and model.cards and model.cards[2] or nil,
-        card_prefab_name
+        model and model.cards and model.cards[2] or nil
       ),
       create_choice_card(
         stage,
@@ -1074,8 +1378,7 @@ function M.create(env)
         scaled(layout.card.width, scale),
         scaled(layout.card.height, scale),
         3,
-        model and model.cards and model.cards[3] or nil,
-        card_prefab_name
+        model and model.cards and model.cards[3] or nil
       ),
     }
 
@@ -1086,7 +1389,7 @@ function M.create(env)
       scaled(header_layout.title_width or 480, scale),
       scaled(header_layout.title_height or 30, scale),
       'choice_panel.title',
-      get_panel_title(model and model.kind or nil),
+      resolve_panel_title(model),
       9816
     )
     title_text:set_anchor(0.5, 0.5)
@@ -1141,7 +1444,7 @@ function M.create(env)
       stage = stage,
       stage_shell = stage_shell,
       cards = cards,
-      card_kind = use_bond_cards and 'bond' or 'default',
+      renderer_signature = get_choice_panel_renderer_signature(model),
       title_text = title_text,
       hint_text = hint_text,
       hide_button = hide_button,
@@ -1169,12 +1472,28 @@ function M.create(env)
   refresh_panel = function()
     local panel = STATE.choice_panel
     if not is_panel_alive(panel) then
+      debug_choice_panel_lifecycle('refresh_panel skipped panel_dead')
       return nil
     end
 
     local model = env.get_current_choice_panel_model and env.get_current_choice_panel_model() or nil
     local card_images = get_choice_panel_images()
     local visible = model ~= nil and STATE.session_phase == 'battle'
+    local renderer_signature = get_choice_panel_renderer_signature(model)
+    debug_choice_panel_lifecycle(string.format(
+      'refresh_panel kind=%s visible=%s hidden=%s session=%s signature=%s panel_signature=%s',
+      tostring(model and model.kind or 'nil'),
+      tostring(visible),
+      tostring(STATE.choice_panel_hidden),
+      tostring(STATE.session_phase),
+      renderer_signature,
+      tostring(panel.renderer_signature or 'nil')
+    ))
+    if panel.renderer_signature ~= renderer_signature then
+      debug_choice_panel_lifecycle('refresh_panel renderer_signature_changed recreate')
+      destroy_panel()
+      return create_choice_panel()
+    end
     panel.root:set_visible(visible)
     if not visible then
       bond_tip_panel.hide()
@@ -1184,14 +1503,8 @@ function M.create(env)
       return panel
     end
 
-    local model_card_kind = model.kind == 'bond' and 'bond' or 'default'
-    if panel.card_kind ~= model_card_kind then
-      destroy_panel()
-      return create_choice_panel()
-    end
-
     if panel.title_text then
-      apply_text_style(panel.title_text, 'choice_panel.title', get_panel_title(model.kind))
+      apply_text_style(panel.title_text, 'choice_panel.title', resolve_panel_title(model))
     end
     if panel.hint_text then
       apply_text_style(panel.hint_text, 'choice_panel.hint', get_panel_hint(model))
@@ -1213,117 +1526,8 @@ function M.create(env)
         set_prefab_card_visible(card, card_visible)
       end
 
-      if card_visible and panel.card_kind == 'bond' and card.uses_default_renderer ~= true then
-        local palette = get_quality_palette(card_model.quality)
-        local tip_model = card_model.tip_model or {}
-        local is_bond_prefab = card.prefab_name == BOND_CHOICE_PREFAB
-
-        if card.background then
-          card.background:set_image(ui_res.common.empty)
-          card.background:set_image_color(255, 255, 255, 0)
-        end
-        if card.bottom_shade then
-          card.bottom_shade:set_visible(false)
-        end
-        if card.decoration and not is_bond_prefab then
-          card.decoration:set_image(get_card_frame_image(card_model.quality))
-          card.decoration:set_image_color(
-            palette.frame_color[1],
-            palette.frame_color[2],
-            palette.frame_color[3],
-            220
-          )
-        end
-        if card.icon then
-          card.icon:set_image(card_model.icon_res or ui_res.common.empty)
-        end
-        if card.item_frame then
-          if not is_bond_prefab then
-            card.item_frame:set_image(card_images.icon_frame or ui_res.hero_prefab.panel_frame)
-          end
-          if card.item_frame.set_image_color then
-            card.item_frame:set_image_color(
-              palette.frame_color[1],
-              palette.frame_color[2],
-              palette.frame_color[3],
-              255
-            )
-          end
-        end
-        if card.rarity_text then
-          local badge_color = palette.badge
-          card.rarity_text:set_text(build_badge_text(card_model))
-          card.rarity_text:set_text_color(
-            badge_color[1],
-            badge_color[2],
-            badge_color[3],
-            badge_color[4]
-          )
-        end
-        if card.set_name then
-          local card_set_name_text = card_model.set_title_text or tip_model.set_name_text or ''
-          local set_name_color = card_model.set_title_color and get_body_color(card_model.set_title_color) or BODY_COLORS.bond_red
-          apply_text_style(
-            card.set_name,
-            'choice_panel.bond.title',
-            card_set_name_text
-          )
-          card.set_name:set_text_color(
-            set_name_color[1],
-            set_name_color[2],
-            set_name_color[3],
-            set_name_color[4]
-          )
-          card.set_name:set_visible(card_set_name_text ~= '')
-        end
-        local card_progress_text = card_model.progress_text or tip_model.progress_text or ''
-        set_text_node(card.set_progress, card_progress_text, 'choice_panel.bond.progress')
-        if card.item_name then
-          local card_item_name_text = build_title_text(card_model) or tip_model.item_name_text or ''
-          local item_color = card_model.title_color and get_body_color(card_model.title_color) or palette.subtitle
-          apply_text_style(
-            card.item_name,
-            'choice_panel.bond.item_name',
-            card_item_name_text
-          )
-          card.item_name:set_text_color(
-            item_color[1],
-            item_color[2],
-            item_color[3],
-            item_color[4]
-          )
-        end
-        for bonus_index, bonus_node in ipairs(card.bonus_lines or {}) do
-          set_text_node(
-            bonus_node,
-            (tip_model.bonus_lines or {})[bonus_index] or '',
-            'choice_panel.bond.bonus'
-          )
-        end
-        set_text_node(card.effect_index, tip_model.effect_index_text or '', 'choice_panel.bond.effect_index')
-        set_text_node(card.effect_name, '')
-        set_text_node(card.effect_body, tip_model.effect_body_text or '', 'choice_panel.bond.effect_body')
-        set_text_node(card.set_title, tip_model.set_title_text or '', 'choice_panel.bond.set_title')
-        for body_index, body_node in ipairs(card.set_body or {}) do
-          set_text_node(
-            body_node,
-            (tip_model.set_body_lines or {})[body_index] or '',
-            'choice_panel.bond.set_body'
-          )
-        end
-        if card.effect_area then
-          local bonus_count = math.max(0, math.min(3, tonumber(card_model.effect_area_bonus_count) or 0))
-          local bond_layout = layout.bond or {}
-          local effect_area_y_by_bonus_count = bond_layout.effect_area_y_by_bonus_count or {}
-          local effect_y = effect_area_y_by_bonus_count[bonus_count] or bond_layout.effect_area_y or 84
-          card.effect_area:set_pos(card.effect_area:get_relative_x(), effect_y)
-          local effect_visible = (tip_model.effect_index_text or '') ~= ''
-              or (tip_model.effect_body_text or '') ~= ''
-              or (tip_model.set_title_text or '') ~= ''
-          card.effect_area:set_visible(effect_visible)
-        end
-        clear_value_highlights(card)
-        clear_effect_highlights(card)
+      if card_visible and card.uses_item_desc_renderer == true then
+        render_item_desc_card(card, card_model)
       elseif card_visible then
         local palette = get_quality_palette(card_model.quality)
         local text_layout = TextLayout.build_text_layout(card_model.body_blocks)
@@ -1354,7 +1558,7 @@ function M.create(env)
         if card.set_name then
           local set_title_text = card_model.set_title_text or ''
           local set_title_visible = set_title_text ~= ''
-          local set_title_color = card_model.set_title_color and get_body_color(card_model.set_title_color) or palette.title
+          local set_title_color = card_model.set_title_color and get_body_color(card_model.set_title_color) or palette.subtitle
           card.set_name:set_visible(set_title_visible)
           if set_title_visible then
             card.set_name:set_text(set_title_text)
@@ -1469,9 +1673,11 @@ function M.create(env)
 
   return {
     ensure_panel = function()
+      debug_choice_panel_lifecycle('ensure_panel')
       return create_choice_panel()
     end,
     refresh_panel = function()
+      debug_choice_panel_lifecycle('refresh_panel api')
       return refresh_panel()
     end,
     set_visible = function(visible)

@@ -334,6 +334,12 @@ local function is_choice_panel_blocking_messages()
   if STATE.bond_runtime and STATE.bond_runtime.current_choices and #STATE.bond_runtime.current_choices > 0 then
     return true
   end
+  if STATE.mark_runtime
+    and STATE.mark_runtime.awaiting_choice
+    and STATE.mark_runtime.current_choices
+    and #STATE.mark_runtime.current_choices > 0 then
+    return true
+  end
   if STATE.treasure_runtime then
     if STATE.treasure_runtime.current_choices and #STATE.treasure_runtime.current_choices > 0 then
       return true
@@ -1538,6 +1544,7 @@ local function apply_round_choice(index)
   end
   if STATE.mark_runtime and STATE.mark_runtime.awaiting_choice then
     apply_mark_choice(index)
+    STATE.choice_panel_hidden = false
     return
   end
   if STATE.treasure_runtime and (STATE.treasure_runtime.awaiting_choice or STATE.treasure_runtime.awaiting_replace) then
@@ -1705,7 +1712,7 @@ local function try_treasure_entry()
     show_pending_round_choice('treasure')
     return
   end
-  try_start_challenge('treasure_trial')
+  message('当前没有待领取的宝物三选一。')
 end
 
 runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
@@ -1828,6 +1835,8 @@ choice_panel_system = (function()
     ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS,
     TREASURE_DEFS = reward_system.TREASURE_DEFS,
     get_pending_round_choice_kind = get_pending_round_choice_kind,
+    get_mark_runtime = get_mark_runtime,
+    get_mark_quality_label = get_mark_quality_label,
     get_treasure_runtime = get_treasure_runtime,
     get_treasure_quality_label = get_treasure_quality_label,
     get_treasure_active_count = get_treasure_active_count,

@@ -135,15 +135,32 @@ local function build_attr_lines(item_key, item_api)
 end
 
 local function build_affix_lines(item)
-  local lines = {}
+  local names = {}
   for _, affix in ipairs(item.affixes or {}) do
     local display_name = affix.display_name or affix.id
     if display_name then
-      lines[#lines + 1] = tostring(display_name)
+      names[#names + 1] = tostring(display_name)
+    end
+    if #names >= 3 then
+      break
     end
   end
-  if #lines == 0 then
-    return { '暂无词缀' }
+
+  if #names == 0 then
+    return {
+      {
+        title = '当前词缀',
+        body = '暂无词缀',
+      },
+    }
+  end
+
+  local lines = {}
+  for index, name in ipairs(names) do
+    lines[#lines + 1] = {
+      title = index == 1 and '当前词缀' or string.format('词缀%d', index),
+      body = name,
+    }
   end
   return lines
 end

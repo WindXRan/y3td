@@ -11,6 +11,16 @@ local function resolve_ui(y3, player, path)
   return ui
 end
 
+local function resolve_first_ui(y3, player, paths)
+  for _, path in ipairs(paths or {}) do
+    local ui = resolve_ui(y3, player, path)
+    if ui then
+      return ui
+    end
+  end
+  return nil
+end
+
 local function is_alive(ui)
   return ui and (not ui.is_removed or not ui:is_removed())
 end
@@ -213,20 +223,50 @@ end
 local function resolve_tracker_nodes(env, runtime_hud)
   local y3 = env.y3
   local player = env.get_player()
-  runtime_hud.right_tracker_panel = resolve_ui(y3, player, 'MainlineTaskPanel')
+  runtime_hud.right_tracker_panel = resolve_first_ui(y3, player, {
+    'MainlineTaskPanel',
+    'MainlineTaskPanel.爬塔挑战',
+  })
   runtime_hud.tracker_shortcut_chip_bg = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_shortcut_chip_bg')
-  runtime_hud.tracker_shortcut_chip_label = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_shortcut_chip_label')
+  runtime_hud.tracker_shortcut_chip_label = resolve_first_ui(y3, player, {
+    'MainlineTaskPanel.tracker_shortcut_chip_label',
+    'MainlineTaskPanel.爬塔挑战.layout.scroll_view_1.快捷键C',
+  })
   runtime_hud.tracker_shortcut_chip_key = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_shortcut_chip_key')
   runtime_hud.tracker_shortcut_chip_arrow = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_shortcut_chip_arrow')
-  runtime_hud.tracker_card_border = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_card_border')
-  runtime_hud.tracker_title = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_title')
-  runtime_hud.tracker_objective = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_objective')
-  runtime_hud.tracker_progress = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_progress')
-  runtime_hud.tracker_reward_label = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_reward_label')
-  runtime_hud.tracker_reward = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_reward')
+  runtime_hud.tracker_card_border = resolve_first_ui(y3, player, {
+    'MainlineTaskPanel.tracker_card_border',
+    'MainlineTaskPanel.爬塔挑战.layout.image',
+  })
+  runtime_hud.tracker_title = resolve_first_ui(y3, player, {
+    'MainlineTaskPanel.tracker_title',
+    'MainlineTaskPanel.爬塔挑战.layout.scroll_view_1.第X层',
+  })
+  runtime_hud.tracker_objective = resolve_first_ui(y3, player, {
+    'MainlineTaskPanel.tracker_objective',
+    'MainlineTaskPanel.爬塔挑战.layout.scroll_view_1.目标',
+  })
+  runtime_hud.tracker_progress = resolve_first_ui(y3, player, {
+    'MainlineTaskPanel.tracker_progress',
+    'MainlineTaskPanel.爬塔挑战.layout.scroll_view_1.具体目标',
+  })
+  runtime_hud.tracker_reward_label = resolve_first_ui(y3, player, {
+    'MainlineTaskPanel.tracker_reward_label',
+    'MainlineTaskPanel.爬塔挑战.layout.scroll_view_1.奖励',
+  })
+  runtime_hud.tracker_reward = resolve_first_ui(y3, player, {
+    'MainlineTaskPanel.tracker_reward',
+    'MainlineTaskPanel.爬塔挑战.layout.scroll_view_1.具体奖励',
+  })
   runtime_hud.tracker_hint = resolve_ui(y3, player, 'MainlineTaskPanel.tracker_hint')
-  runtime_hud.auto_task_checkbox = resolve_ui(y3, player, 'MainlineTaskPanel.auto_task_checkbox')
-  runtime_hud.auto_task_label = resolve_ui(y3, player, 'MainlineTaskPanel.auto_task_label')
+  runtime_hud.auto_task_checkbox = resolve_first_ui(y3, player, {
+    'MainlineTaskPanel.auto_task_checkbox',
+    'MainlineTaskPanel.爬塔挑战.layout.scroll_view_1.layout_14.check_box',
+  })
+  runtime_hud.auto_task_label = resolve_first_ui(y3, player, {
+    'MainlineTaskPanel.auto_task_label',
+    'MainlineTaskPanel.爬塔挑战.layout.scroll_view_1.layout_14.自动挑战',
+  })
 end
 
 local function get_task_panel_summary(env)
@@ -255,7 +295,7 @@ local function build_tracker_hint(summary, tracker_state)
   if summary and summary.state_text then
     return tostring(summary.state_text)
   end
-  return '目标追踪已开启，面板跟随当前层挑战'
+  return '正在同步当前层挑战数据'
 end
 
 local function get_tracker_visual_state(summary)
@@ -264,9 +304,9 @@ local function get_tracker_visual_state(summary)
       border = { 92, 120, 154, 180 },
       chip = { 58, 88, 116, 220 },
       chip_text = { 220, 232, 246, 255 },
-      label = '爬塔挑战',
-      key = 'C',
-      arrow = '>',
+      label = '同步中',
+      key = '',
+      arrow = '',
     }
   end
   if summary.is_running then
@@ -326,7 +366,11 @@ local function refresh_tracker_panel(env, runtime_hud)
     set_image_rgba(runtime_hud.tracker_shortcut_chip_bg, visual_state.chip)
   end
   if is_alive(runtime_hud.tracker_shortcut_chip_label) then
-    runtime_hud.tracker_shortcut_chip_label:set_text(visual_state.label)
+    local shortcut_text = visual_state.label
+    if not is_alive(runtime_hud.tracker_shortcut_chip_key) and visual_state.key and visual_state.key ~= '' then
+      shortcut_text = string.format('%s  快捷键%s', visual_state.label, visual_state.key)
+    end
+    runtime_hud.tracker_shortcut_chip_label:set_text(shortcut_text)
     set_text_rgba(runtime_hud.tracker_shortcut_chip_label, visual_state.chip_text)
   end
   if is_alive(runtime_hud.tracker_shortcut_chip_key) then
@@ -339,25 +383,32 @@ local function refresh_tracker_panel(env, runtime_hud)
   end
 
   if is_alive(runtime_hud.tracker_title) then
-    UIStyle.apply_text(runtime_hud.tracker_title, 'runtime_hud.panel1.tracker_title', summary and summary.title_text or '爬塔挑战')
+    UIStyle.apply_text(runtime_hud.tracker_title, 'runtime_hud.panel1.tracker_title', summary and summary.title_text or '爬塔挑战同步中')
+    set_text_rgba(runtime_hud.tracker_title, { 244, 247, 255, 255 })
   end
   if is_alive(runtime_hud.tracker_objective) then
-    UIStyle.apply_text(runtime_hud.tracker_objective, 'runtime_hud.panel1.tracker_objective', summary and ('目标：' .. tostring(summary.objective_text or '')) or '目标：暂无')
+    UIStyle.apply_text(runtime_hud.tracker_objective, 'runtime_hud.panel1.tracker_objective', summary and ('目标：' .. tostring(summary.objective_text or '')) or '目标：等待任务数据')
+    set_text_rgba(runtime_hud.tracker_objective, { 143, 239, 76, 255 })
   end
   if is_alive(runtime_hud.tracker_progress) then
     UIStyle.apply_text(runtime_hud.tracker_progress, 'runtime_hud.panel1.tracker_progress', summary and summary.progress_text or '当前无层数挑战')
+    set_text_rgba(runtime_hud.tracker_progress, { 224, 232, 240, 255 })
   end
   if is_alive(runtime_hud.tracker_reward_label) then
     UIStyle.apply_text(runtime_hud.tracker_reward_label, 'runtime_hud.panel1.tracker_reward_label', '奖励：')
+    set_text_rgba(runtime_hud.tracker_reward_label, { 255, 212, 73, 255 })
   end
   if is_alive(runtime_hud.tracker_reward) then
-    UIStyle.apply_text(runtime_hud.tracker_reward, 'runtime_hud.panel1.tracker_reward', build_reward_text(summary))
+    UIStyle.apply_text(runtime_hud.tracker_reward, 'runtime_hud.panel1.tracker_reward', summary and build_reward_text(summary) or '等待任务奖励数据')
+    set_text_rgba(runtime_hud.tracker_reward, { 143, 226, 91, 255 })
   end
   if is_alive(runtime_hud.tracker_hint) then
     UIStyle.apply_text(runtime_hud.tracker_hint, 'runtime_hud.panel1.tracker_hint', build_tracker_hint(summary, tracker_state))
+    set_text_rgba(runtime_hud.tracker_hint, { 159, 175, 198, 220 })
   end
   if is_alive(runtime_hud.auto_task_label) then
-    UIStyle.apply_text(runtime_hud.auto_task_label, 'runtime_hud.panel1.auto_task_label', '目标追踪')
+    UIStyle.apply_text(runtime_hud.auto_task_label, 'runtime_hud.panel1.auto_task_label', '自动挑战')
+    set_text_rgba(runtime_hud.auto_task_label, { 241, 243, 240, 255 })
   end
   if is_alive(runtime_hud.auto_task_checkbox) then
     set_checkbox_selected(runtime_hud.auto_task_checkbox, auto_track_enabled)
@@ -392,6 +443,7 @@ local function bind_panel1_top(env, runtime_hud)
   if not wave_node or not wavetime_node or not tips_node or not curlevel_node or not gametime_node then
     clear_panel1_top_bindings(runtime_hud)
     set_panel1_top_visible(env, false)
+    refresh_tracker_panel(env, runtime_hud)
     return false
   end
 
@@ -436,13 +488,17 @@ function M.create(env)
         bind_panel1_top(env, hud)
       end
       local result = base.refresh_hud()
-      if hud and hud.panel1_top_bound then
+      if hud then
         flush_panel1_boss(hud)
         refresh_tracker_panel(env, hud)
       end
       return result
     end,
     set_visible = function(visible)
+      local hud = env.STATE and env.STATE.runtime_hud
+      if hud and hud.right_tracker_panel and is_alive(hud.right_tracker_panel) then
+        hud.right_tracker_panel:set_visible(visible == true)
+      end
       set_panel1_top_visible(env, visible == true)
       return base.set_visible(visible)
     end,

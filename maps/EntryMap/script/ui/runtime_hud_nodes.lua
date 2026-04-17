@@ -119,7 +119,16 @@ function M.resolve_bottom_bg(prefab)
   return {
     bottom_bg_root = prefab:get_child(),
     bottom_bg_backpack = resolve_prefab_node(prefab, 'layout_1.backpack'),
+    bottom_backpack_slots = {
+      resolve_prefab_node(prefab, 'layout_1.backpack.物品1'),
+      resolve_prefab_node(prefab, 'layout_1.backpack.物品2'),
+      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1_1'),
+      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1_1_1'),
+      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1'),
+      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1_2'),
+    },
 
+    bottom_portrait = resolve_prefab_node(prefab, 'layout_1.mid.头像.英雄头像'),
     bottom_name = resolve_prefab_node(prefab, 'layout_1.mid.头像.name'),
     bottom_level = resolve_prefab_node(prefab, 'layout_1.mid.头像.等级'),
     bottom_exp_fill = resolve_prefab_node(prefab, 'layout_1.mid.进化进度条.progress_bar_img'),
@@ -158,6 +167,13 @@ function M.resolve_bottom_bg(prefab)
       resolve_prefab_node(prefab, 'layout_1.UP.羁绊图片6'),
       resolve_prefab_node(prefab, 'layout_1.UP.羁绊图片7'),
     },
+
+    bottom_skill_draw_button = resolve_prefab_node(prefab, 'layout_1.button.技能抽卡'),
+    bottom_bond_draw_button = resolve_prefab_node(prefab, 'layout_1.button.羁绊抽卡'),
+    bottom_treasure_challenge_button = resolve_prefab_node(prefab, 'layout_1.challenge.宝物挑战'),
+    bottom_gold_challenge_button = resolve_prefab_node(prefab, 'layout_1.challenge.金币挑战'),
+    bottom_exp_challenge_button = resolve_prefab_node(prefab, 'layout_1.challenge.杀敌挑战'),
+    bottom_wood_challenge_button = resolve_prefab_node(prefab, 'layout_1.challenge.木材挑战'),
   }
 end
 

@@ -113,7 +113,7 @@
     "circle_radius": {
         "__tuple__": true, 
         "items": [
-            "2.5"
+            " (250)/100"
         ]
     }, 
     "cold_down_time": {
@@ -261,7 +261,7 @@
     "sector_radius": {
         "__tuple__": true, 
         "items": [
-            "4.5"
+            " (450)/100"
         ]
     }, 
     "show_building_attack_range": false, 

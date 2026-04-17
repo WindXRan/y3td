@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-HUD_PATH = ROOT / "ui" / "runtime_hud_v2.lua"
+HUD_PATH = ROOT / "ui" / "runtime_hud.lua"
 NODES_PATH = ROOT / "ui" / "runtime_hud_nodes.lua"
 
 

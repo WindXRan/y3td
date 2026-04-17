@@ -7,6 +7,21 @@ local ICON_PATH = '物品说明.物品说明.shopTip.basic.avatar.icon'
 local ATTR_LIST_PATH = '物品说明.物品说明.shopTip.attr_LIST'
 local DESCR_LIST_PATH = '物品说明.物品说明.shopTip.descr_LIST'
 
+local QUALITY_PALETTES = {
+  common = {
+    title = { 120, 255, 126, 255 },
+    subtitle = { 62, 255, 68, 255 },
+  },
+  rare = {
+    title = { 138, 203, 255, 255 },
+    subtitle = { 40, 149, 255, 255 },
+  },
+  epic = {
+    title = { 226, 174, 255, 255 },
+    subtitle = { 198, 120, 255, 255 },
+  },
+}
+
 local function resolve_ui(y3, player, path)
   local ok, ui = pcall(y3.ui.get_ui, player, path)
   if not ok or not ui then
@@ -45,16 +60,37 @@ local function set_image(node, image_id)
   end
 end
 
+local function set_text_color(node, color)
+  if not is_alive(node) or not color then
+    return
+  end
+  node:set_text_color(color[1], color[2], color[3], color[4] or 255)
+end
+
+local function get_quality_palette(quality)
+  return QUALITY_PALETTES[quality or 'common'] or QUALITY_PALETTES.common
+end
+
 local function set_list_lines(list_nodes, lines, title_key, body_key)
   for index, entry in ipairs(list_nodes or {}) do
     local line = lines and lines[index] or nil
     if type(entry) == 'table' then
-      set_text(entry[title_key], line or '')
+      local title_text = ''
+      local body_text = ''
+      if type(line) == 'table' then
+        title_text = line.title or line[title_key] or line.text or ''
+        body_text = line.body or line[body_key] or line.desc or ''
+      else
+        title_text = line or ''
+      end
+
+      set_text(entry[title_key], title_text)
       if body_key then
-        set_text(entry[body_key], '')
+        set_text(entry[body_key], body_text)
       end
       if entry.root and is_alive(entry.root) then
-        entry.root:set_visible(line ~= nil and line ~= '')
+        local visible = title_text ~= '' or body_text ~= ''
+        entry.root:set_visible(visible)
       end
     end
   end
@@ -147,8 +183,11 @@ function M.create(env)
       return
     end
 
+    local palette = get_quality_palette(payload.quality)
     set_text(nodes.title, payload.title_text or '')
     set_text(nodes.subtitle, string.format('%s  %s', payload.subtitle_text or '', payload.cost_text or ''))
+    set_text_color(nodes.title, palette.title)
+    set_text_color(nodes.subtitle, palette.subtitle)
     set_image(nodes.icon, payload.icon_res)
     set_list_lines(nodes.attr_nodes, payload.attr_lines, 'text', nil)
     set_list_lines(nodes.descr_nodes, payload.affix_lines, 'title_TEXT', 'descr_TEXT')

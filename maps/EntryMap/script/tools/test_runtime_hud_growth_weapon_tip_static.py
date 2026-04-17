@@ -18,9 +18,10 @@ def main() -> None:
 
     require(source, "local GrowthWeaponItemTip = require 'ui.growth_weapon_item_tip'", 'expected editor-backed growth weapon tip require')
     require(source, 'local function bind_default_item_slot_hover(runtime_hud)', 'expected default item slot hover binder')
-    require(source, "string.format('GameHUD.main.goods.equip_slot_bg_%d.goods', slot)", 'expected default item slot path binding')
+    require(source, 'runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[1] or nil', 'expected growth weapon slot to prefer bottom_bg backpack slots')
+    require(source, 'runtime_hud.editor_bottom_inventory_slots = runtime_hud.bottom_backpack_slots or {}', 'expected bottom_bg backpack slots to drive runtime inventory binding')
     require(source, "local function show_growth_weapon_tip(anchor_ui)", 'expected shared growth weapon tip show helper')
-    require(source, "GameHUD.main.inventory.equip_slot_bg_1.equip_slot_1", 'expected editor-authored growth weapon slot path')
+    require(source, "GameHUD.layout_3.inventory.equip_slot_bg_1.equip_slot_1", 'expected runtime hud to keep legacy inventory fallback path')
     require(source, "growth_weapon_tip.show_for_anchor", 'expected runtime hud to delegate tip rendering to editor tip binder')
     require(source, "set_equip_slot_use_operation('无')", 'expected growth weapon slot left click to be disabled')
     require(source, "set_equip_slot_drag_operation('无')", 'expected growth weapon slot drag to be disabled')

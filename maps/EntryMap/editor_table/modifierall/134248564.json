@@ -31,9 +31,7 @@
                 1.0, 
                 "root", 
                 true, 
-                true, 
-                0, 
-                false
+                0
             ]
         ]
     }, 

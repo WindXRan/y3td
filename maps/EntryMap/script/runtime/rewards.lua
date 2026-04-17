@@ -996,6 +996,7 @@ function M.create(env)
       mark_runtime.current_choices = choices
       mark_runtime.awaiting_choice = true
       round.state = 'pending'
+      STATE.choice_panel_hidden = false
 
       message(string.format('%s：获得一次进化 3选1。', round.ui_title or '进化选择'))
       api.show_mark_choices()
@@ -1173,6 +1174,7 @@ function M.create(env)
     runtime.awaiting_choice = false
     runtime.current_choices = nil
     runtime.current_round = nil
+    STATE.choice_panel_hidden = false
 
     api.sync_mark_effects()
 
@@ -1192,6 +1194,7 @@ function M.create(env)
       return
     end
 
+    STATE.choice_panel_hidden = false
     local title = runtime.current_round and runtime.current_round.ui_title or '进化选择'
     message(string.format('%s：按 1 / 2 / 3 选择。', title))
     for index, def in ipairs(runtime.current_choices) do

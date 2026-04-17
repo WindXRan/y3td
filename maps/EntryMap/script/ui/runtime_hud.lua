@@ -4,6 +4,7 @@ local theme = require 'ui.theme'
 local UIStyle = require 'ui.style'
 local Factory = require 'ui.factory'
 local layout = require 'ui.runtime_hud_layout'
+local RuntimeHudNodes = require 'ui.runtime_hud_nodes'
 local BondTipPanel = require 'ui.bond_tip_panel'
 local GrowthWeaponItemTip = require 'ui.growth_weapon_item_tip'
 
@@ -22,6 +23,20 @@ local function resolve_ui(y3, player, path)
     return nil
   end
   return ui
+end
+
+local function resolve_first_ui(y3, player, paths)
+  for _, path in ipairs(paths or {}) do
+    local ui = resolve_ui(y3, player, path)
+    if ui then
+      return ui
+    end
+  end
+  return nil
+end
+
+local function is_ui_alive(ui)
+  return ui and (not ui.is_removed or not ui:is_removed())
 end
 
 function M.create(env)
@@ -139,6 +154,79 @@ function M.create(env)
     end
     local fallback = hero_attr_system and hero_attr_system.get_attr(STATE.hero, fallback_name) or STATE.hero:get_attr(fallback_name)
     return y3.helper.tonumber(fallback) or 0
+  end
+
+  local function set_visible_if_alive(ui, visible)
+    if is_ui_alive(ui) then
+      ui:set_visible(visible == true)
+    end
+  end
+
+  local function set_text_if_alive(ui, text)
+    if is_ui_alive(ui) and ui.set_text then
+      ui:set_text(text or '')
+    end
+  end
+
+  local function set_image_if_alive(ui, image, color)
+    if not is_ui_alive(ui) then
+      return
+    end
+    if image ~= nil and ui.set_image then
+      ui:set_image(image)
+    end
+    if color and ui.set_image_color then
+      ui:set_image_color(color[1], color[2], color[3], color[4] or 255)
+    end
+  end
+
+  local function set_progress_if_alive(ui, current, max_value)
+    if not is_ui_alive(ui) then
+      return
+    end
+    local final_max = math.max(1, math.floor(max_value or 1))
+    local final_current = math.max(0, math.min(final_max, math.floor(current or 0)))
+    if ui.set_max_progress_bar_value then
+      ui:set_max_progress_bar_value(final_max)
+    end
+    if ui.set_current_progress_bar_value then
+      ui:set_current_progress_bar_value(final_current, 0)
+    end
+  end
+
+  local function set_optional_text(ui, text)
+    if is_ui_alive(ui) and ui.set_text then
+      ui:set_text(text or '')
+    end
+  end
+
+  local function normalize_percent_bonus(value)
+    local number = y3.helper.tonumber(value) or 0
+    if math.abs(number) <= 1 then
+      return number * 100
+    end
+    return number
+  end
+
+  local function combine_percent_bonus(value_a, value_b)
+    return normalize_percent_bonus(value_a) + normalize_percent_bonus(value_b)
+  end
+
+  local function format_signed_compact(value)
+    local number = y3.helper.tonumber(value) or 0
+    if math.abs(number) < 0.0001 then
+      return '+0'
+    end
+    local prefix = number >= 0 and '+' or '-'
+    return prefix .. format_compact(math.abs(number))
+  end
+
+  local function format_percent_bonus_text(value_a, value_b)
+    local total = combine_percent_bonus(value_a, value_b)
+    local abs_total = math.abs(total)
+    local text = string.format('%.1f', abs_total):gsub('%.0$', '')
+    local prefix = total >= 0 and '+' or '-'
+    return string.format('%s%s%%', prefix, text)
   end
 
   local function get_stage_text()
@@ -585,28 +673,378 @@ function M.create(env)
     return item and item_key and item.get_key and item:get_key() == item_key
   end
 
+  local function bind_ui_click_once(runtime_hud, key, ui, callback)
+    if not runtime_hud or not is_ui_alive(ui) then
+      return
+    end
+    runtime_hud.bound_click_targets = runtime_hud.bound_click_targets or {}
+    if runtime_hud.bound_click_targets[key] == ui then
+      return
+    end
+    runtime_hud.bound_click_targets[key] = ui
+    if ui.set_intercepts_operations then
+      ui:set_intercepts_operations(true)
+    end
+    ui:add_fast_event('左键-点击', function()
+      hide_bond_tip()
+      hide_growth_weapon_tip()
+      if callback then
+        callback()
+      end
+    end)
+  end
+
+  local function attach_bottom_bg_prefab(runtime_hud)
+    if not runtime_hud then
+      return
+    end
+    if is_ui_alive(runtime_hud.bottom_bg_root) then
+      return
+    end
+
+    local hud = get_hud_root()
+    if not hud then
+      return
+    end
+
+    local prefab = y3.ui_prefab.create(env.get_player(), 'bottom_bg', hud)
+    local root = prefab and prefab:get_child() or nil
+    if not root then
+      return
+    end
+
+    root:set_anchor(0.5, 0)
+    root:set_relative_parent_pos('底部', 0)
+    set_percent_pos(env.get_player(), root, 50, 0)
+    if root.set_widget_relative_scale then
+      local prefab_scale = math.max(0.84, math.min(1.02, get_hud_scale(hud, y3) * 0.94))
+      root:set_widget_relative_scale(prefab_scale, prefab_scale)
+    end
+    root:set_z_order(9392)
+
+    RuntimeHudNodes.attach_bottom_bg(runtime_hud, prefab)
+  end
+
+  local function bind_bottom_bond_icons(runtime_hud)
+    if not runtime_hud then
+      return
+    end
+    runtime_hud.editor_bottom_bond_slot_bound = runtime_hud.editor_bottom_bond_slot_bound or {}
+    runtime_hud.editor_bottom_bond_payloads = runtime_hud.editor_bottom_bond_payloads or {}
+    for slot = 1, 7 do
+      local icon_ui = runtime_hud.bottom_bond_icons and runtime_hud.bottom_bond_icons[slot] or nil
+      if is_ui_alive(icon_ui) and runtime_hud.editor_bottom_bond_slot_bound[slot] ~= icon_ui then
+        runtime_hud.editor_bottom_bond_slot_bound[slot] = icon_ui
+        if icon_ui.set_intercepts_operations then
+          icon_ui:set_intercepts_operations(true)
+        end
+        icon_ui:add_fast_event('鼠标-移入', function()
+          local payload = runtime_hud.editor_bottom_bond_payloads[slot]
+          if payload then
+            bond_tip_panel.show_for_anchor(icon_ui, payload)
+          else
+            hide_bond_tip()
+          end
+        end)
+        icon_ui:add_fast_event('鼠标-移出', function()
+          hide_bond_tip()
+        end)
+        icon_ui:add_fast_event('左键-点击', function()
+          hide_bond_tip()
+        end)
+      end
+    end
+  end
+
+  local function bind_bottom_bg_actions(runtime_hud)
+    if not runtime_hud then
+      return
+    end
+
+    bind_ui_click_once(runtime_hud, 'bottom_skill_draw', runtime_hud.bottom_skill_draw_button, function()
+      if env.show_upgrade_choices then
+        env.show_upgrade_choices()
+      end
+    end)
+    bind_ui_click_once(runtime_hud, 'bottom_bond_draw', runtime_hud.bottom_bond_draw_button, function()
+      if env.try_bond_draw then
+        env.try_bond_draw()
+      end
+    end)
+    bind_ui_click_once(runtime_hud, 'bottom_gold_trial', runtime_hud.bottom_gold_challenge_button, function()
+      if env.try_start_challenge then
+        env.try_start_challenge('gold_trial')
+      end
+    end)
+    bind_ui_click_once(runtime_hud, 'bottom_wood_trial', runtime_hud.bottom_wood_challenge_button, function()
+      if env.try_start_challenge then
+        env.try_start_challenge('wood_trial')
+      end
+    end)
+    bind_ui_click_once(runtime_hud, 'bottom_exp_trial', runtime_hud.bottom_exp_challenge_button, function()
+      if env.try_start_challenge then
+        env.try_start_challenge('exp_trial')
+      end
+    end)
+    bind_ui_click_once(runtime_hud, 'bottom_treasure_trial', runtime_hud.bottom_treasure_challenge_button, function()
+      if env.try_treasure_entry then
+        env.try_treasure_entry()
+      end
+    end)
+  end
+
+  local function bind_growth_weapon_slot(runtime_hud)
+    if not runtime_hud then
+      return
+    end
+
+    local slot_ui = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[1] or nil
+    if not slot_ui then
+      slot_ui = resolve_first_ui(y3, env.get_player(), {
+        'GameHUD.layout_3.inventory.equip_slot_bg_1.equip_slot_1',
+        'GameHUD.main.inventory.equip_slot_bg_1.equip_slot_1',
+      })
+    end
+    if not slot_ui then
+      return
+    end
+
+    runtime_hud.growth_weapon_slot = slot_ui
+    if runtime_hud.growth_weapon_slot_bound_target == slot_ui then
+      return
+    end
+
+    runtime_hud.growth_weapon_slot_bound_target = slot_ui
+    if slot_ui.set_equip_slot_use_operation then
+      slot_ui:set_equip_slot_use_operation('无')
+    end
+    if slot_ui.set_equip_slot_drag_operation then
+      slot_ui:set_equip_slot_drag_operation('无')
+    end
+    slot_ui:add_fast_event('鼠标-移入', function()
+      show_growth_weapon_tip(slot_ui)
+    end)
+    slot_ui:add_fast_event('鼠标-移出', function()
+      hide_growth_weapon_tip()
+    end)
+    slot_ui:add_fast_event('左键-点击', function()
+      hide_growth_weapon_tip()
+    end)
+  end
+
+  local function bind_editor_overlay_nodes(runtime_hud)
+    if not runtime_hud then
+      return
+    end
+    local player = env.get_player()
+
+    runtime_hud.editor_top_panel = resolve_ui(y3, player, 'top')
+    runtime_hud.editor_top_root = resolve_first_ui(y3, player, {
+      'top.top',
+      'top',
+    })
+    runtime_hud.editor_top_gold_value = resolve_ui(y3, player, 'top.top.金币.image_3.label_2')
+    runtime_hud.editor_top_wood_value = resolve_ui(y3, player, 'top.top.木材.image_3.label_2')
+    runtime_hud.editor_top_kill_value = resolve_ui(y3, player, 'top.top.人口.image_3.label_2')
+
+    attach_bottom_bg_prefab(runtime_hud)
+
+    runtime_hud.editor_bottom_panel = runtime_hud.bottom_bg_root
+    runtime_hud.editor_bottom_root = runtime_hud.bottom_bg_root
+    runtime_hud.editor_bottom_layout = runtime_hud.bottom_bg_root
+    runtime_hud.editor_bottom_hp_bar = runtime_hud.bottom_hp_fill
+    runtime_hud.editor_bottom_hp_value = runtime_hud.bottom_hp_text
+    runtime_hud.editor_bottom_hp_recover = nil
+    runtime_hud.editor_bottom_exp_bar = runtime_hud.bottom_exp_fill
+    runtime_hud.editor_bottom_attack_text = runtime_hud.bottom_attack_value
+    runtime_hud.editor_bottom_armor_text = runtime_hud.bottom_armor_value
+    runtime_hud.editor_bottom_strength_text = runtime_hud.bottom_strength_value
+    runtime_hud.editor_bottom_agility_text = runtime_hud.bottom_agility_value
+    runtime_hud.editor_bottom_intelligence_text = runtime_hud.bottom_intelligence_value
+    runtime_hud.editor_bottom_inventory_slots = runtime_hud.bottom_backpack_slots or {}
+    runtime_hud.editor_bottom_bond_slots = runtime_hud.bottom_bond_icons or {}
+    runtime_hud.editor_bottom_bond_slot_bound = runtime_hud.editor_bottom_bond_slot_bound or {}
+    runtime_hud.editor_bottom_bond_payloads = runtime_hud.editor_bottom_bond_payloads or {}
+
+    runtime_hud.legacy_bottom_nodes = runtime_hud.legacy_bottom_nodes or {
+      resolve_ui(y3, player, 'GameHUD.layout_3.main_hp_bar'),
+      resolve_ui(y3, player, 'GameHUD.layout_3.hp_value'),
+      resolve_ui(y3, player, 'GameHUD.layout_3.hp_recover'),
+      resolve_ui(y3, player, 'GameHUD.layout_3.exp'),
+      resolve_ui(y3, player, 'GameHUD.layout_3.zuobian'),
+      resolve_ui(y3, player, 'GameHUD.layout_3.inventory'),
+      resolve_ui(y3, player, 'GameHUD.jiban_list'),
+      resolve_ui(y3, player, 'GameHUD.main'),
+    }
+    for _, legacy_node in ipairs(runtime_hud.legacy_bottom_nodes) do
+      set_visible_if_alive(legacy_node, false)
+    end
+
+    bind_bottom_bond_icons(runtime_hud)
+    bind_bottom_bg_actions(runtime_hud)
+
+    bind_growth_weapon_slot(runtime_hud)
+  end
+
+  local function has_editor_top(runtime_hud)
+    return is_ui_alive(runtime_hud and runtime_hud.editor_top_root)
+      or is_ui_alive(runtime_hud and runtime_hud.editor_top_panel)
+  end
+
+  local function has_editor_bottom(runtime_hud)
+    return is_ui_alive(runtime_hud and runtime_hud.editor_bottom_root)
+      or is_ui_alive(runtime_hud and runtime_hud.editor_bottom_panel)
+  end
+
+  local function sync_editor_inventory_slots(runtime_hud)
+    if not runtime_hud or not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then
+      return
+    end
+    for slot = 1, 6 do
+      local slot_ui = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[slot] or nil
+      if is_ui_alive(slot_ui) and slot_ui.set_ui_unit_slot then
+        slot_ui:set_ui_unit_slot(STATE.hero, y3.const.SlotType.BAR, slot - 1)
+      end
+    end
+    if is_ui_alive(runtime_hud.growth_weapon_slot) and runtime_hud.growth_weapon_slot.set_ui_unit_slot then
+      runtime_hud.growth_weapon_slot:set_ui_unit_slot(STATE.hero, y3.const.SlotType.BAR, 0)
+    end
+  end
+
+  local function refresh_editor_overlay(runtime_hud)
+    if not runtime_hud then
+      return
+    end
+    bind_editor_overlay_nodes(runtime_hud)
+
+    set_text_if_alive(runtime_hud.editor_top_gold_value, format_compact(STATE.resources and STATE.resources.gold or 0))
+    set_text_if_alive(runtime_hud.editor_top_wood_value, format_compact(STATE.resources and STATE.resources.wood or 0))
+    set_text_if_alive(runtime_hud.editor_top_kill_value, format_compact(STATE.total_kills or 0))
+
+    local current_hp = 0
+    if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() then
+      current_hp = y3.helper.tonumber(STATE.hero:get_hp()) or 0
+    end
+    local hero_name = STATE.hero and STATE.hero.get_name and STATE.hero:get_name() or '英雄'
+    local hero_level = env.get_hero_level and env.get_hero_level() or ((STATE.hero_progress and STATE.hero_progress.level) or 1)
+    set_image_if_alive(runtime_hud.bottom_portrait, STATE.hero and STATE.hero.get_icon and STATE.hero:get_icon() or nil, { 255, 255, 255, 255 })
+    set_optional_text(runtime_hud.bottom_name, hero_name)
+    set_optional_text(runtime_hud.bottom_level, tostring(math.max(1, math.floor(hero_level or 1))))
+
+    local max_hp = math.max(1, get_hero_attr('生命结算值', '生命'))
+    set_progress_if_alive(runtime_hud.editor_bottom_hp_bar, current_hp, max_hp)
+    set_text_if_alive(
+      runtime_hud.editor_bottom_hp_value,
+      string.format('%s/%s', format_compact(current_hp), format_compact(max_hp))
+    )
+    set_text_if_alive(runtime_hud.editor_bottom_hp_recover, '+' .. format_compact(get_hero_attr('生命恢复')))
+
+    local progress = STATE.hero_progress or {}
+    local exp_current = progress.exp or 0
+    local exp_max = progress.exp_to_next or 0
+    if exp_max <= 0 then
+      exp_max = math.max(1, exp_current)
+    end
+    set_progress_if_alive(runtime_hud.editor_bottom_exp_bar, exp_current, exp_max)
+    set_optional_text(
+      runtime_hud.bottom_exp_text,
+      string.format('%s/%s', format_compact(exp_current), format_compact(exp_max))
+    )
+
+    set_text_if_alive(runtime_hud.editor_bottom_attack_text, format_compact(get_hero_attr('攻击结算值', '攻击')))
+    set_text_if_alive(runtime_hud.editor_bottom_armor_text, format_compact(get_hero_attr('护甲结算值', '护甲')))
+    set_text_if_alive(runtime_hud.editor_bottom_strength_text, format_compact(get_hero_attr('最终力量', '力量')))
+    set_text_if_alive(runtime_hud.editor_bottom_agility_text, format_compact(get_hero_attr('最终敏捷', '敏捷')))
+    set_text_if_alive(runtime_hud.editor_bottom_intelligence_text, format_compact(get_hero_attr('最终智力', '智力')))
+
+    set_optional_text(runtime_hud.bottom_attack_percent, '攻击力')
+    set_optional_text(runtime_hud.bottom_attack_percent_bonus, format_percent_bonus_text(
+      get_hero_attr('攻击增幅'),
+      get_hero_attr('最终攻击')
+    ))
+    set_optional_text(runtime_hud.bottom_attack_value_bonus, format_signed_compact(get_hero_attr('攻击绿字')))
+
+    set_optional_text(runtime_hud.bottom_strength_percent, '力量')
+    set_optional_text(runtime_hud.bottom_strength_percent_bonus, format_percent_bonus_text(
+      get_hero_attr('力量增幅'),
+      get_hero_attr('最终力量增幅')
+    ))
+    set_optional_text(runtime_hud.bottom_strength_value_bonus, format_signed_compact(get_hero_attr('力量绿字')))
+
+    set_optional_text(runtime_hud.bottom_agility_percent, '敏捷')
+    set_optional_text(runtime_hud.bottom_agility_percent_bonus, format_percent_bonus_text(
+      get_hero_attr('敏捷增幅'),
+      get_hero_attr('最终敏捷增幅')
+    ))
+    set_optional_text(runtime_hud.bottom_agility_value_bonus, format_signed_compact(get_hero_attr('敏捷绿字')))
+
+    set_optional_text(runtime_hud.bottom_intelligence_percent, '智力')
+    set_optional_text(runtime_hud.bottom_intelligence_percent_bonus, format_percent_bonus_text(
+      get_hero_attr('智力增幅'),
+      get_hero_attr('最终智力增幅')
+    ))
+    set_optional_text(runtime_hud.bottom_intelligence_value_bonus, format_signed_compact(get_hero_attr('智力绿字')))
+
+    set_optional_text(runtime_hud.bottom_armor_percent, '护甲值')
+    set_optional_text(runtime_hud.bottom_armor_percent_bonus, format_percent_bonus_text(
+      get_hero_attr('护甲增幅'),
+      get_hero_attr('最终护甲')
+    ))
+    set_optional_text(runtime_hud.bottom_armor_value_bonus, format_signed_compact(get_hero_attr('护甲绿字')))
+
+    sync_editor_inventory_slots(runtime_hud)
+  end
+
+  local function apply_runtime_hud_visibility(runtime_hud, visible)
+    if not runtime_hud then
+      return
+    end
+    bind_editor_overlay_nodes(runtime_hud)
+
+    local show = visible == true
+    local use_editor_top = has_editor_top(runtime_hud)
+    local use_editor_bottom = has_editor_bottom(runtime_hud)
+
+    set_visible_if_alive(runtime_hud.center_root, show and not use_editor_top)
+    set_visible_if_alive(runtime_hud.left_root, show and not use_editor_top)
+    set_visible_if_alive(runtime_hud.editor_top_panel, show)
+    set_visible_if_alive(runtime_hud.editor_top_root, show)
+    set_visible_if_alive(runtime_hud.editor_bottom_panel, show)
+    set_visible_if_alive(runtime_hud.editor_bottom_root, show)
+    set_visible_if_alive(runtime_hud.editor_bottom_layout, show)
+    set_visible_if_alive(runtime_hud.bond_slot_bar, show and not use_editor_bottom)
+  end
+
   local function bind_default_item_slot_hover(runtime_hud)
     runtime_hud.default_item_slots = runtime_hud.default_item_slots or {}
+    runtime_hud.default_item_slot_targets = runtime_hud.default_item_slot_targets or {}
     for slot = 1, 6 do
-      if runtime_hud.default_item_slots[slot] == nil then
-        local slot_ui = resolve_ui(y3, env.get_player(), string.format('GameHUD.main.goods.equip_slot_bg_%d.goods', slot))
-        runtime_hud.default_item_slots[slot] = slot_ui or false
-        if slot_ui then
-          slot_ui:add_fast_event('鼠标-移入', function()
-            local item = get_hero_bar_item(slot)
-            if is_growth_weapon_item(item) then
-              show_growth_weapon_tip(slot_ui)
-            else
-              hide_growth_weapon_tip()
-            end
-          end)
-          slot_ui:add_fast_event('鼠标-移出', function()
+      local slot_ui = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[slot] or nil
+      if not slot_ui then
+        slot_ui = resolve_first_ui(y3, env.get_player(), {
+          string.format('GameHUD.layout_3.inventory.equip_slot_bg_%d.equip_slot_1', slot),
+          string.format('GameHUD.main.inventory.equip_slot_bg_%d.equip_slot_1', slot),
+          string.format('GameHUD.main.goods.equip_slot_bg_%d.goods', slot),
+        })
+      end
+
+      runtime_hud.default_item_slots[slot] = slot_ui or false
+      if is_ui_alive(slot_ui) and runtime_hud.default_item_slot_targets[slot] ~= slot_ui then
+        runtime_hud.default_item_slot_targets[slot] = slot_ui
+        slot_ui:add_fast_event('鼠标-移入', function()
+          local item = get_hero_bar_item(slot)
+          if is_growth_weapon_item(item) then
+            show_growth_weapon_tip(slot_ui)
+          else
             hide_growth_weapon_tip()
-          end)
-          slot_ui:add_fast_event('左键-点击', function()
-            hide_growth_weapon_tip()
-          end)
-        end
+          end
+        end)
+        slot_ui:add_fast_event('鼠标-移出', function()
+          hide_growth_weapon_tip()
+        end)
+        slot_ui:add_fast_event('左键-点击', function()
+          hide_growth_weapon_tip()
+        end)
       end
     end
   end
@@ -640,10 +1078,40 @@ function M.create(env)
       return
     end
 
+    bind_editor_overlay_nodes(runtime_hud)
+
+    if runtime_hud.gold_value then
+      runtime_hud.gold_value:set_text(format_compact(STATE.resources and STATE.resources.gold or 0))
+    end
+    if runtime_hud.wood_value then
+      runtime_hud.wood_value:set_text(format_compact(STATE.resources and STATE.resources.wood or 0))
+    end
+    if runtime_hud.skill_value then
+      runtime_hud.skill_value:set_text(format_compact(STATE.total_kills or 0))
+    end
+    if runtime_hud.challenge_value then
+      runtime_hud.challenge_value:set_text(string.format('%d/%d', get_total_challenge_charge_count(), get_total_challenge_charge_max()))
+    end
+
+    refresh_editor_overlay(runtime_hud)
+
+    runtime_hud.editor_bottom_bond_payloads = runtime_hud.editor_bottom_bond_payloads or {}
     for slot = 1, 7 do
+      local payload = env.build_bond_slot_tip_payload and env.build_bond_slot_tip_payload(slot) or nil
+      runtime_hud.editor_bottom_bond_payloads[slot] = payload
+
+      local bottom_icon = runtime_hud.bottom_bond_icons and runtime_hud.bottom_bond_icons[slot] or nil
+      if is_ui_alive(bottom_icon) then
+        if payload then
+          set_image_if_alive(bottom_icon, payload.icon_res or ui_res.common.empty, { 255, 255, 255, 255 })
+        elseif bottom_icon.set_image_color then
+          bottom_icon:set_image_color(116, 130, 154, 148)
+        end
+        bottom_icon:set_visible(true)
+      end
+
       local slot_ui = runtime_hud.bond_slot_icons and runtime_hud.bond_slot_icons[slot] or nil
       if slot_ui then
-        local payload = env.build_bond_slot_tip_payload and env.build_bond_slot_tip_payload(slot) or nil
         slot_ui.payload = payload
         slot_ui.count:set_text(tostring(slot))
         slot_ui.count:set_visible(true)
@@ -926,7 +1394,7 @@ function M.create(env)
       scaled(742, scale),
       scaled(38, scale),
       scaled(90, scale),
-      '技能点',
+      '杀敌数',
       '0',
       theme.palette.text_muted,
       theme.palette.text,
@@ -1257,7 +1725,10 @@ function M.create(env)
       bond_slot_bar = bond_slot_bar,
       bond_slot_label = bond_slot_label,
       bond_slot_icons = bond_slot_icons,
-      growth_weapon_slot = resolve_ui(y3, env.get_player(), 'GameHUD.main.inventory.equip_slot_bg_1.equip_slot_1'),
+      growth_weapon_slot = resolve_first_ui(y3, env.get_player(), {
+        'GameHUD.layout_3.inventory.equip_slot_bg_1.equip_slot_1',
+        'GameHUD.main.inventory.equip_slot_bg_1.equip_slot_1',
+      }),
       skill_slots = {
         [1] = {
           root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_1'),
@@ -1282,21 +1753,9 @@ function M.create(env)
       },
     }
 
-    if STATE.runtime_hud.growth_weapon_slot then
-      STATE.runtime_hud.growth_weapon_slot:set_equip_slot_use_operation('无')
-      STATE.runtime_hud.growth_weapon_slot:set_equip_slot_drag_operation('无')
-      STATE.runtime_hud.growth_weapon_slot:add_fast_event('鼠标-移入', function()
-        show_growth_weapon_tip(STATE.runtime_hud.growth_weapon_slot)
-      end)
-      STATE.runtime_hud.growth_weapon_slot:add_fast_event('鼠标-移出', function()
-        hide_growth_weapon_tip()
-      end)
-      STATE.runtime_hud.growth_weapon_slot:add_fast_event('左键-点击', function()
-        hide_growth_weapon_tip()
-      end)
-    end
-
+    bind_editor_overlay_nodes(STATE.runtime_hud)
     bind_default_item_slot_hover(STATE.runtime_hud)
+    apply_runtime_hud_visibility(STATE.runtime_hud, true)
     refresh_runtime_hud()
     return STATE.runtime_hud
   end
@@ -1315,9 +1774,7 @@ function M.create(env)
       end
       hide_bond_tip()
       hide_growth_weapon_tip()
-      if runtime_hud.bond_slot_bar and not runtime_hud.bond_slot_bar:is_removed() then
-        runtime_hud.bond_slot_bar:set_visible(false)
-      end
+      apply_runtime_hud_visibility(runtime_hud, visible == true)
       hide_legacy_decision_panel(runtime_hud)
     end,
   }

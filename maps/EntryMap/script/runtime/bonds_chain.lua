@@ -1,8 +1,8 @@
 local M = {}
 
 local BondNodes = require 'runtime.bond_nodes'
+local BondTipModelBuilder = require 'runtime.bond_tip_model_builder'
 local BondTemplates = require 'runtime.bond_templates.init'
-local BondAliasConfig = require 'data.object_tables.bond_alias_config'
 local BondDrawConfig = require 'data.object_tables.bond_draw_config'
 local BondMiscConfig = require 'data.object_tables.bond_misc_config'
 local BondPickConfig = require 'data.object_tables.bond_pick_config'
@@ -15,13 +15,11 @@ local ROOT_NODE_IDS = BondNodes.root_ids
 local ROOT_NODE_ID_SET = {}
 local ROOT_SUBTREE_NODE_IDS = {}
 local ROOT_SET_PROGRESS_NODE_IDS = {}
-local LEGACY_TAGS_BY_NODE_ID = BondAliasConfig.legacy_tags_by_node_id or {}
+local ROOT_STAGE_NODE_IDS = {}
+local ROOT_STAGE_TIERS = {}
 
 local BOND_DRAW_COST = BondDrawConfig.draw_cost or 100
 local SYSTEM_DYNAMIC_NODE_ID = '__system__'
-
-local ATTR_ALIASES_FROM_RUNTIME = BondAliasConfig.attr_aliases_from_runtime or {}
-local RUNTIME_ALIASES = BondAliasConfig.runtime_aliases or {}
 
 local PER_SECOND_ATTR_KEYS = BondMiscConfig.per_second_attr_keys or {}
 local GROUP_LABELS = BondMiscConfig.group_labels or {}
@@ -118,10 +116,25 @@ for _, root_id in ipairs(ROOT_NODE_IDS) do
 
   local root_def = NODE_BY_ID[root_id]
   local progress_node_ids = {}
+  local stage_node_ids = {}
   for _, def in ipairs(LINE_BY_ID[root_def and root_def.line_id] or {}) do
     progress_node_ids[#progress_node_ids + 1] = def.id
   end
+  for _, node_id in ipairs(subtree_ids) do
+    local node_def = NODE_BY_ID[node_id]
+    local tier = tonumber(node_def and node_def.tier) or 1
+    stage_node_ids[tier] = stage_node_ids[tier] or {}
+    stage_node_ids[tier][#stage_node_ids[tier] + 1] = node_id
+  end
   ROOT_SET_PROGRESS_NODE_IDS[root_id] = progress_node_ids
+  ROOT_STAGE_NODE_IDS[root_id] = stage_node_ids
+
+  local ordered_tiers = {}
+  for tier in pairs(stage_node_ids) do
+    ordered_tiers[#ordered_tiers + 1] = tier
+  end
+  table.sort(ordered_tiers)
+  ROOT_STAGE_TIERS[root_id] = ordered_tiers
 end
 
 local function add_bonus_value(target, key, value)
@@ -186,40 +199,9 @@ local function append_route_tags(tags, node_def)
     return
   end
 
-  for _, tag in ipairs(LEGACY_TAGS_BY_NODE_ID[node_def.id] or {}) do
-    tags[tag] = true
-  end
-
   for _, tag in ipairs(node_def.route_tags or {}) do
     tags[tag] = true
   end
-end
-
-local function build_attr_alias_pack(runtime_pack)
-  local result = {}
-  for key, value in pairs(runtime_pack or {}) do
-    local aliases = ATTR_ALIASES_FROM_RUNTIME[key]
-    if aliases then
-      for attr_name, factor in pairs(aliases) do
-        add_bonus_value(result, attr_name, value * factor)
-      end
-    end
-  end
-  return result
-end
-
-local function build_runtime_alias_pack(runtime_pack)
-  local result = {}
-  for key, value in pairs(runtime_pack or {}) do
-    add_bonus_value(result, key, value)
-    local aliases = RUNTIME_ALIASES[key]
-    if aliases then
-      for alias_key, factor in pairs(aliases) do
-        add_bonus_value(result, alias_key, value * factor)
-      end
-    end
-  end
-  return result
 end
 
 local function build_static_attr_pack(state, node_def)
@@ -227,28 +209,25 @@ local function build_static_attr_pack(state, node_def)
   local root_meta = node_def and node_def.parent_id == nil and ROOT_SET_DOC_META[node_def.id] or nil
   if root_meta then
     merge_bonus_pack(result, root_meta.base_attr)
-    merge_bonus_pack(result, build_attr_alias_pack(root_meta.base_runtime))
     if is_root_set_complete(state, node_def.id) then
       merge_bonus_pack(result, root_meta.set_attr)
-      merge_bonus_pack(result, build_attr_alias_pack(root_meta.set_runtime))
     end
     return result
   end
   merge_bonus_pack(result, node_def and node_def.attr or {})
-  merge_bonus_pack(result, build_attr_alias_pack(node_def and node_def.runtime or {}))
   return result
 end
 
 local function build_static_runtime_pack(state, node_def)
   local root_meta = node_def and node_def.parent_id == nil and ROOT_SET_DOC_META[node_def.id] or nil
   if root_meta then
-    local result = build_runtime_alias_pack(root_meta.base_runtime or {})
+    local result = copy_bonus_pack(root_meta.base_runtime or {})
     if is_root_set_complete(state, node_def.id) then
-      merge_bonus_pack(result, build_runtime_alias_pack(root_meta.set_runtime or {}))
+      merge_bonus_pack(result, root_meta.set_runtime or {})
     end
     return result
   end
-  return build_runtime_alias_pack(node_def and node_def.runtime or {})
+  return copy_bonus_pack(node_def and node_def.runtime or {})
 end
 
 local function ensure_node_state(runtime, node_id)
@@ -322,28 +301,39 @@ local function ensure_runtime(state)
   return state.bond_runtime
 end
 
-local function seed_root_nodes_into_pool(runtime)
+local function get_root_active_stage_tier(state, root_id)
+  local runtime = get_runtime(state)
+  local stage_tiers = root_id and ROOT_STAGE_TIERS[root_id] or nil
+  if not runtime or not stage_tiers or #stage_tiers == 0 then
+    return nil
+  end
+  if runtime.completed_root_sets[root_id] ~= true then
+    return stage_tiers[1]
+  end
+  for index = 2, #stage_tiers do
+    local tier = stage_tiers[index]
+    for _, node_id in ipairs(ROOT_STAGE_NODE_IDS[root_id][tier] or {}) do
+      if runtime.unlocked_node_ids[node_id] ~= true then
+        return tier
+      end
+    end
+  end
+  return nil
+end
+
+local function seed_active_stage_nodes_into_pool(runtime)
   if not runtime then
     return
   end
   runtime.pool_node_ids = runtime.pool_node_ids or {}
-  for _, node_id in ipairs(ROOT_NODE_IDS) do
-    local node_def = NODE_BY_ID[node_id]
+  for _, root_id in ipairs(ROOT_NODE_IDS) do
+    local node_def = NODE_BY_ID[root_id]
     local group_started = node_def and node_def.group_id and runtime.state_ref and is_group_started(runtime.state_ref, node_def.group_id)
     local allow_root = BondPickConfig.include_group_choices ~= true or group_started
-    if allow_root and not (runtime.completed_root_sets and runtime.completed_root_sets[node_id] == true) then
+    local active_tier = allow_root and runtime.state_ref and get_root_active_stage_tier(runtime.state_ref, root_id) or nil
+    for _, node_id in ipairs(active_tier and ROOT_STAGE_NODE_IDS[root_id][active_tier] or {}) do
       runtime.pool_node_ids[node_id] = true
     end
-  end
-end
-
-local function unlock_followup_nodes_into_pool(runtime, node_def)
-  if not runtime or not node_def then
-    return
-  end
-  runtime.pool_node_ids = runtime.pool_node_ids or {}
-  for _, next_id in ipairs(node_def.next_ids or {}) do
-    runtime.pool_node_ids[next_id] = true
   end
 end
 
@@ -393,8 +383,9 @@ local function unlock_group_choice(state, group_id)
   end
 
   runtime.unlocked_group_ids[group_id] = true
+  runtime.last_unlocked_node_id = nil
   runtime.owned_node_order[#runtime.owned_node_order + 1] = group_def.id
-  seed_root_nodes_into_pool(runtime)
+  seed_active_stage_nodes_into_pool(runtime)
   M.rebuild_candidate_nodes(state)
   return true
 end
@@ -457,6 +448,31 @@ local function trim_inline_text(text)
     return ''
   end
   return (text:gsub('[。；;，,%s]+$', ''))
+end
+
+local function is_transition_advanced_text(text)
+  if type(text) ~= 'string' then
+    return false
+  end
+
+  local value = trim_inline_text(text)
+  if value == '' then
+    return false
+  end
+
+  if string.find(value, '已凑齐，开启后续分支', 1, true)
+      or string.find(value, '已凑齐,开启后续分支', 1, true)
+      or string.find(value, '已凑齐，解锁后续分支', 1, true)
+      or string.find(value, '已凑齐,解锁后续分支', 1, true) then
+    return true
+  end
+
+  if string.find(value, '我要玩', 1, true)
+      and string.find(value, '卡池中加入', 1, true) then
+    return true
+  end
+
+  return false
 end
 
 local function format_value_text_lines(text)
@@ -568,7 +584,7 @@ local function build_fallback_effect_parts(node_def)
   for key, value in pairs(node_def and node_def.attr or {}) do
     parts[#parts + 1] = string.format('%s %+g', key, value)
   end
-  for key, value in pairs(build_runtime_alias_pack(node_def and node_def.runtime or {})) do
+  for key, value in pairs(node_def and node_def.runtime or {}) do
     if PER_SECOND_ATTR_KEYS[key] == nil then
       parts[#parts + 1] = string.format('%s %+g', key, value)
     end
@@ -595,6 +611,9 @@ end
 
 local function get_choice_advanced_text(node_def)
   if type(node_def and node_def.desc) == 'table' and node_def.desc.advanced and node_def.desc.advanced ~= '' then
+    if is_transition_advanced_text(node_def.desc.advanced) then
+      return ''
+    end
     return node_def.desc.advanced
   end
   return ''
@@ -664,6 +683,10 @@ local function get_set_root_def(node_def)
     guard = guard + 1
   end
   return current or node_def
+end
+
+local function get_node_tier(node_def)
+  return tonumber(node_def and node_def.tier) or 1
 end
 
 local function get_root_set_doc_meta(node_def)
@@ -761,21 +784,6 @@ local function remove_root_set_nodes_from_runtime(state, root_id)
   end
 end
 
-local function push_consumed_root_set_order(runtime, root_id)
-  if not runtime or not root_id then
-    return
-  end
-
-  runtime.consumed_root_set_order = runtime.consumed_root_set_order or {}
-  for index = #runtime.consumed_root_set_order, 1, -1 do
-    if runtime.consumed_root_set_order[index] == root_id then
-      table.remove(runtime.consumed_root_set_order, index)
-      break
-    end
-  end
-  table.insert(runtime.consumed_root_set_order, 1, root_id)
-end
-
 local function resolve_root_set_completion(state, root_id)
   local runtime = get_runtime(state)
   local mode = get_root_set_completion_mode(root_id)
@@ -795,7 +803,6 @@ local function resolve_root_set_completion(state, root_id)
 
   if mode == 'consume_all' then
     runtime.consumed_root_sets[root_id] = true
-    push_consumed_root_set_order(runtime, root_id)
     remove_root_set_nodes_from_runtime(state, root_id)
     M.refresh_all_nodes(state)
     return true
@@ -870,6 +877,47 @@ local function build_branch_progress_node_ids(node_def)
   return result
 end
 
+local function build_effect_segment_node_ids(node_def)
+  if not node_def then
+    return {}
+  end
+
+  local target_advanced = trim_inline_text(get_choice_advanced_text(node_def))
+  if target_advanced == '' then
+    return {}
+  end
+
+  local result = {}
+  for _, def in ipairs(LINE_BY_ID[node_def.line_id] or {}) do
+    if trim_inline_text(get_choice_advanced_text(def)) == target_advanced then
+      result[#result + 1] = def.id
+    end
+  end
+  return result
+end
+
+local function get_display_set_root_def(node_def)
+  if not node_def then
+    return nil
+  end
+
+  if is_root_line_node(node_def) then
+    return get_set_root_def(node_def) or node_def
+  end
+
+  local segment_node_ids = build_effect_segment_node_ids(node_def)
+  if #segment_node_ids > 0 then
+    return NODE_BY_ID[segment_node_ids[1]] or node_def
+  end
+
+  local anchor_def = get_branch_anchor_def(node_def)
+  if anchor_def then
+    return anchor_def
+  end
+
+  return get_set_root_def(node_def) or node_def
+end
+
 local function build_choice_progress_values(state, node_def)
   if not node_def then
     return 0, 0
@@ -886,6 +934,12 @@ local function build_choice_progress_values(state, node_def)
   end
 
   if node_def.parent_id then
+    local segment_node_ids = build_effect_segment_node_ids(node_def)
+    if #segment_node_ids > 0 then
+      local unlocked_count = count_unlocked_nodes(state, segment_node_ids)
+      return unlocked_count, #segment_node_ids
+    end
+
     local branch_node_ids = build_branch_progress_node_ids(node_def)
     if #branch_node_ids > 0 then
       local unlocked_count = count_unlocked_nodes(state, branch_node_ids)
@@ -914,7 +968,7 @@ local function build_choice_progress_values(state, node_def)
 end
 
 local function build_line_progress_values(state, node_def)
-  local set_root_def = get_set_root_def(node_def)
+  local set_root_def = get_display_set_root_def(node_def)
   local unlocked_count, required_count = build_choice_progress_values(state, node_def)
   return string.format(
     '%s(%d/%d)',
@@ -939,6 +993,63 @@ local function trim_choice_prefix(text)
   return trim_inline_text(trimmed)
 end
 
+local function trim_choice_name_punctuation(text)
+  local value = type(text) == 'string' and text or ''
+  local changed = true
+  while changed and value ~= '' do
+    changed = false
+    if string.sub(value, -3) == '。' or string.sub(value, -3) == '；' or string.sub(value, -3) == '，' then
+      value = string.sub(value, 1, -4)
+      changed = true
+    elseif string.sub(value, -1) == ';'
+        or string.sub(value, -1) == ','
+        or string.sub(value, -1) == ' '
+        or string.sub(value, -1) == '\t'
+        or string.sub(value, -1) == '\n'
+        or string.sub(value, -1) == '\r' then
+      value = string.sub(value, 1, -2)
+      changed = true
+    end
+  end
+  return value
+end
+
+local function get_choice_card_name_text(node_def)
+  if not node_def then
+    return ''
+  end
+
+  local single_text = get_choice_single_text(node_def)
+  for _, prefix in ipairs({ '当前：', '后继：', '进阶链路：', '终局方向：', '终阶节点：' }) do
+    if string.sub(single_text, 1, #prefix) == prefix then
+      single_text = string.sub(single_text, #prefix + 1)
+      break
+    end
+  end
+  single_text = trim_choice_name_punctuation(single_text)
+  if single_text ~= '' then
+    local colon_pos = string.find(single_text, '：', 1, true)
+    if not colon_pos then
+      colon_pos = string.find(single_text, ':', 1, true)
+    end
+    local headline = colon_pos and string.sub(single_text, 1, colon_pos - 1) or ''
+    headline = trim_choice_name_punctuation(headline)
+    if headline ~= '' then
+      return headline
+    end
+
+    local compact_single = trim_choice_name_punctuation(single_text)
+    if compact_single ~= ''
+        and not string.find(compact_single, '，', 1, true)
+        and not string.find(compact_single, ',', 1, true)
+        and not string.find(compact_single, '\n', 1, true) then
+      return compact_single
+    end
+  end
+
+  return node_def.display_name or ''
+end
+
 local function build_choice_effect_title(state, node_def)
   if node_def and node_def.parent_id then
     return ''
@@ -958,6 +1069,97 @@ local function build_choice_effect_text(node_def)
     return trim_choice_prefix(root_meta.effect_text)
   end
   return trim_choice_prefix(get_choice_single_text(root_def))
+end
+
+local function compact_tip_text(text)
+  local compact = trim_choice_prefix(text)
+  compact = compact:gsub('\r', '')
+  compact = compact:gsub('\n', '')
+  compact = compact:gsub('%s+', '')
+  return trim_inline_text(compact)
+end
+
+local function split_tip_lines(text, max_lines)
+  local lines = {}
+  local normalized = trim_choice_prefix(text)
+  if normalized == '' then
+    return lines
+  end
+  normalized = normalized:gsub('\r', '')
+  for line in normalized:gmatch('[^\n]+') do
+    local trimmed = trim_inline_text(line)
+    if trimmed ~= '' then
+      lines[#lines + 1] = trimmed
+    end
+    if max_lines and #lines >= max_lines then
+      break
+    end
+  end
+  return lines
+end
+
+local function build_owned_group_tip_payload(group_def)
+  if not group_def then
+    return nil
+  end
+  local effect_text = string.format('选择后开放[%s]主链根节点。', group_def.display_name or '该分组')
+  local tip_model = BondTipModelBuilder.build({
+    quality_text = M.get_quality_label(group_def.quality),
+    set_name_text = group_def.display_name or '',
+    progress_text = '(未开启)',
+    icon_res = group_def.icon,
+    item_name_text = group_def.display_name or '未命名分组',
+    bonus_text = group_def.desc or '',
+    effect_index_text = '[效果1]',
+    effect_body_text = effect_text,
+  })
+  return {
+    kind = 'bond',
+    quality = group_def.quality or 'rare',
+    badge_text = M.get_quality_label(group_def.quality),
+    icon_res = group_def.icon,
+    title_text = group_def.display_name or '未命名分组',
+    bonus_lines = tip_model.bonus_lines,
+    effect_area_bonus_count = math.min(3, #tip_model.bonus_lines),
+    tip_model = tip_model,
+  }
+end
+
+local function build_owned_node_tip_payload(state, node_def)
+  if not node_def then
+    return nil
+  end
+
+  local set_root_def = get_set_root_def(node_def) or node_def
+  local card_name_text = get_choice_card_name_text(node_def)
+  local current_text = build_choice_current_text(node_def)
+  local advanced_text = get_choice_advanced_text(node_def)
+  local next_text = build_choice_next_text(node_def)
+  local effect_title = build_choice_effect_title(state, node_def)
+  local effect_text = build_choice_effect_text(node_def)
+  local progress_text = build_line_progress_text(state, node_def)
+  local tip_model = BondTipModelBuilder.build({
+    quality_text = M.get_quality_label(node_def.quality),
+    set_name_text = set_root_def and set_root_def.display_name or '',
+    progress_text = progress_text ~= '' and string.format('(%s)', progress_text) or '',
+    icon_res = node_def.icon,
+    item_name_text = card_name_text ~= '' and card_name_text or '未命名羁绊',
+    current_text = current_text,
+    effect_body_text = advanced_text,
+    set_title_text = effect_title,
+    effect_text = effect_text,
+  })
+
+  return {
+    kind = 'bond',
+    quality = node_def.quality or 'rare',
+    badge_text = M.get_quality_label(node_def.quality),
+    icon_res = node_def.icon,
+    title_text = card_name_text ~= '' and card_name_text or '未命名羁绊',
+    bonus_lines = tip_model.bonus_lines,
+    effect_area_bonus_count = math.min(3, #tip_model.bonus_lines),
+    tip_model = tip_model,
+  }
 end
 
 local function build_choice_body_blocks(state, node_def, current_text, advanced_text, effect_title, effect_text)
@@ -1145,8 +1347,6 @@ local function build_root_overview_entry(state, root_id)
     started = started,
     completed = completed,
     consumed = consumed,
-    icon = root_def.icon,
-    quality = root_def.quality,
     unlocked_count = #unlocked_defs,
     total_count = #subtree_ids,
     required_count = required_count,
@@ -1200,12 +1400,14 @@ end
 
 local function build_choice_entry(state, node_def, index)
   local set_root_def = get_set_root_def(node_def) or node_def
+  local display_set_root_def = get_display_set_root_def(node_def) or set_root_def
+  local card_name_text = get_choice_card_name_text(node_def)
   local current_text = build_choice_current_text(node_def)
   local advanced_text = get_choice_advanced_text(node_def)
   local next_text = build_choice_next_text(node_def)
   local effect_title = build_choice_effect_title(state, node_def)
   local effect_text = build_choice_effect_text(node_def)
-  local subtitle_text = node_def.display_name
+  local subtitle_text = card_name_text ~= '' and card_name_text or node_def.display_name
   local progress_text = build_line_progress_text(state, node_def)
 
   return {
@@ -1224,7 +1426,7 @@ local function build_choice_entry(state, node_def, index)
     template = node_def.template,
     title_text = string.format(
       '%s (%s)',
-      set_root_def and set_root_def.display_name or node_def.display_name,
+      display_set_root_def and display_set_root_def.display_name or node_def.display_name,
       progress_text
     ),
     subtitle_text = subtitle_text,
@@ -1237,8 +1439,6 @@ local function build_choice_entry(state, node_def, index)
     effect_title = effect_title,
     effect_text = effect_text,
     body_blocks = build_choice_body_blocks(state, node_def, current_text, advanced_text, effect_title, effect_text),
-    title_color = 'bond_red',
-    subtitle_color = 'blue',
     effect_color_mode = 'auto',
     effect_root_id = set_root_def and set_root_def.id or node_def.id,
     line_root_id = line_root_def and line_root_def.id or node_def.id,
@@ -1273,8 +1473,6 @@ local function build_group_choice_entry(group_def, index)
     effect_title = '',
     effect_text = effect_text,
     body_blocks = build_choice_body_blocks(nil, nil, current_text, '', '', effect_text),
-    title_color = 'bond_red',
-    subtitle_color = 'blue',
     effect_color_mode = 'auto',
   }
 end
@@ -1285,6 +1483,14 @@ local function collect_merged_bonus_packs(pack_map)
     merge_bonus_pack(result, bonus_pack)
   end
   return result
+end
+
+local function append_unique_candidate(target, seen, candidate)
+  if not target or not seen or not candidate or not candidate.id or seen[candidate.id] then
+    return
+  end
+  seen[candidate.id] = true
+  target[#target + 1] = candidate
 end
 
 local function apply_dynamic_bonuses(env, desired_attr, desired_runtime)
@@ -1490,7 +1696,14 @@ local function collect_candidate_choice_entries(state)
       candidate_defs[#candidate_defs + 1] = group_def
     end
   end
-  return pick_random_candidates(state, candidate_defs, BondPickConfig.choice_count or 3)
+
+  local choice_count = BondPickConfig.choice_count or 3
+  local choices = pick_random_candidates(state, candidate_defs, choice_count)
+
+  for index, choice in ipairs(choices) do
+    choice.index = index
+  end
+  return choices
 end
 
 function M.create_runtime()
@@ -1516,9 +1729,9 @@ function M.create_runtime()
     current_round = nil,
     current_choices = nil,
     awaiting_choice = false,
+    last_unlocked_node_id = nil,
     completed_root_sets = {},
     consumed_root_sets = {},
-    consumed_root_set_order = {},
     fused_root_sets = {},
     completed_root_set_modes = {},
     completed_root_set_attr_bonuses = {},
@@ -1606,9 +1819,6 @@ function M.collect_route_tags(state)
   for node_id in pairs(runtime.unlocked_node_ids) do
     local node_def = NODE_BY_ID[node_id]
     if node_def and node_def.parent_id == nil and ROOT_SET_DOC_META[node_id] then
-      for _, tag in ipairs(LEGACY_TAGS_BY_NODE_ID[node_id] or {}) do
-        tags[tag] = true
-      end
       for _, tag in ipairs(node_def.route_tags or {}) do
         if string.sub(tag, 1, 5) ~= 'auto_' or is_root_set_complete(state, node_id) then
           tags[tag] = true
@@ -1622,9 +1832,6 @@ function M.collect_route_tags(state)
   for root_id in pairs(runtime.completed_root_sets or {}) do
     local root_def = NODE_BY_ID[root_id]
     if root_def then
-      for _, tag in ipairs(LEGACY_TAGS_BY_NODE_ID[root_id] or {}) do
-        tags[tag] = true
-      end
       for _, tag in ipairs(root_def.route_tags or {}) do
         tags[tag] = true
       end
@@ -1660,29 +1867,22 @@ function M.can_unlock_node(state, node_id)
     return false
   end
   local root_def = get_set_root_def(node_def)
-  local root_progress_node_ids = root_def and ROOT_SET_PROGRESS_NODE_IDS[root_def.id] or nil
-  local root_completed = root_def and runtime.completed_root_sets and runtime.completed_root_sets[root_def.id] == true
-  if root_completed and root_progress_node_ids then
-    for _, progress_node_id in ipairs(root_progress_node_ids) do
-      if progress_node_id == node_def.id then
-        return false
-      end
-    end
-  end
   if runtime.unlocked_node_ids[node_def.id] then
     return false
   end
-  if not node_def.parent_id then
-    return true
+  if not root_def then
+    return false
   end
-  if root_completed and root_progress_node_ids then
-    for _, progress_node_id in ipairs(root_progress_node_ids) do
-      if progress_node_id == node_def.parent_id then
-        return true
-      end
-    end
+  local group_started = root_def.group_id and is_group_started(state, root_def.group_id)
+  local allow_root = BondPickConfig.include_group_choices ~= true or group_started
+  if not allow_root then
+    return false
   end
-  return runtime.unlocked_node_ids[node_def.parent_id] == true
+  local active_tier = get_root_active_stage_tier(state, root_def.id)
+  if not active_tier then
+    return false
+  end
+  return get_node_tier(node_def) == active_tier
 end
 
 function M.get_candidate_nodes(state)
@@ -1712,7 +1912,7 @@ function M.rebuild_candidate_nodes(state)
   end
   runtime.state_ref = state
 
-  seed_root_nodes_into_pool(runtime)
+  seed_active_stage_nodes_into_pool(runtime)
   local candidate_node_ids = {}
   for node_id in pairs(runtime.pool_node_ids or {}) do
     if M.can_unlock_node(state, node_id) then
@@ -1736,6 +1936,7 @@ function M.unlock_node(state, node_id)
   end
 
   runtime.unlocked_node_ids[node_def.id] = true
+  runtime.last_unlocked_node_id = node_def.id
   runtime.owned_node_order[#runtime.owned_node_order + 1] = node_def.id
   local unlock_rewards = apply_unlock_rewards(state, node_def)
   M.refresh_all_nodes(state)
@@ -1770,16 +1971,15 @@ function M.refresh_all_nodes(state)
 
   runtime.line_progress = {}
   runtime.pool_node_ids = {}
-  seed_root_nodes_into_pool(runtime)
   for node_id in pairs(runtime.unlocked_node_ids) do
     local node_def = NODE_BY_ID[node_id]
     if node_def then
       set_line_progress(runtime, node_def)
       activate_node_runtime(state, node_def)
-      unlock_followup_nodes_into_pool(runtime, node_def)
     end
   end
 
+  seed_active_stage_nodes_into_pool(runtime)
   runtime.hunter_hit_targets = {}
   M.rebuild_candidate_nodes(state)
 end
@@ -2183,6 +2383,39 @@ function M.build_slot_text(state, slot)
   )
 end
 
+function M.build_slot_tip_payload(state, slot)
+  local runtime = get_runtime(state)
+  if not runtime or not slot then
+    return nil
+  end
+
+  local node_id = runtime.owned_node_order[slot]
+  if not node_id then
+    return nil
+  end
+
+  if string.sub(node_id, 1, 8) == '__group_' then
+    return build_owned_group_tip_payload(GROUP_CHOICE_DEFS[string.sub(node_id, 9)])
+  end
+
+  return build_owned_node_tip_payload(state, NODE_BY_ID[node_id])
+end
+
+function M.build_latest_owned_tip_payload(state)
+  local runtime = get_runtime(state)
+  if not runtime or not runtime.owned_node_order then
+    return nil
+  end
+
+  for slot = #runtime.owned_node_order, 1, -1 do
+    local payload = M.build_slot_tip_payload(state, slot)
+    if payload then
+      return payload
+    end
+  end
+  return nil
+end
+
 function M.show_loadout(env)
   local state = env and env.STATE
   local runtime = get_runtime(state)
@@ -2277,93 +2510,6 @@ function M.get_root_overview_entries(state)
     result[#result + 1] = entry
   end
   return result
-end
-
-function M.get_consumed_root_entries(state, max_entries)
-  local runtime = get_runtime(state)
-  if not runtime or not runtime.consumed_root_sets then
-    return {}
-  end
-
-  local ordered_ids = {}
-  local seen = {}
-
-  for _, root_id in ipairs(runtime.consumed_root_set_order or {}) do
-    if runtime.consumed_root_sets[root_id] == true and not seen[root_id] then
-      seen[root_id] = true
-      ordered_ids[#ordered_ids + 1] = root_id
-    end
-  end
-
-  for root_id, consumed in pairs(runtime.consumed_root_sets) do
-    if consumed == true and not seen[root_id] then
-      seen[root_id] = true
-      ordered_ids[#ordered_ids + 1] = root_id
-    end
-  end
-
-  local limit = math.max(1, max_entries or #ordered_ids)
-  local result = {}
-  for _, root_id in ipairs(ordered_ids) do
-    if #result >= limit then
-      break
-    end
-    local entry = build_root_overview_entry(state, root_id)
-    if entry and entry.consumed then
-      result[#result + 1] = entry
-    end
-  end
-  return result
-end
-
-function M.get_consumed_node_entries(state, max_entries)
-  local runtime = get_runtime(state)
-  if not runtime or not runtime.consumed_root_sets then
-    return {}
-  end
-
-  local ordered_root_ids = {}
-  local seen_root = {}
-
-  for _, root_id in ipairs(runtime.consumed_root_set_order or {}) do
-    if runtime.consumed_root_sets[root_id] == true and not seen_root[root_id] then
-      seen_root[root_id] = true
-      ordered_root_ids[#ordered_root_ids + 1] = root_id
-    end
-  end
-
-  for root_id, consumed in pairs(runtime.consumed_root_sets) do
-    if consumed == true and not seen_root[root_id] then
-      seen_root[root_id] = true
-      ordered_root_ids[#ordered_root_ids + 1] = root_id
-    end
-  end
-
-  local entries = {}
-  local limit = math.max(1, max_entries or 9999)
-  for _, root_id in ipairs(ordered_root_ids) do
-    local node_ids = ROOT_SET_PROGRESS_NODE_IDS[root_id] or { root_id }
-    local root_def = NODE_BY_ID[root_id]
-    for _, node_id in ipairs(node_ids) do
-      if #entries >= limit then
-        return entries
-      end
-      local node_def = NODE_BY_ID[node_id]
-      if node_def then
-        entries[#entries + 1] = {
-          root_id = root_id,
-          node_id = node_id,
-          display_name = node_def.display_name,
-          icon = node_def.icon,
-          quality = node_def.quality,
-          group_id = node_def.group_id,
-          root_display_name = root_def and root_def.display_name or '',
-        }
-      end
-    end
-  end
-
-  return entries
 end
 
 function M.show_bond_progress(env)
