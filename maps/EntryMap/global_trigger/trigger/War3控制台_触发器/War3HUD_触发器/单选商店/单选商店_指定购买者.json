@@ -360,7 +360,7 @@
             "p_trigger_id": 1697386590, 
             "trigger_id": 1370783842, 
             "trigger_name": "子触发器_14", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 
@@ -370,7 +370,7 @@
     }, 
     "trigger_id": 1697386590, 
     "trigger_name": "单选商店_指定购买者", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "UNIT_ENTITY": {

@@ -176,7 +176,7 @@
     "p_trigger_id": null, 
     "trigger_id": 2000973919, 
     "trigger_name": "点击关闭屏蔽栏", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "INTEGER": {
