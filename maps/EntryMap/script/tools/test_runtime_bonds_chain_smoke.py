@@ -403,7 +403,7 @@ def main() -> None:
             "local root_choice = assert(root_draw_state.bond_runtime.current_choices[1]) "
             "assert(root_choice.node_id == 'bond_body_core', 'first bond draw should start from root nodes directly') "
             "assert(root_choice.display_name == '体术', 'first root choice should use body root label') "
-            "assert(root_choice.title_text == '体术 (0/3)', 'root choice title should show initial progress directly') "
+            "assert(root_choice.title_text == '金刚体 (0/3)', 'root choice title should show initial progress directly') "
             "assert(root_choice.progress_text == '', 'root choice progress should move into title') "
             "assert(root_choice.subtitle_text == '生命值+100', 'root choice subtitle should show the concrete first-card name') "
             "assert(root_choice.title_color == nil, 'bond title should fall back to quality-driven title colors') "
@@ -412,7 +412,7 @@ def main() -> None:
             "assert(bonds.try_draw({ STATE = body_root_state, message = function() end })) "
             "local body_root_choice = assert(body_root_state.bond_runtime.current_choices[1]) "
             "assert(body_root_choice.node_id == 'bond_body_core', 'initial root card should be body core') "
-            "assert(body_root_choice.title_text == '体术 (0/3)', 'root choice title should include the root set progress in the screenshot format') "
+            "assert(body_root_choice.title_text == '金刚体 (0/3)', 'root choice title should include the root set progress in the screenshot format') "
             "assert(body_root_choice.progress_text == '', 'bond choice progress should move into the title instead of subtitle') "
             "assert(body_root_choice.subtitle_text == '生命值+100', 'root choice subtitle should show the concrete first-card name under the icon') "
             "assert(string.find(body_root_choice.current_text, '生命值+100', 1, true) ~= nil and string.find(body_root_choice.current_text, '攻击力+50', 1, true) == nil, 'root choice top block should keep the corrected first card text') "
@@ -420,7 +420,7 @@ def main() -> None:
             "assert(string.find(body_root_choice.body_blocks[1].text or '', '生命值+100：', 1, true) ~= nil, 'root choice body block should include the corrected card name prefix') "
             "assert(string.find(body_root_choice.body_blocks[1].text or '', '力量+50', 1, true) ~= nil and string.find(body_root_choice.body_blocks[1].text or '', '攻击力+50', 1, true) == nil, 'root choice body block should include the corrected card effect text') "
             "assert(body_root_choice.body_blocks[1].segments ~= nil and #body_root_choice.body_blocks[1].segments > 1, 'root choice value text should carry manual color segments') "
-            "assert(body_root_choice.effect_title == '激活[体术]套装效果：', 'root choice should use set-effect title instead of branch preview title') "
+            "assert(body_root_choice.effect_title == '悟得[金刚体]道统真意：', 'root choice should use set-effect title instead of branch preview title') "
             "assert(string.find(body_root_choice.effect_text, '斗气场域', 1, true) ~= nil, 'root choice should show set-effect text instead of follow-up branch names') "
             "assert(body_root_choice.body_blocks[3].segments ~= nil and #body_root_choice.body_blocks[3].segments > 1, 'root choice effect text should carry manual color segments') "
             "assert(bonds.can_unlock_node(body_root_state, 'bond_body_core_momentum') == true, 'body current stage should expose remaining tier-1 cards before the root set is complete') "
@@ -723,14 +723,14 @@ def main() -> None:
             "local choice_panel_api = choice_panel_model.create({ "
             "STATE = { bond_runtime = { current_offer_round = { free_refresh_left = 0, refresh_paid_count = 0 }, current_choices = { { "
             "quality = 'rare', "
-            "title_text = '体术(0/3)', "
+            "title_text = '金刚体(0/3)', "
             "subtitle_text = '体魄', "
             "desc_text = '占位描述', "
             "current_text = '当前：敏捷 +100。', "
             "advanced_text = '体魄路线成型后，额外获得减伤强化。', "
             "next_text = '后继：猎魔人。', "
             "value_text = '生命值+100\\n力量+50', "
-            "effect_title = '激活[体术]链式效果：', "
+            "effect_title = '悟得[金刚体]道统真意：', "
             "effect_text = '斗气场域：每秒对周围1200范围内的敌人造成(60%)力量自适应伤害' "
             "} } }, choice_panel_hidden = false }, "
             "message = function() end, "
@@ -748,7 +748,7 @@ def main() -> None:
             "local panel_model = assert(choice_panel_api.get_current_choice_panel_model()) "
             "assert(#panel_model.cards == 1) "
             "assert(panel_model.cards[1].title_text == '体魄') "
-            "assert(panel_model.cards[1].set_title_text == '体术') "
+            "assert(panel_model.cards[1].set_title_text == '金刚体') "
             "assert(panel_model.cards[1].progress_text == '(0/3)') "
             "assert(panel_model.cards[1].subtitle_text == '') "
             "assert(panel_model.card_renderer == 'default', 'bond choice panel should use default choice_panel rendering') "
@@ -757,7 +757,7 @@ def main() -> None:
             "assert(#(panel_model.cards[1].body_blocks or {}) >= 1, 'bond choice body blocks should still show visible info after transition filtering') "
             "assert(panel_model.cards[1].tip_model.effect_index_text == '', 'bond tip model should keep effect1 blank when no explicit effect1 is configured') "
             "assert(panel_model.cards[1].tip_model.effect_body_text == '', 'bond tip model should keep effect1 body empty when no explicit effect1 is configured') "
-            "assert(panel_model.cards[1].tip_model.set_title_text == '激活[体术]链式效果：', 'bond tip model should keep explicit set-effect title') "
+            "assert(panel_model.cards[1].tip_model.set_title_text == '悟得[金刚体]道统真意：', 'bond tip model should keep explicit set-effect title') "
             "assert(panel_model.cards[1].tip_model.set_body_lines[1] == '斗气场域：每秒对周围1200范围内的敌人造成(60%)力量自适应伤害', 'bond tip model should route explicit set-effect text into set body lines') "
             "assert(panel_model.cards[1].body_blocks[1].segments == nil or type(panel_model.cards[1].body_blocks[1].segments) == 'table') "
             "local text_layout = require('ui.choice_panel_text_layout').build_text_layout(panel_model.cards[1].body_blocks) "
@@ -794,7 +794,7 @@ def main() -> None:
             "build_attack_skill_slot_text = function(slot) return '技能位' .. tostring(slot) end, "
             "build_bond_slot_text = function(slot) return '羁绊位' .. tostring(slot) end, "
             "build_bond_choice_preview_text = function(index, choice) return string.format('%d. %s | %s', index, choice.display_name, choice.current_text) end, "
-            "build_bond_progress_lines = function() return { '成长 · 敏捷线 1/3 | 可选：猎魔人' } end "
+            "build_bond_progress_lines = function() return { '修行 · 仙途线 1/3 | 可选：伏魔' } end "
             "}) "
             "local overview = overview_api.get_runtime_overview_model() "
             "assert(#(overview.sections.pending.lines or {}) >= 3) "
@@ -832,8 +832,8 @@ def main() -> None:
     assert_contains(overview_content, 'build_bond_progress_lines', 'overview_model.lua should render bond progress bridge text')
     assert_contains(overview_content, 'progress = {', 'overview_model.lua should expose progress section key')
     assert_not_contains(overview_content, 'swallowed = {', 'overview_model.lua should not keep swallowed section key')
-    assert_contains(overview_content, '链路进度', 'overview_model.lua should expose bond progress title')
-    assert_contains(boot_content, '链式羁绊', 'boot.lua should expose chain-bond wording')
+    assert_contains(overview_content, '道统进境', 'overview_model.lua should expose bond progress title')
+    assert_contains(boot_content, '仙缘感应', 'boot.lua should expose chain-bond wording')
     assert_contains(boot_content, 'show_bond_progress', 'boot.lua should expose bond progress bridge')
     assert_not_contains(boot_content, 'show_swallowed_bonds', 'boot.lua should not keep swallowed progress bridge')
     assert_not_contains(boot_content, 'build_swallowed_bond_text', 'boot.lua should not keep swallowed bond text bridge')

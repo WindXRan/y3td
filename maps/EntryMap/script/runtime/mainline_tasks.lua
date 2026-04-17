@@ -122,6 +122,10 @@ local function get_floor_label(task)
   return string.format('第%s层', to_chinese_number(floor_index))
 end
 
+local function get_task_notice_label(task)
+  return get_floor_label(task) or (task and task.title_text) or (task and task.id)
+end
+
 local function clone_list(list)
   local result = {}
   for index, value in ipairs(list or {}) do
@@ -412,14 +416,14 @@ function M.create(env)
       elseif line.type == 'special' then
         if line.key == 'treasure_choice' and queue_treasure_round then
           for _ = 1, tonumber(line.value) or 0 do
-            queue_treasure_round('mainline_task', task.title_text or task.id)
+            queue_treasure_round('mainline_task', get_task_notice_label(task))
           end
         elseif line.key == 'skill_point' then
           STATE.skill_points = (STATE.skill_points or 0) + (tonumber(line.value) or 0)
         elseif line.key == 'hero_card' then
           runtime.hero_card_count = (runtime.hero_card_count or 0) + (tonumber(line.value) or 0)
           if message then
-            message(string.format('%s：英雄卡 %+d。', task.title_text or task.id, tonumber(line.value) or 0))
+            message(string.format('%s：英雄卡 %+d。', get_task_notice_label(task), tonumber(line.value) or 0))
           end
         end
       end
@@ -429,7 +433,7 @@ function M.create(env)
       add_hero_attr_pack(STATE.hero, attr_pack)
     end
     if (reward_pack.gold or 0) ~= 0 or (reward_pack.wood or 0) ~= 0 or (reward_pack.exp or 0) ~= 0 then
-      award_rewards(reward_pack, task.title_text or task.id, false)
+      award_rewards(reward_pack, get_task_notice_label(task), false)
     end
 
     if task.id then
@@ -437,7 +441,7 @@ function M.create(env)
       runtime.rewarded_task_ids[task.id] = true
     end
     if message then
-      message(string.format('%s 奖励已发放。', task.title_text or task.id))
+      message(string.format('%s 奖励已发放。', get_task_notice_label(task)))
     end
     return true
   end
@@ -526,7 +530,7 @@ function M.create(env)
     runtime.completed_task_ids[task.id] = true
 
     if message then
-      message(string.format('%s 已完成。', task.title_text or task.id))
+      message(string.format('%s 已完成。', get_task_notice_label(task)))
     end
     api.apply_task_rewards(task)
 

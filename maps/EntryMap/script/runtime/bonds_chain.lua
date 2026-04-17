@@ -84,6 +84,99 @@ local GROUP_CHOICE_DEFS = BondDrawConfig.group_choice_defs or {
   },
 }
 
+local THEMED_GROUP_LABELS = {
+  body = '炼体',
+  economy = '财缘',
+  magic = '玄法',
+  archery = '弓修',
+  critical = '诛心',
+  growth = '修行',
+}
+
+local THEMED_GROUP_DESCS = {
+  body = '可参悟：长生、兵法、不动、血誓、血魔、破军',
+  economy = '可参悟：吞财、渡劫',
+  magic = '可参悟：金灵、玄炁、爆法、迅诀、厚土',
+  archery = '可参悟：广射、疾风、穿云',
+  critical = '可参悟：致命、天诛法',
+  growth = '可参悟：敏捷、力量、智力三脉',
+}
+
+local THEMED_NODE_NAMES = {
+  bond_body_core = '金刚体',
+  bond_economy_core = '天府缘',
+  bond_magic_core = '玄门法',
+  bond_archery_core = '天弓道',
+  bond_critical_core = '诛心诀',
+  bond_growth_core = '仙途',
+  bond_growth_demon_hunter = '伏魔',
+  bond_growth_barbarian = '搬山',
+  bond_growth_war_god = '显圣真君',
+  bond_growth_archmage = '灵台',
+  bond_growth_archmage_sage = '方寸',
+  bond_growth_archmage_quick_cast = '掐诀',
+  bond_growth_archmage_burst = '炁涌',
+  bond_growth_spell_god = '天师真传',
+  bond_growth_spell_god_element = '五行合参',
+  bond_magic_mage = '金灵',
+  bond_magic_arcane_power = '玄炁',
+  bond_magic_arcane_power_staff = '如意杖',
+  bond_magic_trick = '爆法',
+  bond_magic_trick_mastery = '通玄',
+  bond_magic_haste = '迅诀',
+  bond_magic_haste_cooldown = '返照',
+  bond_magic_haste_charge = '藏炁',
+  bond_magic_elementalist = '厚土',
+  bond_economy_greed = '吞财',
+  bond_economy_greed_coin = '聚宝',
+  bond_economy_greed_key = '灵钥',
+  bond_economy_challenge = '渡劫',
+  bond_economy_challenge_exp_hunter = '功德',
+  bond_economy_challenge_gold_hunter = '纳财',
+  bond_body_life = '长生',
+  bond_body_life_blessing = '甘露',
+  bond_body_life_power = '生机',
+  bond_body_tactics = '兵法',
+  bond_body_fortress = '不动',
+  bond_body_charge_breaker = '破军',
+  bond_body_blood_demon_satan = '红莲魔君',
+  bond_body_blood_demon_armlet = '血煞魔镯',
+  bond_archery_rapid = '疾风',
+  bond_archery_shooting = '穿云',
+  bond_archery_barrage_moon_blade = '逐日',
+  bond_archery_multishot_volley = '百羽',
+  bond_critical_deadly_magic = '破妄',
+  bond_critical_cannon = '天诛法',
+  bond_critical_cannon_attack = '灭形击',
+  bond_growth_bow_god = '羿神',
+  bond_growth_bow_god_master = '神弓真传',
+}
+
+local function get_group_theme_name(group_id, fallback)
+  return THEMED_GROUP_LABELS[group_id] or fallback or group_id or '未知分类'
+end
+
+local function get_group_choice_theme_name(group_def)
+  if not group_def then
+    return '未命名分组'
+  end
+  return get_group_theme_name(group_def.group_id, group_def.display_name)
+end
+
+local function get_group_choice_desc(group_def)
+  if not group_def then
+    return ''
+  end
+  return THEMED_GROUP_DESCS[group_def.group_id] or group_def.desc or ''
+end
+
+local function get_node_theme_name(node_def, fallback)
+  if not node_def then
+    return fallback or ''
+  end
+  return THEMED_NODE_NAMES[node_def.id] or fallback or node_def.display_name or ''
+end
+
 for _, node_id in ipairs(ROOT_NODE_IDS) do
   ROOT_NODE_ID_SET[node_id] = true
   local node_def = NODE_BY_ID[node_id]
@@ -327,10 +420,7 @@ local function seed_active_stage_nodes_into_pool(runtime)
   end
   runtime.pool_node_ids = runtime.pool_node_ids or {}
   for _, root_id in ipairs(ROOT_NODE_IDS) do
-    local node_def = NODE_BY_ID[root_id]
-    local group_started = node_def and node_def.group_id and runtime.state_ref and is_group_started(runtime.state_ref, node_def.group_id)
-    local allow_root = BondPickConfig.include_group_choices ~= true or group_started
-    local active_tier = allow_root and runtime.state_ref and get_root_active_stage_tier(runtime.state_ref, root_id) or nil
+    local active_tier = runtime.state_ref and get_root_active_stage_tier(runtime.state_ref, root_id) or nil
     for _, node_id in ipairs(active_tier and ROOT_STAGE_NODE_IDS[root_id][active_tier] or {}) do
       runtime.pool_node_ids[node_id] = true
     end
@@ -430,14 +520,17 @@ end
 
 local function format_line_label(node_def)
   if not node_def then
-    return '未知链路'
+    return '未知道统'
   end
 
   local line_defs = LINE_BY_ID[node_def.line_id] or {}
   local line_root = line_defs[1]
-  local group_label = GROUP_LABELS[node_def.group_id] or node_def.group_id or '未知分类'
+  local group_label = get_group_theme_name(
+    node_def.group_id,
+    GROUP_LABELS[node_def.group_id] or node_def.group_id
+  )
   local line_label = line_root and line_root.display_name and line_root.display_name ~= ''
-      and string.format('%s线', line_root.display_name)
+      and string.format('%s线', get_node_theme_name(line_root))
       or (node_def.line_id or '未知路线')
 
   return string.format('%s · %s · 第%d层', group_label, line_label, node_def.tier or 0)
@@ -463,12 +556,18 @@ local function is_transition_advanced_text(text)
   if string.find(value, '已凑齐，开启后续分支', 1, true)
       or string.find(value, '已凑齐,开启后续分支', 1, true)
       or string.find(value, '已凑齐，解锁后续分支', 1, true)
-      or string.find(value, '已凑齐,解锁后续分支', 1, true) then
+      or string.find(value, '已凑齐,解锁后续分支', 1, true)
+      or (string.find(value, '已圆满', 1, true) and string.find(value, '后续道统', 1, true)) then
     return true
   end
 
   if string.find(value, '我要玩', 1, true)
       and string.find(value, '卡池中加入', 1, true) then
+    return true
+  end
+
+  if string.find(value, '机缘已现', 1, true)
+      and (string.find(value, '感应池加入', 1, true) or string.find(value, '卡池中加入', 1, true)) then
     return true
   end
 
@@ -663,9 +762,12 @@ local function build_node_summary_text(node_def)
 end
 
 local function format_root_title(root_def)
-  local group_label = GROUP_LABELS[root_def and root_def.group_id] or root_def and root_def.group_id or '未知分类'
+  local group_label = get_group_theme_name(
+    root_def and root_def.group_id,
+    GROUP_LABELS[root_def and root_def.group_id] or root_def and root_def.group_id
+  )
   local line_label = root_def and root_def.display_name and root_def.display_name ~= ''
-      and string.format('%s线', root_def.display_name)
+      and string.format('%s线', get_node_theme_name(root_def))
       or '未知路线'
   return string.format('%s · %s', group_label, line_label)
 end
@@ -972,7 +1074,7 @@ local function build_line_progress_values(state, node_def)
   local unlocked_count, required_count = build_choice_progress_values(state, node_def)
   return string.format(
     '%s(%d/%d)',
-    set_root_def and set_root_def.display_name or (node_def and node_def.display_name) or '未知羁绊',
+    set_root_def and get_node_theme_name(set_root_def) or (node_def and get_node_theme_name(node_def)) or '未知仙缘',
     unlocked_count,
     required_count
   )
@@ -1047,7 +1149,7 @@ local function get_choice_card_name_text(node_def)
     end
   end
 
-  return node_def.display_name or ''
+  return get_node_theme_name(node_def)
 end
 
 local function build_choice_effect_title(state, node_def)
@@ -1055,8 +1157,8 @@ local function build_choice_effect_title(state, node_def)
     return ''
   end
   local root_def = get_set_root_def(node_def)
-  local line_name = root_def and root_def.display_name or node_def and node_def.display_name or '未知羁绊'
-  return string.format('激活[%s]套装效果：', line_name)
+  local line_name = root_def and get_node_theme_name(root_def) or node_def and get_node_theme_name(node_def) or '未知仙缘'
+  return string.format('悟得[%s]道统真意：', line_name)
 end
 
 local function build_choice_effect_text(node_def)
@@ -1069,6 +1171,25 @@ local function build_choice_effect_text(node_def)
     return trim_choice_prefix(root_meta.effect_text)
   end
   return trim_choice_prefix(get_choice_single_text(root_def))
+end
+
+local function get_owned_tip_effect_text(node_def)
+  local effect_text = get_choice_advanced_text(node_def)
+  if effect_text ~= '' or not node_def or not node_def.parent_id then
+    return effect_text
+  end
+
+  local current = node_def
+  local guard = 0
+  while current and current.parent_id and guard < 16 do
+    current = NODE_BY_ID[current.parent_id]
+    effect_text = get_choice_advanced_text(current)
+    if effect_text ~= '' then
+      return effect_text
+    end
+    guard = guard + 1
+  end
+  return ''
 end
 
 local function compact_tip_text(text)
@@ -1102,15 +1223,16 @@ local function build_owned_group_tip_payload(group_def)
   if not group_def then
     return nil
   end
-  local effect_text = string.format('选择后开放[%s]主链根节点。', group_def.display_name or '该分组')
+  local themed_name = get_group_choice_theme_name(group_def)
+  local effect_text = string.format('感应后开启[%s]道统根脉。', themed_name)
   local tip_model = BondTipModelBuilder.build({
     quality_text = M.get_quality_label(group_def.quality),
-    set_name_text = group_def.display_name or '',
-    progress_text = '(未开启)',
+    set_name_text = themed_name,
+    progress_text = '(未开悟)',
     icon_res = group_def.icon,
-    item_name_text = group_def.display_name or '未命名分组',
-    bonus_text = group_def.desc or '',
-    effect_index_text = '[效果1]',
+    item_name_text = themed_name,
+    bonus_text = get_group_choice_desc(group_def),
+    effect_index_text = '[缘起]',
     effect_body_text = effect_text,
   })
   return {
@@ -1118,7 +1240,7 @@ local function build_owned_group_tip_payload(group_def)
     quality = group_def.quality or 'rare',
     badge_text = M.get_quality_label(group_def.quality),
     icon_res = group_def.icon,
-    title_text = group_def.display_name or '未命名分组',
+    title_text = themed_name,
     bonus_lines = tip_model.bonus_lines,
     effect_area_bonus_count = math.min(3, #tip_model.bonus_lines),
     tip_model = tip_model,
@@ -1133,17 +1255,17 @@ local function build_owned_node_tip_payload(state, node_def)
   local set_root_def = get_set_root_def(node_def) or node_def
   local card_name_text = get_choice_card_name_text(node_def)
   local current_text = build_choice_current_text(node_def)
-  local advanced_text = get_choice_advanced_text(node_def)
+  local advanced_text = get_owned_tip_effect_text(node_def)
   local next_text = build_choice_next_text(node_def)
   local effect_title = build_choice_effect_title(state, node_def)
   local effect_text = build_choice_effect_text(node_def)
   local progress_text = build_line_progress_text(state, node_def)
   local tip_model = BondTipModelBuilder.build({
     quality_text = M.get_quality_label(node_def.quality),
-    set_name_text = set_root_def and set_root_def.display_name or '',
+    set_name_text = set_root_def and get_node_theme_name(set_root_def) or '',
     progress_text = progress_text ~= '' and string.format('(%s)', progress_text) or '',
     icon_res = node_def.icon,
-    item_name_text = card_name_text ~= '' and card_name_text or '未命名羁绊',
+    item_name_text = card_name_text ~= '' and card_name_text or get_node_theme_name(node_def, '未命名仙缘'),
     current_text = current_text,
     effect_body_text = advanced_text,
     set_title_text = effect_title,
@@ -1155,7 +1277,7 @@ local function build_owned_node_tip_payload(state, node_def)
     quality = node_def.quality or 'rare',
     badge_text = M.get_quality_label(node_def.quality),
     icon_res = node_def.icon,
-    title_text = card_name_text ~= '' and card_name_text or '未命名羁绊',
+    title_text = card_name_text ~= '' and card_name_text or get_node_theme_name(node_def, '未命名仙缘'),
     bonus_lines = tip_model.bonus_lines,
     effect_area_bonus_count = math.min(3, #tip_model.bonus_lines),
     tip_model = tip_model,
@@ -1177,11 +1299,11 @@ local function build_choice_body_blocks(state, node_def, current_text, advanced_
   if node_def and node_def.parent_id and own_effect_text ~= '' then
     body_blocks[#body_blocks + 1] = {
       kind = 'effect_title',
-      text = '套装效果：',
+      text = '道统真意：',
       color = 'gold',
       segments = {
         {
-          text = '套装效果：',
+          text = '道统真意：',
           color = 'gold',
         },
       },
@@ -1224,7 +1346,7 @@ local function build_def_name_list(defs, max_count)
     if index > limit then
       break
     end
-    names[#names + 1] = def.display_name
+    names[#names + 1] = get_node_theme_name(def)
   end
   if #defs > limit then
     names[#names + 1] = string.format('等%d个', #defs)
@@ -1342,6 +1464,8 @@ local function build_root_overview_entry(state, root_id)
     group_id = root_def.group_id,
     group_name = GROUP_LABELS[root_def.group_id] or root_def.group_id,
     display_name = root_def.display_name,
+    pretty_group_name = get_group_theme_name(root_def.group_id, GROUP_LABELS[root_def.group_id] or root_def.group_id),
+    pretty_display_name = get_node_theme_name(root_def),
     title = format_root_title(root_def),
     status = status,
     started = started,
@@ -1407,13 +1531,15 @@ local function build_choice_entry(state, node_def, index)
   local next_text = build_choice_next_text(node_def)
   local effect_title = build_choice_effect_title(state, node_def)
   local effect_text = build_choice_effect_text(node_def)
-  local subtitle_text = card_name_text ~= '' and card_name_text or node_def.display_name
+  local subtitle_text = card_name_text ~= '' and card_name_text or get_node_theme_name(node_def)
   local progress_text = build_line_progress_text(state, node_def)
+  local themed_set_name = display_set_root_def and get_node_theme_name(display_set_root_def) or get_node_theme_name(node_def)
 
   return {
     index = index,
     node_id = node_def.id,
     display_name = node_def.display_name,
+    pretty_display_name = get_node_theme_name(node_def),
     quality = node_def.quality or 'rare',
     ui_icon = node_def.icon,
     icon = node_def.icon,
@@ -1426,7 +1552,7 @@ local function build_choice_entry(state, node_def, index)
     template = node_def.template,
     title_text = string.format(
       '%s (%s)',
-      display_set_root_def and display_set_root_def.display_name or node_def.display_name,
+      themed_set_name,
       progress_text
     ),
     subtitle_text = subtitle_text,
@@ -1446,9 +1572,10 @@ local function build_choice_entry(state, node_def, index)
 end
 
 local function build_group_choice_entry(group_def, index)
-  local title_text = string.format('%s (未开启)', group_def.display_name or '未命名分组')
-  local current_text = group_def.desc or ''
-  local effect_text = string.format('选择后开放[%s]主链根节点。', group_def.display_name or '该分组')
+  local themed_name = get_group_choice_theme_name(group_def)
+  local title_text = string.format('%s (未开悟)', themed_name)
+  local current_text = get_group_choice_desc(group_def)
+  local effect_text = string.format('感应后开启[%s]道统根脉。', themed_name)
 
   return {
     index = index,
@@ -1456,12 +1583,13 @@ local function build_group_choice_entry(group_def, index)
     group_choice_id = group_def.id,
     group_id = group_def.group_id,
     display_name = group_def.display_name,
+    pretty_display_name = themed_name,
     quality = group_def.quality or 'rare',
     ui_icon = group_def.icon,
     icon = group_def.icon,
     title_text = title_text,
-    subtitle_text = '主链分组',
-    progress_text = '未开启',
+    subtitle_text = '道统分脉',
+    progress_text = '未开悟',
     current_text = current_text,
     advanced_text = '',
     next_text = '',
@@ -1691,12 +1819,6 @@ local function collect_candidate_choice_entries(state)
   for _, node_def in ipairs(M.get_candidate_nodes(state)) do
     candidate_defs[#candidate_defs + 1] = node_def
   end
-  if BondPickConfig.include_group_choices then
-    for _, group_def in ipairs(get_group_choice_defs(state)) do
-      candidate_defs[#candidate_defs + 1] = group_def
-    end
-  end
-
   local choice_count = BondPickConfig.choice_count or 3
   local choices = pick_random_candidates(state, candidate_defs, choice_count)
 
@@ -1871,11 +1993,6 @@ function M.can_unlock_node(state, node_id)
     return false
   end
   if not root_def then
-    return false
-  end
-  local group_started = root_def.group_id and is_group_started(state, root_def.group_id)
-  local allow_root = BondPickConfig.include_group_choices ~= true or group_started
-  if not allow_root then
     return false
   end
   local active_tier = get_root_active_stage_tier(state, root_def.id)
@@ -2195,14 +2312,14 @@ function M.try_draw(env)
 
   if runtime.awaiting_choice and runtime.current_choices and #runtime.current_choices > 0 then
     if env and env.message then
-      env.message('继续当前 F 链式羁绊三选一。')
+      env.message('继续当前 F 仙缘感应三选一。')
     end
     return true
   end
 
   if not state.resources or (state.resources.wood or 0) < BOND_DRAW_COST then
     if env and env.message then
-      env.message('木材不足，无法进行链式羁绊抽取。')
+      env.message('木材不足，无法进行仙缘感应。')
     end
     return false
   end
@@ -2210,7 +2327,7 @@ function M.try_draw(env)
   local choices = collect_candidate_choice_entries(state)
   if #choices == 0 then
     if env and env.message then
-      env.message('当前没有可选的链式羁绊节点。')
+      env.message('当前没有可感应的仙缘节点。')
     end
     return false
   end
@@ -2226,7 +2343,7 @@ function M.try_draw(env)
   runtime.current_round = runtime.current_offer_round
 
   if env and env.message then
-    env.message('链式羁绊 3选1：按 1 / 2 / 3 选择。')
+    env.message('仙缘感应 3选1：按 1 / 2 / 3 选择。')
   end
   return true
 end
@@ -2241,7 +2358,7 @@ function M.refresh_choice(env)
   local choices = collect_candidate_choice_entries(state)
   if #choices == 0 then
     if env and env.message then
-      env.message('当前没有可刷新的链式羁绊候选。')
+      env.message('当前没有可刷新的仙缘候选。')
     end
     return false
   end
@@ -2254,21 +2371,21 @@ function M.refresh_choice(env)
   if (round.free_refresh_left or 0) > 0 then
     round.free_refresh_left = round.free_refresh_left - 1
     if env and env.message then
-      env.message(string.format('已免费刷新 F 链式羁绊三选一，剩余免费次数 %d。', round.free_refresh_left))
+      env.message(string.format('已免费刷新 F 仙缘感应三选一，剩余免费次数 %d。', round.free_refresh_left))
     end
   else
     local cost = get_refresh_cost(round.refresh_paid_count or 0)
     local wood = state.resources and state.resources.wood or 0
     if wood < cost then
       if env and env.message then
-        env.message(string.format('木材不足，刷新 F 链式羁绊三选一需要 %d 木材。', cost))
+        env.message(string.format('木材不足，刷新 F 仙缘感应三选一需要 %d 木材。', cost))
       end
       return false
     end
     state.resources.wood = wood - cost
     round.refresh_paid_count = (round.refresh_paid_count or 0) + 1
     if env and env.message then
-      env.message(string.format('已消耗 %d 木材刷新 F 链式羁绊三选一。', cost))
+      env.message(string.format('已消耗 %d 木材刷新 F 仙缘感应三选一。', cost))
     end
   end
 
@@ -2302,7 +2419,7 @@ function M.apply_choice(env, index)
     runtime.current_round = nil
 
     if env and env.message then
-      env.message('已开启羁绊主链：' .. tostring(choice.display_name or choice.group_id) .. '。')
+      env.message('已开启仙缘道统：' .. tostring(choice.pretty_display_name or choice.display_name or choice.group_id) .. '。')
     end
     M.show_loadout(env)
     return true
@@ -2315,7 +2432,7 @@ function M.apply_choice(env, index)
   local node_def, unlock_rewards_or_err = M.unlock_node(state, choice.node_id)
   if not node_def then
     if env and env.message then
-      env.message('羁绊节点解锁失败：' .. tostring(unlock_rewards_or_err))
+      env.message('仙缘节点解锁失败：' .. tostring(unlock_rewards_or_err))
     end
     return false
   end
@@ -2328,7 +2445,7 @@ function M.apply_choice(env, index)
   sync_attr_bonuses_to_hero(env)
 
   if env and env.message then
-    env.message(string.format('已解锁链式羁绊：%s。', node_def.display_name))
+    env.message(string.format('已参悟仙缘：%s。', get_node_theme_name(node_def)))
     if unlock_rewards_or_err and #unlock_rewards_or_err > 0 then
       env.message('节点奖励：' .. table.concat(unlock_rewards_or_err, '，') .. '。')
     end
@@ -2340,7 +2457,7 @@ end
 function M.build_slot_text(state, slot)
   local runtime = get_runtime(state)
   if not runtime then
-    return string.format('%d号羁绊位 空', slot)
+    return string.format('%d号仙缘位 空', slot)
   end
 
   local node_id = runtime.owned_node_order[slot]
@@ -2349,36 +2466,36 @@ function M.build_slot_text(state, slot)
     node_def = GROUP_CHOICE_DEFS[string.sub(node_id, 9)]
   end
   if not node_def then
-    return string.format('%d号羁绊位 空', slot)
+    return string.format('%d号仙缘位 空', slot)
   end
 
   if node_id and string.sub(node_id, 1, 8) == '__group_' then
     return string.format(
-      '%d号羁绊位 [%s]%s | %s',
+      '%d号仙缘位 [%s]%s | %s',
       slot,
       M.get_quality_label(node_def.quality),
-      node_def.display_name,
-      node_def.desc or ''
+      get_group_choice_theme_name(node_def),
+      get_group_choice_desc(node_def)
     )
   end
 
   local summary = build_node_summary_text(node_def)
   if summary ~= '' then
     return string.format(
-      '%d号羁绊位 [%s]%s | %s | %s',
+      '%d号仙缘位 [%s]%s | %s | %s',
       slot,
       M.get_quality_label(node_def.quality),
-      node_def.display_name,
+      get_node_theme_name(node_def),
       format_line_label(node_def),
       summary
     )
   end
 
   return string.format(
-    '%d号羁绊位 [%s]%s | %s',
+    '%d号仙缘位 [%s]%s | %s',
     slot,
     M.get_quality_label(node_def.quality),
-    node_def.display_name,
+    get_node_theme_name(node_def),
     format_line_label(node_def)
   )
 end
@@ -2421,13 +2538,13 @@ function M.show_loadout(env)
   local runtime = get_runtime(state)
   if not runtime or #runtime.owned_node_order == 0 then
     if env and env.message then
-      env.message('链式羁绊栏：暂无已解锁节点。')
+      env.message('仙缘图谱栏：暂无已参悟节点。')
     end
     return
   end
 
   if env and env.message then
-    env.message('链式羁绊栏：')
+    env.message('仙缘图谱栏：')
     for slot = 1, 7 do
       env.message(M.build_slot_text(state, slot))
     end
@@ -2440,7 +2557,7 @@ function M.build_choice_preview_text(index, choice)
   end
 
   local parts = {
-    string.format('%d. %s', index or 1, choice.display_name or choice.title_text or '未命名节点'),
+    string.format('%d. %s', index or 1, choice.pretty_display_name or choice.display_name or choice.title_text or '未命名节点'),
   }
 
   for _, text in ipairs(build_choice_preview_segments(choice)) do
@@ -2482,7 +2599,7 @@ function M.build_progress_lines(state, max_lines)
 
   local remaining = (#started_lines + #frontier_lines) - #result
   if remaining > 0 then
-    result[#result + 1] = string.format('其余 %d 条链路可在抽卡界面查看。', remaining)
+    result[#result + 1] = string.format('其余 %d 条道统可在仙缘感应界面查看。', remaining)
   end
   return result
 end
@@ -2516,7 +2633,7 @@ function M.show_bond_progress(env)
   local state = env and env.STATE
   local lines = M.build_progress_lines(state, 10)
   if env and env.message then
-    env.message('链式羁绊链路进度：')
+    env.message('仙缘道统进境：')
     for _, line in ipairs(lines) do
       env.message(line)
     end
@@ -2528,13 +2645,13 @@ function M.debug_grant_card(env, node_id)
   local runtime = ensure_runtime(state)
   local node_def = get_node_def(node_id)
   if not runtime or not node_def then
-    return false, '未知链式羁绊节点。'
+    return false, '未知仙缘节点。'
   end
   if M.is_node_unlocked(state, node_def.id) then
-    return false, '该链式羁绊节点已经解锁。'
+    return false, '该仙缘节点已经参悟。'
   end
   if not M.can_unlock_node(state, node_def.id) then
-    return false, '前置节点未满足，无法直接解锁该链式羁绊节点。'
+    return false, '前置缘法未满足，无法直接参悟该仙缘节点。'
   end
 
   local unlocked, err = M.unlock_node(state, node_def.id)
@@ -2542,7 +2659,7 @@ function M.debug_grant_card(env, node_id)
     return false, '节点解锁失败：' .. tostring(err)
   end
 
-  return true, string.format('已解锁链式羁绊节点：%s。', unlocked.display_name)
+  return true, string.format('已参悟仙缘节点：%s。', get_node_theme_name(unlocked))
 end
 
 return M

@@ -64,7 +64,7 @@ def test_runtime_copy_uses_chapter_and_battle_objective_language() -> None:
     assert "自动任务" not in panel1_top
     assert "主线任务" not in panel1_top
 
-    assert "章节 1-1" in stages_csv
+    assert "花果山洞-1" in stages_csv
     assert "主线 1-1" not in stages_csv
 
     assert panel_json.get("name") == "MainlineTaskPanel"

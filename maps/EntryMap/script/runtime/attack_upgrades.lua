@@ -154,7 +154,7 @@ function M.create(env)
     skill_upgrade({
       key = 'basic_attack_damage',
       skill_id = 'basic_attack',
-      name = '强化箭矢',
+      name = '凝锋',
       desc = '普攻伤害 +15%。',
       max_picks = 4,
       route_tags = { 'basic_attack' },
@@ -165,9 +165,22 @@ function M.create(env)
       end,
     }),
     skill_upgrade({
+      key = 'basic_rapid_edge',
+      skill_id = 'basic_attack',
+      name = '御剑回环',
+      desc = '普攻间隔缩短 8%。',
+      max_picks = 4,
+      route_tags = { 'basic_attack', 'tempo' },
+      apply = function()
+        local skill = get_attack_skill('basic_attack')
+        skill.cooldown_reduction = math.min(0.55, (skill.cooldown_reduction or 0) + 0.08)
+        sync_basic_attack_ability()
+      end,
+    }),
+    skill_upgrade({
       key = 'basic_splitshot',
       skill_id = 'basic_attack',
-      name = '分裂箭矢',
+      name = '分光剑影',
       desc = '普攻额外分裂 1 个目标，分裂伤害 +15%。',
       max_picks = 3,
       route_tags = { 'basic_attack', 'barrage', 'clear' },
@@ -196,7 +209,7 @@ function M.create(env)
     skill_upgrade({
       key = 'basic_sunder',
       skill_id = 'basic_attack',
-      name = '破甲强弩',
+      name = '裂甲飞锋',
       desc = '普攻附加破甲，持续时间 +1 秒，叠层上限 +1。',
       max_picks = 3,
       route_tags = { 'basic_attack', 'armor_break', 'boss' },

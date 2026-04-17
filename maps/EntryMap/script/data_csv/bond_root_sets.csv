@@ -1,7 +1,7 @@
 root_id,required_count,completion_mode,base_text,effect_text
-bond_body_core,3,consume_all,生命值 + 100，力量 + 50,斗气场域：每秒对周围1200范围内的敌人造成60%力量的自适应伤害
-bond_economy_core,3,consume_all,杀敌金币 + 10%,每秒木材+0.5，每秒金币+15。
-bond_magic_core,3,consume_all,技能伤害 + 5%,魔爆术：每隔18秒，触发1次魔爆术，对300范围内的敌人造成200%智力的自适应伤害
-bond_archery_core,3,consume_all,攻击力 + 50，弹射伤害 + 5%,穿云箭：每攻击15次，射出1支穿云箭，对直线敌人造成300%敏捷的自适应伤害
-bond_critical_core,2,consume_all,物理暴击 + 3%，魔法暴击 + 3%,物理暴击+4%，魔法暴击+4%。
-bond_growth_core,4,consume_all,每秒智力 + 0.5,每秒木材+0.3，杀敌力量+0.1，杀敌敏捷+0.1，杀敌智力+0.1。
+bond_body_core,3,consume_all,金刚体魄：生命值 + 100，力量 + 50,斗气场域：每秒对周围1200范围内的敌人造成60%力量的自适应伤害。
+bond_economy_core,3,consume_all,天府福缘：杀敌金币 + 10%,天府流财：每秒木材+0.5，每秒金币+15。
+bond_magic_core,3,consume_all,玄门法意：技能伤害 + 5%,玄门雷爆：魔爆术：每隔18秒，触发1次魔爆术，对300范围内的敌人造成200%智力的自适应伤害。
+bond_archery_core,3,consume_all,天弓初悟：攻击力 + 50，弹射伤害 + 5%,穿云箭：每攻击15次，射出1支穿云箭，对直线敌人造成300%敏捷的自适应伤害。
+bond_critical_core,2,consume_all,诛心初悟：物理暴击 + 3%，魔法暴击 + 3%,诛心真诀：物理暴击+4%，魔法暴击+4%。
+bond_growth_core,4,consume_all,仙途初悟：每秒智力 + 0.5,仙途灵蕴：每秒木材+0.3，杀敌力量+0.1，杀敌敏捷+0.1，杀敌智力+0.1。
