@@ -1,4 +1,4 @@
-# UI 开发规则
+﻿# UI 开发规则
 
 > Y3 UI 系统的特殊规则和常见陷阱
 
@@ -42,32 +42,18 @@
     ├─ 需要新建 UI → y3-ui-generator（生成 JSON）
     │       └─ 草图 → HTML 预览 → 转换 JSON
     │
-    └─ 需要 Lua 代码 → y3-ui-official（API 参考）
+    └─ 需要 Lua 代码 → y3-lua-pipeline（API 参考）
 ```
-
-### 自动触发规则
-
-- 用户描述 `完整 UI 需求` 时，默认触发 `y3-ui-pipeline`
-- 用户明确说 `只生成 UI JSON / 只创建画板 / 用 y3-ui-generator` 时，允许直达 `y3-ui-generator`
-- 用户明确说 `只写 UI Lua / 只接点击悬停显示隐藏 / 用官方 UI API` 时，允许直达 `y3-ui-official`
-- 如果同一句话里既包含 `新建 UI` 又包含 `交互逻辑`，仍然优先走 `y3-ui-pipeline`
-
-### 统一口径
-
-- `y3-ui-pipeline` = UI 统一入口
-- `y3-ui-generator` = UI 资源生成
-- `y3-ui-official` = UI 交互逻辑
 
 ### 禁止手写 UI JSON！
 
-UI JSON 文件通常 300+ 行，必须使用 `y3-ui-generator` 技能通过 HTML 转换生成。
-
-> 详细边界见 `knowledge/UI系统/UI技能自动路由规范.md`
+UI JSON 文件通常 200+ 行，必须使用 `y3-ui-generator` 技能通过 HTML 转换生成。
 
 ## 📚 参考文档
 
 | 文档 | 路径 |
 |------|------|
-| UI 字段规范 | `knowledge/05-UI字段规范.md` |
-| 官方组件指南 | `knowledge/08-官方UI组件.md` |
-| 控件适配规则 | `knowledge/16-UI控件适配规则.md` |
+| UI 字段规范 | `knowledge/UI系统/01-字段规范.md` |
+| 官方组件指南 | `knowledge/UI系统/03-官方组件.md` |
+| 控件适配规则 | `knowledge/UI系统/07-控件适配规则.md` |
+
