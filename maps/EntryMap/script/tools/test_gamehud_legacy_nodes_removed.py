@@ -4,25 +4,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 GAMEHUD_PATH = ROOT / "ui" / "GameHUD.json"
-LEGACY_NAMES = {
+REQUIRED_NAMES = {
+    "GameHUD",
+    "main",
+    "main_unit",
     "main_hp_bar",
     "main_mp_bar",
-    "player_attr_list",
     "inventory",
-    "bag_btn",
-    "bag",
-    "hero_1",
-    "hero_2",
-    "hero_3",
-    "hero_4",
-    "hero_5",
-    "hero_6",
-    "hero_7",
-    "hero_8",
-    "hero_9",
-    "hero_10",
-    "hero_11",
-    "hero_12",
+    "skill_list",
+    "tips_node",
 }
 
 
@@ -32,15 +22,14 @@ def walk_names(node):
         yield from walk_names(child)
 
 
-def test_gamehud_legacy_nodes_removed():
+def test_gamehud_current_runtime_nodes_present():
     data = json.loads(GAMEHUD_PATH.read_text(encoding="utf-8"))
     all_names = set(walk_names(data))
 
-    assert "hud_root" in all_names
-
-    remaining = LEGACY_NAMES & all_names
-    assert not remaining, f"Legacy GameHUD nodes still present: {sorted(remaining)}"
+    missing = REQUIRED_NAMES - all_names
+    assert not missing, f"GameHUD current runtime nodes missing: {sorted(missing)}"
+    assert "hud_root" not in all_names
 
 
 if __name__ == "__main__":
-    test_gamehud_legacy_nodes_removed()
+    test_gamehud_current_runtime_nodes_present()

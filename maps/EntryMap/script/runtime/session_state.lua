@@ -100,6 +100,8 @@ function M.create(env)
     STATE.choice_panel_hidden = false
     STATE.choice_panel = nil
     STATE.game_finished = false
+    STATE.runtime_ui_fault_logged = false
+    STATE.runtime_ui_fault_message = nil
   end
 
   local function reset_session_state()
@@ -133,6 +135,27 @@ function M.create(env)
       outgame_system.set_ui_visible(true)
       outgame_system.refresh_ui()
     end
+    return false
+  end
+
+  local function try_initialize_battle_ui()
+    local ok, err = pcall(function()
+      ensure_runtime_hud()
+      set_battle_hud_visible(true)
+      refresh_runtime_hud()
+    end)
+    if ok then
+      STATE.runtime_ui_fault_logged = false
+      STATE.runtime_ui_fault_message = nil
+      return true
+    end
+
+    local err_text = tostring(err)
+    if STATE.runtime_ui_fault_logged ~= true or STATE.runtime_ui_fault_message ~= err_text then
+      print(string.format('[session_state] battle ui init failed, continue stage start: %s', err_text))
+    end
+    STATE.runtime_ui_fault_logged = true
+    STATE.runtime_ui_fault_message = err_text
     return false
   end
 
@@ -200,9 +223,7 @@ function M.create(env)
     end
     initialize_hero_progression()
     setup_basic_attack_ability()
-    ensure_runtime_hud()
-    set_battle_hud_visible(true)
-    refresh_runtime_hud()
+    try_initialize_battle_ui()
 
     if stage_def.content_source_stage_id and stage_def.content_source_stage_id ~= stage_def.stage_id then
     end

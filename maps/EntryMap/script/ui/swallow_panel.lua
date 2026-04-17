@@ -89,8 +89,8 @@ function M.create(env)
 
     if not entries or #entries == 0 then
       return {
-        '当前还没有已吞噬羁绊。',
-        '吞噬后会按“最新在前”记录在这里。',
+        '当前还没有已炼化仙缘。',
+        '炼化后的仙缘会按“最新在前”留存在这里。',
       }
     end
 
@@ -102,7 +102,7 @@ function M.create(env)
         '%02d. [%s] %s',
         index,
         quality_label(entry.quality),
-        tostring(entry.display_name or entry.title or entry.root_id or '未命名羁绊')
+        tostring(entry.pretty_display_name or entry.title or entry.display_name or entry.root_id or '未命名仙缘')
       )
     end
 
@@ -118,15 +118,27 @@ function M.create(env)
     if STATE.swallow_panel and is_alive(STATE.swallow_panel.root) then
       return STATE.swallow_panel
     end
+    if STATE.swallow_panel_unavailable == true then
+      return nil
+    end
 
     local hud = get_hud_root()
     if not hud then
       return nil
     end
 
-    local prefab = y3.ui_prefab.create(get_player(), '吞噬界面', hud)
+    local ok, prefab = pcall(y3.ui_prefab.create, get_player(), '吞噬界面', hud)
+    if not ok or not prefab then
+      STATE.swallow_panel_unavailable = true
+      if message and not STATE.swallow_panel_unavailable_warned then
+        STATE.swallow_panel_unavailable_warned = true
+        message('炼化图谱预制体缺失，已自动跳过该面板。')
+      end
+      return nil
+    end
     local root = prefab and prefab:get_child() or nil
     if not root then
+      STATE.swallow_panel_unavailable = true
       return nil
     end
 
@@ -177,7 +189,7 @@ function M.create(env)
 
     local entries = get_consumed_bond_entries and get_consumed_bond_entries(#panel.icon_slots) or {}
     if panel.title and is_alive(panel.title) then
-      panel.title:set_text(string.format('已吞噬（最新在前） %d', #entries))
+      panel.title:set_text(string.format('已炼化仙缘（最新在前） %d', #entries))
     end
 
     for index, slot in ipairs(panel.icon_slots or {}) do
@@ -215,7 +227,7 @@ function M.create(env)
     local panel = ensure_panel()
     if not panel then
       if message then
-        message('吞噬界面加载失败，先用文字模式展示。')
+        message('炼化图谱加载失败，先用文字模式展示。')
       end
       return nil
     end

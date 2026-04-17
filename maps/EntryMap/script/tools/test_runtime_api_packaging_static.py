@@ -58,8 +58,9 @@ def test_consumers_use_split_runtime_packages() -> None:
     assert "env.get_mainline_task_summary" not in runtime_hud_panel1_top
     assert "env.toggle_mainline_task_auto_track" not in runtime_hud_panel1_top
 
-    assert "env.stage_runtime and env.stage_runtime.start_selected_stage" in outgame
-    assert "env.start_selected_stage" not in outgame
+    assert "env.stage_runtime" in outgame
+    assert "env.stage_runtime.start_selected_stage" in outgame
+    assert "env.start_selected_stage(" not in outgame
 
 
 if __name__ == "__main__":

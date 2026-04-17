@@ -1,8 +1,3 @@
-﻿local theme = require 'ui.theme'
-local Factory = require 'ui.factory'
-local layout = require 'ui.outgame_layout'
-
-local skin = require 'ui.skin'
 local M = {}
 
 function M.create(env)
@@ -12,15 +7,6 @@ function M.create(env)
   local message = env.message
   local play_ui_click = env.play_ui_click
   local ensure_music_loop = env.ensure_music_loop
-  local factory = Factory.create(env)
-
-  local create_panel = factory.create_panel
-  local create_text = factory.create_text
-  local create_button = factory.create_button
-  local set_percent_pos = factory.set_percent_pos
-  local get_hud_scale = factory.get_hud_scale
-  local scaled = factory.scaled
-  local outgame_skin = skin.images.outgame or {}
 
   local STAGE_LIST = CONFIG.stages and CONFIG.stages.list or {}
   local STAGES_BY_ID = CONFIG.stages and CONFIG.stages.by_id or {}
@@ -29,39 +15,71 @@ function M.create(env)
   local OUTGAME_ATTR_BONUS_BY_STAGE_MODE = CONFIG.outgame_attr_bonus_config
     and CONFIG.outgame_attr_bonus_config.by_stage_mode
     or {}
-  local STAGE_PAGE_SIZE = 3
+  local STAGE_PAGE_SIZE = 5
   local CHAPTER_LIST = {}
   local STAGES_BY_CHAPTER = {}
+  local PAGE_LIST = {}
+  local PAGES_BY_CHAPTER = {}
+  local PAGE_BY_STAGE_ID = {}
+  local MAX_CHAPTER_PAGE_COUNT = 0
+  local MAX_CHAPTER_DIFFICULTY_COUNT = 0
+  local SINGLE_MODE_ID = 'standard'
+  local SINGLE_MODE_LABEL = '主线模式'
+  local COLOR = {
+    selected_bg = { 84, 138, 226, 255 },
+    selected_text = { 245, 248, 255, 255 },
+    available_bg = { 40, 58, 92, 236 },
+    available_text = { 220, 232, 246, 255 },
+    locked_bg = { 34, 38, 48, 214 },
+    locked_text = { 164, 172, 186, 255 },
+    cleared_bg = { 58, 100, 82, 232 },
+    cleared_text = { 232, 246, 238, 255 },
+    start_ready_bg = { 82, 132, 96, 236 },
+    start_locked_bg = { 58, 62, 72, 214 },
+  }
 
   local api = {}
 
-  local function get_hud_root()
-    local ok, hud = pcall(y3.ui.get_ui, env.get_player(), 'GameHUD')
-    if not ok or not hud then
+  local function resolve_ui(path)
+    local ok, ui = pcall(y3.ui.get_ui, env.get_player(), path)
+    if not ok or not ui then
       return nil
     end
-    return hud
+    return ui
   end
 
-  local function create_fullscreen_root(hud)
-    local root = hud:create_child('图片')
-    local width = math.floor((hud:get_width() or 0) + 0.5)
-    local height = math.floor((hud:get_height() or 0) + 0.5)
-    if width <= 0 then
-      width = math.floor((y3.ui.get_window_width() or 1920) + 0.5)
+  local function is_ui_alive(ui)
+    return ui and (not ui.is_removed or not ui:is_removed())
+  end
+
+  local function set_visible_if_alive(ui, visible)
+    if is_ui_alive(ui) and ui.set_visible then
+      ui:set_visible(visible == true)
     end
-    if height <= 0 then
-      height = math.floor((y3.ui.get_window_height() or 1080) + 0.5)
+  end
+
+  local function set_text_if_alive(ui, text)
+    if is_ui_alive(ui) and ui.set_text then
+      ui:set_text(text or '')
     end
-    root:set_ui_size(width, height)
-    root:set_anchor(0.5, 0.5)
-    root:set_pos(width * 0.5, height * 0.5)
-    root:set_image(999)
-    root:set_image_color(6, 10, 18, 220)
-    root:set_z_order(30000)
-    root:set_visible(true)
-    root:set_intercepts_operations(true)
-    return root
+  end
+
+  local function set_text_color_if_alive(ui, color)
+    if is_ui_alive(ui) and ui.set_text_color and color then
+      ui:set_text_color(color[1], color[2], color[3], color[4] or 255)
+    end
+  end
+
+  local function set_image_color_if_alive(ui, color)
+    if is_ui_alive(ui) and ui.set_image_color and color then
+      ui:set_image_color(color[1], color[2], color[3], color[4] or 255)
+    end
+  end
+
+  local function set_intercepts_if_alive(ui, intercepts)
+    if is_ui_alive(ui) and ui.set_intercepts_operations then
+      ui:set_intercepts_operations(intercepts == true)
+    end
   end
 
   local function parse_stage_id(stage_id)
@@ -73,7 +91,18 @@ function M.create(env)
     if stage_def and stage_def.display_name and stage_def.display_name ~= '' then
       return stage_def.display_name
     end
-    return tostring(fallback_stage_id or '未命名章节')
+    return tostring(fallback_stage_id or '未命名关卡')
+  end
+
+  local function get_mode_ui_label(mode_id)
+    if mode_id == SINGLE_MODE_ID then
+      return SINGLE_MODE_LABEL
+    end
+    local mode_def = MODES_BY_ID[mode_id]
+    if mode_def and mode_def.display_name and mode_def.display_name ~= '' then
+      return mode_def.display_name
+    end
+    return SINGLE_MODE_LABEL
   end
 
   for _, stage_def in ipairs(STAGE_LIST) do
@@ -84,60 +113,70 @@ function M.create(env)
       CHAPTER_LIST[#CHAPTER_LIST + 1] = chapter_id
     end
     STAGES_BY_CHAPTER[chapter_id][#STAGES_BY_CHAPTER[chapter_id] + 1] = stage_def
+    MAX_CHAPTER_DIFFICULTY_COUNT = math.max(MAX_CHAPTER_DIFFICULTY_COUNT, #STAGES_BY_CHAPTER[chapter_id])
   end
-
   table.sort(CHAPTER_LIST)
 
   local function get_chapter_stage_list(chapter_id)
     return STAGES_BY_CHAPTER[chapter_id] or {}
   end
 
-  local function get_chapter_name(chapter_id)
+  local function get_chapter_display_text(chapter_id)
     local chapter_stages = get_chapter_stage_list(chapter_id)
     local first_stage = chapter_stages[1]
-    local chapter_name = tostring(get_stage_display_text(first_stage, chapter_id)):match('^(.-)%-%d+$')
-    if chapter_name and chapter_name ~= '' then
-      return chapter_name
+    local display = get_stage_display_text(first_stage, string.format('%s-1', tostring(chapter_id or 1)))
+    local chapter_name = tostring(display):gsub('%-%d+$', '')
+    if chapter_name == '' then
+      return tostring(chapter_id or '未命名章节')
     end
-    return string.format('第%d章', tonumber(chapter_id) or 1)
+    return chapter_name
   end
 
-  local function get_stage_page_count(chapter_id)
-    local chapter_stages = get_chapter_stage_list(chapter_id)
-    return math.max(1, math.ceil(#chapter_stages / STAGE_PAGE_SIZE))
-  end
-
-  local function get_stage_page_index(stage_id)
-    local _, stage_index = parse_stage_id(stage_id)
-    if not stage_index or stage_index <= 0 then
-      return 1
+  local function get_page_label(page_stages)
+    local first_stage = page_stages[1]
+    local last_stage = page_stages[#page_stages]
+    if not first_stage or not last_stage then
+      return '暂无关卡'
     end
-    return math.max(1, math.floor((stage_index - 1) / STAGE_PAGE_SIZE) + 1)
+    if first_stage.stage_id == last_stage.stage_id then
+      return first_stage.stage_id
+    end
+    return string.format('%s ~ %s', first_stage.stage_id, last_stage.stage_id)
   end
 
-  local function get_page_stage_defs(stage_id)
-    local chapter_id = select(1, parse_stage_id(stage_id))
-    chapter_id = chapter_id or CHAPTER_LIST[1] or 1
-
-    local chapter_stages = get_chapter_stage_list(chapter_id)
-    local page_index = get_stage_page_index(stage_id)
-    local page_count = get_stage_page_count(chapter_id)
-    local start_index = ((page_index - 1) * STAGE_PAGE_SIZE) + 1
-    local visible_stages = {}
-
-    for offset = 0, STAGE_PAGE_SIZE - 1 do
-      local stage_def = chapter_stages[start_index + offset]
-      if not stage_def then
-        break
+  do
+    local global_index = 0
+    for _, chapter_id in ipairs(CHAPTER_LIST) do
+      local chapter_stages = get_chapter_stage_list(chapter_id)
+      local chapter_page_index = 0
+      for start_index = 1, #chapter_stages, STAGE_PAGE_SIZE do
+        chapter_page_index = chapter_page_index + 1
+        global_index = global_index + 1
+        local page_stages = {}
+        for offset = 0, STAGE_PAGE_SIZE - 1 do
+          local stage_def = chapter_stages[start_index + offset]
+          if not stage_def then
+            break
+          end
+          page_stages[#page_stages + 1] = stage_def
+        end
+        local page_def = {
+          id = string.format('page_%d', global_index),
+          global_index = global_index,
+          chapter_id = chapter_id,
+          chapter_page_index = chapter_page_index,
+          stages = page_stages,
+          label = get_page_label(page_stages),
+        }
+        PAGE_LIST[#PAGE_LIST + 1] = page_def
+        PAGES_BY_CHAPTER[chapter_id] = PAGES_BY_CHAPTER[chapter_id] or {}
+        PAGES_BY_CHAPTER[chapter_id][#PAGES_BY_CHAPTER[chapter_id] + 1] = page_def
+        MAX_CHAPTER_PAGE_COUNT = math.max(MAX_CHAPTER_PAGE_COUNT, #PAGES_BY_CHAPTER[chapter_id])
+        for _, stage_def in ipairs(page_stages) do
+          PAGE_BY_STAGE_ID[stage_def.stage_id] = page_def
+        end
       end
-      visible_stages[#visible_stages + 1] = stage_def
     end
-
-    return chapter_id, page_index, page_count, visible_stages
-  end
-
-  local function get_stage_count_text()
-    return string.format('已接入 %d 章 / %d 关', #CHAPTER_LIST, #STAGE_LIST)
   end
 
   local function is_stage_supported_mode(stage_def, mode_id)
@@ -165,15 +204,13 @@ function M.create(env)
   end
 
   local function is_mode_unlocked(profile, stage_id, mode_id)
+    mode_id = mode_id or SINGLE_MODE_ID
     local progress = get_stage_progress(profile, stage_id)
     if not progress then
       return false
     end
-    if mode_id == 'standard' then
+    if mode_id == SINGLE_MODE_ID then
       return progress.standard_unlocked == true
-    end
-    if mode_id == 'challenge' then
-      return progress.challenge_unlocked == true
     end
     return false
   end
@@ -211,6 +248,44 @@ function M.create(env)
     return fallback
   end
 
+  local function get_selected_chapter_id(stage_id)
+    return select(1, parse_stage_id(stage_id)) or CHAPTER_LIST[1]
+  end
+
+  local function get_chapter_progress_state(profile, chapter_id)
+    local unlocked_count = 0
+    local cleared_count = 0
+    for _, stage_def in ipairs(get_chapter_stage_list(chapter_id)) do
+      local progress = get_stage_progress(profile, stage_def.stage_id)
+      if progress and progress.standard_unlocked then
+        unlocked_count = unlocked_count + 1
+      end
+      if progress and progress.standard_cleared then
+        cleared_count = cleared_count + 1
+      end
+    end
+    return unlocked_count, cleared_count
+  end
+
+  local function get_chapter_target_stage_id(profile, chapter_id, preferred_stage_id)
+    local chapter_stages = get_chapter_stage_list(chapter_id)
+    local fallback_stage_id = chapter_stages[1] and chapter_stages[1].stage_id or get_first_stage_id()
+    if preferred_stage_id
+      and STAGES_BY_ID[preferred_stage_id]
+      and get_selected_chapter_id(preferred_stage_id) == chapter_id then
+      return preferred_stage_id
+    end
+
+    local latest_unlocked_stage_id = nil
+    for _, stage_def in ipairs(chapter_stages) do
+      if is_standard_unlocked(profile, stage_def.stage_id) then
+        latest_unlocked_stage_id = stage_def.stage_id
+      end
+    end
+
+    return latest_unlocked_stage_id or fallback_stage_id
+  end
+
   local function mark_profile_dirty()
     if STATE.outgame_profile_save_enabled ~= true then
       return
@@ -228,20 +303,16 @@ function M.create(env)
 
   local function ensure_stage_progress_defaults(profile, stage_id)
     local dirty = false
-
     if type(profile.stage_progress) ~= 'table' then
       profile.stage_progress = {}
       dirty = true
     end
-
     if type(profile.stage_progress[stage_id]) ~= 'table' then
       profile.stage_progress[stage_id] = {}
       dirty = true
     end
-
     local progress = profile.stage_progress[stage_id]
     local is_first_stage = stage_id == get_first_stage_id()
-
     if progress.standard_unlocked == nil then
       progress.standard_unlocked = is_first_stage
       dirty = true
@@ -258,33 +329,23 @@ function M.create(env)
       progress.challenge_cleared = false
       dirty = true
     end
-
     return dirty
   end
 
   local function normalize_loaded_selection(profile)
     local dirty = false
     local selected_stage_id = profile.selected_stage_id
-    local selected_mode_id = profile.selected_mode_id
     local fallback_stage_id = get_highest_unlocked_standard_stage_id(profile)
-
     if type(selected_stage_id) ~= 'string'
       or not STAGES_BY_ID[selected_stage_id]
       or not is_standard_unlocked(profile, selected_stage_id) then
       profile.selected_stage_id = fallback_stage_id
-      selected_stage_id = profile.selected_stage_id
       dirty = true
     end
-
-    local stage_def = STAGES_BY_ID[selected_stage_id]
-    if type(selected_mode_id) ~= 'string'
-      or not MODES_BY_ID[selected_mode_id]
-      or not is_stage_supported_mode(stage_def, selected_mode_id)
-      or not is_mode_unlocked(profile, selected_stage_id, selected_mode_id) then
-      profile.selected_mode_id = 'standard'
+    if profile.selected_mode_id ~= SINGLE_MODE_ID then
+      profile.selected_mode_id = SINGLE_MODE_ID
       dirty = true
     end
-
     return dirty
   end
 
@@ -300,7 +361,6 @@ function M.create(env)
   local function are_same_bonus_stats(left, right)
     left = type(left) == 'table' and left or {}
     right = type(right) == 'table' and right or {}
-
     for key, value in pairs(left) do
       if (tonumber(value) or value) ~= (tonumber(right[key]) or right[key]) then
         return false
@@ -316,7 +376,6 @@ function M.create(env)
 
   local function rebuild_hero_attr_bonus_stats(profile)
     local rebuilt = {}
-
     for _, stage_def in ipairs(STAGE_LIST) do
       local stage_id = stage_def.stage_id
       local progress = get_stage_progress(profile, stage_id)
@@ -325,23 +384,17 @@ function M.create(env)
         if progress.standard_cleared == true then
           merge_bonus_stats(rebuilt, stage_rules.standard)
         end
-        if progress.challenge_cleared == true then
-          merge_bonus_stats(rebuilt, stage_rules.challenge)
-        end
       end
     end
-
     if are_same_bonus_stats(profile.hero_attr_bonus_stats, rebuilt) then
       return false
     end
-
     profile.hero_attr_bonus_stats = rebuilt
     return true
   end
 
   local function ensure_profile_defaults(profile)
     local dirty = false
-
     if type(profile.version) ~= 'number' then
       profile.version = 1
       dirty = true
@@ -358,17 +411,14 @@ function M.create(env)
       profile.hero_attr_bonus_stats = {}
       dirty = true
     end
-
     for _, stage_def in ipairs(STAGE_LIST) do
       if ensure_stage_progress_defaults(profile, stage_def.stage_id) then
         dirty = true
       end
     end
-
     if rebuild_hero_attr_bonus_stats(profile) then
       dirty = true
     end
-
     local last_result = profile.last_result
     if last_result.is_win == nil then
       last_result.is_win = false
@@ -378,11 +428,9 @@ function M.create(env)
       last_result.reached_wave_index = 0
       dirty = true
     end
-
     if normalize_loaded_selection(profile) then
       dirty = true
     end
-
     return dirty
   end
 
@@ -430,10 +478,47 @@ function M.create(env)
   end
 
   local function sync_selected_state(stage_id, mode_id)
+    mode_id = mode_id == SINGLE_MODE_ID and mode_id or SINGLE_MODE_ID
     STATE.selected_stage_id = stage_id
     STATE.selected_mode_id = mode_id
     STATE.current_stage_def = STAGES_BY_ID[stage_id]
-    STATE.current_mode_def = MODES_BY_ID[mode_id]
+    STATE.current_mode_def = MODES_BY_ID[mode_id] or MODES_BY_ID[SINGLE_MODE_ID]
+  end
+
+  local function get_page_for_stage(stage_id)
+    return PAGE_BY_STAGE_ID[stage_id] or PAGE_LIST[1]
+  end
+
+  local function get_chapter_page_list(chapter_id)
+    return PAGES_BY_CHAPTER[chapter_id] or {}
+  end
+
+  local function get_difficulty_display_text(stage_def, fallback_index)
+    local difficulty_index = stage_def and select(2, parse_stage_id(stage_def.stage_id)) or fallback_index or 1
+    return string.format('N%d', difficulty_index or fallback_index or 1)
+  end
+
+  local function get_page_display_text(page_def)
+    local difficulty_index = page_def and tonumber(page_def.chapter_page_index) or 1
+    return string.format('N%d', difficulty_index or 1)
+  end
+
+  local function get_page_target_stage_id(profile, page_def, preferred_stage_id)
+    local page_stages = page_def and page_def.stages or {}
+    local fallback_stage_id = page_stages[1] and page_stages[1].stage_id or get_first_stage_id()
+    local preferred_page = preferred_stage_id and get_page_for_stage(preferred_stage_id) or nil
+    if preferred_page and page_def and preferred_page.id == page_def.id then
+      return preferred_stage_id
+    end
+
+    local latest_unlocked_stage_id = nil
+    for _, stage_def in ipairs(page_stages) do
+      if is_standard_unlocked(profile, stage_def.stage_id) then
+        latest_unlocked_stage_id = stage_def.stage_id
+      end
+    end
+
+    return latest_unlocked_stage_id or fallback_stage_id
   end
 
   local function set_selected_stage(stage_id)
@@ -444,11 +529,7 @@ function M.create(env)
     end
 
     profile.selected_stage_id = stage_id
-    local mode_id = profile.selected_mode_id
-    if not is_stage_supported_mode(stage_def, mode_id)
-      or not is_mode_unlocked(profile, stage_id, mode_id) then
-      profile.selected_mode_id = 'standard'
-    end
+    profile.selected_mode_id = SINGLE_MODE_ID
 
     sync_selected_state(profile.selected_stage_id, profile.selected_mode_id)
     mark_profile_dirty()
@@ -456,48 +537,18 @@ function M.create(env)
   end
 
   local function set_selected_mode(mode_id)
+    if mode_id ~= SINGLE_MODE_ID then
+      return false
+    end
     local profile = load_profile()
-    local stage_def = STAGES_BY_ID[profile.selected_stage_id]
-    if not stage_def or not MODES_BY_ID[mode_id] then
-      return false
-    end
-    if not is_stage_supported_mode(stage_def, mode_id) then
-      return false
-    end
-    if not is_mode_unlocked(profile, profile.selected_stage_id, mode_id) then
+    if not is_mode_unlocked(profile, profile.selected_stage_id, SINGLE_MODE_ID) then
       return false
     end
 
-    profile.selected_mode_id = mode_id
+    profile.selected_mode_id = SINGLE_MODE_ID
     sync_selected_state(profile.selected_stage_id, profile.selected_mode_id)
     mark_profile_dirty()
     return true
-  end
-
-  local function set_selected_chapter(chapter_id)
-    local chapter_stages = get_chapter_stage_list(chapter_id)
-    local target_stage = chapter_stages[1]
-    if not target_stage then
-      return false
-    end
-    return set_selected_stage(target_stage.stage_id)
-  end
-
-  local function step_stage_page(direction)
-    local profile = load_profile()
-    local selected_stage_id = STATE.selected_stage_id or profile.selected_stage_id or get_first_stage_id()
-    local chapter_id, page_index, page_count = get_page_stage_defs(selected_stage_id)
-    local target_page = math.max(1, math.min(page_count, page_index + direction))
-    if target_page == page_index then
-      return false
-    end
-
-    local chapter_stages = get_chapter_stage_list(chapter_id)
-    local target_stage = chapter_stages[((target_page - 1) * STAGE_PAGE_SIZE) + 1]
-    if not target_stage then
-      return false
-    end
-    return set_selected_stage(target_stage.stage_id)
   end
 
   local function get_stage_status_text(profile, stage_def)
@@ -506,1216 +557,586 @@ function M.create(env)
       return '未解锁'
     end
     if stage_def.content_source_stage_id ~= stage_def.stage_id then
-      return '内容接入中，当前复用 1-1 验证流程'
+      return '当前关卡暂复用 1-1 战斗内容'
     end
     if progress.standard_cleared then
-      return '标准流程已通关'
+      return '已通关'
     end
-    return '章节内容已接入，可直接推进'
+    return '已开放'
   end
 
-  local function get_mode_button_text(profile, stage_id, mode_id)
-    local mode_def = MODES_BY_ID[mode_id]
-    local progress = get_stage_progress(profile, stage_id)
-    if not mode_def or not progress then
-      return tostring(mode_id)
+  local function get_mode_hint_text(profile, stage_id, mode_id)
+    if mode_id ~= SINGLE_MODE_ID then
+      return '当前版本仅保留主线模式。'
     end
-    if mode_id == 'standard' then
-      if progress.standard_cleared then
-        return mode_def.display_name .. ' 已通关'
-      end
-      if progress.standard_unlocked then
-        return mode_def.display_name .. ' 可进入'
-      end
-      return mode_def.display_name .. ' 未解锁'
-    end
-    if progress.challenge_cleared then
-      return mode_def.display_name .. ' 已通关'
-    end
-    if progress.challenge_unlocked then
-      return mode_def.display_name .. ' 可进入'
-    end
-    return mode_def.display_name .. ' 未解锁'
+    return '主线模式用于推进关卡，是当前版本的主要体验路径。'
   end
 
   local function build_start_hint(profile, stage_id, mode_id)
     local stage_def = STAGES_BY_ID[stage_id]
-    local mode_def = MODES_BY_ID[mode_id]
-    if not stage_def or not mode_def then
-      return '当前选择无效，请重新确认章节与模式。'
+    if not stage_def then
+      return '当前选择无效，请重新确认关卡。'
+    end
+    if mode_id ~= SINGLE_MODE_ID then
+      return '当前版本仅保留主线模式。'
     end
     if not is_standard_unlocked(profile, stage_id) then
-      return '当前章节尚未开放，请先通关上一章标准模式。'
-    end
-    if mode_id == 'challenge' and not is_mode_unlocked(profile, stage_id, mode_id) then
-      return '挑战模式需要先通关本章标准模式后解锁。'
+      return '当前关卡尚未开放，请先推进上一关。'
     end
     if stage_def.content_source_stage_id ~= stage_def.stage_id then
-      return '本章暂复用 1-1 战斗内容，当前主要用于验证局外流程与章节解锁。'
+      return string.format('本关当前复用 %s 战斗内容做流程验证。', tostring(stage_def.content_source_stage_id))
     end
-    return '当前章节内容已准备完成，确认后即可开始战斗。'
+    return '当前关卡已准备完成，点击开始即可进入战斗。'
   end
 
   local function format_last_result(profile)
     local result = profile and profile.last_result or nil
-    if type(result) ~= 'table' or not result.stage_id or not result.mode_id then
-      return '最近结果：暂无记录'
+    if type(result) ~= 'table' or not result.stage_id then
+      return ''
     end
 
     local outcome = result.is_win and '胜利' or '失败'
     local stage_def = STAGES_BY_ID[result.stage_id]
-    local mode_def = MODES_BY_ID[result.mode_id]
     local stage_name = get_stage_display_text(stage_def, result.stage_id)
-    local mode_name = mode_def and mode_def.display_name or tostring(result.mode_id)
     local reached_wave = math.max(0, result.reached_wave_index or 0)
 
     return string.format(
-      '最近战报：%s  %s  %s  到达波次 %d',
+      '最近战报：%s %s %s，到达波次 %d',
       stage_name,
-      mode_name,
+      SINGLE_MODE_LABEL,
       outcome,
       reached_wave
     )
   end
 
-  local function get_detail_meta_text(stage_id, mode_id)
-    local mode_name = MODES_BY_ID[mode_id] and MODES_BY_ID[mode_id].display_name or tostring(mode_id)
-    local chapter_id = select(1, parse_stage_id(stage_id))
-    return string.format('战前简报：%s / %s', get_chapter_name(chapter_id), mode_name)
-  end
-
-  local function get_profile_status_text()
-    if STATE.outgame_profile_save_enabled then
-      return '存档状态：云端存档可用'
-    end
-    return '存档状态：当前使用内存态'
-  end
-
-  local function get_mode_hint_text(profile, stage_id, mode_id)
-    local mode_def = MODES_BY_ID[mode_id]
-    if not mode_def then
-      return '请选择可用模式后再开始本局。'
-    end
-    if not is_mode_unlocked(profile, stage_id, mode_id) then
-      return string.format('%s 尚未开放，请先完成前置解锁条件。', mode_def.display_name)
-    end
-    if mode_id == 'challenge' then
-      return '挑战模式用于毕业验证，会继承章节解锁进度并强调强度检验。'
-    end
-    return '标准模式用于推进章节，是当前版本的主要体验路径。'
-  end
-
-  local function get_start_ready_text(profile, stage_id, mode_id)
-    local mode_def = MODES_BY_ID[mode_id]
+  local function build_header_tip_text(profile, stage_id, mode_id)
     local stage_def = STAGES_BY_ID[stage_id]
-    if not stage_def or not mode_def then
-      return '当前选择无效，请重新确认。'
+    local stage_name = get_stage_display_text(stage_def, stage_id)
+    local result_text = format_last_result(profile)
+    local hint = build_start_hint(profile, stage_id, mode_id)
+    if result_text ~= '' then
+      return string.format('当前关卡：%s。%s %s', stage_name, hint, result_text)
     end
-    if stage_def.content_source_stage_id ~= stage_def.stage_id then
-      return string.format('将进入 %s，当前使用 %s 规则进行验证。', mode_def.display_name, stage_def.content_source_stage_id)
+    return string.format('当前关卡：%s。%s', stage_name, hint)
+  end
+
+  local function build_stage_slot_text(profile, stage_def)
+    local display = get_stage_display_text(stage_def, stage_def.stage_id)
+    local progress = get_stage_progress(profile, stage_def.stage_id)
+    if not progress or not progress.standard_unlocked then
+      return display .. ' · 未解锁'
     end
-    return string.format('将进入 %s 的 %s，请确认后开始。', get_stage_display_text(stage_def, stage_id), mode_def.display_name)
+    if progress.standard_cleared then
+      return display .. ' · 已通关'
+    end
+    return display
+  end
+
+  local function get_page_progress_state(profile, page_def)
+    local unlocked_count = 0
+    local cleared_count = 0
+    for _, stage_def in ipairs(page_def.stages or {}) do
+      local progress = get_stage_progress(profile, stage_def.stage_id)
+      if progress and progress.standard_unlocked then
+        unlocked_count = unlocked_count + 1
+      end
+      if progress and progress.standard_cleared then
+        cleared_count = cleared_count + 1
+      end
+    end
+    return unlocked_count, cleared_count
   end
 
   local function is_outgame_ui_alive(ui)
     return ui
-      and ui.root
-      and not ui.root:is_removed()
-      and ui.stage_cards
-      and ui.detail_panel
+      and is_ui_alive(ui.root)
+      and is_ui_alive(ui.hall_root)
+      and ui.stage_slots
+      and is_ui_alive(ui.page_container)
+      and is_ui_alive(ui.start_button)
   end
 
-  local function set_stage_card_visible(card, visible)
-    if not card then
-      return
-    end
-    if card.bg then
-      card.bg:set_visible(visible == true)
-    end
-    if card.button then
-      card.button:set_visible(visible == true)
-    end
-  end
-
-  local function refresh_ui()
-    local ui = STATE.outgame_ui
-    local profile = load_profile()
-    if not is_outgame_ui_alive(ui) then
-      return
-    end
-
-    local selected_stage_id = STATE.selected_stage_id or profile.selected_stage_id
-    local selected_mode_id = STATE.selected_mode_id or profile.selected_mode_id
-    local selected_stage_def = STAGES_BY_ID[selected_stage_id]
-
-    ui.root:set_visible(STATE.session_phase == 'outgame')
-    if not selected_stage_def then
-      return
-    end
-
-    local active_chapter_id, active_page_index, active_page_count, visible_stage_defs = get_page_stage_defs(selected_stage_id)
-    local visible_slots = {}
-    for slot_index, stage_def in ipairs(visible_stage_defs) do
-      visible_slots[stage_def.stage_id] = slot_index
-    end
-
-    for _, stage_def in ipairs(STAGE_LIST) do
-      local card = ui.stage_cards[stage_def.stage_id]
-      local slot_index = visible_slots[stage_def.stage_id]
-      if not slot_index then
-        set_stage_card_visible(card, false)
-      else
-        local y = ui.stage_card_y - (slot_index - 1) * ui.stage_card_step
-        card.bg:set_pos(ui.stage_card_x, y)
-        card.button:set_pos(ui.stage_card_x, y)
-        set_stage_card_visible(card, true)
-        local selected = stage_def.stage_id == selected_stage_id
-        local unlocked = is_standard_unlocked(profile, stage_def.stage_id)
-        local status_text = get_stage_status_text(profile, stage_def)
-
-        if selected then
-          card.bg:set_image_color(42, 92, 158, 238)
-          if card.frame then
-            card.frame:set_image_color(116, 190, 255, 188)
-          end
-          if card.icon then
-            card.icon:set_image_color(238, 246, 255, 255)
-          end
-          card.line:set_image_color(96, 170, 255, 255)
-          if card.badge_bg then
-            card.badge_bg:set_image_color(82, 146, 226, 236)
-          end
-          if card.badge then
-            card.badge:set_text('当前')
-            card.badge:set_text_color(245, 248, 255, 255)
-          end
-          card.title:set_text_color(245, 248, 255, 255)
-          card.note:set_text_color(214, 232, 248, 255)
-        elseif unlocked then
-          card.bg:set_image_color(20, 34, 54, 226)
-          if card.frame then
-            card.frame:set_image_color(90, 146, 212, 126)
-          end
-          if card.icon then
-            card.icon:set_image_color(204, 226, 255, 240)
-          end
-          card.line:set_image_color(60, 110, 170, 188)
-          if card.badge_bg then
-            card.badge_bg:set_image_color(58, 92, 136, 220)
-          end
-          if card.badge then
-            card.badge:set_text('开放')
-            card.badge:set_text_color(230, 240, 252, 255)
-          end
-          card.title:set_text_color(236, 244, 255, 255)
-          card.note:set_text_color(182, 201, 224, 255)
-        else
-          card.bg:set_image_color(16, 24, 36, 218)
-          if card.frame then
-            card.frame:set_image_color(92, 102, 118, 96)
-          end
-          if card.icon then
-            card.icon:set_image_color(148, 158, 174, 214)
-          end
-          card.line:set_image_color(74, 78, 92, 156)
-          if card.badge_bg then
-            card.badge_bg:set_image_color(64, 68, 78, 210)
-          end
-          if card.badge then
-            card.badge:set_text('未开')
-            card.badge:set_text_color(214, 206, 186, 255)
-          end
-          card.title:set_text_color(188, 198, 214, 255)
-          card.note:set_text_color(132, 146, 168, 255)
-        end
-
-        card.title:set_text(get_stage_display_text(stage_def, stage_def.stage_id))
-        card.note:set_text(stage_def.preview_note or '')
-        card.status:set_text(status_text)
-        if unlocked then
-          card.status:set_text_color(210, 228, 242, 255)
-        else
-          card.status:set_text_color(176, 160, 132, 255)
-        end
+  local function clear_page_buttons(ui)
+    for _, root in ipairs(STATE.outgame_page_button_roots or {}) do
+      if is_ui_alive(root) and root.remove then
+        root:remove()
       end
     end
+    STATE.outgame_page_button_roots = {}
+    for _, button_ref in ipairs(ui.page_buttons or {}) do
+      if is_ui_alive(button_ref.root) and button_ref.root.remove then
+        button_ref.root:remove()
+      end
+    end
+    ui.page_button_canvas = nil
+    ui.page_button_top_spacer = nil
+    ui.page_button_bottom_spacer = nil
+    ui.page_button_count = 0
+    ui.page_button_layout = nil
+    ui.page_buttons = {}
+  end
 
-    for _, chapter_id in ipairs(CHAPTER_LIST) do
-      local button_ref = ui.chapter_buttons and ui.chapter_buttons[chapter_id] or nil
+  local function create_difficulty_button(parent_ui)
+    if not is_ui_alive(parent_ui) then
+      return nil
+    end
+
+    local ok, prefab = pcall(y3.ui_prefab.create, env.get_player(), '难度按钮', parent_ui)
+    if not ok or not prefab then
+      return nil
+    end
+
+    local root = prefab:get_child()
+    local button = prefab:get_child('button_2')
+    if not is_ui_alive(root) or not is_ui_alive(button) then
+      if prefab.remove then
+        prefab:remove()
+      end
+      return nil
+    end
+
+    local locked = prefab:get_child('button_2.locked')
+    set_intercepts_if_alive(locked, false)
+    return {
+      prefab = prefab,
+      root = root,
+      button = button,
+      locked = locked,
+    }
+  end
+
+  local function layout_difficulty_button(root, center_x, center_y, width, height, z_order)
+    if not is_ui_alive(root) then
+      return
+    end
+    root:set_anchor(0.5, 0.5)
+    root:set_pos(center_x, center_y)
+    if root.set_ui_size then
+      root:set_ui_size(width or 428, height or 100)
+    end
+    if root.set_widget_relative_scale then
+      root:set_widget_relative_scale(
+        math.max(0.1, (width or 428) / 428),
+        math.max(0.1, (height or 100) / 100)
+      )
+    end
+    if z_order and root.set_z_order then
+      root:set_z_order(z_order)
+    end
+  end
+
+  local function get_centered_vertical_pos(container_height, item_height, gap, item_count, item_index)
+    local total_gap = math.max(0, (item_count or 1) - 1) * (item_height + gap)
+    return math.floor((container_height * 0.5) + (total_gap * 0.5) - ((item_index - 1) * (item_height + gap)) + 0.5)
+  end
+
+  local function layout_page_buttons(ui)
+    local container = ui and ui.page_container or nil
+    local layout = ui and ui.page_button_layout or nil
+    if not is_ui_alive(container) or not layout then
+      return
+    end
+
+    local container_width = math.floor((container:get_width() or 428) + 0.5)
+    local container_height = math.floor((container:get_height() or 688) + 0.5)
+    local item_height = math.max(0, math.floor((layout.height or 100) + 0.5))
+    local gap = math.max(0, math.floor((layout.gap or 0) + 0.5))
+    local item_count = math.max(0, ui.page_button_count or 0)
+    local center_x = math.floor((container_width * 0.5) + 0.5)
+
+    if is_ui_alive(ui.page_button_canvas) and ui.page_button_canvas.set_ui_size then
+      ui.page_button_canvas:set_ui_size(container_width, container_height)
+    end
+
+    for index, button_ref in ipairs(ui.page_buttons or {}) do
+      layout_difficulty_button(
+        button_ref.root,
+        center_x,
+        get_centered_vertical_pos(container_height, item_height, gap, item_count, index),
+        layout.width,
+        layout.height,
+        10
+      )
+    end
+  end
+
+  local function clear_stage_slot_overlay(slot)
+    if not slot or not is_ui_alive(slot.root) then
+      return
+    end
+
+    local overlay_root = slot.root.get_child and slot.root:get_child('难度按钮') or nil
+    if is_ui_alive(overlay_root) and overlay_root.remove then
+      overlay_root:remove()
+    end
+
+    slot.prefab = nil
+    slot.button_root = nil
+    slot.button = nil
+    slot.locked = nil
+    slot.bound = false
+
+    set_visible_if_alive(slot.bg, true)
+    set_visible_if_alive(slot.label, true)
+  end
+
+  local function ensure_page_buttons(ui, desired_count)
+    local container = ui.page_container
+    if not is_ui_alive(container) then
+      return
+    end
+    desired_count = math.max(0, tonumber(desired_count) or 0)
+    if desired_count <= 0 then
+      clear_page_buttons(ui)
+      return
+    end
+    if desired_count == (ui.page_button_count or 0)
+      and desired_count == #ui.page_buttons
+      and is_ui_alive(ui.page_button_canvas) then
+      layout_page_buttons(ui)
+      return
+    end
+
+    clear_page_buttons(ui)
+    STATE.outgame_page_button_roots = {}
+
+    local container_width = math.floor((container:get_width() or 428) + 0.5)
+    local container_height = math.floor((container:get_height() or 688) + 0.5)
+    local gap = desired_count >= 10 and 2 or 4
+    local height = math.max(
+      40,
+      math.min(100, math.floor((container_height - (math.max(0, desired_count - 1) * gap)) / math.max(1, desired_count)))
+    )
+    local width = math.max(120, container_width - 16)
+    local canvas = container:create_child('图片')
+    if not is_ui_alive(canvas) then
+      return
+    end
+    canvas:set_image(999)
+    canvas:set_ui_size(container_width, container_height)
+    canvas:set_intercepts_operations(false)
+    set_image_color_if_alive(canvas, { 255, 255, 255, 0 })
+    STATE.outgame_page_button_roots[#STATE.outgame_page_button_roots + 1] = canvas
+    ui.page_button_canvas = canvas
+    ui.page_button_count = desired_count
+
+    ui.page_button_layout = {
+      width = width,
+      height = height,
+      gap = gap,
+    }
+
+    for index = 1, desired_count do
+      local button_ref = create_difficulty_button(canvas)
       if button_ref then
-        local selected = chapter_id == active_chapter_id
-        button_ref.button:set_text(get_chapter_name(chapter_id))
-        if selected then
-          button_ref.bg:set_image_color(54, 108, 172, 236)
-          button_ref.shadow:set_image_color(18, 42, 74, 148)
-          button_ref.button:set_text_color(245, 248, 255, 255)
-        else
-          button_ref.bg:set_image_color(44, 62, 90, 220)
-          button_ref.shadow:set_image_color(8, 18, 34, 110)
-          button_ref.button:set_text_color(220, 232, 246, 255)
+        local entry = {
+          prefab = button_ref.prefab,
+          root = button_ref.root,
+          button = button_ref.button,
+          locked = button_ref.locked,
+          stage_def = nil,
+        }
+        layout_difficulty_button(button_ref.root, container_width * 0.5, 0, width, height, 10)
+        button_ref.button:set_button_enable(true)
+        button_ref.button:add_fast_event('左键-按下', function()
+          local stage_def = entry.stage_def
+          if not stage_def then
+            return
+          end
+          if play_ui_click then
+            play_ui_click()
+          end
+          if set_selected_stage(stage_def.stage_id) then
+            api.refresh_ui()
+          end
+        end)
+        ui.page_buttons[#ui.page_buttons + 1] = entry
+        STATE.outgame_page_button_roots[#STATE.outgame_page_button_roots + 1] = button_ref.root
+      else
+        local root = canvas:create_child('图片')
+        root:set_image(999)
+        layout_difficulty_button(root, container_width * 0.5, 0, width, height, 10)
+        root:set_intercepts_operations(true)
+
+        local label = root:create_child('文本')
+        label:set_ui_size(width - 24, height)
+        label:set_anchor(0.5, 0.5)
+        label:set_pos(width * 0.5, height * 0.5)
+        label:set_text(string.format('N%d', index))
+        label:set_font_size(24)
+        label:set_text_alignment('中', '中')
+        label:set_intercepts_operations(false)
+        label:set_z_order(11)
+
+        local entry = {
+          root = root,
+          label = label,
+          stage_def = nil,
+        }
+        root:add_fast_event('左键-按下', function()
+          local stage_def = entry.stage_def
+          if not stage_def then
+            return
+          end
+          if play_ui_click then
+            play_ui_click()
+          end
+          if set_selected_stage(stage_def.stage_id) then
+            api.refresh_ui()
+          end
+        end)
+        ui.page_buttons[#ui.page_buttons + 1] = entry
+        STATE.outgame_page_button_roots[#STATE.outgame_page_button_roots + 1] = root
+      end
+    end
+
+    layout_page_buttons(ui)
+  end
+
+  local function bind_stage_slot(slot)
+    local click_target = slot.bg or slot.root
+    if not is_ui_alive(click_target) or slot.bound == true then
+      return
+    end
+    slot.bound = true
+    click_target:add_fast_event('左键-按下', function()
+      if not slot.chapter_id then
+        return
+      end
+      local profile = load_profile()
+      local target_stage_id = get_chapter_target_stage_id(profile, slot.chapter_id, profile.selected_stage_id)
+      if not target_stage_id then
+        return
+      end
+      if play_ui_click then
+        play_ui_click()
+      end
+      if set_selected_stage(target_stage_id) then
+        api.refresh_ui()
+      end
+    end)
+  end
+
+  local function bind_ui_events(ui)
+    for _, slot in ipairs(ui.stage_slots or {}) do
+      bind_stage_slot(slot)
+    end
+
+    if is_ui_alive(ui.start_button) and ui.start_bound ~= true then
+      ui.start_bound = true
+      ui.start_button:add_fast_event('左键-按下', function()
+        if play_ui_click then
+          play_ui_click()
         end
-      end
-    end
-
-    if ui.page_prev_button then
-      local can_prev = active_page_index > 1
-      ui.page_prev_button.button:set_button_enable(can_prev)
-      if can_prev then
-        ui.page_prev_button.bg:set_image_color(44, 62, 90, 220)
-        ui.page_prev_button.shadow:set_image_color(8, 18, 34, 110)
-        ui.page_prev_button.button:set_text_color(220, 232, 246, 255)
-      else
-        ui.page_prev_button.bg:set_image_color(34, 38, 48, 196)
-        ui.page_prev_button.shadow:set_image_color(8, 10, 18, 96)
-        ui.page_prev_button.button:set_text_color(160, 170, 184, 255)
-      end
-    end
-
-    if ui.page_next_button then
-      local can_next = active_page_index < active_page_count
-      ui.page_next_button.button:set_button_enable(can_next)
-      if can_next then
-        ui.page_next_button.bg:set_image_color(44, 62, 90, 220)
-        ui.page_next_button.shadow:set_image_color(8, 18, 34, 110)
-        ui.page_next_button.button:set_text_color(220, 232, 246, 255)
-      else
-        ui.page_next_button.bg:set_image_color(34, 38, 48, 196)
-        ui.page_next_button.shadow:set_image_color(8, 10, 18, 96)
-        ui.page_next_button.button:set_text_color(160, 170, 184, 255)
-      end
-    end
-
-    if ui.stage_page_text then
-      ui.stage_page_text:set_text(string.format('第 %d / %d 页', active_page_index, active_page_count))
-    end
-    ui.stage_list_hint:set_text(string.format('%s · 关卡分页', get_chapter_name(active_chapter_id)))
-
-    ui.detail_title:set_text(get_stage_display_text(selected_stage_def, selected_stage_id))
-    ui.detail_note:set_text(selected_stage_def.preview_note or '')
-    ui.detail_status:set_text(build_start_hint(profile, selected_stage_id, selected_mode_id))
-    ui.last_result:set_text(format_last_result(profile))
-    ui.stage_badge.text:set_text('当前选择 ' .. get_stage_display_text(selected_stage_def, selected_stage_id))
-    if ui.detail_meta then
-      ui.detail_meta:set_text(get_detail_meta_text(selected_stage_id, selected_mode_id))
-    end
-    if ui.profile_status then
-      ui.profile_status:set_text(get_profile_status_text())
-    end
-    if ui.mode_hint then
-      ui.mode_hint:set_text(get_mode_hint_text(profile, selected_stage_id, selected_mode_id))
-    end
-
-    for mode_id, button_ref in pairs(ui.mode_buttons) do
-      local unlocked = is_mode_unlocked(profile, selected_stage_id, mode_id)
-      local selected = selected_mode_id == mode_id
-      button_ref.button:set_text(get_mode_button_text(profile, selected_stage_id, mode_id))
-      button_ref.button:set_button_enable(unlocked)
-      if selected and unlocked then
-        button_ref.bg:set_image_color(54, 108, 172, 236)
-        button_ref.shadow:set_image_color(18, 42, 74, 148)
-        button_ref.button:set_text_color(245, 248, 255, 255)
-      elseif unlocked then
-        button_ref.bg:set_image_color(54, 78, 112, 226)
-        button_ref.shadow:set_image_color(8, 18, 34, 118)
-        button_ref.button:set_text_color(228, 238, 250, 255)
-      else
-        button_ref.bg:set_image_color(38, 42, 56, 206)
-        button_ref.shadow:set_image_color(8, 10, 18, 96)
-        button_ref.button:set_text_color(170, 178, 190, 255)
-      end
-    end
-
-    local start_enabled = is_mode_unlocked(profile, selected_stage_id, selected_mode_id)
-    ui.start_button.button:set_button_enable(start_enabled)
-    if start_enabled then
-      ui.start_button.bg:set_image_color(76, 126, 90, 236)
-      ui.start_button.shadow:set_image_color(26, 54, 32, 150)
-      ui.start_button.button:set_text_color(245, 248, 255, 255)
-      ui.start_hint:set_text(get_start_ready_text(profile, selected_stage_id, selected_mode_id))
-    else
-      ui.start_button.bg:set_image_color(58, 62, 72, 214)
-      ui.start_button.shadow:set_image_color(8, 10, 18, 96)
-      ui.start_button.button:set_text_color(186, 194, 206, 255)
-      ui.start_hint:set_text(build_start_hint(profile, selected_stage_id, selected_mode_id))
+        api.start_selected_stage()
+      end)
     end
   end
 
   local function ensure_ui()
-    local hud = get_hud_root()
-    if not hud then
-      return nil
-    end
     if is_outgame_ui_alive(STATE.outgame_ui) then
-      refresh_ui()
+      ensure_page_buttons(STATE.outgame_ui, MAX_CHAPTER_DIFFICULTY_COUNT)
+      for _, slot in ipairs(STATE.outgame_ui.stage_slots or {}) do
+        clear_stage_slot_overlay(slot)
+      end
+      bind_ui_events(STATE.outgame_ui)
       return STATE.outgame_ui
     end
 
-    local scale = get_hud_scale(hud, y3)
-    local hud_width = math.floor((hud:get_width() or 0) + 0.5)
-    local hud_height = math.floor((hud:get_height() or 0) + 0.5)
-    if hud_width <= 0 then
-      hud_width = math.floor((y3.ui.get_window_width() or 1920) + 0.5)
-    end
-    if hud_height <= 0 then
-      hud_height = math.floor((y3.ui.get_window_height() or 1080) + 0.5)
-    end
-    local root = create_fullscreen_root(hud)
+    local root = resolve_ui('outgame')
+    local hall_root = resolve_ui('outgame.大厅')
+    local title = resolve_ui('outgame.大厅.layout.right.mode_name')
+    local tip_root = resolve_ui('outgame.大厅.layout.right.mode_name.修仙模式tips')
+    local tip = resolve_ui('outgame.大厅.layout.right.mode_name.修仙模式tips.layout_2.label_3')
+    local page_container = resolve_ui('outgame.大厅.layout.right.难度列表')
+    local mode_panel = resolve_ui('outgame.大厅.layout.left_2')
+    local stage_slot_container = resolve_ui('outgame.大厅.layout.right_2.list')
+    local start_button = resolve_ui('outgame.大厅.layout.start')
 
-    local container = create_panel(
-      root,
-      0,
-      0,
-      hud_width,
-      hud_height,
-      { 6, 10, 18, 228 },
-      { 48, 48, 48, 48 },
-      30001,
-      outgame_skin.backdrop
-    )
-    container:set_anchor(0.5, 0.5)
-    set_percent_pos(env.get_player(), container, 50, 50)
-    container:set_visible(true)
-
-    local vignette = create_panel(
-      container,
-      hud_width * 0.5,
-      hud_height * 0.5,
-      math.floor(hud_width * 0.94),
-      math.floor(hud_height * 0.9),
-      { 8, 14, 24, 186 },
-      { 48, 48, 48, 48 },
-      30002,
-      outgame_skin.vignette
-    )
-    vignette:set_anchor(0.5, 0.5)
-
-    local header_band = create_panel(
-      container,
-      hud_width * 0.5,
-      math.floor(hud_height * 0.92),
-      math.floor(hud_width * 0.96),
-      math.floor(hud_height * 0.12),
-      { 10, 22, 38, 214 },
-      { 40, 40, 32, 32 },
-      30002,
-      outgame_skin.header_band
-    )
-    header_band:set_anchor(0.5, 0.5)
-
-    local footer_band = create_panel(
-      container,
-      hud_width * 0.5,
-      math.floor(hud_height * 0.08),
-      math.floor(hud_width * 0.96),
-      math.floor(hud_height * 0.09),
-      { 8, 16, 28, 186 },
-      { 36, 36, 30, 30 },
-      30002,
-      outgame_skin.footer_band
-    )
-    footer_band:set_anchor(0.5, 0.5)
-
-    local left_edge = create_panel(
-      container,
-      math.floor(hud_width * 0.035),
-      hud_height * 0.5,
-      math.floor(hud_width * 0.035),
-      math.floor(hud_height * 0.8),
-      { 20, 44, 76, 188 },
-      { 24, 24, 24, 24 },
-      30002,
-      outgame_skin.edge_decor
-    )
-    left_edge:set_anchor(0.5, 0.5)
-
-    local right_edge = create_panel(
-      container,
-      math.floor(hud_width * 0.965),
-      hud_height * 0.5,
-      math.floor(hud_width * 0.035),
-      math.floor(hud_height * 0.8),
-      { 20, 44, 76, 132 },
-      { 24, 24, 24, 24 },
-      30002,
-      outgame_skin.edge_decor
-    )
-    right_edge:set_anchor(0.5, 0.5)
-
-    local left_glow = create_panel(
-      container,
-      math.floor(hud_width * 0.12),
-      hud_height * 0.5,
-      math.floor(hud_width * 0.16),
-      math.floor(hud_height * 0.72),
-      { 18, 46, 78, 96 },
-      { 40, 40, 40, 40 },
-      30002,
-      outgame_skin.side_glow
-    )
-    left_glow:set_anchor(0.5, 0.5)
-
-    local right_glow = create_panel(
-      container,
-      math.floor(hud_width * 0.88),
-      hud_height * 0.5,
-      math.floor(hud_width * 0.16),
-      math.floor(hud_height * 0.72),
-      { 18, 40, 70, 72 },
-      { 40, 40, 40, 40 },
-      30002,
-      outgame_skin.side_glow
-    )
-    right_glow:set_anchor(0.5, 0.5)
-
-    local header_title = create_text(
-      container,
-      math.floor(hud_width * 0.16),
-      math.floor(hud_height * 0.93),
-      math.floor(hud_width * 0.22),
-      math.floor(hud_height * 0.04),
-      scaled(16, scale),
-      theme.palette.accent_bright,
-      '左',
-      '中',
-      30003
-    )
-    header_title:set_text('局外指挥终端')
-
-    local header_hint = create_text(
-      container,
-      math.floor(hud_width * 0.84),
-      math.floor(hud_height * 0.93),
-      math.floor(hud_width * 0.28),
-      math.floor(hud_height * 0.03),
-      scaled(11, scale),
-      theme.palette.text_soft,
-      '右',
-      '中',
-      30003
-    )
-    header_hint:set_text('章节选择 / 模式确认 / 战斗开始')
-
-    local content_root = create_panel(
-      container,
-      scaled(layout.container.x, scale),
-      scaled(layout.container.y, scale),
-      scaled(layout.container.width, scale),
-      scaled(layout.container.height, scale),
-      theme.palette.panel_deep,
-      { 36, 36, 30, 30 },
-      30003,
-      outgame_skin.content_root
-    )
-    content_root:set_anchor(0.5, 0.5)
-    set_percent_pos(env.get_player(), content_root, 50, 50)
-
-    local left_strip = create_panel(
-      content_root,
-      scaled(layout.left_strip.x, scale),
-      scaled(layout.left_strip.y, scale),
-      scaled(layout.left_strip.width, scale),
-      scaled(layout.left_strip.height, scale),
-      { 78, 146, 224, 220 },
-      theme.insets.soft,
-      30004,
-      outgame_skin.left_strip
-    )
-    left_strip:set_anchor(0.5, 0.5)
-
-    local top_glow = create_panel(
-      content_root,
-      scaled(676, scale),
-      scaled(734, scale),
-      scaled(1220, scale),
-      scaled(46, scale),
-      { 20, 44, 74, 168 },
-      { 26, 26, 26, 26 },
-      30004,
-      outgame_skin.top_glow
-    )
-    top_glow:set_anchor(0.5, 0.5)
-
-    local top_line = create_panel(
-      content_root,
-      scaled(676, scale),
-      scaled(748, scale),
-      scaled(1210, scale),
-      scaled(4, scale),
-      theme.palette.accent_bright,
-      theme.insets.soft,
-      30005,
-      outgame_skin.top_line
-    )
-    top_line:set_anchor(0.5, 0.5)
-
-    local title_logo = create_panel(
-      content_root,
-      scaled(96, scale),
-      scaled(716, scale),
-      scaled(70, scale),
-      scaled(70, scale),
-      { 210, 230, 255, 255 },
-      theme.insets.soft,
-      30005,
-      outgame_skin.title_logo
-    )
-    title_logo:set_anchor(0.5, 0.5)
-
-    local title = create_text(
-      content_root,
-      scaled(170, scale),
-      scaled(718, scale),
-      scaled(420, scale),
-      scaled(42, scale),
-      scaled(32, scale),
-      theme.palette.text,
-      '左',
-      '中',
-      30002
-    )
-    title:set_text('远征终端')
-
-    local subtitle = create_text(
-      content_root,
-      scaled(174, scale),
-      scaled(680, scale),
-      scaled(520, scale),
-      scaled(42, scale),
-      scaled(14, scale),
-      theme.palette.text_soft,
-      '左',
-      '中',
-      30002
-    )
-    subtitle:set_text('梳理章节、模式、结算回流与存档骨架，并统一整体 UI 风格。')
-    subtitle:set_text('统一章节、模式、存档与战斗入口信息，让局外准备阶段更清晰。')
-
-    local stage_list_panel = create_panel(
-      content_root,
-      scaled(layout.stage_list.x, scale),
-      scaled(layout.stage_list.y, scale),
-      scaled(layout.stage_list.width, scale),
-      scaled(layout.stage_list.height, scale),
-      theme.palette.panel_glass,
-      { 28, 28, 24, 24 },
-      30001,
-      outgame_skin.stage_list_panel
-    )
-    stage_list_panel:set_anchor(0.5, 0.5)
-    local stage_list_icon = create_panel(
-      stage_list_panel,
-      scaled(40, scale),
-      scaled(532, scale),
-      scaled(26, scale),
-      scaled(26, scale),
-      { 194, 222, 255, 255 },
-      theme.insets.soft,
-      30003,
-      outgame_skin.stage_list_icon
-    )
-    stage_list_icon:set_anchor(0.5, 0.5)
-    local stage_list_title = create_text(
-      stage_list_panel,
-      scaled(90, scale),
-      scaled(534, scale),
-      scaled(200, scale),
-      scaled(24, scale),
-      scaled(18, scale),
-      theme.palette.text,
-      '左',
-      '中',
-      30002
-    )
-    stage_list_title:set_text('章节列表')
-    local stage_list_hint = create_text(
-      stage_list_panel,
-      scaled(92, scale),
-      scaled(504, scale),
-      scaled(220, scale),
-      scaled(18, scale),
-      scaled(11, scale),
-      theme.palette.text_muted,
-      nil,
-      nil,
-      30002
-    )
-    stage_list_hint:set_text('章节推进')
-
-    local stage_list_count = create_text(
-      stage_list_panel,
-      scaled(286, scale),
-      scaled(534, scale),
-      scaled(170, scale),
-      scaled(20, scale),
-      scaled(11, scale),
-      theme.palette.accent_bright,
-      '右',
-      '中',
-      30002
-    )
-    stage_list_count:set_text(get_stage_count_text())
-
-    local stage_list_divider = create_panel(
-      stage_list_panel,
-      scaled(207, scale),
-      scaled(478, scale),
-      scaled(342, scale),
-      scaled(3, scale),
-      { 72, 118, 178, 168 },
-      theme.insets.soft,
-      30002
-    )
-    stage_list_divider:set_anchor(0.5, 0.5)
-
-    local chapter_buttons = {}
-    local chapter_button_width = scaled(62, scale)
-    local chapter_button_height = scaled(32, scale)
-    local chapter_button_start_x = scaled(44, scale)
-    local chapter_button_step = scaled(76, scale)
-    for index, chapter_id in ipairs(CHAPTER_LIST) do
-      chapter_buttons[chapter_id] = create_button(
-        stage_list_panel,
-        chapter_button_start_x + ((index - 1) * chapter_button_step),
-        scaled(432, scale),
-        chapter_button_width,
-        chapter_button_height,
-        get_chapter_name(chapter_id),
-        function()
-          if set_selected_chapter(chapter_id) then
-            refresh_ui()
-          end
-        end,
-        {
-          font_size = scaled(11, scale),
-          style = 'outgame_mode_secondary',
-          shadow_offset_y = 2,
-          shadow_grow = 6,
-        }
-      )
+    if not root or not hall_root or not title or not page_container or not stage_slot_container or not start_button then
+      if not STATE.outgame_ui_bind_warned then
+        STATE.outgame_ui_bind_warned = true
+        message('未找到 outgame 画板中的大厅节点，请先确认 outgame.json 已加载。')
+      end
+      return nil
     end
 
-    local stage_page_text = create_text(
-      stage_list_panel,
-      scaled(207, scale),
-      scaled(42, scale),
-      scaled(160, scale),
-      scaled(18, scale),
-      scaled(12, scale),
-      theme.palette.text_soft,
-      '中',
-      '中',
-      30002
-    )
-    stage_page_text:set_text('第 1 / 1 页')
+    for _, old_root in ipairs(STATE.outgame_page_button_roots or {}) do
+      if is_ui_alive(old_root) and old_root.remove then
+        old_root:remove()
+      end
+    end
+    STATE.outgame_page_button_roots = {}
 
-    local page_prev_button = create_button(
-      stage_list_panel,
-      scaled(84, scale),
-      scaled(42, scale),
-      scaled(86, scale),
-      scaled(30, scale),
-      '上一页',
-      function()
-        if step_stage_page(-1) then
-          refresh_ui()
-        end
-      end,
-      {
-        font_size = scaled(11, scale),
-        style = 'outgame_mode_secondary',
-        shadow_offset_y = 2,
-        shadow_grow = 6,
+    local stage_slots = {}
+    for index = 1, STAGE_PAGE_SIZE do
+      local slot_root = stage_slot_container:get_child(string.format('mode%d', index))
+      local slot_bg = slot_root and slot_root:get_child('模式') or nil
+      local slot_label = slot_root and slot_root:get_child('模式.mode') or nil
+      local slot_selected = slot_root and slot_root:get_child('模式.selected') or nil
+      set_intercepts_if_alive(slot_label, false)
+      set_intercepts_if_alive(slot_selected, false)
+      stage_slots[index] = {
+        root = slot_root,
+        bg = slot_bg,
+        label = slot_label,
+        selected = slot_selected,
+        chapter_id = nil,
+        stage_id = nil,
+        bound = false,
       }
-    )
-
-    local page_next_button = create_button(
-      stage_list_panel,
-      scaled(330, scale),
-      scaled(42, scale),
-      scaled(86, scale),
-      scaled(30, scale),
-      '下一页',
-      function()
-        if step_stage_page(1) then
-          refresh_ui()
-        end
-      end,
-      {
-        font_size = scaled(11, scale),
-        style = 'outgame_mode_secondary',
-        shadow_offset_y = 2,
-        shadow_grow = 6,
-      }
-    )
-
-    local detail_panel = create_panel(
-      content_root,
-      scaled(layout.detail.x, scale),
-      scaled(layout.detail.y, scale),
-      scaled(layout.detail.width, scale),
-      scaled(layout.detail.height, scale),
-      theme.palette.panel_glass,
-      { 30, 30, 26, 26 },
-      30001,
-      outgame_skin.detail_panel
-    )
-    detail_panel:set_anchor(0.5, 0.5)
-
-    local detail_hero = create_panel(
-      detail_panel,
-      scaled(366, scale),
-      scaled(488, scale),
-      scaled(650, scale),
-      scaled(126, scale),
-      { 14, 26, 42, 228 },
-      { 24, 24, 20, 20 },
-      30002,
-      outgame_skin.detail_hero
-    )
-    detail_hero:set_anchor(0.5, 0.5)
-
-    local detail_mode_block = create_panel(
-      detail_panel,
-      scaled(366, scale),
-      scaled(258, scale),
-      scaled(650, scale),
-      scaled(150, scale),
-      { 14, 24, 38, 220 },
-      { 24, 24, 20, 20 },
-      30002,
-      outgame_skin.detail_mode_block
-    )
-    detail_mode_block:set_anchor(0.5, 0.5)
-
-    local detail_footer = create_panel(
-      detail_panel,
-      scaled(366, scale),
-      scaled(74, scale),
-      scaled(650, scale),
-      scaled(106, scale),
-      { 10, 18, 30, 232 },
-      { 24, 24, 20, 20 },
-      30002,
-      outgame_skin.detail_footer
-    )
-    detail_footer:set_anchor(0.5, 0.5)
-
-    local stage_badge = {
-      bg = create_panel(
-        detail_hero,
-        scaled(86, scale),
-        scaled(102, scale),
-        scaled(126, scale),
-        scaled(30, scale),
-        theme.palette.accent,
-        theme.insets.soft,
-        30003,
-        outgame_skin.stage_badge
-      ),
-    }
-    stage_badge.icon = create_panel(
-      stage_badge.bg,
-      scaled(16, scale),
-      scaled(15, scale),
-      scaled(18, scale),
-      scaled(18, scale),
-      { 255, 255, 255, 235 },
-      theme.insets.soft,
-      30004,
-      outgame_skin.stage_badge_icon
-    )
-    stage_badge.icon:set_anchor(0.5, 0.5)
-    stage_badge.text = create_text(
-      stage_badge.bg,
-      scaled(60, scale),
-      scaled(14, scale),
-      scaled(120, scale),
-      scaled(20, scale),
-      scaled(12, scale),
-      theme.palette.text,
-      '中',
-      '中',
-      9703
-    )
-
-    local detail_title = create_text(
-      detail_hero,
-      scaled(98, scale),
-      scaled(66, scale),
-      scaled(300, scale),
-      scaled(32, scale),
-      scaled(28, scale),
-      theme.palette.text,
-      '左',
-      '中',
-      30003
-    )
-    local detail_note = create_text(
-      detail_hero,
-      scaled(104, scale),
-      scaled(28, scale),
-      scaled(520, scale),
-      scaled(22, scale),
-      scaled(14, scale),
-      theme.palette.text_soft,
-      '左',
-      '中',
-      30003
-    )
-    local detail_status = create_text(
-      detail_hero,
-      scaled(330, scale),
-      scaled(-8, scale),
-      scaled(540, scale),
-      scaled(48, scale),
-      scaled(15, scale),
-      theme.palette.text,
-      '左',
-      '中',
-      30003
-    )
-    local detail_meta = create_text(
-      detail_hero,
-      scaled(542, scale),
-      scaled(102, scale),
-      scaled(170, scale),
-      scaled(18, scale),
-      scaled(11, scale),
-      theme.palette.accent_bright,
-      '右',
-      '中',
-      30003
-    )
-    detail_meta:set_text('战前简报')
-
-    local detail_badge_decor = create_panel(
-      detail_hero,
-      scaled(602, scale),
-      scaled(102, scale),
-      scaled(30, scale),
-      scaled(30, scale),
-      { 186, 220, 255, 255 },
-      theme.insets.soft,
-      30003,
-      outgame_skin.detail_badge_decor
-    )
-    detail_badge_decor:set_anchor(0.5, 0.5)
-
-    local mode_title = create_text(
-      detail_mode_block,
-      scaled(84, scale),
-      scaled(118, scale),
-      scaled(180, scale),
-      scaled(24, scale),
-      scaled(18, scale),
-      theme.palette.text,
-      '左',
-      '中',
-      30002
-    )
-    mode_title:set_text('模式选择')
-    local mode_icon = create_panel(
-      detail_mode_block,
-      scaled(42, scale),
-      scaled(118, scale),
-      scaled(24, scale),
-      scaled(24, scale),
-      { 194, 222, 255, 255 },
-      theme.insets.soft,
-      30003,
-      outgame_skin.mode_icon
-    )
-    mode_icon:set_anchor(0.5, 0.5)
-
-    local mode_buttons = {
-      standard = create_button(
-        detail_mode_block,
-        scaled(176, scale),
-        scaled(42, scale),
-        scaled(220, scale),
-        scaled(62, scale),
-        '标准模式',
-        function()
-          if set_selected_mode('standard') then
-            refresh_ui()
-          end
-        end,
-        { font_size = scaled(15, scale), style = 'outgame_mode_primary' }
-      ),
-      challenge = create_button(
-        detail_mode_block,
-        scaled(432, scale),
-        scaled(42, scale),
-        scaled(220, scale),
-        scaled(62, scale),
-        '挑战模式',
-        function()
-          if set_selected_mode('challenge') then
-            refresh_ui()
-          end
-        end,
-        { font_size = scaled(15, scale), style = 'outgame_mode_secondary' }
-      ),
-    }
-
-    local start_button = create_button(
-      detail_panel,
-      scaled(382, scale),
-      scaled(120, scale),
-      scaled(532, scale),
-      scaled(72, scale),
-      '开始本局',
-      function()
-        api.start_selected_stage()
-      end,
-      { font_size = scaled(22, scale), style = 'outgame_start' }
-    )
-    local start_button_decor = create_panel(
-      detail_panel,
-      scaled(128, scale),
-      scaled(156, scale),
-      scaled(42, scale),
-      scaled(42, scale),
-      { 255, 244, 216, 255 },
-      theme.insets.soft,
-      30003,
-      outgame_skin.start_button_decor
-    )
-    start_button_decor:set_anchor(0.5, 0.5)
-    local start_hint = create_text(
-      detail_panel,
-      scaled(382, scale),
-      scaled(64, scale),
-      scaled(560, scale),
-      scaled(30, scale),
-      scaled(14, scale),
-      theme.palette.text_soft,
-      '中',
-      '中',
-      30002
-    )
-    local last_result = create_text(
-      detail_footer,
-      scaled(324, scale),
-      scaled(56, scale),
-      scaled(560, scale),
-      scaled(28, scale),
-      scaled(15, scale),
-      theme.palette.text,
-      '中',
-      '中',
-      9702
-    )
-
-    local profile_status = create_text(
-      detail_footer,
-      scaled(324, scale),
-      scaled(24, scale),
-      scaled(560, scale),
-      scaled(18, scale),
-      scaled(11, scale),
-      theme.palette.text_muted,
-      nil,
-      nil,
-      9702
-    )
-    profile_status:set_text('存档状态读取中')
-    local mode_hint = create_text(
-      detail_mode_block,
-      scaled(324, scale),
-      scaled(18, scale),
-      scaled(540, scale),
-      scaled(18, scale),
-      scaled(12, scale),
-      theme.palette.text_muted,
-      '中',
-      '中',
-      9702
-    )
-    mode_hint:set_text('请选择章节与模式，确认当前局的入口配置。')
-
-    local stage_cards = {}
-    local stage_card_x = scaled(layout.stage_list.card_x, scale)
-    local stage_card_y = scaled(layout.stage_list.card_y - 74, scale)
-    local stage_card_step = scaled(layout.stage_list.card_step, scale)
-    for index, stage_def in ipairs(STAGE_LIST) do
-      local y = stage_card_y - (index - 1) * stage_card_step
-      local card_bg = create_panel(
-        stage_list_panel,
-        stage_card_x,
-        y,
-        scaled(layout.stage_list.card_width, scale),
-        scaled(layout.stage_list.card_height, scale),
-        { 17, 28, 43, 232 },
-        theme.insets.normal,
-        30002,
-        outgame_skin.stage_card_bg
-      )
-      local card_frame = create_panel(
-        card_bg,
-        scaled(layout.stage_list.card_width * 0.5, scale),
-        scaled(layout.stage_list.card_height * 0.5, scale),
-        scaled(layout.stage_list.card_width, scale),
-        scaled(layout.stage_list.card_height, scale),
-        { 150, 196, 255, 132 },
-        theme.insets.normal,
-        30003,
-        outgame_skin.stage_card_frame
-      )
-      card_frame:set_anchor(0.5, 0.5)
-      local card_line = create_panel(
-        card_bg,
-        scaled(16, scale),
-        scaled(61, scale),
-        scaled(6, scale),
-        scaled(82, scale),
-        { 70, 120, 186, 190 },
-        theme.insets.soft,
-        9703
-      )
-      card_line:set_anchor(0.5, 0.5)
-      local card_icon = create_panel(
-        card_bg,
-        scaled(44, scale),
-        scaled(90, scale),
-        scaled(34, scale),
-        scaled(34, scale),
-        { 204, 226, 255, 255 },
-        theme.insets.soft,
-        30005,
-        outgame_skin.stage_card_icon
-      )
-      card_icon:set_anchor(0.5, 0.5)
-
-      local card_button = stage_list_panel:create_child('按钮')
-      card_button:set_ui_size(
-        scaled(layout.stage_list.card_width, scale),
-        scaled(layout.stage_list.card_height, scale)
-      )
-      card_button:set_pos(stage_card_x, y)
-      card_button:set_text('')
-      card_button:set_btn_status_image(1, 999)
-      card_button:set_btn_status_image(2, 999)
-      card_button:set_btn_status_image(3, 999)
-      card_button:set_btn_status_image(4, 999)
-      card_button:set_z_order(30004)
-      card_button:add_fast_event('左键-点击', function()
-        if play_ui_click then
-          play_ui_click()
-        end
-        if set_selected_stage(stage_def.stage_id) then
-          refresh_ui()
-        end
-      end)
-
-      local card_title = create_text(
-        card_bg,
-        scaled(104, scale),
-        scaled(90, scale),
-        scaled(188, scale),
-        scaled(24, scale),
-        scaled(18, scale),
-        theme.palette.text,
-        '左',
-        '中',
-        30005,
-        outgame_skin.stage_card_badge
-      )
-      local card_note = create_text(
-        card_bg,
-        scaled(134, scale),
-        scaled(56, scale),
-        scaled(250, scale),
-        scaled(20, scale),
-        scaled(12, scale),
-        theme.palette.text_soft,
-        '左',
-        '中',
-        30005
-      )
-      local card_status = create_text(
-        card_bg,
-        scaled(170, scale),
-        scaled(22, scale),
-        scaled(262, scale),
-        scaled(18, scale),
-        scaled(12, scale),
-        theme.palette.text,
-        '左',
-        '中',
-        30005
-      )
-      local card_badge_bg = create_panel(
-        card_bg,
-        scaled(266, scale),
-        scaled(96, scale),
-        scaled(56, scale),
-        scaled(18, scale),
-        theme.palette.accent_soft,
-        theme.insets.soft,
-        30005
-      )
-      local card_badge = create_text(
-        card_badge_bg,
-        scaled(30, scale),
-        scaled(9, scale),
-        scaled(60, scale),
-        scaled(16, scale),
-        scaled(10, scale),
-        theme.palette.text,
-        nil,
-        nil,
-        30006
-      )
-      card_badge:set_text('开放')
-
-      stage_cards[stage_def.stage_id] = {
-        bg = card_bg,
-        frame = card_frame,
-        icon = card_icon,
-        line = card_line,
-        button = card_button,
-        title = card_title,
-        note = card_note,
-        status = card_status,
-        badge_bg = card_badge_bg,
-        badge = card_badge,
-      }
+      clear_stage_slot_overlay(stage_slots[index])
     end
 
     STATE.outgame_ui = {
       root = root,
-      container = container,
-      content_root = content_root,
-      left_strip = left_strip,
+      hall_root = hall_root,
       title = title,
-      subtitle = subtitle,
-      stage_list_panel = stage_list_panel,
-      detail_panel = detail_panel,
-      stage_cards = stage_cards,
-      chapter_buttons = chapter_buttons,
-      page_prev_button = page_prev_button,
-      page_next_button = page_next_button,
-      stage_page_text = stage_page_text,
-      stage_card_x = stage_card_x,
-      stage_card_y = stage_card_y,
-      stage_card_step = stage_card_step,
-      detail_title = detail_title,
-      detail_note = detail_note,
-      detail_status = detail_status,
-      detail_meta = detail_meta,
-      mode_buttons = mode_buttons,
-      mode_hint = mode_hint,
+      tip_root = tip_root,
+      tip = tip,
+      mode_panel = mode_panel,
+      page_container = page_container,
+      page_button_canvas = nil,
+      page_button_count = 0,
+      page_buttons = {},
+      page_button_top_spacer = nil,
+      page_button_bottom_spacer = nil,
+      page_button_layout = nil,
+      stage_slots = stage_slots,
       start_button = start_button,
-      start_hint = start_hint,
-      last_result = last_result,
-      profile_status = profile_status,
-      stage_badge = stage_badge,
-      stage_list_hint = stage_list_hint,
+      start_bound = false,
     }
 
-    refresh_ui()
+    ensure_page_buttons(STATE.outgame_ui, MAX_CHAPTER_DIFFICULTY_COUNT)
+    bind_ui_events(STATE.outgame_ui)
     return STATE.outgame_ui
+  end
+
+  local function refresh_mode_selectors(ui, profile, selected_stage_id, selected_mode_id)
+    set_visible_if_alive(ui.mode_panel, false)
+  end
+
+  local function refresh_page_buttons(ui, profile, selected_stage_id)
+    local selected_chapter_id = get_selected_chapter_id(selected_stage_id)
+    local chapter_stages = get_chapter_stage_list(selected_chapter_id)
+    ensure_page_buttons(ui, #chapter_stages)
+    for index, button_ref in ipairs(ui.page_buttons or {}) do
+      local stage_def = chapter_stages[index]
+      local progress = stage_def and get_stage_progress(profile, stage_def.stage_id) or nil
+      local unlocked = progress and progress.standard_unlocked == true or false
+      local cleared = progress and progress.standard_cleared == true or false
+      local selected = stage_def and selected_stage_id == stage_def.stage_id or false
+
+      button_ref.stage_def = stage_def
+      set_visible_if_alive(button_ref.root, stage_def ~= nil)
+      if stage_def then
+        set_text_if_alive(button_ref.button or button_ref.label, get_difficulty_display_text(stage_def, index))
+        set_visible_if_alive(button_ref.locked, not unlocked)
+
+        if selected then
+          set_image_color_if_alive(button_ref.button or button_ref.root, COLOR.selected_bg)
+          set_text_color_if_alive(button_ref.button or button_ref.label, COLOR.selected_text)
+        elseif not unlocked then
+          set_image_color_if_alive(button_ref.button or button_ref.root, COLOR.locked_bg)
+          set_text_color_if_alive(button_ref.button or button_ref.label, COLOR.locked_text)
+        elseif cleared then
+          set_image_color_if_alive(button_ref.button or button_ref.root, COLOR.cleared_bg)
+          set_text_color_if_alive(button_ref.button or button_ref.label, COLOR.cleared_text)
+        else
+          set_image_color_if_alive(button_ref.button or button_ref.root, COLOR.available_bg)
+          set_text_color_if_alive(button_ref.button or button_ref.label, COLOR.available_text)
+        end
+      else
+        set_visible_if_alive(button_ref.locked, false)
+      end
+    end
+  end
+
+  local function refresh_stage_slots(ui, profile, selected_stage_id)
+    local selected_chapter_id = get_selected_chapter_id(selected_stage_id)
+    for index, slot in ipairs(ui.stage_slots or {}) do
+      local chapter_id = CHAPTER_LIST[index]
+      slot.chapter_id = chapter_id
+      slot.stage_id = chapter_id and get_chapter_target_stage_id(
+        profile,
+        chapter_id,
+        selected_chapter_id == chapter_id and selected_stage_id or nil
+      ) or nil
+      set_visible_if_alive(slot.root, chapter_id ~= nil)
+
+      if chapter_id then
+        local chapter_name = get_chapter_display_text(chapter_id)
+        local chapter_stages = get_chapter_stage_list(chapter_id)
+        local unlocked_count, cleared_count = get_chapter_progress_state(profile, chapter_id)
+        local unlocked = unlocked_count > 0
+        local selected = selected_chapter_id == chapter_id
+        local cleared = cleared_count >= #chapter_stages and cleared_count > 0
+
+        set_text_if_alive(slot.label, chapter_name)
+        set_visible_if_alive(slot.selected, selected)
+
+        if selected then
+          set_image_color_if_alive(slot.bg, COLOR.selected_bg)
+          set_text_color_if_alive(slot.label, COLOR.selected_text)
+        elseif not unlocked then
+          set_image_color_if_alive(slot.bg, COLOR.locked_bg)
+          set_text_color_if_alive(slot.label, COLOR.locked_text)
+        elseif cleared then
+          set_image_color_if_alive(slot.bg, COLOR.cleared_bg)
+          set_text_color_if_alive(slot.label, COLOR.cleared_text)
+        else
+          set_image_color_if_alive(slot.bg, COLOR.available_bg)
+          set_text_color_if_alive(slot.label, COLOR.available_text)
+        end
+      end
+    end
+
+    return selected_chapter_id
+  end
+
+  local function refresh_ui()
+    local ui = ensure_ui()
+    if not is_outgame_ui_alive(ui) then
+      return
+    end
+
+    local profile = load_profile()
+    local selected_stage_id = STATE.selected_stage_id or profile.selected_stage_id
+    local selected_mode_id = SINGLE_MODE_ID
+    local selected_stage_def = STAGES_BY_ID[selected_stage_id]
+
+    set_visible_if_alive(ui.root, STATE.session_phase == 'outgame')
+    set_visible_if_alive(ui.hall_root, STATE.session_phase == 'outgame')
+
+    if not selected_stage_def then
+      return
+    end
+
+    if profile.selected_mode_id ~= SINGLE_MODE_ID then
+      profile.selected_mode_id = SINGLE_MODE_ID
+      mark_profile_dirty()
+    end
+    sync_selected_state(selected_stage_id, SINGLE_MODE_ID)
+
+    set_text_if_alive(ui.title, SINGLE_MODE_LABEL)
+    set_visible_if_alive(ui.tip_root or ui.tip, false)
+    set_text_if_alive(ui.tip, '')
+
+    refresh_mode_selectors(ui, profile, selected_stage_id, selected_mode_id)
+    refresh_stage_slots(ui, profile, selected_stage_id)
+    refresh_page_buttons(ui, profile, selected_stage_id)
+
+    local start_enabled = is_mode_unlocked(profile, selected_stage_id, selected_mode_id)
+    ui.start_button:set_text(start_enabled and '开始' or '未解锁')
+    ui.start_button:set_button_enable(start_enabled)
+
+    if start_enabled then
+      set_image_color_if_alive(ui.start_button, COLOR.start_ready_bg)
+      set_text_color_if_alive(ui.start_button, COLOR.selected_text)
+    else
+      set_image_color_if_alive(ui.start_button, COLOR.start_locked_bg)
+      set_text_color_if_alive(ui.start_button, COLOR.locked_text)
+    end
   end
 
   function api.load_profile()
@@ -1727,16 +1148,17 @@ function M.create(env)
   function api.refresh_ui()
     if not is_outgame_ui_alive(STATE.outgame_ui) then
       ensure_ui()
-      return
     end
     refresh_ui()
   end
 
   function api.set_ui_visible(visible)
-    if not is_outgame_ui_alive(STATE.outgame_ui) then
+    local ui = ensure_ui()
+    if not is_outgame_ui_alive(ui) then
       return
     end
-    STATE.outgame_ui.root:set_visible(visible == true)
+    set_visible_if_alive(ui.root, visible == true)
+    set_visible_if_alive(ui.hall_root, visible == true)
   end
 
   function api.enter_outgame(result)
@@ -1766,43 +1188,37 @@ function M.create(env)
 
     local profile = load_profile()
     local stage_id = result.stage_id or get_first_stage_id()
-    local mode_id = result.mode_id or 'standard'
+    local mode_id = SINGLE_MODE_ID
     local progress = get_stage_progress(profile, stage_id)
     if not progress then
       return
     end
 
     profile.last_result.stage_id = stage_id
-    profile.last_result.mode_id = mode_id
+    profile.last_result.mode_id = SINGLE_MODE_ID
     profile.last_result.is_win = result.is_win == true
     profile.last_result.reached_wave_index = math.max(0, result.reached_wave_index or 0)
 
     if result.is_win then
-      if mode_id == 'standard' then
-        progress.standard_cleared = true
-        progress.challenge_unlocked = true
+      progress.standard_cleared = true
 
-        local next_stage_id = get_next_stage_id(stage_id)
-        if next_stage_id then
-          local next_progress = get_stage_progress(profile, next_stage_id)
-          if next_progress then
-            next_progress.standard_unlocked = true
-          end
+      local next_stage_id = get_next_stage_id(stage_id)
+      if next_stage_id then
+        local next_progress = get_stage_progress(profile, next_stage_id)
+        if next_progress then
+          next_progress.standard_unlocked = true
         end
-      elseif mode_id == 'challenge' then
-        progress.challenge_cleared = true
       end
     end
 
     rebuild_hero_attr_bonus_stats(profile)
-
     mark_profile_dirty()
   end
 
   function api.start_selected_stage()
     local profile = load_profile()
     local stage_id = STATE.selected_stage_id or profile.selected_stage_id
-    local mode_id = STATE.selected_mode_id or profile.selected_mode_id
+    local mode_id = SINGLE_MODE_ID
 
     if not is_mode_unlocked(profile, stage_id, mode_id) then
       message(build_start_hint(profile, stage_id, mode_id))
@@ -1810,7 +1226,9 @@ function M.create(env)
       return false
     end
 
-    local ok = env.start_selected_stage(stage_id, mode_id)
+    local ok = env.stage_runtime
+      and env.stage_runtime.start_selected_stage
+      and env.stage_runtime.start_selected_stage(stage_id, mode_id)
     if ok then
       api.set_ui_visible(false)
       return true
@@ -1826,11 +1244,14 @@ function M.create(env)
   end
 
   function api.get_selected_mode_def()
-    return MODES_BY_ID[STATE.selected_mode_id]
+    return MODES_BY_ID[SINGLE_MODE_ID]
   end
 
   function api.is_mode_unlocked(stage_id, mode_id)
-    return is_mode_unlocked(load_profile(), stage_id, mode_id)
+    if mode_id and mode_id ~= SINGLE_MODE_ID then
+      return false
+    end
+    return is_mode_unlocked(load_profile(), stage_id, SINGLE_MODE_ID)
   end
 
   function api.get_profile()
@@ -1843,4 +1264,3 @@ function M.create(env)
 end
 
 return M
-

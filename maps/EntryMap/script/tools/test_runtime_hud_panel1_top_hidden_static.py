@@ -15,7 +15,7 @@ def test_runtime_hud_panel1_top_hides_overlay_sections():
 
     assert_contains(content, "runtime_hud.top_battle_cluster:set_visible(false)", "runtime_hud_panel1_top should hide top battle cluster")
     assert_contains(content, "runtime_hud.left_shortcut_panel:set_visible(false)", "runtime_hud_panel1_top should hide left shortcut panel")
-    assert_contains(content, "runtime_hud.right_tracker_panel:set_visible(false)", "runtime_hud_panel1_top should hide right tracker panel")
+    assert_contains(content, "runtime_hud.right_tracker_panel:set_visible(true)", "runtime_hud_panel1_top should keep right tracker panel visible")
 
 
 if __name__ == "__main__":

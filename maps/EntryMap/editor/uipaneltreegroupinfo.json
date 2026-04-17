@@ -13,13 +13,6 @@
    {
     "__tuple__": true, 
     "items": [
-     "d32051a3-0908-4abc-a8b9-61365fdec708", 
-     "CardSetEffectTipPanel"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
      "d5e1196c-e380-4cf3-964c-8ad3da08591d", 
      "MainlineTaskPanel"
     ]
@@ -57,6 +50,13 @@
     "items": [
      "7029d6cb-b7c1-4fc6-936d-f2b5c6f67bef", 
      "\u80cc\u5305\u7cfb\u7edf"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "deb2fb53-0b46-41db-b2ea-5054d38e3ff5", 
+     "outgame"
     ]
    }
   ]

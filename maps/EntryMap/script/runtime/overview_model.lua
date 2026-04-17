@@ -153,7 +153,7 @@ function M.create(env)
   local function build_bond_progress_overview_lines()
     local lines = build_bond_progress_lines(8)
     if not lines or #lines == 0 then
-      return { '当前没有可显示的链路进度。' }
+      return { '当前没有可显示的道统进境。' }
     end
     return lines
   end
@@ -176,7 +176,7 @@ function M.create(env)
     if pending_kind == 'upgrade' then
       lines[#lines + 1] = string.format('当前待选：技能强化，剩余技能点 %d', STATE.skill_points or 0)
     elseif pending_kind == 'bond' then
-      lines[#lines + 1] = '当前待选：链式羁绊三选一'
+      lines[#lines + 1] = '当前待选：仙缘感应三选一'
       local runtime = STATE.bond_runtime
       for index, choice in ipairs(runtime and runtime.current_choices or {}) do
         lines[#lines + 1] = build_bond_choice_preview_text(index, choice)
@@ -300,7 +300,7 @@ function M.create(env)
         format_attr_value(env.get_treasure_passive_income('gold')),
         format_attr_value(env.get_treasure_passive_income('wood'))
       ),
-      string.format('构筑计数：宝物 %d / 3  进化 %d  已解锁羁绊 %d',
+      string.format('构筑计数：宝物 %d / 3  进化 %d  已结仙缘 %d',
         get_treasure_active_count(),
         get_mark_active_count(),
         STATE.bond_runtime and #(STATE.bond_runtime.owned_node_order or {}) or 0
@@ -339,7 +339,7 @@ function M.create(env)
             lines = build_pending_overview_lines(),
           },
           progress = {
-            title = '链路进度',
+            title = '道统进境',
             lines = build_bond_progress_overview_lines(),
           },
         },
@@ -363,7 +363,7 @@ function M.create(env)
           lines = build_attack_skill_overview_lines(),
         },
         bonds = {
-          title = '链式羁绊',
+          title = '仙缘道统',
           lines = build_bond_overview_lines(),
         },
         treasures = {
@@ -375,7 +375,7 @@ function M.create(env)
           lines = build_pending_overview_lines(),
         },
         progress = {
-          title = '链路进度',
+          title = '道统进境',
           lines = build_bond_progress_overview_lines(),
         },
       },

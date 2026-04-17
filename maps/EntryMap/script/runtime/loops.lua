@@ -39,6 +39,33 @@ function M.create(env)
     return y3.helper.tonumber(hero_attr_system and hero_attr_system.get_attr(STATE.hero, '攻击') or STATE.hero:get_attr('攻击') or STATE.hero:get_attr('物理攻击')) or 0
   end
 
+  local function try_refresh_battle_ui()
+    local ok, err = pcall(function()
+      ensure_runtime_hud()
+      ensure_choice_panel()
+      set_battle_hud_visible(true)
+      refresh_runtime_hud()
+      refresh_choice_panel()
+      if refresh_swallow_panel then
+        refresh_swallow_panel()
+      end
+      refresh_runtime_overview()
+    end)
+    if ok then
+      STATE.runtime_ui_fault_logged = false
+      STATE.runtime_ui_fault_message = nil
+      return true
+    end
+
+    local err_text = tostring(err)
+    if STATE.runtime_ui_fault_logged ~= true or STATE.runtime_ui_fault_message ~= err_text then
+      print(string.format('[runtime.loops] battle ui refresh failed, gameplay continues: %s', err_text))
+    end
+    STATE.runtime_ui_fault_logged = true
+    STATE.runtime_ui_fault_message = err_text
+    return false
+  end
+
   local function start_runtime_loops()
     y3.ltimer.loop(0.25, function()
       if is_battle_active() then
@@ -58,15 +85,7 @@ function M.create(env)
         update_enemy_statuses(0.25)
         update_attack_skills(0.25)
         update_temporary_treasures(0.25)
-        ensure_runtime_hud()
-        ensure_choice_panel()
-        set_battle_hud_visible(true)
-        refresh_runtime_hud()
-        refresh_choice_panel()
-        if refresh_swallow_panel then
-          refresh_swallow_panel()
-        end
-        refresh_runtime_overview()
+        try_refresh_battle_ui()
         return
       end
 

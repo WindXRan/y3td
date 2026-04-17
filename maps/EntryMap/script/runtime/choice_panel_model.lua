@@ -265,9 +265,9 @@ end
 local function get_bond_set_effect_title(progress_text)
   local total_count = parse_progress_total(progress_text)
   if total_count and total_count > 0 then
-    return string.format('%d件效果', total_count)
+    return string.format('%d重真意', total_count)
   end
-  return '套装效果'
+  return '道统真意'
 end
 
 local function take_set_body_lines(choice)

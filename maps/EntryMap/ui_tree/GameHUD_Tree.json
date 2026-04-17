@@ -2313,14 +2313,14 @@
               ]
             },
             {
-              "name": "hp",
-              "uid": "93f34af5-ef6f-49f1-a353-6296f8905612",
+              "name": "mp",
+              "uid": "34819cf2-282c-4e05-bed2-8138c7bd7026",
               "type": 5,
               "children": []
             },
             {
-              "name": "mp",
-              "uid": "34819cf2-282c-4e05-bed2-8138c7bd7026",
+              "name": "hp",
+              "uid": "93f34af5-ef6f-49f1-a353-6296f8905612",
               "type": 5,
               "children": []
             }
@@ -2351,14 +2351,14 @@
               ]
             },
             {
-              "name": "hp",
-              "uid": "9df9765c-fbda-4a09-a314-ebb3e6a29034",
+              "name": "mp",
+              "uid": "61cbe598-4bd4-4cba-91c8-8564819ca7a5",
               "type": 5,
               "children": []
             },
             {
-              "name": "mp",
-              "uid": "61cbe598-4bd4-4cba-91c8-8564819ca7a5",
+              "name": "hp",
+              "uid": "9df9765c-fbda-4a09-a314-ebb3e6a29034",
               "type": 5,
               "children": []
             }
@@ -2389,14 +2389,14 @@
               ]
             },
             {
-              "name": "hp",
-              "uid": "b94dde9d-6deb-48ca-8cd5-79e8c8e98931",
+              "name": "mp",
+              "uid": "ac4f3839-0770-4a98-87bf-4527373c8a7e",
               "type": 5,
               "children": []
             },
             {
-              "name": "mp",
-              "uid": "ac4f3839-0770-4a98-87bf-4527373c8a7e",
+              "name": "hp",
+              "uid": "b94dde9d-6deb-48ca-8cd5-79e8c8e98931",
               "type": 5,
               "children": []
             }
@@ -2427,14 +2427,14 @@
               ]
             },
             {
-              "name": "hp",
-              "uid": "3e8dd173-2043-4810-952e-fd217d12eef7",
+              "name": "mp",
+              "uid": "891a3908-309f-4c27-9e65-f0238f183d49",
               "type": 5,
               "children": []
             },
             {
-              "name": "mp",
-              "uid": "891a3908-309f-4c27-9e65-f0238f183d49",
+              "name": "hp",
+              "uid": "3e8dd173-2043-4810-952e-fd217d12eef7",
               "type": 5,
               "children": []
             }
@@ -2465,14 +2465,14 @@
               ]
             },
             {
-              "name": "hp",
-              "uid": "93ba5ee6-0915-411c-9d29-a4a9bf7b0264",
+              "name": "mp",
+              "uid": "da3ad6f5-a867-4899-8894-cd753a347288",
               "type": 5,
               "children": []
             },
             {
-              "name": "mp",
-              "uid": "da3ad6f5-a867-4899-8894-cd753a347288",
+              "name": "hp",
+              "uid": "93ba5ee6-0915-411c-9d29-a4a9bf7b0264",
               "type": 5,
               "children": []
             }
@@ -2503,14 +2503,14 @@
               ]
             },
             {
-              "name": "hp",
-              "uid": "1ae9fb1f-4c30-4452-9580-c3313c962367",
+              "name": "mp",
+              "uid": "4567fdd7-bde7-422f-98cb-c11d5ec0aeb5",
               "type": 5,
               "children": []
             },
             {
-              "name": "mp",
-              "uid": "4567fdd7-bde7-422f-98cb-c11d5ec0aeb5",
+              "name": "hp",
+              "uid": "1ae9fb1f-4c30-4452-9580-c3313c962367",
               "type": 5,
               "children": []
             }
@@ -2541,14 +2541,14 @@
               ]
             },
             {
-              "name": "hp",
-              "uid": "45950979-5bf8-4f24-8233-4c4e4152e0eb",
+              "name": "mp",
+              "uid": "cc96b214-b638-474a-9f6d-a559e311b36c",
               "type": 5,
               "children": []
             },
             {
-              "name": "mp",
-              "uid": "cc96b214-b638-474a-9f6d-a559e311b36c",
+              "name": "hp",
+              "uid": "45950979-5bf8-4f24-8233-4c4e4152e0eb",
               "type": 5,
               "children": []
             }
@@ -2579,14 +2579,14 @@
               ]
             },
             {
-              "name": "hp",
-              "uid": "b1a32504-5205-475c-ae10-53df81928db5",
+              "name": "mp",
+              "uid": "d59c16bb-fdea-459d-8c2a-2b96d75f74e5",
               "type": 5,
               "children": []
             },
             {
-              "name": "mp",
-              "uid": "d59c16bb-fdea-459d-8c2a-2b96d75f74e5",
+              "name": "hp",
+              "uid": "b1a32504-5205-475c-ae10-53df81928db5",
               "type": 5,
               "children": []
             }
@@ -2617,14 +2617,14 @@
               ]
             },
             {
-              "name": "hp",
-              "uid": "c7ead56a-bc19-4126-9fff-1813e1b0d774",
+              "name": "mp",
+              "uid": "8964ffb7-dd46-472f-ba0b-08c5ba486aaa",
               "type": 5,
               "children": []
             },
             {
-              "name": "mp",
-              "uid": "8964ffb7-dd46-472f-ba0b-08c5ba486aaa",
+              "name": "hp",
+              "uid": "c7ead56a-bc19-4126-9fff-1813e1b0d774",
               "type": 5,
               "children": []
             }
@@ -2655,14 +2655,14 @@
               ]
             },
             {
-              "name": "hp",
-              "uid": "9dfe323d-d8d3-4ca0-8e2e-fb91fbc0346e",
+              "name": "mp",
+              "uid": "958a3992-a183-4f91-b261-fb4b3e073175",
               "type": 5,
               "children": []
             },
             {
-              "name": "mp",
-              "uid": "958a3992-a183-4f91-b261-fb4b3e073175",
+              "name": "hp",
+              "uid": "9dfe323d-d8d3-4ca0-8e2e-fb91fbc0346e",
               "type": 5,
               "children": []
             }
@@ -2693,14 +2693,14 @@
               ]
             },
             {
-              "name": "hp",
-              "uid": "b7bfcc1f-43d5-4dd4-a68c-651089be9186",
+              "name": "mp",
+              "uid": "891667df-08f8-4735-b24c-311ff1a8c8f1",
               "type": 5,
               "children": []
             },
             {
-              "name": "mp",
-              "uid": "891667df-08f8-4735-b24c-311ff1a8c8f1",
+              "name": "hp",
+              "uid": "b7bfcc1f-43d5-4dd4-a68c-651089be9186",
               "type": 5,
               "children": []
             }
@@ -2731,14 +2731,14 @@
               ]
             },
             {
-              "name": "hp",
-              "uid": "8ff604a1-b98d-4d47-808c-7b079e1204ea",
+              "name": "mp",
+              "uid": "302f191d-1c0c-425a-b6bf-e9682e255b76",
               "type": 5,
               "children": []
             },
             {
-              "name": "mp",
-              "uid": "302f191d-1c0c-425a-b6bf-e9682e255b76",
+              "name": "hp",
+              "uid": "8ff604a1-b98d-4d47-808c-7b079e1204ea",
               "type": 5,
               "children": []
             }
@@ -6264,843 +6264,6 @@
       "uid": "a06c0e95-daa5-4976-9d46-d3e9ebd1db0f",
       "type": 1,
       "children": []
-    },
-    {
-      "name": "hud_root",
-      "uid": "d14ec809-44c1-47ed-9673-e793dd6f806b",
-      "type": 7,
-      "children": [
-        {
-          "name": "top_battle_cluster",
-          "uid": "c9f68a71-4b82-432f-a447-4063b1bb10c7",
-          "type": 7,
-          "children": [
-            {
-              "name": "top_battle_cluster_bg",
-              "uid": "58819330-74b2-45e2-a4b5-d567e3f645d5",
-              "type": 4,
-              "children": []
-            },
-            {
-              "name": "stage_chip",
-              "uid": "88421258-c507-473e-9778-e4f505b91141",
-              "type": 7,
-              "children": [
-                {
-                  "name": "stage_chip_bg",
-                  "uid": "f00c8905-4b72-46fb-a601-97062140ffd5",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "stage_label",
-                  "uid": "b43a3767-354d-4cef-a534-64c9ece33a68",
-                  "type": 3,
-                  "children": []
-                },
-                {
-                  "name": "stage_text",
-                  "uid": "f41c5f68-ca94-4cae-9235-835d71f44e84",
-                  "type": 3,
-                  "children": []
-                }
-              ]
-            },
-            {
-              "name": "timer_block",
-              "uid": "7ddbf368-9ed9-4d0f-9e23-ac1889d123e3",
-              "type": 7,
-              "children": [
-                {
-                  "name": "timer_block_bg",
-                  "uid": "b11ce415-828d-4cc1-ac78-a8f24203dd38",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "timer_label",
-                  "uid": "5e3a6568-d036-4e0e-93b9-f1d8c8d58bd6",
-                  "type": 3,
-                  "children": []
-                },
-                {
-                  "name": "timer_text",
-                  "uid": "e04041e3-1104-4508-9bf4-6a2de04b4f1b",
-                  "type": 3,
-                  "children": []
-                },
-                {
-                  "name": "wave_status_text",
-                  "uid": "1a3acee8-67a2-4aef-b6ca-eb9dd200141d",
-                  "type": 3,
-                  "children": []
-                }
-              ]
-            },
-            {
-              "name": "wave_medallion",
-              "uid": "89fad510-02e8-4932-bb97-a563edb8a1bc",
-              "type": 7,
-              "children": [
-                {
-                  "name": "wave_medallion_bg",
-                  "uid": "684e5d19-e2c2-4878-b196-80308dc9f215",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "wave_caption",
-                  "uid": "b38ef79d-557f-45cb-bb32-b455e684cbee",
-                  "type": 3,
-                  "children": []
-                },
-                {
-                  "name": "wave_title",
-                  "uid": "4c61e153-23b9-442e-8e36-de46417a2dbf",
-                  "type": 3,
-                  "children": []
-                }
-              ]
-            },
-            {
-              "name": "boss_capsule",
-              "uid": "57ccac35-1b6a-4d73-9580-d121f8e2f4c2",
-              "type": 7,
-              "children": [
-                {
-                  "name": "boss_capsule_bg",
-                  "uid": "f90574e0-1636-441e-ac0a-35b90363155a",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "boss_label",
-                  "uid": "16a8ef28-b998-4b85-9c85-508b1d1818ee",
-                  "type": 3,
-                  "children": []
-                },
-                {
-                  "name": "boss_name",
-                  "uid": "5d567edf-b7d3-4f6e-869c-6e6bd7bdea65",
-                  "type": 3,
-                  "children": []
-                },
-                {
-                  "name": "boss_state",
-                  "uid": "98ac2855-ebaf-48f5-9253-ebba034156db",
-                  "type": 3,
-                  "children": []
-                }
-              ]
-            },
-            {
-              "name": "resource_cluster",
-              "uid": "00bd7a74-319b-45f2-86a9-a35d709086ca",
-              "type": 7,
-              "children": [
-                {
-                  "name": "gold_card",
-                  "uid": "582cc0cd-6282-4e47-92fc-3c32d64cda9b",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "gold_card_bg",
-                      "uid": "42e4f52a-5cca-456a-97bf-66397e60733d",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "gold_card_label",
-                      "uid": "fad6d3f9-9135-4220-9f18-a903c4d3c160",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "gold_value",
-                      "uid": "62e8f4de-a609-406b-8105-482deccdf8f6",
-                      "type": 3,
-                      "children": []
-                    }
-                  ]
-                },
-                {
-                  "name": "wood_card",
-                  "uid": "ad3a4596-771a-4091-9145-e2d7f888793e",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "wood_card_bg",
-                      "uid": "ba371eb8-d467-4586-a2ee-628f4452bfa6",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "wood_card_label",
-                      "uid": "40d3e382-79a5-4467-8065-b7cd40307197",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "wood_value",
-                      "uid": "16c951f1-b4c8-4ba0-8dd4-c0fb7d923e08",
-                      "type": 3,
-                      "children": []
-                    }
-                  ]
-                },
-                {
-                  "name": "skill_card",
-                  "uid": "56ccc974-b65d-4228-80c0-724307eb2adc",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "skill_card_bg",
-                      "uid": "11f91970-c5e2-41bd-85a2-ad2dcf5f70fd",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_card_label",
-                      "uid": "ac3f629d-8511-4e14-9cb4-b2644a5aa611",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_value",
-                      "uid": "2df72660-4acb-4407-9546-8aab5ca34636",
-                      "type": 3,
-                      "children": []
-                    }
-                  ]
-                },
-                {
-                  "name": "challenge_card",
-                  "uid": "9aa981b6-eb25-4b68-9b22-c4c0aaf9bc1a",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "challenge_card_bg",
-                      "uid": "44425298-5f84-4413-a3e5-fb2f92d34933",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "challenge_card_label",
-                      "uid": "24ffcd0b-f832-4e9f-8d7d-37ec0bad091f",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "challenge_value",
-                      "uid": "8772bcfb-2d2e-42f5-bd43-9f81d197d74c",
-                      "type": 3,
-                      "children": []
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "left_shortcut_panel",
-          "uid": "7c9a4146-7df8-418e-9817-93fd167a1a9c",
-          "type": 7,
-          "children": [
-            {
-              "name": "left_shortcut_panel_bg",
-              "uid": "b80f6cd2-2e78-4dba-8aa9-18aeb8fc3107",
-              "type": 4,
-              "children": []
-            },
-            {
-              "name": "exit_button",
-              "uid": "b9b2279d-d2ed-4d40-a0a9-ec6e4c599b22",
-              "type": 1,
-              "children": []
-            },
-            {
-              "name": "settings_button",
-              "uid": "6a0164bb-2d67-47a6-bf54-9c8b50ca8f13",
-              "type": 1,
-              "children": []
-            },
-            {
-              "name": "shortcut_title",
-              "uid": "493ff5fe-0876-42be-ad1b-ac6ba2f075f3",
-              "type": 3,
-              "children": []
-            },
-            {
-              "name": "shortcut_list",
-              "uid": "9dbe32a0-4716-4805-a0da-1d28ba70d1df",
-              "type": 3,
-              "children": []
-            }
-          ]
-        },
-        {
-          "name": "right_tracker_panel",
-          "uid": "85b54a6c-850f-4423-9516-6e91ecce890f",
-          "type": 7,
-          "children": [
-            {
-              "name": "right_tracker_panel_bg",
-              "uid": "f90e35dc-0579-4384-b68c-6a39a026edb0",
-              "type": 4,
-              "children": []
-            },
-            {
-              "name": "tracker_title",
-              "uid": "b54b8cc7-6450-4263-83ab-5e1adf3d37ea",
-              "type": 3,
-              "children": []
-            },
-            {
-              "name": "tracker_objective",
-              "uid": "be07ddf7-87e2-47d6-876f-e42359348a5c",
-              "type": 3,
-              "children": []
-            },
-            {
-              "name": "tracker_progress",
-              "uid": "035d4f31-c2f2-4b2a-afa3-15475b53bf4d",
-              "type": 3,
-              "children": []
-            },
-            {
-              "name": "tracker_reward",
-              "uid": "ad04d62d-9554-4465-87a7-25a3955dd597",
-              "type": 3,
-              "children": []
-            },
-            {
-              "name": "tracker_hint",
-              "uid": "e8c62730-b5b9-46ec-b4a1-b7646d523966",
-              "type": 3,
-              "children": []
-            },
-            {
-              "name": "auto_task_checkbox",
-              "uid": "b570bd56-8ea6-4a9a-a851-9e2f31915398",
-              "type": 46,
-              "children": []
-            },
-            {
-              "name": "auto_task_label",
-              "uid": "fa7f5769-1e1d-4e54-ae9d-53156db8a395",
-              "type": 3,
-              "children": []
-            }
-          ]
-        },
-        {
-          "name": "challenge_strip",
-          "uid": "bcfbd20c-d43a-4347-900e-03abaabacd50",
-          "type": 7,
-          "children": [
-            {
-              "name": "challenge_strip_bg",
-              "uid": "892faee9-dc99-4c77-86df-56c82ec79e0d",
-              "type": 4,
-              "children": []
-            },
-            {
-              "name": "challenge_strip_title",
-              "uid": "38caec07-417b-479c-88ac-c5ae98e92932",
-              "type": 3,
-              "children": []
-            },
-            {
-              "name": "gold_trial_button",
-              "uid": "7f3aeb85-5da9-488d-bcd5-714d4400349d",
-              "type": 7,
-              "children": [
-                {
-                  "name": "shadow",
-                  "uid": "defd9f39-2418-4de6-93d0-467caaf28d16",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "bg",
-                  "uid": "c4712dd2-1ac6-4a1f-bd45-fada14b87632",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "button",
-                  "uid": "f8ca2918-824d-47cb-a8df-6e288002018b",
-                  "type": 1,
-                  "children": []
-                }
-              ]
-            },
-            {
-              "name": "wood_trial_button",
-              "uid": "262b458b-7886-4fa9-b23c-f82df75d20fc",
-              "type": 7,
-              "children": [
-                {
-                  "name": "shadow",
-                  "uid": "04d3c062-fa61-4524-99e2-9673a2404dbc",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "bg",
-                  "uid": "cf066099-25de-404d-9fb6-62c79eea5c1f",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "button",
-                  "uid": "5495dfe3-7096-4311-81d0-70d8b7e9ddf4",
-                  "type": 1,
-                  "children": []
-                }
-              ]
-            },
-            {
-              "name": "exp_trial_button",
-              "uid": "6dcbfc98-5bd1-4aae-9c0e-0d2d40a84b2c",
-              "type": 7,
-              "children": [
-                {
-                  "name": "shadow",
-                  "uid": "dcc0a85e-ca63-418c-be60-8509f04756a6",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "bg",
-                  "uid": "866ad94f-0836-4fae-94c2-1fa5cb8db6fc",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "button",
-                  "uid": "4d2c1c63-be8c-492e-aa1e-dc4c5895c72c",
-                  "type": 1,
-                  "children": []
-                }
-              ]
-            },
-            {
-              "name": "treasure_trial_button",
-              "uid": "6830af18-b1ef-4a32-b036-bc67e999e57e",
-              "type": 7,
-              "children": [
-                {
-                  "name": "shadow",
-                  "uid": "d3c04fe9-f887-43c5-a3bc-79365b0b7054",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "bg",
-                  "uid": "792edb17-3a38-4e95-8a00-76839427db60",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "button",
-                  "uid": "7c6ef288-c5e5-486d-b4c4-7de2ab50bad2",
-                  "type": 1,
-                  "children": []
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "bottom_action_bar",
-          "uid": "4a1c1d28-4e07-4004-b19a-50eab1032058",
-          "type": 7,
-          "children": [
-            {
-              "name": "bottom_action_bar_bg",
-              "uid": "23ed9d32-1830-4b5a-8476-67230b6e6ce2",
-              "type": 4,
-              "children": []
-            },
-            {
-              "name": "hero_core_panel",
-              "uid": "2b4fc36d-e649-4c84-95e8-a41769b399ce",
-              "type": 7,
-              "children": [
-                {
-                  "name": "hero_core_panel_bg",
-                  "uid": "4d1a37b4-1f34-4f85-968f-ea5c9f2eb46b",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "hero_portrait",
-                  "uid": "9ff83d13-6bd3-4a40-8a1b-2d23d7ed5b72",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "hero_name",
-                  "uid": "6f8f0ed0-eccd-4e9d-a0ec-90134373538f",
-                  "type": 3,
-                  "children": []
-                },
-                {
-                  "name": "hero_progress_text",
-                  "uid": "0015194b-59c4-4af8-8321-aea6a30ff2ab",
-                  "type": 3,
-                  "children": []
-                },
-                {
-                  "name": "hero_hp_bg",
-                  "uid": "044fb216-330e-4207-af07-22bf76f41413",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "hero_hp_fill",
-                  "uid": "f0dadd4b-eee2-4245-b95a-f6f2c0d6333c",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "hero_hp_text",
-                  "uid": "3493ed3d-5f9b-4235-a50f-8fe854aaca48",
-                  "type": 3,
-                  "children": []
-                }
-              ]
-            },
-            {
-              "name": "skill_hotbar",
-              "uid": "06c66d22-8446-4a1b-a1fa-6f42a929fa55",
-              "type": 7,
-              "children": [
-                {
-                  "name": "skill_slot_1",
-                  "uid": "8a4987d1-4697-4697-8c39-2b08ecb7b809",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "skill_slot_1_bg",
-                      "uid": "d9bd2040-b2e5-4768-ac55-27ed1da0b67c",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_1_accent",
-                      "uid": "85d8bcb2-2e99-447d-b2be-9e0a39bd3986",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_1_key",
-                      "uid": "3d3dbace-3bae-4b67-806d-e149910ce671",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_1_text",
-                      "uid": "1167b7a8-2041-47e9-8d0a-d7068858dc9b",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_1_meta",
-                      "uid": "7cb9eec9-15d8-4a9f-bc44-bd3acbf6cad1",
-                      "type": 3,
-                      "children": []
-                    }
-                  ]
-                },
-                {
-                  "name": "skill_slot_2",
-                  "uid": "6225b2e0-d7fe-4880-9e5e-a284e7d81fab",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "skill_slot_2_bg",
-                      "uid": "46ecb69c-78f9-46d9-8fac-6d2da110cf86",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_2_accent",
-                      "uid": "27669eb4-8286-40f2-a34d-a22a80baf66f",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_2_key",
-                      "uid": "1e84e312-d863-47e4-ad34-1ce0bfae3ad0",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_2_text",
-                      "uid": "a62bfeac-9b5e-4082-b1e9-28a58faeb5ad",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_2_meta",
-                      "uid": "80012d02-eeaa-4455-a0a3-e3983b0800f2",
-                      "type": 3,
-                      "children": []
-                    }
-                  ]
-                },
-                {
-                  "name": "skill_slot_3",
-                  "uid": "87a2f41f-7971-4e29-a7fd-27c25b8bef9a",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "skill_slot_3_bg",
-                      "uid": "92aeafa7-f9c2-454f-83f4-37c013a00b71",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_3_accent",
-                      "uid": "39425f54-e954-4dd4-ac49-a9b9bf3200d1",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_3_key",
-                      "uid": "863bf64c-949e-442f-adcd-8fea393a0c41",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_3_text",
-                      "uid": "5cf3967e-f7da-40d7-a808-53a6b1022c34",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_3_meta",
-                      "uid": "282e908c-773c-45c8-9323-7b00179d3347",
-                      "type": 3,
-                      "children": []
-                    }
-                  ]
-                },
-                {
-                  "name": "skill_slot_4",
-                  "uid": "2d4fa53f-211f-4963-b428-eabb8d07f70f",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "skill_slot_4_bg",
-                      "uid": "0bae7aae-7556-40c4-947b-966261043521",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_4_accent",
-                      "uid": "b732e9a3-7e53-4fa8-bd25-2d6b489259bc",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_4_key",
-                      "uid": "7692acdc-e9cd-43a1-89b4-88587ed4436d",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_4_text",
-                      "uid": "7aac95a3-b98e-4a85-a7e9-33bbeec191ed",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "skill_slot_4_meta",
-                      "uid": "41c00c88-3fce-4024-a0d3-bdc111186b35",
-                      "type": 3,
-                      "children": []
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "primary_action_cluster",
-              "uid": "08eadc27-c837-4578-872f-666c1e997fbc",
-              "type": 7,
-              "children": [
-                {
-                  "name": "skill_button",
-                  "uid": "482d85c4-751d-4605-86ba-210915dded38",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "shadow",
-                      "uid": "7430a4e6-ae86-42b0-9f04-23b7e3f1bd63",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "bg",
-                      "uid": "5a1d44d2-ea9c-43df-aa80-5d1db8e671e6",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "button",
-                      "uid": "83762a87-c648-4121-84c1-b908fbd5f73a",
-                      "type": 1,
-                      "children": []
-                    }
-                  ]
-                },
-                {
-                  "name": "bond_button",
-                  "uid": "84be58c7-aff8-4c7c-97af-2b605d9af045",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "shadow",
-                      "uid": "5a31d93a-8d08-43a3-92c1-f232be8c2ab5",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "bg",
-                      "uid": "22f0665f-5673-4efa-b453-cf1a84f3e0c9",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "button",
-                      "uid": "7bd9491b-ce36-46d6-99bd-6234e6b758ee",
-                      "type": 1,
-                      "children": []
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "secondary_action_cluster",
-              "uid": "9d2d8b30-86d8-45f4-a504-7a62b0a5831b",
-              "type": 7,
-              "children": [
-                {
-                  "name": "treasure_button",
-                  "uid": "153c8e60-45fa-4baa-8f77-bc8c94ae71d1",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "shadow",
-                      "uid": "01827382-3678-4c82-a143-818921852f9d",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "bg",
-                      "uid": "5b45fc0d-4772-4de7-be3b-dcb2fe4322c7",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "button",
-                      "uid": "71b3624d-1d2f-4411-9d23-e13c94f0e827",
-                      "type": 1,
-                      "children": []
-                    }
-                  ]
-                },
-                {
-                  "name": "focus_clear_button",
-                  "uid": "dfa26aee-98c1-43f0-ade4-f91a48b230a6",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "shadow",
-                      "uid": "bf618bb2-2b2f-4d15-b50f-ca269cd8ca68",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "bg",
-                      "uid": "091212f8-7c4e-43bc-8e38-5d8457a1187b",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "button",
-                      "uid": "38fad642-4549-4c9d-be59-af846ccf2ffd",
-                      "type": 1,
-                      "children": []
-                    }
-                  ]
-                },
-                {
-                  "name": "swallowed_list_button",
-                  "uid": "4ab60267-d845-4b7b-9ee6-cc0bc0bc9814",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "shadow",
-                      "uid": "a7b05b33-c7e8-48cd-9359-4d08febe1438",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "bg",
-                      "uid": "7a08bf6d-f9b3-4009-bf4b-b9fc640e983b",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "button",
-                      "uid": "7e3a7099-2cc2-4cf1-8d61-f0cf9d1ef733",
-                      "type": 1,
-                      "children": []
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "exp_rail",
-              "uid": "ac63edb3-14da-49ae-b4f5-b0151e250ea6",
-              "type": 7,
-              "children": [
-                {
-                  "name": "exp_rail_bg",
-                  "uid": "0a25aded-428d-43fb-8d5b-730d909959db",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "exp_rail_fill",
-                  "uid": "96e365c6-5563-4cdc-a6bc-233efaacc1b0",
-                  "type": 4,
-                  "children": []
-                },
-                {
-                  "name": "exp_rail_text",
-                  "uid": "dc5b988d-d12f-4a02-8475-9eb944c2c080",
-                  "type": 3,
-                  "children": []
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "overlay_reserved",
-          "uid": "d3446f50-39d5-40cd-81fa-6a9039f808c0",
-          "type": 7,
-          "children": []
-        }
-      ]
     }
   ]
 }

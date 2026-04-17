@@ -43,7 +43,7 @@ local function build_affix_lines(tip_model)
   local effect_body_text = trim_text(tip_model and tip_model.effect_body_text or '')
   if effect_body_text ~= '' then
     lines[#lines + 1] = {
-      title = '当前效果',
+      title = '当前参悟',
       body = effect_body_text,
     }
   end
@@ -52,7 +52,7 @@ local function build_affix_lines(tip_model)
   local set_body = join_non_empty(tip_model and tip_model.set_body_lines or {}, '\n')
   if set_title ~= '' or set_body ~= '' then
     lines[#lines + 1] = {
-      title = set_title ~= '' and set_title or '套装效果',
+      title = set_title ~= '' and set_title or '道统真意',
       body = set_body,
     }
   end

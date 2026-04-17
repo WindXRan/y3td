@@ -1,6 +1,7 @@
 local ui_res = require 'ui.res'
 local theme = require 'ui.theme'
 local skin = require 'ui.skin'
+local UIStyle = require 'ui.style'
 local Factory = require 'ui.factory'
 local BondTipPanel = require 'ui.bond_tip_panel'
 local layout = require 'ui.choice_panel_layout'
@@ -114,7 +115,7 @@ local function get_panel_title(kind)
     return '技能强化'
   end
   if kind == 'bond' then
-    return '羁绊抽卡'
+    return '仙缘感应'
   end
   if kind == 'mark' then
     return '进化选择'
@@ -186,18 +187,63 @@ function M.create(env)
 
   local create_panel = factory.create_panel
   local create_text = factory.create_text
-  local create_styled_text = factory.create_styled_text
   local get_hud_metrics = factory.get_hud_metrics
   local get_hud_scale = factory.get_hud_scale
   local scaled = factory.scaled
   local set_percent_pos = factory.set_percent_pos
-  local apply_text_style = factory.apply_text_style
   local bond_tip_panel = BondTipPanel.create(env)
 
   local refresh_panel
   local set_text_node
   local clear_value_highlights
   local clear_effect_highlights
+
+  local function fallback_create_styled_text(parent, x, y, width, height, style_key, value, z_order, h_align, v_align, font_size, color)
+    local text = create_text(
+      parent,
+      x,
+      y,
+      width,
+      height,
+      font_size or math.max(10, math.floor((height or 18) * 0.72)),
+      color,
+      h_align or '中',
+      v_align or '中',
+      z_order
+    )
+    UIStyle.apply_text(text, style_key, value or '')
+    return text
+  end
+
+  local function fallback_apply_text_style(node, style_key, value, opts)
+    if not node then
+      return node
+    end
+    UIStyle.apply_text(node, style_key, value or '')
+
+    local options = opts or {}
+    if options.font_size and node.set_font_size then
+      node:set_font_size(options.font_size)
+    end
+    if (options.h_align or options.v_align) and node.set_text_alignment then
+      node:set_text_alignment(options.h_align or '中', options.v_align or '中')
+    end
+    if options.color and node.set_text_color then
+      node:set_text_color(
+        options.color[1],
+        options.color[2],
+        options.color[3],
+        options.color[4] or 255
+      )
+    end
+    if options.visible ~= nil and node.set_visible then
+      node:set_visible(options.visible == true)
+    end
+    return node
+  end
+
+  local create_styled_text = factory.create_styled_text or fallback_create_styled_text
+  local apply_text_style = factory.apply_text_style or fallback_apply_text_style
 
   local function get_hud_root()
     local ok, hud = pcall(y3.ui.get_ui, env.get_player(), 'GameHUD')
@@ -447,7 +493,7 @@ function M.create(env)
 
     if text_layout.effect_text and text_layout.effect_text ~= '' then
       affix_lines[#affix_lines + 1] = {
-        title = text_layout.effect_title ~= '' and text_layout.effect_title or '效果说明',
+        title = text_layout.effect_title ~= '' and text_layout.effect_title or '真意点化',
         body = text_layout.effect_text,
       }
     end

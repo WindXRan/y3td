@@ -27,6 +27,19 @@ def color(*items):
     return tup(*items)
 
 
+LEGACY_NODE_FIXES_BY_UID = {
+    "b49def45-49b7-4c74-8855-9dfdf3b9e82c": {
+        "adapter_option": [False, True, True, True, 127.9699, -4.9999, 159.6685, -504.9985],
+        "pos_data": tup(400.6685, 3.0001, 293.1649, 2.1588, 1, 1),
+    },
+}
+LEGACY_NODE_FIXES_BY_NAME = {
+    "tips_node": {
+        "visible": False,
+    },
+}
+
+
 def adapt_flags(adapter):
     parts = {part.strip().lower() for part in adapter.split(",") if part.strip()}
     return (
@@ -196,6 +209,28 @@ def panel(name, x, y, width, height, parent_w, parent_h, bg_rgba, adapter="", in
 def add(parent, *children):
     parent["children"].extend(child for child in children if child is not None)
     return parent
+
+
+def walk_nodes(node):
+    if isinstance(node, dict):
+        yield node
+        for value in node.values():
+            if isinstance(value, (dict, list)):
+                yield from walk_nodes(value)
+    elif isinstance(node, list):
+        for item in node:
+            yield from walk_nodes(item)
+
+
+def apply_legacy_node_fixes(data):
+    for node in walk_nodes(data):
+        uid = node.get("uid")
+        if uid in LEGACY_NODE_FIXES_BY_UID:
+            node.update(LEGACY_NODE_FIXES_BY_UID[uid])
+
+        name = node.get("name")
+        if name in LEGACY_NODE_FIXES_BY_NAME:
+            node.update(LEGACY_NODE_FIXES_BY_NAME[name])
 
 
 def button_bundle(
@@ -459,6 +494,7 @@ def patch_gamehud(gamehud_path: Path):
     children = [child for child in children if child.get("name") != "hud_root"]
     children.append(build_hud_root())
     data["children"] = children
+    apply_legacy_node_fixes(data)
 
     with gamehud_path.open("w", encoding="utf-8") as fh:
         json.dump(data, fh, ensure_ascii=False, indent=4)

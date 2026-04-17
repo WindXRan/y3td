@@ -1,4 +1,5 @@
-local layout = require 'ui.bond_tip_panel_layout'
+local ok_layout, loaded_layout = pcall(require, 'ui.bond_tip_panel_layout')
+local layout = ok_layout and loaded_layout or nil
 local UIStyle = require 'ui.style'
 
 local M = {}
@@ -101,10 +102,32 @@ local function get_quality_palette(quality)
   return QUALITY_COLORS[quality or 'common'] or QUALITY_COLORS.common
 end
 
+local function is_layout_available()
+  return type(layout) == 'table'
+    and type(layout.panel_name) == 'string'
+    and type(layout.nodes) == 'table'
+    and type(layout.nodes.panel) == 'string'
+    and type(layout.nodes.quality_badge) == 'string'
+end
+
 function M.create(env)
   local y3 = env.y3
   local player = env.get_player()
   local cache = nil
+  local api = {}
+
+  if not is_layout_available() then
+    function api.hide()
+    end
+
+    function api.show_for_card()
+    end
+
+    function api.show_for_anchor()
+    end
+
+    return api
+  end
 
   local function ensure_nodes()
     if is_cache_valid(cache) then
@@ -192,8 +215,6 @@ function M.create(env)
 
     nodes.panel:set_absolute_pos(target_x, target_y)
   end
-
-  local api = {}
 
   function api.hide()
     local nodes = ensure_nodes()

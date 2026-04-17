@@ -57,7 +57,6 @@ function M.create(env)
 
   local create_panel = factory.create_panel
   local create_text = factory.create_text
-  local create_styled_text = factory.create_styled_text
   local create_button = factory.create_button
   local set_percent_pos = factory.set_percent_pos
   local get_hud_metrics = factory.get_hud_metrics
@@ -65,6 +64,25 @@ function M.create(env)
   local scaled = factory.scaled
   local runtime_skin = skin.images.runtime_hud or {}
   local refresh_runtime_hud
+
+  local function fallback_create_styled_text(parent, x, y, width, height, style_key, value, z_order, h_align, v_align, font_size, color)
+    local text = create_text(
+      parent,
+      x,
+      y,
+      width,
+      height,
+      font_size or math.max(10, math.floor((height or 18) * 0.72)),
+      color,
+      h_align or '中',
+      v_align or '中',
+      z_order
+    )
+    UIStyle.apply_text(text, style_key, value or '')
+    return text
+  end
+
+  local create_styled_text = factory.create_styled_text or fallback_create_styled_text
 
   local function get_challenge_charge_count(challenge_id)
     if STATE.challenge_charge_map and STATE.challenge_charge_map[challenge_id] ~= nil then
@@ -588,7 +606,7 @@ function M.create(env)
       return '技能抉择'
     end
     if kind == 'bond' then
-      return '羁绊抉择'
+      return '仙缘抉择'
     end
     if kind == 'mark' then
       return '进化抉择'
@@ -604,7 +622,7 @@ function M.create(env)
       return string.format('按 %d 领取此项', index)
     end
     if kind == 'bond' then
-      return string.format('按 %d 收下此卡', index)
+      return string.format('按 %d 收下此缘', index)
     end
     if kind == 'mark' then
       return string.format('按 %d 选择此进化', index)
@@ -617,7 +635,7 @@ function M.create(env)
       return '成长抉择待确认'
     end
     if kind == 'bond' then
-      return '羁绊招募进行中'
+      return '仙缘感应进行中'
     end
     if kind == 'mark' then
       return '进化正在抉择'
@@ -1612,7 +1630,7 @@ function M.create(env)
       scaled(96, scale),
       scaled(12, scale),
       'runtime_hud.bond_slot_label',
-      '已拥有羁绊',
+      '已结仙缘',
       9402
     )
 

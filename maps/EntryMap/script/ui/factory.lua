@@ -1,6 +1,7 @@
 local ui_res = require 'ui.res'
 local skin = require 'ui.skin'
 local theme = require 'ui.theme'
+local UIStyle = require 'ui.style'
 
 local M = {}
 
@@ -97,6 +98,56 @@ function M.create(env)
       text:set_z_order(z_order)
     end
     return text
+  end
+
+  function api.create_styled_text(parent, x, y, width, height, style_key, value, z_order, h_align, v_align, font_size, color)
+    local resolved_font_size = font_size
+    if resolved_font_size == nil then
+      resolved_font_size = math.max(10, math.floor((height or 18) * 0.72))
+    end
+
+    local text = api.create_text(
+      parent,
+      x,
+      y,
+      width,
+      height,
+      resolved_font_size,
+      color,
+      h_align or '中',
+      v_align or '中',
+      z_order
+    )
+    UIStyle.apply_text(text, style_key, value or '')
+    return text
+  end
+
+  function api.apply_text_style(node, style_key, value, opts)
+    if not node then
+      return node
+    end
+
+    UIStyle.apply_text(node, style_key, value or '')
+
+    local options = opts or {}
+    if options.font_size and node.set_font_size then
+      node:set_font_size(options.font_size)
+    end
+    if (options.h_align or options.v_align) and node.set_text_alignment then
+      node:set_text_alignment(options.h_align or '中', options.v_align or '中')
+    end
+    if options.color and node.set_text_color then
+      node:set_text_color(
+        options.color[1],
+        options.color[2],
+        options.color[3],
+        options.color[4] or 255
+      )
+    end
+    if options.visible ~= nil and node.set_visible then
+      node:set_visible(options.visible == true)
+    end
+    return node
   end
 
   function api.create_button(parent, x, y, width, height, label, callback, options)

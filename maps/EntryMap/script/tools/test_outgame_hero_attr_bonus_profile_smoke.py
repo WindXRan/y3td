@@ -83,6 +83,8 @@ def main() -> None:
         "assert(profile.hero_attr_bonus_stats['攻击白字'] == 6, 'expected standard clear attack bonus') "
         "assert(profile.hero_attr_bonus_stats['生命白字'] == 120, 'expected standard clear hp bonus') "
         "assert(profile.hero_attr_bonus_stats['攻击范围'] == 50, 'expected challenge clear range bonus') "
+        "assert(profile.selected_stage_id == '1-2', 'expected highest unlocked standard stage to be selected') "
+        "assert(profile.selected_mode_id == 'standard', 'expected invalid saved mode to normalize to standard') "
         "print('outgame hero attr bonus profile smoke ok') "
     )
     with tempfile.NamedTemporaryFile('w', encoding='utf-8', suffix='.lua', delete=False) as handle:
