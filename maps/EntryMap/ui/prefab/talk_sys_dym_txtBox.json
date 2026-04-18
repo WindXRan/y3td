@@ -1,0 +1,93 @@
+{
+    "data": {
+        "adapter_option": [
+            true, 
+            true, 
+            true, 
+            true, 
+            0.0, 
+            0.0, 
+            50.0, 
+            50.0
+        ], 
+        "anchor": [
+            0.5, 
+            0.5
+        ], 
+        "can_drag": false, 
+        "children": [], 
+        "comp_type": "InputField", 
+        "custom_kv": {}, 
+        "event_list": [], 
+        "font": {
+            "__tuple__": true, 
+            "items": [
+                "HKYuanW9", 
+                24
+            ]
+        }, 
+        "font_color": [
+            255, 
+            255, 
+            255
+        ], 
+        "hover_child": "", 
+        "name": "talk_sys_dym_label_input", 
+        "opacity": 1.0, 
+        "open_adapter": false, 
+        "pos_data": {
+            "__tuple__": true, 
+            "items": [
+                960.0, 
+                540.0, 
+                50.0, 
+                50.0, 
+                1, 
+                1
+            ]
+        }, 
+        "prefab_key": "f6d16d7a-9ede-4869-a260-efcfe69c7b81", 
+        "prefab_sub_key": null, 
+        "rotation": 0, 
+        "scale": [
+            1, 
+            1
+        ], 
+        "scene_ui_name": null, 
+        "size": {
+            "__tuple__": true, 
+            "items": [
+                960.0, 
+                40.0
+            ]
+        }, 
+        "swallow_enter": false, 
+        "swallow_touches": false, 
+        "text": {
+            "__tuple__": true, 
+            "items": [
+                "", 
+                false
+            ]
+        }, 
+        "tip_text": {
+            "__tuple__": true, 
+            "items": [
+                "\u8bf7\u8f93\u5165\u5185\u5bb9...", 
+                false
+            ]
+        }, 
+        "tip_text_color": {
+            "__tuple__": true, 
+            "items": [
+                175, 
+                228, 
+                133
+            ]
+        }, 
+        "type": 15, 
+        "visible": true
+    }, 
+    "key": "f6d16d7a-9ede-4869-a260-efcfe69c7b81", 
+    "name": "talk_sys_dym_txtBox"
+}

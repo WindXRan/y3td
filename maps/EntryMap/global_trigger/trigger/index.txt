@@ -1,8 +1,16 @@
 {
+    "MOBA单位预设第一期_触发器.folder": 8, 
+    "MOBA单位预设第三期_触发器.folder": 10, 
+    "MOBA单位预设第二期_触发器.folder": 9, 
+    "MOBA单位预设第四期_触发器.folder": 11, 
     "New trigger.json": 0, 
     "UI.folder": 1, 
     "War3控制台_触发器.folder": 2, 
+    "【v2】功能模拟聊天_触发器.folder": 6, 
+    "消息提示_触发器.folder": 7, 
     "物品说明_触发器.folder": 3, 
     "物品说明_触发器_Import.folder": 5, 
-    "自走棋图鉴_触发器.folder": 4
+    "简易英雄职业_触发器.folder": 12, 
+    "自走棋图鉴_触发器.folder": 4, 
+    "通行证系统_触发器.folder": 13
 }

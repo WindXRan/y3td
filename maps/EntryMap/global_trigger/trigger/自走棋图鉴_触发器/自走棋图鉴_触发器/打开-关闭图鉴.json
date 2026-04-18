@@ -219,7 +219,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1464283161, 
     "trigger_name": "打开-关闭图鉴", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "PLAYER": {

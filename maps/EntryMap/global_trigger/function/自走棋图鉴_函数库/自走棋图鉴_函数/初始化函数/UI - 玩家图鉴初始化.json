@@ -1122,7 +1122,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1531392006, 
     "trigger_name": "UI - 玩家图鉴初始化", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "BOOLEAN": {

@@ -1,0 +1,4 @@
+{
+    "talk_sys_send_talk.json": 0, 
+    "talk_sys_set_mod_str.json": 1
+}

@@ -79,7 +79,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1766273053, 
     "trigger_name": "图鉴卡牌ui - 移出", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {}, 
         {}, 

@@ -305,7 +305,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1917267979, 
     "trigger_name": "玩家 - 显示军团图鉴", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "BOOLEAN": {

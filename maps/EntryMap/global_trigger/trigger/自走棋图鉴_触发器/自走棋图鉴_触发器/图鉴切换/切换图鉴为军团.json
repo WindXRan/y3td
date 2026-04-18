@@ -80,7 +80,7 @@
     "p_trigger_id": null, 
     "trigger_id": 138883098, 
     "trigger_name": "切换图鉴为军团", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "PLAYER": {

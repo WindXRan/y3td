@@ -1,0 +1,314 @@
+{
+    "action": [
+        {
+            "action_type": "UNREG_TRIGGER", 
+            "args_list": [
+                {
+                    "arg_type": 100178, 
+                    "args_list": [
+                        [
+                            "DYNAMIC_TRIGGER_INSTANCE", 
+                            "高级消息_触发器-添加消息"
+                        ], 
+                        {
+                            "arg_type": 100002, 
+                            "args_list": [
+                                {
+                                    "__tuple__": true, 
+                                    "items": [
+                                        "INTEGER", 
+                                        "控件序号", 
+                                        "local"
+                                    ]
+                                }
+                            ], 
+                            "sub_type": 6
+                        }
+                    ], 
+                    "sub_type": "VARIABLE"
+                }
+            ], 
+            "bp": false, 
+            "element_id": 2055995422000001, 
+            "enable": true
+        }, 
+        {
+            "action_type": "UNREG_TRIGGER", 
+            "args_list": [
+                {
+                    "arg_type": 100178, 
+                    "args_list": [
+                        [
+                            "DYNAMIC_TRIGGER_INSTANCE", 
+                            "高级消息_触发器-帧循环"
+                        ], 
+                        {
+                            "arg_type": 100002, 
+                            "args_list": [
+                                {
+                                    "__tuple__": true, 
+                                    "items": [
+                                        "INTEGER", 
+                                        "控件序号", 
+                                        "local"
+                                    ]
+                                }
+                            ], 
+                            "sub_type": 6
+                        }
+                    ], 
+                    "sub_type": "VARIABLE"
+                }
+            ], 
+            "bp": false, 
+            "element_id": 2055995422000002, 
+            "enable": true
+        }, 
+        {
+            "action_type": "UNREG_TRIGGER", 
+            "args_list": [
+                {
+                    "arg_type": 100178, 
+                    "args_list": [
+                        [
+                            "DYNAMIC_TRIGGER_INSTANCE", 
+                            "高级消息_触发器-清空消息"
+                        ], 
+                        {
+                            "arg_type": 100002, 
+                            "args_list": [
+                                {
+                                    "__tuple__": true, 
+                                    "items": [
+                                        "INTEGER", 
+                                        "控件序号", 
+                                        "local"
+                                    ]
+                                }
+                            ], 
+                            "sub_type": 6
+                        }
+                    ], 
+                    "sub_type": "VARIABLE"
+                }
+            ], 
+            "bp": false, 
+            "element_id": 2055995422000003, 
+            "enable": true
+        }, 
+        {
+            "action_type": "REMOVE_LIST_VAR_ITEM", 
+            "args_list": [
+                {
+                    "arg_type": 100081, 
+                    "args_list": [
+                        [
+                            "INTEGER", 
+                            "高级消息_剩余显示帧数"
+                        ]
+                    ], 
+                    "sub_type": 1
+                }, 
+                {
+                    "arg_type": 100002, 
+                    "args_list": [
+                        {
+                            "__tuple__": true, 
+                            "items": [
+                                "INTEGER", 
+                                "控件序号", 
+                                "local"
+                            ]
+                        }
+                    ], 
+                    "sub_type": 6
+                }
+            ], 
+            "bp": false, 
+            "element_id": 2055995422000004, 
+            "enable": true, 
+            "op_arg": [
+                {
+                    "arg_type": 100001, 
+                    "args_list": [
+                        true
+                    ], 
+                    "sub_type": 1
+                }
+            ], 
+            "op_arg_enable": [
+                false
+            ]
+        }, 
+        {
+            "action_type": "REMOVE_LIST_VAR_ITEM", 
+            "args_list": [
+                {
+                    "arg_type": 100081, 
+                    "args_list": [
+                        [
+                            "DYNAMIC_TRIGGER_INSTANCE", 
+                            "高级消息_触发器-添加消息"
+                        ]
+                    ], 
+                    "sub_type": 1
+                }, 
+                {
+                    "arg_type": 100002, 
+                    "args_list": [
+                        {
+                            "__tuple__": true, 
+                            "items": [
+                                "INTEGER", 
+                                "控件序号", 
+                                "local"
+                            ]
+                        }
+                    ], 
+                    "sub_type": 6
+                }
+            ], 
+            "bp": false, 
+            "element_id": 2055995422000005, 
+            "enable": true, 
+            "op_arg": [
+                {
+                    "arg_type": 100001, 
+                    "args_list": [
+                        true
+                    ], 
+                    "sub_type": 1
+                }
+            ], 
+            "op_arg_enable": [
+                false
+            ]
+        }, 
+        {
+            "action_type": "REMOVE_LIST_VAR_ITEM", 
+            "args_list": [
+                {
+                    "arg_type": 100081, 
+                    "args_list": [
+                        [
+                            "DYNAMIC_TRIGGER_INSTANCE", 
+                            "高级消息_触发器-帧循环"
+                        ]
+                    ], 
+                    "sub_type": 1
+                }, 
+                {
+                    "arg_type": 100002, 
+                    "args_list": [
+                        {
+                            "__tuple__": true, 
+                            "items": [
+                                "INTEGER", 
+                                "控件序号", 
+                                "local"
+                            ]
+                        }
+                    ], 
+                    "sub_type": 6
+                }
+            ], 
+            "bp": false, 
+            "element_id": 2055995422000006, 
+            "enable": true, 
+            "op_arg": [
+                {
+                    "arg_type": 100001, 
+                    "args_list": [
+                        true
+                    ], 
+                    "sub_type": 1
+                }
+            ], 
+            "op_arg_enable": [
+                false
+            ]
+        }, 
+        {
+            "action_type": "REMOVE_LIST_VAR_ITEM", 
+            "args_list": [
+                {
+                    "arg_type": 100081, 
+                    "args_list": [
+                        [
+                            "DYNAMIC_TRIGGER_INSTANCE", 
+                            "高级消息_触发器-清空消息"
+                        ]
+                    ], 
+                    "sub_type": 1
+                }, 
+                {
+                    "arg_type": 100002, 
+                    "args_list": [
+                        {
+                            "__tuple__": true, 
+                            "items": [
+                                "INTEGER", 
+                                "控件序号", 
+                                "local"
+                            ]
+                        }
+                    ], 
+                    "sub_type": 6
+                }
+            ], 
+            "bp": false, 
+            "element_id": 2055995422000007, 
+            "enable": true, 
+            "op_arg": [
+                {
+                    "arg_type": 100001, 
+                    "args_list": [
+                        true
+                    ], 
+                    "sub_type": 1
+                }
+            ], 
+            "op_arg_enable": [
+                false
+            ]
+        }
+    ], 
+    "call_enabled": true, 
+    "condition": [], 
+    "enabled": true, 
+    "event": [], 
+    "func_category": "t_function", 
+    "func_comment": "", 
+    "func_des": "注销编号为{控件序号}的控件", 
+    "func_id": "4856865e937911eea35130d042e9144c", 
+    "func_name": "【消息公告板】注销", 
+    "func_param_list": [
+        {
+            "__tuple__": true, 
+            "items": [
+                "控件序号", 
+                true
+            ]
+        }
+    ], 
+    "group_id": "v8lj-DpUEfGekDm7oEs-XI", 
+    "is_func": true, 
+    "is_official_func": false, 
+    "p_trigger_id": null, 
+    "trigger_id": 2055995422, 
+    "trigger_name": "【消息公告板】注销", 
+    "valid": true, 
+    "var_data": [
+        {
+            "INTEGER": {
+                "控件序号": 0
+            }
+        }, 
+        {
+            "控件序号": 0
+        }, 
+        [
+            "控件序号"
+        ]
+    ]
+}

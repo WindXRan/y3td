@@ -27,13 +27,6 @@
    {
     "__tuple__": true, 
     "items": [
-     "35274c25-43dc-428d-9e1c-0e4135e65b74", 
-     "\u7269\u54c1\u8bf4\u660e"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
      "bea2ea16-5932-4d1c-815e-22c49d611e65", 
      "ShopItemDetailPanel"
     ]
@@ -57,6 +50,27 @@
     "items": [
      "deb2fb53-0b46-41db-b2ea-5054d38e3ff5", 
      "outgame"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "panel_1", 
+     "talk_sys_panel"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "63db06b4-4d2d-4541-a257-47f46c53711d", 
+     "\u6d88\u606f\u63d0\u793a"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "9b35ec72-a685-43a1-a4e8-3ff3ca031490", 
+     "\u5b58\u6863\u7cfb\u7edf"
     ]
    }
   ]

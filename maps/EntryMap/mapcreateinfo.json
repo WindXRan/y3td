@@ -6,6 +6,30 @@
     "lua_script_preset": "y3", 
     "object_template_preset": "default", 
     "plugin_name_index": {
+        "1160fd5d-5b45-4942-ae33-78320e0d1415": [
+            "ejFWWTrNEfGMfv+GIcAtO+", 
+            "ejI14zrNEfGGA-+GIcAtO+", 
+            "ejJLkzrNEfGbNv+GIcAtO5", 
+            "ejJkGzrNEfGRaP+GIcAtO3"
+        ], 
+        "2b8106b2-daf7-4880-ad2c-2533fb7648c4": [
+            "5tbqnDpjEfGjJzm7oEs-XN", 
+            "5tbvuzpjEfG4Djm7oEs-XB", 
+            "5tbxVDpjEfGs2Dm7oEs-XO", 
+            "5tby-TpjEfGhmDm7oEs-XO"
+        ], 
+        "4b21d49e-6d2e-4a69-a219-85040c6e38aa": [
+            "lTnpGzpUEfGPKzm7oEs-XG", 
+            "lToNpTpUEfGVWzm7oEs-XH", 
+            "lToVTzpUEfGcGTm7oEs-XK", 
+            "lToamTpUEfGnqzm7oEs-XK"
+        ], 
+        "4c937f47-67cc-4f7e-a2d2-70e35a536ef6": [
+            "TN6tAjpjEfGS5zm7oEs-XK", 
+            "TN6yjzpjEfGK+Tm7oEs-XJ", 
+            "TN60pjpjEfGbKTm7oEs-XI", 
+            "TN62ezpjEfG+WDm7oEs-XP"
+        ], 
         "4ef95f14-7b10-479f-bbce-18881e9f08e6": [
             "tY9rCzh1EfG9gnWyv+tFV+", 
             "tY9vUTh1EfGKb3Wyv+tFV3", 
@@ -18,11 +42,35 @@
             "BD6iHDmHEfGtn68vlGLNbY", 
             "BD6i-TmHEfG+zK8vlGLNbR"
         ], 
+        "96cb959f-cfaa-4811-bf01-307cf74f9013": [
+            "v6wFyTpUEfGbIjm7oEs-XN", 
+            "v6wLrTpUEfGm6Tm7oEs-XH", 
+            "v6wOITpUEfGWOzm7oEs-XN", 
+            "v6wQXDpUEfG0tTm7oEs-XL"
+        ], 
         "a0b4094d-ccda-431e-b7ca-9b9f4b58f9c5": [
             "idE1qzi1EfGKzt+XyC-aAK", 
             "idFKhDi1EfGaZ9+XyC-aAF", 
             "idFbKji1EfGnTt+XyC-aAP", 
             "idFpwDi1EfGNCN+XyC-aAA"
+        ], 
+        "badb4fa5-44d5-4472-86e7-ef81c5c62279": [
+            "FXDYnzpjEfG-Xjm7oEs-XI", 
+            "FXGFZjpjEfGZaDm7oEs-XH", 
+            "FXGpJjpjEfG-9Tm7oEs-XN", 
+            "FXG3zjpjEfGKfzm7oEs-XP"
+        ], 
+        "d21f539f-dd7b-40c0-971c-56a2b5952f35": [
+            "vkDtNDpjEfGsCDm7oEs-XK", 
+            "vkDycjpjEfGWdDm7oEs-XC", 
+            "vkD0GTpjEfGhKTm7oEs-XO", 
+            "vkD1wDpjEfGS6Tm7oEs-XD"
+        ], 
+        "de231124-2b0c-46da-8e27-87374b5eb3d4": [
+            "jRED7zpjEfGP2jm7oEs-XF", 
+            "jRFRKzpjEfGKFzm7oEs-XC", 
+            "jRFVvTpjEfGJyTm7oEs-XG", 
+            "jRGKujpjEfGHRjm7oEs-XL"
         ]
     }
 }

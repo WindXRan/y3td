@@ -1,0 +1,231 @@
+{
+    "data": {
+        "adapter_option": [
+            false, 
+            false, 
+            false, 
+            false, 
+            0, 
+            0, 
+            0, 
+            0
+        ], 
+        "anchor": [
+            0.5, 
+            0.5
+        ], 
+        "can_drag": false, 
+        "children": [
+            {
+                "adapter_option": [
+                    false, 
+                    false, 
+                    false, 
+                    false, 
+                    0, 
+                    0, 
+                    0, 
+                    0
+                ], 
+                "alignment": {
+                    "__tuple__": true, 
+                    "items": [
+                        2, 
+                        8
+                    ]
+                }, 
+                "anchor": [
+                    0.5, 
+                    0.5
+                ], 
+                "bold": false, 
+                "border": false, 
+                "can_drag": false, 
+                "children": [], 
+                "comp_type": "TextLabel", 
+                "event_list": [], 
+                "font": {
+                    "__tuple__": true, 
+                    "items": [
+                        "HKSongW9", 
+                        20
+                    ]
+                }, 
+                "font_color": [
+                    230, 
+                    211, 
+                    152, 
+                    255
+                ], 
+                "font_min_size": 15, 
+                "gradient": false, 
+                "gradient_bl_color": [
+                    255, 
+                    255, 
+                    255, 
+                    255
+                ], 
+                "gradient_br_color": [
+                    255, 
+                    255, 
+                    255, 
+                    255
+                ], 
+                "gradient_tl_color": [
+                    255, 
+                    255, 
+                    255, 
+                    255
+                ], 
+                "gradient_tr_color": [
+                    255, 
+                    255, 
+                    255, 
+                    255
+                ], 
+                "hover_child": "", 
+                "italics": false, 
+                "label_effect": {
+                    "__tuple__": true, 
+                    "items": [
+                        false, 
+                        false, 
+                        false, 
+                        false, 
+                        false, 
+                        false
+                    ]
+                }, 
+                "line_space": {
+                    "__tuple__": true, 
+                    "items": [
+                        0, 
+                        0
+                    ]
+                }, 
+                "name": "\u6587\u672c", 
+                "opacity": 1.0, 
+                "open_adapter": false, 
+                "over_pattern": false, 
+                "pos_data": {
+                    "__tuple__": true, 
+                    "items": [
+                        50.0, 
+                        -22.5, 
+                        50.0, 
+                        -75.0, 
+                        1, 
+                        1
+                    ]
+                }, 
+                "prefab_sub_key": "f82e8b03-227c-4559-99e8-e0b0c2580d51", 
+                "review_word": false, 
+                "rotation": 0, 
+                "scale": [
+                    1, 
+                    1
+                ], 
+                "scene_ui_name": null, 
+                "shadow": false, 
+                "size": [
+                    100.0, 
+                    30.0
+                ], 
+                "strike_through": false, 
+                "strike_through_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        0, 
+                        0, 
+                        0, 
+                        255
+                    ]
+                }, 
+                "strike_through_size": 0, 
+                "swallow_touches": false, 
+                "text": {
+                    "__tuple__": true, 
+                    "items": [
+                        "\u7b2c1\u7ea7", 
+                        false
+                    ]
+                }, 
+                "text_bind": [
+                    null, 
+                    null
+                ], 
+                "text_border_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        0, 
+                        0, 
+                        0, 
+                        255
+                    ]
+                }, 
+                "text_border_width": 0, 
+                "text_format": "", 
+                "text_italic_radius": 0.5, 
+                "text_shadow_color": [
+                    123, 
+                    123, 
+                    123, 
+                    255
+                ], 
+                "text_shadow_offset": [
+                    0, 
+                    0
+                ], 
+                "type": 3, 
+                "typewriter_effect": 0, 
+                "typewriter_space": 0, 
+                "under_line": false, 
+                "visible": true
+            }
+        ], 
+        "clip_enabled": false, 
+        "clipping_type": 1, 
+        "color": [
+            255, 
+            255, 
+            255, 
+            0
+        ], 
+        "comp_type": "Layout", 
+        "custom_kv": {}, 
+        "event_list": [], 
+        "hover_child": "", 
+        "mask_image": 100445, 
+        "name": "\u901a\u884c\u8bc1\u7b2c\u51e0\u7ea7", 
+        "opacity": 1.0, 
+        "open_adapter": false, 
+        "pos_data": {
+            "__tuple__": true, 
+            "items": [
+                960.0, 
+                540.0, 
+                50.0, 
+                50.0, 
+                1, 
+                1
+            ]
+        }, 
+        "prefab_key": "e7c787c8-29a6-4e44-a51e-4158e478ada2", 
+        "prefab_sub_key": null, 
+        "rotation": 0, 
+        "scale": [
+            1, 
+            1
+        ], 
+        "scene_ui_name": null, 
+        "size": [
+            100.0, 
+            30.0
+        ], 
+        "swallow_touches": false, 
+        "type": 7, 
+        "visible": true
+    }, 
+    "key": "e7c787c8-29a6-4e44-a51e-4158e478ada2", 
+    "name": "\u901a\u884c\u8bc1\u7b2c\u51e0\u7ea7"
+}

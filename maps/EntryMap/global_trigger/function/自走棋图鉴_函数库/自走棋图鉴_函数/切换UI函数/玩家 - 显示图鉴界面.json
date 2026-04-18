@@ -357,7 +357,7 @@
     "p_trigger_id": null, 
     "trigger_id": 994521097, 
     "trigger_name": "玩家 - 显示图鉴界面", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "PLAYER": {

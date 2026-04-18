@@ -21,13 +21,13 @@
     "ability_cost": {
         "__tuple__": true, 
         "items": [
-            "0"
+            " 0"
         ]
     }, 
     "ability_damage": {
         "__tuple__": true, 
         "items": [
-            "0"
+            " 0"
         ]
     }, 
     "ability_damage_range": {
@@ -113,13 +113,13 @@
     "circle_radius": {
         "__tuple__": true, 
         "items": [
-            "0.0"
+            "1.0"
         ]
     }, 
     "cold_down_time": {
         "__tuple__": true, 
         "items": [
-            "0"
+            " 1.5"
         ]
     }, 
     "collection_animation": "", 
@@ -150,7 +150,7 @@
         "items": []
     }, 
     "filter_condition_camp": 5, 
-    "filter_condition_move_channel_type": 99, 
+    "filter_condition_move_channel_type": 0, 
     "filter_condition_type": 15, 
     "filter_item_tags": {
         "__tuple__": true, 
@@ -220,10 +220,7 @@
     "release_immediately_out_of_range": false, 
     "required_level": {
         "formula": "", 
-        "required_levels": {
-            "__tuple__": true, 
-            "items": []
-        }
+        "required_levels": []
     }, 
     "sector_angle": {
         "__tuple__": true, 

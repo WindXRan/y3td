@@ -721,7 +721,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1330065423, 
     "trigger_name": "UI - 过滤图鉴", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "INTEGER": {

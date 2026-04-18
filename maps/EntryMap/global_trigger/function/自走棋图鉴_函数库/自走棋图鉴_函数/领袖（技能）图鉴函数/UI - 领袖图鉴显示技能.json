@@ -410,7 +410,7 @@
     "p_trigger_id": null, 
     "trigger_id": 692531222, 
     "trigger_name": "UI - 领袖图鉴显示技能", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "ABILITY_NAME": {

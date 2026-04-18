@@ -1780,7 +1780,7 @@
             "p_trigger_id": 1514614791, 
             "trigger_id": 407318536, 
             "trigger_name": "领袖图鉴卡牌点击_2", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "ABILITY_NAME": {}, 
@@ -1793,7 +1793,7 @@
     }, 
     "trigger_id": 1514614791, 
     "trigger_name": "UI - 玩家领袖图鉴初始化", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "ABILITY_NAME": {

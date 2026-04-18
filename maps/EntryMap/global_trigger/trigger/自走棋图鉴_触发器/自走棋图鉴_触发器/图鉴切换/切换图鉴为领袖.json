@@ -76,7 +76,7 @@
     "p_trigger_id": null, 
     "trigger_id": 122105883, 
     "trigger_name": "切换图鉴为领袖", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "PLAYER": {

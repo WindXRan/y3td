@@ -233,8 +233,64 @@
    {
     "__tuple__": true, 
     "items": [
-     "6606cb76-909c-4793-8f52-4b61fd8fdc74", 
-     "new_choice"
+     "59b7bc11-8106-45ae-8be9-58326440e549", 
+     "talk_sys_dym_label"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "f6d16d7a-9ede-4869-a260-efcfe69c7b81", 
+     "talk_sys_dym_txtBox"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "a8b883e3-6811-4482-ad83-61aae9b1efd7", 
+     "\u5355\u6761\u6d88\u606f"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "3aa9f6ad-6dda-452d-8e12-18fc51dbf0a0", 
+     "\u5546\u54c1\u56fe\u6807"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "e7c787c8-29a6-4e44-a51e-4158e478ada2", 
+     "\u901a\u884c\u8bc1\u7b2c\u51e0\u7ea7"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "63b1744e-d446-4f15-b402-85fa02cfaf67", 
+     "\u83b7\u5f97\u9053\u5177\u5f39\u6846"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "0662502a-1bc7-40b0-a9bd-446988f76302", 
+     "\u83b7\u5f97\u591a\u4e2a\u9053\u5177\u5f39\u6846"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "2f0b7d62-fe7b-464f-82ca-3bdf0f2302e1", 
+     "\u9519\u8bef\u5f39\u6846"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "68e5c9d4-814c-4296-be47-2bad7df878d0", 
+     "\u4fe1\u606f\u7248"
     ]
    }
   ]
