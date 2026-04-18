@@ -240,6 +240,14 @@ function M.create(env)
   end
 
   local function launch_projectile_to_target(vfx, target, on_finish)
+    local launch_angle
+    if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and target and target:is_exist() then
+      local source_point = STATE.hero:get_point()
+      local target_point = target:get_point()
+      if source_point and target_point and source_point.get_angle_with then
+        launch_angle = source_point:get_angle_with(target_point)
+      end
+    end
     if not vfx or not vfx.projectile_key or not target or not target:is_exist() then
       if on_finish then
         on_finish(target and target:is_exist() and target:get_point() or nil)
@@ -252,6 +260,7 @@ function M.create(env)
       target = STATE.hero,
       socket = 'origin',
       owner = STATE.hero,
+      angle = launch_angle,
       time = vfx.projectile_time or 3.0,
       remove_immediately = true,
     })
@@ -262,6 +271,12 @@ function M.create(env)
       return false
     end
 
+    if launch_angle ~= nil then
+      pcall(function()
+        projectile:set_facing(launch_angle)
+      end)
+    end
+	
     local resolved = false
     local function finish(final_point)
       if resolved then
@@ -281,6 +296,9 @@ function M.create(env)
         target = target,
         speed = vfx.projectile_speed or 1000,
         target_distance = vfx.target_distance or 60,
+        init_angle = launch_angle,
+        rotate_time = 0.0,
+        face_angle = true,
         on_finish = function()
           finish(target:get_point())
         end,

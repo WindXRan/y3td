@@ -1,4 +1,5 @@
 local M = {}
+local UIRoot = require 'ui.ui_root'
 
 function M.create(env)
   local STATE = env.STATE
@@ -514,8 +515,8 @@ function M.create(env)
       return nil
     end
 
-    local ok, hud = pcall(y3.ui.get_ui, env.get_player(), 'GameHUD')
-    if not ok or not hud then
+    local hud = UIRoot.get_overlay_parent(y3, env.get_player())
+    if not hud then
       return nil
     end
 

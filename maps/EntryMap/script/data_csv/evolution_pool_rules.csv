@@ -1,2 +1,2 @@
 pool_rule_id,choice_count,common_weight,rare_weight,epic_weight,guarantee_high_quality,same_round_no_repeat,exclude_owned,enabled
-mark_pool_global,3,65,25,10,true,true,true,true
+evolution_pool_global,2,65,25,10,true,true,true,true

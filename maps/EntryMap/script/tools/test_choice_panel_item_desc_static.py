@@ -25,7 +25,10 @@ def main() -> None:
         raise AssertionError("Expected item desc prefab to exist")
 
     assert_contains(panel, "local ITEM_DESC_PREFAB = '物品说明'", "choice panel should declare the item desc prefab constant")
-    assert_contains(panel, "y3.ui_prefab.create(player, ITEM_DESC_PREFAB, parent)", "choice panel should create item desc prefab cards")
+    assert_contains(panel, "local function create_ui_prefab_safe(player, prefab_name, parent, debug_scope)", "choice panel should wrap prefab creation in a safe helper")
+    assert_contains(panel, "pcall(y3.ui_prefab.create, player, prefab_name, parent)", "choice panel should guard prefab creation errors")
+    assert_contains(panel, "create_ui_prefab_safe(player, ITEM_DESC_PREFAB, parent", "choice panel should create item desc prefab cards through the safe helper")
+    assert_contains(panel, "item_desc_fallback index=", "choice panel should log and fall back when item desc prefab creation fails")
     assert_contains(panel, "basic.title.title_TEXT", "choice panel should bind item desc title node")
     assert_contains(panel, "basic.title.subtitle_TEXT", "choice panel should bind item desc subtitle node")
     assert_contains(panel, "basic.avatar.icon", "choice panel should bind item desc icon node")

@@ -15,12 +15,16 @@ function M.create(env)
   local show_runtime_attr_dialog = env.show_runtime_attr_dialog
   local start_current_task_challenge = env.start_current_task_challenge
   local try_start_challenge = env.try_start_challenge
+  local try_evolution_entry = env.try_evolution_entry
   local try_treasure_entry = env.try_treasure_entry
   local apply_round_choice = env.apply_round_choice
   local show_runtime_status = env.show_runtime_status
   local show_debug_hotkey_help = env.show_debug_hotkey_help
   local debug_actions_system = env.debug_actions_system
   local debug_tools_system = env.debug_tools_system
+  local toggle_talk_input = env.toggle_talk_input
+  local toggle_inventory_panel = env.toggle_inventory_panel
+  local try_upgrade_growth_weapon = env.try_upgrade_growth_weapon
 
   local function register_runtime_events()
     if STATE.events_registered then
@@ -66,10 +70,10 @@ function M.create(env)
       show_bond_progress()
     end)
     y3.game:event('键盘-按下', 'B', function()
-      if not is_battle_active() then
+      if not is_battle_active() or not toggle_inventory_panel then
         return
       end
-      show_runtime_status()
+      toggle_inventory_panel()
     end)
     y3.game:event('键盘-按下', y3.const.KeyboardKey['TAB'], function()
       if not is_battle_active() then
@@ -127,12 +131,36 @@ function M.create(env)
       end
       try_treasure_entry()
     end)
-
+    y3.game:event('键盘-按下', 'H', function()
+      if not is_battle_active() or not try_evolution_entry then
+        return
+      end
+      try_evolution_entry()
+    end)
+    y3.game:event('键盘-按下', y3.const.KeyboardKey['ENTER'], function()
+      if not is_battle_active() or not toggle_talk_input then
+        return
+      end
+      toggle_talk_input()
+    end)
+    if y3.const.KeyboardKey['RETURN'] then
+      y3.game:event('键盘-按下', y3.const.KeyboardKey['RETURN'], function()
+        if not is_battle_active() or not toggle_talk_input then
+          return
+        end
+        toggle_talk_input()
+      end)
+    end
     y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_1'], function()
       if not is_battle_active() then
         return
       end
-      apply_round_choice(1)
+      if apply_round_choice(1) then
+        return
+      end
+      if try_upgrade_growth_weapon then
+        try_upgrade_growth_weapon('hotkey')
+      end
     end)
     y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_2'], function()
       if not is_battle_active() then

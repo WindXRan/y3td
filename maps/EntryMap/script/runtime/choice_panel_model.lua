@@ -1,6 +1,8 @@
 local ui_res = require 'ui.res'
 local ChoicePanelConfig = require 'data.object_tables.choice_panel_config'
 local BondTipModelBuilder = require 'runtime.bond_tip_model_builder'
+local HeroRoster = require 'data.object_tables.hero_roster'
+local HeroFormSkills = require 'data.object_tables.hero_form_skills'
 
 local M = {}
 
@@ -21,6 +23,52 @@ local function get_bond_quality_text(quality)
     return '稀有'
   end
   return '普通'
+end
+
+local function get_evolution_hero_entry(def)
+  local unit_id = def and def.hero_unit_id or nil
+  if unit_id == nil then
+    return nil
+  end
+  return HeroRoster.by_unit_id[unit_id]
+end
+
+local function get_evolution_hero_skill(def)
+  local entry = get_evolution_hero_entry(def)
+  if not entry then
+    return nil, nil
+  end
+  return HeroFormSkills.by_hero_id[entry.id], entry
+end
+
+local function get_evolution_title(def, index)
+  local entry = get_evolution_hero_entry(def)
+  if entry and entry.name and entry.name ~= '' then
+    return entry.name
+  end
+  if def and def.name and def.name ~= '' then
+    return def.name
+  end
+  return string.format('真身 %d', index)
+end
+
+local function get_evolution_subtitle(def)
+  local _, entry = get_evolution_hero_skill(def)
+  if entry and entry.title and entry.title ~= '' then
+    return entry.title
+  end
+  return '英雄真身'
+end
+
+local function get_evolution_summary(def)
+  local skill, entry = get_evolution_hero_skill(def)
+  if skill and skill.summary and skill.summary ~= '' then
+    return skill.summary
+  end
+  if entry and entry.summary and entry.summary ~= '' then
+    return entry.summary
+  end
+  return def and def.summary or ''
 end
 
 local function get_choice_default_icon(kind, quality)
@@ -425,6 +473,7 @@ local function build_item_desc_payload(fields)
     subtitle_text = table.concat(subtitle_parts, ' '),
     cost_text = trim_inline_text(fields.cost_text or ''),
     icon_res = fields.icon_res,
+    note_text = trim_inline_text(fields.note_text or ''),
     attr_lines = normalize_item_desc_lines(fields.attr_lines or {}, display_title_candidates),
     affix_lines = normalize_item_desc_lines(fields.affix_lines or {}, display_title_candidates),
   }
@@ -433,24 +482,58 @@ end
 local function build_upgrade_item_desc_payload(upgrade, skill_def, is_unlock, icon_res)
   local attr_lines = {}
   local affix_lines = {}
+  local function append_attr(text)
+    if text and text ~= '' then
+      attr_lines[#attr_lines + 1] = text
+    end
+  end
 
   if is_unlock then
-    attr_lines[#attr_lines + 1] = '强化类型：新技能'
+    append_attr('卡牌类型：初始技能')
+    append_attr('技能分类：' .. trim_inline_text(skill_def and skill_def.category or '未分类'))
+    append_attr('定位：' .. trim_inline_text(skill_def and skill_def.archetype or '攻击技能'))
+    append_attr('施法家族：' .. trim_inline_text(skill_def and skill_def.cast_family or '未定义'))
+    append_attr('伤害标签：' .. trim_inline_text(skill_def and skill_def.damage_label or '未定义'))
+    if skill_def and skill_def.base_damage_ratio and skill_def.base_damage_ratio > 0 then
+      append_attr(string.format('伤害系数：%.0f%%攻击', skill_def.base_damage_ratio * 100))
+    end
+    if skill_def and skill_def.base_cooldown and skill_def.base_cooldown > 0 then
+      append_attr(string.format('冷却时间：%.1f秒', skill_def.base_cooldown))
+    end
+    if skill_def and skill_def.base_range and skill_def.base_range > 0 then
+      append_attr(string.format('施法范围：%d', math.floor(skill_def.base_range + 0.5)))
+    end
+    if skill_def and skill_def.base_pierce and skill_def.base_pierce > 0 then
+      append_attr(string.format('穿透次数：%d', math.floor(skill_def.base_pierce + 0.5)))
+    end
+    if skill_def and skill_def.base_radius and skill_def.base_radius > 0 then
+      append_attr(string.format('作用范围：%d', math.floor(skill_def.base_radius + 0.5)))
+    end
+    if skill_def and skill_def.base_duration and skill_def.base_duration > 0 then
+      append_attr(string.format('持续时间：%.1f秒', skill_def.base_duration))
+    end
+    if skill_def and skill_def.base_bounce and skill_def.base_bounce > 0 then
+      local bounce_title = '弹射次数'
+      if skill_def.archetype == '追击飞剑攒射' then
+        bounce_title = '飞剑数量'
+      end
+      append_attr(string.format('%s：%d', bounce_title, math.floor(skill_def.base_bounce + 0.5)))
+    end
   else
-    attr_lines[#attr_lines + 1] = '强化类型：常规强化'
-  end
-  if skill_def and skill_def.name then
-    attr_lines[#attr_lines + 1] = '作用技能：' .. trim_inline_text(skill_def.name)
-  elseif upgrade and upgrade.name then
-    attr_lines[#attr_lines + 1] = '作用技能：' .. trim_inline_text(upgrade.name)
+    append_attr('卡牌类型：技能强化')
+    if skill_def and skill_def.name then
+      append_attr('作用技能：' .. trim_inline_text(skill_def.name))
+    elseif upgrade and upgrade.name then
+      append_attr('作用技能：' .. trim_inline_text(upgrade.name))
+    end
   end
   append_affix_line(affix_lines, '技能说明', skill_def and skill_def.summary or '', 3)
   append_affix_line(affix_lines, is_unlock and '装配效果' or '强化效果', upgrade and upgrade.desc or '', 3)
 
   return build_item_desc_payload({
-    title_text = upgrade and upgrade.name or '',
-    subtitle_text = skill_def and skill_def.name or (is_unlock and '新技能' or '技能强化'),
-    cost_text = is_unlock and '新技能' or '强化',
+    title_text = is_unlock and (skill_def and skill_def.name or upgrade and upgrade.name or '') or (upgrade and upgrade.name or ''),
+    subtitle_text = is_unlock and trim_inline_text(skill_def and skill_def.archetype or '初始技能') or (skill_def and skill_def.name or '技能强化'),
+    cost_text = is_unlock and '初始技能' or '强化',
     icon_res = icon_res,
     attr_lines = attr_lines,
     affix_lines = affix_lines,
@@ -521,19 +604,40 @@ local function build_treasure_item_desc_payload(def, active_count, quality_text,
   })
 end
 
-local function build_mark_item_desc_payload(def, index, quality_text, icon_res)
+local function build_evolution_item_desc_payload(def, index, quality_text, icon_res)
+  local skill, entry = get_evolution_hero_skill(def)
+  local attr_lines = {}
+  local affix_lines = {}
+
+  if entry and entry.rarity and entry.rarity ~= '' then
+    attr_lines[#attr_lines + 1] = '真身品阶：' .. trim_inline_text(entry.rarity)
+  end
+  if entry and entry.title and entry.title ~= '' then
+    attr_lines[#attr_lines + 1] = '真身定位：' .. trim_inline_text(entry.title)
+  end
+  if skill and skill.subtitle and skill.subtitle ~= '' then
+    attr_lines[#attr_lines + 1] = '神通类型：' .. trim_inline_text(skill.subtitle)
+  end
+  attr_lines[#attr_lines + 1] = '化形后保留等级、经验与已装配技能'
+
+  append_affix_line(affix_lines, '真身简介', entry and entry.summary or '', 3)
+  append_affix_line(
+    affix_lines,
+    skill and ('专属神通·' .. trim_inline_text(skill.name)) or '专属神通',
+    (skill and skill.item_desc) or (skill and skill.summary) or '',
+    3
+  )
+  append_affix_line(affix_lines, '进化加持', def and def.summary or '', 3)
+
   return build_item_desc_payload({
-    title_text = def and def.name or string.format('进化 %d', index),
-    subtitle_text = '永久进化',
+    title_text = get_evolution_title(def, index),
+    subtitle_text = get_evolution_subtitle(def),
+    extra_subtitle_text = skill and ('神通·' .. trim_inline_text(skill.name)) or '',
     cost_text = quality_text,
     icon_res = icon_res,
-    attr_lines = { '生效范围：所有已装配攻击技能' },
-    affix_lines = {
-      {
-        title = '进化效果',
-        body = def and def.summary or '',
-      },
-    },
+    note_text = '选中后立即替换英雄模型，并启用对应专属神通。',
+    attr_lines = attr_lines,
+    affix_lines = affix_lines,
   })
 end
 
@@ -544,8 +648,8 @@ function M.create(env)
   local ATTACK_SKILL_DEFS = env.ATTACK_SKILL_DEFS
   local TREASURE_DEFS = env.TREASURE_DEFS
   local get_pending_round_choice_kind = env.get_pending_round_choice_kind
-  local get_mark_runtime = env.get_mark_runtime
-  local get_mark_quality_label = env.get_mark_quality_label
+  local get_evolution_runtime = env.get_evolution_runtime or env.get_mark_runtime
+  local get_evolution_quality_label = env.get_evolution_quality_label or env.get_mark_quality_label
   local get_treasure_runtime = env.get_treasure_runtime
   local get_treasure_quality_label = env.get_treasure_quality_label
   local get_treasure_active_count = env.get_treasure_active_count
@@ -600,18 +704,19 @@ function M.create(env)
     for index, upgrade in ipairs(STATE.current_upgrade_choices or {}) do
       local is_unlock = upgrade and type(upgrade.key) == 'string' and string.sub(upgrade.key, 1, 7) == 'unlock_'
       local skill_def = upgrade and ATTACK_SKILL_DEFS[upgrade.skill_id] or nil
+      local quality = upgrade and upgrade.quality or (is_unlock and 'rare' or 'common')
       local icon_res = (upgrade and upgrade.ui_icon)
           or (skill_def and skill_def.ui_icon)
-          or get_choice_default_icon('upgrade', is_unlock and 'rare' or 'common')
+          or get_choice_default_icon('upgrade', quality)
 
       cards[#cards + 1] = {
         index = index,
-        badge_text = is_unlock and 'N' or 'R',
-        quality = is_unlock and 'rare' or 'common',
+        badge_text = get_choice_badge_text(quality),
+        quality = quality,
         icon_res = icon_res,
-        title_text = is_unlock and '新技能' or (skill_def and skill_def.name) or (upgrade.tag or '强化'),
+        title_text = is_unlock and (skill_def and skill_def.name or upgrade.name) or (skill_def and skill_def.name) or (upgrade.tag or '强化'),
         progress_text = '',
-        subtitle_text = upgrade.name,
+        subtitle_text = is_unlock and trim_inline_text(skill_def and skill_def.archetype or '初始技能') or upgrade.name,
         use_item_desc_card = true,
         item_desc_payload = build_upgrade_item_desc_payload(upgrade, skill_def, is_unlock, icon_res),
         body_blocks = build_choice_text_blocks({
@@ -726,27 +831,29 @@ function M.create(env)
     return cards
   end
 
-  local function build_mark_choice_cards()
-    local runtime = (get_mark_runtime and get_mark_runtime()) or STATE.mark_runtime
+  local function build_evolution_choice_cards()
+    local runtime = (get_evolution_runtime and get_evolution_runtime()) or STATE.evolution_runtime or STATE.mark_runtime
     local cards = {}
     for index, def in ipairs(runtime and runtime.current_choices or {}) do
       local quality = def and def.quality or 'common'
-      local quality_text = get_mark_quality_label and get_mark_quality_label(quality) or ''
+      local quality_text = get_evolution_quality_label and get_evolution_quality_label(quality) or ''
+      local entry = get_evolution_hero_entry(def)
       local icon_res = def and def.ui_icon or get_choice_default_icon('mark', quality)
       cards[#cards + 1] = {
         index = index,
-        badge_text = get_choice_badge_text(quality),
+        kind = 'evolution',
+        badge_text = entry and entry.rarity or get_choice_badge_text(quality),
         quality = quality,
         icon_res = icon_res,
-        title_text = def and def.name or string.format('进化 %d', index),
+        title_text = get_evolution_title(def, index),
         progress_text = '',
-        subtitle_text = quality_text,
+        subtitle_text = get_evolution_subtitle(def),
         use_item_desc_card = true,
-        item_desc_payload = build_mark_item_desc_payload(def, index, quality_text, icon_res),
-        body_blocks = build_choice_text_blocks(def and {
-          text = def.summary or '',
+        item_desc_payload = build_evolution_item_desc_payload(def, index, quality_text, icon_res),
+        body_blocks = build_choice_text_blocks({
+          text = get_evolution_summary(def),
           color = 'green',
-        } or nil),
+        }),
       }
     end
     return cards
@@ -821,11 +928,12 @@ function M.create(env)
       }
     end
 
-    if kind == 'mark' then
-      local runtime = (get_mark_runtime and get_mark_runtime()) or STATE.mark_runtime
+    if kind == 'evolution' or kind == 'mark' then
+      local runtime = (get_evolution_runtime and get_evolution_runtime()) or STATE.evolution_runtime or STATE.mark_runtime
+      local cards = build_evolution_choice_cards()
       local round = runtime and runtime.current_round or nil
       return {
-        kind = kind,
+        kind = 'evolution',
         panel_title = round and round.ui_title or '进化选择',
         hide_enabled = true,
         refresh = {
@@ -834,7 +942,7 @@ function M.create(env)
           free_left = 0,
           wood_cost = 0,
         },
-        cards = build_mark_choice_cards(),
+        cards = cards,
       }
     end
 

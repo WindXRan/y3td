@@ -55,6 +55,7 @@ for _, row in ipairs(mark_rows) do
     quality = row.quality,
     pool_weight = tonumber(row.pool_weight) or 0,
     order_index = tonumber(row.order_index) or 0,
+    hero_unit_id = to_number_if_possible(row.hero_unit_id),
     summary = row.summary,
     tags = tags,
     bonuses = {

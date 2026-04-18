@@ -1,4 +1,5 @@
 local ui_res = require 'ui.res'
+local UIRoot = require 'ui.ui_root'
 
 local M = {}
 local EMPTY_SLOT_IMAGE = 904138
@@ -49,11 +50,7 @@ function M.create(env)
   local get_consumed_bond_entries = env.get_consumed_bond_entries
 
   local function get_hud_root()
-    local ok, hud = pcall(y3.ui.get_ui, get_player(), 'GameHUD')
-    if not ok or not hud then
-      return nil
-    end
-    return hud
+    return UIRoot.get_overlay_parent(y3, get_player())
   end
 
   local function resolve_prefab_node(prefab, path)

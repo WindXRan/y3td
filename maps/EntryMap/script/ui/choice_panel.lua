@@ -3,6 +3,7 @@ local theme = require 'ui.theme'
 local skin = require 'ui.skin'
 local UIStyle = require 'ui.style'
 local Factory = require 'ui.factory'
+local UIRoot = require 'ui.ui_root'
 local BondTipPanel = require 'ui.bond_tip_panel'
 local layout = require 'ui.choice_panel_layout'
 local TextLayout = require 'ui.choice_panel_text_layout'
@@ -117,8 +118,8 @@ local function get_panel_title(kind)
   if kind == 'bond' then
     return '仙缘感应'
   end
-  if kind == 'mark' then
-    return '进化选择'
+  if kind == 'evolution' or kind == 'mark' then
+    return '真身进化'
   end
   if kind == 'treasure_replace' then
     return '替换宝物'
@@ -126,7 +127,7 @@ local function get_panel_title(kind)
   if kind == 'treasure' then
     return '宝物候选'
   end
-  return '三选一奖励'
+  return '奖励抉择'
 end
 
 local function resolve_panel_title(model)
@@ -136,6 +137,23 @@ local function resolve_panel_title(model)
   return get_panel_title(model and model.kind or nil)
 end
 
+local function get_model_choice_count(model)
+  local count = 0
+  for _ in ipairs(model and model.cards or {}) do
+    count = count + 1
+  end
+  return count
+end
+
+local function build_choice_key_hint(choice_count)
+  local count = math.max(1, math.min(3, tonumber(choice_count) or 0))
+  local keys = {}
+  for index = 1, count do
+    keys[index] = tostring(index)
+  end
+  return table.concat(keys, ' / ')
+end
+
 local function get_panel_hint(model)
   if model and model.hint_text and model.hint_text ~= '' then
     return model.hint_text
@@ -143,7 +161,7 @@ local function get_panel_hint(model)
   if model and model.kind == 'treasure_replace' then
     return '点击一张卡，指定要被替换的宝物位'
   end
-  return '点击卡片或按 1 / 2 / 3 选择'
+  return string.format('点击卡片或按 %s 选择', build_choice_key_hint(get_model_choice_count(model)))
 end
 
 local function build_badge_text(card_model)
@@ -197,6 +215,7 @@ function M.create(env)
   local set_text_node
   local clear_value_highlights
   local clear_effect_highlights
+  local debug_choice_panel_lifecycle
 
   local function fallback_create_styled_text(parent, x, y, width, height, style_key, value, z_order, h_align, v_align, font_size, color)
     local text = create_text(
@@ -246,11 +265,7 @@ function M.create(env)
   local apply_text_style = factory.apply_text_style or fallback_apply_text_style
 
   local function get_hud_root()
-    local ok, hud = pcall(y3.ui.get_ui, env.get_player(), 'GameHUD')
-    if not ok or not hud then
-      return nil
-    end
-    return hud
+    return UIRoot.get_overlay_parent(y3, env.get_player())
   end
 
   local function is_ui_alive(ui)
@@ -259,6 +274,25 @@ function M.create(env)
 
   local function is_panel_alive(panel)
     return panel and panel.root and is_ui_alive(panel.root)
+  end
+
+  local function create_ui_prefab_safe(player, prefab_name, parent, debug_scope)
+    if not player or not parent or not prefab_name or prefab_name == '' then
+      return nil
+    end
+
+    local ok, prefab_or_err = pcall(y3.ui_prefab.create, player, prefab_name, parent)
+    if not ok or not prefab_or_err then
+      debug_choice_panel_lifecycle(string.format(
+        'prefab_create_failed prefab=%s scope=%s err=%s',
+        tostring(prefab_name),
+        tostring(debug_scope or '?'),
+        tostring(prefab_or_err)
+      ))
+      return nil
+    end
+
+    return prefab_or_err
   end
 
   local function set_action_button_state(button_ref, visible, enabled, label)
@@ -297,6 +331,23 @@ function M.create(env)
 
   local function rect_center(left, bottom, width, height)
     return left + width * 0.5, bottom + height * 0.5
+  end
+
+  local function get_card_left_positions(card_count)
+    local visible_count = math.max(1, math.min(3, tonumber(card_count) or 0))
+    local gap = (layout.card.x[2] - layout.card.x[1]) - layout.card.width
+    local total_width = (layout.card.width * visible_count) + (gap * math.max(0, visible_count - 1))
+    local first_left = math.floor(((layout.panel.width - total_width) * 0.5) + 0.5)
+    local positions = {}
+
+    for index = 1, visible_count do
+      positions[index] = first_left + ((index - 1) * (layout.card.width + gap))
+    end
+    for index = visible_count + 1, 3 do
+      positions[index] = layout.card.x[index] or layout.card.x[#layout.card.x]
+    end
+
+    return positions
   end
 
   local function get_prefab_node(prefab, path)
@@ -353,7 +404,7 @@ function M.create(env)
     print('[choice_panel.item_desc] ' .. tostring(message))
   end
 
-  local function debug_choice_panel_lifecycle(message)
+  debug_choice_panel_lifecycle = function(message)
     if log and log.info then
       log.info('[choice_panel.lifecycle] ' .. tostring(message))
       return
@@ -658,7 +709,7 @@ function M.create(env)
 
   local function create_prefab_action_button(parent, left, bottom, width, height, label, callback, index)
     local player = env.get_player()
-    local prefab = y3.ui_prefab.create(player, 'choice_button', parent)
+    local prefab = create_ui_prefab_safe(player, 'choice_button', parent, 'action_button')
     local root = prefab and prefab:get_child() or nil
     local button = get_prefab_node(prefab, 'layout_1.button_1')
     local bg_node = get_prefab_node(prefab, 'layout_1.image_3')
@@ -1163,7 +1214,7 @@ function M.create(env)
 
   local function create_item_desc_choice_card(parent, left, bottom, width, height, index, card_model)
     local player = env.get_player()
-    local prefab = y3.ui_prefab.create(player, ITEM_DESC_PREFAB, parent)
+    local prefab = create_ui_prefab_safe(player, ITEM_DESC_PREFAB, parent, string.format('item_desc_card_%s', tostring(index)))
     local wrapper_root = prefab and prefab:get_child() or nil
     local card_root = get_item_desc_prefab_node(prefab, wrapper_root, nil, {
       'layout_15',
@@ -1261,11 +1312,16 @@ function M.create(env)
       if item_desc_card then
         return item_desc_card
       end
+      debug_choice_panel_lifecycle(string.format(
+        'item_desc_fallback index=%s title=%s',
+        tostring(index),
+        tostring(card_model and card_model.title_text or '')
+      ))
     end
 
     local player = env.get_player()
     local prefab_name = (card_model and card_model.render_prefab) or fallback_prefab_name or 'choice_panel'
-    local prefab = y3.ui_prefab.create(player, prefab_name, parent)
+    local prefab = create_ui_prefab_safe(player, prefab_name, parent, string.format('default_card_%s', tostring(index)))
     local root = prefab and prefab:get_child() or nil
     if not root then
       return nil
@@ -1397,11 +1453,12 @@ function M.create(env)
     stage_shell:set_image_color(255, 255, 255, 0)
 
     local model = env.get_current_choice_panel_model and env.get_current_choice_panel_model() or nil
+    local card_left_positions = get_card_left_positions(get_model_choice_count(model))
 
     local cards = {
       create_choice_card(
         stage,
-        scaled(layout.card.x[1], scale),
+        scaled(card_left_positions[1], scale),
         scaled(layout.card.y, scale),
         scaled(layout.card.width, scale),
         scaled(layout.card.height, scale),
@@ -1410,7 +1467,7 @@ function M.create(env)
       ),
       create_choice_card(
         stage,
-        scaled(layout.card.x[2], scale),
+        scaled(card_left_positions[2], scale),
         scaled(layout.card.y, scale),
         scaled(layout.card.width, scale),
         scaled(layout.card.height, scale),
@@ -1419,7 +1476,7 @@ function M.create(env)
       ),
       create_choice_card(
         stage,
-        scaled(layout.card.x[3], scale),
+        scaled(card_left_positions[3], scale),
         scaled(layout.card.y, scale),
         scaled(layout.card.width, scale),
         scaled(layout.card.height, scale),

@@ -46,6 +46,8 @@ require_files(
         "data/object_tables/stages.lua",
         "data/object_tables/stage_modes.lua",
         "data/object_tables/hero_attr_config.lua",
+        "data/object_tables/hero_roster.lua",
+        "data/object_tables/hero_form_skills.lua",
         "data/object_tables/hero_level_progression.lua",
         "data/object_tables/gear_upgrade_config.lua",
         "data/object_tables/battle_base_config.lua",
@@ -98,6 +100,8 @@ require_files(
         "data_csv/stage_modes.csv",
         "data_csv/stage_mode_links.csv",
         "data_csv/hero_attr_config.csv",
+        "data_csv/hero_roster.csv",
+        "data_csv/hero_form_skills.csv",
         "data_csv/hero_init_stats.csv",
         "data_csv/hero_level_progression.csv",
         "data_csv/gear_upgrade_slots.csv",
@@ -115,6 +119,26 @@ require_files(
         "data_csv/evolution_pool_rules.csv",
         "data/object_tables/evolution_nodes.lua",
     ],
+)
+
+run_check(
+    "hero roster csv loader smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_hero_roster_csv_loader_smoke.lua"],
+)
+
+run_check(
+    "hero form skills csv loader smoke executed",
+    ["lua", "maps/EntryMap/script/tools/test_hero_form_skills_csv_loader_smoke.lua"],
+)
+
+run_check(
+    "hero form skill roster static executed",
+    ["py", "-3", "maps/EntryMap/script/tools/test_hero_form_skill_roster_static.py"],
+)
+
+run_check(
+    "hero form skill boot wiring static executed",
+    ["py", "-3", "maps/EntryMap/script/tools/test_hero_form_skill_boot_wiring_static.py"],
 )
 
 run_check(

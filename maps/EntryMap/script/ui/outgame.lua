@@ -1,3 +1,5 @@
+local BattlePass = require 'runtime.battle_pass'
+
 local M = {}
 
 function M.create(env)
@@ -25,6 +27,18 @@ function M.create(env)
   local MAX_CHAPTER_DIFFICULTY_COUNT = 0
   local SINGLE_MODE_ID = 'standard'
   local SINGLE_MODE_LABEL = '主线模式'
+  local VIEW_MODE_MAINLINE = 'mainline'
+  local VIEW_MODE_CULTIVATION = 'cultivation'
+  local VIEW_MODE_LABELS = {
+    [VIEW_MODE_MAINLINE] = '主线模式',
+    [VIEW_MODE_CULTIVATION] = '修仙模式',
+  }
+  local DIFFICULTY_BUTTON_SLOT_WIDTH = 428
+  local DIFFICULTY_BUTTON_SLOT_HEIGHT = 100
+  local DIFFICULTY_BUTTON_WIDTH = 204
+  local DIFFICULTY_BUTTON_HEIGHT = 68
+  local DIFFICULTY_BUTTON_GAP = 12
+  local DIFFICULTY_BUTTON_TOP_PADDING = 18
   local COLOR = {
     selected_bg = { 84, 138, 226, 255 },
     selected_text = { 245, 248, 255, 255 },
@@ -39,6 +53,7 @@ function M.create(env)
   }
 
   local api = {}
+  local battle_pass_panel = nil
 
   local function resolve_ui(path)
     local ok, ui = pcall(y3.ui.get_ui, env.get_player(), path)
@@ -103,6 +118,10 @@ function M.create(env)
       return mode_def.display_name
     end
     return SINGLE_MODE_LABEL
+  end
+
+  local function get_view_mode_label(view_mode)
+    return VIEW_MODE_LABELS[view_mode] or VIEW_MODE_LABELS[VIEW_MODE_MAINLINE]
   end
 
   for _, stage_def in ipairs(STAGE_LIST) do
@@ -346,6 +365,10 @@ function M.create(env)
       profile.selected_mode_id = SINGLE_MODE_ID
       dirty = true
     end
+    if profile.selected_view_mode ~= VIEW_MODE_MAINLINE and profile.selected_view_mode ~= VIEW_MODE_CULTIVATION then
+      profile.selected_view_mode = VIEW_MODE_MAINLINE
+      dirty = true
+    end
     return dirty
   end
 
@@ -386,6 +409,7 @@ function M.create(env)
         end
       end
     end
+    merge_bonus_stats(rebuilt, BattlePass.collect_claimed_bonus_stats(profile))
     if are_same_bonus_stats(profile.hero_attr_bonus_stats, rebuilt) then
       return false
     end
@@ -409,6 +433,13 @@ function M.create(env)
     end
     if type(profile.hero_attr_bonus_stats) ~= 'table' then
       profile.hero_attr_bonus_stats = {}
+      dirty = true
+    end
+    if BattlePass.ensure_profile_defaults(profile) then
+      dirty = true
+    end
+    if profile.selected_view_mode ~= VIEW_MODE_MAINLINE and profile.selected_view_mode ~= VIEW_MODE_CULTIVATION then
+      profile.selected_view_mode = VIEW_MODE_MAINLINE
       dirty = true
     end
     for _, stage_def in ipairs(STAGE_LIST) do
@@ -489,6 +520,14 @@ function M.create(env)
     return PAGE_BY_STAGE_ID[stage_id] or PAGE_LIST[1]
   end
 
+  local function get_selected_view_mode(profile)
+    local view_mode = profile and profile.selected_view_mode or nil
+    if view_mode == VIEW_MODE_CULTIVATION then
+      return VIEW_MODE_CULTIVATION
+    end
+    return VIEW_MODE_MAINLINE
+  end
+
   local function get_chapter_page_list(chapter_id)
     return PAGES_BY_CHAPTER[chapter_id] or {}
   end
@@ -547,6 +586,21 @@ function M.create(env)
 
     profile.selected_mode_id = SINGLE_MODE_ID
     sync_selected_state(profile.selected_stage_id, profile.selected_mode_id)
+    mark_profile_dirty()
+    return true
+  end
+
+  local function set_selected_view_mode(view_mode)
+    if view_mode ~= VIEW_MODE_CULTIVATION then
+      view_mode = VIEW_MODE_MAINLINE
+    end
+
+    local profile = load_profile()
+    if profile.selected_view_mode == view_mode then
+      return false
+    end
+
+    profile.selected_view_mode = view_mode
     mark_profile_dirty()
     return true
   end
@@ -696,6 +750,7 @@ function M.create(env)
     end
 
     local locked = prefab:get_child('button_2.locked')
+    set_intercepts_if_alive(root, false)
     set_intercepts_if_alive(locked, false)
     return {
       prefab = prefab,
@@ -705,29 +760,32 @@ function M.create(env)
     }
   end
 
-  local function layout_difficulty_button(root, center_x, center_y, width, height, z_order)
-    if not is_ui_alive(root) then
+  local function layout_difficulty_button(button_ref, center_x, center_y, z_order)
+    if not button_ref then
       return
     end
-    root:set_anchor(0.5, 0.5)
-    root:set_pos(center_x, center_y)
-    if root.set_ui_size then
-      root:set_ui_size(width or 428, height or 100)
+
+    if not is_ui_alive(button_ref.root) then
+      return
     end
-    if root.set_widget_relative_scale then
-      root:set_widget_relative_scale(
-        math.max(0.1, (width or 428) / 428),
-        math.max(0.1, (height or 100) / 100)
-      )
+
+    button_ref.root:set_anchor(0.5, 0.5)
+    button_ref.root:set_pos(center_x, center_y)
+    if button_ref.root.set_ui_size then
+      button_ref.root:set_ui_size(DIFFICULTY_BUTTON_SLOT_WIDTH, DIFFICULTY_BUTTON_SLOT_HEIGHT)
     end
-    if z_order and root.set_z_order then
-      root:set_z_order(z_order)
+    set_intercepts_if_alive(button_ref.root, false)
+    if z_order and button_ref.root.set_z_order then
+      button_ref.root:set_z_order(z_order)
+    end
+    if is_ui_alive(button_ref.locked) and z_order and button_ref.locked.set_z_order then
+      button_ref.locked:set_z_order(z_order + 1)
     end
   end
 
-  local function get_centered_vertical_pos(container_height, item_height, gap, item_count, item_index)
-    local total_gap = math.max(0, (item_count or 1) - 1) * (item_height + gap)
-    return math.floor((container_height * 0.5) + (total_gap * 0.5) - ((item_index - 1) * (item_height + gap)) + 0.5)
+  local function get_top_aligned_vertical_pos(container_height, item_height, gap, item_index, top_padding)
+    local start_y = container_height - math.max(0, top_padding or 0) - (item_height * 0.5)
+    return math.floor(start_y - ((item_index - 1) * (item_height + gap)) + 0.5)
   end
 
   local function layout_page_buttons(ui)
@@ -741,20 +799,13 @@ function M.create(env)
     local container_height = math.floor((container:get_height() or 688) + 0.5)
     local item_height = math.max(0, math.floor((layout.height or 100) + 0.5))
     local gap = math.max(0, math.floor((layout.gap or 0) + 0.5))
-    local item_count = math.max(0, ui.page_button_count or 0)
     local center_x = math.floor((container_width * 0.5) + 0.5)
-
-    if is_ui_alive(ui.page_button_canvas) and ui.page_button_canvas.set_ui_size then
-      ui.page_button_canvas:set_ui_size(container_width, container_height)
-    end
 
     for index, button_ref in ipairs(ui.page_buttons or {}) do
       layout_difficulty_button(
-        button_ref.root,
+        button_ref,
         center_x,
-        get_centered_vertical_pos(container_height, item_height, gap, item_count, index),
-        layout.width,
-        layout.height,
+        get_top_aligned_vertical_pos(container_height, item_height, gap, index, layout.top_padding),
         10
       )
     end
@@ -791,8 +842,7 @@ function M.create(env)
       return
     end
     if desired_count == (ui.page_button_count or 0)
-      and desired_count == #ui.page_buttons
-      and is_ui_alive(ui.page_button_canvas) then
+      and desired_count == #ui.page_buttons then
       layout_page_buttons(ui)
       return
     end
@@ -800,34 +850,17 @@ function M.create(env)
     clear_page_buttons(ui)
     STATE.outgame_page_button_roots = {}
 
-    local container_width = math.floor((container:get_width() or 428) + 0.5)
-    local container_height = math.floor((container:get_height() or 688) + 0.5)
-    local gap = desired_count >= 10 and 2 or 4
-    local height = math.max(
-      40,
-      math.min(100, math.floor((container_height - (math.max(0, desired_count - 1) * gap)) / math.max(1, desired_count)))
-    )
-    local width = math.max(120, container_width - 16)
-    local canvas = container:create_child('图片')
-    if not is_ui_alive(canvas) then
-      return
-    end
-    canvas:set_image(999)
-    canvas:set_ui_size(container_width, container_height)
-    canvas:set_intercepts_operations(false)
-    set_image_color_if_alive(canvas, { 255, 255, 255, 0 })
-    STATE.outgame_page_button_roots[#STATE.outgame_page_button_roots + 1] = canvas
-    ui.page_button_canvas = canvas
     ui.page_button_count = desired_count
 
     ui.page_button_layout = {
-      width = width,
-      height = height,
-      gap = gap,
+      width = DIFFICULTY_BUTTON_SLOT_WIDTH,
+      height = DIFFICULTY_BUTTON_SLOT_HEIGHT,
+      gap = DIFFICULTY_BUTTON_GAP,
+      top_padding = DIFFICULTY_BUTTON_TOP_PADDING,
     }
 
     for index = 1, desired_count do
-      local button_ref = create_difficulty_button(canvas)
+      local button_ref = create_difficulty_button(container)
       if button_ref then
         local entry = {
           prefab = button_ref.prefab,
@@ -836,7 +869,7 @@ function M.create(env)
           locked = button_ref.locked,
           stage_def = nil,
         }
-        layout_difficulty_button(button_ref.root, container_width * 0.5, 0, width, height, 10)
+        layout_difficulty_button(entry, 0, 0, 10)
         button_ref.button:set_button_enable(true)
         button_ref.button:add_fast_event('左键-按下', function()
           local stage_def = entry.stage_def
@@ -853,15 +886,16 @@ function M.create(env)
         ui.page_buttons[#ui.page_buttons + 1] = entry
         STATE.outgame_page_button_roots[#STATE.outgame_page_button_roots + 1] = button_ref.root
       else
-        local root = canvas:create_child('图片')
+        local root = container:create_child('图片')
         root:set_image(999)
-        layout_difficulty_button(root, container_width * 0.5, 0, width, height, 10)
+        root:set_ui_size(DIFFICULTY_BUTTON_SLOT_WIDTH, DIFFICULTY_BUTTON_SLOT_HEIGHT)
+        layout_difficulty_button({ root = root }, 0, 0, 10)
         root:set_intercepts_operations(true)
 
         local label = root:create_child('文本')
-        label:set_ui_size(width - 24, height)
+        label:set_ui_size(DIFFICULTY_BUTTON_WIDTH, DIFFICULTY_BUTTON_HEIGHT)
         label:set_anchor(0.5, 0.5)
-        label:set_pos(width * 0.5, height * 0.5)
+        label:set_pos(DIFFICULTY_BUTTON_SLOT_WIDTH * 0.5, DIFFICULTY_BUTTON_SLOT_HEIGHT * 0.5)
         label:set_text(string.format('N%d', index))
         label:set_font_size(24)
         label:set_text_alignment('中', '中')
@@ -917,7 +951,26 @@ function M.create(env)
     end)
   end
 
+  local function bind_mode_slot(slot)
+    local click_target = slot and (slot.bg or slot.root) or nil
+    if not is_ui_alive(click_target) or slot.bound == true then
+      return
+    end
+    slot.bound = true
+    click_target:add_fast_event('左键-按下', function()
+      if play_ui_click then
+        play_ui_click()
+      end
+      if set_selected_view_mode(slot.view_mode) then
+        api.refresh_ui()
+      end
+    end)
+  end
+
   local function bind_ui_events(ui)
+    for _, slot in ipairs(ui.mode_slots or {}) do
+      bind_mode_slot(slot)
+    end
     for _, slot in ipairs(ui.stage_slots or {}) do
       bind_stage_slot(slot)
     end
@@ -933,23 +986,37 @@ function M.create(env)
     end
   end
 
+  local function sync_outgame_backdrop(ui)
+    local backdrop = ui and ui.backdrop or nil
+    if not is_ui_alive(backdrop) or not backdrop.set_ui_size then
+      return
+    end
+
+    local window_width = tonumber(y3.ui.get_window_width and y3.ui.get_window_width() or nil) or 1920
+    local window_height = tonumber(y3.ui.get_window_height and y3.ui.get_window_height() or nil) or 1080
+    backdrop:set_ui_size(window_width, window_height)
+  end
+
   local function ensure_ui()
     if is_outgame_ui_alive(STATE.outgame_ui) then
       ensure_page_buttons(STATE.outgame_ui, MAX_CHAPTER_DIFFICULTY_COUNT)
       for _, slot in ipairs(STATE.outgame_ui.stage_slots or {}) do
         clear_stage_slot_overlay(slot)
       end
+      sync_outgame_backdrop(STATE.outgame_ui)
       bind_ui_events(STATE.outgame_ui)
       return STATE.outgame_ui
     end
 
     local root = resolve_ui('outgame')
     local hall_root = resolve_ui('outgame.大厅')
+    local backdrop = resolve_ui('outgame.大厅.layout.底板')
     local title = resolve_ui('outgame.大厅.layout.right.mode_name')
     local tip_root = resolve_ui('outgame.大厅.layout.right.mode_name.修仙模式tips')
-    local tip = resolve_ui('outgame.大厅.layout.right.mode_name.修仙模式tips.layout_2.label_3')
+    local tip = resolve_ui('outgame.大厅.layout.right.mode_name.修仙模式tips.layout.label')
     local page_container = resolve_ui('outgame.大厅.layout.right.难度列表')
     local mode_panel = resolve_ui('outgame.大厅.layout.left_2')
+    local mode_list = resolve_ui('outgame.大厅.layout.left_2.list')
     local stage_slot_container = resolve_ui('outgame.大厅.layout.right_2.list')
     local start_button = resolve_ui('outgame.大厅.layout.start')
 
@@ -967,6 +1034,28 @@ function M.create(env)
       end
     end
     STATE.outgame_page_button_roots = {}
+
+    local mode_slots = {}
+    for _, slot_def in ipairs({
+      { node_name = '主线模式', view_mode = VIEW_MODE_MAINLINE, label = '主线模式' },
+      { node_name = '修仙模式', view_mode = VIEW_MODE_CULTIVATION, label = '修仙模式' },
+    }) do
+      local slot_root = mode_list and mode_list:get_child(slot_def.node_name) or nil
+      local slot_bg = slot_root and slot_root:get_child('模式') or nil
+      local slot_label = slot_root and slot_root:get_child('模式.mode') or nil
+      local slot_selected = slot_root and slot_root:get_child('模式.selected') or nil
+      set_intercepts_if_alive(slot_label, false)
+      set_intercepts_if_alive(slot_selected, false)
+      mode_slots[#mode_slots + 1] = {
+        root = slot_root,
+        bg = slot_bg,
+        label = slot_label,
+        selected = slot_selected,
+        view_mode = slot_def.view_mode,
+        display_label = slot_def.label,
+        bound = false,
+      }
+    end
 
     local stage_slots = {}
     for index = 1, STAGE_PAGE_SIZE do
@@ -991,10 +1080,12 @@ function M.create(env)
     STATE.outgame_ui = {
       root = root,
       hall_root = hall_root,
+      backdrop = backdrop,
       title = title,
       tip_root = tip_root,
       tip = tip,
       mode_panel = mode_panel,
+      mode_slots = mode_slots,
       page_container = page_container,
       page_button_canvas = nil,
       page_button_count = 0,
@@ -1007,13 +1098,24 @@ function M.create(env)
       start_bound = false,
     }
 
+    sync_outgame_backdrop(STATE.outgame_ui)
     ensure_page_buttons(STATE.outgame_ui, MAX_CHAPTER_DIFFICULTY_COUNT)
     bind_ui_events(STATE.outgame_ui)
     return STATE.outgame_ui
   end
 
   local function refresh_mode_selectors(ui, profile, selected_stage_id, selected_mode_id)
-    set_visible_if_alive(ui.mode_panel, false)
+    local selected_view_mode = get_selected_view_mode(profile)
+    set_visible_if_alive(ui.mode_panel, true)
+    for _, slot in ipairs(ui.mode_slots or {}) do
+      local selected = slot.view_mode == selected_view_mode
+      set_visible_if_alive(slot.root, true)
+      set_text_if_alive(slot.label, slot.display_label)
+      set_visible_if_alive(slot.selected, selected)
+      set_image_color_if_alive(slot.bg, { 255, 255, 255, selected and 255 or 210 })
+      set_text_color_if_alive(slot.label, selected and { 253, 151, 0, 255 } or { 208, 216, 228, 255 })
+    end
+    return selected_view_mode
   end
 
   local function refresh_page_buttons(ui, profile, selected_stage_id)
@@ -1103,8 +1205,10 @@ function M.create(env)
     local profile = load_profile()
     local selected_stage_id = STATE.selected_stage_id or profile.selected_stage_id
     local selected_mode_id = SINGLE_MODE_ID
+    local selected_view_mode = get_selected_view_mode(profile)
     local selected_stage_def = STAGES_BY_ID[selected_stage_id]
 
+    sync_outgame_backdrop(ui)
     set_visible_if_alive(ui.root, STATE.session_phase == 'outgame')
     set_visible_if_alive(ui.hall_root, STATE.session_phase == 'outgame')
 
@@ -1118,9 +1222,8 @@ function M.create(env)
     end
     sync_selected_state(selected_stage_id, SINGLE_MODE_ID)
 
-    set_text_if_alive(ui.title, SINGLE_MODE_LABEL)
-    set_visible_if_alive(ui.tip_root or ui.tip, false)
-    set_text_if_alive(ui.tip, '')
+    set_text_if_alive(ui.title, get_view_mode_label(selected_view_mode))
+    set_visible_if_alive(ui.tip_root, selected_view_mode == VIEW_MODE_CULTIVATION)
 
     refresh_mode_selectors(ui, profile, selected_stage_id, selected_mode_id)
     refresh_stage_slots(ui, profile, selected_stage_id)
@@ -1150,6 +1253,9 @@ function M.create(env)
       ensure_ui()
     end
     refresh_ui()
+    if battle_pass_panel and battle_pass_panel.refresh_ui then
+      battle_pass_panel.refresh_ui()
+    end
   end
 
   function api.set_ui_visible(visible)
@@ -1159,12 +1265,16 @@ function M.create(env)
     end
     set_visible_if_alive(ui.root, visible == true)
     set_visible_if_alive(ui.hall_root, visible == true)
+    if battle_pass_panel and battle_pass_panel.set_ui_visible then
+      battle_pass_panel.set_ui_visible(visible == true and STATE.session_phase == 'outgame')
+    end
   end
 
   function api.enter_outgame(result)
     local profile = api.load_profile()
+    local battle_pass_summary = nil
     if result then
-      api.apply_battle_result(result)
+      battle_pass_summary = api.apply_battle_result(result)
       profile = load_profile()
     end
 
@@ -1179,11 +1289,17 @@ function M.create(env)
     ensure_ui()
     refresh_ui()
     api.set_ui_visible(true)
+    if battle_pass_panel and battle_pass_panel.enter_outgame then
+      battle_pass_panel.enter_outgame()
+    end
+    if battle_pass_summary and battle_pass_summary.added_exp and battle_pass_summary.added_exp > 0 then
+      message(BattlePass.build_gain_message(battle_pass_summary))
+    end
   end
 
   function api.apply_battle_result(result)
     if not result then
-      return
+      return nil
     end
 
     local profile = load_profile()
@@ -1191,7 +1307,7 @@ function M.create(env)
     local mode_id = SINGLE_MODE_ID
     local progress = get_stage_progress(profile, stage_id)
     if not progress then
-      return
+      return nil
     end
 
     profile.last_result.stage_id = stage_id
@@ -1211,8 +1327,10 @@ function M.create(env)
       end
     end
 
+    local battle_pass_summary = BattlePass.apply_battle_result(profile, result)
     rebuild_hero_attr_bonus_stats(profile)
     mark_profile_dirty()
+    return battle_pass_summary
   end
 
   function api.start_selected_stage()
@@ -1230,6 +1348,9 @@ function M.create(env)
       and env.stage_runtime.start_selected_stage
       and env.stage_runtime.start_selected_stage(stage_id, mode_id)
     if ok then
+      if battle_pass_panel and battle_pass_panel.leave_outgame then
+        battle_pass_panel.leave_outgame()
+      end
       api.set_ui_visible(false)
       return true
     end
@@ -1256,6 +1377,14 @@ function M.create(env)
 
   function api.get_profile()
     return load_profile()
+  end
+
+  function api.mark_profile_dirty()
+    return mark_profile_dirty()
+  end
+
+  function api.set_battle_pass_panel(panel)
+    battle_pass_panel = panel
   end
 
   api.rebuild_hero_attr_bonus_stats = rebuild_hero_attr_bonus_stats

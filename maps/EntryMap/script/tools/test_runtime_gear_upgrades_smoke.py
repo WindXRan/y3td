@@ -88,7 +88,9 @@ def main() -> None:
         "assert(payload.title_text == '洪荒之刃', 'expected payload title text') "
         "assert(payload.cost_text == '升级所需：100 金币', 'expected payload cost text') "
         "assert(payload.attr_lines[1] == '物理攻击 +31', 'expected payload attr line') "
-        "assert(payload.affix_lines[1] == '暂无词缀', 'expected payload affix fallback') "
+        "assert(type(payload.affix_lines[1]) == 'table', 'expected payload affix row structure') "
+        "assert(payload.affix_lines[1].title == '当前词缀', 'expected payload affix title') "
+        "assert(payload.affix_lines[1].body == '暂无词缀', 'expected payload affix fallback') "
         "print('runtime gear upgrades smoke ok')"
     )
 

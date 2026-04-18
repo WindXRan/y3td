@@ -1,5 +1,9 @@
 id,trigger_level,choice_count,pool_rule_id,queue_priority,ui_title
-mark_node_lv10,10,3,mark_pool_global,95,10级进化选择
-mark_node_lv20,20,3,mark_pool_global,95,20级进化选择
-mark_node_lv30,30,3,mark_pool_global,95,30级进化选择
-mark_node_lv40,40,3,mark_pool_global,95,40级进化选择
+evolution_node_lv05,5,2,evolution_pool_global,95,5级真身抉择
+evolution_node_lv10,10,2,evolution_pool_global,95,10级真身抉择
+evolution_node_lv15,15,2,evolution_pool_global,95,15级真身抉择
+evolution_node_lv20,20,2,evolution_pool_global,95,20级真身抉择
+evolution_node_lv25,25,2,evolution_pool_global,95,25级真身抉择
+evolution_node_lv30,30,2,evolution_pool_global,95,30级真身抉择
+evolution_node_lv35,35,2,evolution_pool_global,95,35级真身抉择
+evolution_node_lv40,40,2,evolution_pool_global,95,40级真身抉择

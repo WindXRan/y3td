@@ -176,6 +176,271 @@ function M.create(env)
     end)
   end
 
+  local function get_unit_max_hp(unit)
+    if not unit or not unit.is_exist or not unit:is_exist() then
+      return 0
+    end
+    return y3.helper.tonumber(unit:get_attr('生命')) or y3.helper.tonumber(unit:get_attr('最大生命')) or 0
+  end
+
+  local function get_enemy_hit_reaction_snapshot(unit, data)
+    local damage = tonumber(data and data.damage) or 0
+    local is_critical = false
+    local is_missed = false
+    local damage_instance = data and data.damage_instance or nil
+
+    if damage_instance then
+      local ok_damage, damage_from_instance = pcall(function()
+        return damage_instance:get_damage()
+      end)
+      if ok_damage and damage_from_instance ~= nil then
+        damage = tonumber(damage_from_instance) or damage
+      end
+
+      local ok_critical, critical = pcall(function()
+        return damage_instance:is_critical()
+      end)
+      if ok_critical then
+        is_critical = critical == true
+      end
+
+      local ok_missed, missed = pcall(function()
+        return damage_instance:is_missed()
+      end)
+      if ok_missed then
+        is_missed = missed == true
+      end
+    end
+
+    local max_hp = get_unit_max_hp(unit)
+    return {
+      damage = math.max(0, damage),
+      damage_ratio = max_hp > 0 and math.max(0, damage) / max_hp or 0,
+      is_critical = is_critical,
+      is_missed = is_missed,
+    }
+  end
+
+  local function resolve_enemy_hit_reaction_profile(info, hit)
+    local is_boss = is_boss_runtime_enemy(info)
+    local is_elite = is_elite_runtime_enemy(info)
+    local damage = hit and hit.damage or 0
+    local damage_ratio = hit and hit.damage_ratio or 0
+
+    if (hit and hit.is_critical)
+      or damage_ratio >= (is_boss and 0.08 or 0.12)
+      or damage >= (is_boss and 120 or 80)
+    then
+      return {
+        hit_kind = 'heavy',
+        min_interval = is_boss and 0.09 or 0.07,
+        burst_effect = 102702,
+        burst_scale = is_boss and 0.90 or (is_elite and 0.82 or 0.72),
+        burst_time = is_boss and 0.26 or 0.22,
+        burst_height = is_boss and 32 or 26,
+        burst_color = is_boss and { 255, 52, 42, 228 } or { 255, 42, 30, 220 },
+        burst_anim_speed = 1.22,
+        shock_scale = is_boss and 0.76 or 0.68,
+        shock_time = is_boss and 0.30 or 0.24,
+        mist_scale = is_boss and 0.72 or 0.60,
+        mist_time = is_boss and 0.36 or 0.28,
+        mist_distance = is_boss and 76 or 62,
+        mist_speed = is_boss and 760 or 680,
+        trail_scale = is_boss and 0.56 or 0.46,
+        trail_time = is_boss and 0.34 or 0.28,
+        trail_distance = is_boss and 88 or 72,
+        trail_speed = is_boss and 880 or 760,
+        shove_distance = is_boss and 0 or (is_elite and 18 or 26),
+        shove_speed = is_elite and 940 or 1080,
+        shove_interval = 0.18,
+      }
+    end
+
+    if is_elite
+      or damage_ratio >= (is_boss and 0.025 or 0.04)
+      or damage >= (is_boss and 42 or 22)
+    then
+      return {
+        hit_kind = 'medium',
+        min_interval = is_boss and 0.075 or 0.055,
+        burst_effect = 102706,
+        burst_scale = is_boss and 0.72 or (is_elite and 0.62 or 0.54),
+        burst_time = is_boss and 0.22 or 0.18,
+        burst_height = is_boss and 24 or 20,
+        burst_color = is_boss and { 228, 40, 34, 212 } or { 212, 30, 28, 196 },
+        burst_anim_speed = 1.18,
+        mist_scale = is_boss and 0.56 or 0.44,
+        mist_time = is_boss and 0.28 or 0.22,
+        mist_distance = is_boss and 52 or 42,
+        mist_speed = is_boss and 620 or 520,
+        trail_scale = is_boss and 0.40 or 0.32,
+        trail_time = is_boss and 0.24 or 0.20,
+        trail_distance = is_boss and 54 or 46,
+        trail_speed = is_boss and 620 or 560,
+        shove_distance = is_boss and 0 or (is_elite and 10 or 16),
+        shove_speed = 820,
+        shove_interval = 0.14,
+      }
+    end
+
+    return {
+      hit_kind = 'light',
+      min_interval = 0.04,
+      burst_effect = 102706,
+      burst_scale = is_boss and 0.48 or (is_elite and 0.42 or 0.34),
+      burst_time = is_boss and 0.16 or 0.12,
+      burst_height = is_boss and 18 or 14,
+      burst_color = { 182, 24, 24, 172 },
+      burst_anim_speed = 1.10,
+      mist_scale = is_boss and 0.34 or 0.26,
+      mist_time = 0.14,
+      mist_distance = is_boss and 30 or 24,
+      mist_speed = 380,
+      shove_distance = 0,
+      shove_speed = 0,
+      shove_interval = 0.10,
+    }
+  end
+
+  local function play_enemy_hit_reaction(unit, info, data)
+    if not unit or not unit.is_exist or not unit:is_exist() then
+      return
+    end
+    if not info or not info.alive then
+      return
+    end
+    if (unit:get_hp() or 0) <= 0 then
+      return
+    end
+
+    local hit = get_enemy_hit_reaction_snapshot(unit, data)
+    if hit.is_missed or hit.damage <= 0 then
+      return
+    end
+
+    local profile = resolve_enemy_hit_reaction_profile(info, hit)
+    local now = y3.game.current_game_run_time()
+    local since_last_feedback = now - (tonumber(info.last_hit_feedback_time) or -10)
+    -- DOT 和多段攻击会非常密，这里做轻度节流，保留爽感但避免特效糊成一团。
+    if since_last_feedback < (profile.min_interval or 0) then
+      if not hit.is_critical or since_last_feedback < 0.03 then
+        return
+      end
+    end
+    info.last_hit_feedback_time = now
+
+    local hit_point = get_unit_point_snapshot(unit)
+    if not hit_point then
+      return
+    end
+
+    local hit_angle = unit:get_facing()
+    local source_unit = data and data.source_unit or nil
+    if source_unit and source_unit.is_exist and source_unit:is_exist() then
+      local source_point = get_unit_point_snapshot(source_unit)
+      if source_point then
+        hit_angle = source_point:get_angle_with(hit_point)
+      end
+    end
+
+    local burst = create_point_particle(
+      profile.burst_effect,
+      hit_point,
+      hit_angle,
+      profile.burst_scale,
+      profile.burst_time,
+      profile.burst_height,
+      profile.burst_color,
+      profile.burst_anim_speed
+    )
+    if burst then
+      burst:set_rotate(0, 0, hit_angle)
+    end
+
+    local mist = create_point_particle(
+      102877,
+      hit_point,
+      hit_angle,
+      profile.mist_scale,
+      profile.mist_time,
+      profile.burst_height + 6,
+      { 110, 8, 8, 166 },
+      1.08
+    )
+    if mist then
+      spray_particle_line(mist, hit_angle, profile.mist_distance, profile.mist_speed)
+    end
+
+    if profile.hit_kind == 'medium' or profile.hit_kind == 'heavy' then
+      local trail = create_point_particle(
+        102820,
+        hit_point,
+        hit_angle,
+        profile.trail_scale,
+        profile.trail_time,
+        profile.burst_height + 14,
+        { 210, 20, 20, 190 },
+        1.20
+      )
+      if trail then
+        spray_particle_line(trail, hit_angle, profile.trail_distance, profile.trail_speed)
+      end
+    end
+
+    if profile.hit_kind == 'heavy' then
+      for _, angle_offset in ipairs({ -12, 10 }) do
+        local extra_trail = create_point_particle(
+          102820,
+          hit_point,
+          hit_angle + angle_offset,
+          profile.trail_scale * 0.78,
+          profile.trail_time,
+          profile.burst_height + 18,
+          { 228, 28, 24, 210 },
+          1.28
+        )
+        if extra_trail then
+          spray_particle_line(
+            extra_trail,
+            hit_angle + angle_offset,
+            math.max(24, profile.trail_distance * 0.72),
+            math.max(360, profile.trail_speed * 0.88)
+          )
+        end
+      end
+
+      local shock = create_point_particle(
+        102706,
+        hit_point,
+        hit_angle,
+        profile.shock_scale,
+        profile.shock_time,
+        profile.burst_height - 8,
+        { 190, 20, 20, 196 },
+        1.12
+      )
+      if shock then
+        shock:set_rotate(0, 0, hit_angle)
+      end
+    end
+
+    if (profile.shove_distance or 0) > 0 then
+      local since_last_shove = now - (tonumber(info.last_hit_shove_time) or -10)
+      if since_last_shove >= (profile.shove_interval or 0) then
+        info.last_hit_shove_time = now
+        pcall(function()
+          unit:mover_line({
+            angle = hit_angle,
+            distance = profile.shove_distance,
+            speed = profile.shove_speed,
+            terrain_block = false,
+            face_angle = false,
+          })
+        end)
+      end
+    end
+  end
+
   local function resolve_enemy_death_reaction_profile(info)
     if info and info.kind == 'boss' then
       return {
@@ -370,6 +635,8 @@ function M.create(env)
     info.base_move_speed = unit:get_attr('移动速度')
     info.lane_slow_applied = false
     info.lane_slow_factor = 1
+    info.last_hit_feedback_time = info.last_hit_feedback_time or -10
+    info.last_hit_shove_time = info.last_hit_shove_time or -10
 
     STATE.enemy_info_map = STATE.enemy_info_map or {}
     STATE.enemy_info_map[unit] = info
@@ -421,6 +688,10 @@ function M.create(env)
 
       return true
     end
+
+    unit:event('单位-受到伤害后', function(_, data)
+      play_enemy_hit_reaction(unit, info, data)
+    end)
 
     unit:event('单位-死亡', function(_, data)
       if not info.remove_runtime(true) then

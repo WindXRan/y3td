@@ -26,8 +26,8 @@ local api = RewardSystem.create({
 local runtime = api.create_mark_runtime()
 state.mark_runtime = runtime
 
-local picks = api.debug_pick_mark_choices_for_rule('mark_pool_global', 3)
-assert(#picks == 3, 'should return 3 evolution picks')
+local picks = api.debug_pick_evolution_choices_for_rule('evolution_pool_global', 2)
+assert(#picks == 2, 'should return 2 evolution picks')
 
 local ids = {}
 local has_high_quality = false
@@ -41,7 +41,7 @@ end
 assert(has_high_quality, 'global rule should guarantee at least one rare or epic pick')
 
 runtime.owned_mark_ids[picks[1].id] = true
-local next_picks = api.debug_pick_mark_choices_for_rule('mark_pool_global', 3)
+local next_picks = api.debug_pick_evolution_choices_for_rule('evolution_pool_global', 2)
 for _, def in ipairs(next_picks) do
   assert(def.id ~= picks[1].id, 'owned evolutions should be excluded')
 end
@@ -52,8 +52,8 @@ for _, def in pairs(api.MARK_DEFS) do
   end
 end
 
-local fallback_picks = api.debug_pick_mark_choices_for_rule('mark_pool_global', 3)
-assert(#fallback_picks == 3, 'fallback picks should still return 3 evolutions when only commons remain')
+local fallback_picks = api.debug_pick_evolution_choices_for_rule('evolution_pool_global', 2)
+assert(#fallback_picks == 2, 'fallback picks should still return 2 evolutions when only commons remain')
 for _, def in ipairs(fallback_picks) do
   assert(def.quality == 'common', 'fallback picks should use remaining common evolutions when high-quality pool is empty')
 end

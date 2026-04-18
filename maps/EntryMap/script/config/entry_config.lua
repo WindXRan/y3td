@@ -30,6 +30,7 @@ local GearUpgradeConfig = require 'data.object_tables.gear_upgrade_config'
 
 local M = {
   debug_time_scale = DEBUG_TIME_SCALE,
+  debug_auto_unlock_attack_skills_on_stage_start = y3.game.is_debug_mode(),
   player_id = global_rules.player_id,
   enemy_player_id = global_rules.enemy_player_id,
   total_enemy_soft_cap = global_rules.total_enemy_soft_cap,

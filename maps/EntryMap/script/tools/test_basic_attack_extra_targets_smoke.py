@@ -33,8 +33,8 @@ def test_basic_attack_code_uses_snapshot_center_and_bonus_chain_attrs() -> None:
     boot_content = BOOT.read_text(encoding="utf-8")
 
     assert "local splash_center = impact_point or get_unit_point_snapshot(target) or target" in attack_content
-    assert "get_enemies_in_range(\n            splash_center," in attack_content
-    assert "play_particle_on_point(extra_center, extra_hit_particle, extra_hit_scale, extra_hit_time, 16)" in attack_content
+    assert "get_enemies_in_range(\n          splash_center," in attack_content
+    assert "play_skill_particle_on_point(skill, extra_center, 'chain', 16)" in attack_content
     assert "particle = extra_hit_particle," in attack_content
     assert "get_bond_runtime_bonus('chain_bounces') + get_hero_attr_value('弹射次数')" in boot_content
     assert "get_hero_attr_ratio('弹射伤害')" in boot_content
@@ -90,6 +90,7 @@ def test_basic_attack_multishot_and_split_survive_killshot_center() -> None:
         "function projectile:is_exist() return not self.removed end "
         "function projectile:get_point() return self.point end "
         "function projectile:remove() self.removed = true end "
+        "function projectile:set_facing(_) end "
         "function projectile:mover_target(args) args.on_finish() end "
         "local system = attack_skills.create({ "
         "  STATE = { "
@@ -122,7 +123,7 @@ def test_basic_attack_multishot_and_split_survive_killshot_center() -> None:
         "  }, "
         "  round_number = function(v) return math.floor((tonumber(v) or 0) + 0.5) end, "
         "  message = function() end, "
-        "  ATTACK_SKILL_DEFS = { basic_attack = { base_range = 600, damage_type = '物理' } }, "
+        "  ATTACK_SKILL_DEFS = { basic_attack = { base_range = 600, damage_type = '物理', cast_family = 'basic_projectile' } }, "
         "  ATTACK_SKILL_VFX = { basic_attack = { projectile_key = 1, impact_particle = 0 } }, "
         "  hero_attr_system = { "
         "    get_attr = function(_, name) "

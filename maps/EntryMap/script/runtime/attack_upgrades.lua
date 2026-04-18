@@ -55,6 +55,495 @@ function M.create(env)
     return def
   end
 
+  local BLUEPRINT_BUCKET_ORDER = {
+    'common',
+    'excellent',
+    'rare',
+  }
+
+  local QUALITY_BY_BUCKET = {
+    common = 'common',
+    excellent = 'rare',
+    rare = 'epic',
+    legendary = 'epic',
+  }
+
+  local WEIGHT_BY_BUCKET = {
+    common = 6,
+    excellent = 5,
+    rare = 4,
+    legendary = 3,
+  }
+
+  local ROUTE_TAG_BY_BUCKET = {
+    common = 'foundation',
+    excellent = 'branch',
+    rare = 'advanced',
+    legendary = 'legend',
+  }
+
+  local function has_text(text, pattern)
+    return string.find(tostring(text or ''), pattern, 1, true) ~= nil
+  end
+
+  local function parse_first_percent(text)
+    local value = tostring(text or ''):match('([%d%.]+)%%')
+    return value and ((tonumber(value) or 0) / 100) or 0
+  end
+
+  local function parse_first_seconds(text)
+    local value = tostring(text or ''):match('([%d%.]+)%s*秒')
+    return value and (tonumber(value) or 0) or 0
+  end
+
+  local function parse_first_integer(text)
+    local value = tostring(text or ''):match('(%d+)')
+    return value and (tonumber(value) or 0) or 0
+  end
+
+  local function get_base_skill_def(skill_id)
+    return ATTACK_SKILL_DEFS[skill_id] or {}
+  end
+
+  local function add_skill_damage_ratio(skill, skill_id, ratio_gain)
+    local base = get_base_skill_def(skill_id).base_damage_ratio or skill.damage_ratio or 0
+    skill.damage_ratio = (skill.damage_ratio or 0) + math.max(0, base * (ratio_gain or 0))
+  end
+
+  local function add_skill_cooldown_cut(skill, ratio_cut)
+    skill.cooldown_reduction = math.min(0.80, (skill.cooldown_reduction or 0) + math.max(0, ratio_cut or 0))
+  end
+
+  local function add_skill_cast_range(skill, skill_id, ratio_gain)
+    local base = get_base_skill_def(skill_id).base_range or skill.cast_range or 0
+    skill.range_bonus = (skill.range_bonus or 0) + math.max(0, base * (ratio_gain or 0))
+  end
+
+  local function add_skill_radius(skill, skill_id, ratio_gain)
+    local base = get_base_skill_def(skill_id).base_radius or skill.base_radius or 0
+    if base > 0 then
+      skill.base_radius = (skill.base_radius or 0) + math.max(0, base * (ratio_gain or 0))
+      return
+    end
+    add_skill_cast_range(skill, skill_id, ratio_gain)
+  end
+
+  local function add_skill_duration(skill, seconds)
+    skill.base_duration = (skill.base_duration or 0) + math.max(0, seconds or 0)
+  end
+
+  local function add_skill_bounce(skill, count)
+    skill.base_bounce = math.max(0, (skill.base_bounce or 0) + math.max(0, count or 0))
+  end
+
+  local function add_skill_pierce(skill, count)
+    skill.pierce = math.max(0, (skill.pierce or 0) + math.max(0, count or 0))
+  end
+
+  local function add_skill_followup(skill, count, ratio)
+    skill.followup_count = (skill.followup_count or 0) + math.max(0, count or 0)
+    skill.followup_ratio = math.max(skill.followup_ratio or 0, ratio or 0)
+  end
+
+  local function add_skill_echo(skill, count, ratio)
+    skill.echo_count = (skill.echo_count or 0) + math.max(0, count or 0)
+    skill.echo_ratio = math.max(skill.echo_ratio or 0, ratio or 0)
+  end
+
+  local function add_skill_terminal_burst(skill, skill_id, burst_ratio, radius_scale)
+    local def = get_base_skill_def(skill_id)
+    local base_radius = def.base_radius or skill.base_radius or 0
+    local base_range = def.base_range or skill.cast_range or 0
+    local radius = math.max(
+      160,
+      base_radius > 0 and base_radius * math.max(0.45, radius_scale or 0.70)
+        or math.max(160, base_range * 0.18)
+    )
+    skill.terminal_burst_radius = math.max(skill.terminal_burst_radius or 0, radius)
+    skill.terminal_burst_ratio = math.max(skill.terminal_burst_ratio or 0, burst_ratio or 0)
+  end
+
+  local function add_skill_persistent_field(skill, skill_id, duration, ratio, opts)
+    if (skill.base_radius or 0) <= 0 then
+      local base_radius = get_base_skill_def(skill_id).base_radius or 0
+      skill.base_radius = math.max(skill.base_radius or 0, base_radius > 0 and base_radius or 180)
+    end
+    skill.persistent_field_duration = math.max(skill.persistent_field_duration or 0, duration or 0)
+    skill.persistent_field_ratio = math.max(skill.persistent_field_ratio or 0, ratio or 0)
+    if opts and opts.control then
+      skill.persistent_field_control = true
+    end
+    if opts and opts.ignite then
+      skill.persistent_field_ignite = true
+    end
+  end
+
+  local function add_generic_armor_break(skill, ratio, duration, max_stacks)
+    skill.apply_generic_armor_break = true
+    skill.armor_break_ratio = math.max(skill.armor_break_ratio or 0, ratio or 0)
+    skill.armor_break_duration = math.max(skill.armor_break_duration or 0, duration or 0)
+    skill.armor_break_max_stacks = math.max(skill.armor_break_max_stacks or 0, max_stacks or 1)
+  end
+
+  local function add_generic_ignite(skill, duration, tick_ratio)
+    skill.apply_generic_ignite = true
+    skill.ignite_duration = math.max(skill.ignite_duration or 0, duration or 0)
+    skill.ignite_tick_ratio = math.max(skill.ignite_tick_ratio or 0, tick_ratio or 0)
+  end
+
+  local function add_generic_shock(skill, duration, bonus)
+    skill.apply_generic_shock = true
+    skill.shock_duration = math.max(skill.shock_duration or 0, duration or 0)
+    skill.shock_bonus = math.max(skill.shock_bonus or 0, bonus or 0)
+  end
+
+  local function add_generic_control(skill, duration)
+    skill.apply_generic_control = true
+    skill.control_lock_time = math.max(skill.control_lock_time or 0, duration or 0)
+  end
+
+  local function add_pull_strength(skill, amount)
+    skill.pull_strength = (skill.pull_strength or 0) + math.max(0, amount or 0)
+  end
+
+  local function add_boss_bonus(skill, ratio)
+    skill.boss_bonus_ratio = (skill.boss_bonus_ratio or 0) + math.max(0, ratio or 0)
+  end
+
+  local function add_repeat_with_ratio(skill, repeat_delta, per_cast_ratio)
+    skill.repeat_count = math.max(1, (skill.repeat_count or 1) + math.max(0, repeat_delta or 0))
+    if per_cast_ratio and per_cast_ratio > 0 and per_cast_ratio < 1 then
+      skill.damage_ratio = (skill.damage_ratio or 0) * per_cast_ratio
+    end
+  end
+
+  local function apply_blueprint_function_card(blueprint, skill, card)
+    local summary = card.summary or ''
+    local seconds = parse_first_seconds(summary)
+    local percent = parse_first_percent(summary)
+    local count = parse_first_integer(summary)
+
+    if has_text(summary, '燃烧') or has_text(summary, '灼光') then
+      add_generic_ignite(skill, seconds > 0 and seconds or 4, 0.08)
+      return
+    end
+    if has_text(summary, '回斩伤害') then
+      skill.return_pass_enabled = true
+      skill.return_pass_ratio = math.max(skill.return_pass_ratio or 0.80, 0.80 + percent)
+      if has_text(summary, '穿透') then
+        add_skill_pierce(skill, math.max(1, count))
+      end
+      return
+    end
+    if has_text(summary, '穿透') then
+      add_skill_pierce(skill, math.max(1, count))
+      return
+    end
+    if has_text(summary, '飞剑数量') or has_text(summary, '弹射次数') then
+      add_skill_bounce(skill, math.max(1, count))
+      return
+    end
+    if has_text(summary, '拉扯力度') or has_text(summary, '聚怪力度') then
+      add_pull_strength(skill, percent > 0 and 140 * percent + 80 or 140)
+      return
+    end
+    if has_text(summary, '击飞') then
+      add_generic_control(skill, seconds > 0 and seconds or 0.8)
+      return
+    end
+    if has_text(summary, '减速效果') then
+      add_generic_control(skill, 0.30)
+      return
+    end
+    if seconds > 0 then
+      add_skill_duration(skill, seconds)
+    end
+  end
+
+  local function apply_blueprint_state_card(blueprint, skill, card)
+    local summary = card.summary or ''
+    local seconds = parse_first_seconds(summary)
+    local percent = parse_first_percent(summary)
+
+    if has_text(summary, '感电') then
+      add_generic_shock(skill, seconds > 0 and seconds or 4, percent > 0 and percent or 0.18)
+      return
+    end
+    if has_text(summary, '燃烧') or has_text(summary, '灼光') or has_text(summary, '焚地') then
+      add_generic_ignite(skill, seconds > 0 and seconds or 4, math.max(0.08, percent * 0.40))
+      if has_text(summary, '焚地') then
+        add_skill_persistent_field(skill, blueprint.id, seconds > 0 and seconds or 4, 0.18, { ignite = true })
+      end
+      return
+    end
+    if has_text(summary, '禁足') or has_text(summary, '束缚') or has_text(summary, '冻结') or has_text(summary, '减速') then
+      add_generic_control(skill, seconds > 0 and seconds or 0.40)
+      return
+    end
+
+    add_generic_armor_break(skill, percent > 0 and percent or 0.18, seconds > 0 and seconds or 4, 1)
+    if has_text(summary, '扩散') then
+      add_skill_followup(skill, 1, 0.35)
+    end
+  end
+
+  local function apply_blueprint_count_card(blueprint, skill, card)
+    local summary = card.summary or ''
+    local percent = parse_first_percent(summary)
+    local per_cast_ratio = percent > 0 and percent or 0.65
+    if string.find(summary, '-', 1, true) ~= nil and percent > 0 then
+      per_cast_ratio = math.max(0.55, 1 - percent)
+    end
+
+    if has_text(summary, '回响') or has_text(summary, '余震') or has_text(summary, '小型法环') or has_text(summary, '小型法印') then
+      add_skill_echo(skill, 1, per_cast_ratio)
+      return
+    end
+
+    add_repeat_with_ratio(skill, 1, per_cast_ratio)
+  end
+
+  local function apply_blueprint_form_card(blueprint, skill, card)
+    local summary = card.summary or ''
+    local count = math.max(1, parse_first_integer(summary))
+
+    if has_text(summary, '横扫') then
+      skill.sweep_enabled = true
+      return
+    end
+    if has_text(summary, '回斩') then
+      skill.return_pass_enabled = true
+      skill.return_pass_ratio = math.max(skill.return_pass_ratio or 0.80, 1.00)
+      return
+    end
+    if has_text(summary, '雷爆') or has_text(summary, '爆燃') then
+      add_skill_terminal_burst(skill, blueprint.id, 0.80, 0.75)
+      return
+    end
+    if has_text(summary, '分叉') then
+      add_skill_followup(skill, 2, 0.45)
+      return
+    end
+    if has_text(summary, '冰棱') or has_text(summary, '碎片') or has_text(summary, '火星') then
+      add_skill_followup(skill, math.min(6, count), 0.35)
+      return
+    end
+    if has_text(summary, '电弧') or has_text(summary, '符链') then
+      add_skill_followup(skill, math.min(3, count), 0.50)
+      return
+    end
+    if has_text(summary, '岩刺') or has_text(summary, '高频') or has_text(summary, '切割') then
+      add_skill_persistent_field(skill, blueprint.id, 2.0, 0.25, {})
+    end
+  end
+
+  local function apply_blueprint_elite_card(skill, card)
+    local summary = card.summary or ''
+    local seconds = parse_first_seconds(summary)
+    local percent = parse_first_percent(summary)
+
+    add_boss_bonus(skill, percent > 0 and percent or 0.80)
+    if has_text(summary, '追加 1 段') or has_text(summary, '额外承受') then
+      add_skill_followup(skill, 1, math.max(0.70, percent > 0 and percent or 0.80))
+    end
+    if has_text(summary, '击飞') then
+      add_generic_control(skill, seconds > 0 and seconds or 0.6)
+    end
+  end
+
+  local function apply_blueprint_trigger_card(blueprint, skill, card)
+    local summary = card.summary or ''
+
+    if has_text(summary, '回弹') or has_text(summary, '回流') then
+      skill.return_pass_enabled = true
+      skill.return_pass_ratio = math.max(skill.return_pass_ratio or 0.70, 0.70)
+      return
+    end
+    if has_text(summary, '乱流') then
+      add_skill_persistent_field(skill, blueprint.id, 1.8, 0.25, {})
+      return
+    end
+    if has_text(summary, '火圈') then
+      add_skill_persistent_field(skill, blueprint.id, 1.8, 0.25, { ignite = true })
+      return
+    end
+
+    if has_text(summary, '补斩')
+      or has_text(summary, '再延伸')
+      or has_text(summary, '再追发')
+      or has_text(summary, '追命')
+      or has_text(summary, '回扫')
+      or has_text(summary, '额外降下') then
+      add_skill_followup(skill, 1, 0.60)
+    end
+    if has_text(summary, '爆炸')
+      or has_text(summary, '冰爆')
+      or has_text(summary, '回爆')
+      or has_text(summary, '余震')
+      or has_text(summary, '爆发') then
+      add_skill_echo(skill, 1, 0.60)
+      add_skill_terminal_burst(skill, blueprint.id, 0.60, 0.60)
+    end
+  end
+
+  local function apply_blueprint_legendary_card(blueprint, skill, card)
+    local summary = card.summary or ''
+    local def = get_base_skill_def(blueprint.id)
+
+    add_skill_damage_ratio(skill, blueprint.id, 0.85)
+
+    if has_text(summary, '持续时间 +100%') or has_text(summary, '持续时间+100%') then
+      add_skill_duration(skill, def.base_duration or skill.base_duration or 0)
+    elseif (def.base_duration or 0) > 0 and (has_text(summary, '持续') or has_text(summary, '禁域') or has_text(summary, '冰界') or has_text(summary, '莲台')) then
+      add_skill_duration(skill, math.max(1.5, (def.base_duration or skill.base_duration or 0) * 0.5))
+    end
+
+    if (def.base_radius or 0) > 0 and (
+      has_text(summary, '范围')
+      or has_text(summary, '冰界')
+      or has_text(summary, '禁域')
+      or has_text(summary, '莲台')
+      or has_text(summary, '火浪')
+      or has_text(summary, '裂界')
+    ) then
+      add_skill_radius(skill, blueprint.id, 0.35)
+    end
+
+    if (def.base_bounce or 0) > 0 then
+      add_skill_bounce(skill, 2)
+    end
+
+    if has_text(summary, '追踪') then
+      skill.field_track_target = true
+      add_pull_strength(skill, 80)
+    end
+    if has_text(summary, '束缚')
+      or has_text(summary, '压制')
+      or has_text(summary, '冻结')
+      or has_text(summary, '禁域')
+      or has_text(summary, '冰界') then
+      add_skill_persistent_field(skill, blueprint.id, has_text(summary, '冰界') and 4 or 3.5, 0.35, { control = true })
+    end
+    if has_text(summary, '火浪')
+      or has_text(summary, '焚世')
+      or has_text(summary, '莲台')
+      or has_text(summary, '劫火') then
+      add_skill_persistent_field(skill, blueprint.id, 3.0, 0.35, { ignite = true })
+    end
+    if has_text(summary, '回斩') or has_text(summary, '往返') or has_text(summary, '轮斩') then
+      skill.return_pass_enabled = true
+      skill.return_pass_ratio = math.max(skill.return_pass_ratio or 0.80, 1.00)
+      add_skill_followup(skill, 1, 0.50)
+    end
+    if has_text(summary, '切割') or has_text(summary, '残影') or has_text(summary, '岩浪') then
+      add_skill_echo(skill, 1, 0.70)
+      add_skill_persistent_field(skill, blueprint.id, 2.2, 0.30, {})
+    end
+    if has_text(summary, '终点')
+      or has_text(summary, '重斩')
+      or blueprint.archetype == '直线贯穿清怪'
+      or blueprint.archetype == '长线穿透爆发' then
+      add_skill_terminal_burst(skill, blueprint.id, 1.10, 0.80)
+    end
+    if has_text(summary, '雷劫') or has_text(summary, '雷击') then
+      add_generic_shock(skill, 4, 0.20)
+      skill.return_pass_enabled = true
+    end
+    if blueprint.archetype == '追击飞剑攒射' then
+      add_skill_followup(skill, 2, 0.55)
+    end
+    if has_text(summary, '聚怪') or has_text(summary, '黄风') or has_text(summary, '风庭') then
+      add_pull_strength(skill, 120)
+    end
+  end
+
+  local function build_blueprint_card_apply(blueprint, card)
+    return function()
+      local skill = get_attack_skill(blueprint.id)
+      if not skill then
+        return
+      end
+
+      local summary = card.summary or ''
+      if card.lane == 'damage' then
+        add_skill_damage_ratio(skill, blueprint.id, parse_first_percent(summary) > 0 and parse_first_percent(summary) or 0.60)
+        return
+      end
+      if card.lane == 'frequency' then
+        add_skill_cooldown_cut(skill, parse_first_percent(summary) > 0 and parse_first_percent(summary) or 0.18)
+        return
+      end
+      if card.lane == 'range' then
+        if (get_base_skill_def(blueprint.id).base_radius or 0) > 0 then
+          add_skill_radius(skill, blueprint.id, parse_first_percent(summary) > 0 and parse_first_percent(summary) or 0.60)
+        else
+          add_skill_cast_range(skill, blueprint.id, parse_first_percent(summary) > 0 and parse_first_percent(summary) or 0.60)
+        end
+        return
+      end
+      if card.lane == 'function' then
+        apply_blueprint_function_card(blueprint, skill, card)
+        return
+      end
+      if card.lane == 'count' then
+        apply_blueprint_count_card(blueprint, skill, card)
+        return
+      end
+      if card.lane == 'form' then
+        apply_blueprint_form_card(blueprint, skill, card)
+        return
+      end
+      if card.lane == 'state' then
+        apply_blueprint_state_card(blueprint, skill, card)
+        return
+      end
+      if card.lane == 'elite' then
+        apply_blueprint_elite_card(skill, card)
+        return
+      end
+      if card.lane == 'trigger' then
+        apply_blueprint_trigger_card(blueprint, skill, card)
+        return
+      end
+    end
+  end
+
+  local function build_blueprint_regular_upgrades()
+    local upgrades = {}
+
+    for _, blueprint in ipairs(ATTACK_SKILL_BLUEPRINTS.list or {}) do
+      if not ATTACK_SKILL_DEFS[blueprint.id] then
+        goto continue_blueprint
+      end
+
+      for _, bucket in ipairs(BLUEPRINT_BUCKET_ORDER) do
+        for _, card in ipairs((blueprint.cards and blueprint.cards[bucket]) or {}) do
+          upgrades[#upgrades + 1] = skill_upgrade({
+            key = 'bp_' .. tostring(card.id),
+            skill_id = blueprint.id,
+            name = card.name,
+            desc = card.summary,
+            ui_icon = (ATTACK_SKILL_DEFS[blueprint.id] and ATTACK_SKILL_DEFS[blueprint.id].ui_icon) or blueprint.ui_icon or blueprint.icon,
+            quality = QUALITY_BY_BUCKET[bucket] or 'common',
+            weight = WEIGHT_BY_BUCKET[bucket] or 4,
+            max_picks = 1,
+            route_tags = {
+              blueprint.id,
+              blueprint.element or 'element',
+              card.lane or bucket,
+              ROUTE_TAG_BY_BUCKET[bucket] or bucket,
+            },
+            apply = build_blueprint_card_apply(blueprint, card),
+          })
+        end
+      end
+
+      ::continue_blueprint::
+    end
+
+    return upgrades
+  end
+
   local function build_blueprint_unlock_upgrades()
     local upgrades = {}
 
@@ -67,8 +556,14 @@ function M.create(env)
         key = 'unlock_' .. blueprint.id,
         skill_id = blueprint.id,
         name = blueprint.name,
-        desc = string.format('装配到空余攻击技能位。定位：%s。', blueprint.archetype or '攻击技能'),
-        route_tags = { blueprint.id },
+        ui_icon = (ATTACK_SKILL_DEFS[blueprint.id] and ATTACK_SKILL_DEFS[blueprint.id].ui_icon) or blueprint.ui_icon or blueprint.icon,
+        desc = string.format(
+          '装配到空余攻击技能位。定位：%s。终局：%s。',
+          blueprint.archetype or '攻击技能',
+          blueprint.evolution and blueprint.evolution.name or '未命名终局'
+        ),
+        quality = 'rare',
+        route_tags = { blueprint.id, blueprint.element or 'element' },
         can_offer = function()
           return get_empty_attack_skill_slot() ~= nil and not get_attack_skill(blueprint.id)
         end,
@@ -87,70 +582,6 @@ function M.create(env)
   end
 
   local ATTACK_UPGRADE_DEFS = {
-    unlock_upgrade({
-      key = 'unlock_arcane_arrow',
-      skill_id = 'arcane_arrow',
-      name = '奥术箭',
-      desc = '装配到空余攻击技能位。',
-      route_tags = { 'arcane_arrow', 'element' },
-      can_offer = function()
-        return get_empty_attack_skill_slot() ~= nil and not get_attack_skill('arcane_arrow')
-      end,
-      apply = function()
-        local skill, slot, is_new = unlock_attack_skill('arcane_arrow')
-        if skill and is_new then
-          message(string.format('已装配 %d 号位攻击技能：%s。', slot, skill.name))
-        end
-      end,
-    }),
-    unlock_upgrade({
-      key = 'unlock_flame_arrow',
-      skill_id = 'flame_arrow',
-      name = '爆炎箭',
-      desc = '装配到空余攻击技能位。',
-      route_tags = { 'flame_arrow', 'element' },
-      can_offer = function()
-        return get_empty_attack_skill_slot() ~= nil and not get_attack_skill('flame_arrow')
-      end,
-      apply = function()
-        local skill, slot, is_new = unlock_attack_skill('flame_arrow')
-        if skill and is_new then
-          message(string.format('已装配 %d 号位攻击技能：%s。', slot, skill.name))
-        end
-      end,
-    }),
-    unlock_upgrade({
-      key = 'unlock_frost_arrow',
-      skill_id = 'frost_arrow',
-      name = '寒冰箭',
-      desc = '装配到空余攻击技能位。',
-      route_tags = { 'frost_arrow', 'element' },
-      can_offer = function()
-        return get_empty_attack_skill_slot() ~= nil and not get_attack_skill('frost_arrow')
-      end,
-      apply = function()
-        local skill, slot, is_new = unlock_attack_skill('frost_arrow')
-        if skill and is_new then
-          message(string.format('已装配 %d 号位攻击技能：%s。', slot, skill.name))
-        end
-      end,
-    }),
-    unlock_upgrade({
-      key = 'unlock_thunder',
-      skill_id = 'thunder',
-      name = '天雷',
-      desc = '装配到空余攻击技能位。',
-      route_tags = { 'thunder', 'element' },
-      can_offer = function()
-        return get_empty_attack_skill_slot() ~= nil and not get_attack_skill('thunder')
-      end,
-      apply = function()
-        local skill, slot, is_new = unlock_attack_skill('thunder')
-        if skill and is_new then
-          message(string.format('已装配 %d 号位攻击技能：%s。', slot, skill.name))
-        end
-      end,
-    }),
     skill_upgrade({
       key = 'basic_attack_damage',
       skill_id = 'basic_attack',
@@ -221,211 +652,12 @@ function M.create(env)
         sync_basic_attack_ability()
       end,
     }),
-    skill_upgrade({
-      key = 'arcane_damage',
-      skill_id = 'arcane_arrow',
-      name = '箭矢增幅',
-      desc = '奥术箭伤害 +20%。',
-      max_picks = 4,
-      route_tags = { 'arcane_arrow', 'element' },
-      apply = function()
-        local skill = get_attack_skill('arcane_arrow')
-        skill.damage_ratio = skill.damage_ratio + 0.20
-      end,
-    }),
-    skill_upgrade({
-      key = 'arcane_secondary',
-      skill_id = 'arcane_arrow',
-      name = '次级箭',
-      desc = '奥术箭次级目标 +1。',
-      max_picks = 3,
-      route_tags = { 'arcane_arrow', 'resonance', 'clear' },
-      apply = function()
-        local skill = get_attack_skill('arcane_arrow')
-        skill.secondary_targets = skill.secondary_targets + 1
-      end,
-    }),
-    skill_upgrade({
-      key = 'arcane_burst',
-      skill_id = 'arcane_arrow',
-      name = '爆裂棱镜',
-      desc = '奥术箭命中后额外爆裂，半径 +110，倍率 +20%。',
-      max_picks = 3,
-      route_tags = { 'arcane_arrow', 'resonance', 'burst' },
-      apply = function()
-        local skill = get_attack_skill('arcane_arrow')
-        skill.burst_radius = skill.burst_radius + 110
-        skill.burst_ratio = skill.burst_ratio + 0.20
-      end,
-    }),
-    skill_upgrade({
-      key = 'arcane_volley',
-      skill_id = 'arcane_arrow',
-      name = '齐射回路',
-      desc = '奥术箭额外释放 1 次，冷却缩减 8%。',
-      max_picks = 2,
-      route_tags = { 'arcane_arrow', 'tempo', 'element' },
-      apply = function()
-        local skill = get_attack_skill('arcane_arrow')
-        skill.repeat_count = skill.repeat_count + 1
-        skill.cooldown_reduction = math.min(0.65, skill.cooldown_reduction + 0.08)
-      end,
-    }),
-    skill_upgrade({
-      key = 'flame_damage',
-      skill_id = 'flame_arrow',
-      name = '火箭增幅',
-      desc = '爆炎箭本体与爆炸伤害各 +18%。',
-      max_picks = 4,
-      route_tags = { 'flame_arrow', 'element' },
-      apply = function()
-        local skill = get_attack_skill('flame_arrow')
-        skill.damage_ratio = skill.damage_ratio + 0.18
-        skill.explosion_ratio = skill.explosion_ratio + 0.18
-      end,
-    }),
-    skill_upgrade({
-      key = 'flame_ignite',
-      skill_id = 'flame_arrow',
-      name = '灼热引信',
-      desc = '点燃持续时间 +2 秒，每秒伤害 +6% 攻击。',
-      max_picks = 3,
-      route_tags = { 'flame_arrow', 'burn', 'element' },
-      apply = function()
-        local skill = get_attack_skill('flame_arrow')
-        skill.ignite_duration = skill.ignite_duration + 2
-        skill.ignite_tick_ratio = skill.ignite_tick_ratio + 0.06
-      end,
-    }),
-    skill_upgrade({
-      key = 'flame_spread',
-      skill_id = 'flame_arrow',
-      name = '余烬扩散',
-      desc = '点燃扩散半径 +140，爆炸半径 +50。',
-      max_picks = 3,
-      route_tags = { 'flame_arrow', 'burn', 'clear' },
-      apply = function()
-        local skill = get_attack_skill('flame_arrow')
-        skill.ignite_spread_radius = skill.ignite_spread_radius + 140
-        skill.explosion_radius = skill.explosion_radius + 50
-      end,
-    }),
-    skill_upgrade({
-      key = 'flame_double_blast',
-      skill_id = 'flame_arrow',
-      name = '火箭爆破',
-      desc = '爆炎箭额外释放 1 次，爆炸倍率 +25%。',
-      max_picks = 2,
-      route_tags = { 'flame_arrow', 'burst', 'boss' },
-      apply = function()
-        local skill = get_attack_skill('flame_arrow')
-        skill.repeat_count = skill.repeat_count + 1
-        skill.explosion_ratio = skill.explosion_ratio + 0.25
-      end,
-    }),
-    skill_upgrade({
-      key = 'frost_damage',
-      skill_id = 'frost_arrow',
-      name = '冰箭增幅',
-      desc = '寒冰箭伤害 +20%。',
-      max_picks = 4,
-      route_tags = { 'frost_arrow', 'element' },
-      apply = function()
-        local skill = get_attack_skill('frost_arrow')
-        skill.damage_ratio = skill.damage_ratio + 0.20
-      end,
-    }),
-    skill_upgrade({
-      key = 'frost_pierce',
-      skill_id = 'frost_arrow',
-      name = '贯穿冰箭',
-      desc = '寒冰箭穿透 +1。',
-      max_picks = 3,
-      route_tags = { 'frost_arrow', 'line', 'control' },
-      apply = function()
-        local skill = get_attack_skill('frost_arrow')
-        skill.pierce = skill.pierce + 1
-      end,
-    }),
-    skill_upgrade({
-      key = 'frost_shards',
-      skill_id = 'frost_arrow',
-      name = '三棱冰片',
-      desc = '寒冰箭额外裂出 2 枚冰片，冰片伤害 +15%。',
-      max_picks = 3,
-      route_tags = { 'frost_arrow', 'cold_tide', 'clear' },
-      apply = function()
-        local skill = get_attack_skill('frost_arrow')
-        skill.shard_count = skill.shard_count + 2
-        skill.shard_ratio = skill.shard_ratio + 0.15
-      end,
-    }),
-    skill_upgrade({
-      key = 'frost_shatter',
-      skill_id = 'frost_arrow',
-      name = '冰片增伤',
-      desc = '对受控目标额外伤害 +15%，控制时间 +0.12 秒。',
-      max_picks = 3,
-      route_tags = { 'frost_arrow', 'control', 'boss' },
-      apply = function()
-        local skill = get_attack_skill('frost_arrow')
-        skill.shatter_bonus = skill.shatter_bonus + 0.15
-        skill.control_lock_time = skill.control_lock_time + 0.12
-      end,
-    }),
-    skill_upgrade({
-      key = 'thunder_damage',
-      skill_id = 'thunder',
-      name = '雷击增幅',
-      desc = '天雷伤害 +20%。',
-      max_picks = 4,
-      route_tags = { 'thunder', 'element' },
-      apply = function()
-        local skill = get_attack_skill('thunder')
-        skill.damage_ratio = skill.damage_ratio + 0.20
-      end,
-    }),
-    skill_upgrade({
-      key = 'thunder_chain',
-      skill_id = 'thunder',
-      name = '连续雷击',
-      desc = '天雷额外打击 1 个附近目标。',
-      max_picks = 3,
-      route_tags = { 'thunder', 'shock', 'clear' },
-      apply = function()
-        local skill = get_attack_skill('thunder')
-        skill.extra_targets = skill.extra_targets + 1
-      end,
-    }),
-    skill_upgrade({
-      key = 'thunder_shock',
-      skill_id = 'thunder',
-      name = '高压导体',
-      desc = '感电持续时间 +1.5 秒，对感电目标额外伤害 +10%。',
-      max_picks = 3,
-      route_tags = { 'thunder', 'shock', 'boss' },
-      apply = function()
-        local skill = get_attack_skill('thunder')
-        skill.shock_duration = skill.shock_duration + 1.5
-        skill.shock_bonus = skill.shock_bonus + 0.10
-      end,
-    }),
-    skill_upgrade({
-      key = 'thunder_field',
-      skill_id = 'thunder',
-      name = '磁暴电场',
-      desc = '天雷落点生成电场，半径 +120，倍率 +20%。',
-      max_picks = 3,
-      route_tags = { 'thunder', 'shock', 'clear' },
-      apply = function()
-        local skill = get_attack_skill('thunder')
-        skill.field_radius = skill.field_radius + 120
-        skill.field_ratio = skill.field_ratio + 0.20
-      end,
-    }),
   }
 
   for _, upgrade in ipairs(build_blueprint_unlock_upgrades()) do
+    ATTACK_UPGRADE_DEFS[#ATTACK_UPGRADE_DEFS + 1] = upgrade
+  end
+  for _, upgrade in ipairs(build_blueprint_regular_upgrades()) do
     ATTACK_UPGRADE_DEFS[#ATTACK_UPGRADE_DEFS + 1] = upgrade
   end
 
@@ -486,9 +718,17 @@ function M.create(env)
   local function build_upgrade_route_tags()
     local tags = {}
 
-    for _, skill_id in ipairs({ 'basic_attack', 'arcane_arrow', 'flame_arrow', 'frost_arrow', 'thunder' }) do
-      if get_attack_skill(skill_id) then
+    if STATE.attack_skill_state and STATE.attack_skill_state.by_id then
+      for skill_id in pairs(STATE.attack_skill_state.by_id) do
         tags[skill_id] = true
+      end
+    else
+      tags.basic_attack = true
+      for _, blueprint in ipairs(ATTACK_SKILL_BLUEPRINTS.list or {}) do
+        local skill_id = blueprint.id
+        if get_attack_skill(skill_id) then
+          tags[skill_id] = true
+        end
       end
     end
 

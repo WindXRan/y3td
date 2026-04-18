@@ -1,14 +1,13 @@
 local player = y3.player(1)
 local required_paths = {
-  'GameHUD.hud_root',
-  'GameHUD.hud_root.top_battle_cluster',
-  'GameHUD.hud_root.left_shortcut_panel',
-  'GameHUD.hud_root.right_tracker_panel',
-  'GameHUD.hud_root.challenge_strip',
-  'GameHUD.hud_root.bottom_action_bar',
-  'GameHUD.hud_root.bottom_action_bar.skill_hotbar',
-  'GameHUD.hud_root.bottom_action_bar.primary_action_cluster',
-  'GameHUD.hud_root.bottom_action_bar.secondary_action_cluster',
+  'top',
+  'top.top',
+  'bottom_bg',
+  'bottom_bg.bottom_bg',
+  'MainlineTaskPanel',
+  'talk_sys_panel',
+  '消息提示',
+  '背包系统.背包系统',
 }
 
 for _, path in ipairs(required_paths) do

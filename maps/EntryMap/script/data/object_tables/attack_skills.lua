@@ -1,6 +1,7 @@
 local CsvLoader = require 'data.csv_loader'
 local helpers = require 'entry_objects.helpers'
 local SecondBatchBlueprints = require 'entry_objects.attack_skill_blueprints.second_batch_skills'
+local SkillTaxonomy = require 'data.object_tables.attack_skill_taxonomy'
 
 local skill_rows = CsvLoader.read_rows('data_csv/attack_skills.csv')
 local vfx_rows = CsvLoader.read_rows('data_csv/attack_skill_vfx.csv')
@@ -20,6 +21,8 @@ local OPTIONAL_NUMBER_FIELDS = {
   base_explosion_radius = true,
   base_extra_targets = true,
   base_repeat_count = true,
+  ui_icon = true,
+  icon = true,
 }
 
 local OPTIONAL_VFX_NUMBER_FIELDS = {
@@ -90,6 +93,20 @@ local function build_damage_meta(row)
   error(string.format('attack skill %s missing damage metadata', tostring(row.id)))
 end
 
+local function apply_taxonomy(def, skill_id)
+  local taxonomy = SkillTaxonomy.by_id and SkillTaxonomy.by_id[skill_id] or nil
+  if not taxonomy then
+    return def
+  end
+
+  def.category = taxonomy.category
+  def.cast_family = taxonomy.cast_family
+  def.presentation_family = taxonomy.presentation_family
+  def.eca_reference = taxonomy.eca_reference
+  def.tactical_tags = taxonomy.tactical_tags
+  return def
+end
+
 local list = {}
 for _, row in ipairs(skill_rows) do
   local damage_form, element, damage_label = build_damage_meta(row)
@@ -108,15 +125,51 @@ for _, row in ipairs(skill_rows) do
     def[field_name] = to_optional_number(row[field_name])
   end
 
+  apply_taxonomy(def, row.id)
+
   list[#list + 1] = def
 end
 
 local defs_by_id = helpers.list_to_map(list)
+local vfx_by_id = helpers.build_field_map(list, 'vfx', {})
+
+for _, blueprint in ipairs(SecondBatchBlueprints.list or {}) do
+  if not defs_by_id[blueprint.id] then
+    defs_by_id[blueprint.id] = {
+      id = blueprint.id,
+      name = blueprint.name,
+      summary = blueprint.summary,
+      damage_type = blueprint.damage_type,
+      damage_form = blueprint.damage_form,
+      element = blueprint.element,
+      damage_label = blueprint.damage_label,
+      ui_icon = blueprint.ui_icon or blueprint.icon,
+      icon = blueprint.ui_icon or blueprint.icon,
+      archetype = blueprint.archetype,
+      category = nil,
+      cast_family = nil,
+      presentation_family = nil,
+      eca_reference = nil,
+      base_damage_ratio = blueprint.base and blueprint.base.damage_ratio or 0,
+      base_cooldown = blueprint.base and blueprint.base.cooldown or 0,
+      base_range = blueprint.base and blueprint.base.range or 0,
+      base_pierce = blueprint.base and blueprint.base.pierce or 0,
+      base_duration = blueprint.base and blueprint.base.duration or 0,
+      base_radius = blueprint.base and blueprint.base.radius or 0,
+      base_bounce = blueprint.base and blueprint.base.bounce or 0,
+      evolution_name = blueprint.evolution and blueprint.evolution.name or nil,
+      evolution_summary = blueprint.evolution and blueprint.evolution.summary or nil,
+      vfx = build_vfx(blueprint.id),
+    }
+    apply_taxonomy(defs_by_id[blueprint.id], blueprint.id)
+    vfx_by_id[blueprint.id] = defs_by_id[blueprint.id].vfx
+  end
+end
 
 return {
   list = list,
   defs_by_id = defs_by_id,
-  vfx_by_id = helpers.build_field_map(list, 'vfx', {}),
+  vfx_by_id = vfx_by_id,
   blueprints = SecondBatchBlueprints,
   blueprint_by_id = helpers.list_to_map(SecondBatchBlueprints.list),
 }

@@ -21,9 +21,13 @@ def test_basic_attack_audio_is_wired() -> None:
     attack_skills = read_text(ATTACK_SKILLS_PATH)
     boot = read_text(BOOT_PATH)
 
-    assert_contains(audio, "basic_attack = '134257538'", "audio runtime should define a default basic attack sound id")
-    assert_contains(audio, "local function play_for_unit(audio_id, unit, options)", "audio runtime should support unit-followed audio")
+    assert_contains(audio, "basic_attack = {", "audio runtime should define basic attack audio candidates")
+    assert_contains(audio, "'134257538'", "audio runtime should keep the legacy basic attack sound id as first candidate")
+    assert_contains(audio, "'123160'", "audio runtime should include a valid swish fallback for basic attacks")
+    assert_contains(audio, "local function resolve_audio_key(audio_ids, audio_label)", "audio runtime should resolve audio candidates with fallback support")
+    assert_contains(audio, "local function play_for_unit(audio_ids, unit, options, audio_label)", "audio runtime should support unit-followed audio candidates")
     assert_contains(audio, "local function play_basic_attack(unit)", "audio runtime should expose basic attack audio helper")
+    assert_contains(audio, "}, 'basic_attack')", "audio runtime should label basic attack audio resolution for debugging")
     assert_contains(audio, "play_basic_attack = play_basic_attack", "audio runtime should return the basic attack audio helper")
 
     assert_contains(attack_skills, "local play_basic_attack_sound = env.play_basic_attack_sound", "attack skills should accept a basic attack audio callback")

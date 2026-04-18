@@ -6,6 +6,7 @@ function M.create(env)
   local debug_message = env.debug_message
   local get_hero_max_level = env.get_hero_max_level
   local sync_hero_progression = env.sync_hero_progression
+  local ATTACK_SKILL_BLUEPRINTS = env.ATTACK_SKILL_BLUEPRINTS or { list = {} }
   local unlock_attack_skill = env.unlock_attack_skill
   local show_attack_skill_loadout = env.show_attack_skill_loadout
   local show_upgrade_choices = env.show_upgrade_choices
@@ -79,10 +80,13 @@ function M.create(env)
       return
     end
     local unlocked = 0
-    for _, skill_id in ipairs({ 'arcane_arrow', 'flame_arrow', 'frost_arrow', 'thunder' }) do
-      local _, _, is_new = unlock_attack_skill(skill_id)
+    for _, blueprint in ipairs(ATTACK_SKILL_BLUEPRINTS.list or {}) do
+      local _, _, is_new = unlock_attack_skill(blueprint.id)
       if is_new then
         unlocked = unlocked + 1
+      end
+      if unlocked >= 3 then
+        break
       end
     end
 

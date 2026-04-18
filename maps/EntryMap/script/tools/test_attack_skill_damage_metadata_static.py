@@ -30,11 +30,13 @@ def test_second_batch_blueprints_use_structured_damage_metadata():
     assert "damage_form" in first, "second batch skills csv must expose damage_form"
     assert "element" in first, "second batch skills csv must expose element"
     assert "damage_label" in first, "second batch skills csv must expose damage_label"
+    assert "ui_icon" in first, "second batch skills csv must expose ui_icon"
 
     content = BLUEPRINTS_OBJECT_TABLE.read_text(encoding="utf-8")
     assert "damage_form = row.damage_form" in content, "second batch blueprints object table must map damage_form"
     assert "element = row.element" in content, "second batch blueprints object table must map element"
     assert "damage_label = row.damage_label" in content, "second batch blueprints object table must map damage_label"
+    assert "ui_icon = to_scalar(row.ui_icon)" in content, "second batch blueprints object table must map ui_icon"
 
 
 def main() -> None:

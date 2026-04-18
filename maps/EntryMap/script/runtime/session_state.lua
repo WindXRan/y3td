@@ -1,3 +1,5 @@
+local EquipmentCatalog = require 'data.object_tables.equipment_catalog'
+
 local M = {}
 
 function M.create(env)
@@ -14,6 +16,7 @@ function M.create(env)
   local create_treasure_runtime = env.create_treasure_runtime
   local create_skill_runtime = env.create_skill_runtime
   local create_attack_skill_state = env.create_attack_skill_state
+  local ATTACK_SKILL_BLUEPRINTS = env.ATTACK_SKILL_BLUEPRINTS or { list = {} }
   local destroy_choice_panel = env.destroy_choice_panel
   local battlefield_system = env.battlefield_system
   local hero_attr_system = env.hero_attr_system
@@ -23,10 +26,61 @@ function M.create(env)
   local initialize_hero_progression = env.initialize_hero_progression
   local ensure_gear_runtime = env.ensure_gear_runtime
   local sync_gear_items_to_hero = env.sync_gear_items_to_hero
+  local unlock_attack_skill = env.unlock_attack_skill
+  local show_attack_skill_loadout = env.show_attack_skill_loadout
   local setup_basic_attack_ability = env.setup_basic_attack_ability
   local ensure_runtime_hud = env.ensure_runtime_hud
   local set_battle_hud_visible = env.set_battle_hud_visible
   local refresh_runtime_hud = env.refresh_runtime_hud
+
+  local function grant_equipment_drag_test_items(hero)
+    if not hero or not hero.add_item then
+      return false
+    end
+
+    if hero.get_bar_cnt and hero.set_bar_cnt then
+      local target_bar_cnt = tonumber(EquipmentCatalog.bar_slot_count) or 6
+      local current_bar_cnt = tonumber(hero:get_bar_cnt()) or 0
+      if current_bar_cnt < target_bar_cnt then
+        hero:set_bar_cnt(target_bar_cnt)
+      end
+    end
+
+    local granted = false
+    for _, item_key in ipairs(EquipmentCatalog.test_loadout_ids or {}) do
+      local has_item = hero.has_item_by_key and hero:has_item_by_key(item_key) or false
+      if not has_item then
+        hero:add_item(item_key, '物品栏')
+        granted = true
+      end
+    end
+    return granted
+  end
+
+  local function grant_test_attack_skills_on_stage_start()
+    if CONFIG.debug_auto_unlock_attack_skills_on_stage_start ~= true then
+      return 0
+    end
+    if not unlock_attack_skill then
+      return 0
+    end
+
+    local unlocked = 0
+    for _, blueprint in ipairs(ATTACK_SKILL_BLUEPRINTS.list or {}) do
+      local _, _, is_new = unlock_attack_skill(blueprint.id)
+      if is_new then
+        unlocked = unlocked + 1
+      end
+    end
+
+    if unlocked > 0 then
+      message(string.format('测试开局：已自动装配 %d 个攻击技能。', unlocked))
+      if show_attack_skill_loadout then
+        show_attack_skill_loadout()
+      end
+    end
+    return unlocked
+  end
 
   local function is_battle_active()
     return STATE.session_phase == 'battle' and STATE.game_finished ~= true
@@ -210,6 +264,9 @@ function M.create(env)
     if sync_gear_items_to_hero and STATE.hero then
       sync_gear_items_to_hero(STATE, STATE.hero, CONFIG.gear_upgrade_config)
     end
+    if STATE.hero then
+      grant_equipment_drag_test_items(STATE.hero)
+    end
     if hero_attr_system and STATE.hero then
       hero_attr_system.snapshot(STATE.hero, STATE)
       if hero_attr_system.log_snapshot then
@@ -223,6 +280,7 @@ function M.create(env)
     end
     initialize_hero_progression()
     setup_basic_attack_ability()
+    grant_test_attack_skills_on_stage_start()
     try_initialize_battle_ui()
 
     if stage_def.content_source_stage_id and stage_def.content_source_stage_id ~= stage_def.stage_id then

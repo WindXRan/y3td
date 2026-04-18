@@ -7,7 +7,7 @@ local STATE = {
   current_upgrade_choices = {
     {
       key = 'upgrade_a',
-      skill_id = 'arcane_arrow',
+      skill_id = 'basic_attack',
       name = '测试强化',
       desc = '测试描述',
     },
@@ -30,8 +30,8 @@ local api = model.create({
     end,
   },
   ATTACK_SKILL_DEFS = {
-    arcane_arrow = {
-      name = '青木灵矢',
+    basic_attack = {
+      name = '普攻',
     },
   },
   TREASURE_DEFS = {},
@@ -61,13 +61,14 @@ local api = model.create({
 local panel = api.get_current_choice_panel_model()
 assert(panel ~= nil, 'choice panel model should exist')
 assert(panel.refresh.wood_cost == 100, 'choice panel should use config-backed refresh cost')
-assert(panel.cards[1].badge_text == 'R', 'upgrade card should use config-backed badge text')
+assert(panel.cards[1].badge_text == 'N', 'upgrade card should use config-backed badge text')
 assert(panel.cards[1].use_item_desc_card == true, 'upgrade card should opt into item desc card rendering')
 assert(type(panel.cards[1].item_desc_payload) == 'table', 'upgrade card should expose item desc payload')
 assert(panel.cards[1].item_desc_payload.title_text == '测试强化', 'upgrade template should use the upgrade entry name as title')
-assert(panel.cards[1].item_desc_payload.subtitle_text == '青木灵矢', 'upgrade template should use the target skill name as subtitle')
+assert(panel.cards[1].item_desc_payload.subtitle_text == '普攻', 'upgrade template should use the target skill name as subtitle')
 assert(panel.cards[1].item_desc_payload.cost_text == '强化', 'upgrade template should expose the strengthen label')
-assert(panel.cards[1].item_desc_payload.attr_lines[1] == '强化类型：常规强化', 'upgrade template should describe the reward type in attrs')
+assert(panel.cards[1].item_desc_payload.attr_lines[1] == '卡牌类型：技能强化', 'upgrade template should describe the reward type in attrs')
+assert(panel.cards[1].item_desc_payload.attr_lines[2] == '作用技能：普攻', 'upgrade template should expose the target skill in attrs')
 assert(panel.cards[1].item_desc_payload.affix_lines[1].title == '技能说明', 'upgrade item desc should expose skill summary section')
 assert(panel.cards[1].item_desc_payload.affix_lines[2].title == '强化效果', 'upgrade item desc should expose upgrade effect section')
 
@@ -278,19 +279,20 @@ assert(compound_bonus_bond_panel.cards[1].bonus_lines[2] == '生命值+100', 'co
 assert(compound_bonus_bond_panel.cards[1].item_desc_payload.attr_lines[1] == '力量+100', 'compound bonus item desc should keep the first split stat line')
 assert(compound_bonus_bond_panel.cards[1].item_desc_payload.attr_lines[2] == '生命值+100', 'compound bonus item desc should keep the second split stat line')
 
-local mark_state = {
+local evolution_state = {
   choice_panel_hidden = false,
-  mark_runtime = {
+  evolution_runtime = {
     awaiting_choice = true,
     current_choices = {
       {
         quality = 'epic',
-        name = '风暴刻印',
-        summary = '攻击技能冷却缩短 20%。',
+        name = '战神进化',
+        summary = '伤害加成 +12%，普攻伤害 +20%，攻击技能伤害 +20%；每 8 次普攻触发 1 次血怒践踏。',
+        hero_unit_id = 100008,
       },
     },
     current_round = {
-      ui_title = '10级进化选择',
+      ui_title = '10级真身抉择',
     },
   },
   resources = {
@@ -298,8 +300,8 @@ local mark_state = {
   },
 }
 
-local mark_api = model.create({
-  STATE = mark_state,
+local evolution_api = model.create({
+  STATE = evolution_state,
   message = function() end,
   BondSystem = {
     refresh_choice = function()
@@ -309,12 +311,12 @@ local mark_api = model.create({
   ATTACK_SKILL_DEFS = {},
   TREASURE_DEFS = {},
   get_pending_round_choice_kind = function()
-    return 'mark'
+    return 'evolution'
   end,
-  get_mark_runtime = function()
-    return mark_state.mark_runtime
+  get_evolution_runtime = function()
+    return evolution_state.evolution_runtime
   end,
-  get_mark_quality_label = function(quality)
+  get_evolution_quality_label = function(quality)
     local labels = {
       common = '普通',
       rare = '稀有',
@@ -342,19 +344,26 @@ local mark_api = model.create({
   end,
 })
 
-local mark_panel = mark_api.get_current_choice_panel_model()
-assert(mark_panel ~= nil, 'mark choice panel model should exist')
-assert(mark_panel.kind == 'mark', 'mark panel should keep mark kind')
-assert(mark_panel.panel_title == '10级进化选择', 'mark panel should expose dynamic round title')
-assert(mark_panel.refresh.visible == false, 'mark panel should hide refresh action')
-assert(mark_panel.cards[1].title_text == '风暴刻印', 'mark card should reuse mark name')
-assert(mark_panel.cards[1].subtitle_text == '史诗', 'mark card should reuse mark quality label')
-assert(mark_panel.cards[1].body_blocks[1].text == '攻击技能冷却缩短 20%。', 'mark card should expose summary body text')
-assert(mark_panel.cards[1].use_item_desc_card == true, 'mark card should opt into item desc card rendering')
-assert(mark_panel.cards[1].item_desc_payload.subtitle_text == '永久进化', 'mark template should use the permanent-evolution subtitle')
-assert(mark_panel.cards[1].item_desc_payload.cost_text == '史诗', 'mark template should expose readable quality text')
-assert(mark_panel.cards[1].item_desc_payload.attr_lines[1] == '生效范围：所有已装配攻击技能', 'mark template should describe the effective scope')
-assert(mark_panel.cards[1].item_desc_payload.affix_lines[1].title == '进化效果', 'mark item desc should expose mark effect section')
+local evolution_panel = evolution_api.get_current_choice_panel_model()
+assert(evolution_panel ~= nil, 'evolution choice panel model should exist')
+assert(evolution_panel.kind == 'evolution', 'evolution panel should expose evolution kind')
+assert(evolution_panel.panel_title == '10级真身抉择', 'evolution panel should expose dynamic round title')
+assert(evolution_panel.refresh.visible == false, 'evolution panel should hide refresh action')
+assert(evolution_panel.cards[1].badge_text == 'UR', 'evolution card should use the hero rarity as badge text')
+assert(evolution_panel.cards[1].title_text == '显圣真君', 'evolution card should use the hero name as title')
+assert(evolution_panel.cards[1].subtitle_text == '三界战锋', 'evolution card should use the hero title as subtitle')
+assert(evolution_panel.cards[1].body_blocks[1].text == '战戟连断三轮并对首领形成极强压制。', 'evolution card should preview the active hero skill summary')
+assert(evolution_panel.cards[1].use_item_desc_card == true, 'evolution card should opt into item desc card rendering')
+assert(evolution_panel.cards[1].item_desc_payload.title_text == '显圣真君', 'evolution item desc should use the hero name as title')
+assert(evolution_panel.cards[1].item_desc_payload.subtitle_text == '三界战锋 神通·天目戟', 'evolution item desc should compose hero title and skill name')
+assert(evolution_panel.cards[1].item_desc_payload.cost_text == '史诗', 'evolution item desc should expose readable quality text')
+assert(evolution_panel.cards[1].item_desc_payload.note_text == '选中后立即替换英雄模型，并启用对应专属神通。', 'evolution item desc should expose the transformation note')
+assert(evolution_panel.cards[1].item_desc_payload.attr_lines[1] == '真身品阶：UR', 'evolution item desc should describe hero rarity')
+assert(evolution_panel.cards[1].item_desc_payload.attr_lines[2] == '真身定位：三界战锋', 'evolution item desc should describe hero role')
+assert(evolution_panel.cards[1].item_desc_payload.attr_lines[3] == '神通类型：战锋连镇', 'evolution item desc should describe hero skill subtitle')
+assert(evolution_panel.cards[1].item_desc_payload.affix_lines[1].title == '真身简介', 'evolution item desc should expose the hero intro section')
+assert(evolution_panel.cards[1].item_desc_payload.affix_lines[2].title == '专属神通·天目戟', 'evolution item desc should expose the exclusive skill section')
+assert(evolution_panel.cards[1].item_desc_payload.affix_lines[3].title == '进化加持', 'evolution item desc should expose the evolution bonus section')
 
 local treasure_defs = {
   echo_tome = {

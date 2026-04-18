@@ -5,6 +5,7 @@ local UIStyle = require 'ui.style'
 local Factory = require 'ui.factory'
 local layout = require 'ui.runtime_hud_layout'
 local RuntimeHudNodes = require 'ui.runtime_hud_nodes'
+local UIRoot = require 'ui.ui_root'
 local BondTipPanel = require 'ui.bond_tip_panel'
 local GrowthWeaponItemTip = require 'ui.growth_weapon_item_tip'
 
@@ -18,25 +19,15 @@ local BOND_SLOT_QUALITY_COLORS = {
 }
 
 local function resolve_ui(y3, player, path)
-  local ok, ui = pcall(y3.ui.get_ui, player, path)
-  if not ok or not ui then
-    return nil
-  end
-  return ui
+  return UIRoot.resolve_ui(y3, player, path)
 end
 
 local function resolve_first_ui(y3, player, paths)
-  for _, path in ipairs(paths or {}) do
-    local ui = resolve_ui(y3, player, path)
-    if ui then
-      return ui
-    end
-  end
-  return nil
+  return UIRoot.resolve_first_ui(y3, player, paths)
 end
 
 local function is_ui_alive(ui)
-  return ui and (not ui.is_removed or not ui:is_removed())
+  return UIRoot.is_alive(ui)
 end
 
 function M.create(env)
@@ -133,11 +124,32 @@ function M.create(env)
   end
 
   local function get_hud_root()
-    local ok, hud = pcall(y3.ui.get_ui, env.get_player(), 'GameHUD')
-    if not ok or not hud then
-      return nil
+    return UIRoot.get_overlay_parent(y3, env.get_player())
+  end
+
+  local function resolve_inventory_slot_ui(slot)
+    local player = env.get_player()
+    local paths
+    if slot == 1 then
+      paths = {
+        'GameHUD.layout_3.inventory.equip_slot_bg_1.equip_slot_1',
+      }
+    else
+      paths = {
+        string.format('GameHUD.layout_3.inventory.equip_slot_bg_%d.equip_slot_1', slot),
+      }
     end
-    return hud
+    local resolved_ui = resolve_first_ui(y3, player, paths)
+    if is_ui_alive(resolved_ui) then
+      return resolved_ui
+    end
+
+    local runtime_hud = STATE.runtime_hud
+    local slot_ui = runtime_hud and runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[slot] or nil
+    if is_ui_alive(slot_ui) then
+      return slot_ui
+    end
+    return nil
   end
 
   local function format_time(seconds)
@@ -216,6 +228,18 @@ function M.create(env)
     if is_ui_alive(ui) and ui.set_text then
       ui:set_text(text or '')
     end
+  end
+
+  local function call_ui_method_safely(ui, method_name, ...)
+    if not is_ui_alive(ui) then
+      return false
+    end
+    local method = ui[method_name]
+    if type(method) ~= 'function' then
+      return false
+    end
+    local ok = pcall(method, ui, ...)
+    return ok
   end
 
   local function normalize_percent_bonus(value)
@@ -608,8 +632,8 @@ function M.create(env)
     if kind == 'bond' then
       return '仙缘抉择'
     end
-    if kind == 'mark' then
-      return '进化抉择'
+    if kind == 'evolution' or kind == 'mark' then
+      return '真身抉择'
     end
     if kind == 'treasure' then
       return '宝物抉择'
@@ -624,8 +648,8 @@ function M.create(env)
     if kind == 'bond' then
       return string.format('按 %d 收下此缘', index)
     end
-    if kind == 'mark' then
-      return string.format('按 %d 选择此进化', index)
+    if kind == 'evolution' or kind == 'mark' then
+      return string.format('按 %d 选择此真身', index)
     end
     return string.format('按 %d 确认选择', index)
   end
@@ -637,8 +661,8 @@ function M.create(env)
     if kind == 'bond' then
       return '仙缘感应进行中'
     end
-    if kind == 'mark' then
-      return '进化正在抉择'
+    if kind == 'evolution' or kind == 'mark' then
+      return '真身进化进行中'
     end
     if kind == 'treasure' then
       return '宝物选择进行中'
@@ -720,27 +744,12 @@ function M.create(env)
       return
     end
 
-    local hud = get_hud_root()
-    if not hud then
-      return
-    end
-
-    local prefab = y3.ui_prefab.create(env.get_player(), 'bottom_bg', hud)
-    local root = prefab and prefab:get_child() or nil
+    local root = UIRoot.get_bottom_root(y3, env.get_player())
     if not root then
       return
     end
 
-    root:set_anchor(0.5, 0)
-    root:set_relative_parent_pos('底部', 0)
-    set_percent_pos(env.get_player(), root, 50, 0)
-    if root.set_widget_relative_scale then
-      local prefab_scale = math.max(0.84, math.min(1.02, get_hud_scale(hud, y3) * 0.94))
-      root:set_widget_relative_scale(prefab_scale, prefab_scale)
-    end
-    root:set_z_order(9392)
-
-    RuntimeHudNodes.attach_bottom_bg(runtime_hud, prefab)
+    RuntimeHudNodes.attach_bottom_bg(runtime_hud, root)
   end
 
   local function bind_bottom_bond_icons(runtime_hud)
@@ -811,43 +820,23 @@ function M.create(env)
     end)
   end
 
+  local bind_default_item_slot_hover
+
   local function bind_growth_weapon_slot(runtime_hud)
     if not runtime_hud then
-      return
+      return runtime_hud
+    end
+    runtime_hud.growth_weapon_slot = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[1] or nil
+    if not is_ui_alive(runtime_hud.growth_weapon_slot) then
+      runtime_hud.growth_weapon_slot = runtime_hud.editor_bottom_inventory_anchors and runtime_hud.editor_bottom_inventory_anchors[1] or nil
     end
 
-    local slot_ui = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[1] or nil
-    if not slot_ui then
-      slot_ui = resolve_first_ui(y3, env.get_player(), {
-        'GameHUD.layout_3.inventory.equip_slot_bg_1.equip_slot_1',
-        'GameHUD.main.inventory.equip_slot_bg_1.equip_slot_1',
-      })
+    local slot_ui = runtime_hud.growth_weapon_slot
+    if is_ui_alive(slot_ui) then
+      call_ui_method_safely(slot_ui, 'set_equip_slot_use_operation', '无')
+      call_ui_method_safely(slot_ui, 'set_equip_slot_drag_operation', '无')
     end
-    if not slot_ui then
-      return
-    end
-
-    runtime_hud.growth_weapon_slot = slot_ui
-    if runtime_hud.growth_weapon_slot_bound_target == slot_ui then
-      return
-    end
-
-    runtime_hud.growth_weapon_slot_bound_target = slot_ui
-    if slot_ui.set_equip_slot_use_operation then
-      slot_ui:set_equip_slot_use_operation('无')
-    end
-    if slot_ui.set_equip_slot_drag_operation then
-      slot_ui:set_equip_slot_drag_operation('无')
-    end
-    slot_ui:add_fast_event('鼠标-移入', function()
-      show_growth_weapon_tip(slot_ui)
-    end)
-    slot_ui:add_fast_event('鼠标-移出', function()
-      hide_growth_weapon_tip()
-    end)
-    slot_ui:add_fast_event('左键-点击', function()
-      hide_growth_weapon_tip()
-    end)
+    return runtime_hud
   end
 
   local function bind_editor_overlay_nodes(runtime_hud)
@@ -856,18 +845,15 @@ function M.create(env)
     end
     local player = env.get_player()
 
-    runtime_hud.editor_top_panel = resolve_ui(y3, player, 'top')
-    runtime_hud.editor_top_root = resolve_first_ui(y3, player, {
-      'top.top',
-      'top',
-    })
+    runtime_hud.editor_top_panel = UIRoot.get_top_sheet(y3, player)
+    runtime_hud.editor_top_root = UIRoot.get_top_root(y3, player)
     runtime_hud.editor_top_gold_value = resolve_ui(y3, player, 'top.top.金币.image_3.label_2')
     runtime_hud.editor_top_wood_value = resolve_ui(y3, player, 'top.top.木材.image_3.label_2')
     runtime_hud.editor_top_kill_value = resolve_ui(y3, player, 'top.top.人口.image_3.label_2')
 
     attach_bottom_bg_prefab(runtime_hud)
 
-    runtime_hud.editor_bottom_panel = runtime_hud.bottom_bg_root
+    runtime_hud.editor_bottom_panel = UIRoot.get_bottom_sheet(y3, player)
     runtime_hud.editor_bottom_root = runtime_hud.bottom_bg_root
     runtime_hud.editor_bottom_layout = runtime_hud.bottom_bg_root
     runtime_hud.editor_bottom_hp_bar = runtime_hud.bottom_hp_fill
@@ -879,29 +865,17 @@ function M.create(env)
     runtime_hud.editor_bottom_strength_text = runtime_hud.bottom_strength_value
     runtime_hud.editor_bottom_agility_text = runtime_hud.bottom_agility_value
     runtime_hud.editor_bottom_intelligence_text = runtime_hud.bottom_intelligence_value
-    runtime_hud.editor_bottom_inventory_slots = runtime_hud.bottom_backpack_slots or {}
+    runtime_hud.editor_bottom_inventory_anchors = runtime_hud.bottom_backpack_slots or {}
+    runtime_hud.editor_bottom_inventory_slots = runtime_hud.editor_bottom_inventory_slots or {}
     runtime_hud.editor_bottom_bond_slots = runtime_hud.bottom_bond_icons or {}
     runtime_hud.editor_bottom_bond_slot_bound = runtime_hud.editor_bottom_bond_slot_bound or {}
     runtime_hud.editor_bottom_bond_payloads = runtime_hud.editor_bottom_bond_payloads or {}
-
-    runtime_hud.legacy_bottom_nodes = runtime_hud.legacy_bottom_nodes or {
-      resolve_ui(y3, player, 'GameHUD.layout_3.main_hp_bar'),
-      resolve_ui(y3, player, 'GameHUD.layout_3.hp_value'),
-      resolve_ui(y3, player, 'GameHUD.layout_3.hp_recover'),
-      resolve_ui(y3, player, 'GameHUD.layout_3.exp'),
-      resolve_ui(y3, player, 'GameHUD.layout_3.zuobian'),
-      resolve_ui(y3, player, 'GameHUD.layout_3.inventory'),
-      resolve_ui(y3, player, 'GameHUD.jiban_list'),
-      resolve_ui(y3, player, 'GameHUD.main'),
-    }
-    for _, legacy_node in ipairs(runtime_hud.legacy_bottom_nodes) do
-      set_visible_if_alive(legacy_node, false)
-    end
+    runtime_hud.legacy_bottom_nodes = {}
 
     bind_bottom_bond_icons(runtime_hud)
     bind_bottom_bg_actions(runtime_hud)
 
-    bind_growth_weapon_slot(runtime_hud)
+    set_visible_if_alive(runtime_hud.bottom_bg_backpack, false)
   end
 
   local function has_editor_top(runtime_hud)
@@ -915,18 +889,32 @@ function M.create(env)
   end
 
   local function sync_editor_inventory_slots(runtime_hud)
-    if not runtime_hud or not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then
-      return
+    if not runtime_hud then
+      return runtime_hud
     end
+
+    runtime_hud.editor_bottom_inventory_anchors = runtime_hud.bottom_backpack_slots or {}
+    runtime_hud.editor_bottom_inventory_slots = runtime_hud.editor_bottom_inventory_slots or {}
+
     for slot = 1, 6 do
-      local slot_ui = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[slot] or nil
-      if is_ui_alive(slot_ui) and slot_ui.set_ui_unit_slot then
-        slot_ui:set_ui_unit_slot(STATE.hero, y3.const.SlotType.BAR, slot - 1)
+      local slot_ui = resolve_inventory_slot_ui(slot)
+      if not is_ui_alive(slot_ui) then
+        slot_ui = runtime_hud.editor_bottom_inventory_anchors[slot]
+      end
+      runtime_hud.editor_bottom_inventory_slots[slot] = slot_ui
+
+      if is_ui_alive(slot_ui) and STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() then
+        call_ui_method_safely(slot_ui, 'set_ui_unit_slot', STATE.hero, y3.const.SlotType.BAR, slot - 1)
+        if slot == 1 then
+          call_ui_method_safely(slot_ui, 'set_equip_slot_use_operation', '无')
+          call_ui_method_safely(slot_ui, 'set_equip_slot_drag_operation', '无')
+        end
       end
     end
-    if is_ui_alive(runtime_hud.growth_weapon_slot) and runtime_hud.growth_weapon_slot.set_ui_unit_slot then
-      runtime_hud.growth_weapon_slot:set_ui_unit_slot(STATE.hero, y3.const.SlotType.BAR, 0)
-    end
+
+    bind_growth_weapon_slot(runtime_hud)
+    bind_default_item_slot_hover(runtime_hud)
+    return runtime_hud
   end
 
   local function refresh_editor_overlay(runtime_hud)
@@ -1030,41 +1018,56 @@ function M.create(env)
     set_visible_if_alive(runtime_hud.editor_bottom_panel, show)
     set_visible_if_alive(runtime_hud.editor_bottom_root, show)
     set_visible_if_alive(runtime_hud.editor_bottom_layout, show)
+    set_visible_if_alive(runtime_hud.bottom_bg_backpack, false)
     set_visible_if_alive(runtime_hud.bond_slot_bar, show and not use_editor_bottom)
   end
 
-  local function bind_default_item_slot_hover(runtime_hud)
-    runtime_hud.default_item_slots = runtime_hud.default_item_slots or {}
-    runtime_hud.default_item_slot_targets = runtime_hud.default_item_slot_targets or {}
-    for slot = 1, 6 do
-      local slot_ui = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[slot] or nil
-      if not slot_ui then
-        slot_ui = resolve_first_ui(y3, env.get_player(), {
-          string.format('GameHUD.layout_3.inventory.equip_slot_bg_%d.equip_slot_1', slot),
-          string.format('GameHUD.main.inventory.equip_slot_bg_%d.equip_slot_1', slot),
-          string.format('GameHUD.main.goods.equip_slot_bg_%d.goods', slot),
-        })
-      end
-
-      runtime_hud.default_item_slots[slot] = slot_ui or false
-      if is_ui_alive(slot_ui) and runtime_hud.default_item_slot_targets[slot] ~= slot_ui then
-        runtime_hud.default_item_slot_targets[slot] = slot_ui
-        slot_ui:add_fast_event('鼠标-移入', function()
-          local item = get_hero_bar_item(slot)
-          if is_growth_weapon_item(item) then
-            show_growth_weapon_tip(slot_ui)
-          else
-            hide_growth_weapon_tip()
-          end
-        end)
-        slot_ui:add_fast_event('鼠标-移出', function()
-          hide_growth_weapon_tip()
-        end)
-        slot_ui:add_fast_event('左键-点击', function()
-          hide_growth_weapon_tip()
-        end)
-      end
+  -- local function bind_default_item_slot_hover(runtime_hud)
+  bind_default_item_slot_hover = function(runtime_hud)
+    if not runtime_hud then
+      return runtime_hud
     end
+
+    runtime_hud.editor_bottom_inventory_anchors = runtime_hud.bottom_backpack_slots or {}
+    runtime_hud.editor_bottom_inventory_slots = runtime_hud.editor_bottom_inventory_slots or {}
+
+    local anchor_ui = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[1] or nil
+    if not is_ui_alive(anchor_ui) then
+      anchor_ui = runtime_hud.editor_bottom_inventory_anchors[1] or nil
+    end
+    if not is_ui_alive(anchor_ui) then
+      return runtime_hud
+    end
+
+    runtime_hud.bound_inventory_targets = runtime_hud.bound_inventory_targets or {}
+    if runtime_hud.bound_inventory_targets.growth_weapon == anchor_ui then
+      return runtime_hud
+    end
+    runtime_hud.bound_inventory_targets.growth_weapon = anchor_ui
+
+    if anchor_ui.set_intercepts_operations then
+      anchor_ui:set_intercepts_operations(true)
+    end
+
+    anchor_ui:add_fast_event('鼠标-移入', function()
+      local item = get_hero_bar_item(1)
+      if is_growth_weapon_item(item) then
+        runtime_hud.growth_weapon_tip_anchor = anchor_ui
+        show_growth_weapon_tip(anchor_ui)
+      else
+        hide_growth_weapon_tip()
+      end
+    end)
+    anchor_ui:add_fast_event('鼠标-移出', function()
+      hide_growth_weapon_tip()
+    end)
+    anchor_ui:add_fast_event('左键-点击', function()
+      hide_growth_weapon_tip()
+      if is_growth_weapon_item(get_hero_bar_item(1)) and env.try_upgrade_growth_weapon then
+        env.try_upgrade_growth_weapon('hud_click')
+      end
+    end)
+    return runtime_hud
   end
 
   local function show_latest_bond_tip(anchor_ui)
@@ -1175,15 +1178,6 @@ function M.create(env)
       end
     end
 
-    local growth_slot = runtime_hud.growth_weapon_slot
-    if growth_slot then
-      local payload = env.build_growth_weapon_tip_payload and env.build_growth_weapon_tip_payload() or nil
-      if payload then
-        if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and growth_slot.set_ui_unit_slot then
-          growth_slot:set_ui_unit_slot(STATE.hero, y3.const.SlotType.BAR, 0)
-        end
-      end
-    end
     hide_legacy_decision_panel(runtime_hud)
   end
 
@@ -1743,33 +1737,13 @@ function M.create(env)
       bond_slot_bar = bond_slot_bar,
       bond_slot_label = bond_slot_label,
       bond_slot_icons = bond_slot_icons,
-      growth_weapon_slot = resolve_first_ui(y3, env.get_player(), {
-        'GameHUD.layout_3.inventory.equip_slot_bg_1.equip_slot_1',
-        'GameHUD.main.inventory.equip_slot_bg_1.equip_slot_1',
-      }),
-      skill_slots = {
-        [1] = {
-          root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_1'),
-          text = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_1.skill_slot_1_text'),
-          meta = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_1.skill_slot_1_meta'),
-        },
-        [2] = {
-          root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_2'),
-          text = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_2.skill_slot_2_text'),
-          meta = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_2.skill_slot_2_meta'),
-        },
-        [3] = {
-          root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_3'),
-          text = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_3.skill_slot_3_text'),
-          meta = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_3.skill_slot_3_meta'),
-        },
-        [4] = {
-          root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_4'),
-          text = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_4.skill_slot_4_text'),
-          meta = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_4.skill_slot_4_meta'),
-        },
-      },
+      growth_weapon_slot = nil,
+      skill_slots = {},
     }
+
+    if is_ui_alive(bond_slot_bar) then
+      bond_slot_bar:set_visible(false)
+    end
 
     bind_editor_overlay_nodes(STATE.runtime_hud)
     bind_default_item_slot_hover(STATE.runtime_hud)

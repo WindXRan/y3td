@@ -16,9 +16,18 @@ assert(#battle_scar.tags >= 1, 'battle_scar_mark should keep at least one tag')
 assert(type(battle_scar.bonuses) == 'table', 'battle_scar_mark.bonuses should be a table')
 assert(type(battle_scar.bonuses.runtime) == 'table', 'battle_scar_mark runtime bonuses should be a table')
 assert(battle_scar.bonuses.runtime.skill_damage_bonus == 0.12, 'battle_scar_mark runtime bonus should stay intact')
+assert(battle_scar.hero_unit_id == 100001, 'battle_scar_mark should expose its evolution hero unit id')
 
 local void_mark = marks.by_id.void_mark
 assert(void_mark ~= nil, 'void_mark should exist')
 assert(void_mark.bonuses.attack_skill.cooldown_reduction == 0.12, 'void_mark attack_skill bonus should stay intact')
+assert(void_mark.hero_unit_id == 100009, 'void_mark should expose its evolution hero unit id')
+
+local seen_hero_unit_ids = {}
+for _, def in ipairs(marks.list) do
+  assert(type(def.hero_unit_id) == 'number', string.format('mark %s should carry a numeric hero_unit_id', tostring(def.id)))
+  assert(not seen_hero_unit_ids[def.hero_unit_id], string.format('hero_unit_id %s should not be duplicated across marks', tostring(def.hero_unit_id)))
+  seen_hero_unit_ids[def.hero_unit_id] = true
+end
 
 print('marks csv loader smoke ok')

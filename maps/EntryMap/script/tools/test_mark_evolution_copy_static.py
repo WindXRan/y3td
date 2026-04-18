@@ -22,10 +22,7 @@ hud_lua = read("ui/runtime_hud.lua")
 overview_lua = read("runtime/overview_model.lua")
 runtime_overview_lua = read("ui/runtime_overview.lua")
 boot_lua = read("runtime/boot.lua")
-mark_node_10 = read("entry_objects/mark_nodes/mark_node_lv10.lua")
-mark_node_20 = read("entry_objects/mark_nodes/mark_node_lv20.lua")
-mark_node_30 = read("entry_objects/mark_nodes/mark_node_lv30.lua")
-mark_node_40 = read("entry_objects/mark_nodes/mark_node_lv40.lua")
+evolution_nodes_csv = read("data_csv/evolution_nodes.csv")
 
 for evolution_name in [
     "战痕进化",
@@ -53,17 +50,16 @@ for old_name in [
 ]:
     assert_not_contains(marks_csv, old_name, f"old mark name still present: {old_name}")
 
-for content in [rewards_lua, hud_lua, overview_lua, runtime_overview_lua, boot_lua, mark_node_10, mark_node_20, mark_node_30, mark_node_40]:
+for content in [rewards_lua, hud_lua, overview_lua, runtime_overview_lua, boot_lua, evolution_nodes_csv]:
     assert_not_contains(content, "烙印", "player-facing mark copy should be renamed to evolution")
 
 for phrase in [
     "进化位",
     "进化栏",
-    "获得一次进化 3选1",
-    "已获得进化",
-    "进化选择",
-    "进化抉择",
-    "进化正在抉择",
+    "获得一次英雄真身",
+    "已完成进化",
+    "真身抉择",
+    "真身进化进行中",
     "宝物与进化",
 ]:
     assert (
@@ -72,10 +68,7 @@ for phrase in [
         or phrase in overview_lua
         or phrase in runtime_overview_lua
         or phrase in boot_lua
-        or phrase in mark_node_10
-        or phrase in mark_node_20
-        or phrase in mark_node_30
-        or phrase in mark_node_40
+        or phrase in evolution_nodes_csv
     ), f"missing updated phrase: {phrase}"
 
 print("mark evolution copy static ok")

@@ -9,6 +9,8 @@ local OverviewModelSystem = require 'runtime.overview_model'
 local SessionStateSystem = require 'runtime.session_state'
 local InputEventsSystem = require 'runtime.input_events'
 local RuntimeLoopsSystem = require 'runtime.loops'
+local BattleEventPromptsFactory = require 'runtime.battle_event_prompts'
+local RuntimeUIHelpers = require 'runtime.runtime_ui_helpers'
 local OutgameSystem = require 'ui.outgame'
 local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
@@ -41,6 +43,8 @@ local auto_active_effects_system
 local effect_debug_system
 local reward_system
 local audio_system
+local message
+local ensure_round_choice_available
 local hero_attr_system = HeroAttrSystem.create()
 
 local function trace_boot(message)
@@ -105,6 +109,26 @@ local function create_skill_runtime()
     shock_bonus = 0,
     field_radius = 0,
     field_ratio = 0,
+    apply_generic_armor_break = false,
+    apply_generic_ignite = false,
+    apply_generic_shock = false,
+    apply_generic_control = false,
+    generic_status_duration = 0,
+    terminal_burst_radius = 0,
+    terminal_burst_ratio = 0,
+    followup_count = 0,
+    followup_ratio = 0,
+    echo_count = 0,
+    echo_ratio = 0,
+    return_pass_enabled = false,
+    return_pass_ratio = 0.75,
+    sweep_enabled = false,
+    field_track_target = false,
+    persistent_field_duration = 0,
+    persistent_field_ratio = 0,
+    persistent_field_control = false,
+    persistent_field_ignite = false,
+    pull_strength = 0,
   }
 end
 
@@ -132,11 +156,22 @@ end
 
 local function create_attack_skill_instance(skill_id, slot)
   local def = ATTACK_SKILL_DEFS[skill_id]
+  local blueprint = ATTACK_SKILL_BLUEPRINTS.by_id and ATTACK_SKILL_BLUEPRINTS.by_id[skill_id] or nil
+  local blueprint_base = blueprint and blueprint.base or {}
   return {
     id = def.id,
     name = def.name,
     slot = slot or def.default_slot or 0,
     summary = def.summary,
+    archetype = def.archetype or (blueprint and blueprint.archetype) or nil,
+    category = def.category or nil,
+    cast_family = def.cast_family or nil,
+    presentation_family = def.presentation_family or nil,
+    eca_reference = def.eca_reference or nil,
+    ui_icon = def.ui_icon or (blueprint and (blueprint.ui_icon or blueprint.icon)) or nil,
+    icon = def.icon or def.ui_icon or (blueprint and (blueprint.icon or blueprint.ui_icon)) or nil,
+    evolution_name = def.evolution_name or (blueprint and blueprint.evolution and blueprint.evolution.name) or nil,
+    evolution_summary = def.evolution_summary or (blueprint and blueprint.evolution and blueprint.evolution.summary) or nil,
     damage_type = def.damage_type,
     damage_form = def.damage_form,
     element = def.element,
@@ -152,6 +187,9 @@ local function create_attack_skill_instance(skill_id, slot)
     attack_speed_bonus = 0,
     pierce = def.base_pierce or 0,
     pierce_width = def.base_pierce_width or 90,
+    base_duration = def.base_duration or blueprint_base.duration or 0,
+    base_radius = def.base_radius or blueprint_base.radius or 0,
+    base_bounce = def.base_bounce or blueprint_base.bounce or 0,
     repeat_count = def.base_repeat_count or 1,
     explosion_ratio = def.base_explosion_ratio or 0,
     explosion_radius = def.base_explosion_radius or 0,
@@ -179,6 +217,26 @@ local function create_attack_skill_instance(skill_id, slot)
     shock_bonus = 0,
     field_radius = 0,
     field_ratio = 0,
+    apply_generic_armor_break = false,
+    apply_generic_ignite = false,
+    apply_generic_shock = false,
+    apply_generic_control = false,
+    generic_status_duration = 0,
+    terminal_burst_radius = 0,
+    terminal_burst_ratio = 0,
+    followup_count = 0,
+    followup_ratio = 0,
+    echo_count = 0,
+    echo_ratio = 0,
+    return_pass_enabled = false,
+    return_pass_ratio = 0.75,
+    sweep_enabled = false,
+    field_track_target = false,
+    persistent_field_duration = 0,
+    persistent_field_ratio = 0,
+    persistent_field_control = false,
+    persistent_field_ignite = false,
+    pull_strength = 0,
   }
 end
 
@@ -256,6 +314,7 @@ local STATE = {
   runtime_overview = nil,
   runtime_overview_mode = 'build',
   hero_attr_runtime = nil,
+  hero_form_skill_runtime = nil,
   gm_ui = nil,
   session_phase = 'outgame',
   outgame_profile = nil,
@@ -312,19 +371,32 @@ local function infer_battle_event_style(text)
   return 'neutral'
 end
 
-local function push_battle_event(text, style, duration)
-  if STATE.session_phase ~= 'battle' then
-    return nil
-  end
-  if not STATE.battle_event_feed then
-    STATE.battle_event_feed = create_battle_event_feed_runtime()
-  end
-  return BattleEventFeedSystem.push_event(STATE.battle_event_feed, text, {
-    now = STATE.runtime_elapsed or 0,
-    style = style or infer_battle_event_style(text),
-    duration = duration,
-  })
-end
+local BattleEventPrompts = BattleEventPromptsFactory.create({
+  STATE = STATE,
+  BattleEventFeedSystem = BattleEventFeedSystem,
+  create_battle_event_feed_runtime = create_battle_event_feed_runtime,
+  infer_battle_event_style = infer_battle_event_style,
+  GearUpgrades = GearUpgrades,
+  CONFIG = CONFIG,
+  get_message_prompt_system = function()
+    return STATE.message_prompt_system
+  end,
+  get_audio_system = function()
+    return audio_system
+  end,
+  get_runtime_hud_system = function()
+    return runtime_hud_system
+  end,
+  get_inventory_panel_system = function()
+    return STATE.inventory_panel_system
+  end,
+  message = function(text)
+    return message(text)
+  end,
+  ensure_round_choice_available = function(allowed_kind)
+    return ensure_round_choice_available(allowed_kind)
+  end,
+})
 
 local function is_choice_panel_blocking_messages()
   if STATE.session_phase ~= 'battle' or STATE.choice_panel_hidden == true then
@@ -336,10 +408,11 @@ local function is_choice_panel_blocking_messages()
   if STATE.bond_runtime and STATE.bond_runtime.current_choices and #STATE.bond_runtime.current_choices > 0 then
     return true
   end
-  if STATE.mark_runtime
-    and STATE.mark_runtime.awaiting_choice
-    and STATE.mark_runtime.current_choices
-    and #STATE.mark_runtime.current_choices > 0 then
+  local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
+  if evolution_runtime
+    and evolution_runtime.awaiting_choice
+    and evolution_runtime.current_choices
+    and #evolution_runtime.current_choices > 0 then
     return true
   end
   if STATE.treasure_runtime then
@@ -353,12 +426,13 @@ local function is_choice_panel_blocking_messages()
   return false
 end
 
-local function message(text)
+message = function(text)
   print(text)
-  if not is_choice_panel_blocking_messages() then
-    get_player():display_message(text)
-    push_battle_event(text)
+  if STATE.session_phase == 'battle' then
+    BattleEventPrompts.push_battle_event(text)
+    return
   end
+  get_player():display_message(text)
 end
 
 local function make_point(data)
@@ -379,7 +453,6 @@ local is_battle_active
 local reset_battle_state
 local reset_session_state
 local set_battle_hud_visible
-local refresh_runtime_overview
 local mainline_task_system
 
 progression_system = ProgressionSystem.create({
@@ -465,9 +538,12 @@ reward_system = RewardSystem.create({
   STATE = STATE,
   message = message,
   round_number = round_number,
+  y3 = y3,
   hero_attr_system = hero_attr_system,
   add_attr_pack = add_hero_attr_pack,
   sync_basic_attack_ability = sync_basic_attack_ability,
+  setup_basic_attack_ability = setup_basic_attack_ability,
+  get_player = get_player,
   heal_hero = function(amount)
     return heal_hero(amount)
   end,
@@ -504,16 +580,24 @@ local function create_treasure_runtime()
   return reward_system.create_treasure_runtime()
 end
 
+local function create_evolution_runtime()
+  return reward_system.create_evolution_runtime()
+end
+
 local function create_mark_runtime()
-  return reward_system.create_mark_runtime()
+  return create_evolution_runtime()
 end
 
 local function get_treasure_runtime()
   return reward_system.get_treasure_runtime()
 end
 
+local function get_evolution_runtime()
+  return reward_system.get_evolution_runtime()
+end
+
 local function get_mark_runtime()
-  return reward_system.get_mark_runtime()
+  return get_evolution_runtime()
 end
 
 local function get_reward_queue()
@@ -528,24 +612,36 @@ local function get_treasure_quality_label(quality)
   return reward_system.get_treasure_quality_label(quality)
 end
 
+local function get_evolution_quality_label(quality)
+  return reward_system.get_evolution_quality_label(quality)
+end
+
 local function get_mark_quality_label(quality)
-  return reward_system.get_mark_quality_label(quality)
+  return get_evolution_quality_label(quality)
 end
 
 local function get_treasure_active_count()
   return reward_system.get_treasure_active_count()
 end
 
+local function get_evolution_active_count()
+  return reward_system.get_evolution_active_count()
+end
+
 local function get_mark_active_count()
-  return reward_system.get_mark_active_count()
+  return get_evolution_active_count()
 end
 
 local function build_treasure_slot_text(slot)
   return reward_system.build_treasure_slot_text(slot)
 end
 
+local function build_evolution_slot_text(slot)
+  return reward_system.build_evolution_slot_text(slot)
+end
+
 local function build_mark_slot_text(slot)
-  return reward_system.build_mark_slot_text(slot)
+  return build_evolution_slot_text(slot)
 end
 
 local function pick_treasure_choices(choice_count)
@@ -584,32 +680,48 @@ local function sync_mark_effects()
   return reward_system.sync_mark_effects()
 end
 
+local function sync_evolution_effects()
+  return reward_system.sync_evolution_effects()
+end
+
 local function show_treasure_loadout()
   return reward_system.show_treasure_loadout()
 end
 
+local function show_evolution_loadout()
+  return reward_system.show_evolution_loadout()
+end
+
 local function show_mark_loadout()
-  return reward_system.show_mark_loadout()
+  return show_evolution_loadout()
 end
 
 local function apply_treasure_choice(index)
   return reward_system.apply_treasure_choice(index)
 end
 
+local function apply_evolution_choice(index)
+  return reward_system.apply_evolution_choice(index)
+end
+
 local function apply_mark_choice(index)
-  return reward_system.apply_mark_choice(index)
+  return apply_evolution_choice(index)
 end
 
 local function queue_treasure_round(source_type, source_name)
   return reward_system.queue_treasure_round(source_type, source_name)
 end
 
+local function try_queue_evolution_node_for_level(level)
+  return reward_system.try_queue_evolution_node_for_level(level)
+end
+
 local function try_queue_mark_node_for_level(level)
-  return reward_system.try_queue_mark_node_for_level(level)
+  return try_queue_evolution_node_for_level(level)
 end
 
 show_mark_choices = function()
-  return reward_system.show_mark_choices()
+  return reward_system.show_evolution_choices()
 end
 
 show_treasure_choices = function()
@@ -635,6 +747,9 @@ end
 local function update_auto_active_effects(dt)
   if auto_active_effects_system then
     auto_active_effects_system.update(dt)
+  end
+  if STATE.hero_form_skills_system then
+    STATE.hero_form_skills_system.update(dt)
   end
 end
 
@@ -1065,6 +1180,9 @@ local function handle_bond_enemy_kill(info)
   if auto_active_effects_system then
     auto_active_effects_system.handle_enemy_kill(info)
   end
+  if STATE.hero_form_skills_system then
+    STATE.hero_form_skills_system.handle_enemy_kill(info)
+  end
 end
 
 local function get_current_wave()
@@ -1154,7 +1272,7 @@ local function trigger_td_skills_on_hit(data)
   local basic_attack_vfx = AttackSkillObjects.vfx_by_id.basic_attack or {}
   local basic_chain_particle = basic_attack_vfx.chain_particle
     or basic_attack_vfx.impact_particle
-    or AttackSkillObjects.vfx_by_id.thunder.chain_particle
+    or ((AttackSkillObjects.vfx_by_id.chain_lightning or {}).chain_particle)
 
   if skill.normal_attack_bonus_ratio > 0 then
     deal_skill_damage(target, data.damage * skill.normal_attack_bonus_ratio, '物理', {
@@ -1335,7 +1453,7 @@ local function build_attack_skill_slot_text(slot)
   return attack_skills_system.build_attack_skill_slot_text(slot)
 end
 
-local function show_attack_skill_loadout()
+show_attack_skill_loadout = function()
   return attack_skills_system.show_attack_skill_loadout()
 end
 
@@ -1387,14 +1505,23 @@ attack_skills_system = AttackSkillsSystem.create({
     if auto_active_effects_system then
       auto_active_effects_system.handle_basic_attack_cast(target)
     end
+    if STATE.hero_form_skills_system then
+      STATE.hero_form_skills_system.handle_basic_attack_cast(target)
+    end
   end,
   notify_auto_active_skill_cast = function(skill, target)
     if auto_active_effects_system then
       auto_active_effects_system.handle_attack_skill_cast(skill, target)
     end
+    if STATE.hero_form_skills_system then
+      STATE.hero_form_skills_system.handle_attack_skill_cast(skill, target)
+    end
   end,
   play_basic_attack_sound = function(source_unit)
     return audio_system and audio_system.play_basic_attack and audio_system.play_basic_attack(source_unit) or nil
+  end,
+  play_attack_skill_sound = function(skill, source_anchor, stage)
+    return audio_system and audio_system.play_attack_skill and audio_system.play_attack_skill(skill, source_anchor, stage) or nil
   end,
 })
 
@@ -1444,6 +1571,26 @@ effect_debug_system = EffectDebugSystem.create({
   end,
 })
 
+STATE.hero_form_skills_system = require('runtime.hero_form_skills').create({
+  STATE = STATE,
+  y3 = y3,
+  message = message,
+  round_number = round_number,
+  hero_attr_system = hero_attr_system,
+  is_active_enemy = is_active_enemy,
+  get_enemies_in_range = get_enemies_in_range,
+  get_enemy_runtime_info = get_enemy_runtime_info,
+  is_boss_runtime_enemy = is_boss_runtime_enemy,
+  is_elite_runtime_enemy = is_elite_runtime_enemy,
+  deal_skill_damage = deal_skill_damage,
+  heal_hero = function(amount)
+    return heal_hero(amount)
+  end,
+  play_skill_sound = function(skill)
+    return audio_system and audio_system.play_attack_skill and audio_system.play_attack_skill(skill, STATE.hero) or nil
+  end,
+})
+
 attack_upgrade_system = AttackUpgradeSystem.create({
   STATE = STATE,
   message = message,
@@ -1474,8 +1621,9 @@ local function get_pending_round_choice_kind()
   if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice and STATE.bond_runtime.current_choices then
     return 'bond'
   end
-  if STATE.mark_runtime and STATE.mark_runtime.awaiting_choice and STATE.mark_runtime.current_choices then
-    return 'mark'
+  local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
+  if evolution_runtime and evolution_runtime.awaiting_choice and evolution_runtime.current_choices then
+    return 'evolution'
   end
   if STATE.treasure_runtime then
     if STATE.treasure_runtime.awaiting_choice and STATE.treasure_runtime.current_choices then
@@ -1495,8 +1643,8 @@ local function get_pending_round_choice_label(kind)
   if kind == 'bond' then
     return 'F 仙缘感应'
   end
-  if kind == 'mark' then
-    return '进化选择'
+  if kind == 'evolution' or kind == 'mark' then
+    return '真身进化'
   end
   if kind == 'treasure' then
     return '宝物选择'
@@ -1555,7 +1703,7 @@ local function show_pending_round_choice(kind)
     BondSystem.try_draw(create_bond_env())
     return
   end
-  if current_kind == 'mark' then
+  if current_kind == 'evolution' or current_kind == 'mark' then
     show_mark_choices()
     return
   end
@@ -1564,7 +1712,7 @@ local function show_pending_round_choice(kind)
   end
 end
 
-local function ensure_round_choice_available(allowed_kind)
+ensure_round_choice_available = function(allowed_kind)
   local kind = get_pending_round_choice_kind()
   if not kind or kind == allowed_kind then
     return true
@@ -1601,21 +1749,24 @@ end
 local function apply_round_choice(index)
   if STATE.awaiting_upgrade then
     apply_upgrade(index)
-    return
+    return true
   end
   if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice then
     apply_bond_choice(index)
-    return
+    return true
   end
-  if STATE.mark_runtime and STATE.mark_runtime.awaiting_choice then
-    apply_mark_choice(index)
+  local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
+  if evolution_runtime and evolution_runtime.awaiting_choice then
+    apply_evolution_choice(index)
     STATE.choice_panel_hidden = false
-    return
+    return true
   end
   if STATE.treasure_runtime and (STATE.treasure_runtime.awaiting_choice or STATE.treasure_runtime.awaiting_replace) then
     apply_treasure_choice(index)
     STATE.choice_panel_hidden = false
+    return true
   end
+  return false
 end
 
 local function try_bond_draw()
@@ -1640,6 +1791,7 @@ debug_actions_system = DebugActionsSystem.create({
   end,
   get_hero_max_level = get_hero_max_level,
   sync_hero_progression = sync_hero_progression,
+  ATTACK_SKILL_BLUEPRINTS = ATTACK_SKILL_BLUEPRINTS,
   unlock_attack_skill = unlock_attack_skill,
   show_attack_skill_loadout = show_attack_skill_loadout,
   show_upgrade_choices = show_upgrade_choices,
@@ -1757,7 +1909,28 @@ function M.finish_challenge(instance, is_success)
 end
 
 function M.push_battle_event(text, style, duration)
-  return push_battle_event(text, style, duration)
+  return BattleEventPrompts.push_battle_event(text, style, duration)
+end
+
+function M.push_message_prompt(text, icon, opts)
+  if not STATE.message_prompt_system or not STATE.message_prompt_system.push_list then
+    return nil
+  end
+  return STATE.message_prompt_system.push_list(text, icon, opts)
+end
+
+function M.push_message_board(text, priority, opts)
+  if not STATE.message_prompt_system or not STATE.message_prompt_system.push_board then
+    return nil
+  end
+  return STATE.message_prompt_system.push_board(text, priority, opts)
+end
+
+function M.push_message_marquee(text, priority, opts)
+  if not STATE.message_prompt_system or not STATE.message_prompt_system.push_marquee then
+    return nil
+  end
+  return STATE.message_prompt_system.push_marquee(text, priority, opts)
 end
 
 local function try_start_challenge(challenge_id)
@@ -1769,6 +1942,37 @@ end
 
 local function has_pending_treasure_choice()
   return reward_system.has_pending_treasure_choice()
+end
+
+local function has_pending_evolution_choice()
+  local runtime = get_evolution_runtime()
+  return runtime
+    and runtime.awaiting_choice == true
+    and runtime.current_choices
+    and #runtime.current_choices > 0
+end
+
+local function try_evolution_entry()
+  local pending_kind = get_pending_round_choice_kind()
+  if pending_kind == 'evolution' or pending_kind == 'mark' then
+    STATE.choice_panel_hidden = false
+    show_pending_round_choice('evolution')
+    return true
+  end
+  if pending_kind then
+    message('请先完成当前' .. get_pending_round_choice_label(pending_kind) .. '。')
+    show_pending_round_choice(pending_kind)
+    return false
+  end
+  if has_pending_evolution_choice() then
+    STATE.choice_panel_hidden = false
+    show_mark_choices()
+    return true
+  end
+
+  show_evolution_loadout()
+  message('当前没有待选择的进化。')
+  return false
 end
 
 local function try_treasure_entry()
@@ -1884,6 +2088,7 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
       or nil
     return slot_cfg and slot_cfg.item_key or nil
   end,
+  try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
   build_attack_skill_slot_text = function(slot)
     return attack_skills_system.build_attack_skill_slot_text(slot)
   end,
@@ -1900,6 +2105,8 @@ choice_panel_system = (function()
     ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS,
     TREASURE_DEFS = reward_system.TREASURE_DEFS,
     get_pending_round_choice_kind = get_pending_round_choice_kind,
+    get_evolution_runtime = get_evolution_runtime,
+    get_evolution_quality_label = get_evolution_quality_label,
     get_mark_runtime = get_mark_runtime,
     get_mark_quality_label = get_mark_quality_label,
     get_treasure_runtime = get_treasure_runtime,
@@ -1926,88 +2133,35 @@ choice_panel_system = (function()
   })
 end)()
 
-local function ensure_runtime_hud()
-  return runtime_hud_system.ensure_hud()
-end
+local runtime_ui_helpers = RuntimeUIHelpers.create({
+  STATE = STATE,
+  y3 = y3,
+  get_player = get_player,
+  build_growth_weapon_tip_payload = function()
+    return GearUpgrades.build_tip_payload(STATE, 'weapon', CONFIG.gear_upgrade_config, y3.item)
+  end,
+  get_growth_weapon_item_key = function()
+    local slot_cfg = CONFIG.gear_upgrade_config
+      and CONFIG.gear_upgrade_config.slots
+      and CONFIG.gear_upgrade_config.slots.weapon
+      or nil
+    return slot_cfg and slot_cfg.item_key or nil
+  end,
+  try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
+  get_runtime_hud_system = function()
+    return runtime_hud_system
+  end,
+  get_choice_panel_system = function()
+    return choice_panel_system
+  end,
+  get_runtime_overview_model = function()
+    return get_runtime_overview_model and get_runtime_overview_model() or nil
+  end,
+})
 
-local function refresh_runtime_hud()
-  return runtime_hud_system.refresh_hud()
-end
+runtime_ui_helpers.install_panel_systems()
 
-local function ensure_choice_panel()
-  if not choice_panel_system or not choice_panel_system.ensure_panel then
-    return nil
-  end
-  return choice_panel_system.ensure_panel()
-end
-
-local function refresh_choice_panel()
-  if not choice_panel_system or not choice_panel_system.refresh_panel then
-    return nil
-  end
-  return choice_panel_system.refresh_panel()
-end
-
-local function destroy_choice_panel()
-  if choice_panel_system and choice_panel_system.destroy_panel then
-    choice_panel_system.destroy_panel()
-  end
-end
-
-local function refresh_runtime_overview()
-end
-
-local function build_attr_tip_panel_text()
-  local previous_mode = STATE.runtime_overview_mode
-  STATE.runtime_overview_mode = 'attr'
-  local model = get_runtime_overview_model and get_runtime_overview_model() or nil
-  STATE.runtime_overview_mode = previous_mode
-
-  if not model or not model.sections then
-    return '属性面板暂不可用'
-  end
-
-  local lines = {}
-  local ordered_sections = { 'summary', 'skills', 'bonds', 'treasures' }
-  for _, key in ipairs(ordered_sections) do
-    local section = model.sections[key]
-    if section and section.title and section.lines and #section.lines > 0 then
-      lines[#lines + 1] = string.format('[%s]', tostring(section.title))
-      for _, line in ipairs(section.lines) do
-        lines[#lines + 1] = tostring(line)
-        if #lines >= 8 then
-          break
-        end
-      end
-    end
-    if #lines >= 8 then
-      break
-    end
-  end
-
-  if #lines == 0 then
-    return '当前没有可显示的属性面板'
-  end
-  return table.concat(lines, '\n')
-end
-
-local function show_runtime_attr_tip_panel(duration)
-  if runtime_hud_system and runtime_hud_system.ensure_hud then
-    runtime_hud_system.ensure_hud()
-  end
-  if runtime_hud_system and runtime_hud_system.show_tip_panel then
-    runtime_hud_system.show_tip_panel(build_attr_tip_panel_text(), duration or 8)
-  end
-end
-
-set_battle_hud_visible = function(visible)
-  if runtime_hud_system and runtime_hud_system.set_visible then
-    runtime_hud_system.set_visible(visible)
-  end
-  if choice_panel_system and choice_panel_system.set_visible then
-    choice_panel_system.set_visible(visible)
-  end
-end
+set_battle_hud_visible = runtime_ui_helpers.set_battle_hud_visible
 
 local function create_hero()
   return battlefield_system.create_hero(ATTACK_SKILL_DEFS.basic_attack.base_range or 250)
@@ -2032,7 +2186,8 @@ session_state_system = SessionStateSystem.create({
   create_treasure_runtime = create_treasure_runtime,
   create_skill_runtime = create_skill_runtime,
   create_attack_skill_state = create_attack_skill_state,
-  destroy_choice_panel = destroy_choice_panel,
+  ATTACK_SKILL_BLUEPRINTS = ATTACK_SKILL_BLUEPRINTS,
+  destroy_choice_panel = runtime_ui_helpers.destroy_choice_panel,
   battlefield_system = battlefield_system,
   get_player = get_player,
   get_enemy_player = get_enemy_player,
@@ -2044,12 +2199,14 @@ session_state_system = SessionStateSystem.create({
   sync_gear_items_to_hero = function(state, hero, config)
     return GearUpgrades.sync_items_to_hero(state, hero, config)
   end,
+  unlock_attack_skill = unlock_attack_skill,
+  show_attack_skill_loadout = show_attack_skill_loadout,
   setup_basic_attack_ability = setup_basic_attack_ability,
-  ensure_runtime_hud = ensure_runtime_hud,
+  ensure_runtime_hud = runtime_ui_helpers.ensure_runtime_hud,
   set_battle_hud_visible = function(visible)
     return set_battle_hud_visible(visible)
   end,
-  refresh_runtime_hud = refresh_runtime_hud,
+  refresh_runtime_hud = runtime_ui_helpers.refresh_runtime_hud,
   get_outgame_system = function()
     return outgame_system
   end,
@@ -2118,17 +2275,21 @@ input_events_system = InputEventsSystem.create({
     show_runtime_attr_dialog()
   end,
   show_runtime_attr_tip_panel = function()
-    show_runtime_attr_tip_panel(8)
+    runtime_ui_helpers.show_runtime_attr_tip_panel(8)
   end,
   show_runtime_attr_dialog = show_runtime_attr_dialog,
-  refresh_runtime_overview = refresh_runtime_overview,
+  refresh_runtime_overview = runtime_ui_helpers.refresh_runtime_overview,
   start_current_task_challenge = function()
     return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
   end,
   try_start_challenge = try_start_challenge,
+  try_evolution_entry = try_evolution_entry,
   try_treasure_entry = try_treasure_entry,
   apply_round_choice = apply_round_choice,
   show_runtime_status = show_runtime_status,
+  toggle_talk_input = runtime_ui_helpers.toggle_talk_input,
+  toggle_inventory_panel = runtime_ui_helpers.toggle_inventory_panel,
+  try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
   show_debug_hotkey_help = show_debug_hotkey_help,
   debug_actions_system = debug_actions_system,
   debug_tools_system = debug_tools_system,
@@ -2156,12 +2317,13 @@ runtime_loops_system = RuntimeLoopsSystem.create({
   update_mainline_task = function(dt)
     return mainline_task_system and mainline_task_system.update and mainline_task_system.update(dt) or nil
   end,
-  ensure_runtime_hud = ensure_runtime_hud,
-  ensure_choice_panel = ensure_choice_panel,
+  ensure_runtime_hud = runtime_ui_helpers.ensure_runtime_hud,
+  ensure_choice_panel = runtime_ui_helpers.ensure_choice_panel,
   set_battle_hud_visible = set_battle_hud_visible,
-  refresh_runtime_hud = refresh_runtime_hud,
-  refresh_choice_panel = refresh_choice_panel,
-  refresh_runtime_overview = refresh_runtime_overview,
+  refresh_runtime_hud = runtime_ui_helpers.refresh_runtime_hud,
+  refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel,
+  refresh_runtime_overview = runtime_ui_helpers.refresh_runtime_overview,
+  refresh_inventory_panel = runtime_ui_helpers.refresh_inventory_panel,
   outgame_system = outgame_system,
   debug_tools_system = debug_tools_system,
   is_active_enemy = is_active_enemy,

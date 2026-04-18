@@ -1,6 +1,7 @@
 local theme = require 'ui.theme'
 local Factory = require 'ui.factory'
 local skin = require 'ui.skin'
+local UIRoot = require 'ui.ui_root'
 
 local M = {}
 
@@ -19,11 +20,7 @@ function M.create(env)
   local overview_skin = skin.images.overview or {}
 
   local function get_hud_root()
-    local ok, hud = pcall(y3.ui.get_ui, env.get_player(), 'GameHUD')
-    if not ok or not hud then
-      return nil
-    end
-    return hud
+    return UIRoot.get_overlay_parent(y3, env.get_player())
   end
 
   local function is_panel_alive(panel)

@@ -192,9 +192,15 @@ function M.create(env)
       else
         lines[#lines + 1] = '当前待选：宝物三选一'
       end
-    elseif pending_kind == 'mark' then
+    elseif pending_kind == 'evolution' or pending_kind == 'mark' then
       local runtime = get_mark_runtime()
-      lines[#lines + 1] = string.format('当前待选：%s', runtime.current_round and runtime.current_round.ui_title or '进化选择')
+      local choice_count = runtime and runtime.current_choices and #runtime.current_choices or 0
+      local pick_text = choice_count > 0 and string.format('英雄真身%d选1', choice_count) or '英雄真身抉择'
+      lines[#lines + 1] = string.format(
+        '当前待选：%s · %s',
+        runtime.current_round and runtime.current_round.ui_title or '真身进化',
+        pick_text
+      )
     else
       lines[#lines + 1] = '当前没有进行中的待选轮次。'
     end

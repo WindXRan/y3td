@@ -7,10 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 FILES = [
     ROOT / "entry_objects" / "attack_skills" / "basic_attack.lua",
-    ROOT / "entry_objects" / "attack_skills" / "arcane_arrow.lua",
-    ROOT / "entry_objects" / "attack_skills" / "flame_arrow.lua",
-    ROOT / "entry_objects" / "attack_skills" / "frost_arrow.lua",
-    ROOT / "entry_objects" / "attack_skills" / "thunder.lua",
+    ROOT / "data_csv" / "attack_skills.csv",
 ]
 
 

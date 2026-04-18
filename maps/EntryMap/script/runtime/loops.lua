@@ -20,6 +20,7 @@ function M.create(env)
   local refresh_choice_panel = env.refresh_choice_panel
   local refresh_swallow_panel = env.refresh_swallow_panel
   local refresh_runtime_overview = env.refresh_runtime_overview
+  local refresh_inventory_panel = env.refresh_inventory_panel
   local outgame_system = env.outgame_system
   local debug_tools_system = env.debug_tools_system
   local is_active_enemy = env.is_active_enemy
@@ -48,6 +49,9 @@ function M.create(env)
       refresh_choice_panel()
       if refresh_swallow_panel then
         refresh_swallow_panel()
+      end
+      if refresh_inventory_panel then
+        refresh_inventory_panel()
       end
       refresh_runtime_overview()
     end)

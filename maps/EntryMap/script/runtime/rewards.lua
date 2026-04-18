@@ -1,6 +1,8 @@
 local TreasureObjects = require 'entry_objects.treasures'
-local MarkObjects = require 'entry_objects.marks'
-local MarkNodeObjects = require 'entry_objects.mark_nodes'
+local EvolutionObjects = require 'entry_objects.evolutions'
+local EvolutionNodeObjects = require 'entry_objects.evolution_nodes'
+local HeroRoster = require 'data.object_tables.hero_roster'
+local HeroFormSkills = require 'data.object_tables.hero_form_skills'
 
 local M = {}
 
@@ -18,10 +20,75 @@ local MARK_QUALITY_LABELS = {
 
 local TREASURE_DEF_LIST = TreasureObjects.list
 local TREASURE_DEFS = TreasureObjects.by_id
-local MARK_DEF_LIST = MarkObjects.list
-local MARK_DEFS = MarkObjects.by_id
-local MARK_NODES_BY_LEVEL = MarkNodeObjects.by_level
-local MARK_POOL_RULES = MarkNodeObjects.pool_rules_by_id or {}
+local EVOLUTION_DEF_LIST = EvolutionObjects.list
+local EVOLUTION_DEFS = EvolutionObjects.by_id
+local EVOLUTION_NODES_BY_LEVEL = EvolutionNodeObjects.by_level
+local EVOLUTION_POOL_RULES = EvolutionNodeObjects.pool_rules_by_id or {}
+local HERO_ROSTER_BY_UNIT_ID = HeroRoster.by_unit_id or {}
+local HERO_FORM_SKILLS_BY_HERO_ID = HeroFormSkills.by_hero_id or {}
+
+local function get_evolution_hero_entry(def)
+  local unit_id = def and def.hero_unit_id or nil
+  if unit_id == nil then
+    return nil
+  end
+  return HERO_ROSTER_BY_UNIT_ID[unit_id]
+end
+
+local function get_evolution_hero_skill(def)
+  local entry = get_evolution_hero_entry(def)
+  if not entry then
+    return nil, nil
+  end
+  return HERO_FORM_SKILLS_BY_HERO_ID[entry.id], entry
+end
+
+local function get_evolution_display_name(def)
+  local entry = get_evolution_hero_entry(def)
+  if entry and entry.name and entry.name ~= '' then
+    return entry.name
+  end
+  if def and def.name and def.name ~= '' then
+    return def.name
+  end
+  return '未命名真身'
+end
+
+local function get_evolution_display_role(def)
+  local skill, entry = get_evolution_hero_skill(def)
+  if entry and entry.title and entry.title ~= '' then
+    return entry.title
+  end
+  if skill and skill.subtitle and skill.subtitle ~= '' then
+    return skill.subtitle
+  end
+  return '英雄真身'
+end
+
+local function get_evolution_display_summary(def)
+  local skill, entry = get_evolution_hero_skill(def)
+  if skill and skill.summary and skill.summary ~= '' then
+    return skill.summary
+  end
+  if entry and entry.summary and entry.summary ~= '' then
+    return entry.summary
+  end
+  return def and def.summary or ''
+end
+
+local function get_evolution_skill_name(def)
+  local skill = get_evolution_hero_skill(def)
+  return skill and skill.name or nil
+end
+
+local function build_choice_key_text(choice_count)
+  local count = math.max(1, math.min(3, tonumber(choice_count) or 0))
+  local parts = {}
+  for index = 1, count do
+    parts[index] = tostring(index)
+  end
+  return table.concat(parts, ' / ')
+end
 
 local function clone_reward(reward)
   if not reward then
@@ -56,15 +123,19 @@ function M.create(env)
   local STATE = env.STATE
   local message = env.message
   local round_number = env.round_number
+  local y3 = env.y3
   local add_attr_pack = env.add_attr_pack
   local hero_attr_system = env.hero_attr_system
   local sync_basic_attack_ability = env.sync_basic_attack_ability
+  local setup_basic_attack_ability = env.setup_basic_attack_ability
+  local get_player = env.get_player
   local heal_hero = env.heal_hero
   local collect_bond_route_tags = env.collect_bond_route_tags
 
   local api = {
     TREASURE_DEFS = TREASURE_DEFS,
-    MARK_DEFS = MARK_DEFS,
+    EVOLUTION_DEFS = EVOLUTION_DEFS,
+    MARK_DEFS = EVOLUTION_DEFS,
   }
   local resolve_treasure_pick
 
@@ -101,10 +172,11 @@ function M.create(env)
     }
   end
 
-  function api.create_mark_runtime()
-    return {
-      owned_mark_ids = {},
-      ordered_mark_ids = {},
+  function api.create_evolution_runtime()
+    local runtime = {
+      owned_evolution_ids = {},
+      ordered_evolution_ids = {},
+      active_form_unit_id = nil,
       triggered_node_ids = {},
       rounds_by_id = {},
       next_round_id = 1,
@@ -117,7 +189,11 @@ function M.create(env)
         attack_skill = {},
       },
     }
+    runtime.owned_mark_ids = runtime.owned_evolution_ids
+    runtime.ordered_mark_ids = runtime.ordered_evolution_ids
+    return runtime
   end
+  api.create_mark_runtime = api.create_evolution_runtime
 
   function api.get_treasure_runtime()
     if not STATE.treasure_runtime then
@@ -126,12 +202,20 @@ function M.create(env)
     return STATE.treasure_runtime
   end
 
-  function api.get_mark_runtime()
-    if not STATE.mark_runtime then
-      STATE.mark_runtime = api.create_mark_runtime()
+  function api.get_evolution_runtime()
+    local runtime = STATE.evolution_runtime or STATE.mark_runtime
+    if not runtime then
+      runtime = api.create_evolution_runtime()
     end
-    return STATE.mark_runtime
+    runtime.owned_evolution_ids = runtime.owned_evolution_ids or runtime.owned_mark_ids or {}
+    runtime.owned_mark_ids = runtime.owned_mark_ids or runtime.owned_evolution_ids
+    runtime.ordered_evolution_ids = runtime.ordered_evolution_ids or runtime.ordered_mark_ids or {}
+    runtime.ordered_mark_ids = runtime.ordered_mark_ids or runtime.ordered_evolution_ids
+    STATE.evolution_runtime = runtime
+    STATE.mark_runtime = runtime
+    return runtime
   end
+  api.get_mark_runtime = api.get_evolution_runtime
 
   function api.get_reward_queue()
     if not STATE.reward_queue then
@@ -148,9 +232,10 @@ function M.create(env)
     return TREASURE_QUALITY_LABELS[quality] or '普通'
   end
 
-  function api.get_mark_quality_label(quality)
+  function api.get_evolution_quality_label(quality)
     return MARK_QUALITY_LABELS[quality] or '普通'
   end
+  api.get_mark_quality_label = api.get_evolution_quality_label
 
   local function enqueue_reward_entry(entry)
     local queue = api.get_reward_queue()
@@ -220,69 +305,135 @@ function M.create(env)
     )
   end
 
-  function api.get_mark_active_count()
-    local runtime = api.get_mark_runtime()
-    return #runtime.ordered_mark_ids
+  function api.get_evolution_active_count()
+    local runtime = api.get_evolution_runtime()
+    return #runtime.ordered_evolution_ids
   end
+  api.get_mark_active_count = api.get_evolution_active_count
 
-  local function build_mark_choice_text(index, def)
+  local function build_evolution_choice_text(index, def)
+    local skill_name = get_evolution_skill_name(def)
+    local name_text = get_evolution_display_name(def)
+    local role_text = get_evolution_display_role(def)
+    local summary_text = get_evolution_display_summary(def)
+    if skill_name and skill_name ~= '' then
+      summary_text = string.format('神通「%s」：%s', skill_name, summary_text)
+    end
     return string.format(
-      '%d. [%s] %s：%s',
+      '%d. [%s] %s·%s：%s',
       index,
-      api.get_mark_quality_label(def.quality),
-      def.name,
-      def.summary
+      api.get_evolution_quality_label(def.quality),
+      name_text,
+      role_text,
+      summary_text
     )
   end
 
-  function api.build_mark_slot_text(slot)
-    local runtime = api.get_mark_runtime()
-    local mark_id = runtime.ordered_mark_ids[slot]
-    if not mark_id then
+  function api.build_evolution_slot_text(slot)
+    local runtime = api.get_evolution_runtime()
+    local evolution_id = runtime.ordered_evolution_ids[slot]
+    if not evolution_id then
       return string.format('进化位 %d：空。', slot)
     end
 
-    local def = MARK_DEFS[mark_id]
+    local def = EVOLUTION_DEFS[evolution_id]
     if not def then
-      return string.format('进化位 %d：未知进化 %s。', slot, tostring(mark_id))
+      return string.format('进化位 %d：未知进化 %s。', slot, tostring(evolution_id))
     end
 
+    local skill_name = get_evolution_skill_name(def)
+    local name_text = get_evolution_display_name(def)
+    local role_text = get_evolution_display_role(def)
     return string.format(
-      '进化位 %d：[%s] %s - %s',
+      '进化位 %d：[%s] %s·%s%s',
       slot,
-      api.get_mark_quality_label(def.quality),
-      def.name,
-      def.summary
+      api.get_evolution_quality_label(def.quality),
+      name_text,
+      role_text,
+      skill_name and string.format('，神通「%s」', skill_name) or ''
     )
   end
+  api.build_mark_slot_text = api.build_evolution_slot_text
 
-  function api.show_mark_loadout()
+  function api.show_evolution_loadout()
     message('进化栏：')
-    local count = math.max(4, api.get_mark_active_count())
+    local count = math.max(4, api.get_evolution_active_count())
     for slot = 1, count, 1 do
-      message(api.build_mark_slot_text(slot))
+      message(api.build_evolution_slot_text(slot))
     end
   end
+  api.show_mark_loadout = api.show_evolution_loadout
 
   local function build_current_treasure_tags()
     local tags = {
       basic_attack = true,
     }
 
+    local function has_text(value, text)
+      return string.find(tostring(value or ''), text, 1, true) ~= nil
+    end
+
+    local function skill_has_aoe_profile(skill)
+      local archetype = tostring(skill and skill.archetype or '')
+      local cast_family = tostring(skill and skill.cast_family or '')
+      return (skill and skill.base_radius or 0) > 0
+        or (skill and skill.explosion_radius or 0) > 0
+        or cast_family == 'beam'
+        or cast_family == 'nova'
+        or cast_family == 'area_burst'
+        or cast_family == 'moving_field'
+        or cast_family == 'control_field'
+        or cast_family == 'delayed_area_burst'
+        or cast_family == 'persistent_field'
+        or cast_family == 'ignite_field'
+        or cast_family == 'seal_burst'
+        or has_text(archetype, '范围')
+        or has_text(archetype, '持续')
+        or has_text(archetype, '爆发')
+        or has_text(archetype, '爆炸')
+        or has_text(archetype, '火域')
+        or has_text(archetype, '冰界')
+    end
+
+    local function skill_has_bounce_profile(skill)
+      local archetype = tostring(skill and skill.archetype or '')
+      local cast_family = tostring(skill and skill.cast_family or '')
+      return (skill and skill.base_bounce or 0) > 0
+        or (skill and skill.followup_count or 0) > 0
+        or (skill and skill.echo_count or 0) > 0
+        or cast_family == 'chain'
+        or cast_family == 'line_return'
+        or cast_family == 'seeking_swords'
+        or cast_family == 'delayed_strike'
+        or has_text(archetype, '连锁')
+        or has_text(archetype, '弹射')
+        or has_text(archetype, '飞剑')
+        or has_text(archetype, '轮斩')
+    end
+
     local attack_state = STATE.attack_skill_state
     if attack_state and attack_state.by_id then
-      if attack_state.by_id.arcane_arrow
-        or attack_state.by_id.flame_arrow
-        or attack_state.by_id.frost_arrow
-        or attack_state.by_id.thunder then
+      local has_attack_skill = false
+      for skill_id, skill in pairs(attack_state.by_id) do
+        if skill_id ~= 'basic_attack' and skill then
+          has_attack_skill = true
+          tags[skill_id] = true
+          if skill.element and skill.element ~= '' and skill.element ~= 'none' then
+            tags[skill.element] = true
+          end
+          if skill.damage_form == 'spell' then
+            tags.spell_cycle = true
+          end
+          if skill_has_aoe_profile(skill) then
+            tags.aoe = true
+          end
+          if skill_has_bounce_profile(skill) then
+            tags.bounce = true
+          end
+        end
+      end
+      if has_attack_skill then
         tags.skill = true
-        tags.spell_cycle = true
-      end
-      if attack_state.by_id.flame_arrow then
-        tags.aoe = true
-      end
-      if attack_state.by_id.thunder then
-        tags.bounce = true
       end
     end
 
@@ -461,7 +612,7 @@ function M.create(env)
     local runtime = api.get_mark_runtime()
     local result = {}
 
-    for _, def in ipairs(MARK_DEF_LIST) do
+    for _, def in ipairs(EVOLUTION_DEF_LIST) do
       local excluded_by_owned = pool_rule and pool_rule.exclude_owned and runtime.owned_mark_ids[def.id]
       local excluded_by_round = pool_rule and pool_rule.same_round_no_repeat and used_ids and used_ids[def.id]
       if not excluded_by_owned and not excluded_by_round then
@@ -561,10 +712,10 @@ function M.create(env)
   end
 
   local function pick_mark_choices_for_rule(pool_rule_id, requested_choice_count)
-    local pool_rule = MARK_POOL_RULES[pool_rule_id]
+    local pool_rule = EVOLUTION_POOL_RULES[pool_rule_id]
     assert(pool_rule and pool_rule.enabled, string.format('missing enabled mark pool rule: %s', tostring(pool_rule_id)))
 
-    local choice_count = requested_choice_count or pool_rule.choice_count or 3
+    local choice_count = requested_choice_count or pool_rule.choice_count or 2
     local choices = {}
     local used_ids = {}
     local has_high_quality = false
@@ -606,9 +757,9 @@ function M.create(env)
   end
 
   local function pick_mark_choices(choice_count)
-    local default_node = MARK_NODES_BY_LEVEL[10]
-    local default_rule_id = default_node and default_node.pool_rule_id or 'mark_pool_global'
-    local available = build_available_mark_defs(MARK_POOL_RULES[default_rule_id], {})
+    local default_node = EVOLUTION_NODES_BY_LEVEL[5]
+    local default_rule_id = default_node and default_node.pool_rule_id or 'evolution_pool_global'
+    local available = build_available_mark_defs(EVOLUTION_POOL_RULES[default_rule_id], {})
     if #available == 0 then
       return {}
     end
@@ -618,6 +769,7 @@ function M.create(env)
   function api.debug_pick_mark_choices_for_rule(pool_rule_id, choice_count)
     return pick_mark_choices_for_rule(pool_rule_id, choice_count)
   end
+  api.debug_pick_evolution_choices_for_rule = api.debug_pick_mark_choices_for_rule
 
   function api.get_treasure_reward_ratio(key)
     local runtime = api.get_treasure_runtime()
@@ -886,7 +1038,7 @@ function M.create(env)
     }
 
     for _, mark_id in ipairs(runtime.ordered_mark_ids) do
-      local def = MARK_DEFS[mark_id]
+      local def = EVOLUTION_DEFS[mark_id]
       if def and def.bonuses then
         add_bonus_pack(aggregate.attr, def.bonuses.attr)
         add_bonus_pack(aggregate.runtime, def.bonuses.runtime)
@@ -928,6 +1080,182 @@ function M.create(env)
     runtime.applied = aggregate
     sync_basic_attack_ability()
   end
+  api.sync_evolution_effects = api.sync_mark_effects
+
+  local function clone_attr_snapshot(snapshot)
+    if not snapshot then
+      return nil
+    end
+
+    local copy = {}
+    for name, value in pairs(snapshot) do
+      copy[name] = value
+    end
+    return copy
+  end
+
+  local function get_hero_attr_snapshot()
+    if not STATE.hero or not STATE.hero:is_exist() or not hero_attr_system or not hero_attr_system.snapshot then
+      return nil
+    end
+    return clone_attr_snapshot(hero_attr_system.snapshot(STATE.hero, {}))
+  end
+
+  local function get_hero_hp_snapshot()
+    if not STATE.hero or not STATE.hero:is_exist() then
+      return nil
+    end
+
+    local current_hp = tonumber(STATE.hero:get_hp()) or 0
+    local max_hp = hero_attr_system and hero_attr_system.get_attr(STATE.hero, '生命结算值') or 0
+    if max_hp <= 0 then
+      max_hp = tonumber(STATE.hero:get_attr('生命结算值'))
+        or tonumber(STATE.hero:get_attr('生命'))
+        or tonumber(STATE.hero:get_attr('最大生命'))
+        or 0
+    end
+
+    return {
+      hp = current_hp,
+      max_hp = max_hp,
+      hp_ratio = max_hp > 0 and math.max(0, math.min(1, current_hp / max_hp)) or nil,
+      level = tonumber(STATE.hero:get_level()) or nil,
+      exp = tonumber(STATE.hero:get_exp()) or nil,
+      ability_point = tonumber(STATE.hero:get_ability_point()) or nil,
+      facing = tonumber(STATE.hero:get_facing()) or nil,
+      attr_snapshot = get_hero_attr_snapshot(),
+    }
+  end
+
+  local function restore_hero_attr_snapshot(snapshot)
+    if not snapshot or not STATE.hero or not STATE.hero:is_exist() then
+      return
+    end
+
+    -- transformation 后有些物编字段会退回到目标单位默认值，需要把运行时养成属性灌回去。
+    if hero_attr_system and hero_attr_system.init_hero_attrs then
+      hero_attr_system.init_hero_attrs(STATE.hero, snapshot)
+    else
+      for name, value in pairs(snapshot) do
+        STATE.hero:set_attr(name, value)
+      end
+    end
+
+    if hero_attr_system and hero_attr_system.snapshot then
+      hero_attr_system.snapshot(STATE.hero, STATE)
+    end
+  end
+
+  local function restore_hero_runtime_after_evolution(snapshot)
+    if not STATE.hero or not STATE.hero:is_exist() then
+      return
+    end
+
+    if snapshot then
+      if snapshot.level ~= nil then
+        STATE.hero:set_level(snapshot.level)
+      end
+      if snapshot.exp ~= nil then
+        STATE.hero:set_exp(snapshot.exp)
+      end
+      if snapshot.ability_point ~= nil then
+        STATE.hero:set_ability_point(snapshot.ability_point)
+      end
+      if snapshot.facing ~= nil then
+        STATE.hero:set_facing(snapshot.facing, 0.0)
+      end
+    end
+
+    restore_hero_attr_snapshot(snapshot and snapshot.attr_snapshot or nil)
+
+    STATE.hero:add_state('禁止普攻')
+    STATE.hero:add_state('禁止移动')
+    STATE.hero:stop()
+    STATE.hero_common_attack = nil
+    STATE.basic_attack_ability_bound = false
+    STATE.basic_attack_ability_warned = false
+    STATE.basic_attack_animation_names = nil
+    STATE.basic_attack_animation_index = 0
+
+    if setup_basic_attack_ability then
+      setup_basic_attack_ability()
+    else
+      sync_basic_attack_ability()
+    end
+
+    if get_player then
+      get_player():select_unit(STATE.hero)
+    end
+  end
+
+  local function restore_hero_hp_by_snapshot(snapshot)
+    if not snapshot or not STATE.hero or not STATE.hero:is_exist() then
+      return
+    end
+
+    local max_hp = hero_attr_system and hero_attr_system.get_attr(STATE.hero, '生命结算值') or 0
+    if max_hp <= 0 then
+      max_hp = tonumber(STATE.hero:get_attr('生命结算值'))
+        or tonumber(STATE.hero:get_attr('生命'))
+        or tonumber(STATE.hero:get_attr('最大生命'))
+        or 0
+    end
+    if max_hp <= 0 then
+      return
+    end
+
+    local target_hp = snapshot.hp_ratio and (max_hp * snapshot.hp_ratio) or snapshot.hp
+    target_hp = math.max(1, math.min(max_hp, tonumber(target_hp) or max_hp))
+    STATE.hero:set_hp(target_hp)
+  end
+
+  local function apply_mark_hero_form(def)
+    local runtime = api.get_mark_runtime()
+    local hero = STATE.hero
+    local target_unit_id = def and def.hero_unit_id
+    if not hero or not hero:is_exist() or not target_unit_id then
+      return false
+    end
+
+    if hero:get_key() == target_unit_id then
+      runtime.active_form_unit_id = target_unit_id
+      restore_hero_runtime_after_evolution(get_hero_hp_snapshot())
+      return true
+    end
+
+    if not (y3 and y3.object and y3.object.unit and y3.object.unit[target_unit_id]) then
+      message(string.format(
+        '警告：真身 %s 缺少英雄模型单位 %s，已跳过形态替换。',
+        tostring(get_evolution_display_name(def)),
+        tostring(target_unit_id)
+      ))
+      return false
+    end
+
+    local snapshot = get_hero_hp_snapshot()
+    local ok, err = pcall(function()
+      hero:transformation(target_unit_id, {
+        inherit_composite_attr = true,
+        inherit_unit_attr = true,
+        inherit_kv = true,
+        inherit_hero_ability = true,
+        inherit_common_ability = true,
+        inherit_passive_ability = true,
+      })
+    end)
+    if not ok then
+      message(string.format(
+        '警告：真身 %s 替换英雄模型失败：%s',
+        tostring(get_evolution_display_name(def)),
+        tostring(err)
+      ))
+      return false
+    end
+
+    runtime.active_form_unit_id = target_unit_id
+    restore_hero_runtime_after_evolution(snapshot)
+    return true
+  end
 
   function api.show_treasure_loadout()
     local runtime = api.get_treasure_runtime()
@@ -949,8 +1277,8 @@ function M.create(env)
     if STATE.game_finished then
       return false
     end
-    local mark_runtime = api.get_mark_runtime()
-    if mark_runtime.awaiting_choice then
+    local evolution_runtime = api.get_evolution_runtime()
+    if evolution_runtime.awaiting_choice then
       return false
     end
 
@@ -971,17 +1299,17 @@ function M.create(env)
       return false
     end
 
-    if next_entry.kind == 'mark_choice' then
-      local round = next_entry.round_id and mark_runtime.rounds_by_id[next_entry.round_id] or nil
+    if next_entry.kind == 'evolution_choice' or next_entry.kind == 'mark_choice' then
+      local round = next_entry.round_id and evolution_runtime.rounds_by_id[next_entry.round_id] or nil
       if not round then
         message('进化轮次数据不存在，本次奖励已跳过。')
         return true
       end
 
       local choices = {}
-      for _, mark_id in ipairs(round.candidate_mark_ids or {}) do
-        local def = MARK_DEFS[mark_id]
-        if def and not mark_runtime.owned_mark_ids[mark_id] then
+      for _, evolution_id in ipairs(round.candidate_evolution_ids or round.candidate_mark_ids or {}) do
+        local def = EVOLUTION_DEFS[evolution_id]
+        if def and not evolution_runtime.owned_evolution_ids[evolution_id] then
           choices[#choices + 1] = def
         end
       end
@@ -992,14 +1320,15 @@ function M.create(env)
         return true
       end
 
-      mark_runtime.current_round = round
-      mark_runtime.current_choices = choices
-      mark_runtime.awaiting_choice = true
+      evolution_runtime.current_round = round
+      evolution_runtime.current_choices = choices
+      evolution_runtime.awaiting_choice = true
       round.state = 'pending'
       STATE.choice_panel_hidden = false
 
-      message(string.format('%s：获得一次进化 3选1。', round.ui_title or '进化选择'))
-      api.show_mark_choices()
+      round.choice_count = #choices
+      message(string.format('%s：获得一次英雄真身 %d选1。', round.ui_title or '真身进化', #choices))
+      api.show_evolution_choices()
       return true
     end
 
@@ -1161,12 +1490,14 @@ function M.create(env)
     api.show_treasure_choices()
   end
 
-  local function resolve_mark_pick(def)
-    local runtime = api.get_mark_runtime()
-    runtime.owned_mark_ids[def.id] = true
-    runtime.ordered_mark_ids[#runtime.ordered_mark_ids + 1] = def.id
+  local function resolve_evolution_pick(def)
+    local runtime = api.get_evolution_runtime()
+    local hero_snapshot = get_hero_hp_snapshot()
+    runtime.owned_evolution_ids[def.id] = true
+    runtime.ordered_evolution_ids[#runtime.ordered_evolution_ids + 1] = def.id
 
     if runtime.current_round then
+      runtime.current_round.selected_evolution_id = def.id
       runtime.current_round.selected_mark_id = def.id
       runtime.current_round.state = 'resolved'
     end
@@ -1176,35 +1507,45 @@ function M.create(env)
     runtime.current_round = nil
     STATE.choice_panel_hidden = false
 
-    api.sync_mark_effects()
+    apply_mark_hero_form(def)
+    api.sync_evolution_effects()
+    restore_hero_hp_by_snapshot(hero_snapshot)
 
+    local skill_name = get_evolution_skill_name(def)
     message(string.format(
-      '已获得进化：[%s] %s。',
-      api.get_mark_quality_label(def.quality),
-      def.name
+      '已完成进化：[%s] %s·%s%s。',
+      api.get_evolution_quality_label(def.quality),
+      get_evolution_display_name(def),
+      get_evolution_display_role(def),
+      skill_name and string.format('，神通「%s」已激活', skill_name) or ''
     ))
-    api.show_mark_loadout()
+    api.show_evolution_loadout()
 
     try_process_reward_queue()
   end
 
-  function api.show_mark_choices()
-    local runtime = api.get_mark_runtime()
+  function api.show_evolution_choices()
+    local runtime = api.get_evolution_runtime()
     if not runtime.awaiting_choice or not runtime.current_choices then
       return
     end
 
     STATE.choice_panel_hidden = false
-    local title = runtime.current_round and runtime.current_round.ui_title or '进化选择'
-    message(string.format('%s：按 1 / 2 / 3 选择。', title))
+    local title = runtime.current_round and runtime.current_round.ui_title or '真身进化'
+    message(string.format(
+      '%s：按 %s 选择。',
+      title,
+      build_choice_key_text(#runtime.current_choices)
+    ))
     for index, def in ipairs(runtime.current_choices) do
-      message(build_mark_choice_text(index, def))
+      message(build_evolution_choice_text(index, def))
     end
-    api.show_mark_loadout()
+    api.show_evolution_loadout()
   end
+  api.show_mark_choices = api.show_evolution_choices
 
-  function api.apply_mark_choice(index)
-    local runtime = api.get_mark_runtime()
+  function api.apply_evolution_choice(index)
+    local runtime = api.get_evolution_runtime()
     if not runtime.awaiting_choice or not runtime.current_choices then
       return
     end
@@ -1214,8 +1555,9 @@ function M.create(env)
       return
     end
 
-    resolve_mark_pick(def)
+    resolve_evolution_pick(def)
   end
+  api.apply_mark_choice = api.apply_evolution_choice
 
   function api.try_process_reward_queue()
     return try_process_reward_queue()
@@ -1375,22 +1717,22 @@ function M.create(env)
     end
   end
 
-  function api.try_queue_mark_node_for_level(level)
-    local node = MARK_NODES_BY_LEVEL[level]
+  function api.try_queue_evolution_node_for_level(level)
+    local node = EVOLUTION_NODES_BY_LEVEL[level]
     if not node then
       return false
     end
 
-    local runtime = api.get_mark_runtime()
+    local runtime = api.get_evolution_runtime()
     if runtime.triggered_node_ids[node.id] then
       return false
     end
 
     runtime.triggered_node_ids[node.id] = true
 
-    local choices = pick_mark_choices_for_rule(node.pool_rule_id, node.choice_count or 3)
+    local choices = pick_mark_choices_for_rule(node.pool_rule_id, node.choice_count or 2)
     if #choices == 0 then
-      message(string.format('%s：本局没有可用进化候选。', node.ui_title or '进化选择'))
+      message(string.format('%s：本局没有可用真身候选。', node.ui_title or '真身进化'))
       return false
     end
 
@@ -1401,31 +1743,35 @@ function M.create(env)
       node_id = node.id,
       trigger_level = node.trigger_level,
       ui_title = node.ui_title,
+      choice_count = #choices,
       state = 'queued',
+      candidate_evolution_ids = {},
       candidate_mark_ids = {},
     }
 
     for _, def in ipairs(choices) do
+      runtime.rounds_by_id[round_id].candidate_evolution_ids[#runtime.rounds_by_id[round_id].candidate_evolution_ids + 1] = def.id
       runtime.rounds_by_id[round_id].candidate_mark_ids[#runtime.rounds_by_id[round_id].candidate_mark_ids + 1] = def.id
     end
 
     enqueue_reward_entry({
-      kind = 'mark_choice',
+      kind = 'evolution_choice',
       priority = node.queue_priority or 95,
       round_id = round_id,
-      source_name = node.ui_title or '进化选择',
+      source_name = node.ui_title or '真身进化',
     })
 
     if runtime.awaiting_choice then
-      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '进化选择'))
+      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '真身进化'))
       return true
     end
 
     if not try_process_reward_queue() and api.get_reward_queue_count() > 0 then
-      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '进化选择'))
+      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '真身进化'))
     end
     return true
   end
+  api.try_queue_mark_node_for_level = api.try_queue_evolution_node_for_level
 
   function api.has_pending_treasure_choice()
     local runtime = STATE.treasure_runtime
