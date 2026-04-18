@@ -26,12 +26,14 @@ function M.create(env)
   local initialize_hero_progression = env.initialize_hero_progression
   local ensure_gear_runtime = env.ensure_gear_runtime
   local sync_gear_items_to_hero = env.sync_gear_items_to_hero
+  local sync_gear_runtime_effects = env.sync_gear_runtime_effects
   local unlock_attack_skill = env.unlock_attack_skill
   local show_attack_skill_loadout = env.show_attack_skill_loadout
   local setup_basic_attack_ability = env.setup_basic_attack_ability
   local ensure_runtime_hud = env.ensure_runtime_hud
   local set_battle_hud_visible = env.set_battle_hud_visible
   local refresh_runtime_hud = env.refresh_runtime_hud
+  local enter_battle_audio = env.enter_battle_audio
 
   local function grant_equipment_drag_test_items(hero)
     if not hero or not hero.add_item then
@@ -151,6 +153,7 @@ function M.create(env)
     STATE.basic_attack_ability_warned = false
     STATE.runtime_elapsed = 0
     STATE.hero_attr_runtime = nil
+    STATE.gear_state = nil
     STATE.choice_panel_hidden = false
     STATE.choice_panel = nil
     STATE.game_finished = false
@@ -264,6 +267,12 @@ function M.create(env)
     if sync_gear_items_to_hero and STATE.hero then
       sync_gear_items_to_hero(STATE, STATE.hero, CONFIG.gear_upgrade_config)
     end
+    if sync_gear_runtime_effects and STATE.hero then
+      sync_gear_runtime_effects(STATE, STATE.hero, CONFIG.gear_upgrade_config)
+      if hero_attr_system and hero_attr_system.get_attr and STATE.hero.set_hp then
+        STATE.hero:set_hp(hero_attr_system.get_attr(STATE.hero, '生命结算值'))
+      end
+    end
     if STATE.hero then
       grant_equipment_drag_test_items(STATE.hero)
     end
@@ -282,6 +291,9 @@ function M.create(env)
     setup_basic_attack_ability()
     grant_test_attack_skills_on_stage_start()
     try_initialize_battle_ui()
+    if enter_battle_audio then
+      enter_battle_audio()
+    end
 
     if stage_def.content_source_stage_id and stage_def.content_source_stage_id ~= stage_def.stage_id then
     end

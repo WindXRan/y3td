@@ -21,10 +21,10 @@ def test_enemy_death_audio_is_wired() -> None:
     boot = read_text(BOOT_PATH)
     battlefield = read_text(BATTLEFIELD_PATH)
 
-    assert_contains(audio, "enemy_death_heavy = {", "audio runtime should define heavy enemy death audio candidates")
+    assert_contains(audio, "enemy_death_heavy = prepend_audio_ids({", "audio runtime should define heavy enemy death audio candidates with local fallbacks")
     assert_contains(audio, "'134257420'", "audio runtime should keep the legacy heavy death sound id as first candidate")
     assert_contains(audio, "'126040'", "audio runtime should include a valid heavy death fallback")
-    assert_contains(audio, "enemy_death_burst = {", "audio runtime should define burst enemy death audio candidates")
+    assert_contains(audio, "enemy_death_burst = prepend_audio_ids({", "audio runtime should define burst enemy death audio candidates with local fallbacks")
     assert_contains(audio, "'134257799'", "audio runtime should keep the legacy burst death sound id as first candidate")
     assert_contains(audio, "'126054'", "audio runtime should include a valid burst death fallback")
     assert_contains(audio, "local function play_enemy_death(unit, is_boss)", "audio runtime should expose enemy death audio helper")
@@ -37,3 +37,17 @@ def test_enemy_death_audio_is_wired() -> None:
 
     assert_contains(battlefield, "local play_enemy_death_sound = env.play_enemy_death_sound", "battlefield should receive enemy death audio callback")
     assert_contains(battlefield, "play_enemy_death_sound(unit, info)", "battlefield death reaction should trigger audio")
+
+
+def test_audio_runtime_primes_channels_and_listener() -> None:
+    audio = read_text(AUDIO_PATH)
+
+    assert_contains(audio, "local function ensure_audio_channels_ready()", "audio runtime should initialize audio channel state before playback")
+    assert_contains(audio, "GameAPI.open_background_music", "audio runtime should force-enable background music when runtime audio starts")
+    assert_contains(audio, "GameAPI.open_battle_music", "audio runtime should force-enable battle audio when runtime audio starts")
+    assert_contains(audio, "GameAPI.set_background_music_volume", "audio runtime should restore background music volume when it is muted")
+    assert_contains(audio, "GameAPI.set_battle_music_volume", "audio runtime should restore battle audio volume when it is muted")
+    assert_contains(audio, "local function ensure_audio_listener(anchor)", "audio runtime should bind a 3D listener before world-space playback")
+    assert_contains(audio, "GameAPI.set_player_listener_to_follow_unit", "audio runtime should attach the player listener to the hero or playback anchor")
+    assert_contains(audio, "local player = ensure_audio_channels_ready()", "2D audio playback should route through the audio initialization helper")
+    assert_contains(audio, "local player = ensure_audio_listener(unit)", "unit audio playback should route through the listener helper")

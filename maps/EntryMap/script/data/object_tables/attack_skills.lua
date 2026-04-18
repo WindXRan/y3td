@@ -2,6 +2,7 @@ local CsvLoader = require 'data.csv_loader'
 local helpers = require 'entry_objects.helpers'
 local SecondBatchBlueprints = require 'entry_objects.attack_skill_blueprints.second_batch_skills'
 local SkillTaxonomy = require 'data.object_tables.attack_skill_taxonomy'
+local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
 
 local skill_rows = CsvLoader.read_rows('data_csv/attack_skills.csv')
 local vfx_rows = CsvLoader.read_rows('data_csv/attack_skill_vfx.csv')
@@ -118,6 +119,7 @@ for _, row in ipairs(skill_rows) do
     damage_form = damage_form,
     element = element,
     damage_label = damage_label,
+    editor_ability_key = RuntimeEditorIds.ability[row.id],
     vfx = build_vfx(row.id),
   }
 
@@ -150,6 +152,7 @@ for _, blueprint in ipairs(SecondBatchBlueprints.list or {}) do
       cast_family = nil,
       presentation_family = nil,
       eca_reference = nil,
+      editor_ability_key = RuntimeEditorIds.ability[blueprint.id],
       base_damage_ratio = blueprint.base and blueprint.base.damage_ratio or 0,
       base_cooldown = blueprint.base and blueprint.base.cooldown or 0,
       base_range = blueprint.base and blueprint.base.range or 0,

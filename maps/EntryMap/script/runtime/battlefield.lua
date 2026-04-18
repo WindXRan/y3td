@@ -505,6 +505,11 @@ function M.create(env)
       play_enemy_death_sound(unit, info)
     end
 
+    -- 默认关闭死亡粒子反馈，只保留音效与后续结算。
+    if CONFIG.enemy_death_reaction_enabled ~= true then
+      return 0.30
+    end
+
     unit:stop()
     pcall(function()
       unit:mover_line({
@@ -689,9 +694,11 @@ function M.create(env)
       return true
     end
 
-    unit:event('单位-受到伤害后', function(_, data)
-      play_enemy_hit_reaction(unit, info, data)
-    end)
+    if CONFIG.enemy_hit_reaction_enabled ~= false then
+      unit:event('单位-受到伤害后', function(_, data)
+        play_enemy_hit_reaction(unit, info, data)
+      end)
+    end
 
     unit:event('单位-死亡', function(_, data)
       if not info.remove_runtime(true) then
@@ -936,10 +943,18 @@ function M.create(env)
       elapsed = 0,
       active = true,
       boss_spawned = false,
+      boss_warning_sent = false,
       boss_info = nil,
       alive_count = 0,
       next_spawn_sec = 0,
     }
+
+    message(string.format(
+      '%s 开始，%s 将在 %.0f 秒后登场。',
+      wave.name or string.format('第 %d 波', index),
+      get_boss_name(wave),
+      design_seconds(wave.boss_spawn_sec or 0)
+    ))
 
     if env.on_wave_started then
       env.on_wave_started(index)
@@ -955,6 +970,7 @@ function M.create(env)
     STATE.active_challenges[instance.id] = nil
 
     if is_success then
+      message(instance.def.name .. ' 成功。')
       local handled = false
       if env.handle_challenge_success then
         handled = env.handle_challenge_success(instance) == true
@@ -1132,6 +1148,17 @@ function M.create(env)
       local interval = get_spawn_interval(runner.wave, runner.elapsed, runner.boss_spawned)
       interval = math.max(interval, 0.2)
       runner.next_spawn_sec = runner.next_spawn_sec + interval
+    end
+
+    if not runner.boss_spawned and runner.boss_warning_sent ~= true then
+      local remain = math.max(0, (runner.wave.boss_spawn_sec or 0) - (runner.elapsed or 0))
+      if remain <= 6 then
+        runner.boss_warning_sent = true
+        message(string.format('警告：%s 将在 %.0f 秒后登场。', get_boss_name(runner.wave), design_seconds(remain)))
+        if env.on_boss_warning then
+          env.on_boss_warning(runner.wave, remain)
+        end
+      end
     end
 
     if not runner.boss_spawned and runner.elapsed >= runner.wave.boss_spawn_sec then

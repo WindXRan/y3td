@@ -26,42 +26,60 @@ local function get_config(config)
   return config or DefaultConfig
 end
 
+local function clone_bonus_pack(pack)
+  local result = {}
+  for attr_name, value in pairs(pack or {}) do
+    if value ~= 0 then
+      result[attr_name] = value
+    end
+  end
+  return result
+end
+
+local function add_bonus_pack(target, pack)
+  for attr_name, value in pairs(pack or {}) do
+    local number = tonumber(value) or 0
+    if number ~= 0 then
+      target[attr_name] = (target[attr_name] or 0) + number
+    end
+  end
+  return target
+end
+
 local function get_slot_config(slot, config)
-  return get_config(config).slots and get_config(config).slots[slot] or nil
+  local resolved = get_config(config)
+  return resolved.slots and resolved.slots[slot] or nil
 end
 
-local function get_level_config(level, config)
-  return get_config(config).levels_by_level and get_config(config).levels_by_level[level] or nil
+local function get_slot_weapon_id(slot, config)
+  local slot_cfg = get_slot_config(slot, config)
+  if slot_cfg and slot_cfg.weapon_id and slot_cfg.weapon_id ~= '' then
+    return slot_cfg.weapon_id
+  end
+  return slot
 end
 
-local function make_affix_choices(slot, level)
-  local slot_label = SLOT_LABELS[slot] or tostring(slot)
-  local slot_cfg = get_slot_config(slot)
-  local choice_count = slot_cfg and slot_cfg.affix_choice_count or CHOICE_COUNT
-  if choice_count < 1 then
-    choice_count = CHOICE_COUNT
+local function get_level_config(slot, level, config, weapon_id)
+  local resolved = get_config(config)
+  local final_weapon_id = weapon_id or get_slot_weapon_id(slot, resolved)
+  if resolved.levels_by_weapon and resolved.levels_by_weapon[final_weapon_id] then
+    return resolved.levels_by_weapon[final_weapon_id][level] or nil
   end
-  local choices = {
-    {
-      id = slot .. '_affix_' .. tostring(level) .. '_1',
-      display_name = slot_label .. '锋芒',
-      summary = '攻击向词缀',
-    },
-    {
-      id = slot .. '_affix_' .. tostring(level) .. '_2',
-      display_name = slot_label .. '专注',
-      summary = '功能向词缀',
-    },
-    {
-      id = slot .. '_affix_' .. tostring(level) .. '_3',
-      display_name = slot_label .. '底蕴',
-      summary = '成长向词缀',
-    },
-  }
-  while #choices > choice_count do
-    choices[#choices] = nil
+  if resolved.levels_by_level then
+    return resolved.levels_by_level[level] or nil
   end
-  return choices
+  return nil
+end
+
+local function get_affix_pool(pool_id, config)
+  if not pool_id then
+    return {}
+  end
+  local resolved = get_config(config)
+  if resolved.affixes_by_pool and resolved.affixes_by_pool[pool_id] then
+    return resolved.affixes_by_pool[pool_id]
+  end
+  return {}
 end
 
 local function get_max_level(slot, config)
@@ -72,8 +90,8 @@ local function get_max_level(slot, config)
   return MAX_LEVEL
 end
 
-local function is_affix_node(level, config)
-  local level_cfg = get_level_config(level, config)
+local function is_affix_node(slot, level, config, weapon_id)
+  local level_cfg = get_level_config(slot, level, config, weapon_id)
   if level_cfg ~= nil then
     return level_cfg.is_affix_node == true
   end
@@ -82,14 +100,23 @@ end
 
 local function ensure_item(runtime, slot)
   local slot_cfg = runtime.config and runtime.config.slots and runtime.config.slots[slot] or nil
+  local init_level = slot_cfg and tonumber(slot_cfg.init_level) or 1
   runtime.items[slot] = runtime.items[slot] or {
     slot = slot,
-    level = 1,
+    level = math.max(1, init_level or 1),
     affixes = {},
     item_key = slot_cfg and slot_cfg.item_key or nil,
+    weapon_id = slot_cfg and slot_cfg.weapon_id or slot,
   }
+  runtime.items[slot].level = math.max(1, tonumber(runtime.items[slot].level) or init_level or 1)
+  runtime.items[slot].affixes = runtime.items[slot].affixes or {}
   if runtime.items[slot].item_key == nil and slot_cfg and slot_cfg.item_key ~= nil then
     runtime.items[slot].item_key = slot_cfg.item_key
+  end
+  if (runtime.items[slot].weapon_id == nil or runtime.items[slot].weapon_id == '')
+    and slot_cfg
+    and slot_cfg.weapon_id ~= nil then
+    runtime.items[slot].weapon_id = slot_cfg.weapon_id
   end
   return runtime.items[slot]
 end
@@ -165,17 +192,162 @@ local function build_affix_lines(item)
   return lines
 end
 
+local function item_has_unique_affix(item, affix_def)
+  if not affix_def then
+    return false
+  end
+  local unique_group = affix_def.unique_group
+  local is_unique = affix_def.is_unique == true
+  if not unique_group and not is_unique then
+    return false
+  end
+
+  for _, owned in ipairs(item.affixes or {}) do
+    if unique_group and owned.unique_group == unique_group then
+      return true
+    end
+    if is_unique and owned.id == affix_def.affix_id then
+      return true
+    end
+  end
+  return false
+end
+
+local function build_affix_choice(affix_def, level)
+  return {
+    id = affix_def.affix_id,
+    affix_id = affix_def.affix_id,
+    level = level,
+    display_name = affix_def.display_name,
+    summary = affix_def.summary,
+    bonus_pack = clone_bonus_pack(affix_def.bonus_pack),
+    unique_group = affix_def.unique_group,
+    is_unique = affix_def.is_unique == true,
+  }
+end
+
+local function make_fallback_affix_choices(slot, level, choice_count)
+  local slot_label = SLOT_LABELS[slot] or tostring(slot)
+  local choices = {
+    {
+      id = slot .. '_affix_' .. tostring(level) .. '_1',
+      display_name = slot_label .. '锋芒',
+      summary = '攻击向词缀',
+      bonus_pack = {},
+    },
+    {
+      id = slot .. '_affix_' .. tostring(level) .. '_2',
+      display_name = slot_label .. '专注',
+      summary = '功能向词缀',
+      bonus_pack = {},
+    },
+    {
+      id = slot .. '_affix_' .. tostring(level) .. '_3',
+      display_name = slot_label .. '底蕴',
+      summary = '成长向词缀',
+      bonus_pack = {},
+    },
+  }
+  while #choices > choice_count do
+    choices[#choices] = nil
+  end
+  return choices
+end
+
+local function make_affix_choices(slot, item, level, config)
+  local slot_cfg = get_slot_config(slot, config)
+  local choice_count = slot_cfg and slot_cfg.affix_choice_count or CHOICE_COUNT
+  if choice_count < 1 then
+    choice_count = CHOICE_COUNT
+  end
+
+  local level_cfg = get_level_config(slot, level, config, item and item.weapon_id or nil)
+  local pool = get_affix_pool(level_cfg and level_cfg.affix_pool_id or nil, config)
+  local choices = {}
+
+  for _, affix_def in ipairs(pool) do
+    if not item_has_unique_affix(item, affix_def) then
+      choices[#choices + 1] = build_affix_choice(affix_def, level)
+      if #choices >= choice_count then
+        break
+      end
+    end
+  end
+
+  if #choices == 0 then
+    return make_fallback_affix_choices(slot, level, choice_count)
+  end
+
+  return choices
+end
+
+local function queue_affix_choice(runtime, slot, level)
+  local item = ensure_item(runtime, slot)
+  runtime.awaiting_choice = true
+  runtime.pending_affix_choice = {
+    slot = slot,
+    level = level,
+    weapon_id = item.weapon_id,
+  }
+  runtime.current_choices = make_affix_choices(slot, item, level, runtime.config)
+end
+
+local function compute_item_bonus(item, config)
+  local total = {}
+  local current_level = tonumber(item and item.level) or 1
+
+  for level = 1, math.max(1, current_level) - 1, 1 do
+    local level_cfg = get_level_config(item.slot, level, config, item.weapon_id)
+    if level_cfg and level_cfg.bonus_pack then
+      add_bonus_pack(total, level_cfg.bonus_pack)
+    end
+  end
+
+  for _, affix in ipairs(item.affixes or {}) do
+    add_bonus_pack(total, affix.bonus_pack)
+  end
+
+  return total
+end
+
+local function apply_bonus_diff(hero, hero_attr_system, previous_bonus, next_bonus)
+  local changed = false
+  local seen = {}
+
+  for attr_name, value in pairs(next_bonus or {}) do
+    local number = tonumber(value) or 0
+    seen[attr_name] = true
+    local previous = tonumber(previous_bonus and previous_bonus[attr_name]) or 0
+    local delta = number - previous
+    if delta ~= 0 then
+      hero_attr_system.add_attr(hero, attr_name, delta)
+      changed = true
+    end
+  end
+
+  for attr_name, previous in pairs(previous_bonus or {}) do
+    if not seen[attr_name] and previous ~= 0 then
+      hero_attr_system.add_attr(hero, attr_name, -previous)
+      changed = true
+    end
+  end
+
+  return changed
+end
+
 function M.ensure_runtime(state, config)
   state.gear_state = state.gear_state or {
     items = {},
     awaiting_choice = false,
     current_choices = nil,
     pending_affix_choice = nil,
+    applied_attr_bonuses = {},
   }
 
   local runtime = state.gear_state
   runtime.config = get_config(config)
   runtime.items = runtime.items or {}
+  runtime.applied_attr_bonuses = runtime.applied_attr_bonuses or {}
   for _, slot in ipairs(SLOT_ORDER) do
     ensure_item(runtime, slot)
   end
@@ -198,21 +370,12 @@ function M.get_upgrade_cost(slot, current_level, config)
   if current_level >= get_max_level(slot, config) then
     return 0
   end
-  local level_cfg = get_level_config(current_level, config)
+  local level_cfg = get_level_config(slot, current_level, config)
   if level_cfg then
     return level_cfg.gold_cost
   end
   local band_index = math.floor(math.max(0, current_level - 1) / 10)
   return 100 + band_index * 50
-end
-
-local function queue_affix_choice(runtime, slot, level)
-  runtime.awaiting_choice = true
-  runtime.pending_affix_choice = {
-    slot = slot,
-    level = level,
-  }
-  runtime.current_choices = make_affix_choices(slot, level)
 end
 
 function M.try_upgrade_levels(env, slot, count)
@@ -240,7 +403,7 @@ function M.try_upgrade_levels(env, slot, count)
     resources.gold = (resources.gold or 0) - cost
     item.level = item.level + 1
 
-    if is_affix_node(item.level, runtime.config) then
+    if is_affix_node(slot, item.level, runtime.config, item.weapon_id) then
       queue_affix_choice(runtime, slot, item.level)
       return item.level
     end
@@ -271,12 +434,40 @@ function M.apply_affix_choice(env, choice_index)
     level = pending.level,
     display_name = choice.display_name,
     summary = choice.summary,
+    bonus_pack = clone_bonus_pack(choice.bonus_pack),
+    unique_group = choice.unique_group,
+    is_unique = choice.is_unique == true,
   }
 
   runtime.awaiting_choice = false
   runtime.current_choices = nil
   runtime.pending_affix_choice = nil
   return true
+end
+
+function M.sync_runtime_bonuses(state, hero, config, hero_attr_system)
+  if not state or not hero or not hero_attr_system or not hero_attr_system.add_attr then
+    return false
+  end
+
+  local runtime = M.ensure_runtime(state, config)
+  local changed = false
+
+  for _, slot in ipairs(SLOT_ORDER) do
+    local item = ensure_item(runtime, slot)
+    local next_bonus = compute_item_bonus(item, runtime.config)
+    local previous_bonus = runtime.applied_attr_bonuses[slot] or {}
+    if apply_bonus_diff(hero, hero_attr_system, previous_bonus, next_bonus) then
+      changed = true
+    end
+    runtime.applied_attr_bonuses[slot] = clone_bonus_pack(next_bonus)
+  end
+
+  if changed and hero_attr_system.rebuild_derived_attrs then
+    hero_attr_system.rebuild_derived_attrs(hero)
+  end
+
+  return changed
 end
 
 function M.build_slot_text(state, slot)

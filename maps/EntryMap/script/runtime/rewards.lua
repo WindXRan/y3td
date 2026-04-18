@@ -1176,11 +1176,37 @@ function M.create(env)
     STATE.basic_attack_ability_warned = false
     STATE.basic_attack_animation_names = nil
     STATE.basic_attack_animation_index = 0
+    if STATE.attack_skill_state and STATE.attack_skill_state.by_id and STATE.attack_skill_state.by_id.basic_attack then
+      STATE.attack_skill_state.by_id.basic_attack.cooldown_remaining = 0
+    end
 
     if setup_basic_attack_ability then
       setup_basic_attack_ability()
     else
       sync_basic_attack_ability()
+    end
+
+    -- transformation 有时会在当前帧之后继续覆盖单位默认属性/普攻对象，
+    -- 这里延迟再补一轮恢复，避免进化后偶发拿到 0 射程或空普攻句柄。
+    for _, delay in ipairs({ 0.03, 0.12, 0.35 }) do
+      y3.ltimer.wait(delay, function()
+        if not STATE.hero or not STATE.hero:is_exist() or STATE.game_finished then
+          return
+        end
+        restore_hero_attr_snapshot(snapshot and snapshot.attr_snapshot or nil)
+        STATE.hero_common_attack = nil
+        STATE.basic_attack_ability_bound = false
+        STATE.basic_attack_ability_warned = false
+        STATE.basic_attack_animation_names = nil
+        if STATE.attack_skill_state and STATE.attack_skill_state.by_id and STATE.attack_skill_state.by_id.basic_attack then
+          STATE.attack_skill_state.by_id.basic_attack.cooldown_remaining = 0
+        end
+        if setup_basic_attack_ability then
+          setup_basic_attack_ability()
+        else
+          sync_basic_attack_ability()
+        end
+      end)
     end
 
     if get_player then

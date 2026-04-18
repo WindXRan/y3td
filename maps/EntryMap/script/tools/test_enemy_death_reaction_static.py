@@ -3,6 +3,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BATTLEFIELD = ROOT / "runtime" / "battlefield.lua"
+ENTRY_CONFIG = ROOT / "config" / "entry_config.lua"
 
 
 def test_enemy_death_reaction_is_wired() -> None:
@@ -22,3 +23,11 @@ def test_enemy_death_reaction_is_wired() -> None:
     assert "unit:event('单位-死亡', function(_, data)" in content
     assert "local corpse_remove_delay = play_enemy_death_reaction(unit, info, data)" in content
     assert "y3.ltimer.wait(corpse_remove_delay, function()" in content
+
+
+def test_enemy_death_reaction_is_disabled_by_default() -> None:
+    config = ENTRY_CONFIG.read_text(encoding="utf-8")
+    content = BATTLEFIELD.read_text(encoding="utf-8")
+
+    assert "enemy_death_reaction_enabled = false" in config
+    assert "if CONFIG.enemy_death_reaction_enabled ~= true then" in content

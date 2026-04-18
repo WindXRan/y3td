@@ -21,7 +21,7 @@ def test_basic_attack_audio_is_wired() -> None:
     attack_skills = read_text(ATTACK_SKILLS_PATH)
     boot = read_text(BOOT_PATH)
 
-    assert_contains(audio, "basic_attack = {", "audio runtime should define basic attack audio candidates")
+    assert_contains(audio, "basic_attack = prepend_audio_ids({", "audio runtime should define basic attack audio candidates with local fallbacks")
     assert_contains(audio, "'134257538'", "audio runtime should keep the legacy basic attack sound id as first candidate")
     assert_contains(audio, "'123160'", "audio runtime should include a valid swish fallback for basic attacks")
     assert_contains(audio, "local function resolve_audio_key(audio_ids, audio_label)", "audio runtime should resolve audio candidates with fallback support")

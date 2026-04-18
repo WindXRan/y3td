@@ -27,5 +27,10 @@ assert(mod.defs_by_id.sword_wave ~= nil, 'expected sword_wave def to be bridged 
 assert(mod.defs_by_id.sword_wave.base_range == 980, 'expected sword_wave base_range to match')
 assert(mod.defs_by_id.sword_wave.ui_icon == 106990, 'expected sword_wave icon to be bridged into defs_by_id')
 assert(mod.defs_by_id.sword_wave.evolution_name == '崩岳天锋', 'expected sword_wave evolution name to match')
+assert(mod.vfx_by_id.sword_wave.projectile_key == 201364743, 'expected sword_wave projectile_key to use its dedicated projectile')
+assert(mod.vfx_by_id.arcane_ray.projectile_key == 134264830, 'expected arcane_ray projectile_key to use its dedicated projectile')
+assert(mod.vfx_by_id.moon_blade.projectile_key == 201364750, 'expected moon_blade projectile_key to use its dedicated projectile')
+assert(mod.vfx_by_id.fireball.projectile_key == 201364749, 'expected fireball projectile_key to use its dedicated projectile')
+assert(mod.vfx_by_id.flying_swords.projectile_key == 201364753, 'expected flying_swords projectile_key to use its dedicated projectile')
 
 print('[OK] attack skills csv loader smoke passed')

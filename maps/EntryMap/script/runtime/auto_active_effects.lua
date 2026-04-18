@@ -1,9 +1,11 @@
 local EffectObjects = require 'entry_objects.auto_active_effects'
+local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
 
 local M = {}
 
 function M.create(env)
   local STATE = env.STATE
+  local CONFIG = env.CONFIG or {}
   local y3 = env.y3
   local hero_attr_system = env.hero_attr_system
   local ATTACK_SKILL_VFX = env.ATTACK_SKILL_VFX
@@ -16,7 +18,9 @@ function M.create(env)
   local EFFECT_LIST = EffectObjects.list
   local MODIFIER_KEYS = {
     stun = 117,
-    fighting_spirit = nil,
+    fighting_spirit = RuntimeEditorIds.modifier.auto_active_effect.fighting_spirit_field,
+    rapid_overdrive = RuntimeEditorIds.modifier.auto_active_effect.rapid_overdrive,
+    charge_breaker_rally = RuntimeEditorIds.modifier.auto_active_effect.charge_breaker_rally,
   }
 
   local function get_runtime()
@@ -118,6 +122,13 @@ function M.create(env)
     return math.max(1, get_unit_attr(STATE.hero, '物理攻击'))
   end
 
+  local function clone_point(point)
+    if not point or not point.move then
+      return nil
+    end
+    return point:move()
+  end
+
   local function get_intelligence()
     return math.max(1, get_unit_attr(STATE.hero, '智力'))
   end
@@ -174,6 +185,9 @@ function M.create(env)
   end
 
   local function play_particle_on_unit(unit, effect_key, scale, time, socket)
+    if CONFIG.attack_skill_single_effect_mode == true then
+      return nil
+    end
     if not effect_key or not unit or not unit:is_exist() then
       return nil
     end
@@ -193,6 +207,9 @@ function M.create(env)
   end
 
   local function play_particle_on_point(point, effect_key, scale, time, height)
+    if CONFIG.attack_skill_single_effect_mode == true then
+      return nil
+    end
     if not effect_key or not point then
       return nil
     end
@@ -239,6 +256,8 @@ function M.create(env)
     return nil
   end
 
+  local PROJECTILE_FLIGHT_HEIGHT = 100
+
   local function launch_projectile_to_target(vfx, target, on_finish)
     local launch_angle
     if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and target and target:is_exist() then
@@ -250,7 +269,7 @@ function M.create(env)
     end
     if not vfx or not vfx.projectile_key or not target or not target:is_exist() then
       if on_finish then
-        on_finish(target and target:is_exist() and target:get_point() or nil)
+        on_finish(target and target:is_exist() and target:get_point() or nil, false)
       end
       return false
     end
@@ -266,10 +285,14 @@ function M.create(env)
     })
     if not ok_create or not projectile then
       if on_finish then
-        on_finish(target:get_point())
+        on_finish(target:get_point(), false)
       end
       return false
     end
+
+    pcall(function()
+      projectile:set_height(PROJECTILE_FLIGHT_HEIGHT)
+    end)
 
     if launch_angle ~= nil then
       pcall(function()
@@ -278,16 +301,20 @@ function M.create(env)
     end
 	
     local resolved = false
-    local function finish(final_point)
+    local function finish(final_point, did_hit)
       if resolved then
         return
       end
       resolved = true
+      local resolved_point = final_point
+      if projectile and projectile:is_exist() then
+        resolved_point = final_point or clone_point(projectile:get_point()) or resolved_point
+      end
       if projectile and projectile:is_exist() then
         projectile:remove()
       end
       if on_finish then
-        on_finish(final_point)
+        on_finish(resolved_point, did_hit == true)
       end
     end
 
@@ -296,20 +323,25 @@ function M.create(env)
         target = target,
         speed = vfx.projectile_speed or 1000,
         target_distance = vfx.target_distance or 60,
+        height = PROJECTILE_FLIGHT_HEIGHT,
         init_angle = launch_angle,
         rotate_time = 0.0,
         face_angle = true,
+        miss_when_target_destroy = true,
         on_finish = function()
-          finish(target:get_point())
+          finish(target:get_point(), true)
         end,
         on_break = function()
-          finish(target:get_point())
+          finish(target:is_exist() and target:get_point() or nil, false)
+        end,
+        on_miss = function()
+          finish(target and target:is_exist() and target:get_point() or nil, false)
         end,
       })
     end)
 
     if not ok_move then
-      finish(target:get_point())
+      finish(target:is_exist() and target:get_point() or nil, false)
       return false
     end
     return true
@@ -591,6 +623,7 @@ function M.create(env)
     sync_temp_attr_bonus(def.id, {
       ['攻击速度'] = def.attack_speed_bonus or 100,
     }, def.duration or 5.0)
+    try_add_buff(def.id, STATE.hero, def.modifier_key or MODIFIER_KEYS.rapid_overdrive, def.duration or 5.0)
     local vfx = ATTACK_SKILL_VFX[def.vfx]
     play_particle_on_unit(STATE.hero, vfx and vfx.cast_particle or vfx and vfx.impact_particle or nil, 1.05, 0.25, 'origin')
     return true
@@ -636,6 +669,7 @@ function M.create(env)
 
   local function trigger_charge_breaker_rally(def)
     sync_temp_attr_bonus(def.id, def.attr or {}, def.duration or 10.0)
+    try_add_buff(def.id, STATE.hero, def.modifier_key or MODIFIER_KEYS.charge_breaker_rally, def.duration or 10.0)
     local vfx = ATTACK_SKILL_VFX[def.vfx]
     play_particle_on_unit(STATE.hero, vfx and vfx.cast_particle or vfx and vfx.impact_particle or nil, 1.2, 0.35, 'origin')
     return true
@@ -663,7 +697,10 @@ function M.create(env)
 
     local vfx = ATTACK_SKILL_VFX[def.vfx]
     local damage = get_attack_damage_base() * (def.damage_ratio or 1)
-    launch_projectile_to_target(vfx, resolved_target, function(impact_point)
+    launch_projectile_to_target(vfx, resolved_target, function(impact_point, did_hit)
+      if did_hit ~= true then
+        return
+      end
       if impact_point and vfx and vfx.impact_particle then
         play_particle_on_point(impact_point, vfx.impact_particle, vfx.impact_scale, vfx.impact_time, 18)
       end

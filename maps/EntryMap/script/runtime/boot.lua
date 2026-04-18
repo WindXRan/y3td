@@ -396,6 +396,9 @@ local BattleEventPrompts = BattleEventPromptsFactory.create({
   ensure_round_choice_available = function(allowed_kind)
     return ensure_round_choice_available(allowed_kind)
   end,
+  sync_gear_runtime_effects = function(state, hero, config)
+    return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
+  end,
 })
 
 local function is_choice_panel_blocking_messages()
@@ -576,150 +579,6 @@ mainline_task_system = require('runtime.mainline_tasks').create({
   end,
 })
 
-local function create_treasure_runtime()
-  return reward_system.create_treasure_runtime()
-end
-
-local function create_evolution_runtime()
-  return reward_system.create_evolution_runtime()
-end
-
-local function create_mark_runtime()
-  return create_evolution_runtime()
-end
-
-local function get_treasure_runtime()
-  return reward_system.get_treasure_runtime()
-end
-
-local function get_evolution_runtime()
-  return reward_system.get_evolution_runtime()
-end
-
-local function get_mark_runtime()
-  return get_evolution_runtime()
-end
-
-local function get_reward_queue()
-  return reward_system.get_reward_queue()
-end
-
-local function get_reward_queue_count()
-  return reward_system.get_reward_queue_count()
-end
-
-local function get_treasure_quality_label(quality)
-  return reward_system.get_treasure_quality_label(quality)
-end
-
-local function get_evolution_quality_label(quality)
-  return reward_system.get_evolution_quality_label(quality)
-end
-
-local function get_mark_quality_label(quality)
-  return get_evolution_quality_label(quality)
-end
-
-local function get_treasure_active_count()
-  return reward_system.get_treasure_active_count()
-end
-
-local function get_evolution_active_count()
-  return reward_system.get_evolution_active_count()
-end
-
-local function get_mark_active_count()
-  return get_evolution_active_count()
-end
-
-local function build_treasure_slot_text(slot)
-  return reward_system.build_treasure_slot_text(slot)
-end
-
-local function build_evolution_slot_text(slot)
-  return reward_system.build_evolution_slot_text(slot)
-end
-
-local function build_mark_slot_text(slot)
-  return build_evolution_slot_text(slot)
-end
-
-local function pick_treasure_choices(choice_count)
-  return reward_system.pick_treasure_choices(choice_count)
-end
-
-local function get_treasure_reward_ratio(key)
-  return reward_system.get_treasure_reward_ratio(key)
-end
-
-local function get_treasure_passive_income(key)
-  return reward_system.get_treasure_passive_income(key)
-end
-
-local function get_treasure_runtime_bonus(key)
-  return reward_system.get_treasure_runtime_bonus(key)
-end
-
-local function build_reward_with_treasure_bonus(reward)
-  return reward_system.build_reward_with_treasure_bonus(reward)
-end
-
-local function apply_treasure_bonus_to_attack_skill(skill_id, skill, bonus, direction)
-  return reward_system.apply_treasure_bonus_to_attack_skill(skill_id, skill, bonus, direction)
-end
-
-local function sync_treasure_effects()
-  return reward_system.sync_treasure_effects()
-end
-
-local function update_temporary_treasures(dt)
-  return reward_system.update_temporary_treasures(dt)
-end
-
-local function sync_mark_effects()
-  return reward_system.sync_mark_effects()
-end
-
-local function sync_evolution_effects()
-  return reward_system.sync_evolution_effects()
-end
-
-local function show_treasure_loadout()
-  return reward_system.show_treasure_loadout()
-end
-
-local function show_evolution_loadout()
-  return reward_system.show_evolution_loadout()
-end
-
-local function show_mark_loadout()
-  return show_evolution_loadout()
-end
-
-local function apply_treasure_choice(index)
-  return reward_system.apply_treasure_choice(index)
-end
-
-local function apply_evolution_choice(index)
-  return reward_system.apply_evolution_choice(index)
-end
-
-local function apply_mark_choice(index)
-  return apply_evolution_choice(index)
-end
-
-local function queue_treasure_round(source_type, source_name)
-  return reward_system.queue_treasure_round(source_type, source_name)
-end
-
-local function try_queue_evolution_node_for_level(level)
-  return reward_system.try_queue_evolution_node_for_level(level)
-end
-
-local function try_queue_mark_node_for_level(level)
-  return try_queue_evolution_node_for_level(level)
-end
-
 show_mark_choices = function()
   return reward_system.show_evolution_choices()
 end
@@ -761,46 +620,6 @@ end
 
 local function update_enemy_statuses(dt)
   return attack_skills_system.update_enemy_statuses(dt)
-end
-
-local function get_hero_max_level()
-  return progression_system.get_hero_max_level()
-end
-
-local function get_engine_exp_cap_level()
-  return progression_system.get_engine_exp_cap_level()
-end
-
-local function get_post_cap_exp_required(level)
-  return progression_system.get_post_cap_exp_required(level)
-end
-
-local function get_hero_level()
-  return progression_system.get_hero_level()
-end
-
-local function get_hero_next_level_exp(level)
-  return progression_system.get_hero_next_level_exp(level)
-end
-
-local function sync_hero_progression()
-  return progression_system.sync_hero_progression()
-end
-
-local function initialize_hero_progression()
-  return progression_system.initialize_hero_progression()
-end
-
-local function sync_hero_progress_from_engine()
-  return progression_system.sync_hero_progress_from_engine()
-end
-
-local function get_hero_progress_text()
-  return progression_system.get_hero_progress_text()
-end
-
-local function grant_hero_exp(amount)
-  return progression_system.grant_hero_exp(amount)
 end
 
 local ReservedRuntimeApi = {}
@@ -904,7 +723,7 @@ local function get_bond_runtime_bonus(key)
 end
 
 local function get_combat_bonus(key)
-  return get_bond_runtime_bonus(key) + get_treasure_runtime_bonus(key)
+  return get_bond_runtime_bonus(key) + reward_system.get_treasure_runtime_bonus(key)
 end
 
 create_bond_env = function()
@@ -1063,6 +882,7 @@ local function deal_skill_damage(target, amount, damage, visual)
     return
   end
 
+  local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false
   local damage_meta = resolve_damage_meta(damage)
   local final_damage = math.floor((amount or 0) * hero_attr_system.get_damage_multiplier(
     STATE.hero,
@@ -1082,9 +902,9 @@ local function deal_skill_damage(target, amount, damage, visual)
     type = damage_meta.damage_type or '法术',
     text_type = resolve_damage_text_type(damage_meta.damage_form, visual),
     text_track = visual and visual.text_track or 934269508,
-    particle = visual and visual.particle or nil,
-    socket = visual and visual.socket or '',
-    pos_socket = visual and visual.pos_socket or '',
+    particle = hit_effect_enabled and visual and visual.particle or nil,
+    socket = hit_effect_enabled and visual and visual.socket or '',
+    pos_socket = hit_effect_enabled and visual and visual.pos_socket or '',
     common_attack = false,
     no_miss = true,
   })
@@ -1107,7 +927,7 @@ heal_hero = function(amount)
 end
 
 award_rewards = function(reward, source_text, silent)
-  local final_reward = build_reward_with_treasure_bonus(reward)
+  local final_reward = reward_system.build_reward_with_treasure_bonus(reward)
   if not final_reward then
     return
   end
@@ -1121,7 +941,7 @@ award_rewards = function(reward, source_text, silent)
   end
 
   if final_reward.exp and final_reward.exp > 0 then
-    grant_hero_exp(final_reward.exp)
+    progression_system.grant_hero_exp(final_reward.exp)
   end
 
   if silent then
@@ -1153,13 +973,13 @@ local function update_passive_resources(dt)
     0,
     (rules.gold_per_sec or 0)
     + get_bond_runtime_bonus('gold_per_sec_bonus')
-    + get_treasure_passive_income('gold')
+    + reward_system.get_treasure_passive_income('gold')
   )
   local wood_per_sec = math.max(
     0,
     (rules.wood_per_sec or 0)
     + get_bond_runtime_bonus('wood_per_sec_bonus')
-    + get_treasure_passive_income('wood')
+    + reward_system.get_treasure_passive_income('wood')
   )
   if (gold_per_sec <= 0 and wood_per_sec <= 0) or not STATE.resources then
     return
@@ -1241,19 +1061,22 @@ local function show_runtime_status()
     '状态：%s，%s，英雄 %s，敌人数 %d，金币 %d，木材 %d，技能点 %d，挑战次数 %s，进行中挑战 %d，待领奖励 %d。',
     wave_text,
     boss_text,
-    get_hero_progress_text(),
+    progression_system.get_hero_progress_text(),
     STATE.total_enemy_alive,
     STATE.resources.gold,
     STATE.resources.wood,
     STATE.skill_points,
     challenge_charge_text,
     challenge_count,
-    get_reward_queue_count()
+    reward_system.get_reward_queue_count()
   ))
 end
 
 local function trigger_td_skills_on_hit(data)
   if STATE.game_finished or not data.is_normal_hit or data.source_unit ~= STATE.hero then
+    return
+  end
+  if CONFIG.attack_skill_single_effect_mode == true then
     return
   end
 
@@ -1272,7 +1095,9 @@ local function trigger_td_skills_on_hit(data)
   local basic_attack_vfx = AttackSkillObjects.vfx_by_id.basic_attack or {}
   local basic_chain_particle = basic_attack_vfx.chain_particle
     or basic_attack_vfx.impact_particle
-    or ((AttackSkillObjects.vfx_by_id.chain_lightning or {}).chain_particle)
+  if CONFIG.damage_hit_effect_enabled == false then
+    basic_chain_particle = nil
+  end
 
   if skill.normal_attack_bonus_ratio > 0 then
     deal_skill_damage(target, data.damage * skill.normal_attack_bonus_ratio, '物理', {
@@ -1341,11 +1166,14 @@ local function handle_challenge_success(instance)
   end
 
   award_rewards(instance.def.reward, instance.def.name .. ' 成功', false)
-  queue_treasure_round(instance.def.id, instance.def.name)
+  reward_system.queue_treasure_round(instance.def.id, instance.def.name)
   return true
 end
 
 local function handle_battle_finished(result)
+  if audio_system and audio_system.handle_battle_finished then
+    audio_system.handle_battle_finished(result)
+  end
   if battlefield_system and battlefield_system.cleanup_battle_units then
     battlefield_system.cleanup_battle_units()
   end
@@ -1371,7 +1199,7 @@ battlefield_system = BattlefieldSystem.create({
   add_attr_pack = add_attr_pack,
   get_player = get_player,
   get_enemy_player = get_enemy_player,
-  get_hero_level = get_hero_level,
+  get_hero_level = progression_system.get_hero_level,
   award_rewards = function(reward, source_text, silent)
     return award_rewards(reward, source_text, silent)
   end,
@@ -1391,6 +1219,9 @@ battlefield_system = BattlefieldSystem.create({
     return trigger_td_skills_on_hit(data)
   end,
   on_wave_started = function(wave_index)
+    if audio_system and audio_system.handle_wave_started then
+      audio_system.handle_wave_started(wave_index)
+    end
     return reward_system.handle_wave_started(wave_index)
   end,
   on_mainline_task_wave_started = function(wave_index)
@@ -1406,18 +1237,36 @@ battlefield_system = BattlefieldSystem.create({
     return mainline_task_system.handle_task_cleared(task)
   end,
   on_boss_spawned = function(boss_info)
+    if audio_system and audio_system.handle_boss_spawned then
+      audio_system.handle_boss_spawned(boss_info)
+    end
     return reward_system.handle_boss_spawned(boss_info)
   end,
+  on_boss_warning = function(wave, remain)
+    if audio_system and audio_system.handle_boss_warning then
+      return audio_system.handle_boss_warning(wave, remain)
+    end
+    return nil
+  end,
   on_challenge_started = function(instance)
+    if audio_system and audio_system.handle_challenge_started then
+      audio_system.handle_challenge_started(instance)
+    end
     return reward_system.handle_challenge_started(instance)
   end,
   on_challenge_finished = function(instance, is_success)
+    if audio_system and audio_system.handle_challenge_finished then
+      audio_system.handle_challenge_finished(instance, is_success)
+    end
     if mainline_task_system and mainline_task_system.handle_challenge_finished then
       mainline_task_system.handle_challenge_finished(instance, is_success)
     end
     return reward_system.handle_challenge_finished(instance, is_success)
   end,
   on_hero_be_hurt = function()
+    if audio_system and audio_system.handle_hero_be_hurt then
+      audio_system.handle_hero_be_hurt()
+    end
     return reward_system.handle_hero_be_hurt()
   end,
   on_hero_attr_changed = snapshot_hero_attrs,
@@ -1460,7 +1309,7 @@ end
 local function unlock_attack_skill(skill_id)
   local skill, slot, is_new = attack_skills_system.unlock_attack_skill(skill_id)
   if is_new and STATE.treasure_runtime and STATE.treasure_runtime.applied then
-    apply_treasure_bonus_to_attack_skill(
+    reward_system.apply_treasure_bonus_to_attack_skill(
       skill_id,
       skill,
       STATE.treasure_runtime.applied.attack_skill or {},
@@ -1468,7 +1317,7 @@ local function unlock_attack_skill(skill_id)
     )
   end
   if is_new and STATE.mark_runtime and STATE.mark_runtime.applied then
-    apply_treasure_bonus_to_attack_skill(
+    reward_system.apply_treasure_bonus_to_attack_skill(
       skill_id,
       skill,
       STATE.mark_runtime.applied.attack_skill or {},
@@ -1483,6 +1332,7 @@ local function update_attack_skills(dt)
 end
 attack_skills_system = AttackSkillsSystem.create({
   STATE = STATE,
+  CONFIG = CONFIG,
   y3 = y3,
   round_number = round_number,
   message = message,
@@ -1527,6 +1377,7 @@ attack_skills_system = AttackSkillsSystem.create({
 
 auto_active_effects_system = AutoActiveEffectsSystem.create({
   STATE = STATE,
+  CONFIG = CONFIG,
   y3 = y3,
   hero_attr_system = hero_attr_system,
   str_to_modifier_key = function(name)
@@ -1661,19 +1512,19 @@ overview_model_system = OverviewModelSystem.create({
   get_current_wave = get_current_wave,
   get_boss_name = get_boss_name,
   get_pending_round_choice_kind = get_pending_round_choice_kind,
-  get_hero_progress_text = get_hero_progress_text,
-  get_reward_queue_count = get_reward_queue_count,
-  get_reward_queue = get_reward_queue,
-  get_mark_runtime = get_mark_runtime,
-  get_treasure_runtime = get_treasure_runtime,
-  get_treasure_quality_label = get_treasure_quality_label,
-  get_treasure_active_count = get_treasure_active_count,
-  get_mark_active_count = get_mark_active_count,
-  build_treasure_slot_text = build_treasure_slot_text,
-  build_mark_slot_text = build_mark_slot_text,
+  get_hero_progress_text = progression_system.get_hero_progress_text,
+  get_reward_queue_count = reward_system.get_reward_queue_count,
+  get_reward_queue = reward_system.get_reward_queue,
+  get_mark_runtime = reward_system.get_evolution_runtime,
+  get_treasure_runtime = reward_system.get_treasure_runtime,
+  get_treasure_quality_label = reward_system.get_treasure_quality_label,
+  get_treasure_active_count = reward_system.get_treasure_active_count,
+  get_mark_active_count = reward_system.get_evolution_active_count,
+  build_treasure_slot_text = reward_system.build_treasure_slot_text,
+  build_mark_slot_text = reward_system.build_evolution_slot_text,
   get_bond_runtime_bonus = get_bond_runtime_bonus,
-  get_treasure_reward_ratio = get_treasure_reward_ratio,
-  get_treasure_passive_income = get_treasure_passive_income,
+  get_treasure_reward_ratio = reward_system.get_treasure_reward_ratio,
+  get_treasure_passive_income = reward_system.get_treasure_passive_income,
   build_attack_skill_slot_text = function(slot)
     return attack_skills_system.build_attack_skill_slot_text(slot)
   end,
@@ -1734,8 +1585,8 @@ end
 local function apply_upgrade(index)
   local result = attack_upgrade_system.apply_upgrade(index)
   STATE.choice_panel_hidden = false
-  sync_mark_effects()
-  sync_treasure_effects()
+  reward_system.sync_mark_effects()
+  reward_system.sync_treasure_effects()
   try_open_queued_treasure_round()
   return result
 end
@@ -1757,12 +1608,12 @@ local function apply_round_choice(index)
   end
   local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
   if evolution_runtime and evolution_runtime.awaiting_choice then
-    apply_evolution_choice(index)
+    reward_system.apply_evolution_choice(index)
     STATE.choice_panel_hidden = false
     return true
   end
   if STATE.treasure_runtime and (STATE.treasure_runtime.awaiting_choice or STATE.treasure_runtime.awaiting_replace) then
-    apply_treasure_choice(index)
+    reward_system.apply_treasure_choice(index)
     STATE.choice_panel_hidden = false
     return true
   end
@@ -1789,8 +1640,8 @@ debug_actions_system = DebugActionsSystem.create({
   is_battle_active = function()
     return is_battle_active and is_battle_active() or false
   end,
-  get_hero_max_level = get_hero_max_level,
-  sync_hero_progression = sync_hero_progression,
+  get_hero_max_level = progression_system.get_hero_max_level,
+  sync_hero_progression = progression_system.sync_hero_progression,
   ATTACK_SKILL_BLUEPRINTS = ATTACK_SKILL_BLUEPRINTS,
   unlock_attack_skill = unlock_attack_skill,
   show_attack_skill_loadout = show_attack_skill_loadout,
@@ -1829,7 +1680,7 @@ debug_tools_system = DebugToolsSystem.create({
   get_hero_point = get_hero_point,
   get_current_wave = get_current_wave,
   get_boss_name = get_boss_name,
-  get_hero_level = get_hero_level,
+  get_hero_level = progression_system.get_hero_level,
   get_active_challenge_count = function()
     return battlefield_system.get_active_challenge_count()
   end,
@@ -1945,7 +1796,7 @@ local function has_pending_treasure_choice()
 end
 
 local function has_pending_evolution_choice()
-  local runtime = get_evolution_runtime()
+  local runtime = reward_system.get_evolution_runtime()
   return runtime
     and runtime.awaiting_choice == true
     and runtime.current_choices
@@ -1970,7 +1821,7 @@ local function try_evolution_entry()
     return true
   end
 
-  show_evolution_loadout()
+  reward_system.show_evolution_loadout()
   message('当前没有待选择的进化。')
   return false
 end
@@ -1992,16 +1843,16 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
   round_number = round_number,
   get_resource_rules = get_resource_rules,
   get_bond_runtime_bonus = get_bond_runtime_bonus,
-  get_treasure_passive_income = get_treasure_passive_income,
-  get_treasure_reward_ratio = get_treasure_reward_ratio,
+  get_treasure_passive_income = reward_system.get_treasure_passive_income,
+  get_treasure_reward_ratio = reward_system.get_treasure_reward_ratio,
   get_player = get_player,
   get_boss_name = get_boss_name,
-  get_hero_level = get_hero_level,
-  get_hero_progress_text = get_hero_progress_text,
+  get_hero_level = progression_system.get_hero_level,
+  get_hero_progress_text = progression_system.get_hero_progress_text,
   get_active_challenge_count = function()
     return battlefield_system.get_active_challenge_count()
   end,
-  get_reward_queue_count = get_reward_queue_count,
+  get_reward_queue_count = reward_system.get_reward_queue_count,
   get_battle_event_feed_entries = function(max_visible)
     return BattleEventFeedSystem.get_visible_entries(
       STATE.battle_event_feed,
@@ -2105,14 +1956,14 @@ choice_panel_system = (function()
     ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS,
     TREASURE_DEFS = reward_system.TREASURE_DEFS,
     get_pending_round_choice_kind = get_pending_round_choice_kind,
-    get_evolution_runtime = get_evolution_runtime,
-    get_evolution_quality_label = get_evolution_quality_label,
-    get_mark_runtime = get_mark_runtime,
-    get_mark_quality_label = get_mark_quality_label,
-    get_treasure_runtime = get_treasure_runtime,
-    get_treasure_quality_label = get_treasure_quality_label,
-    get_treasure_active_count = get_treasure_active_count,
-    pick_treasure_choices = pick_treasure_choices,
+    get_evolution_runtime = reward_system.get_evolution_runtime,
+    get_evolution_quality_label = reward_system.get_evolution_quality_label,
+    get_mark_runtime = reward_system.get_evolution_runtime,
+    get_mark_quality_label = reward_system.get_evolution_quality_label,
+    get_treasure_runtime = reward_system.get_treasure_runtime,
+    get_treasure_quality_label = reward_system.get_treasure_quality_label,
+    get_treasure_active_count = reward_system.get_treasure_active_count,
+    pick_treasure_choices = reward_system.pick_treasure_choices,
     create_bond_env = function()
       return create_bond_env()
     end,
@@ -2182,8 +2033,8 @@ session_state_system = SessionStateSystem.create({
   create_bond_runtime = create_bond_runtime,
   create_battle_event_feed_runtime = create_battle_event_feed_runtime,
   create_effect_debug_runtime = create_effect_debug_runtime,
-  create_mark_runtime = create_mark_runtime,
-  create_treasure_runtime = create_treasure_runtime,
+  create_mark_runtime = reward_system.create_evolution_runtime,
+  create_treasure_runtime = reward_system.create_treasure_runtime,
   create_skill_runtime = create_skill_runtime,
   create_attack_skill_state = create_attack_skill_state,
   ATTACK_SKILL_BLUEPRINTS = ATTACK_SKILL_BLUEPRINTS,
@@ -2192,12 +2043,15 @@ session_state_system = SessionStateSystem.create({
   get_player = get_player,
   get_enemy_player = get_enemy_player,
   create_hero = create_hero,
-  initialize_hero_progression = initialize_hero_progression,
+  initialize_hero_progression = progression_system.initialize_hero_progression,
   ensure_gear_runtime = function(state, config)
     return GearUpgrades.ensure_runtime(state, config)
   end,
   sync_gear_items_to_hero = function(state, hero, config)
     return GearUpgrades.sync_items_to_hero(state, hero, config)
+  end,
+  sync_gear_runtime_effects = function(state, hero, config)
+    return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
   end,
   unlock_attack_skill = unlock_attack_skill,
   show_attack_skill_loadout = show_attack_skill_loadout,
@@ -2207,6 +2061,9 @@ session_state_system = SessionStateSystem.create({
     return set_battle_hud_visible(visible)
   end,
   refresh_runtime_hud = runtime_ui_helpers.refresh_runtime_hud,
+  enter_battle_audio = function()
+    return audio_system and audio_system.enter_battle and audio_system.enter_battle() or nil
+  end,
   get_outgame_system = function()
     return outgame_system
   end,
@@ -2282,9 +2139,9 @@ input_events_system = InputEventsSystem.create({
   is_battle_active = function()
     return is_battle_active()
   end,
-  get_hero_max_level = get_hero_max_level,
-  sync_hero_progress_from_engine = sync_hero_progress_from_engine,
-  try_queue_mark_node_for_level = try_queue_mark_node_for_level,
+  get_hero_max_level = progression_system.get_hero_max_level,
+  sync_hero_progress_from_engine = progression_system.sync_hero_progress_from_engine,
+  try_queue_mark_node_for_level = reward_system.try_queue_evolution_node_for_level,
   show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
   show_bond_progress = function()
@@ -2332,7 +2189,7 @@ runtime_loops_system = RuntimeLoopsSystem.create({
   update_effect_debug = update_effect_debug,
   update_enemy_statuses = update_enemy_statuses,
   update_attack_skills = update_attack_skills,
-  update_temporary_treasures = update_temporary_treasures,
+  update_temporary_treasures = reward_system.update_temporary_treasures,
   update_mainline_task = function(dt)
     return mainline_task_system and mainline_task_system.update and mainline_task_system.update(dt) or nil
   end,

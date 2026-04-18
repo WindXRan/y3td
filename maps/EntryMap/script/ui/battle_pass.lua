@@ -7,6 +7,7 @@ local PAGE_LOGIN = 'login'
 local PAGE_PREMIUM = 'premium'
 local PAGE_PASS = 'pass'
 local BIND_FLAG_KEYS = {
+  'bound_open_hotspot',
   'bound_open_button',
   'bound_open_icon',
   'bound_close_button',
@@ -38,10 +39,26 @@ local function set_text_color_if_alive(ui, color)
   end
 end
 
+local function set_image_color_if_alive(ui, color)
+  if UIRoot.is_alive(ui) and ui.set_image_color and color then
+    ui:set_image_color(color[1], color[2], color[3], color[4] or 255)
+  end
+end
+
 local function set_button_enable_if_alive(ui, enabled)
   if UIRoot.is_alive(ui) and ui.set_button_enable then
     ui:set_button_enable(enabled == true)
   end
+end
+
+local function can_bind_fast_event(ui)
+  if not UIRoot.is_alive(ui) then
+    return false
+  end
+  local ok, method = pcall(function()
+    return ui.add_fast_event
+  end)
+  return ok and type(method) == 'function'
 end
 
 local function set_progress_if_alive(ui, current, max_value)
@@ -96,6 +113,46 @@ function M.create(env)
 
   local function get_ui()
     return runtime.ui
+  end
+
+  local function ensure_open_hotspot(ui)
+    if not ui or not UIRoot.is_alive(ui.button_area) then
+      return nil
+    end
+    if can_bind_fast_event(runtime.open_hotspot) then
+      return runtime.open_hotspot
+    end
+    if not ui.button_area.create_child then
+      return nil
+    end
+
+    local ok, hotspot = pcall(ui.button_area.create_child, ui.button_area, '图片')
+    if not ok or not hotspot then
+      return nil
+    end
+
+    local width = math.max(1, math.floor((ui.button_area.get_width and ui.button_area:get_width() or 200) + 0.5))
+    local height = math.max(1, math.floor((ui.button_area.get_height and ui.button_area:get_height() or 100) + 0.5))
+
+    if hotspot.set_image then
+      hotspot:set_image(999)
+    end
+    if hotspot.set_anchor then
+      hotspot:set_anchor(0.5, 0.5)
+    end
+    if hotspot.set_pos then
+      hotspot:set_pos(width * 0.5, height * 0.5)
+    end
+    if hotspot.set_ui_size then
+      hotspot:set_ui_size(width, height)
+    end
+    if hotspot.set_intercepts_operations then
+      hotspot:set_intercepts_operations(true)
+    end
+    set_image_color_if_alive(hotspot, { 255, 255, 255, 0 })
+
+    runtime.open_hotspot = hotspot
+    return hotspot
   end
 
   local function reset_bind_flags()
@@ -302,7 +359,7 @@ function M.create(env)
   end
 
   local function bind_click_once(ui_node, callback, field_name)
-    if not UIRoot.is_alive(ui_node) or runtime[field_name] == true then
+    if runtime[field_name] == true or not can_bind_fast_event(ui_node) then
       return
     end
     runtime[field_name] = true
@@ -436,6 +493,11 @@ function M.create(env)
       debug_reset_claims = debug_reset_claims,
     }
 
+    runtime.ui.open_hotspot = ensure_open_hotspot(runtime.ui)
+
+    bind_click_once(runtime.ui.open_hotspot, function()
+      open_panel(PAGE_PASS)
+    end, 'bound_open_hotspot')
     bind_click_once(open_button, function()
       open_panel(PAGE_PASS)
     end, 'bound_open_button')

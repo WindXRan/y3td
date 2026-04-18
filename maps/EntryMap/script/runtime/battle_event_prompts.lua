@@ -13,6 +13,7 @@ function M.create(env)
   local get_inventory_panel_system = env.get_inventory_panel_system
   local message = env.message
   local ensure_round_choice_available = env.ensure_round_choice_available
+  local sync_gear_runtime_effects = env.sync_gear_runtime_effects
 
   local function contains_any(content, patterns)
     for _, pattern in ipairs(patterns or {}) do
@@ -236,6 +237,10 @@ function M.create(env)
         end
         message(string.format('成长武器领悟词缀：%s。', pending_choice.display_name or pending_choice.id or '未知词缀'))
       end
+    end
+
+    if sync_gear_runtime_effects and STATE.hero then
+      sync_gear_runtime_effects(STATE, STATE.hero, CONFIG.gear_upgrade_config)
     end
 
     local runtime_hud_system = get_runtime_hud_system and get_runtime_hud_system() or nil

@@ -1,8 +1,8 @@
 skill_id,projectile_key,projectile_speed,projectile_time,target_distance,cast_particle,cast_scale,cast_time,impact_particle,impact_scale,impact_time,explosion_particle,explosion_scale,explosion_time,charge_particle,charge_scale,charge_time,chain_particle,chain_scale,chain_time,strike_delay
 basic_attack,134267104,1880,1.45,28,,,,,,,,,,,,,,,,
-sword_wave,134232711,1450,2.2,70,,,,,,,,,,,,,,,,
+sword_wave,201364743,1450,2.2,70,,,,,,,,,,,,,,,,
 arcane_laser,,,,,,,,,,,,,,,,,,,,
-arcane_ray,134232711,1520,2.0,70,,,,,,,,,,,,,,,,
+arcane_ray,134264830,1520,2.0,70,,,,,,,,,,,,,,,,
 frost_nova,,,,,,,,,,,,,,,,,,,,
 chain_lightning,,,,,,,,,,,,,,,,,,,,0.08
 earthquake,,,,,,,,,,,,,,,,,,,,
@@ -10,8 +10,8 @@ tornado,,,,,,,,,,,,,,,,,,,,
 electro_net,,,,,,,,,,,,,,,,,,,,
 meteor,,,,,,,,,,,,,,,,,,,,0.60
 hurricane,,,,,,,,,,,,,,,,,,,,
-fireball,134218466,980,3.0,75,,,,,,,,,,,,,,,,
-moon_blade,134232711,1500,2.4,70,,,,,,,,,,,,,,,,
+fireball,201364749,980,3.0,75,,,,,,,,,,,,,,,,
+moon_blade,201364750,1500,2.4,70,,,,,,,,,,,,,,,,
 lotus_flame,,,,,,,,,,,,,,,,,,,,
 demon_seal,,,,,,,,,,,,,,,,,,,,0.25
-flying_swords,134267104,1600,2.0,60,,,,,,,,,,,,,,,,
+flying_swords,201364753,1600,2.0,60,,,,,,,,,,,,,,,,

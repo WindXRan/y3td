@@ -1,9 +1,11 @@
 local PresentationProfiles = require 'data.object_tables.attack_skill_presentation_profiles'
+local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
 
 local M = {}
 
 function M.create(env)
   local STATE = env.STATE
+  local CONFIG = env.CONFIG or {}
   local y3 = env.y3
   local round_number = env.round_number
   local message = env.message
@@ -25,6 +27,7 @@ function M.create(env)
   local notify_auto_active_skill_cast = env.notify_auto_active_skill_cast
   local play_basic_attack_sound = env.play_basic_attack_sound
   local play_attack_skill_sound = env.play_attack_skill_sound
+  local ATTACK_STATUS_MODIFIER_KEYS = RuntimeEditorIds.modifier.attack_status or {}
 
   local function get_hero_attr(name, fallback_name)
     if not STATE.hero or not STATE.hero:is_exist() then
@@ -47,11 +50,18 @@ function M.create(env)
     return number
   end
 
+  local function is_projectile_only_mode()
+    return CONFIG.attack_skill_single_effect_mode == true
+  end
+
   local function get_hero_attr_ratio(name, fallback_name)
     return normalize_ratio(get_hero_attr(name, fallback_name))
   end
 
   local function get_basic_attack_multishot_bonus()
+    if is_projectile_only_mode() then
+      return 0, 0
+    end
     local count = math.max(0, round_number(
       get_bond_runtime_bonus('multishot_count') + get_hero_attr('多重数量')
     ))
@@ -75,6 +85,9 @@ function M.create(env)
   end
 
   local function get_basic_attack_bonus_chain_stats()
+    if is_projectile_only_mode() then
+      return 0, 0
+    end
     local count = math.max(0, round_number(
       get_bond_runtime_bonus('chain_bounces') + get_hero_attr('弹射次数')
     ))
@@ -104,15 +117,38 @@ function M.create(env)
   local function get_effective_skill_value(skill, field)
     return math.max(0, (skill and skill[field] or 0) + get_global_skill_bonus(field))
   end
+
+  local function remember_basic_attack_range(range)
+    local number = y3.helper.tonumber(range) or 0
+    if number > 0 then
+      STATE.last_valid_basic_attack_range = number
+      return number
+    end
+    return 0
+  end
   
   local function get_current_basic_attack_range()
     if not STATE.hero or not STATE.hero:is_exist() then
-      return ATTACK_SKILL_DEFS.basic_attack.base_range or 0
+      return math.max(1, round_number(
+        STATE.last_valid_basic_attack_range
+          or ATTACK_SKILL_DEFS.basic_attack.base_range
+          or 0
+      ))
     end
-    local range = y3.helper.tonumber(hero_attr_system and hero_attr_system.get_attr(STATE.hero, '攻击范围') or STATE.hero:get_attr('攻击范围'))
-      or y3.helper.tonumber(hero_attr_system and hero_attr_system.get_attr(STATE.hero, 'attack_range') or STATE.hero:get_attr('attack_range'))
-      or ATTACK_SKILL_DEFS.basic_attack.base_range
-      or 0
+
+    local range = remember_basic_attack_range(
+      hero_attr_system and hero_attr_system.get_attr(STATE.hero, '攻击范围') or STATE.hero:get_attr('攻击范围')
+    )
+    if range <= 0 then
+      range = remember_basic_attack_range(
+        hero_attr_system and hero_attr_system.get_attr(STATE.hero, 'attack_range') or STATE.hero:get_attr('attack_range')
+      )
+    end
+    if range <= 0 then
+      range = STATE.last_valid_basic_attack_range
+        or ATTACK_SKILL_DEFS.basic_attack.base_range
+        or 0
+    end
     return math.max(1, round_number(range))
   end
   
@@ -536,6 +572,24 @@ function M.create(env)
     return bucket[status_id]
   end
 
+  local function try_add_status_modifier(unit, modifier_key, duration)
+    if not modifier_key or modifier_key == 0 or (duration or 0) <= 0 then
+      return nil
+    end
+    if not unit or not unit.is_exist or not unit:is_exist() or not unit.add_buff then
+      return nil
+    end
+    local ok, buff = pcall(unit.add_buff, unit, {
+      key = modifier_key,
+      source = STATE.hero,
+      time = duration,
+    })
+    if ok then
+      return buff
+    end
+    return nil
+  end
+
   local function get_enemy_status(unit, status_id)
     local bucket = get_enemy_status_bucket(unit)
     return bucket and bucket[status_id] or nil
@@ -638,6 +692,10 @@ function M.create(env)
   end
 
   local function resolve_skill_stage_particle(skill, stage)
+    if CONFIG.attack_skill_single_effect_mode == true then
+      return nil, nil, nil, nil, nil
+    end
+
     local vfx = get_skill_vfx(skill)
     local profile = get_skill_stage_profile(skill, stage)
     local effect_key
@@ -707,12 +765,14 @@ function M.create(env)
     return source_point:get_angle_with(target_point)
   end
 
+  local PROJECTILE_FLIGHT_HEIGHT = 100
+
   local function launch_projectile_to_target(vfx, target, on_finish, ability)
     local impact_point = get_unit_point_snapshot(target)
     local launch_angle = get_projectile_launch_angle(target)
     if not vfx or not vfx.projectile_key or not STATE.hero or not STATE.hero:is_exist() then
       if on_finish then
-        on_finish(impact_point)
+        on_finish(impact_point, false)
       end
       return false
     end
@@ -722,17 +782,23 @@ function M.create(env)
       target = STATE.hero,
       socket = 'origin',
       owner = STATE.hero,
-      ability = ability,
+      -- In single-effect mode we keep only the projectile visual and suppress
+      -- any engine-side ability binding that can add stray hit VFX/damage.
+      ability = CONFIG.attack_skill_single_effect_mode == true and nil or ability,
       angle = launch_angle,
       time = vfx.projectile_time or 3.0,
       remove_immediately = true,
     })
     if not ok_create or not projectile then
       if on_finish then
-        on_finish(impact_point)
+        on_finish(impact_point, false)
       end
       return false
     end
+
+    pcall(function()
+      projectile:set_height(PROJECTILE_FLIGHT_HEIGHT)
+    end)
 
     if launch_angle ~= nil then
       pcall(function()
@@ -742,18 +808,18 @@ function M.create(env)
   
     local resolved = false
   
-    local function finish()
+    local function finish(did_hit, final_point)
       if resolved then
         return
       end
       resolved = true
-      local final_point = impact_point
+      local resolved_point = final_point or impact_point
       if projectile and projectile:is_exist() then
-        final_point = clone_point(projectile:get_point()) or final_point
+        resolved_point = final_point or clone_point(projectile:get_point()) or resolved_point
         projectile:remove()
       end
       if on_finish then
-        on_finish(final_point)
+        on_finish(resolved_point, did_hit == true)
       end
     end
   
@@ -762,21 +828,19 @@ function M.create(env)
         target = target,
         speed = vfx.projectile_speed or 1000,
         target_distance = vfx.target_distance or 60,
+        height = PROJECTILE_FLIGHT_HEIGHT,
         init_angle = launch_angle,
         rotate_time = 0.0,
         face_angle = true,
-        on_finish = finish,
+        miss_when_target_destroy = true,
+        on_finish = function()
+          finish(true)
+        end,
         on_break = function()
-          if resolved then
-            return
-          end
-          resolved = true
-          if projectile and projectile:is_exist() then
-            projectile:remove()
-          end
-          if on_finish then
-            on_finish(impact_point)
-          end
+          finish(false, clone_point(projectile and projectile:is_exist() and projectile:get_point() or nil) or impact_point)
+        end,
+        on_miss = function()
+          finish(false, clone_point(projectile and projectile:is_exist() and projectile:get_point() or nil) or impact_point)
         end,
       })
     end)
@@ -785,13 +849,7 @@ function M.create(env)
       if resolved then
         return false
       end
-      resolved = true
-      if projectile and projectile:is_exist() then
-        projectile:remove()
-      end
-      if on_finish then
-        on_finish(impact_point)
-      end
+      finish(false, clone_point(projectile and projectile:is_exist() and projectile:get_point() or nil) or impact_point)
       return false
     end
   
@@ -843,22 +901,30 @@ function M.create(env)
       return
     end
 
+    local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false
     STATE.hero:damage({
       target = target,
       damage = round_number((amount or 0) * get_basic_attack_bonus_multiplier(skill, target)),
       type = skill.damage_type,
-      ability = STATE.hero_common_attack and STATE.hero_common_attack:is_exist() and STATE.hero_common_attack or nil,
+      ability = hit_effect_enabled
+        and STATE.hero_common_attack
+        and STATE.hero_common_attack:is_exist()
+        and STATE.hero_common_attack
+        or nil,
       text_type = options and options.text_type or 'physics',
       text_track = options and options.text_track or 934269508,
-      particle = options and options.particle or nil,
-      socket = options and options.socket or '',
-      pos_socket = options and options.pos_socket or '',
-      common_attack = options and options.common_attack == true or false,
+      particle = hit_effect_enabled and options and options.particle or nil,
+      socket = hit_effect_enabled and options and options.socket or '',
+      pos_socket = hit_effect_enabled and options and options.pos_socket or '',
+      common_attack = hit_effect_enabled and options and options.common_attack == true or false,
       no_miss = true,
     })
   end
 
   local function apply_armor_break_on_hit(target)
+    if is_projectile_only_mode() then
+      return
+    end
     local skill = get_basic_attack_skill()
     local ratio = get_effective_skill_value(skill, 'armor_break_ratio')
     local duration = get_effective_skill_value(skill, 'armor_break_duration')
@@ -872,6 +938,7 @@ function M.create(env)
     status.remaining = duration
     status.ratio = ratio
     apply_enemy_status(target, 'armor_break', status)
+    try_add_status_modifier(target, ATTACK_STATUS_MODIFIER_KEYS.armor_break, duration)
   end
 
   local function get_skill_archetype(skill)
@@ -973,6 +1040,7 @@ function M.create(env)
       tick_cd = 1,
       tick_ratio = tick_ratio,
     })
+    try_add_status_modifier(unit, ATTACK_STATUS_MODIFIER_KEYS.ignite, duration)
   end
 
   local function deal_area_skill_damage(center, radius, skill, amount, options)
@@ -988,6 +1056,9 @@ function M.create(env)
   end
 
   local function apply_generic_skill_statuses(skill, unit)
+    if is_projectile_only_mode() then
+      return
+    end
     if not skill or not unit or not is_active_enemy(unit) then
       return
     end
@@ -1001,6 +1072,7 @@ function M.create(env)
       status.remaining = math.max(status.remaining or 0, skill.armor_break_duration or skill.generic_status_duration or 0)
       status.ratio = math.max(status.ratio or 0, skill.armor_break_ratio or 0)
       apply_enemy_status(unit, 'armor_break', status)
+      try_add_status_modifier(unit, ATTACK_STATUS_MODIFIER_KEYS.armor_break, status.remaining)
     end
 
     if skill.apply_generic_ignite and (skill.ignite_duration or 0) > 0 and (skill.ignite_tick_ratio or 0) > 0 then
@@ -1012,6 +1084,7 @@ function M.create(env)
         remaining = skill.shock_duration,
         bonus = skill.shock_bonus or 0,
       })
+      try_add_status_modifier(unit, ATTACK_STATUS_MODIFIER_KEYS.shock, skill.shock_duration)
     end
 
     if skill.apply_generic_control and (skill.control_lock_time or 0) > 0 then
@@ -1091,7 +1164,10 @@ function M.create(env)
     local origin_point = get_hero_point()
     play_skill_particle_on_unit(skill, STATE.hero, 'cast')
 
-    launch_projectile_to_target(vfx, target, function(impact_point)
+    launch_projectile_to_target(vfx, target, function(impact_point, did_hit)
+      if did_hit ~= true then
+        return
+      end
       local center = impact_point or get_unit_point_snapshot(target)
       if center then
         play_skill_particle_on_point(skill, center, 'impact', 18)
@@ -1237,6 +1313,7 @@ function M.create(env)
         remaining = 1.0,
         bonus = 0.10,
       })
+      try_add_status_modifier(current_target, ATTACK_STATUS_MODIFIER_KEYS.shock, 1.0)
       remaining = remaining - 1
       if remaining <= 0 then
         break
@@ -1435,7 +1512,10 @@ function M.create(env)
         if STATE.game_finished or not victim or not victim:is_exist() then
           return
         end
-        launch_projectile_to_target(vfx, victim, function(impact_point)
+        launch_projectile_to_target(vfx, victim, function(impact_point, did_hit)
+          if did_hit ~= true then
+            return
+          end
           if impact_point then
             play_skill_particle_on_point(skill, impact_point, 'impact', 12)
           end
@@ -1464,15 +1544,18 @@ function M.create(env)
     if play_basic_attack_sound then
       play_basic_attack_sound(STATE.hero)
     end
-    if notify_auto_active_basic_attack then
+    if not is_projectile_only_mode() and notify_auto_active_basic_attack then
       notify_auto_active_basic_attack(target)
     end
     if hero_point and target and target:is_exist() and not STATE.hero:has_state('禁止转向') then
       STATE.hero:set_facing(hero_point:get_angle_with(target:get_point()), 0.08)
     end
 
-    launch_projectile_to_target(vfx, target, function(impact_point)
+    launch_projectile_to_target(vfx, target, function(impact_point, did_hit)
       if STATE.game_finished or not STATE.hero or not STATE.hero:is_exist() then
+        return
+      end
+      if did_hit ~= true then
         return
       end
 
@@ -1485,9 +1568,11 @@ function M.create(env)
 
       if is_active_enemy(target) then
         deal_basic_attack_damage(skill, target, damage, {
-          common_attack = true,
+          common_attack = false,
         })
-        try_trigger_hunter_first_hit(target)
+        if not is_projectile_only_mode() then
+          try_trigger_hunter_first_hit(target)
+        end
         apply_armor_break_on_hit(target)
       end
 
@@ -1547,10 +1632,10 @@ function M.create(env)
       return
     end
   
-    if notify_bond_attack_skill_cast then
+    if not is_projectile_only_mode() and notify_bond_attack_skill_cast then
       notify_bond_attack_skill_cast(skill, target)
     end
-    if notify_auto_active_skill_cast then
+    if not is_projectile_only_mode() and notify_auto_active_skill_cast then
       notify_auto_active_skill_cast(skill, target)
     end
   

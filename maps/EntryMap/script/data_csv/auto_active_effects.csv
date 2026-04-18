@@ -2,8 +2,8 @@ id,source_type,source_id,trigger_type,cooldown,range,radius,damage_ratio,chance,
 spell_burst,bond,auto_spell_burst,periodic,18.0,900,300,2.0,,,,,,,,,,,,,arcane_ray
 haste_reset,bond,auto_haste_reset,on_attack_skill_cast,,,,0.07,,,,,,,,,,,,,arcane_laser
 fighting_spirit_field,bond,auto_fighting_spirit,periodic,1.0,,1200,0.60,,,,,,,,201365014,,0.30,0.10,0.30,earthquake
-rapid_overdrive,bond,auto_rapid_overdrive,on_basic_attack_count,,,,,0.20,,,,,5.0,100,,,,,,basic_attack
+rapid_overdrive,bond,auto_rapid_overdrive,on_basic_attack_count,,,,,0.20,,,,,5.0,100,201390104,,,,,basic_attack
 blood_demon_burst,bond,auto_blood_demon_burst,periodic,,,,0.50,,0.35,320,0.20,,,,,,,,,lotus_flame
-charge_breaker_rally,bond,auto_charge_breaker_rally,on_kill,,,,,,,,,200,10.0,,,,,,,moon_blade
+charge_breaker_rally,bond,auto_charge_breaker_rally,on_kill,,,,,,,,,200,10.0,,201390105,,,,,moon_blade
 bloodrage_stomp,mark,war_god_mark,on_basic_attack_count,1.5,,300,1.20,,,,,8,,,,,,,,earthquake
 starfire_echo,mark,storm_mark,on_attack_skill_cast,1.2,900,,0.72,,,,,,,,,,,,,flying_swords

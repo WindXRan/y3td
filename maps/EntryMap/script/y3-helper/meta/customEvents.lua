@@ -16,6 +16,10 @@
 ---@field call fun(name: '【高级消息】添加消息_2', 目标控件: any, 消息文字: string, 消息优先级: integer, 立即显示: boolean)
 ---@field call fun(name: '【跑马灯公告】添加消息_2', 目标控件: any, 消息文字: string, 消息优先级: integer, 立即显示: boolean)
 ---@field call fun(name: '【高级消息】清空消息', 目标控件: any)
+---@field call fun(name: 'HUD同步', 玩家id: integer, 界面id: integer)
+---@field call fun(name: '玩家加载操作', 玩家id: integer, 加载项id: integer)
+---@field call fun(name: '[悬浮信息]通用详情', 玩家id: integer, 标题: string, 小标题: string, 描述: string, 一句话: string, 玩家属性图标: any, 属性价格: string, 待对齐控件: any, 方向: integer, 显隐: boolean)
+---@field call fun(name: '打开签到页面', 玩家: Player)
 
 ---@diagnostic disable: invisible
 
@@ -148,6 +152,41 @@ y3.eca.register_custom_event_impl('【高级消息】清空消息', function (_,
     })
 end)
 
+y3.eca.register_custom_event_impl('HUD同步', function (_, 玩家id, 界面id)
+    y3.game.send_custom_event(2065862999, {
+        ["玩家id"] = 玩家id,
+        ["界面id"] = 界面id
+    })
+end)
+
+y3.eca.register_custom_event_impl('玩家加载操作', function (_, 玩家id, 加载项id)
+    y3.game.send_custom_event(1336439815, {
+        ["玩家id"] = 玩家id,
+        ["加载项id"] = 加载项id
+    })
+end)
+
+y3.eca.register_custom_event_impl('[悬浮信息]通用详情', function (_, 玩家id, 标题, 小标题, 描述, 一句话, 玩家属性图标, 属性价格, 待对齐控件, 方向, 显隐)
+    y3.game.send_custom_event(2030583941, {
+        ["玩家id"] = 玩家id,
+        ["标题"] = 标题,
+        ["小标题"] = 小标题,
+        ["描述"] = 描述,
+        ["一句话"] = 一句话,
+        ["玩家属性图标"] = y3.py_converter.lua_to_py_by_lua_type('any', 玩家属性图标),
+        ["属性价格"] = 属性价格,
+        ["待对齐控件"] = y3.py_converter.lua_to_py_by_lua_type('any', 待对齐控件),
+        ["方向"] = 方向,
+        ["显隐"] = 显隐
+    })
+end)
+
+y3.eca.register_custom_event_impl('打开签到页面', function (_, 玩家)
+    y3.game.send_custom_event(1598002187, {
+        ["玩家"] = y3.py_converter.lua_to_py_by_lua_type('Player', 玩家)
+    })
+end)
+
 y3.const.CustomEventName = y3.const.CustomEventName or {}
 
 y3.const.CustomEventName['界面初始化'] = 1202296270
@@ -167,6 +206,10 @@ y3.const.CustomEventName['【跑马灯公告】添加消息'] = 2036245900
 y3.const.CustomEventName['【高级消息】添加消息_2'] = 1948197137
 y3.const.CustomEventName['【跑马灯公告】添加消息_2'] = 1024373425
 y3.const.CustomEventName['【高级消息】清空消息'] = 1098456899
+y3.const.CustomEventName['HUD同步'] = 2065862999
+y3.const.CustomEventName['玩家加载操作'] = 1336439815
+y3.const.CustomEventName['[悬浮信息]通用详情'] = 2030583941
+y3.const.CustomEventName['打开签到页面'] = 1598002187
 
 ---@enum(key, partial) y3.Const.CustomEventName
 local CustomEventName = {
@@ -187,6 +230,10 @@ local CustomEventName = {
     ['【高级消息】添加消息_2'] = 1948197137,
     ['【跑马灯公告】添加消息_2'] = 1024373425,
     ['【高级消息】清空消息'] = 1098456899,
+    ['HUD同步'] = 2065862999,
+    ['玩家加载操作'] = 1336439815,
+    ['[悬浮信息]通用详情'] = 2030583941,
+    ['打开签到页面'] = 1598002187,
 }
 
 y3.eca.register_custom_event_resolve("界面初始化", function (data)
@@ -331,6 +378,45 @@ y3.eca.register_custom_event_resolve("【高级消息】清空消息", function 
     }
     return data
 end)
+y3.eca.register_custom_event_resolve("HUD同步", function (data)
+    data.name = "HUD同步"
+    data.data = {
+        ["玩家id"] = data.c_param_dict["玩家id"],
+        ["界面id"] = data.c_param_dict["界面id"],
+    }
+    return data
+end)
+y3.eca.register_custom_event_resolve("玩家加载操作", function (data)
+    data.name = "玩家加载操作"
+    data.data = {
+        ["玩家id"] = data.c_param_dict["玩家id"],
+        ["加载项id"] = data.c_param_dict["加载项id"],
+    }
+    return data
+end)
+y3.eca.register_custom_event_resolve("[悬浮信息]通用详情", function (data)
+    data.name = "[悬浮信息]通用详情"
+    data.data = {
+        ["玩家id"] = data.c_param_dict["玩家id"],
+        ["标题"] = data.c_param_dict["标题"],
+        ["小标题"] = data.c_param_dict["小标题"],
+        ["描述"] = data.c_param_dict["描述"],
+        ["一句话"] = data.c_param_dict["一句话"],
+        ["玩家属性图标"] = y3.py_converter.py_to_lua_by_lua_type('any', data.c_param_dict["玩家属性图标"]),
+        ["属性价格"] = data.c_param_dict["属性价格"],
+        ["待对齐控件"] = y3.py_converter.py_to_lua_by_lua_type('any', data.c_param_dict["待对齐控件"]),
+        ["方向"] = data.c_param_dict["方向"],
+        ["显隐"] = data.c_param_dict["显隐"],
+    }
+    return data
+end)
+y3.eca.register_custom_event_resolve("打开签到页面", function (data)
+    data.name = "打开签到页面"
+    data.data = {
+        ["玩家"] = y3.py_converter.py_to_lua_by_lua_type('Player', data.c_param_dict["玩家"]),
+    }
+    return data
+end)
 
 ---@alias EventParam.游戏-消息.界面初始化 { c_param_1: 1202296270, c_param_dict: py.Dict, event: "界面初始化", data: { ["玩家"]: Player } }
 ---@alias EventParam.游戏-消息.单选英雄_选中英雄 { c_param_1: 1695746711, c_param_dict: py.Dict, event: "单选英雄_选中英雄", data: { ["英雄"]: Unit, ["玩家"]: Player } }
@@ -349,6 +435,10 @@ end)
 ---@alias EventParam.游戏-消息.【高级消息】添加消息_2 { c_param_1: 1948197137, c_param_dict: py.Dict, event: "【高级消息】添加消息_2", data: { ["目标控件"]: any, ["消息文字"]: string, ["消息优先级"]: integer, ["立即显示"]: boolean } }
 ---@alias EventParam.游戏-消息.【跑马灯公告】添加消息_2 { c_param_1: 1024373425, c_param_dict: py.Dict, event: "【跑马灯公告】添加消息_2", data: { ["目标控件"]: any, ["消息文字"]: string, ["消息优先级"]: integer, ["立即显示"]: boolean } }
 ---@alias EventParam.游戏-消息.【高级消息】清空消息 { c_param_1: 1098456899, c_param_dict: py.Dict, event: "【高级消息】清空消息", data: { ["目标控件"]: any } }
+---@alias EventParam.游戏-消息.HUD同步 { c_param_1: 2065862999, c_param_dict: py.Dict, event: "HUD同步", data: { ["玩家id"]: integer, ["界面id"]: integer } }
+---@alias EventParam.游戏-消息.玩家加载操作 { c_param_1: 1336439815, c_param_dict: py.Dict, event: "玩家加载操作", data: { ["玩家id"]: integer, ["加载项id"]: integer } }
+---@alias EventParam.游戏-消息._悬浮信息_通用详情 { c_param_1: 2030583941, c_param_dict: py.Dict, event: "[悬浮信息]通用详情", data: { ["玩家id"]: integer, ["标题"]: string, ["小标题"]: string, ["描述"]: string, ["一句话"]: string, ["玩家属性图标"]: any, ["属性价格"]: string, ["待对齐控件"]: any, ["方向"]: integer, ["显隐"]: boolean } }
+---@alias EventParam.游戏-消息.打开签到页面 { c_param_1: 1598002187, c_param_dict: py.Dict, event: "打开签到页面", data: { ["玩家"]: Player } }
 
 ---@class Game
 ---@diagnostic disable-next-line: duplicate-doc-field
@@ -385,3 +475,11 @@ end)
 ---@field event fun(self: Game, event: "游戏-消息", event_id: "【跑马灯公告】添加消息_2", callback: fun(trigger: Trigger, data: EventParam.游戏-消息.【跑马灯公告】添加消息_2))
 ---@diagnostic disable-next-line: duplicate-doc-field
 ---@field event fun(self: Game, event: "游戏-消息", event_id: "【高级消息】清空消息", callback: fun(trigger: Trigger, data: EventParam.游戏-消息.【高级消息】清空消息))
+---@diagnostic disable-next-line: duplicate-doc-field
+---@field event fun(self: Game, event: "游戏-消息", event_id: "HUD同步", callback: fun(trigger: Trigger, data: EventParam.游戏-消息.HUD同步))
+---@diagnostic disable-next-line: duplicate-doc-field
+---@field event fun(self: Game, event: "游戏-消息", event_id: "玩家加载操作", callback: fun(trigger: Trigger, data: EventParam.游戏-消息.玩家加载操作))
+---@diagnostic disable-next-line: duplicate-doc-field
+---@field event fun(self: Game, event: "游戏-消息", event_id: "[悬浮信息]通用详情", callback: fun(trigger: Trigger, data: EventParam.游戏-消息._悬浮信息_通用详情))
+---@diagnostic disable-next-line: duplicate-doc-field
+---@field event fun(self: Game, event: "游戏-消息", event_id: "打开签到页面", callback: fun(trigger: Trigger, data: EventParam.游戏-消息.打开签到页面))
