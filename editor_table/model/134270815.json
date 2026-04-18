@@ -1,0 +1,10 @@
+{
+    "custom": true, 
+    "effect_keep": false, 
+    "effect_max_life": 1.4499999997000002, 
+    "effect_path": "Fx_Effect/Realism/Fx_Skill/Soil/31b19829-862e-4bae-8faf-9987b050861b", 
+    "is_beam_effect": false, 
+    "meshes": [], 
+    "model_id": 134270815, 
+    "name": "\u5c4f\u969c"
+}

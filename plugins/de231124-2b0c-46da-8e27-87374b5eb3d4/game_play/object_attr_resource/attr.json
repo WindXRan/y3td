@@ -1,0 +1,62 @@
+{
+    "ps": 1, 
+    "c": [
+        [
+            "bk+jnkZsEe+VkzDQQukOhb", 
+            {
+                "type": "Fixed", 
+                "desc": "移速马甲", 
+                "default": 0.0, 
+                "minimun": -1000.0, 
+                "maximun": 1000.0, 
+                "key": "bk+jnkZsEe+VkzDQQukOhb", 
+                "desc_bit": 1
+            }
+        ]
+    ], 
+    "p": [
+        [
+            "strength", 
+            {
+                "k": "strength", 
+                "d": "力量", 
+                "m": []
+            }
+        ], 
+        [
+            "agility", 
+            {
+                "k": "agility", 
+                "d": "敏捷", 
+                "m": []
+            }
+        ], 
+        [
+            "intelligence", 
+            {
+                "k": "intelligence", 
+                "d": "智力", 
+                "m": []
+            }
+        ], 
+        [
+            "main", 
+            {
+                "k": "main", 
+                "d": "主属性", 
+                "m": []
+            }
+        ]
+    ], 
+    "b": [
+        [
+            "vision_sector_rng", 
+            {
+                "desc": "扇形视野白天半径", 
+                "default": 0.0, 
+                "minimun": 0.0, 
+                "maximun": 20000000.0
+            }
+        ]
+    ]
+}

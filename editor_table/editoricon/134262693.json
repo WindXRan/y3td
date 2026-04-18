@@ -1,9 +1,10 @@
 {
     "describe": "", 
+    "import_export_folder_info": "/code_explorer_custom_root_folder_name/\u901a\u884c\u8bc1\u7cfb\u7edf", 
     "key": 134262693, 
-    "md5": "2a6c13ee0ad73db734913a48b8de2902", 
+    "md5": "d44f9832fb4fcc3d3c4000d6ca9b686b", 
     "name": "bg_jinbi 1", 
-    "path": "ui/134262693", 
+    "path": "ui/00995bfc-88db-47a7-8bb0-39f01bade16d", 
     "res_type": "kkres", 
     "size": "182X52", 
     "sub_type": "icon", 

@@ -1,0 +1,64 @@
+{
+    "ps": 1, 
+    "c": [
+        [
+            "custom_1", 
+            {
+                "default": 0.0, 
+                "desc": "韧性", 
+                "desc_bit": 1, 
+                "key": "custom_1", 
+                "maximun": 100.0, 
+                "minimun": -10000000.0, 
+                "type": "Fixed"
+            }
+        ], 
+        [
+            "kESX8BZgEe6c+jDQQuUV9l", 
+            {
+                "default": 0.0, 
+                "desc": "移速马甲", 
+                "desc_bit": 1, 
+                "key": "kESX8BZgEe6c+jDQQuUV9l", 
+                "maximun": 1000.0, 
+                "minimun": -1000.0, 
+                "type": "Fixed"
+            }
+        ]
+    ], 
+    "p": [
+        [
+            "strength", 
+            {
+                "k": "strength", 
+                "d": "力量", 
+                "m": []
+            }
+        ], 
+        [
+            "agility", 
+            {
+                "k": "agility", 
+                "d": "敏捷", 
+                "m": []
+            }
+        ], 
+        [
+            "intelligence", 
+            {
+                "k": "intelligence", 
+                "d": "智力", 
+                "m": []
+            }
+        ], 
+        [
+            "main", 
+            {
+                "k": "main", 
+                "d": "主属性", 
+                "m": []
+            }
+        ]
+    ], 
+    "b": []
+}

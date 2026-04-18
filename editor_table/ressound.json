@@ -7,5 +7,14 @@
         "key": "134223345", 
         "name": "SFX_UI_Click_D", 
         "uid": "res_sound_134223345"
+    }, 
+    "134265786": {
+        "Format": "ogg", 
+        "SoundPath": "134265786", 
+        "default_editor_id": 134265786, 
+        "describe": "", 
+        "key": "134265786", 
+        "name": "SFX_UI_Click_D", 
+        "uid": "res_sound_134265786"
     }
 }

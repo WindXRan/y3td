@@ -1,9 +1,10 @@
 {
     "describe": "", 
+    "import_export_folder_info": "/code_explorer_custom_root_folder_name/\u901a\u884c\u8bc1\u7cfb\u7edf", 
     "key": 134275595, 
-    "md5": "e9de6909a915706b777956d1d03aecbc", 
+    "md5": "621dfb00aa033b6cae404315a9f5139e", 
     "name": "\u5e95\u6761\u9ed1", 
-    "path": "ui/134275595", 
+    "path": "ui/36428eb5-65c6-486b-b00a-b526ae53ca60", 
     "res_type": "kkres", 
     "size": "580X68", 
     "sub_type": "icon", 

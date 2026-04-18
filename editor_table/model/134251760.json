@@ -1,0 +1,10 @@
+{
+    "custom": true, 
+    "effect_keep": false, 
+    "effect_max_life": 1.5, 
+    "effect_path": "Fx_Effect/Realism/Fx_Common/Boom/8006e6de-cfa1-4d74-813d-77d4eb1e41aa", 
+    "is_beam_effect": false, 
+    "meshes": [], 
+    "model_id": 134251760, 
+    "name": "\u6ce2\u7eb9"
+}

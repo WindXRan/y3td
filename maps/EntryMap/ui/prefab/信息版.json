@@ -418,17 +418,17 @@
                                 255
                             ]
                         }, 
-                        "bg_image": 106397, 
+                        "bg_image": 999, 
                         "block_scrolling": false, 
                         "bounce_enabled": false, 
                         "can_drag": false, 
                         "cap_insets": {
                             "__tuple__": true, 
                             "items": [
-                                54.0, 
-                                58.0, 
-                                54.0, 
-                                58.0
+                                42.0, 
+                                42.0, 
+                                42.0, 
+                                42.0
                             ]
                         }, 
                         "children": [], 
@@ -446,10 +446,10 @@
                         "pos_data": {
                             "__tuple__": true, 
                             "items": [
-                                54.0, 
-                                -155.0, 
-                                54.0, 
-                                -155.0, 
+                                50.0, 
+                                -152.0, 
+                                50.0, 
+                                -152.0, 
                                 0, 
                                 0
                             ]
@@ -498,8 +498,8 @@
                         "size": {
                             "__tuple__": true, 
                             "items": [
-                                290.9090840816498, 
-                                461.8181688785553
+                                268.9090840816498, 
+                                351.8181688785553
                             ]
                         }, 
                         "size_change_according_children": false, 
