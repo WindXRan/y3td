@@ -6,6 +6,19 @@ local M = {}
 local PAGE_LOGIN = 'login'
 local PAGE_PREMIUM = 'premium'
 local PAGE_PASS = 'pass'
+local BIND_FLAG_KEYS = {
+  'bound_open_button',
+  'bound_open_icon',
+  'bound_close_button',
+  'bound_login_tab',
+  'bound_premium_tab',
+  'bound_pass_tab',
+  'bound_claim_button',
+  'bound_debug_paid',
+  'bound_debug_add_exp_100',
+  'bound_debug_add_exp_500',
+  'bound_debug_reset_claims',
+}
 
 local function set_visible_if_alive(ui, visible)
   if UIRoot.is_alive(ui) and ui.set_visible then
@@ -83,6 +96,12 @@ function M.create(env)
 
   local function get_ui()
     return runtime.ui
+  end
+
+  local function reset_bind_flags()
+    for _, key in ipairs(BIND_FLAG_KEYS) do
+      runtime[key] = false
+    end
   end
 
   local function clear_markers()
@@ -312,6 +331,7 @@ function M.create(env)
     end
 
     clear_markers()
+    reset_bind_flags()
 
     local root = resolve_ui('通行证系统')
     local panel_root = resolve_ui('通行证系统.通行证界面')
