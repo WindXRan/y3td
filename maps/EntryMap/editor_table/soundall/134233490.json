@@ -11,7 +11,7 @@
     "max_dist": 4000.0, 
     "min_dist": 2600.0, 
     "name": -437767517, 
-    "priority": 0, 
+    "priority": 1.0, 
     "sound_id": 1, 
     "sound_id_list": [
         {

@@ -2,16 +2,16 @@
     "_custom_": true, 
     "_ref_": 134267104, 
     "async_effect": false, 
-    "description": 691116324, 
+    "description": 941502614, 
     "effect_destroy_way_is_immediately": false, 
     "effect_foes": [
-        106001, 
+        101175, 
         {
             "__tuple__": true, 
             "items": [
                 0.0, 
                 0.0, 
-                0.0
+                100.0
             ]
         }, 
         {
@@ -25,9 +25,9 @@
         {
             "__tuple__": true, 
             "items": [
-                1.0, 
-                1.0, 
-                1.0
+                0.6, 
+                0.6, 
+                0.6
             ]
         }, 
         1.0, 
@@ -71,13 +71,13 @@
         }
     ], 
     "effect_friend": [
-        106001, 
+        101175, 
         {
             "__tuple__": true, 
             "items": [
                 0.0, 
                 0.0, 
-                0.0
+                100.0
             ]
         }, 
         {
@@ -91,9 +91,9 @@
         {
             "__tuple__": true, 
             "items": [
-                1.0, 
-                1.0, 
-                1.0
+                0.6, 
+                0.6, 
+                0.6
             ]
         }, 
         1.0, 
@@ -142,7 +142,7 @@
     "max_duration": 60, 
     "move_channel": 0, 
     "move_limitation": 1, 
-    "name": 1099589986, 
+    "name": 96745446, 
     "poolable": 0, 
     "sfx_loop": false, 
     "sound_event_list": {

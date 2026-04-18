@@ -215,5 +215,19 @@
    "3d1678d1-2bbe-477f-90ee-b8be2d74e56e", 
    "\u901a\u884c\u8bc1-\u9053\u5177\u4fe1\u606f\u8868\u683c"
   ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   100, 
+   "event_daily_check"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "261469d6-eec1-4372-ac95-83b999c7c051", 
+   "\u968f\u673a\u9053\u5177\u8868"
+  ]
  }
 ]

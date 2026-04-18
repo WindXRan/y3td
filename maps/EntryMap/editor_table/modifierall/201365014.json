@@ -6,7 +6,7 @@
         "items": []
     }, 
     "cycle_time": 0, 
-    "description": -1745518125, 
+    "description": -405480130, 
     "disappear_when_dead": true, 
     "get_effect_list": {
         "__tuple__": true, 
@@ -47,7 +47,7 @@
     "modifier_effect": 2, 
     "modifier_icon": 100859, 
     "modifier_type": 2, 
-    "name": -1579105265, 
+    "name": -1740193167, 
     "same_origin_cover": true, 
     "shield_change_of_cover": 2, 
     "shield_type": 1, 

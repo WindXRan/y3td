@@ -199,6 +199,14 @@
         "path": "ui/134221575", 
         "uid": "res_icon_ui/134221575"
     }, 
+    "ui/134221617": {
+        "default_editor_id": 134221617, 
+        "describe": "", 
+        "key": "ui/134221617", 
+        "name": "icon_\u901a\u7528\u519b\u9636\u7ecf\u9a8c", 
+        "path": "ui/134221617", 
+        "uid": "res_icon_ui/134221617"
+    }, 
     "ui/134221750": {
         "default_editor_id": 134221750, 
         "describe": "", 
@@ -295,6 +303,14 @@
         "path": "ui/134223157", 
         "uid": "res_icon_ui/134223157"
     }, 
+    "ui/134223236": {
+        "default_editor_id": 134223236, 
+        "describe": "", 
+        "key": "ui/134223236", 
+        "name": "avatar_\u521d\u7ea7\u5386\u7ec3\u77f3", 
+        "path": "ui/134223236", 
+        "uid": "res_icon_ui/134223236"
+    }, 
     "ui/134223354": {
         "default_editor_id": 134223354, 
         "describe": "", 
@@ -342,6 +358,14 @@
         "name": "choice-card-shell", 
         "path": "ui/134223766", 
         "uid": "res_icon_ui/134223766"
+    }, 
+    "ui/134223877": {
+        "default_editor_id": 134223877, 
+        "describe": "", 
+        "key": "ui/134223877", 
+        "name": "wx_zhuanpan3", 
+        "path": "ui/134223877", 
+        "uid": "res_icon_ui/134223877"
     }, 
     "ui/134223980": {
         "default_editor_id": 134223980, 
@@ -542,6 +566,14 @@
         "name": "04", 
         "path": "ui/134228181", 
         "uid": "res_icon_ui/134228181"
+    }, 
+    "ui/134228260": {
+        "default_editor_id": 134228260, 
+        "describe": "", 
+        "key": "ui/134228260", 
+        "name": "icon_huodong_nor", 
+        "path": "ui/134228260", 
+        "uid": "res_icon_ui/134228260"
     }, 
     "ui/134229245": {
         "default_editor_id": 134229245, 
@@ -783,6 +815,14 @@
         "path": "ui/134235017", 
         "uid": "res_icon_ui/134235017"
     }, 
+    "ui/134235182": {
+        "default_editor_id": 134235182, 
+        "describe": "", 
+        "key": "ui/134235182", 
+        "name": "frame_3\u7ea7\u6b66\u5c06\u5e38\u6001_1", 
+        "path": "ui/134235182", 
+        "uid": "res_icon_ui/134235182"
+    }, 
     "ui/134235461": {
         "default_editor_id": 134235461, 
         "describe": "", 
@@ -798,6 +838,14 @@
         "name": "\u5723\u796d\u7940E", 
         "path": "ui/134235703", 
         "uid": "res_icon_ui/134235703"
+    }, 
+    "ui/134235985": {
+        "default_editor_id": 134235985, 
+        "describe": "", 
+        "key": "ui/134235985", 
+        "name": "icon_\u7ea2\u70b9_1", 
+        "path": "ui/134235985", 
+        "uid": "res_icon_ui/134235985"
     }, 
     "ui/134236066": {
         "default_editor_id": 134236066, 
@@ -839,6 +887,14 @@
         "path": "ui/134236879", 
         "uid": "res_icon_ui/134236879"
     }, 
+    "ui/134237002": {
+        "default_editor_id": 134237002, 
+        "describe": "", 
+        "key": "ui/134237002", 
+        "name": "\u66f9\u4e15", 
+        "path": "ui/134237002", 
+        "uid": "res_icon_ui/134237002"
+    }, 
     "ui/134237341": {
         "default_editor_id": 134237341, 
         "describe": "", 
@@ -879,6 +935,14 @@
         "path": "ui/134238033", 
         "uid": "res_icon_ui/134238033"
     }, 
+    "ui/134238572": {
+        "default_editor_id": 134238572, 
+        "describe": "", 
+        "key": "ui/134238572", 
+        "name": "avatar_\u63d0\u53d6\u5b9d\u94bb", 
+        "path": "ui/134238572", 
+        "uid": "res_icon_ui/134238572"
+    }, 
     "ui/134238945": {
         "default_editor_id": 134238945, 
         "describe": "", 
@@ -902,6 +966,14 @@
         "name": "ZM_guanbi_nml", 
         "path": "ui/134239629", 
         "uid": "res_icon_ui/134239629"
+    }, 
+    "ui/134239725": {
+        "default_editor_id": 134239725, 
+        "describe": "", 
+        "key": "ui/134239725", 
+        "name": "frame_\u73a9\u5bb6\u5934\u50cf_mask", 
+        "path": "ui/134239725", 
+        "uid": "res_icon_ui/134239725"
     }, 
     "ui/134239912": {
         "default_editor_id": 134239912, 
@@ -998,6 +1070,14 @@
         "name": "\u5723\u796d\u7940W", 
         "path": "ui/134242533", 
         "uid": "res_icon_ui/134242533"
+    }, 
+    "ui/134242744": {
+        "default_editor_id": 134242744, 
+        "describe": "", 
+        "key": "ui/134242744", 
+        "name": "\u4e94\u884c\u4e4b\u529b300", 
+        "path": "ui/134242744", 
+        "uid": "res_icon_ui/134242744"
     }, 
     "ui/134242767": {
         "default_editor_id": 134242767, 
@@ -1111,6 +1191,14 @@
         "path": "ui/134244504", 
         "uid": "res_icon_ui/134244504"
     }, 
+    "ui/134244580": {
+        "default_editor_id": 134244580, 
+        "describe": "", 
+        "key": "ui/134244580", 
+        "name": "avatar_\u4e2d\u7ea7\u5386\u7ec3\u77f3", 
+        "path": "ui/134244580", 
+        "uid": "res_icon_ui/134244580"
+    }, 
     "ui/134245159": {
         "default_editor_id": 134245159, 
         "describe": "", 
@@ -1207,6 +1295,14 @@
         "path": "ui/134246366", 
         "uid": "res_icon_ui/134246366"
     }, 
+    "ui/134246646": {
+        "default_editor_id": 134246646, 
+        "describe": "", 
+        "key": "ui/134246646", 
+        "name": "icon_huodong_hl", 
+        "path": "ui/134246646", 
+        "uid": "res_icon_ui/134246646"
+    }, 
     "ui/134247525": {
         "default_editor_id": 134247525, 
         "describe": "", 
@@ -1262,6 +1358,14 @@
         "name": "\u96f7\u7535\u5927\u796d\u53f8R", 
         "path": "ui/134248687", 
         "uid": "res_icon_ui/134248687"
+    }, 
+    "ui/134248997": {
+        "default_editor_id": 134248997, 
+        "describe": "", 
+        "key": "ui/134248997", 
+        "name": "icon_\u968f\u673a\u91d1\u8272\u540d\u54c1", 
+        "path": "ui/134248997", 
+        "uid": "res_icon_ui/134248997"
     }, 
     "ui/134249060": {
         "default_editor_id": 134249060, 
@@ -1407,6 +1511,14 @@
         "path": "ui/134251378", 
         "uid": "res_icon_ui/134251378"
     }, 
+    "ui/134251708": {
+        "default_editor_id": 134251708, 
+        "describe": "", 
+        "key": "ui/134251708", 
+        "name": "bg_\u901a\u7528\u60ac\u6d6e\u63d0\u793a", 
+        "path": "ui/134251708", 
+        "uid": "res_icon_ui/134251708"
+    }, 
     "ui/134251993": {
         "default_editor_id": 134251993, 
         "describe": "", 
@@ -1455,6 +1567,14 @@
         "path": "ui/134252412", 
         "uid": "res_icon_ui/134252412"
     }, 
+    "ui/134252847": {
+        "default_editor_id": 134252847, 
+        "describe": "", 
+        "key": "ui/134252847", 
+        "name": "icon_\u953b\u9020\u77f3_1", 
+        "path": "ui/134252847", 
+        "uid": "res_icon_ui/134252847"
+    }, 
     "ui/134252919": {
         "default_editor_id": 134252919, 
         "describe": "", 
@@ -1486,6 +1606,14 @@
         "name": "\u96f7\u7535\u5927\u796d\u53f8W", 
         "path": "ui/134253053", 
         "uid": "res_icon_ui/134253053"
+    }, 
+    "ui/134253127": {
+        "default_editor_id": 134253127, 
+        "describe": "", 
+        "key": "ui/134253127", 
+        "name": "bg_\u6e38\u5386\u5361\u7247", 
+        "path": "ui/134253127", 
+        "uid": "res_icon_ui/134253127"
     }, 
     "ui/134253260": {
         "default_editor_id": 134253260, 
@@ -1711,6 +1839,14 @@
         "path": "ui/134256408", 
         "uid": "res_icon_ui/134256408"
     }, 
+    "ui/134256985": {
+        "default_editor_id": 134256985, 
+        "describe": "", 
+        "key": "ui/134256985", 
+        "name": "icon_\u94f6\u4e24", 
+        "path": "ui/134256985", 
+        "uid": "res_icon_ui/134256985"
+    }, 
     "ui/134257037": {
         "default_editor_id": 134257037, 
         "describe": "", 
@@ -1766,6 +1902,14 @@
         "name": "\u51c6\u5907\u5206\u5272\u7ebf", 
         "path": "ui/134257454", 
         "uid": "res_icon_ui/134257454"
+    }, 
+    "ui/134257542": {
+        "default_editor_id": 134257542, 
+        "describe": "", 
+        "key": "ui/134257542", 
+        "name": "bg_tip", 
+        "path": "ui/134257542", 
+        "uid": "res_icon_ui/134257542"
     }, 
     "ui/134257584": {
         "default_editor_id": 134257584, 
@@ -1991,6 +2135,14 @@
         "path": "ui/134262826", 
         "uid": "res_icon_ui/134262826"
     }, 
+    "ui/134262895": {
+        "default_editor_id": 134262895, 
+        "describe": "", 
+        "key": "ui/134262895", 
+        "name": "frame_2\u7ea7\u6b66\u5c06\u5e38\u6001_1", 
+        "path": "ui/134262895", 
+        "uid": "res_icon_ui/134262895"
+    }, 
     "ui/134263581": {
         "default_editor_id": 134263581, 
         "describe": "", 
@@ -2038,6 +2190,14 @@
         "name": "\u6b66\u5668\u5927\u5e08\u88ab\u52a8", 
         "path": "ui/134264014", 
         "uid": "res_icon_ui/134264014"
+    }, 
+    "ui/134264154": {
+        "default_editor_id": 134264154, 
+        "describe": "", 
+        "key": "ui/134264154", 
+        "name": "icon_huodong_sel", 
+        "path": "ui/134264154", 
+        "uid": "res_icon_ui/134264154"
     }, 
     "ui/134264555": {
         "default_editor_id": 134264555, 
@@ -2142,6 +2302,14 @@
         "name": "ZM_biaozhu_1", 
         "path": "ui/134265804", 
         "uid": "res_icon_ui/134265804"
+    }, 
+    "ui/134265849": {
+        "default_editor_id": 134265849, 
+        "describe": "", 
+        "key": "ui/134265849", 
+        "name": "frame_1\u7ea7\u6b66\u5c06\u5e38\u6001_1", 
+        "path": "ui/134265849", 
+        "uid": "res_icon_ui/134265849"
     }, 
     "ui/134266502": {
         "default_editor_id": 134266502, 
@@ -2559,6 +2727,14 @@
         "path": "ui/134277125", 
         "uid": "res_icon_ui/134277125"
     }, 
+    "ui/134277631": {
+        "default_editor_id": 134277631, 
+        "describe": "", 
+        "key": "ui/134277631", 
+        "name": "avatar_\u968f\u673a\u8bcd\u6761\u77f3", 
+        "path": "ui/134277631", 
+        "uid": "res_icon_ui/134277631"
+    }, 
     "ui/134277978": {
         "default_editor_id": 134277978, 
         "describe": "", 
@@ -2630,6 +2806,14 @@
         "name": "image (79)", 
         "path": "ui/134279449", 
         "uid": "res_icon_ui/134279449"
+    }, 
+    "ui/134279516": {
+        "default_editor_id": 134279516, 
+        "describe": "", 
+        "key": "ui/134279516", 
+        "name": "icon_huodong_dis", 
+        "path": "ui/134279516", 
+        "uid": "res_icon_ui/134279516"
     }, 
     "ui/134279529": {
         "default_editor_id": 134279529, 
@@ -2711,6 +2895,14 @@
         "path": "ui/134281545", 
         "uid": "res_icon_ui/134281545"
     }, 
+    "ui/134281589": {
+        "default_editor_id": 134281589, 
+        "describe": "", 
+        "key": "ui/134281589", 
+        "name": "bg_gamesave_\u5927", 
+        "path": "ui/134281589", 
+        "uid": "res_icon_ui/134281589"
+    }, 
     "ui/134281707": {
         "default_editor_id": 134281707, 
         "describe": "", 
@@ -2734,6 +2926,14 @@
         "name": "Rectangle-2", 
         "path": "ui/134281957", 
         "uid": "res_icon_ui/134281957"
+    }, 
+    "ui/134282047": {
+        "default_editor_id": 134282047, 
+        "describe": "", 
+        "key": "ui/134282047", 
+        "name": "frame_0\u7ea7\u6b66\u5c06\u5e38\u6001_1", 
+        "path": "ui/134282047", 
+        "uid": "res_icon_ui/134282047"
     }, 
     "ui/134282277": {
         "default_editor_id": 134282277, 
@@ -2782,6 +2982,14 @@
         "name": "2", 
         "path": "ui/134283022", 
         "uid": "res_icon_ui/134283022"
+    }, 
+    "ui/134283222": {
+        "default_editor_id": 134283222, 
+        "describe": "", 
+        "key": "ui/134283222", 
+        "name": "bg_\u6ed1\u52a8\u6761", 
+        "path": "ui/134283222", 
+        "uid": "res_icon_ui/134283222"
     }, 
     "ui/17c1895d-beda-49c4-b061-88557c6ecda1": {
         "default_editor_id": 134259536, 
@@ -2982,6 +3190,14 @@
         "name": "\u7d2b5-1", 
         "path": "ui/ac7ddfcf-2fa5-4a93-a98b-340001717514", 
         "uid": "res_icon_ui/ac7ddfcf-2fa5-4a93-a98b-340001717514"
+    }, 
+    "ui/acbdc42d-3d7f-46de-9df8-225e4d9ab5e1": {
+        "default_editor_id": 134245470, 
+        "describe": "", 
+        "key": "ui/acbdc42d-3d7f-46de-9df8-225e4d9ab5e1", 
+        "name": "bg_\u7eaf\u9ed1", 
+        "path": "ui/acbdc42d-3d7f-46de-9df8-225e4d9ab5e1", 
+        "uid": "res_icon_ui/acbdc42d-3d7f-46de-9df8-225e4d9ab5e1"
     }, 
     "ui/ad11c3b5-69f9-4829-9ef6-1039bafc8f70": {
         "default_editor_id": 134250888, 

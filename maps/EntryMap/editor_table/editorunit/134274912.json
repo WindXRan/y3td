@@ -295,7 +295,7 @@
         "filter_condition_camp": 5, 
         "filter_condition_type": 7, 
         "hit_effect": {
-            "effect": 102465, 
+            "effect": 0, 
             "follow_scale": true, 
             "scale": 1.0, 
             "socket": "Body"
