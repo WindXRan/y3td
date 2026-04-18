@@ -14,9 +14,9 @@ def test_basic_attack_range_has_post_evolution_fallback() -> None:
     assert "ATTACK_SKILL_DEFS.basic_attack.base_range" in content
 
 
-def test_evolution_restores_basic_attack_runtime_multiple_times() -> None:
+def test_evolution_only_replaces_model() -> None:
     content = REWARDS.read_text(encoding="utf-8")
 
-    assert "cooldown_remaining = 0" in content
-    assert "for _, delay in ipairs({ 0.03, 0.12, 0.35 }) do" in content
-    assert "延迟再补一轮恢复" in content
+    assert "resolve_evolution_target_model_id" in content
+    assert "y3.unit.get_model_by_key(target_unit_id)" in content
+    assert "hero:replace_model(target_model_id)" in content

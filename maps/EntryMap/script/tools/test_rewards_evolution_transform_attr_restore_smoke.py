@@ -33,11 +33,10 @@ def main() -> None:
         "package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path "
         "local rewards = require('runtime.rewards') "
         "local hero_attr_calls = { snapshot = 0, init = 0 } "
-        "local selected_unit = nil "
         "local hero = { "
         "  attrs = { ['攻击范围'] = 1400, ['生命结算值'] = 900, ['生命'] = 900 }, "
         "  snapshot_pack = { ['攻击范围'] = 1400, ['生命结算值'] = 900, ['生命'] = 900 }, "
-        "  kv = {}, hp = 450, level = 8, exp = 12, ability_point = 3, facing = 90, key = 999001 "
+        "  kv = {}, hp = 450, level = 8, exp = 12, ability_point = 3, facing = 90, key = 999001, replaced_model = nil, canceled_model = nil "
         "} "
         "function hero:is_exist() return true end "
         "function hero:get_hp() return self.hp end "
@@ -61,11 +60,8 @@ def main() -> None:
         "function hero:stop() end "
         "function hero:get_common_attack() return nil end "
         "function hero:event(_, _) end "
-        "function hero:transformation(unit_key, _) "
-        "  self.key = unit_key "
-        "  self.attrs = { ['攻击范围'] = 1, ['生命结算值'] = 300, ['生命'] = 300 } "
-        "  self.kv = {} "
-        "end "
+        "function hero:replace_model(model_id) self.replaced_model = model_id end "
+        "function hero:cancel_replace_model(model_id) self.canceled_model = model_id end "
         "local hero_attr_system = { "
         "  snapshot = function(unit, state) "
         "    hero_attr_calls.snapshot = hero_attr_calls.snapshot + 1 "
@@ -88,11 +84,12 @@ def main() -> None:
         "  get_attr = function(unit, name) return unit:get_attr(name) end, "
         "} "
         "local sync_basic_attack_count = 0 "
+        "local expected_model_id = 345678901 "
         "local api = rewards.create({ "
         "  STATE = { hero = hero, hero_common_attack = nil, attack_skill_state = nil }, "
         "  message = function() end, "
         "  round_number = function(value) return math.floor((value or 0) + 0.5) end, "
-        "  y3 = { object = { unit = { [100001] = { data = {} } } } }, "
+        "  y3 = { unit = { get_model_by_key = function(unit_key) if unit_key == 100001 then return expected_model_id end return 0 end } }, "
         "  hero_attr_system = hero_attr_system, "
         "  add_attr_pack = function(unit, pack) "
         "    for name, value in pairs(pack or {}) do "
@@ -102,8 +99,6 @@ def main() -> None:
         "    end "
         "  end, "
         "  sync_basic_attack_ability = function() sync_basic_attack_count = sync_basic_attack_count + 1 end, "
-        "  setup_basic_attack_ability = function() sync_basic_attack_count = sync_basic_attack_count + 1 end, "
-        "  get_player = function() return { select_unit = function(_, unit) selected_unit = unit end } end, "
         "  heal_hero = function() end, "
         "  collect_bond_route_tags = function() return {} end, "
         "}) "
@@ -116,12 +111,14 @@ def main() -> None:
         "api.get_evolution_runtime = function() return runtime end "
         "api.get_mark_runtime = api.get_evolution_runtime "
         "api.apply_evolution_choice(1) "
-        "assert(hero.key == 100001, 'expected hero to transform into battle_scar_mark unit') "
-        "assert(hero_attr_calls.init >= 1, 'expected hero runtime attrs to be restored after transformation') "
-        "assert((hero:get_attr('攻击范围') or 0) >= 1400, 'expected restored attack range to survive transformation, got ' .. tostring(hero:get_attr('攻击范围'))) "
-        "assert(selected_unit == hero, 'expected transformed hero to stay selected') "
-        "assert(sync_basic_attack_count >= 1, 'expected basic attack ability sync after evolution transform') "
-        "print('rewards evolution transform attr restore smoke ok') "
+        "assert(hero.key == 999001, 'evolution should not replace the hero unit itself') "
+        "assert(hero.replaced_model == expected_model_id, 'expected evolution to replace the hero model only') "
+        "assert(runtime.active_form_unit_id == 100001, 'expected evolution runtime to keep the selected form unit id') "
+        "assert(runtime.active_form_model_id == expected_model_id, 'expected evolution runtime to keep the selected form model id') "
+        "assert(hero_attr_calls.init == 0, 'replace_model path should not rebuild hero attrs') "
+        "assert((hero:get_attr('攻击范围') or 0) >= 1400, 'replace_model path should keep the original attack range') "
+        "assert(sync_basic_attack_count >= 1, 'replace_model path should still allow evolution bonuses to refresh basic attack params') "
+        "print('rewards evolution replace model smoke ok') "
     )
     with tempfile.NamedTemporaryFile('w', encoding='utf-8', suffix='.lua', delete=False) as handle:
         handle.write(smoke)
@@ -130,7 +127,7 @@ def main() -> None:
         result = run([str(LUA), str(temp_path)])
     finally:
         temp_path.unlink(missing_ok=True)
-    assert_ok(result, 'rewards evolution transform attr restore smoke failed')
+    assert_ok(result, 'rewards evolution replace model smoke failed')
 
 
 if __name__ == '__main__':

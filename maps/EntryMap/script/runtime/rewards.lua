@@ -127,8 +127,6 @@ function M.create(env)
   local add_attr_pack = env.add_attr_pack
   local hero_attr_system = env.hero_attr_system
   local sync_basic_attack_ability = env.sync_basic_attack_ability
-  local setup_basic_attack_ability = env.setup_basic_attack_ability
-  local get_player = env.get_player
   local heal_hero = env.heal_hero
   local collect_bond_route_tags = env.collect_bond_route_tags
 
@@ -177,6 +175,7 @@ function M.create(env)
       owned_evolution_ids = {},
       ordered_evolution_ids = {},
       active_form_unit_id = nil,
+      active_form_model_id = nil,
       triggered_node_ids = {},
       rounds_by_id = {},
       next_round_id = 1,
@@ -211,6 +210,7 @@ function M.create(env)
     runtime.owned_mark_ids = runtime.owned_mark_ids or runtime.owned_evolution_ids
     runtime.ordered_evolution_ids = runtime.ordered_evolution_ids or runtime.ordered_mark_ids or {}
     runtime.ordered_mark_ids = runtime.ordered_mark_ids or runtime.ordered_evolution_ids
+    runtime.active_form_model_id = runtime.active_form_model_id or nil
     STATE.evolution_runtime = runtime
     STATE.mark_runtime = runtime
     return runtime
@@ -1082,25 +1082,6 @@ function M.create(env)
   end
   api.sync_evolution_effects = api.sync_mark_effects
 
-  local function clone_attr_snapshot(snapshot)
-    if not snapshot then
-      return nil
-    end
-
-    local copy = {}
-    for name, value in pairs(snapshot) do
-      copy[name] = value
-    end
-    return copy
-  end
-
-  local function get_hero_attr_snapshot()
-    if not STATE.hero or not STATE.hero:is_exist() or not hero_attr_system or not hero_attr_system.snapshot then
-      return nil
-    end
-    return clone_attr_snapshot(hero_attr_system.snapshot(STATE.hero, {}))
-  end
-
   local function get_hero_hp_snapshot()
     if not STATE.hero or not STATE.hero:is_exist() then
       return nil
@@ -1119,99 +1100,19 @@ function M.create(env)
       hp = current_hp,
       max_hp = max_hp,
       hp_ratio = max_hp > 0 and math.max(0, math.min(1, current_hp / max_hp)) or nil,
-      level = tonumber(STATE.hero:get_level()) or nil,
-      exp = tonumber(STATE.hero:get_exp()) or nil,
-      ability_point = tonumber(STATE.hero:get_ability_point()) or nil,
-      facing = tonumber(STATE.hero:get_facing()) or nil,
-      attr_snapshot = get_hero_attr_snapshot(),
     }
   end
 
-  local function restore_hero_attr_snapshot(snapshot)
-    if not snapshot or not STATE.hero or not STATE.hero:is_exist() then
-      return
+  local function resolve_evolution_target_model_id(target_unit_id)
+    if not target_unit_id or not y3 or not y3.unit or not y3.unit.get_model_by_key then
+      return nil
     end
 
-    -- transformation 后有些物编字段会退回到目标单位默认值，需要把运行时养成属性灌回去。
-    if hero_attr_system and hero_attr_system.init_hero_attrs then
-      hero_attr_system.init_hero_attrs(STATE.hero, snapshot)
-    else
-      for name, value in pairs(snapshot) do
-        STATE.hero:set_attr(name, value)
-      end
+    local model_id = y3.unit.get_model_by_key(target_unit_id)
+    if model_id == nil or model_id == 0 then
+      return nil
     end
-
-    if hero_attr_system and hero_attr_system.snapshot then
-      hero_attr_system.snapshot(STATE.hero, STATE)
-    end
-  end
-
-  local function restore_hero_runtime_after_evolution(snapshot)
-    if not STATE.hero or not STATE.hero:is_exist() then
-      return
-    end
-
-    if snapshot then
-      if snapshot.level ~= nil then
-        STATE.hero:set_level(snapshot.level)
-      end
-      if snapshot.exp ~= nil then
-        STATE.hero:set_exp(snapshot.exp)
-      end
-      if snapshot.ability_point ~= nil then
-        STATE.hero:set_ability_point(snapshot.ability_point)
-      end
-      if snapshot.facing ~= nil then
-        STATE.hero:set_facing(snapshot.facing, 0.0)
-      end
-    end
-
-    restore_hero_attr_snapshot(snapshot and snapshot.attr_snapshot or nil)
-
-    STATE.hero:add_state('禁止普攻')
-    STATE.hero:add_state('禁止移动')
-    STATE.hero:stop()
-    STATE.hero_common_attack = nil
-    STATE.basic_attack_ability_bound = false
-    STATE.basic_attack_ability_warned = false
-    STATE.basic_attack_animation_names = nil
-    STATE.basic_attack_animation_index = 0
-    if STATE.attack_skill_state and STATE.attack_skill_state.by_id and STATE.attack_skill_state.by_id.basic_attack then
-      STATE.attack_skill_state.by_id.basic_attack.cooldown_remaining = 0
-    end
-
-    if setup_basic_attack_ability then
-      setup_basic_attack_ability()
-    else
-      sync_basic_attack_ability()
-    end
-
-    -- transformation 有时会在当前帧之后继续覆盖单位默认属性/普攻对象，
-    -- 这里延迟再补一轮恢复，避免进化后偶发拿到 0 射程或空普攻句柄。
-    for _, delay in ipairs({ 0.03, 0.12, 0.35 }) do
-      y3.ltimer.wait(delay, function()
-        if not STATE.hero or not STATE.hero:is_exist() or STATE.game_finished then
-          return
-        end
-        restore_hero_attr_snapshot(snapshot and snapshot.attr_snapshot or nil)
-        STATE.hero_common_attack = nil
-        STATE.basic_attack_ability_bound = false
-        STATE.basic_attack_ability_warned = false
-        STATE.basic_attack_animation_names = nil
-        if STATE.attack_skill_state and STATE.attack_skill_state.by_id and STATE.attack_skill_state.by_id.basic_attack then
-          STATE.attack_skill_state.by_id.basic_attack.cooldown_remaining = 0
-        end
-        if setup_basic_attack_ability then
-          setup_basic_attack_ability()
-        else
-          sync_basic_attack_ability()
-        end
-      end)
-    end
-
-    if get_player then
-      get_player():select_unit(STATE.hero)
-    end
+    return model_id
   end
 
   local function restore_hero_hp_by_snapshot(snapshot)
@@ -1239,35 +1140,26 @@ function M.create(env)
     local runtime = api.get_mark_runtime()
     local hero = STATE.hero
     local target_unit_id = def and def.hero_unit_id
-    if not hero or not hero:is_exist() or not target_unit_id then
+    local target_model_id = resolve_evolution_target_model_id(target_unit_id)
+    if not hero or not hero:is_exist() or not target_unit_id or not target_model_id then
+      if target_unit_id then
+        message(string.format(
+          '警告：真身 %s 缺少英雄模型资源 %s，已跳过形态替换。',
+          tostring(get_evolution_display_name(def)),
+          tostring(target_unit_id)
+        ))
+      end
       return false
     end
 
-    if hero:get_key() == target_unit_id then
-      runtime.active_form_unit_id = target_unit_id
-      restore_hero_runtime_after_evolution(get_hero_hp_snapshot())
-      return true
+    if runtime.active_form_model_id
+      and runtime.active_form_model_id ~= target_model_id
+      and hero.cancel_replace_model then
+      pcall(hero.cancel_replace_model, hero, runtime.active_form_model_id)
     end
 
-    if not (y3 and y3.object and y3.object.unit and y3.object.unit[target_unit_id]) then
-      message(string.format(
-        '警告：真身 %s 缺少英雄模型单位 %s，已跳过形态替换。',
-        tostring(get_evolution_display_name(def)),
-        tostring(target_unit_id)
-      ))
-      return false
-    end
-
-    local snapshot = get_hero_hp_snapshot()
     local ok, err = pcall(function()
-      hero:transformation(target_unit_id, {
-        inherit_composite_attr = true,
-        inherit_unit_attr = true,
-        inherit_kv = true,
-        inherit_hero_ability = true,
-        inherit_common_ability = true,
-        inherit_passive_ability = true,
-      })
+      hero:replace_model(target_model_id)
     end)
     if not ok then
       message(string.format(
@@ -1279,7 +1171,7 @@ function M.create(env)
     end
 
     runtime.active_form_unit_id = target_unit_id
-    restore_hero_runtime_after_evolution(snapshot)
+    runtime.active_form_model_id = target_model_id
     return true
   end
 
