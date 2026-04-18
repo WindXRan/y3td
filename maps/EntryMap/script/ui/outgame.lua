@@ -407,6 +407,9 @@ function M.create(env)
         if progress.standard_cleared == true then
           merge_bonus_stats(rebuilt, stage_rules.standard)
         end
+        if progress.challenge_cleared == true then
+          merge_bonus_stats(rebuilt, stage_rules.challenge)
+        end
       end
     end
     merge_bonus_stats(rebuilt, BattlePass.collect_claimed_bonus_stats(profile))

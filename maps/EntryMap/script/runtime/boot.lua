@@ -12,7 +12,6 @@ local RuntimeLoopsSystem = require 'runtime.loops'
 local BattleEventPromptsFactory = require 'runtime.battle_event_prompts'
 local RuntimeUIHelpers = require 'runtime.runtime_ui_helpers'
 local OutgameSystem = require 'ui.outgame'
-local BattlePassPanel = require 'ui.battle_pass'
 local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
 local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
@@ -35,7 +34,6 @@ local runtime_hud_system
 local choice_panel_system
 local overview_model_system
 local outgame_system
-local battle_pass_panel_system
 local session_state_system
 local input_events_system
 local runtime_loops_system
@@ -2258,7 +2256,7 @@ outgame_system = OutgameSystem.create({
   end,
 })
 
-battle_pass_panel_system = BattlePassPanel.create({
+outgame_system.set_battle_pass_panel(require 'ui.battle_pass'.create({
   STATE = STATE,
   y3 = y3,
   message = message,
@@ -2275,8 +2273,7 @@ battle_pass_panel_system = BattlePassPanel.create({
   play_ui_click = function()
     return audio_system and audio_system.play_ui_click and audio_system.play_ui_click() or nil
   end,
-})
-outgame_system.set_battle_pass_panel(battle_pass_panel_system)
+}))
 
 input_events_system = InputEventsSystem.create({
   STATE = STATE,
