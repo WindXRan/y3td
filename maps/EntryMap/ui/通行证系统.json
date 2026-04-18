@@ -2736,10 +2736,13 @@
                                             }, 
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
-                                            "size": [
-                                                202.6, 
-                                                35.0
-                                            ], 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    202.6, 
+                                                    35.0
+                                                ]
+                                            }, 
                                             "text": {
                                                 "__tuple__": true, 
                                                 "items": [
@@ -3529,10 +3532,13 @@
                                     }, 
                                     "prefab_sub_key": null, 
                                     "scene_ui_name": null, 
-                                    "size": [
-                                        400.0, 
-                                        50.0
-                                    ], 
+                                    "size": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            400.0, 
+                                            50.0
+                                        ]
+                                    }, 
                                     "text": {
                                         "__tuple__": true, 
                                         "items": [
@@ -3606,10 +3612,13 @@
                                             }, 
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
-                                            "size": [
-                                                202.6, 
-                                                33.8
-                                            ], 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    202.6, 
+                                                    33.8
+                                                ]
+                                            }, 
                                             "text": {
                                                 "__tuple__": true, 
                                                 "items": [
@@ -3694,10 +3703,13 @@
                                                     }, 
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
-                                                    "size": [
-                                                        340.0, 
-                                                        190.0
-                                                    ], 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            340.0, 
+                                                            190.0
+                                                        ]
+                                                    }, 
                                                     "swallow_touches": true, 
                                                     "type": 4, 
                                                     "uid": "7a848a38-0f80-42f4-8847-16ad9958caa0"
@@ -3917,10 +3929,13 @@
                                                             }, 
                                                             "prefab_sub_key": null, 
                                                             "scene_ui_name": null, 
-                                                            "size": [
-                                                                200.0, 
-                                                                24.0
-                                                            ], 
+                                                            "size": {
+                                                                "__tuple__": true, 
+                                                                "items": [
+                                                                    200.0, 
+                                                                    24.0
+                                                                ]
+                                                            }, 
                                                             "text": {
                                                                 "__tuple__": true, 
                                                                 "items": [
@@ -4273,10 +4288,13 @@
                                                     }, 
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
-                                                    "size": [
-                                                        300.0, 
-                                                        100.0
-                                                    ], 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            300.0, 
+                                                            100.0
+                                                        ]
+                                                    }, 
                                                     "text": {
                                                         "__tuple__": true, 
                                                         "items": [
@@ -4402,10 +4420,13 @@
                                             }, 
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
-                                            "size": [
-                                                270.0, 
-                                                112.0
-                                            ], 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    270.0, 
+                                                    112.0
+                                                ]
+                                            }, 
                                             "text": {
                                                 "__tuple__": true, 
                                                 "items": [
@@ -5005,10 +5026,13 @@
                                                     }, 
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
-                                                    "size": [
-                                                        88.24, 
-                                                        147.0
-                                                    ], 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            88.24, 
+                                                            147.0
+                                                        ]
+                                                    }, 
                                                     "type": 4, 
                                                     "uid": "3d0802af-9a9d-4dd9-b50a-7f6ee28e4937"
                                                 }

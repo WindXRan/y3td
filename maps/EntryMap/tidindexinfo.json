@@ -4,5 +4,11 @@
         "index_type": "object_editor", 
         "item_key": 134236975, 
         "prop_key": "name"
+    }, 
+    "-452646908": {
+        "editor_type": "sound_all", 
+        "index_type": "object_editor", 
+        "item_key": 201330383, 
+        "prop_key": "name"
     }
 }
