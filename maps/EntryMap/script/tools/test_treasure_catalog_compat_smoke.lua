@@ -9,6 +9,7 @@ assert(#compat.list == 22, 'expected 22 compat treasures')
 
 local item_004 = compat.by_id.ITEM_004
 assert(item_004, 'expected ITEM_004 to exist')
+assert(item_004.editor_item_key == 201390204, 'expected ITEM_004 editor_item_key to map to 201390204')
 assert(item_004.quality == 'rare', 'expected ITEM_004 quality to map to rare')
 assert(item_004.treasure_type == 'tactical_temp', 'expected ITEM_004 to map to tactical_temp')
 assert(item_004.duration_type == 'timed', 'expected ITEM_004 duration_type to map to timed')
@@ -22,6 +23,7 @@ assert(item_006.bonuses.runtime['立即金币'] == 20000, 'expected ITEM_006 立
 
 local item_010 = compat.by_id.ITEM_010
 assert(item_010 and item_010.bonuses and item_010.bonuses.runtime, 'expected ITEM_010 bonuses.runtime')
+assert(item_010.editor_item_key == 201390210, 'expected ITEM_010 editor_item_key to map to 201390210')
 assert(item_010.bonuses.runtime['技能免费刷新次数'] == 1, 'expected ITEM_010 技能免费刷新次数 to map to 1')
 assert(item_010.bonuses.runtime['英雄免费刷新次数'] == 1, 'expected ITEM_010 英雄免费刷新次数 to map to 1')
 assert(item_010.bonuses.runtime['宝物免费刷新次数'] == 1, 'expected ITEM_010 宝物免费刷新次数 to map to 1')

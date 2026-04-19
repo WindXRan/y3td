@@ -24,6 +24,7 @@ function M.create(env)
   local debug_tools_system = env.debug_tools_system
   local toggle_talk_input = env.toggle_talk_input
   local toggle_inventory_panel = env.toggle_inventory_panel
+  local open_save_panel = env.open_save_panel
   local try_upgrade_growth_weapon = env.try_upgrade_growth_weapon
 
   local function register_runtime_events()
@@ -74,6 +75,12 @@ function M.create(env)
         return
       end
       toggle_inventory_panel()
+    end)
+    y3.game:event('键盘-按下', 'P', function()
+      if not is_battle_active() or not open_save_panel then
+        return
+      end
+      open_save_panel()
     end)
     y3.game:event('键盘-按下', y3.const.KeyboardKey['TAB'], function()
       if not is_battle_active() then

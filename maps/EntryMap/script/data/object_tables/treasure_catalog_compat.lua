@@ -1,5 +1,6 @@
 local CsvLoader = require 'data.csv_loader'
 local catalog = require 'data.object_tables.treasure_catalog'
+local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
 local helpers = require 'entry_objects.helpers'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
 
@@ -160,6 +161,7 @@ for _, item in ipairs(catalog.list or {}) do
   list[#list + 1] = {
     order_index = item.order_index,
     id = item.id,
+    editor_item_key = RuntimeEditorIds.treasure and RuntimeEditorIds.treasure[item.id] or nil,
     name = item.name,
     quality = RARITY_TO_QUALITY[item.rarity] or 'common',
     summary = item.summary,

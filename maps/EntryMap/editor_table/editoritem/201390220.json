@@ -1,20 +1,8 @@
 {
     "_custom_": true,
-    "_ref_": 201390088,
-    "attached_ability": {
-        "__tuple__": true,
-        "items": []
-    },
-    "attached_agility": {
-        "__tuple__": true,
-        "items": [
-            0.0,
-            0,
-            0,
-            0,
-            0
-        ]
-    },
+    "_ref_": 201390001,
+    "attached_ability": 0,
+    "attached_agility": 0,
     "attached_attack_interval": {
         "__tuple__": true,
         "items": [
@@ -28,7 +16,7 @@
     "attached_attack_mag": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
@@ -38,7 +26,7 @@
     "attached_attack_phy": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
@@ -59,16 +47,16 @@
         "__tuple__": true,
         "items": [
             0.0,
-            0.0,
-            20.0,
-            0.0,
-            0.0
+            0,
+            0,
+            0,
+            0
         ]
     },
     "attached_cd_reduce": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
@@ -79,16 +67,16 @@
         "__tuple__": true,
         "items": [
             0.0,
-            0.0,
-            20.0,
-            0.0,
-            0.0
+            0,
+            0,
+            0,
+            0
         ]
     },
     "attached_critical_dmg": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
@@ -98,7 +86,7 @@
     "attached_defense_mag": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
@@ -108,7 +96,7 @@
     "attached_defense_phy": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
@@ -118,7 +106,7 @@
     "attached_dmg_reduction": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
@@ -138,7 +126,7 @@
     "attached_extra_dmg": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
@@ -148,7 +136,7 @@
     "attached_healing_effect": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
@@ -195,7 +183,8 @@
             0
         ]
     },
-    "attached_intelligence": {
+    "attached_intelligence": 0,
+    "attached_mp_max": {
         "__tuple__": true,
         "items": [
             0.0,
@@ -205,20 +194,10 @@
             0
         ]
     },
-    "attached_mp_max": {
-        "__tuple__": true,
-        "items": [
-            0,
-            0,
-            0,
-            0,
-            0
-        ]
-    },
     "attached_mp_rec": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
@@ -252,7 +231,7 @@
     "attached_pene_mag_ratio": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
@@ -272,14 +251,15 @@
     "attached_pene_phy_ratio": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
             0
         ]
     },
-    "attached_strength": {
+    "attached_strength": 0,
+    "attached_vampire_mag": {
         "__tuple__": true,
         "items": [
             0.0,
@@ -289,20 +269,10 @@
             0
         ]
     },
-    "attached_vampire_mag": {
-        "__tuple__": true,
-        "items": [
-            0,
-            0,
-            0,
-            0,
-            0
-        ]
-    },
     "attached_vampire_phy": {
         "__tuple__": true,
         "items": [
-            0,
+            0.0,
             0,
             0,
             0,
@@ -393,7 +363,12 @@
     "body_size": 0.4,
     "buy_res_list": {
         "__tuple__": true,
-        "items": []
+        "items": [
+            [
+                "official_res_1",
+                400
+            ]
+        ]
     },
     "cd_type": "",
     "click_name_pick_up": 0,
@@ -404,11 +379,11 @@
     "cur_charge": 0,
     "cur_stack": 1,
     "delete_on_discard": false,
-    "description": 2126126788,
+    "description": 1637242970,
     "disable_overlapping": false,
     "discard_enable": true,
     "discard_when_dead": false,
-    "drop_stay_time": 9999,
+    "drop_stay_time": 999999.0,
     "effect_list": {},
     "fresnel_color": [
         255,
@@ -418,11 +393,11 @@
     ],
     "fresnel_emissive_color_strength": 0,
     "fresnel_exp": 1,
-    "hp_max": 100,
-    "icon": 106708,
+    "hp_max": 0.0,
+    "icon": 106504,
     "init_stock": 5,
     "item_billboard_type": 1,
-    "key": 201390088,
+    "key": 201390220,
     "kv": {
         "entry_item_kind": {
             "annotation": "",
@@ -432,27 +407,37 @@
             "etype": 0,
             "prop_cls": "PText",
             "type": 0,
-            "value": "equipment"
+            "value": "treasure"
         },
-        "entry_archetype": {
+        "entry_runtime_treasure_id": {
             "annotation": "",
             "desc": "",
-            "key": "entry_archetype",
+            "key": "entry_runtime_treasure_id",
             "remark": "",
             "etype": 0,
             "prop_cls": "PText",
             "type": 0,
-            "value": "狂斧暴击"
+            "value": "ITEM_020"
         },
-        "entry_tags": {
+        "entry_quality": {
             "annotation": "",
             "desc": "",
-            "key": "entry_tags",
+            "key": "entry_quality",
             "remark": "",
             "etype": 0,
             "prop_cls": "PText",
             "type": 0,
-            "value": "攻速, 暴击, 物攻"
+            "value": "common"
+        },
+        "entry_category": {
+            "annotation": "",
+            "desc": "",
+            "key": "entry_category",
+            "remark": "",
+            "etype": 0,
+            "prop_cls": "PText",
+            "type": 0,
+            "value": "套装组件（属性成长）"
         },
         "entry_summary": {
             "annotation": "",
@@ -462,37 +447,37 @@
             "etype": 0,
             "prop_cls": "PText",
             "type": 0,
-            "value": "偏向近战压制的狂暴斧型装备，适合普攻暴击和贴脸输出。"
+            "value": "智力增幅 +10%。"
         },
-        "entry_attr_pack": {
+        "entry_duration": {
             "annotation": "",
             "desc": "",
-            "key": "entry_attr_pack",
+            "key": "entry_duration",
             "remark": "",
             "etype": 0,
             "prop_cls": "PText",
             "type": 0,
-            "value": "attached_attack_speed=0, 0, 20, 0, 0 | attached_critical_chance=0, 0, 20, 0, 0"
+            "value": "permanent"
         },
-        "entry_active_ability": {
+        "entry_effects": {
             "annotation": "",
             "desc": "",
-            "key": "entry_active_ability",
+            "key": "entry_effects",
             "remark": "",
             "etype": 0,
             "prop_cls": "PText",
             "type": 0,
-            "value": ""
+            "value": "ratio_bonus:智力增幅:add:0.1:permanent"
         },
-        "entry_passive_abilities": {
+        "entry_set": {
             "annotation": "",
             "desc": "",
-            "key": "entry_passive_abilities",
+            "key": "entry_set",
             "remark": "",
             "etype": 0,
             "prop_cls": "PText",
             "type": 0,
-            "value": ""
+            "value": "属性提升(3件) 每秒全属性 +0.6 | passive_growth:每秒力量:add:0.6:permanent | passive_growth:每秒敏捷:add:0.6:permanent | passive_growth:每秒智力:add:0.6:permanent"
         },
         "entry_handler": {
             "annotation": "",
@@ -502,7 +487,7 @@
             "etype": 0,
             "prop_cls": "PText",
             "type": 0,
-            "value": "editor_item_builtin"
+            "value": "runtime.rewards"
         }
     },
     "level": 1,
@@ -519,10 +504,10 @@
     "material_color_intensity": 1,
     "max_stock": 5,
     "maximum_charging": 5,
-    "maximum_stacking": 5,
+    "maximum_stacking": 1,
     "model": 204059,
     "model_opacity": 1,
-    "name": 417390422,
+    "name": 1317390952,
     "name_margin": {
         "__tuple__": true,
         "items": [
@@ -555,7 +540,7 @@
     },
     "preview_name_click_range": 0,
     "preview_name_stack": 0,
-    "refresh_interval": 1,
+    "refresh_interval": 1.0,
     "rotation": {
         "__tuple__": true,
         "items": [
@@ -567,24 +552,25 @@
     "sale_enable": true,
     "sell_res_list": {
         "__tuple__": true,
-        "items": []
+        "items": [
+            [
+                "official_res_1",
+                300
+            ]
+        ]
     },
-    "sound_event_list": {
-        "__tuple__": true,
-        "items": []
-    },
-    "stack_type": 0,
-    "start_rft": 1,
+    "sound_event_list": "",
+    "stack_type": 2,
+    "start_rft": 1.0,
     "suffix": "",
     "tags": {
         "__tuple__": true,
         "items": [
-            "攻速",
-            "暴击",
-            "物攻"
+            "消耗品",
+            "被动使用"
         ]
     },
-    "uid": "201390088",
+    "uid": "201390220",
     "use_base_tint_color": false,
     "use_consume": 1,
     "use_fresnel": false,

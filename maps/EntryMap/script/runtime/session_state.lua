@@ -216,6 +216,20 @@ function M.create(env)
     return false
   end
 
+  local function try_enter_battle_audio()
+    if not enter_battle_audio then
+      return false
+    end
+
+    local ok, err = pcall(enter_battle_audio)
+    if ok then
+      return true
+    end
+
+    print(string.format('[session_state] battle audio init failed, continue stage start: %s', tostring(err)))
+    return false
+  end
+
   local function start_selected_stage(stage_id, mode_id)
     local stage_def = CONFIG.stages and CONFIG.stages.by_id and CONFIG.stages.by_id[stage_id] or nil
     local mode_def = CONFIG.stage_modes and CONFIG.stage_modes.by_id and CONFIG.stage_modes.by_id[mode_id] or nil
@@ -291,9 +305,7 @@ function M.create(env)
     setup_basic_attack_ability()
     grant_test_attack_skills_on_stage_start()
     try_initialize_battle_ui()
-    if enter_battle_audio then
-      enter_battle_audio()
-    end
+    try_enter_battle_audio()
 
     if stage_def.content_source_stage_id and stage_def.content_source_stage_id ~= stage_def.stage_id then
     end

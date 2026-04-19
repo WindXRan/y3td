@@ -34,4 +34,21 @@ local reset_count = battle_pass.reset_claims(profile)
 assert(reset_count == 4, 'expected reset to clear all claimed records')
 assert(next(battle_pass.collect_claimed_bonus_stats(profile)) == nil, 'expected claimed bonus stats to clear after reset')
 
+local daily_refresh = battle_pass.refresh_daily_state(profile)
+assert(daily_refresh.login_claimed == true, 'expected first daily refresh to auto grant login reward')
+assert(daily_refresh.military_orders_added == 1, 'expected first daily refresh to grant one military order')
+assert(profile.battle_pass.wallet.skill_fragments == 12, 'expected daily login reward to add skill fragments')
+assert(profile.battle_pass.wallet.achievement_points == 6, 'expected daily login reward to add achievement points')
+
+local order_gain = battle_pass.apply_battle_result(profile, {
+  is_win = true,
+  reached_wave_index = 0,
+})
+assert(order_gain.military_order_consumed == true, 'expected win to consume one military order when available')
+assert(order_gain.skill_fragments_gained == 18, 'expected military order to grant bonus skill fragments')
+assert(order_gain.achievement_points_gained == 10, 'expected military order to grant bonus achievement points')
+assert(profile.battle_pass.military_order.charges == 0, 'expected military order charge to be consumed')
+assert(profile.battle_pass.wallet.skill_fragments == 30, 'expected wallet fragments to include login and military order rewards')
+assert(profile.battle_pass.wallet.achievement_points == 16, 'expected wallet achievement points to include login and military order rewards')
+
 print('[OK] battle pass runtime smoke passed')

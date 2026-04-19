@@ -97,6 +97,12 @@ function M.create(env)
     end
   end
 
+  local function get_window_metrics()
+    local width = tonumber(y3.ui.get_window_width and y3.ui.get_window_width() or nil) or 1920
+    local height = tonumber(y3.ui.get_window_height and y3.ui.get_window_height() or nil) or 1080
+    return width, height
+  end
+
   local function parse_stage_id(stage_id)
     local chapter_text, stage_text = tostring(stage_id or ''):match('^(%d+)%-(%d+)$')
     return tonumber(chapter_text), tonumber(stage_text)
@@ -239,6 +245,47 @@ function M.create(env)
     return first_stage and first_stage.stage_id or '1-1'
   end
 
+  local function set_save_backend_state(enabled, detail)
+    STATE.outgame_profile_save_enabled = enabled == true
+    if enabled == true then
+      STATE.outgame_profile_save_error = nil
+      return
+    end
+    if detail ~= nil and detail ~= '' then
+      STATE.outgame_profile_save_error = tostring(detail)
+      return
+    end
+    if not STATE.outgame_profile_save_error or STATE.outgame_profile_save_error == '' then
+      STATE.outgame_profile_save_error = '局外存档不可用'
+    end
+  end
+
+  local function build_save_status_brief(profile)
+    local stage_id = profile and profile.selected_stage_id or STATE.selected_stage_id or get_first_stage_id()
+    if STATE.outgame_profile_save_enabled == true then
+      return string.format('槽位 %d · 云端已连接\n当前关卡：%s', SAVE_SLOT, tostring(stage_id))
+    end
+    return string.format('槽位 %d · 当前为内存态\n点击按钮查看原因', SAVE_SLOT)
+  end
+
+  local function build_save_status_detail(profile)
+    local stage_id = profile and profile.selected_stage_id or STATE.selected_stage_id or get_first_stage_id()
+    local stage_def = STAGES_BY_ID[stage_id]
+    local stage_name = get_stage_display_text(stage_def, stage_id)
+    if STATE.outgame_profile_save_enabled == true then
+      return string.format(
+        '局外存档已连接到槽位 %d。\n当前进度：%s。\n系统会在关键节点自动上传，也可以手动保存一次。',
+        SAVE_SLOT,
+        stage_name
+      )
+    end
+    return string.format(
+      '当前会话使用内存态默认档。\n当前进度：%s。\n原因：%s',
+      stage_name,
+      tostring(STATE.outgame_profile_save_error or '局外存档不可用')
+    )
+  end
+
   local function get_stage_index(stage_id)
     for index, stage_def in ipairs(STAGE_LIST) do
       if stage_def.stage_id == stage_id then
@@ -311,13 +358,10 @@ function M.create(env)
     end
     local ok, err = pcall(y3.save_data.upload_save_data, env.get_player())
     if ok then
+      set_save_backend_state(true)
       return
     end
-    STATE.outgame_profile_save_enabled = false
-    if not STATE.outgame_profile_save_warned then
-      STATE.outgame_profile_save_warned = true
-      message('局外存档上传失败，本次会话将继续使用内存态。错误：' .. tostring(err))
-    end
+    set_save_backend_state(false, err)
   end
 
   local function ensure_stage_progress_defaults(profile, stage_id)
@@ -475,30 +519,22 @@ function M.create(env)
 
     local profile
     local ok, result = pcall(function()
-      return y3.save_data.load_table(env.get_player(), SAVE_SLOT)
+      return y3.save_data.load_table(env.get_player(), SAVE_SLOT, true)
     end)
 
     if ok and type(result) == 'table' then
       profile = result
-      STATE.outgame_profile_save_enabled = true
+      set_save_backend_state(true)
     else
       profile = {}
-      STATE.outgame_profile_save_enabled = false
-      if not STATE.outgame_profile_save_warned then
-        STATE.outgame_profile_save_warned = true
-        message('局外存档槽位暂不可用，本次会话将使用内存态。错误：' .. tostring(result))
-      end
+      set_save_backend_state(false, result)
     end
 
     local defaults_ok, defaults_dirty_or_err = pcall(ensure_profile_defaults, profile)
     if not defaults_ok then
       profile = {}
       STATE.outgame_profile = profile
-      STATE.outgame_profile_save_enabled = false
-      if not STATE.outgame_profile_save_warned then
-        STATE.outgame_profile_save_warned = true
-        message('局外存档读取失败，本次会话将使用内存态默认档。错误：' .. tostring(defaults_dirty_or_err))
-      end
+      set_save_backend_state(false, defaults_dirty_or_err)
       ensure_profile_defaults(profile)
       return profile
     end
@@ -970,6 +1006,111 @@ function M.create(env)
     end)
   end
 
+  local function ensure_save_entry_ui(ui)
+    if not ui or not is_ui_alive(ui.hall_root) then
+      return nil
+    end
+    if ui.save_entry
+      and is_ui_alive(ui.save_entry.root)
+      and is_ui_alive(ui.save_entry.status)
+      and is_ui_alive(ui.save_entry.button) then
+      return ui.save_entry
+    end
+
+    local root = ui.hall_root:create_child('图片')
+    root:set_image(999)
+    root:set_ui_size(312, 118)
+    root:set_image_color(12, 18, 28, 228)
+    root:set_z_order(25)
+    root:set_intercepts_operations(true)
+
+    local line = root:create_child('图片')
+    line:set_image(999)
+    line:set_ui_size(280, 2)
+    line:set_pos(156, 78)
+    line:set_image_color(88, 130, 198, 240)
+    line:set_z_order(26)
+
+    local title = root:create_child('文本')
+    title:set_ui_size(136, 24)
+    title:set_pos(82, 92)
+    title:set_text('存档状态')
+    title:set_font_size(20)
+    title:set_text_color(244, 247, 255, 255)
+    title:set_text_alignment('左', '中')
+    title:set_intercepts_operations(false)
+    title:set_z_order(27)
+
+    local status = root:create_child('文本')
+    status:set_ui_size(280, 46)
+    status:set_pos(156, 52)
+    status:set_font_size(15)
+    status:set_text_color(204, 216, 232, 255)
+    status:set_text_alignment('左', '上')
+    status:set_intercepts_operations(false)
+    status:set_z_order(27)
+
+    local button_bg = root:create_child('图片')
+    button_bg:set_image(999)
+    button_bg:set_ui_size(120, 34)
+    button_bg:set_pos(246, 20)
+    button_bg:set_image_color(60, 98, 150, 235)
+    button_bg:set_z_order(26)
+
+    local button = root:create_child('按钮')
+    button:set_ui_size(120, 34)
+    button:set_pos(246, 20)
+    button:set_font_size(16)
+    button:set_text_color(245, 248, 255, 255)
+    button:set_z_order(27)
+
+    ui.save_entry = {
+      root = root,
+      title = title,
+      status = status,
+      button_bg = button_bg,
+      button = button,
+    }
+    ui.save_entry_bound = false
+    return ui.save_entry
+  end
+
+  local function refresh_save_entry_ui(ui, profile)
+    local save_entry = ensure_save_entry_ui(ui)
+    if not save_entry then
+      return
+    end
+
+    local window_width, window_height = get_window_metrics()
+    save_entry.root:set_pos(window_width - 208, window_height - 124)
+    set_visible_if_alive(save_entry.root, STATE.session_phase == 'outgame')
+    set_text_if_alive(save_entry.status, build_save_status_brief(profile))
+    set_text_if_alive(save_entry.button, '打开存档')
+    set_image_color_if_alive(
+      save_entry.button_bg,
+      STATE.outgame_profile_save_enabled == true and { 60, 98, 150, 235 } or { 120, 88, 54, 235 }
+    )
+  end
+
+  local function bind_save_entry(ui)
+    local save_entry = ui and ui.save_entry or nil
+    local button = save_entry and save_entry.button or nil
+    if not is_ui_alive(button) or ui.save_entry_bound == true then
+      return
+    end
+
+    ui.save_entry_bound = true
+    button:add_fast_event('左键-按下', function()
+      if play_ui_click then
+        play_ui_click()
+      end
+
+      if api.open_save_panel() then
+        return
+      end
+    end)
+  end
+
   local function bind_ui_events(ui)
     for _, slot in ipairs(ui.mode_slots or {}) do
       bind_mode_slot(slot)
@@ -977,6 +1118,8 @@ function M.create(env)
     for _, slot in ipairs(ui.stage_slots or {}) do
       bind_stage_slot(slot)
     end
+
+    bind_save_entry(ui)
 
     if is_ui_alive(ui.start_button) and ui.start_bound ~= true then
       ui.start_bound = true
@@ -995,8 +1138,7 @@ function M.create(env)
       return
     end
 
-    local window_width = tonumber(y3.ui.get_window_width and y3.ui.get_window_width() or nil) or 1920
-    local window_height = tonumber(y3.ui.get_window_height and y3.ui.get_window_height() or nil) or 1080
+    local window_width, window_height = get_window_metrics()
     backdrop:set_ui_size(window_width, window_height)
   end
 
@@ -1007,6 +1149,8 @@ function M.create(env)
         clear_stage_slot_overlay(slot)
       end
       sync_outgame_backdrop(STATE.outgame_ui)
+      ensure_save_entry_ui(STATE.outgame_ui)
+      refresh_save_entry_ui(STATE.outgame_ui, STATE.outgame_profile)
       bind_ui_events(STATE.outgame_ui)
       return STATE.outgame_ui
     end
@@ -1099,9 +1243,12 @@ function M.create(env)
       stage_slots = stage_slots,
       start_button = start_button,
       start_bound = false,
+      save_entry = nil,
+      save_entry_bound = false,
     }
 
     sync_outgame_backdrop(STATE.outgame_ui)
+    ensure_save_entry_ui(STATE.outgame_ui)
     ensure_page_buttons(STATE.outgame_ui, MAX_CHAPTER_DIFFICULTY_COUNT)
     bind_ui_events(STATE.outgame_ui)
     return STATE.outgame_ui
@@ -1214,6 +1361,7 @@ function M.create(env)
     sync_outgame_backdrop(ui)
     set_visible_if_alive(ui.root, STATE.session_phase == 'outgame')
     set_visible_if_alive(ui.hall_root, STATE.session_phase == 'outgame')
+    refresh_save_entry_ui(ui, profile)
 
     if not selected_stage_def then
       return
@@ -1251,6 +1399,21 @@ function M.create(env)
     return profile
   end
 
+  function api.open_save_panel()
+    if battle_pass_panel and battle_pass_panel.open_panel then
+      if battle_pass_panel.set_ui_visible then
+        battle_pass_panel.set_ui_visible(true)
+      end
+      if battle_pass_panel.open_panel('pass') then
+        return true
+      end
+    end
+
+    local profile = load_profile()
+    message(build_save_status_detail(profile))
+    return false
+  end
+
   function api.refresh_ui()
     if not is_outgame_ui_alive(STATE.outgame_ui) then
       ensure_ui()
@@ -1269,7 +1432,9 @@ function M.create(env)
     set_visible_if_alive(ui.root, visible == true)
     set_visible_if_alive(ui.hall_root, visible == true)
     if battle_pass_panel and battle_pass_panel.set_ui_visible then
-      battle_pass_panel.set_ui_visible(visible == true and STATE.session_phase == 'outgame')
+      local battle_pass_visible = STATE.session_phase == 'battle'
+        or (visible == true and STATE.session_phase == 'outgame')
+      battle_pass_panel.set_ui_visible(battle_pass_visible)
     end
   end
 

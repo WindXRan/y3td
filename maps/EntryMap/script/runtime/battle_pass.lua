@@ -6,6 +6,16 @@ local TRACK_FREE = 'free'
 local TRACK_PAID = 'paid'
 local CURRENT_SEASON_ID = 'season_1'
 local LEVEL_EXP = 300
+local MAX_MILITARY_ORDER_CHARGES = 4
+local DAILY_LOGIN_REWARD = {
+  skill_fragments = 12,
+  achievement_points = 6,
+}
+local MILITARY_ORDER_REWARD = {
+  exp = 90,
+  skill_fragments = 18,
+  achievement_points = 10,
+}
 
 local SHORT_ATTR_LABELS = {
   ['攻击白字'] = '攻',
@@ -68,6 +78,43 @@ local function clamp_nonnegative_int(value)
   return math.floor(number)
 end
 
+local function clamp_int_with_default(value, default)
+  local integer = math.tointeger(value)
+  if integer == nil then
+    return default
+  end
+  return integer
+end
+
+local function get_day_context()
+  local now
+  if y3 and y3.game and y3.game.get_current_server_time then
+    local ok, result = pcall(y3.game.get_current_server_time, 8)
+    if ok and type(result) == 'table' then
+      now = result
+    end
+  end
+
+  if not now then
+    local timestamp = os.time()
+    local date = os.date('*t', timestamp)
+    date.timestamp = timestamp
+    date.time_zone_stamp = timestamp
+    now = date
+  end
+
+  local stamp = tonumber(now.time_zone_stamp) or tonumber(now.timestamp) or 0
+  return {
+    day_key = string.format(
+      '%04d-%02d-%02d',
+      tonumber(now.year) or 1970,
+      tonumber(now.month) or 1,
+      tonumber(now.day) or 1
+    ),
+    day_serial = math.floor(stamp / 86400),
+  }
+end
+
 local function copy_claim_map(map)
   local result = {}
   local dirty = false
@@ -125,6 +172,27 @@ local function add_attr_pack(target, source)
       target[attr_name] = (target[attr_name] or 0) + numeric
     end
   end
+end
+
+local function count_true_entries(map)
+  local count = 0
+  for _, value in pairs(map or {}) do
+    if value == true then
+      count = count + 1
+    end
+  end
+  return count
+end
+
+local function build_currency_gain_label(reward)
+  local labels = {}
+  if (reward.skill_fragments or 0) > 0 then
+    labels[#labels + 1] = string.format('技能碎片+%d', reward.skill_fragments)
+  end
+  if (reward.achievement_points or 0) > 0 then
+    labels[#labels + 1] = string.format('成就积分+%d', reward.achievement_points)
+  end
+  return table.concat(labels, '、')
 end
 
 local function get_track_claim_map(bp, track)
@@ -199,6 +267,125 @@ end
 
 local function get_bp(profile)
   return type(profile) == 'table' and profile.battle_pass or nil
+end
+
+local function get_wallet(bp)
+  return type(bp) == 'table' and bp.wallet or nil
+end
+
+local function get_login_reward(bp)
+  return type(bp) == 'table' and bp.login_reward or nil
+end
+
+local function get_military_order(bp)
+  return type(bp) == 'table' and bp.military_order or nil
+end
+
+local function create_default_bp()
+  return {
+    season_id = PASS_DEFS.season_id,
+    exp = 0,
+    paid_unlocked = false,
+    claimed_free = {},
+    claimed_paid = {},
+    wallet = {
+      skill_fragments = 0,
+      achievement_points = 0,
+    },
+    login_reward = {
+      last_claim_day_key = '',
+      last_claim_day_serial = -1,
+      total_claim_days = 0,
+    },
+    military_order = {
+      charges = 0,
+      last_refresh_day_serial = -1,
+      completed_count = 0,
+    },
+  }
+end
+
+local function ensure_wallet_defaults(bp)
+  local dirty = false
+  if type(bp.wallet) ~= 'table' then
+    bp.wallet = {}
+    dirty = true
+  end
+
+  local wallet = bp.wallet
+  local skill_fragments = clamp_nonnegative_int(wallet.skill_fragments)
+  if wallet.skill_fragments ~= skill_fragments then
+    wallet.skill_fragments = skill_fragments
+    dirty = true
+  end
+
+  local achievement_points = clamp_nonnegative_int(wallet.achievement_points)
+  if wallet.achievement_points ~= achievement_points then
+    wallet.achievement_points = achievement_points
+    dirty = true
+  end
+
+  return dirty
+end
+
+local function ensure_login_reward_defaults(bp)
+  local dirty = false
+  if type(bp.login_reward) ~= 'table' then
+    bp.login_reward = {}
+    dirty = true
+  end
+
+  local login_reward = bp.login_reward
+  if type(login_reward.last_claim_day_key) ~= 'string' then
+    login_reward.last_claim_day_key = ''
+    dirty = true
+  end
+
+  local last_claim_day_serial = clamp_int_with_default(login_reward.last_claim_day_serial, -1)
+  if login_reward.last_claim_day_serial ~= last_claim_day_serial then
+    login_reward.last_claim_day_serial = last_claim_day_serial
+    dirty = true
+  end
+
+  local total_claim_days = clamp_nonnegative_int(login_reward.total_claim_days)
+  if login_reward.total_claim_days ~= total_claim_days then
+    login_reward.total_claim_days = total_claim_days
+    dirty = true
+  end
+
+  return dirty
+end
+
+local function ensure_military_order_defaults(bp)
+  local dirty = false
+  if type(bp.military_order) ~= 'table' then
+    bp.military_order = {}
+    dirty = true
+  end
+
+  local military_order = bp.military_order
+  local charges = clamp_nonnegative_int(military_order.charges)
+  if charges > MAX_MILITARY_ORDER_CHARGES then
+    charges = MAX_MILITARY_ORDER_CHARGES
+  end
+  if military_order.charges ~= charges then
+    military_order.charges = charges
+    dirty = true
+  end
+
+  local last_refresh_day_serial = clamp_int_with_default(military_order.last_refresh_day_serial, -1)
+  if military_order.last_refresh_day_serial ~= last_refresh_day_serial then
+    military_order.last_refresh_day_serial = last_refresh_day_serial
+    dirty = true
+  end
+
+  local completed_count = clamp_nonnegative_int(military_order.completed_count)
+  if military_order.completed_count ~= completed_count then
+    military_order.completed_count = completed_count
+    dirty = true
+  end
+
+  return dirty
 end
 
 local function get_track_status(bp, level, track, current_level)
@@ -276,19 +463,13 @@ function M.ensure_profile_defaults(profile)
 
   local dirty = false
   if type(profile.battle_pass) ~= 'table' then
-    profile.battle_pass = {}
+    profile.battle_pass = create_default_bp()
     dirty = true
   end
 
   local bp = profile.battle_pass
   if bp.season_id ~= PASS_DEFS.season_id then
-    profile.battle_pass = {
-      season_id = PASS_DEFS.season_id,
-      exp = 0,
-      paid_unlocked = false,
-      claimed_free = {},
-      claimed_paid = {},
-    }
+    profile.battle_pass = create_default_bp()
     return true
   end
 
@@ -315,6 +496,18 @@ function M.ensure_profile_defaults(profile)
   local claimed_paid, paid_dirty = copy_claim_map(bp.claimed_paid)
   if paid_dirty or not same_boolean_map(claimed_paid, bp.claimed_paid) then
     bp.claimed_paid = claimed_paid
+    dirty = true
+  end
+
+  if ensure_wallet_defaults(bp) then
+    dirty = true
+  end
+
+  if ensure_login_reward_defaults(bp) then
+    dirty = true
+  end
+
+  if ensure_military_order_defaults(bp) then
     dirty = true
   end
 
@@ -435,11 +628,127 @@ function M.apply_battle_result(profile, result)
   end
   local exp = M.build_battle_result_exp(result)
   local summary = M.add_exp(profile, exp, 'battle_result')
+  local bp = get_bp(profile)
+  local wallet = get_wallet(bp) or {}
+  local military_order = get_military_order(bp) or {}
   summary.stage_id = result.stage_id
   summary.mode_id = result.mode_id
   summary.is_win = result.is_win == true
   summary.reached_wave_index = clamp_nonnegative_int(result.reached_wave_index)
+  summary.skill_fragments_gained = 0
+  summary.achievement_points_gained = 0
+  summary.military_order_consumed = false
+  summary.military_order_bonus_exp = 0
+  summary.military_order_charges_left = military_order.charges or 0
+
+  if summary.is_win and (military_order.charges or 0) > 0 then
+    military_order.charges = math.max(0, (military_order.charges or 0) - 1)
+    military_order.completed_count = clamp_nonnegative_int(military_order.completed_count) + 1
+
+    add_attr_pack(wallet, {
+      skill_fragments = MILITARY_ORDER_REWARD.skill_fragments,
+      achievement_points = MILITARY_ORDER_REWARD.achievement_points,
+    })
+
+    local order_summary = M.add_exp(profile, MILITARY_ORDER_REWARD.exp, 'military_order')
+    summary.added_exp = (summary.added_exp or 0) + (order_summary.added_exp or 0)
+    summary.after_level = order_summary.after_level or summary.after_level
+    summary.current_level = order_summary.current_level or summary.current_level
+    summary.level_up_count = (summary.level_up_count or 0) + (order_summary.level_up_count or 0)
+    summary.claimable_count = order_summary.claimable_count or summary.claimable_count
+    summary.remaining_to_next = order_summary.remaining_to_next or summary.remaining_to_next
+    summary.reached_max = order_summary.reached_max == true or summary.reached_max == true
+    summary.skill_fragments_gained = MILITARY_ORDER_REWARD.skill_fragments
+    summary.achievement_points_gained = MILITARY_ORDER_REWARD.achievement_points
+    summary.military_order_consumed = true
+    summary.military_order_bonus_exp = order_summary.added_exp or 0
+    summary.military_order_charges_left = military_order.charges
+  end
   return summary
+end
+
+function M.refresh_daily_state(profile)
+  M.ensure_profile_defaults(profile)
+
+  local bp = get_bp(profile)
+  local wallet = get_wallet(bp) or {}
+  local login_reward = get_login_reward(bp) or {}
+  local military_order = get_military_order(bp) or {}
+  local day = get_day_context()
+
+  local summary = {
+    dirty = false,
+    day_key = day.day_key,
+    day_serial = day.day_serial,
+    login_claimed = false,
+    login_total_days = login_reward.total_claim_days or 0,
+    military_orders_added = 0,
+    charges_now = military_order.charges or 0,
+    wallet_gained = {},
+  }
+
+  if login_reward.last_claim_day_serial ~= day.day_serial or login_reward.last_claim_day_key ~= day.day_key then
+    login_reward.last_claim_day_serial = day.day_serial
+    login_reward.last_claim_day_key = day.day_key
+    login_reward.total_claim_days = clamp_nonnegative_int(login_reward.total_claim_days) + 1
+    add_attr_pack(wallet, DAILY_LOGIN_REWARD)
+    add_attr_pack(summary.wallet_gained, DAILY_LOGIN_REWARD)
+    summary.login_claimed = true
+    summary.login_total_days = login_reward.total_claim_days
+    summary.dirty = true
+  end
+
+  local added_orders = 0
+  if military_order.last_refresh_day_serial == nil or military_order.last_refresh_day_serial < 0 then
+    added_orders = math.min(MAX_MILITARY_ORDER_CHARGES - (military_order.charges or 0), 1)
+  elseif day.day_serial > military_order.last_refresh_day_serial then
+    added_orders = math.min(
+      MAX_MILITARY_ORDER_CHARGES - (military_order.charges or 0),
+      day.day_serial - military_order.last_refresh_day_serial
+    )
+  end
+
+  if added_orders > 0 then
+    military_order.charges = (military_order.charges or 0) + added_orders
+    summary.military_orders_added = added_orders
+    summary.dirty = true
+  end
+  if military_order.last_refresh_day_serial ~= day.day_serial then
+    military_order.last_refresh_day_serial = day.day_serial
+    summary.dirty = true
+  end
+
+  summary.charges_now = military_order.charges or 0
+  return summary
+end
+
+function M.build_daily_refresh_message(summary)
+  if not summary then
+    return nil
+  end
+
+  local fragments = {}
+  if summary.login_claimed then
+    local reward_label = build_currency_gain_label(summary.wallet_gained or {})
+    if reward_label ~= '' then
+      fragments[#fragments + 1] = string.format('今日登录奖励已发放：%s。', reward_label)
+    else
+      fragments[#fragments + 1] = '今日登录奖励已发放。'
+    end
+  end
+  if (summary.military_orders_added or 0) > 0 then
+    fragments[#fragments + 1] = string.format(
+      '军令状补充 %d 张，当前 %d/%d。',
+      summary.military_orders_added,
+      summary.charges_now or 0,
+      MAX_MILITARY_ORDER_CHARGES
+    )
+  end
+
+  if #fragments == 0 then
+    return nil
+  end
+  return table.concat(fragments, ' ')
 end
 
 function M.claim_available(profile)
@@ -499,21 +808,47 @@ function M.collect_claimed_bonus_stats(profile)
 end
 
 function M.build_gain_message(summary)
-  if not summary or (summary.added_exp or 0) <= 0 then
+  if not summary then
     return '征战之路已满级，当前不再获得额外经验。'
   end
 
-  local text = string.format('征战之路经验 +%d，当前 Lv.%d', summary.added_exp, summary.current_level or 1)
-  if (summary.level_up_count or 0) > 0 then
-    text = string.format('%s，提升了 %d 级', text, summary.level_up_count)
+  local text
+  if (summary.added_exp or 0) <= 0 then
+    text = '征战之路已满级，当前不再获得额外经验。'
+  else
+    text = string.format('征战之路经验 +%d，当前 Lv.%d', summary.added_exp, summary.current_level or 1)
+    if (summary.level_up_count or 0) > 0 then
+      text = string.format('%s，提升了 %d 级', text, summary.level_up_count)
+    end
+    if summary.reached_max then
+      text = text .. '，已达到满级。'
+    elseif (summary.claimable_count or 0) > 0 then
+      text = string.format('%s，可领取 %d 项奖励。', text, summary.claimable_count)
+    else
+      text = string.format('%s，距离下一级还差 %d 经验。', text, summary.remaining_to_next or 0)
+    end
   end
-  if summary.reached_max then
-    return text .. '，已达到满级。'
+
+  local extras = {}
+  if summary.military_order_consumed then
+    extras[#extras + 1] = string.format(
+      '军令状已完成，剩余 %d/%d。',
+      summary.military_order_charges_left or 0,
+      MAX_MILITARY_ORDER_CHARGES
+    )
   end
-  if (summary.claimable_count or 0) > 0 then
-    return string.format('%s，可领取 %d 项奖励。', text, summary.claimable_count)
+  local currency_label = build_currency_gain_label({
+    skill_fragments = summary.skill_fragments_gained,
+    achievement_points = summary.achievement_points_gained,
+  })
+  if currency_label ~= '' then
+    extras[#extras + 1] = string.format('额外获得 %s。', currency_label)
   end
-  return string.format('%s，距离下一级还差 %d 经验。', text, summary.remaining_to_next or 0)
+  if #extras > 0 then
+    text = string.format('%s %s', text, table.concat(extras, ' '))
+  end
+
+  return text
 end
 
 function M.build_claim_message(summary)
@@ -536,24 +871,32 @@ end
 function M.build_ui_model(profile)
   M.ensure_profile_defaults(profile)
   local bp = get_bp(profile) or {}
+  local wallet = get_wallet(bp) or {}
+  local login_reward = get_login_reward(bp) or {}
+  local military_order = get_military_order(bp) or {}
   local progress = M.get_progress(profile)
   local level_items = {}
+  local day = get_day_context()
 
   for level = 1, MAX_LEVEL do
     local free_status = get_track_status(bp, level, TRACK_FREE, progress.current_level)
     local paid_status = get_track_status(bp, level, TRACK_PAID, progress.current_level)
+    local free_short_label = build_track_summary(level, TRACK_FREE, true)
+    local paid_short_label = build_track_summary(level, TRACK_PAID, true)
     level_items[#level_items + 1] = {
       level = level,
       free_status = free_status,
       paid_status = paid_status,
+      free_short_label = free_short_label,
+      paid_short_label = paid_short_label,
       free_label = build_track_summary(level, TRACK_FREE, false),
       paid_label = build_track_summary(level, TRACK_PAID, false),
       cell_text = string.format(
         'Lv.%02d\n免 %s %s\n付 %s %s',
         level,
-        build_track_summary(level, TRACK_FREE, true),
+        free_short_label,
         get_status_label(free_status),
-        build_track_summary(level, TRACK_PAID, true),
+        paid_short_label,
         get_status_label(paid_status)
       ),
       cell_color = get_cell_color(free_status, paid_status),
@@ -561,8 +904,10 @@ function M.build_ui_model(profile)
   end
 
   local premium_status = progress.paid_unlocked and '已激活' or '未激活'
+  local login_claimed_today = login_reward.last_claim_day_key == day.day_key
+  local claimed_reward_count = count_true_entries(bp.claimed_free) + count_true_entries(bp.claimed_paid)
   local tips = string.format(
-    '当前 Lv.%d/%d，免费可领 %d 项，付费可领 %d 项。\n常规战斗会累积征战之路经验；激活「%s」后，可同步领取付费轨道奖励。',
+    'Lv.%d/%d，免费可领 %d，付费可领 %d。\n常规战斗加经验，激活「%s」后可同步领付费轨道。',
     progress.current_level,
     progress.max_level,
     progress.free_claimable_count,
@@ -589,12 +934,54 @@ function M.build_ui_model(profile)
       or '暂无可领',
     level_items = level_items,
     tips = tips,
-    military_order_summary = string.format(
-      '%s：%s。\n激活后会保留已达成等级，并可额外领取付费轨道中的永久成长奖励。',
-      PASS_DEFS.premium_name,
+    military_order_title = '军令状',
+    military_order_subtitle = string.format(
+      '军令 %d/%d · 至尊 %s',
+      military_order.charges or 0,
+      MAX_MILITARY_ORDER_CHARGES,
       premium_status
     ),
-    login_reward_summary = '登录奖励页当前先保留展示位，首版逻辑已优先接通征战之路经验、等级和奖励领取链路。',
+    military_order_summary = string.format(
+      '每日补 1 张，最多 %d 张；胜利消耗 1 张并额外经验+%d。\n累计完成 %d 张，额外奖励：%s。',
+      MAX_MILITARY_ORDER_CHARGES,
+      MILITARY_ORDER_REWARD.exp,
+      military_order.completed_count or 0,
+      build_currency_gain_label(MILITARY_ORDER_REWARD)
+    ),
+    login_reward_summary = string.format(
+      '%s · 累登 %d 天 · 碎片+%d 成就+%d',
+      login_claimed_today and '今日已领' or '今日待领',
+      login_reward.total_claim_days or 0,
+      DAILY_LOGIN_REWARD.skill_fragments or 0,
+      DAILY_LOGIN_REWARD.achievement_points or 0
+    ),
+    save_counter_text = string.format(
+      '碎片 %d | 成就 %d | 军令 %d/%d | 切页',
+      wallet.skill_fragments or 0,
+      wallet.achievement_points or 0,
+      military_order.charges or 0,
+      MAX_MILITARY_ORDER_CHARGES
+    ),
+    skill_fragments = wallet.skill_fragments or 0,
+    achievement_points = wallet.achievement_points or 0,
+    armory_title = '武库',
+    armory_subtitle = string.format(
+      '已领 %d 项成长，累计登录 %d 天。',
+      claimed_reward_count,
+      login_reward.total_claim_days or 0
+    ),
+    shop_title = '灵魂洪炉',
+    shop_subtitle = string.format(
+      '技能碎片 %d，可用于后续兑换。',
+      wallet.skill_fragments or 0
+    ),
+    achievement_title = '功成名就',
+    achievement_subtitle = string.format(
+      '成就 %d，登录 %d 天，军令 %d。',
+      wallet.achievement_points or 0,
+      login_reward.total_claim_days or 0,
+      military_order.completed_count or 0
+    ),
   }
 end
 

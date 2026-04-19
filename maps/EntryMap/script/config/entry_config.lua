@@ -34,7 +34,6 @@ local M = {
   enemy_hit_reaction_enabled = false,
   enemy_death_reaction_enabled = false,
   damage_hit_effect_enabled = false,
-  attack_skill_single_effect_mode = true,
   player_id = global_rules.player_id,
   enemy_player_id = global_rules.enemy_player_id,
   total_enemy_soft_cap = global_rules.total_enemy_soft_cap,
