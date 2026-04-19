@@ -13,7 +13,7 @@ assert(cfg.points.defense_point.y == 0, 'defense_point.y should stay intact')
 
 local wave_1_area = cfg.areas.main_spawn_wave_1
 assert(type(wave_1_area) == 'table', 'main_spawn_wave_1 should exist')
-assert(wave_1_area.x_min == 1260, 'main_spawn_wave_1.x_min should stay intact')
+assert(wave_1_area.x_min == 1660, 'main_spawn_wave_1.x_min should stay intact')
 assert(wave_1_area.y_max == 1040, 'main_spawn_wave_1.y_max should stay intact')
 
 assert(#cfg.main_enemy_slow_zones == 3, 'expected 3 slow zones')

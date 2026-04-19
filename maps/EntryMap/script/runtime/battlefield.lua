@@ -13,6 +13,16 @@ function M.create(env)
   local play_enemy_death_sound = env.play_enemy_death_sound
 
   local api = {}
+  local VISUAL_ANIMATION_SPEED = 0.5
+  local HERO_RUNTIME_FALLBACK_UNIT_ID = 134274912
+
+  local function scale_visual_duration(seconds)
+    return math.max(0.05, (seconds or 0.30) / VISUAL_ANIMATION_SPEED)
+  end
+
+  local function resolve_visual_animation_speed(base_speed)
+    return math.max(0.05, (tonumber(base_speed) or 1.0) * VISUAL_ANIMATION_SPEED)
+  end
 
   local function get_challenge_recover_sec(challenge_id)
     local def = CONFIG.challenges and CONFIG.challenges[challenge_id]
@@ -21,6 +31,17 @@ function M.create(env)
       return recover_sec
     end
     return CONFIG.challenge_rules.recover_sec or 0
+  end
+
+  local function try_create_player_unit(player, unit_id, point, facing)
+    if not player or not player.create_unit or unit_id == nil then
+      return nil, 'invalid_player_or_unit_id'
+    end
+    local ok, unit_or_err = pcall(player.create_unit, player, unit_id, point, facing or 0)
+    if ok and unit_or_err then
+      return unit_or_err, nil
+    end
+    return nil, unit_or_err
   end
 
   local function refresh_legacy_challenge_summary()
@@ -142,7 +163,7 @@ function M.create(env)
       target = point,
       angle = angle or 0,
       scale = scale or 1.0,
-      time = time or 0.30,
+      time = scale_visual_duration(time),
       height = height or 0,
       immediate = true,
     })
@@ -154,9 +175,7 @@ function M.create(env)
     if color then
       particle:set_color(color[1], color[2], color[3], color[4])
     end
-    if anim_speed then
-      particle:set_animation_speed(anim_speed)
-    end
+    particle:set_animation_speed(resolve_visual_animation_speed(anim_speed))
     return particle
   end
 
@@ -1306,8 +1325,23 @@ function M.create(env)
   end
 
   function api.create_hero(basic_attack_range)
-    local hero = env.get_player():create_unit(CONFIG.unit_ids.hero, STATE.hero_spawn_point, 0)
-    env.get_player():select_unit(hero)
+    local player = env.get_player()
+    local preferred_unit_id = CONFIG.unit_ids.hero
+    local hero, hero_create_err = try_create_player_unit(player, preferred_unit_id, STATE.hero_spawn_point, 0)
+    if not hero and preferred_unit_id ~= HERO_RUNTIME_FALLBACK_UNIT_ID then
+      hero, hero_create_err = try_create_player_unit(player, HERO_RUNTIME_FALLBACK_UNIT_ID, STATE.hero_spawn_point, 0)
+    end
+    if not hero then
+      error(string.format(
+        'failed to create hero unit id=%s fallback=%s err=%s',
+        tostring(preferred_unit_id),
+        tostring(HERO_RUNTIME_FALLBACK_UNIT_ID),
+        tostring(hero_create_err)
+      ))
+    end
+    if player and player.select_unit then
+      player:select_unit(hero)
+    end
     local hero_entry_stats = build_hero_entry_stats()
 
     hero:set_name('守关英雄')
@@ -1315,7 +1349,7 @@ function M.create(env)
       hero_attr_system.log_snapshot(hero, 'create_hero_before_init', string.format('basic_attack_range=%s', tostring(basic_attack_range or 250)))
     end
     hero_attr_system.init_hero_attrs(hero, hero_entry_stats)
-    hero_attr_system.set_attr(hero, '攻击范围', tonumber(hero_entry_stats['攻击范围']) or basic_attack_range or 1400)
+    hero_attr_system.set_attr(hero, '攻击范围', tonumber(hero_entry_stats['攻击范围']) or basic_attack_range or 2000)
     hero:add_state('禁止普攻')
 
     hero:add_state('禁止移动')
