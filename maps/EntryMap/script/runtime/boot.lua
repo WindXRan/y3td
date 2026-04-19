@@ -118,6 +118,13 @@ local function create_skill_runtime()
     terminal_burst_ratio = 0,
     followup_count = 0,
     followup_ratio = 0,
+    split_seek_count = 0,
+    split_seek_ratio = 0,
+    split_seek_radius = 0,
+    split_seek_depth = 0,
+    kill_seek_count = 0,
+    kill_seek_ratio = 0,
+    kill_seek_radius = 0,
     echo_count = 0,
     echo_ratio = 0,
     return_pass_enabled = false,
@@ -226,6 +233,13 @@ local function create_attack_skill_instance(skill_id, slot)
     terminal_burst_ratio = 0,
     followup_count = 0,
     followup_ratio = 0,
+    split_seek_count = 0,
+    split_seek_ratio = 0,
+    split_seek_radius = 0,
+    split_seek_depth = 0,
+    kill_seek_count = 0,
+    kill_seek_ratio = 0,
+    kill_seek_radius = 0,
     echo_count = 0,
     echo_ratio = 0,
     return_pass_enabled = false,
@@ -1074,9 +1088,6 @@ end
 
 local function trigger_td_skills_on_hit(data)
   if STATE.game_finished or not data.is_normal_hit or data.source_unit ~= STATE.hero then
-    return
-  end
-  if CONFIG.attack_skill_single_effect_mode == true then
     return
   end
 
@@ -2165,6 +2176,9 @@ input_events_system = InputEventsSystem.create({
   show_runtime_status = show_runtime_status,
   toggle_talk_input = runtime_ui_helpers.toggle_talk_input,
   toggle_inventory_panel = runtime_ui_helpers.toggle_inventory_panel,
+  open_save_panel = function()
+    return outgame_system and outgame_system.open_save_panel and outgame_system.open_save_panel() or false
+  end,
   try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
   show_debug_hotkey_help = show_debug_hotkey_help,
   debug_actions_system = debug_actions_system,

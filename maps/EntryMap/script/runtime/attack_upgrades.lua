@@ -145,6 +145,19 @@ function M.create(env)
     skill.followup_ratio = math.max(skill.followup_ratio or 0, ratio or 0)
   end
 
+  local function add_seeking_sword_split(skill, count, ratio, radius, depth)
+    skill.split_seek_count = (skill.split_seek_count or 0) + math.max(0, count or 0)
+    skill.split_seek_ratio = math.max(skill.split_seek_ratio or 0, ratio or 0)
+    skill.split_seek_radius = math.max(skill.split_seek_radius or 0, radius or 0)
+    skill.split_seek_depth = math.max(skill.split_seek_depth or 0, depth or 1)
+  end
+
+  local function add_seeking_sword_kill_seek(skill, count, ratio, radius)
+    skill.kill_seek_count = (skill.kill_seek_count or 0) + math.max(0, count or 0)
+    skill.kill_seek_ratio = math.max(skill.kill_seek_ratio or 0, ratio or 0)
+    skill.kill_seek_radius = math.max(skill.kill_seek_radius or 0, radius or 0)
+  end
+
   local function add_skill_echo(skill, count, ratio)
     skill.echo_count = (skill.echo_count or 0) + math.max(0, count or 0)
     skill.echo_ratio = math.max(skill.echo_ratio or 0, ratio or 0)
@@ -307,6 +320,11 @@ function M.create(env)
     local summary = card.summary or ''
     local count = math.max(1, parse_first_integer(summary))
 
+    if blueprint.id == 'flying_swords' and (has_text(summary, '追击飞剑') or has_text(summary, '分出')) then
+      add_seeking_sword_split(skill, math.min(3, count), 0.45, 320, 1)
+      return
+    end
+
     if has_text(summary, '横扫') then
       skill.sweep_enabled = true
       return
@@ -353,6 +371,15 @@ function M.create(env)
 
   local function apply_blueprint_trigger_card(blueprint, skill, card)
     local summary = card.summary or ''
+
+    if blueprint.id == 'flying_swords' and (
+      has_text(summary, '再追发')
+      or has_text(summary, '追命')
+      or has_text(summary, '追击')
+    ) then
+      add_seeking_sword_kill_seek(skill, 1, 0.80, 520)
+      return
+    end
 
     if has_text(summary, '回弹') or has_text(summary, '回流') then
       skill.return_pass_enabled = true
@@ -451,6 +478,8 @@ function M.create(env)
     end
     if blueprint.archetype == '追击飞剑攒射' then
       add_skill_followup(skill, 2, 0.55)
+      add_seeking_sword_split(skill, 1, 0.55, 360, 2)
+      add_seeking_sword_kill_seek(skill, 1, 1.00, 620)
     end
     if has_text(summary, '聚怪') or has_text(summary, '黄风') or has_text(summary, '风庭') then
       add_pull_strength(skill, 120)
