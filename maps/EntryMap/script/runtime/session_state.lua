@@ -28,12 +28,14 @@ function M.create(env)
   local sync_gear_items_to_hero = env.sync_gear_items_to_hero
   local sync_gear_runtime_effects = env.sync_gear_runtime_effects
   local unlock_attack_skill = env.unlock_attack_skill
+  local collect_battle_pass_attack_skill_ids = env.collect_battle_pass_attack_skill_ids
   local show_attack_skill_loadout = env.show_attack_skill_loadout
   local setup_basic_attack_ability = env.setup_basic_attack_ability
   local ensure_runtime_hud = env.ensure_runtime_hud
   local set_battle_hud_visible = env.set_battle_hud_visible
   local refresh_runtime_hud = env.refresh_runtime_hud
   local enter_battle_audio = env.enter_battle_audio
+  local disable_local_attack_preview = env.disable_local_attack_preview
 
   local function grant_equipment_drag_test_items(hero)
     if not hero or not hero.add_item then
@@ -84,6 +86,22 @@ function M.create(env)
     return unlocked
   end
 
+  local function grant_battle_pass_attack_skills_on_stage_start()
+    if not collect_battle_pass_attack_skill_ids or not unlock_attack_skill then
+      return 0
+    end
+
+    local owned_skill_ids = collect_battle_pass_attack_skill_ids() or {}
+    local unlocked = 0
+    for _, skill_id in ipairs(owned_skill_ids) do
+      local _, _, is_new = unlock_attack_skill(skill_id)
+      if is_new then
+        unlocked = unlocked + 1
+      end
+    end
+    return unlocked
+  end
+
   local function is_battle_active()
     return STATE.session_phase == 'battle' and STATE.game_finished ~= true
   end
@@ -115,6 +133,9 @@ function M.create(env)
   local function reset_battle_state()
     destroy_choice_panel()
     cleanup_swallow_panel()
+    if disable_local_attack_preview then
+      disable_local_attack_preview()
+    end
     STATE.hero = nil
     STATE.hero_common_attack = nil
     STATE.hero_spawn_point = make_point(CONFIG.points.hero_spawn)
@@ -303,6 +324,7 @@ function M.create(env)
     end
     initialize_hero_progression()
     setup_basic_attack_ability()
+    grant_battle_pass_attack_skills_on_stage_start()
     grant_test_attack_skills_on_stage_start()
     try_initialize_battle_ui()
     try_enter_battle_audio()

@@ -12,6 +12,7 @@ local RuntimeLoopsSystem = require 'runtime.loops'
 local BattleEventPromptsFactory = require 'runtime.battle_event_prompts'
 local RuntimeUIHelpers = require 'runtime.runtime_ui_helpers'
 local OutgameSystem = require 'ui.outgame'
+local BattlePass = require 'runtime.battle_pass'
 local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
 local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
@@ -20,6 +21,7 @@ local BattleEventFeedSystem = require 'runtime.battle_event_feed'
 local RewardSystem = require 'runtime.rewards'
 local GearUpgrades = require 'runtime.gear_upgrades'
 local AudioSystem = require 'runtime.audio'
+local HeroSelectionRangeSystem = require 'runtime.hero_selection_range'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
 local HeroAttrPanel = require 'runtime.hero_attr_panel'
@@ -43,6 +45,7 @@ local auto_active_effects_system
 local effect_debug_system
 local reward_system
 local audio_system
+local hero_selection_range_system
 local message
 local ensure_round_choice_available
 local hero_attr_system = HeroAttrSystem.create()
@@ -141,6 +144,15 @@ end
 
 local ATTACK_SKILL_DEFS = AttackSkillObjects.defs_by_id
 local ATTACK_SKILL_BLUEPRINTS = AttackSkillObjects.blueprints
+local ATTACK_SKILL_SLOT_COUNT = math.max(
+  4,
+  tonumber(
+    ATTACK_SKILL_BLUEPRINTS
+      and ATTACK_SKILL_BLUEPRINTS.system
+      and ATTACK_SKILL_BLUEPRINTS.system.slot_rule
+      and ATTACK_SKILL_BLUEPRINTS.system.slot_rule.total_attack_skills
+  ) or 4
+)
 
 local function resolve_damage_meta(damage)
   if type(damage) == 'table' then
@@ -256,13 +268,11 @@ end
 
 local function create_attack_skill_state()
   local basic_attack = create_attack_skill_instance('basic_attack', 1)
+  local slots = {
+    [1] = basic_attack,
+  }
   return {
-    slots = {
-      [1] = basic_attack,
-      [2] = nil,
-      [3] = nil,
-      [4] = nil,
-    },
+    slots = slots,
     by_id = {
       basic_attack = basic_attack,
     },
@@ -1536,6 +1546,7 @@ overview_model_system = OverviewModelSystem.create({
   get_bond_runtime_bonus = get_bond_runtime_bonus,
   get_treasure_reward_ratio = reward_system.get_treasure_reward_ratio,
   get_treasure_passive_income = reward_system.get_treasure_passive_income,
+  attack_skill_slot_count = ATTACK_SKILL_SLOT_COUNT,
   build_attack_skill_slot_text = function(slot)
     return attack_skills_system.build_attack_skill_slot_text(slot)
   end,
@@ -1648,6 +1659,7 @@ debug_actions_system = DebugActionsSystem.create({
   STATE = STATE,
   CONFIG = CONFIG,
   debug_message = debug_message,
+  attack_skill_slot_count = ATTACK_SKILL_SLOT_COUNT,
   is_battle_active = function()
     return is_battle_active and is_battle_active() or false
   end,
@@ -1852,6 +1864,7 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
   y3 = y3,
   hero_attr_system = hero_attr_system,
   round_number = round_number,
+  attack_skill_slot_count = ATTACK_SKILL_SLOT_COUNT,
   get_resource_rules = get_resource_rules,
   get_bond_runtime_bonus = get_bond_runtime_bonus,
   get_treasure_passive_income = reward_system.get_treasure_passive_income,
@@ -2033,6 +2046,17 @@ local function validate_config()
   return battlefield_system.validate_config()
 end
 
+hero_selection_range_system = HeroSelectionRangeSystem.create({
+  STATE = STATE,
+  y3 = y3,
+  is_battle_active = function()
+    return STATE.session_phase == 'battle' and STATE.game_finished ~= true
+  end,
+  get_current_basic_attack_range = function()
+    return attack_skills_system and attack_skills_system.get_current_basic_attack_range and attack_skills_system.get_current_basic_attack_range() or 0
+  end,
+})
+
 session_state_system = SessionStateSystem.create({
   STATE = STATE,
   CONFIG = CONFIG,
@@ -2065,6 +2089,12 @@ session_state_system = SessionStateSystem.create({
     return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
   end,
   unlock_attack_skill = unlock_attack_skill,
+  collect_battle_pass_attack_skill_ids = function()
+    local profile = STATE.outgame_profile
+      or (outgame_system and outgame_system.get_profile and outgame_system.get_profile())
+      or nil
+    return BattlePass.collect_owned_attack_skill_ids(profile)
+  end,
   show_attack_skill_loadout = show_attack_skill_loadout,
   setup_basic_attack_ability = setup_basic_attack_ability,
   ensure_runtime_hud = runtime_ui_helpers.ensure_runtime_hud,
@@ -2074,6 +2104,12 @@ session_state_system = SessionStateSystem.create({
   refresh_runtime_hud = runtime_ui_helpers.refresh_runtime_hud,
   enter_battle_audio = function()
     return audio_system and audio_system.enter_battle and audio_system.enter_battle() or nil
+  end,
+  disable_local_attack_preview = function()
+    return hero_selection_range_system
+      and hero_selection_range_system.disable_local_preview
+      and hero_selection_range_system.disable_local_preview()
+      or false
   end,
   get_outgame_system = function()
     return outgame_system
@@ -2186,7 +2222,12 @@ input_events_system = InputEventsSystem.create({
 })
 
 local function register_runtime_events()
-  return input_events_system.register_runtime_events()
+  if input_events_system and input_events_system.register_runtime_events then
+    input_events_system.register_runtime_events()
+  end
+  if hero_selection_range_system and hero_selection_range_system.register_runtime_events then
+    hero_selection_range_system.register_runtime_events()
+  end
 end
 
 runtime_loops_system = RuntimeLoopsSystem.create({
