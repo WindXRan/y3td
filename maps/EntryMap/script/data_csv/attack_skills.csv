@@ -1,2 +1,2 @@
 id,name,default_slot,summary,damage_type,damage_form,element,damage_label,base_damage_ratio,base_cooldown,base_range,base_pierce,base_pierce_width,base_control_lock_time,base_knockback_distance,base_knockback_speed,base_explosion_ratio,base_explosion_radius,base_extra_targets,base_repeat_count
-basic_attack,普攻,1,御使 1 口本命飞剑破空诛敌，造成 125% 攻击的金行飞剑伤害。,物理,weapon,metal,金行飞剑,1.25,1.05,820,,,,,,,,,
+basic_attack,普攻,1,御使 1 口本命飞剑破空诛敌，造成 125% 攻击的金行飞剑伤害。,物理,weapon,metal,金行飞剑,1.25,1.05,820,,,,,,0,0,,

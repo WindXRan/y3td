@@ -65,7 +65,9 @@
     }, 
     "ability_stage_config": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            1
+        ]
     }, 
     "ability_timeline_resource": {
         "model_id": 0

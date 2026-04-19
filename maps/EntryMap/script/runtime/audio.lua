@@ -298,6 +298,33 @@ function M.create(env)
     return true
   end
 
+  local function is_timer_handle_alive(timer)
+    if not timer then
+      return false
+    end
+
+    local timer_type = type(timer)
+    if timer_type ~= 'table' and timer_type ~= 'userdata' then
+      return false
+    end
+
+    if type(timer.is_running) == 'function' then
+      local ok, running = pcall(timer.is_running, timer)
+      if ok then
+        return running == true
+      end
+    end
+
+    if type(timer.is_removed) == 'function' then
+      local ok, removed = pcall(timer.is_removed, timer)
+      if ok then
+        return removed ~= true
+      end
+    end
+
+    return false
+  end
+
   local function ensure_audio_listener(anchor)
     local player = ensure_audio_channels_ready()
     if not player then
@@ -408,14 +435,15 @@ function M.create(env)
 
   local function ensure_music_watchdog()
     local runtime = get_runtime()
-    if runtime.music_watchdog and not runtime.music_watchdog:is_removed() then
+    if is_timer_handle_alive(runtime.music_watchdog) then
       return runtime.music_watchdog
     end
-    if not y3 or not y3.ltimer or not y3.ltimer.loop then
+    runtime.music_watchdog = nil
+    if not y3 or not y3.ltimer or type(y3.ltimer.loop) ~= 'function' then
       return nil
     end
 
-    runtime.music_watchdog = y3.ltimer.loop(2.5, function()
+    local ok, watchdog = pcall(y3.ltimer.loop, 2.5, function()
       local current = get_runtime()
       if current.music_phase == 'result' then
         return
@@ -426,6 +454,11 @@ function M.create(env)
       current.bgm_sound = nil
       set_music_phase(current.music_phase or 'outgame')
     end, 'audio_music_watchdog')
+    if not ok then
+      trace_audio_once('music_watchdog_create_failed', string.format('[audio] failed to create music watchdog: %s', tostring(watchdog)))
+      return nil
+    end
+    runtime.music_watchdog = watchdog
     return runtime.music_watchdog
   end
 

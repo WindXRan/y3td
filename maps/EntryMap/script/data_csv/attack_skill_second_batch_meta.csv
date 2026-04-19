@@ -1,7 +1,7 @@
 key,value
 version,2026-04-17
 status,runtime_in_repo
-note,十五个新版初始技能正式蓝图。采用修仙/西游包装，已接入技能池、基础施法模板与说明卡展示。
+note,现行16个攻击技能中的15个可解锁技能蓝图数据。采用修仙/西游包装，已接入技能池、基础施法模板与说明卡展示。
 fixed_base_slot,普攻
 free_attack_skill_slots,4
 total_attack_skills,5

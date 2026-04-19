@@ -19,5 +19,6 @@ def test_projectiles_face_their_flight_direction() -> None:
         assert "init_angle = launch_angle," in content
         assert "rotate_time = 0.0," in content
         assert "face_angle = true," in content
-        assert "miss_when_target_destroy = true," in content
+        assert "miss_when_target_destroy = false," in content
+        assert "miss_when_target_destroy = true," not in content
         assert "on_miss = function()" in content

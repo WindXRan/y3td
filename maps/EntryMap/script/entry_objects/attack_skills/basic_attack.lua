@@ -10,6 +10,8 @@ local M = {
     base_damage_ratio = 1.25,
     base_cooldown = 1.05,
     base_range = 820,
+    base_explosion_ratio = 0,
+    base_explosion_radius = 0,
   }
 
 M.vfx = {

@@ -16,12 +16,26 @@ function M.create(env)
   local deal_skill_damage = env.deal_skill_damage
   local heal_hero = env.heal_hero
   local EFFECT_LIST = EffectObjects.list
+  local VISUAL_ANIMATION_SPEED = 0.5
   local MODIFIER_KEYS = {
     stun = 117,
     fighting_spirit = RuntimeEditorIds.modifier.auto_active_effect.fighting_spirit_field,
     rapid_overdrive = RuntimeEditorIds.modifier.auto_active_effect.rapid_overdrive,
     charge_breaker_rally = RuntimeEditorIds.modifier.auto_active_effect.charge_breaker_rally,
   }
+
+  local function scale_visual_duration(seconds)
+    return math.max(0.05, (seconds or 0.30) / VISUAL_ANIMATION_SPEED)
+  end
+
+  local function apply_visual_animation_speed(target)
+    if not target or not target.set_animation_speed then
+      return
+    end
+    pcall(function()
+      target:set_animation_speed(VISUAL_ANIMATION_SPEED)
+    end)
+  end
 
   local function get_runtime()
     if not STATE.auto_active_effects then
@@ -185,9 +199,6 @@ function M.create(env)
   end
 
   local function play_particle_on_unit(unit, effect_key, scale, time, socket)
-    if CONFIG.attack_skill_single_effect_mode == true then
-      return nil
-    end
     if not effect_key or not unit or not unit:is_exist() then
       return nil
     end
@@ -197,19 +208,17 @@ function M.create(env)
       target = unit,
       socket = socket or 'origin',
       scale = scale or 1.0,
-      time = time or 0.30,
+      time = scale_visual_duration(time),
       immediate = true,
     })
-    if ok then
+    if ok and particle then
+      apply_visual_animation_speed(particle)
       return particle
     end
     return nil
   end
 
   local function play_particle_on_point(point, effect_key, scale, time, height)
-    if CONFIG.attack_skill_single_effect_mode == true then
-      return nil
-    end
     if not effect_key or not point then
       return nil
     end
@@ -218,11 +227,12 @@ function M.create(env)
       type = effect_key,
       target = point,
       scale = scale or 1.0,
-      time = time or 0.30,
+      time = scale_visual_duration(time),
       height = height or 0,
       immediate = true,
     })
-    if ok then
+    if ok and particle then
+      apply_visual_animation_speed(particle)
       return particle
     end
     return nil
@@ -293,6 +303,7 @@ function M.create(env)
     pcall(function()
       projectile:set_height(PROJECTILE_FLIGHT_HEIGHT)
     end)
+    apply_visual_animation_speed(projectile)
 
     if launch_angle ~= nil then
       pcall(function()
@@ -301,6 +312,11 @@ function M.create(env)
     end
 	
     local resolved = false
+    local function get_projectile_point_snapshot()
+      return clone_point(projectile and projectile:is_exist() and projectile:get_point() or nil)
+        or (target and target:is_exist() and target:get_point() or nil)
+    end
+
     local function finish(final_point, did_hit)
       if resolved then
         return
@@ -327,21 +343,21 @@ function M.create(env)
         init_angle = launch_angle,
         rotate_time = 0.0,
         face_angle = true,
-        miss_when_target_destroy = true,
+        miss_when_target_destroy = false,
         on_finish = function()
-          finish(target:get_point(), true)
+          finish(get_projectile_point_snapshot(), target and target:is_exist() or false)
         end,
         on_break = function()
-          finish(target:is_exist() and target:get_point() or nil, false)
+          finish(get_projectile_point_snapshot(), false)
         end,
         on_miss = function()
-          finish(target and target:is_exist() and target:get_point() or nil, false)
+          finish(get_projectile_point_snapshot(), false)
         end,
       })
     end)
 
     if not ok_move then
-      finish(target:is_exist() and target:get_point() or nil, false)
+      finish(get_projectile_point_snapshot(), false)
       return false
     end
     return true

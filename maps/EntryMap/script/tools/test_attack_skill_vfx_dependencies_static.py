@@ -1,49 +1,74 @@
-import csv
 import json
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 MAP_ROOT = ROOT.parent
-ATTACK_VFX_CSV = ROOT / "data_csv" / "attack_skill_vfx.csv"
-MANUAL_DEP = MAP_ROOT / "manualdependence.json"
-CLOUD_DEP = MAP_ROOT / "cloudresdependence.json"
+ABILITY_DIR = MAP_ROOT / "editor_table" / "abilityall"
 ATTACK_RUNTIME = ROOT / "runtime" / "attack_skills.lua"
 PRESENTATION_TABLE = ROOT / "data" / "object_tables" / "attack_skill_presentation_profiles.lua"
+ABILITY_IDS = [
+    201390001,
+    201390002,
+    201390003,
+    201390004,
+    201390005,
+    201390006,
+    201390007,
+    201390008,
+    201390009,
+    201390010,
+    201390011,
+    201390012,
+    201390013,
+    201390014,
+    201390015,
+    201390016,
+]
+
+
+def kv_value(entry: object) -> object:
+    if isinstance(entry, dict) and "value" in entry:
+        return entry["value"]
+    return entry
 
 
 def _load_attack_vfx_effect_ids() -> set[int]:
-    fields = [
-        "cast_particle",
-        "impact_particle",
-        "explosion_particle",
-        "charge_particle",
-        "chain_particle",
-    ]
     effect_ids: set[int] = set()
-    with ATTACK_VFX_CSV.open(encoding="utf-8-sig", newline="") as f:
-        for row in csv.DictReader(f):
-            for field in fields:
-                raw = (row.get(field) or "").strip()
-                if raw and raw != "0":
-                    effect_ids.add(int(float(raw)))
+    for ability_id in ABILITY_IDS:
+        data = json.loads((ABILITY_DIR / f"{ability_id}.json").read_text(encoding="utf-8"))
+        kv = data.get("kv") or {}
+        for field in (
+            "entry_cast_effect_id",
+            "entry_impact_effect_id",
+            "entry_explosion_effect_id",
+            "entry_charge_effect_id",
+            "entry_chain_effect_id",
+        ):
+            value = int(kv_value(kv.get(field)) or 0)
+            if value > 0:
+                effect_ids.add(value)
     return effect_ids
-
-
-def _load_manual_effect_ids() -> set[int]:
-    data = json.loads(MANUAL_DEP.read_text(encoding="utf-8"))
-    return {int(value) for value in data.get("editor_effect", [])}
-
-
-def _load_cloud_effect_ids() -> set[int]:
-    data = json.loads(CLOUD_DEP.read_text(encoding="utf-8"))
-    items = data.get("editor_effect", {}).get("items", [])
-    return {int(value) for value in items}
 
 
 def test_attack_skill_vfx_ids_have_explicit_dependencies() -> None:
     expected = _load_attack_vfx_effect_ids()
-    assert expected == set()
+    assert expected == {
+        101175,
+        102498,
+        102541,
+        102543,
+        102657,
+        102704,
+        102705,
+        102740,
+        102750,
+        102760,
+        102780,
+        102877,
+        102988,
+        103008,
+    }
 
 
 def test_attack_skill_runtime_uses_presentation_profiles() -> None:
