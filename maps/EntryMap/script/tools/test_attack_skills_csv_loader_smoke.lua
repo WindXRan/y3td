@@ -22,15 +22,26 @@ assert(mod.vfx_by_id.basic_attack.cast_particle == nil, 'expected basic_attack c
 assert(mod.vfx_by_id.basic_attack.impact_particle == nil, 'expected basic_attack impact_particle to be empty')
 assert(mod.vfx_by_id.basic_attack.chain_particle == nil, 'expected basic_attack chain_particle to be empty')
 
-assert(mod.blueprint_by_id.sword_wave ~= nil, 'expected blueprint bridge to remain intact')
-assert(mod.defs_by_id.sword_wave ~= nil, 'expected sword_wave def to be bridged into defs_by_id')
-assert(mod.defs_by_id.sword_wave.base_range == 980, 'expected sword_wave base_range to match')
-assert(mod.defs_by_id.sword_wave.ui_icon == 106990, 'expected sword_wave icon to be bridged into defs_by_id')
-assert(mod.defs_by_id.sword_wave.evolution_name == '崩岳天锋', 'expected sword_wave evolution name to match')
-assert(mod.vfx_by_id.sword_wave.projectile_key == 201364743, 'expected sword_wave projectile_key to use its dedicated projectile')
-assert(mod.vfx_by_id.arcane_ray.projectile_key == 134264830, 'expected arcane_ray projectile_key to use its dedicated projectile')
-assert(mod.vfx_by_id.moon_blade.projectile_key == 201364750, 'expected moon_blade projectile_key to use its dedicated projectile')
-assert(mod.vfx_by_id.fireball.projectile_key == 201364749, 'expected fireball projectile_key to use its dedicated projectile')
-assert(mod.vfx_by_id.flying_swords.projectile_key == 201364753, 'expected flying_swords projectile_key to use its dedicated projectile')
+assert(mod.blueprint_by_id.flying_swords ~= nil, 'expected flying_swords blueprint bridge to remain intact')
+assert(mod.blueprint_by_id.sword_wave == nil, 'expected disabled blueprints to stay out of blueprint_by_id')
+assert(mod.defs_by_id.flying_swords ~= nil, 'expected flying_swords def to be bridged into defs_by_id')
+assert(mod.defs_by_id.sword_wave == nil, 'expected disabled blueprint defs to stay out of defs_by_id')
+assert(mod.defs_by_id.flying_swords.base_range == 930, 'expected flying_swords base_range to match')
+assert(mod.defs_by_id.flying_swords.ui_icon == 106944, 'expected flying_swords icon to be bridged into defs_by_id')
+assert(mod.defs_by_id.flying_swords.evolution_name == '万剑归宗', 'expected flying_swords evolution name to match')
+
+local expected_projectiles = {
+  basic_attack = 134267104,
+  flying_swords = 201364753,
+}
+
+for skill_id, projectile_key in pairs(expected_projectiles) do
+  assert(mod.vfx_by_id[skill_id] and mod.vfx_by_id[skill_id].projectile_key == projectile_key,
+    string.format('expected %s projectile_key to use projectile %s', skill_id, tostring(projectile_key)))
+  assert(mod.defs_by_id[skill_id] and mod.defs_by_id[skill_id].editor_projectile_key == projectile_key,
+    string.format('expected %s editor_projectile_key to expose projectile %s', skill_id, tostring(projectile_key)))
+end
+
+assert(mod.vfx_by_id.sword_wave == nil, 'expected disabled blueprint vfx to stay out of active vfx map')
 
 print('[OK] attack skills csv loader smoke passed')

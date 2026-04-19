@@ -6,6 +6,9 @@ local lane_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_growth
 local skill_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_skills.csv')
 local evolution_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_evolutions.csv')
 local card_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_cards.csv')
+local ACTIVE_SKILL_IDS = {
+  flying_swords = true,
+}
 
 local evolution_by_skill = {}
 for _, row in ipairs(evolution_rows) do
@@ -77,6 +80,9 @@ end
 
 local list = {}
 for _, row in ipairs(skill_rows) do
+  if not ACTIVE_SKILL_IDS[row.id] then
+    goto continue
+  end
   local evolution = evolution_by_skill[row.id] or {}
   list[#list + 1] = {
     id = row.id,
@@ -105,18 +111,23 @@ for _, row in ipairs(skill_rows) do
     },
     cards = build_cards(row.id),
   }
+  ::continue::
 end
+
+local active_skill_count = #list
+local free_attack_skill_slots = math.max(0, math.min(tonumber(meta_map.free_attack_skill_slots) or 0, active_skill_count))
+local total_attack_skills = 1 + free_attack_skill_slots
 
 return {
   version = meta_map.version,
   status = meta_map.status,
-  note = meta_map.note,
+  note = string.format('%s 当前运行时仅启用 %d 个代表技能。', meta_map.note or '', active_skill_count),
   system = {
     slot_rule = {
       fixed_base_slot = meta_map.fixed_base_slot,
-      free_attack_skill_slots = tonumber(meta_map.free_attack_skill_slots) or 0,
-      total_attack_skills = tonumber(meta_map.total_attack_skills) or 0,
-      notation = meta_map.slot_notation,
+      free_attack_skill_slots = free_attack_skill_slots,
+      total_attack_skills = total_attack_skills,
+      notation = string.format('1 个固定基础位 + %d 个自由攻击技能位', free_attack_skill_slots),
     },
     run_rule = {
       target_duration_minutes = tonumber(meta_map.target_duration_minutes) or 0,
