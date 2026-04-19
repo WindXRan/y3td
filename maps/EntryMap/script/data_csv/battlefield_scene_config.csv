@@ -18,7 +18,7 @@ area,challenge_spawn_top,,,,,,1580,1850,220,420,,0
 area,challenge_spawn_mid,,,,,,1620,1890,-80,120,,0
 area,challenge_spawn_bottom,,,,,,1580,1850,-420,-220,,0
 area,challenge_treasure_elite_spawn,,,,,,1640,1780,-60,60,,0
-slow_zone,,1,mid_slow_lane_outer,,,,,,,,0.72,
-slow_zone,,2,mid_slow_lane_inner,,,,,,,,0.52,
-slow_zone,,3,hero_front_slow_lane,,,,,,,,0.38,
+slow_zone,,1,mid_slow_lane_outer,,,,,,,,0.64,
+slow_zone,,2,mid_slow_lane_inner,,,,,,,,0.46,
+slow_zone,,3,hero_front_slow_lane,,,,,,,,0.30,
 save_slot,outgame_profile,,,,,,,,,,,1

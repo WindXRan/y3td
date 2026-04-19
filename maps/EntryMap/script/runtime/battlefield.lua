@@ -15,6 +15,11 @@ function M.create(env)
   local api = {}
   local VISUAL_ANIMATION_SPEED = 0.5
   local HERO_RUNTIME_FALLBACK_UNIT_ID = 134274912
+  local ENEMY_BASE_SPEED_FACTORS = {
+    main = 0.76,
+    boss = 0.82,
+    challenge = 0.76,
+  }
 
   local function scale_visual_duration(seconds)
     return math.max(0.05, (seconds or 0.30) / VISUAL_ANIMATION_SPEED)
@@ -129,6 +134,39 @@ function M.create(env)
 
   local function is_elite_runtime_enemy(info)
     return info and (info.is_elite == true or is_boss_runtime_enemy(info)) or false
+  end
+
+  local function get_enemy_spawn_speed_factor(info)
+    local kind = info and info.kind or 'main'
+    local factor = ENEMY_BASE_SPEED_FACTORS[kind]
+    if factor == nil then
+      factor = ENEMY_BASE_SPEED_FACTORS.main
+    end
+    return math.max(0.05, tonumber(factor) or 1)
+  end
+
+  local function apply_spawn_enemy_speed_tuning(unit, info)
+    if not unit then
+      return nil
+    end
+
+    local base_move_speed = tonumber(unit:get_attr('移动速度')) or 0
+    if base_move_speed <= 0 then
+      return nil
+    end
+
+    local factor = get_enemy_spawn_speed_factor(info)
+    local tuned_move_speed = math.max(1, base_move_speed * factor)
+    if math.abs(tuned_move_speed - base_move_speed) > 0.001 then
+      unit:set_attr('移动速度', tuned_move_speed)
+    end
+
+    if info then
+      info.original_move_speed = base_move_speed
+      info.base_move_speed = tuned_move_speed
+      info.spawn_move_speed_factor = factor
+    end
+    return tuned_move_speed
   end
 
   local function get_current_wave()
@@ -656,7 +694,7 @@ function M.create(env)
     info.alive = true
     info.owner = info.owner or nil
     info.status = info.status or {}
-    info.base_move_speed = unit:get_attr('移动速度')
+    info.base_move_speed = tonumber(info.base_move_speed) or tonumber(unit:get_attr('移动速度')) or 0
     info.lane_slow_applied = false
     info.lane_slow_factor = 1
     info.last_hit_feedback_time = info.last_hit_feedback_time or -10
@@ -817,6 +855,7 @@ function M.create(env)
   end
 
   local function spawn_enemy(unit_id, area_id, facing, info)
+    info = info or {}
     local spawn_point = random_point_in_area(area_id)
     local ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), unit_id, spawn_point, facing or 180.0)
     if not ok or not unit_or_err then
@@ -836,6 +875,7 @@ function M.create(env)
     elseif info and info.attr_overrides and info.attr_overrides['最大生命'] ~= nil then
       unit:set_hp(info.attr_overrides['最大生命'])
     end
+    apply_spawn_enemy_speed_tuning(unit, info)
     unit:set_reward_exp(0)
     unit:attack_move(STATE.defense_point)
     return create_enemy_info(unit, info)

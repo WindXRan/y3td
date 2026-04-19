@@ -18,7 +18,9 @@ assert(wave_1_area.y_max == 1040, 'main_spawn_wave_1.y_max should stay intact')
 
 assert(#cfg.main_enemy_slow_zones == 3, 'expected 3 slow zones')
 assert(cfg.main_enemy_slow_zones[1].area_id == 'mid_slow_lane_outer', 'first slow zone should keep area id')
-assert(cfg.main_enemy_slow_zones[2].speed_factor == 0.52, 'second slow zone should keep speed factor')
+assert(cfg.main_enemy_slow_zones[1].speed_factor == 0.64, 'first slow zone should keep tuned speed factor')
+assert(cfg.main_enemy_slow_zones[2].speed_factor == 0.46, 'second slow zone should keep tuned speed factor')
+assert(cfg.main_enemy_slow_zones[3].speed_factor == 0.30, 'third slow zone should keep tuned speed factor')
 
 assert(cfg.save_slots.outgame_profile == 1, 'outgame_profile save slot should stay intact')
 
