@@ -76,7 +76,7 @@ function M.create(env)
       return 0, 0
     end
 
-    local ratio = 0.30 + math.max(0,
+    local ratio = math.max(0,
       normalize_ratio(get_bond_runtime_bonus('multishot_ratio'))
       + get_hero_attr_ratio('多重伤害')
     )
@@ -1119,9 +1119,26 @@ function M.create(env)
     end
 
     local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false
+    local damage_meta = skill or ATTACK_SKILL_DEFS.basic_attack or {}
+    local damage_form = damage_meta.damage_form or damage_meta.damage_type
+    local element = damage_meta.element
+    if ATTACK_SKILL_DEFS.basic_attack then
+      damage_form = damage_form or ATTACK_SKILL_DEFS.basic_attack.damage_form or ATTACK_SKILL_DEFS.basic_attack.damage_type
+      element = element or ATTACK_SKILL_DEFS.basic_attack.element
+    end
+
+    local hero_damage_multiplier = 1
+    if hero_attr_system and hero_attr_system.get_damage_multiplier then
+      hero_damage_multiplier = hero_attr_system.get_damage_multiplier(
+        STATE.hero,
+        damage_form or 'weapon',
+        'normal_attack',
+        element
+      ) or 1
+    end
     STATE.hero:damage({
       target = target,
-      damage = round_number((amount or 0) * get_basic_attack_bonus_multiplier(skill, target)),
+      damage = round_number((amount or 0) * hero_damage_multiplier * get_basic_attack_bonus_multiplier(skill, target)),
       type = skill.damage_type,
       ability = hit_effect_enabled
         and STATE.hero_common_attack

@@ -74,6 +74,9 @@ def test_basic_attack_primary_hit_no_longer_uses_common_attack_visuals() -> None
     content = ATTACK_SKILLS.read_text(encoding="utf-8")
     assert "deal_basic_attack_damage(skill, target, damage, {\n          common_attack = false," in content
     assert "local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false" in content
+    assert "local hero_damage_multiplier = 1" in content
+    assert "if hero_attr_system and hero_attr_system.get_damage_multiplier then" in content
+    assert "'normal_attack'," in content
     assert "ability = hit_effect_enabled" in content
 
 

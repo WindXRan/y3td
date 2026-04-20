@@ -35,6 +35,7 @@ def main() -> None:
         "assert(cfg.hero_init_stats['攻击白字'] == 46) "
         "assert(cfg.hero_init_stats['攻击范围'] == 2000) "
         "assert(cfg.hero_init_stats['多重数量'] == 2) "
+        "assert(cfg.hero_init_stats['多重伤害'] == 100) "
         "assert(cfg.hero_init_stats['弹射次数'] == 0) "
         "assert(cfg.hero_init_stats['攻击绿字'] == 0) "
         "assert(cfg.hero_init_stats['生命白字'] == 900) "

@@ -72,8 +72,21 @@ def murmur3_hash(key, seed=0):
 def main():
     config_list = json.loads(ABILITY_CONFIG.read_text(encoding='utf-8'))
     language = json.loads(LANGUAGE.read_text(encoding='utf-8'))
+    latest_items_by_id = {}
 
     for item in config_list:
+        expected_name_hash = murmur3_hash(item['name'])
+        expected_desc_hash = murmur3_hash(f"{item['name']}_desc")
+
+        assert language.get(str(expected_name_hash)) == item['name'], (
+            f"{item['id']} missing language name mapping for {item['name']}"
+        )
+        assert language.get(str(expected_desc_hash)) == item['description'], (
+            f"{item['id']} missing language desc mapping for {item['name']}"
+        )
+        latest_items_by_id[item['id']] = item
+
+    for item in latest_items_by_id.values():
         ability_path = ABILITY_DIR / f"{item['id']}.json"
         ability = json.loads(ability_path.read_text(encoding='utf-8'))
         expected_name_hash = murmur3_hash(item['name'])
@@ -87,12 +100,6 @@ def main():
         )
         assert ability['ability_icon'] == item['icon'], (
             f"{item['id']} icon mismatch: expected {item['icon']}, got {ability['ability_icon']}"
-        )
-        assert language.get(str(expected_name_hash)) == item['name'], (
-            f"{item['id']} missing language name mapping for {item['name']}"
-        )
-        assert language.get(str(expected_desc_hash)) == item['description'], (
-            f"{item['id']} missing language desc mapping for {item['name']}"
         )
 
     print('bond node editor sync ok')

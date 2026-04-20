@@ -7,7 +7,7 @@ panel_default,力量白字,0
 panel_default,力量绿字,0
 panel_default,卡牌增幅,0
 panel_default,命中,0
-panel_default,多重伤害,0
+panel_default,多重伤害,100
 panel_default,多重数量,0
 panel_default,弹射伤害,0
 panel_default,弹射次数,0
