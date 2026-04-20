@@ -33,6 +33,14 @@ assert(total_bonus['攻击范围'] == 60, 'expected paid range bonus to merge')
 local reset_count = battle_pass.reset_claims(profile)
 assert(reset_count == 4, 'expected reset to clear all claimed records')
 assert(next(battle_pass.collect_claimed_bonus_stats(profile)) == nil, 'expected claimed bonus stats to clear after reset')
+assert(type(battle_pass.collect_owned_attack_skill_ids(profile)) == 'table', 'expected owned attack skills API to return a table')
+assert(#battle_pass.collect_owned_attack_skill_ids(profile) == 0, 'expected default battle pass to own no attack skills yet')
+
+profile.battle_pass.owned_attack_skill_ids = { 'sword_wave', 'sword_wave', false, 'chain_ball' }
+local owned_skill_ids = battle_pass.collect_owned_attack_skill_ids(profile)
+assert(#owned_skill_ids == 2, 'expected owned attack skill ids to dedupe invalid entries')
+assert(owned_skill_ids[1] == 'sword_wave', 'expected first owned attack skill id to be preserved')
+assert(owned_skill_ids[2] == 'chain_ball', 'expected second owned attack skill id to be preserved')
 
 local daily_refresh = battle_pass.refresh_daily_state(profile)
 assert(daily_refresh.login_claimed == true, 'expected first daily refresh to auto grant login reward')

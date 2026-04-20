@@ -456,6 +456,36 @@ local function count_claimable(bp, current_level)
   return free_count, paid_count
 end
 
+local function append_attack_skill_id(result, seen, skill_id)
+  local value_type = type(skill_id)
+  if value_type ~= 'string' and value_type ~= 'number' then
+    return
+  end
+
+  local normalized = tostring(skill_id)
+  if normalized == '' or seen[normalized] == true then
+    return
+  end
+
+  seen[normalized] = true
+  result[#result + 1] = normalized
+end
+
+local function collect_reward_attack_skill_ids(result, seen, reward_def)
+  if type(reward_def) ~= 'table' then
+    return
+  end
+
+  append_attack_skill_id(result, seen, reward_def.attack_skill_id)
+  if type(reward_def.attack_skill_ids) ~= 'table' then
+    return
+  end
+
+  for _, skill_id in ipairs(reward_def.attack_skill_ids) do
+    append_attack_skill_id(result, seen, skill_id)
+  end
+end
+
 function M.ensure_profile_defaults(profile)
   if type(profile) ~= 'table' then
     return false
@@ -801,6 +831,32 @@ function M.collect_claimed_bonus_stats(profile)
     local paid_def = get_reward_def(level, TRACK_PAID)
     if bp.paid_unlocked == true and bp.claimed_paid and bp.claimed_paid[key] == true and paid_def and paid_def.attr then
       add_attr_pack(result, paid_def.attr)
+    end
+  end
+
+  return result
+end
+
+function M.collect_owned_attack_skill_ids(profile)
+  M.ensure_profile_defaults(profile)
+  local bp = get_bp(profile) or {}
+  local result = {}
+  local seen = {}
+
+  if type(bp.owned_attack_skill_ids) == 'table' then
+    for _, skill_id in ipairs(bp.owned_attack_skill_ids) do
+      append_attack_skill_id(result, seen, skill_id)
+    end
+  end
+
+  for level = 1, MAX_LEVEL do
+    local key = tostring(level)
+    if bp.claimed_free and bp.claimed_free[key] == true then
+      collect_reward_attack_skill_ids(result, seen, get_reward_def(level, TRACK_FREE))
+    end
+
+    if bp.paid_unlocked == true and bp.claimed_paid and bp.claimed_paid[key] == true then
+      collect_reward_attack_skill_ids(result, seen, get_reward_def(level, TRACK_PAID))
     end
   end
 

@@ -2093,6 +2093,9 @@ session_state_system = SessionStateSystem.create({
     local profile = STATE.outgame_profile
       or (outgame_system and outgame_system.get_profile and outgame_system.get_profile())
       or nil
+    if not BattlePass.collect_owned_attack_skill_ids then
+      return {}
+    end
     return BattlePass.collect_owned_attack_skill_ids(profile)
   end,
   show_attack_skill_loadout = show_attack_skill_loadout,

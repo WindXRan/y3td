@@ -91,11 +91,26 @@ function M.create(env)
       return 0
     end
 
-    local owned_skill_ids = collect_battle_pass_attack_skill_ids() or {}
+    local ok, owned_skill_ids_or_err = pcall(collect_battle_pass_attack_skill_ids)
+    if not ok then
+      print(string.format(
+        '[session_state] battle pass attack skill collect failed, continue stage start: %s',
+        tostring(owned_skill_ids_or_err)
+      ))
+      return 0
+    end
+
+    local owned_skill_ids = type(owned_skill_ids_or_err) == 'table' and owned_skill_ids_or_err or {}
     local unlocked = 0
     for _, skill_id in ipairs(owned_skill_ids) do
-      local _, _, is_new = unlock_attack_skill(skill_id)
-      if is_new then
+      local unlock_ok, unlock_skill_or_err, _, is_new = pcall(unlock_attack_skill, skill_id)
+      if not unlock_ok then
+        print(string.format(
+          '[session_state] battle pass attack skill unlock failed for %s, continue stage start: %s',
+          tostring(skill_id),
+          tostring(unlock_skill_or_err)
+        ))
+      elseif is_new then
         unlocked = unlocked + 1
       end
     end

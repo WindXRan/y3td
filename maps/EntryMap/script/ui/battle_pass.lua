@@ -335,7 +335,7 @@ function M.create(env)
     ensure_level_markers(ui, #(model.level_items or {}))
     for index, marker in ipairs(runtime.markers) do
       local item = model.level_items and model.level_items[index] or nil
-      set_visible_if_alive(marker.root, item ~= nil)
+      set_visible_if_alive(marker.root, item ~= nil and not compact_mode)
       if item then
         if marker.root and marker.root.set_ui_size then
           marker.root:set_ui_size(105, compact_mode and 88 or 84)
@@ -791,12 +791,13 @@ function M.create(env)
         and get_compact_pass_subtitle(model)
         or string.format('当前进度 Lv.%d / %d', model.current_level, model.max_level)
     )
+    set_visible_if_alive(ui.pass_subtitle, not compact_mode)
     set_visible_if_alive(ui.current_exp_group, not compact_mode)
     set_visible_if_alive(ui.exp_to_next_group, not compact_mode)
     set_text_if_alive(ui.current_exp_value, tostring(model.total_exp))
     set_text_if_alive(ui.exp_to_next_value, model.reached_max and '已满级' or tostring(model.exp_to_next))
     set_text_if_alive(ui.pass_tips, compact_mode and get_compact_pass_tips(model) or model.tips)
-    set_visible_if_alive(ui.pass_tips, true)
+    set_visible_if_alive(ui.pass_tips, not compact_mode)
 
     set_text_if_alive(ui.login_title, '登录奖励')
     set_text_if_alive(ui.login_subtitle, model.login_reward_summary)

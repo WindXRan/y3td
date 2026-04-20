@@ -443,22 +443,23 @@ function M.create(env)
       return nil
     end
 
-    local ok, watchdog = pcall(y3.ltimer.loop, 2.5, function()
-      local current = get_runtime()
-      if current.music_phase == 'result' then
-        return
-      end
-      if is_sound_handle_alive(current.bgm_sound) then
-        return
-      end
-      current.bgm_sound = nil
-      set_music_phase(current.music_phase or 'outgame')
-    end, 'audio_music_watchdog')
+    local ok, watchdog_or_err = pcall(function()
+      runtime.music_watchdog = y3.ltimer.loop(2.5, function()
+        local current = get_runtime()
+        if current.music_phase == 'result' then
+          return
+        end
+        if is_sound_handle_alive(current.bgm_sound) then
+          return
+        end
+        current.bgm_sound = nil
+        set_music_phase(current.music_phase or 'outgame')
+      end, 'audio_music_watchdog')
+    end)
     if not ok then
-      trace_audio_once('music_watchdog_create_failed', string.format('[audio] failed to create music watchdog: %s', tostring(watchdog)))
+      trace_audio_once('music_watchdog_create_failed', string.format('[audio] failed to create music watchdog: %s', tostring(watchdog_or_err)))
       return nil
     end
-    runtime.music_watchdog = watchdog
     return runtime.music_watchdog
   end
 

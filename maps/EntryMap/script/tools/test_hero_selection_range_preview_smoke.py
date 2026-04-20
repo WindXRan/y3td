@@ -188,7 +188,7 @@ assert(registered['本地-鼠标-按下单位'].key == 0xF0, 'preview should bin
 registered['本地-鼠标-按下单位'].callback(nil, { unit = hero })
 assert(#particle_creations == 1, 'clicking the hero should create one preview particle')
 assert(particle_creations[#particle_creations].type == 101492, 'hero click should use the expected range preview particle')
-assert(particle_creations[#particle_creations].scale >= 12, 'hero click should scale the range preview particle close to the runtime range')
+assert(particle_creations[#particle_creations].scale >= 18, 'hero click should scale the range preview particle close to the runtime range')
 
 registered['本地-选中-单位'](nil, { unit = creep })
 assert(particle_removes >= 1, 'selecting a non-hero should remove the preview particle')
