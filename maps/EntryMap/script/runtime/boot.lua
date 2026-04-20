@@ -337,8 +337,6 @@ local STATE = {
   choice_panel_hidden = false,
   runtime_overview = nil,
   runtime_overview_mode = 'build',
-  runtime_attr_tab_panel = nil,
-  runtime_attr_tab_selected = 'summary',
   hero_attr_runtime = nil,
   hero_form_skill_runtime = nil,
   gm_ui = nil,
@@ -555,12 +553,6 @@ local function build_runtime_attr_dialog_chunks()
 end
 
 local function show_runtime_attr_dialog()
-  if runtime_hud_system and runtime_hud_system.toggle_attr_panel then
-    local visible = runtime_hud_system.toggle_attr_panel()
-    if visible ~= nil then
-      return visible
-    end
-  end
   local chunks = build_runtime_attr_dialog_chunks()
   for index, text in ipairs(chunks) do
     y3.ltimer.wait((index - 1) * 0.08, function()
@@ -1970,9 +1962,6 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
       and CONFIG.gear_upgrade_config.slots.weapon
       or nil
     return slot_cfg and slot_cfg.item_key or nil
-  end,
-  get_runtime_overview_model = function()
-    return get_runtime_overview_model and get_runtime_overview_model() or nil
   end,
   try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
   build_attack_skill_slot_text = function(slot)

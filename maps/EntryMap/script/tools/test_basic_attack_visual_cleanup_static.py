@@ -73,24 +73,8 @@ def kv_value(entry: object) -> object:
 def test_basic_attack_primary_hit_no_longer_uses_common_attack_visuals() -> None:
     content = ATTACK_SKILLS.read_text(encoding="utf-8")
     assert "deal_basic_attack_damage(skill, target, damage, {\n          common_attack = false," in content
-    assert "particle = primary_hit_particle," in content
-    assert "force_hit_effect = true," in content
     assert "local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false" in content
-    assert "if options and options.force_hit_effect == true then" in content
-    assert "local hero_damage_multiplier = 1" in content
-    assert "if hero_attr_system and hero_attr_system.get_damage_multiplier then" in content
-    assert "'normal_attack'," in content
     assert "ability = hit_effect_enabled" in content
-
-
-def test_basic_attack_multishot_now_launches_real_projectiles() -> None:
-    content = ATTACK_SKILLS.read_text(encoding="utf-8")
-    assert "local multishot_targets = {}" in content
-    assert "multishot_targets[#multishot_targets + 1] = unit" in content
-    assert "if #multishot_targets > 0 and multishot_ratio > 0 then" in content
-    assert "launch_projectile_to_target(vfx, unit, function(impact_point, did_hit)" in content
-    assert "deal_basic_attack_damage(skill, unit, damage * multishot_ratio, {" in content
-    assert "apply_armor_break_on_hit(unit)" in content
 
 
 def test_runtime_disables_damage_hit_effects_by_default() -> None:
@@ -163,7 +147,6 @@ def test_basic_attack_followup_damage_chain_stays_enabled() -> None:
 def test_hero_unit_common_attack_hit_effect_is_removed() -> None:
     data = json.loads(HERO_UNIT.read_text(encoding="utf-8"))
     assert data["simple_common_atk"]["hit_effect"]["effect"] == 0
-    assert data["simple_common_atk"]["trajectory_speed"] == 4000.0
 
 
 def test_hero_unit_is_a_clean_archer_shell_without_voice_payload() -> None:

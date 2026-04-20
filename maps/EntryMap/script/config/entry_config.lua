@@ -18,27 +18,6 @@ local function scale(seconds)
   return seconds * DEBUG_TIME_SCALE
 end
 
-local function clamp_scale(value, default)
-  local number = tonumber(value)
-  if number == nil or number <= 0 then
-    return default
-  end
-  return number
-end
-
-local function scale_positive_int(value, scale_value, default)
-  local number = tonumber(value)
-  if number == nil or number <= 0 then
-    return default
-  end
-  return math.max(1, math.floor(number * scale_value + 0.5))
-end
-
-local ENEMY_MOVE_SPEED_SCALE = clamp_scale(global_rules.enemy_move_speed_scale, 1.0)
-local ENEMY_SPAWN_BATCH_SCALE = clamp_scale(global_rules.enemy_spawn_batch_scale, 1.0)
-local ENEMY_ALIVE_CAP_SCALE = clamp_scale(global_rules.enemy_alive_cap_scale, 1.0)
-local TOTAL_ENEMY_SOFT_CAP_SCALE = clamp_scale(global_rules.total_enemy_soft_cap_scale, 1.0)
-
 local WaveObjects = require 'entry_objects.waves'
 local ChallengeObjects = require 'entry_objects.challenges'
 local StageObjects = require 'entry_objects.stages'
@@ -57,10 +36,7 @@ local M = {
   damage_hit_effect_enabled = false,
   player_id = global_rules.player_id,
   enemy_player_id = global_rules.enemy_player_id,
-  total_enemy_soft_cap = scale_positive_int(global_rules.total_enemy_soft_cap, TOTAL_ENEMY_SOFT_CAP_SCALE, 40),
-  enemy_move_speed_scale = ENEMY_MOVE_SPEED_SCALE,
-  enemy_spawn_batch_scale = ENEMY_SPAWN_BATCH_SCALE,
-  enemy_alive_cap_scale = ENEMY_ALIVE_CAP_SCALE,
+  total_enemy_soft_cap = global_rules.total_enemy_soft_cap,
   hero_init_stats = hero_init_stats,
   debug_hero_bonus_stats = debug_hero_bonus_stats,
   debug_apply_hero_bonus_on_spawn = debug_apply_hero_bonus_on_spawn,

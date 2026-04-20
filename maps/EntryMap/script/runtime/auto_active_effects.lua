@@ -5,6 +5,7 @@ local M = {}
 
 function M.create(env)
   local STATE = env.STATE
+  local CONFIG = env.CONFIG or {}
   local y3 = env.y3
   local hero_attr_system = env.hero_attr_system
   local ATTACK_SKILL_VFX = env.ATTACK_SKILL_VFX
@@ -336,7 +337,7 @@ function M.create(env)
     local ok_move = pcall(function()
       projectile:mover_target({
         target = target,
-        speed = tonumber(vfx and vfx.projectile_speed) or 1000,
+        speed = vfx.projectile_speed or 1000,
         target_distance = vfx.target_distance or 60,
         height = PROJECTILE_FLIGHT_HEIGHT,
         init_angle = launch_angle,

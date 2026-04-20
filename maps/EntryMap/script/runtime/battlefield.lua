@@ -136,64 +136,12 @@ function M.create(env)
     return info and (info.is_elite == true or is_boss_runtime_enemy(info)) or false
   end
 
-  local function scale_enemy_count(value, scale_value)
-    local number = tonumber(value) or 0
-    if number <= 0 then
-      return 0
-    end
-    local scale_number = tonumber(scale_value) or 1.0
-    if scale_number <= 0 then
-      scale_number = 1.0
-    end
-    return math.max(1, math.floor(number * scale_number + 0.5))
-  end
-
-  local function get_enemy_batch_scale()
-    return tonumber(CONFIG.enemy_spawn_batch_scale) or 1.0
-  end
-
-  local function get_enemy_alive_cap_scale()
-    return tonumber(CONFIG.enemy_alive_cap_scale) or 1.0
-  end
-
-  local function get_wave_batch_bounds(wave)
-    local scaled_min = scale_enemy_count(wave and wave.batch_min, get_enemy_batch_scale())
-    local scaled_max = scale_enemy_count(wave and wave.batch_max, get_enemy_batch_scale())
-    if scaled_min <= 0 then
-      scaled_min = math.max(1, tonumber(wave and wave.batch_min) or 1)
-    end
-    if scaled_max < scaled_min then
-      scaled_max = scaled_min
-    end
-    return scaled_min, scaled_max
-  end
-
-  local function get_wave_max_alive(wave)
-    local base_max_alive = tonumber(wave and wave.max_alive) or 0
-    if base_max_alive <= 0 then
-      return 0
-    end
-    return scale_enemy_count(base_max_alive, get_enemy_alive_cap_scale())
-  end
-
-  local function get_scaled_challenge_batch_count(instance, batch)
-    local base_count = tonumber(batch and batch.count) or 0
-    if base_count <= 0 then
-      return 0
-    end
-    if instance and instance.mainline_task_id then
-      return math.max(1, base_count)
-    end
-    return scale_enemy_count(base_count, get_enemy_batch_scale())
-  end
-
   local function get_enemy_spawn_speed_factor(info)
     local kind = info and info.kind or 'main'
     local factor = ENEMY_BASE_SPEED_FACTORS[kind]
     if factor == nil then
       factor = ENEMY_BASE_SPEED_FACTORS.main
     end
-    factor = factor * (tonumber(CONFIG.enemy_move_speed_scale) or 1.0)
     return math.max(0.05, tonumber(factor) or 1)
   end
 
@@ -951,8 +899,7 @@ function M.create(env)
     if not runner or not runner.active then
       return false
     end
-    local max_alive = get_wave_max_alive(runner.wave)
-    if max_alive > 0 and runner.alive_count >= max_alive then
+    if runner.wave.max_alive and runner.alive_count >= runner.wave.max_alive then
       return false
     end
     if STATE.total_enemy_alive >= CONFIG.total_enemy_soft_cap then
@@ -967,10 +914,9 @@ function M.create(env)
     end
 
     local wave = runner.wave
-    local scaled_batch_min, scaled_batch_max = get_wave_batch_bounds(wave)
-    local batch_count = math.random(scaled_batch_min, scaled_batch_max)
+    local batch_count = math.random(wave.batch_min, wave.batch_max)
     local soft_cap_left = CONFIG.total_enemy_soft_cap - STATE.total_enemy_alive
-    local wave_cap_left = get_wave_max_alive(wave) - runner.alive_count
+    local wave_cap_left = wave.max_alive - runner.alive_count
     batch_count = math.min(batch_count, soft_cap_left, wave_cap_left)
 
     for _ = 1, batch_count, 1 do
@@ -1107,7 +1053,6 @@ function M.create(env)
     end
     instance.spawned_batches[batch_index] = true
     local spawned_any = false
-    local batch_count = get_scaled_challenge_batch_count(instance, batch)
 
     if instance.def.id == 'treasure_trial' then
       if batch_index == 1 then
@@ -1122,7 +1067,7 @@ function M.create(env)
           instance.infos[#instance.infos + 1] = boss_info
           spawned_any = true
         end
-        for _ = 1, math.max(0, batch_count - 1), 1 do
+        for _ = 1, batch.count - 1, 1 do
           local info = spawn_enemy(instance.def.guard_unit_id, instance.def.spawn_area_id, 180.0, {
             kind = 'challenge',
             owner = instance,
@@ -1135,7 +1080,7 @@ function M.create(env)
           end
         end
       else
-        for _ = 1, batch_count, 1 do
+        for _ = 1, batch.count, 1 do
           local info = spawn_enemy(instance.def.guard_unit_id, instance.def.spawn_area_id, 180.0, {
             kind = 'challenge',
             owner = instance,
@@ -1149,7 +1094,7 @@ function M.create(env)
         end
       end
     else
-      for _ = 1, batch_count, 1 do
+      for _ = 1, batch.count, 1 do
         local info = spawn_enemy(instance.def.unit_id, instance.def.spawn_area_id, 180.0, {
           kind = 'challenge',
           owner = instance,

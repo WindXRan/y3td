@@ -275,7 +275,7 @@
         "order_play_anim": false, 
         "order_play_reset_time": 0.5, 
         "trajectory_radian": 1.0, 
-        "trajectory_speed": 4000.0
+        "trajectory_speed": 1000.0
     }, 
     "sound_event_list": {
         "__tuple__": true, 

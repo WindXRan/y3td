@@ -3,10 +3,6 @@ local HeroAttrLog = require 'runtime.hero_attr_log'
 
 local M = {}
 local KV_PREFIX = '__hero_attr__:'
-local MAIN_STAT_ATTACK_FACTOR = 5
-local STRENGTH_FINAL_LIFE_RATIO_PER_POINT = 0.001
-local AGILITY_PHYSICAL_DAMAGE_RATIO_PER_POINT = 0.001
-local INTELLIGENCE_MAGIC_DAMAGE_RATIO_PER_POINT = 0.001
 
 local function normalize_ratio(value)
   local number = tonumber(value) or 0
@@ -386,9 +382,9 @@ function M.create()
 
     local attack_value = (
       attack_total
-      + final_strength * MAIN_STAT_ATTACK_FACTOR
-      + final_agility * MAIN_STAT_ATTACK_FACTOR
-      + final_intelligence * MAIN_STAT_ATTACK_FACTOR
+      + final_strength * 0.1
+      + final_agility * 0.1
+      + final_intelligence * 0.1
     ) * (1 + normalize_ratio(api.get_attr(hero, '攻击增幅')))
       * (1 + normalize_ratio(api.get_attr(hero, '最终攻击')))
 
@@ -399,10 +395,7 @@ function M.create()
       life_total
       + final_strength * 1.0
     ) * (1 + normalize_ratio(api.get_attr(hero, '生命增幅')))
-      * (1
-        + normalize_ratio(api.get_attr(hero, '最终生命'))
-        + final_strength * STRENGTH_FINAL_LIFE_RATIO_PER_POINT
-      )
+      * (1 + normalize_ratio(api.get_attr(hero, '最终生命')))
 
     local armor_value = (
       armor_total
@@ -495,19 +488,11 @@ function M.create()
 
   function api.get_damage_multiplier(hero, damage_kind, source_kind, element)
     local multiplier = 1
-    local final_agility = math.max(0, api.get_attr(hero, '最终敏捷'))
-    local final_intelligence = math.max(0, api.get_attr(hero, '最终智力'))
 
     if damage_kind == '物理' or damage_kind == 'weapon' then
-      multiplier = multiplier * (1
-        + normalize_ratio(api.get_attr(hero, '物理伤害'))
-        + final_agility * AGILITY_PHYSICAL_DAMAGE_RATIO_PER_POINT
-      )
+      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(hero, '物理伤害')))
     elseif damage_kind == '魔法' or damage_kind == '法术' or damage_kind == 'spell' or damage_kind == 'dot' or damage_kind == 'summon' then
-      multiplier = multiplier * (1
-        + normalize_ratio(api.get_attr(hero, '魔法伤害'))
-        + final_intelligence * INTELLIGENCE_MAGIC_DAMAGE_RATIO_PER_POINT
-      )
+      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(hero, '魔法伤害')))
     end
 
     if element == 'metal' then

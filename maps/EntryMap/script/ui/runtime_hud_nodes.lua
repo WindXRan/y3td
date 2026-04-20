@@ -6,6 +6,16 @@ local function resolve_prefab_node(prefab, path)
   return UIRoot.resolve_child(prefab, path)
 end
 
+local function resolve_prefab_first(prefab, paths)
+  for _, path in ipairs(paths or {}) do
+    local node = resolve_prefab_node(prefab, path)
+    if node then
+      return node
+    end
+  end
+  return nil
+end
+
 function M.attach_bottom_bg(nodes, prefab)
   if not nodes or not prefab then
     return nodes
@@ -14,41 +24,74 @@ function M.attach_bottom_bg(nodes, prefab)
   local bottom_nodes = {
     bottom_bg_root = prefab,
     bottom_bg_backpack = resolve_prefab_node(prefab, 'layout_1.backpack'),
-    bottom_backpack_slots = {
-      resolve_prefab_node(prefab, 'layout_1.backpack.物品1'),
-      resolve_prefab_node(prefab, 'layout_1.backpack.物品2'),
-      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1_1'),
-      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1_1_1'),
-      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1'),
-      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1_2'),
+    bottom_skill_bar = resolve_prefab_node(prefab, '技能栏'),
+    bottom_skill_slot_hosts = {
+      resolve_prefab_node(prefab, '技能栏.物品2'),
+      resolve_prefab_node(prefab, '技能栏.物品2_10'),
+      resolve_prefab_node(prefab, '技能栏.物品2_11'),
+      resolve_prefab_node(prefab, '技能栏.物品2_12'),
+      resolve_prefab_node(prefab, '技能栏.物品2_13'),
+      resolve_prefab_node(prefab, '技能栏.物品2_14'),
+      resolve_prefab_node(prefab, '技能栏.物品2_15'),
+      resolve_prefab_node(prefab, '技能栏.物品2_16'),
+      resolve_prefab_node(prefab, '技能栏.物品2_17'),
+      resolve_prefab_node(prefab, '技能栏.物品2_18'),
+      resolve_prefab_node(prefab, '技能栏.物品2_19'),
+      resolve_prefab_node(prefab, '技能栏.物品2_20'),
     },
-    bottom_portrait = resolve_prefab_node(prefab, 'layout_1.mid.头像.英雄头像'),
+    bottom_backpack_slots = {
+      resolve_prefab_node(prefab, 'layout_1.backpack.物品1')
+        or resolve_prefab_node(prefab, '物品栏.物品2'),
+      resolve_prefab_node(prefab, 'layout_1.backpack.物品2')
+        or resolve_prefab_node(prefab, '物品栏.物品2_10'),
+      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1_1')
+        or resolve_prefab_node(prefab, '物品栏.物品2_11'),
+      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1_1_1')
+        or resolve_prefab_node(prefab, '物品栏.物品2_12'),
+      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1')
+        or resolve_prefab_node(prefab, '物品栏.物品2_13'),
+      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1_2')
+        or resolve_prefab_node(prefab, '物品栏.物品2_14'),
+    },
+    bottom_portrait = resolve_prefab_node(prefab, 'layout_1.mid.头像.英雄头像')
+      or resolve_prefab_node(prefab, 'layout_1.mid.头像.touxiang'),
     bottom_name = resolve_prefab_node(prefab, 'layout_1.mid.头像.name'),
     bottom_level = resolve_prefab_node(prefab, 'layout_1.mid.头像.等级'),
-    bottom_exp_fill = resolve_prefab_node(prefab, 'layout_1.mid.进化进度条.progress_bar_img'),
+    bottom_exp_fill = resolve_prefab_node(prefab, 'layout_1.mid.进化进度条.progress_bar_img')
+      or resolve_prefab_node(prefab, 'exp'),
     bottom_exp_text = resolve_prefab_node(prefab, 'layout_1.mid.进化进度条.progress_percent_label'),
-    bottom_hp_fill = resolve_prefab_node(prefab, 'layout_1.mid.头像.血条.progress_bar_img'),
-    bottom_hp_text = resolve_prefab_node(prefab, 'layout_1.mid.头像.血条.progress_percent_label'),
-    bottom_attack_value = resolve_prefab_node(prefab, 'layout_1.mid.panel.攻击力.value'),
+    bottom_hp_fill = resolve_prefab_node(prefab, 'layout_1.mid.头像.血条.progress_bar_img')
+      or resolve_prefab_node(prefab, 'main_hp_bar'),
+    bottom_hp_text = resolve_prefab_node(prefab, 'layout_1.mid.头像.血条.progress_percent_label')
+      or resolve_prefab_node(prefab, 'hp_value'),
+    bottom_attack_value = resolve_prefab_node(prefab, 'layout_1.mid.panel.攻击力.value')
+      or resolve_prefab_node(prefab, 'layout_1.mid.bg_3.shuxing1.label_3_1'),
     bottom_attack_percent = resolve_prefab_node(prefab, 'layout_1.mid.panel.攻击力.名称+加成百分比'),
     bottom_attack_percent_bonus = resolve_prefab_node(prefab, 'layout_1.mid.panel.攻击力.百分比加成'),
     bottom_attack_value_bonus = resolve_prefab_node(prefab, 'layout_1.mid.panel.攻击力.数值加成'),
-    bottom_strength_value = resolve_prefab_node(prefab, 'layout_1.mid.panel.力量.value_1'),
+    bottom_strength_value = resolve_prefab_node(prefab, 'layout_1.mid.panel.力量.value_1')
+      or resolve_prefab_node(prefab, 'layout_1.mid.bg_3.shuxing2.label_3'),
     bottom_strength_percent = resolve_prefab_node(prefab, 'layout_1.mid.panel.力量.percent'),
     bottom_strength_percent_bonus = resolve_prefab_node(prefab, 'layout_1.mid.panel.力量.百分比加成'),
     bottom_strength_value_bonus = resolve_prefab_node(prefab, 'layout_1.mid.panel.力量.数值加成'),
-    bottom_agility_value = resolve_prefab_node(prefab, 'layout_1.mid.panel.敏捷.value'),
+    bottom_agility_value = resolve_prefab_node(prefab, 'layout_1.mid.panel.敏捷.value')
+      or resolve_prefab_node(prefab, 'layout_1.mid.bg_3.shuxing2.label_3_1'),
     bottom_agility_percent = resolve_prefab_node(prefab, 'layout_1.mid.panel.敏捷.percent'),
     bottom_agility_percent_bonus = resolve_prefab_node(prefab, 'layout_1.mid.panel.敏捷.百分比加成'),
     bottom_agility_value_bonus = resolve_prefab_node(prefab, 'layout_1.mid.panel.敏捷.数值加成'),
-    bottom_intelligence_value = resolve_prefab_node(prefab, 'layout_1.mid.panel.智力.value'),
+    bottom_intelligence_value = resolve_prefab_node(prefab, 'layout_1.mid.panel.智力.value')
+      or resolve_prefab_node(prefab, 'layout_1.mid.bg_3.shuxing2.label_3_2'),
     bottom_intelligence_percent = resolve_prefab_node(prefab, 'layout_1.mid.panel.智力.percent'),
     bottom_intelligence_percent_bonus = resolve_prefab_node(prefab, 'layout_1.mid.panel.智力.百分比加成'),
     bottom_intelligence_value_bonus = resolve_prefab_node(prefab, 'layout_1.mid.panel.智力.数值加成'),
-    bottom_armor_value = resolve_prefab_node(prefab, 'layout_1.mid.panel.护甲值.value'),
+    bottom_armor_value = resolve_prefab_node(prefab, 'layout_1.mid.panel.护甲值.value')
+      or resolve_prefab_node(prefab, 'layout_1.mid.bg_3.shuxing1.label_3_2'),
     bottom_armor_percent = resolve_prefab_node(prefab, 'layout_1.mid.panel.护甲值.percent'),
     bottom_armor_percent_bonus = resolve_prefab_node(prefab, 'layout_1.mid.panel.护甲值.百分比加成'),
     bottom_armor_value_bonus = resolve_prefab_node(prefab, 'layout_1.mid.panel.护甲值.数值加成'),
+    bottom_compact_stats_root = resolve_prefab_first(prefab, {
+      'layout_1.mid.bg_3',
+    }),
     bottom_bond_icons = {
       resolve_prefab_node(prefab, 'layout_1.UP.羁绊图片1'),
       resolve_prefab_node(prefab, 'layout_1.UP.羁绊图片2'),
