@@ -851,7 +851,7 @@ function M.create(env)
     local ok_move = pcall(function()
       projectile:mover_target({
         target = target,
-        speed = vfx.projectile_speed or 1000,
+        speed = tonumber(vfx and vfx.projectile_speed) or 1000,
         target_distance = vfx.target_distance or 60,
         height = PROJECTILE_FLIGHT_HEIGHT,
         init_angle = launch_angle,
@@ -950,7 +950,7 @@ function M.create(env)
     local ok_move = pcall(function()
       projectile:mover_target({
         target = target,
-        speed = vfx.projectile_speed or 1000,
+        speed = tonumber(vfx and vfx.projectile_speed) or 1000,
         target_distance = vfx.target_distance or 60,
         height = PROJECTILE_FLIGHT_HEIGHT,
         init_angle = launch_angle,

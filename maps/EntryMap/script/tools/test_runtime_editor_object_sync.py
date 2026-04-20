@@ -377,7 +377,7 @@ def main():
         assert "缩放 0 / 时长 0" not in description, f"projectile {projectile_id} description should skip zero stage payloads"
 
     basic_attack_projectile = load_json(PROJECTILE_DIR / "134267104.json")["kv"]
-    assert kv_value(basic_attack_projectile["entry_projectile_speed"]) == 940.0, (
+    assert kv_value(basic_attack_projectile["entry_projectile_speed"]) == 3760.0, (
         "basic attack projectile should expose flight speed"
     )
     assert kv_value(basic_attack_projectile["entry_projectile_time"]) == 2.9, (
@@ -453,6 +453,9 @@ def main():
     assert_contains(attack_skill_loader, "get_editor_kv('abilityall', ability_key)", "attack skill loader should read ability editor kv manifests")
     assert_contains(attack_skill_loader, "get_editor_kv('projectileall', projectile_key)", "attack skill loader should read projectile editor kv manifests")
     assert_contains(attack_skill_loader, "local function unwrap_editor_kv_entry(raw)", "attack skill loader should unwrap editor kv descriptor values")
+    assert_contains(attack_skill_loader, "'../editor_table/%s/%s.json'", "attack skill loader should support script-root relative editor_table lookups")
+    assert_contains(attack_skill_loader, "local local_json_data = load_editor_json(table_name, object_key)", "attack skill loader should prefer local generated editor json")
+    assert_contains(attack_skill_loader, "if local_json_data then", "attack skill loader should return local generated editor json when present")
     assert_contains(attack_skill_loader, "local ABILITY_VISIBLE_STAGE_FIELD_MAP = {", "attack skill loader should map visible ability stage fields")
     assert_contains(attack_skill_loader, "apply_visible_ability_vfx(result, ability_data)", "attack skill loader should read visible ability stage vfx as fallback")
     assert_contains(runtime_attack_skills, "ATTACK_STATUS_MODIFIER_KEYS", "runtime attack skills should consume status modifier ids")

@@ -96,6 +96,7 @@ local EDITOR_JSON_CACHE = {
 local EDITOR_JSON_PATH_PATTERNS = {
   'maps/EntryMap/editor_table/%s/%s.json',
   'editor_table/%s/%s.json',
+  '../editor_table/%s/%s.json',
 }
 
 local LEGACY_DAMAGE_TYPE_MAP = {
@@ -171,6 +172,14 @@ end
 local function get_editor_object_data(table_name, object_key)
   if not table_name or not object_key then
     return nil
+  end
+
+  -- Runtime-generated manifests are synced into editor_table first.
+  -- Prefer the local JSON so gameplay sees the latest generated values
+  -- even if the editor object pool or GMP has not been hotfixed yet.
+  local local_json_data = load_editor_json(table_name, object_key)
+  if local_json_data then
+    return local_json_data
   end
 
   local y3_runtime = rawget(_G, 'y3')

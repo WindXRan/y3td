@@ -147,6 +147,7 @@ def test_basic_attack_followup_damage_chain_stays_enabled() -> None:
 def test_hero_unit_common_attack_hit_effect_is_removed() -> None:
     data = json.loads(HERO_UNIT.read_text(encoding="utf-8"))
     assert data["simple_common_atk"]["hit_effect"]["effect"] == 0
+    assert data["simple_common_atk"]["trajectory_speed"] == 4000.0
 
 
 def test_hero_unit_is_a_clean_archer_shell_without_voice_payload() -> None:
