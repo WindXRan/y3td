@@ -1,4 +1,5 @@
 local BaseHud = require 'ui.runtime_hud_v2'
+local RuntimeAttrTabPanel = require 'ui.runtime_attr_tab_panel'
 local UIStyle = require 'ui.style'
 
 local M = {}
@@ -470,6 +471,12 @@ end
 
 function M.create(env)
   local base = BaseHud.create(env)
+  local attr_tab_panel = RuntimeAttrTabPanel.create({
+    STATE = env.STATE,
+    y3 = env.y3,
+    get_player = env.get_player,
+    get_runtime_overview_model = env.get_runtime_overview_model,
+  })
 
   return {
     ensure_hud = function()
@@ -480,6 +487,9 @@ function M.create(env)
       end
       bind_panel1_top(env, hud)
       base.refresh_hud()
+      if attr_tab_panel and attr_tab_panel.ensure_panel then
+        attr_tab_panel.ensure_panel()
+      end
       return hud
     end,
     refresh_hud = function()
@@ -492,6 +502,9 @@ function M.create(env)
         flush_panel1_boss(hud)
         refresh_tracker_panel(env, hud)
       end
+      if attr_tab_panel and attr_tab_panel.refresh_panel then
+        attr_tab_panel.refresh_panel()
+      end
       return result
     end,
     set_visible = function(visible)
@@ -500,6 +513,9 @@ function M.create(env)
         hud.right_tracker_panel:set_visible(visible == true)
       end
       set_panel1_top_visible(env, visible == true)
+      if visible ~= true and attr_tab_panel and attr_tab_panel.hide_panel then
+        attr_tab_panel.hide_panel()
+      end
       return base.set_visible(visible)
     end,
     show_tip_panel = function(text, duration)
@@ -526,6 +542,18 @@ function M.create(env)
       if hud and hud.panel1_top_bound then
         clear_tip_overlay(hud)
       end
+    end,
+    hide_attr_panel = function()
+      return attr_tab_panel and attr_tab_panel.hide_panel and attr_tab_panel.hide_panel() or nil
+    end,
+    refresh_attr_panel = function()
+      return attr_tab_panel and attr_tab_panel.refresh_panel and attr_tab_panel.refresh_panel() or nil
+    end,
+    show_attr_panel = function(tab_key)
+      return attr_tab_panel and attr_tab_panel.show_tab and attr_tab_panel.show_tab(tab_key) or nil
+    end,
+    toggle_attr_panel = function(force_visible)
+      return attr_tab_panel and attr_tab_panel.toggle_panel and attr_tab_panel.toggle_panel(force_visible) or nil
     end,
   }
 end

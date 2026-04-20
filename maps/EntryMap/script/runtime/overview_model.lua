@@ -319,10 +319,10 @@ function M.create(env)
       return {
         title = '局内属性总览',
         subtitle = string.format(
-          '按 TAB 查看属性  按 B 返回构筑  当前战斗时长 %s',
+          '按 TAB 关闭属性面板  当前战斗时长 %s',
           os.date('!%M:%S', math.max(0, math.floor(STATE.runtime_elapsed or 0)))
         ),
-        close_label = '关闭 B',
+        close_label = '关闭 TAB',
         sections = {
           summary = {
             title = '英雄面板',

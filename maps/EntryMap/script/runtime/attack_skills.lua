@@ -1119,6 +1119,9 @@ function M.create(env)
     end
 
     local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false
+    if options and options.force_hit_effect == true then
+      hit_effect_enabled = true
+    end
     local damage_meta = skill or ATTACK_SKILL_DEFS.basic_attack or {}
     local damage_form = damage_meta.damage_form or damage_meta.damage_type
     local element = damage_meta.element
@@ -1946,6 +1949,25 @@ function M.create(env)
     local split_count = math.max(0, round_number(get_effective_skill_value(skill, 'split_count')))
     local split_ratio = get_effective_skill_value(skill, 'split_ratio')
     local hero_point = get_hero_point()
+    local secondary_search_radius = get_basic_attack_secondary_search_radius()
+    local extra_hit_particle = vfx.chain_particle or vfx.impact_particle
+    local primary_hit_particle = vfx.impact_particle or extra_hit_particle
+    local damage_ability = STATE.hero_common_attack and STATE.hero_common_attack:is_exist() and STATE.hero_common_attack or nil
+    local multishot_targets = {}
+    if multishot_count > 0 and multishot_ratio > 0 then
+      local multishot_center = get_unit_point_snapshot(target) or target
+      for _, unit in ipairs(get_enemies_in_range(
+        multishot_center,
+        secondary_search_radius,
+        target,
+        multishot_count
+      )) do
+        multishot_targets[#multishot_targets + 1] = unit
+        if #multishot_targets >= multishot_count then
+          break
+        end
+      end
+    end
     play_skill_particle_on_unit(skill, STATE.hero, 'cast')
     play_basic_attack_animation()
     if play_basic_attack_sound then
@@ -1968,8 +1990,6 @@ function M.create(env)
 
       local impact_center = impact_point or get_unit_point_snapshot(target)
       local splash_center = impact_center or target
-      local secondary_search_radius = get_basic_attack_secondary_search_radius()
-      local extra_hit_particle = vfx.chain_particle or vfx.impact_particle
       local basic_attack_def = ATTACK_SKILL_DEFS.basic_attack or skill
       local runtime = STATE.skill_runtime or {}
       local runtime_chain_count, runtime_chain_chance, runtime_chain_ratio = get_basic_attack_runtime_chain_stats()
@@ -1985,6 +2005,8 @@ function M.create(env)
       if is_active_enemy(target) then
         deal_basic_attack_damage(skill, target, damage, {
           common_attack = false,
+          particle = primary_hit_particle,
+          force_hit_effect = true,
         })
         if (runtime.normal_attack_bonus_ratio or 0) > 0 then
           deal_skill_damage(target, damage * runtime.normal_attack_bonus_ratio, '物理', {
@@ -2007,27 +2029,6 @@ function M.create(env)
               particle = extra_hit_particle,
               stage = 'chain',
             })
-          end
-        end
-      end
-
-      if multishot_count > 0 and multishot_ratio > 0 then
-        local hit_count = 0
-        for _, unit in ipairs(get_enemies_in_range(
-          splash_center,
-          secondary_search_radius,
-          target,
-          multishot_count
-        )) do
-          if deal_basic_attack_secondary_damage(skill, unit, damage * multishot_ratio, {
-            text_type = 'physics',
-            particle = extra_hit_particle,
-            audio_stage = hit_count == 0 and 'chain' or nil,
-          }) then
-            hit_count = hit_count + 1
-          end
-          if hit_count >= multishot_count then
-            break
           end
         end
       end
@@ -2112,7 +2113,38 @@ function M.create(env)
           end
         end
       end
-    end, STATE.hero_common_attack and STATE.hero_common_attack:is_exist() and STATE.hero_common_attack or nil)
+    end, damage_ability)
+
+    if #multishot_targets > 0 and multishot_ratio > 0 then
+      local multishot_audio_played = false
+      for _, unit in ipairs(multishot_targets) do
+        launch_projectile_to_target(vfx, unit, function(impact_point, did_hit)
+          if STATE.game_finished or not STATE.hero or not STATE.hero:is_exist() then
+            return
+          end
+          if did_hit ~= true or not is_active_enemy(unit) then
+            return
+          end
+
+          local impact_center = impact_point or get_unit_point_snapshot(unit)
+          if impact_center then
+            play_skill_particle_on_point(skill, impact_center, 'chain', 18)
+          end
+          if not multishot_audio_played then
+            multishot_audio_played = true
+            play_skill_audio(skill, 'chain', unit or impact_center)
+          end
+
+          deal_basic_attack_damage(skill, unit, damage * multishot_ratio, {
+            text_type = 'physics',
+            particle = extra_hit_particle,
+            force_hit_effect = true,
+            common_attack = false,
+          })
+          apply_armor_break_on_hit(unit)
+        end, damage_ability)
+      end
+    end
   end
   
   local function cast_attack_skill_once(skill, target)

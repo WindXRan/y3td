@@ -253,10 +253,6 @@ function M.create(env)
       inventory_panel_system.refresh_panel()
     end
 
-    if runtime_hud_system and runtime_hud_system.play_growth_weapon_upgrade_effect then
-      runtime_hud_system.play_growth_weapon_upgrade_effect(next_level)
-    end
-
     return true
   end
 
