@@ -23,10 +23,26 @@ local function resolve_child(ui, path)
     return nil
   end
   local ok, child = pcall(ui.get_child, ui, path)
-  if not ok or not child then
+  if ok and child then
+    return child
+  end
+
+  if type(path) ~= 'string' or not path:find('%.', 1, true) then
     return nil
   end
-  return child
+
+  local current = ui
+  for segment in path:gmatch('[^%.]+') do
+    if not current or type(current.get_child) ~= 'function' then
+      return nil
+    end
+    ok, child = pcall(current.get_child, current, segment)
+    if not ok or not child then
+      return nil
+    end
+    current = child
+  end
+  return current
 end
 
 local function is_alive(ui)

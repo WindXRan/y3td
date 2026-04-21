@@ -1,3 +1,6 @@
+local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
+local Json = require 'y3.tools.json'
+
 local M = {}
 
 local LOCAL_AUDIO_IDS = {
@@ -122,6 +125,111 @@ local ATTACK_SKILL_AUDIO_PROFILE_BY_ID = {
   demon_seal = 'seal',
   flying_swords = 'metal_slash',
 }
+
+local ATTACK_SKILL_EDITOR_AUDIO_FIELD_MAP = {
+  cast = 'cst_sound_effect',
+  impact = 'hit_sound_effect',
+  burst = 'end_sound_effect',
+  chain = 'bs_sound_effect',
+  tick = 'ps_sound_effect',
+  charge = 'sp_sound_effect',
+}
+
+local ATTACK_SKILL_EDITOR_AUDIO_CACHE = {}
+local ATTACK_SKILL_EDITOR_AUDIO_PATH_PATTERNS = {
+  'maps/EntryMap/editor_table/abilityall/%s.json',
+  'editor_table/abilityall/%s.json',
+  '../editor_table/abilityall/%s.json',
+}
+
+local function read_text_file(path)
+  local handle = io.open(path, 'r')
+  if not handle then
+    return nil
+  end
+  local content = handle:read('*a')
+  handle:close()
+  return content
+end
+
+local function load_editor_ability_audio_data(object_key)
+  if not object_key then
+    return nil
+  end
+  if ATTACK_SKILL_EDITOR_AUDIO_CACHE[object_key] ~= nil then
+    return ATTACK_SKILL_EDITOR_AUDIO_CACHE[object_key] or nil
+  end
+
+  local content
+  for _, path_pattern in ipairs(ATTACK_SKILL_EDITOR_AUDIO_PATH_PATTERNS) do
+    local path = string.format(path_pattern, tostring(object_key))
+    content = read_text_file(path)
+    if content then
+      break
+    end
+  end
+
+  if not content or content == '' then
+    ATTACK_SKILL_EDITOR_AUDIO_CACHE[object_key] = false
+    return nil
+  end
+
+  local ok, data = pcall(Json.decode, content)
+  if not ok or type(data) ~= 'table' then
+    ATTACK_SKILL_EDITOR_AUDIO_CACHE[object_key] = false
+    return nil
+  end
+
+  ATTACK_SKILL_EDITOR_AUDIO_CACHE[object_key] = data
+  return data
+end
+
+local function unwrap_tuple_items(raw)
+  if type(raw) ~= 'table' then
+    return nil
+  end
+  if type(raw.items) == 'table' then
+    return raw.items
+  end
+  return raw
+end
+
+local function read_editor_stage_audio_ids(skill_id, stage)
+  local ability_key = RuntimeEditorIds.ability and RuntimeEditorIds.ability[skill_id] or nil
+  local stage_field = ATTACK_SKILL_EDITOR_AUDIO_FIELD_MAP[stage or 'cast']
+  if not ability_key or not stage_field then
+    return nil
+  end
+
+  local ability_data = load_editor_ability_audio_data(ability_key)
+  if type(ability_data) ~= 'table' then
+    return nil
+  end
+
+  local items = unwrap_tuple_items(ability_data[stage_field])
+  if type(items) ~= 'table' or items[1] == nil then
+    return nil
+  end
+
+  local ids = {}
+  for _, item in ipairs(items) do
+    local value = item
+    if type(item) == 'table' then
+      value = item[2] or item.id or item.value
+    end
+    if value ~= nil then
+      value = tostring(value)
+      if value ~= '' then
+        ids[#ids + 1] = value
+      end
+    end
+  end
+
+  if #ids == 0 then
+    return nil
+  end
+  return ids
+end
 
 local ATTACK_SKILL_AUDIO_STAGE_CONFIG = {
   metal_slash = {
@@ -742,7 +850,18 @@ function M.create(env)
   local function get_attack_skill_stage_config(skill, stage)
     local profile = resolve_attack_skill_audio_profile(skill)
     local profile_config = ATTACK_SKILL_AUDIO_STAGE_CONFIG[profile] or {}
-    local stage_config = profile_config[stage or 'cast'] or profile_config.cast or {}
+    local stage_key = stage or 'cast'
+    local stage_config = profile_config[stage_key] or profile_config.cast or {}
+    local skill_id = skill and skill.id or nil
+    local editor_stage_ids = skill_id and read_editor_stage_audio_ids(skill_id, stage_key) or nil
+    if editor_stage_ids then
+      local merged = {}
+      for key, value in pairs(stage_config) do
+        merged[key] = value
+      end
+      merged.ids = editor_stage_ids
+      stage_config = merged
+    end
     return profile, stage_config
   end
 
@@ -905,6 +1024,9 @@ function M.create(env)
     play_basic_attack = play_basic_attack,
     play_attack_skill = play_attack_skill,
     play_enemy_death = play_enemy_death,
+    debug_get_attack_skill_stage_config = function(skill_id, stage)
+      return get_attack_skill_stage_config({ id = skill_id }, stage)
+    end,
   }
 end
 

@@ -55,22 +55,15 @@
    {
     "__tuple__": true, 
     "items": [
-     "63db06b4-4d2d-4541-a257-47f46c53711d", 
-     "\u6d88\u606f\u63d0\u793a"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "1ae3c58f-32b7-41b6-a259-bcfe2a6f455f", 
-     "\u7b7e\u5230\u7cfb\u7edf"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
      "72e6c08a-be7e-4460-9975-3782d4dbc8c1", 
      "bottom_bg"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "63db06b4-4d2d-4541-a257-47f46c53711d", 
+     "\u6d88\u606f\u63d0\u793a"
     ]
    }
   ]

@@ -12,7 +12,7 @@ local GearUpgrades = require 'runtime.gear_upgrades'
 
 local M = {}
 
-local BOND_SLOT_QUALITY_COLORS = {
+  local BOND_SLOT_QUALITY_COLORS = {
   common = { 68, 162, 88, 255 },
   rare = { 72, 126, 210, 255 },
   epic = { 164, 108, 216, 255 },
@@ -20,9 +20,11 @@ local BOND_SLOT_QUALITY_COLORS = {
 }
 
 local TOP_BG_BREATH_INTERVAL = 1.8
-local TOP_BOSS_WARNING_THRESHOLD = 5
-local GROWTH_WEAPON_LEVEL_ATTACK_GAIN = 10
-local GROWTH_WEAPON_LEVEL_ALL_ATTR_GAIN = 2
+  local TOP_BOSS_WARNING_THRESHOLD = 5
+  local GROWTH_WEAPON_LEVEL_ATTACK_GAIN = 10
+  local GROWTH_WEAPON_LEVEL_ALL_ATTR_GAIN = 2
+  local BOTTOM_INVENTORY_BIND_TARGET_CACHE = setmetatable({}, { __mode = 'k' })
+  local BOTTOM_INVENTORY_BIND_TARGET_DIAG_CACHE = setmetatable({}, { __mode = 'k' })
 
 local function resolve_ui(y3, player, path)
   return UIRoot.resolve_ui(y3, player, path)
@@ -65,11 +67,20 @@ function M.create(env)
   local bind_default_item_slot_hover
   local attack_skill_slot_count = math.max(1, tonumber(env.attack_skill_slot_count) or 4)
   local bottom_bond_slot_count = 7
+  local hud_binding_debug_seen = {}
 
   local function debug_log_hud_binding(scope, detail)
+    if CONFIG.runtime_hud_binding_debug ~= true then
+      return
+    end
     if not y3 or not y3.game or not y3.game.is_debug_mode or not y3.game.is_debug_mode() then
       return
     end
+    local key = tostring(scope) .. '|' .. tostring(detail)
+    if hud_binding_debug_seen[key] then
+      return
+    end
+    hud_binding_debug_seen[key] = true
     print(string.format('[diag.runtime_hud] %s %s', tostring(scope), tostring(detail)))
   end
 
@@ -1512,17 +1523,35 @@ function M.create(env)
     set_visible_if_alive(slot_ui, true)
   end
 
-  local function get_bottom_inventory_bind_target(slot_ui)
+  local function resolve_bottom_inventory_bind_target(slot_ui)
     if not is_ui_alive(slot_ui) then
       return nil
     end
+    local cached_target = BOTTOM_INVENTORY_BIND_TARGET_CACHE[slot_ui]
+    if is_ui_alive(cached_target) then
+      return cached_target
+    end
     local bind_target = UIRoot.resolve_child(slot_ui, 'equip_slot_2') or slot_ui
-    debug_log_hud_binding('inventory_bind_target', string.format(
+    BOTTOM_INVENTORY_BIND_TARGET_CACHE[slot_ui] = bind_target
+    return bind_target
+  end
+
+  local function get_bottom_inventory_bind_target(slot_ui)
+    local bind_target = resolve_bottom_inventory_bind_target(slot_ui)
+    if not is_ui_alive(bind_target) then
+      return nil
+    end
+
+    local detail = string.format(
       'target=%s has_nested_icon=%s has_root_icon=%s',
       bind_target == slot_ui and 'slot_ui' or 'equip_slot_2',
       tostring(is_ui_alive(UIRoot.resolve_child(slot_ui, 'equip_slot_2.equip_icon_img'))),
       tostring(is_ui_alive(UIRoot.resolve_child(slot_ui, 'equip_icon_img')))
-    ))
+    )
+    if BOTTOM_INVENTORY_BIND_TARGET_DIAG_CACHE[slot_ui] ~= detail then
+      BOTTOM_INVENTORY_BIND_TARGET_DIAG_CACHE[slot_ui] = detail
+      debug_log_hud_binding('inventory_bind_target', detail)
+    end
     return bind_target
   end
 

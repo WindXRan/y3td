@@ -197,7 +197,9 @@
     }, 
     "cst_sound_effect": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            123160
+        ]
     }, 
     "customized_pointer_sfx": 100000, 
     "description": -1511767303, 
@@ -233,7 +235,9 @@
     }, 
     "end_sound_effect": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            126523
+        ]
     }, 
     "filter_condition_camp": 5, 
     "filter_condition_move_channel_type": 99, 
@@ -281,7 +285,9 @@
     }, 
     "hit_sound_effect": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            125775
+        ]
     }, 
     "influenced_by_cd_reduce": true, 
     "influenced_by_move": true, 

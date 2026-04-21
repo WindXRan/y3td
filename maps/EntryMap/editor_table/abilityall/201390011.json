@@ -89,7 +89,7 @@
         "__tuple__": true, 
         "items": [
             [
-                102780, 
+                102706, 
                 [
                     0.0, 
                     0.0, 
@@ -170,7 +170,7 @@
         "__tuple__": true, 
         "items": [
             [
-                102780, 
+                102706, 
                 [
                     0.0, 
                     0.0, 
@@ -197,7 +197,9 @@
     }, 
     "cst_sound_effect": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            126042
+        ]
     }, 
     "customized_pointer_sfx": 100000, 
     "description": -1132351981, 
@@ -206,7 +208,7 @@
         "__tuple__": true, 
         "items": [
             [
-                102780, 
+                102706, 
                 [
                     0.0, 
                     0.0, 
@@ -233,7 +235,9 @@
     }, 
     "end_sound_effect": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            126054
+        ]
     }, 
     "filter_condition_camp": 5, 
     "filter_condition_move_channel_type": 99, 
@@ -254,7 +258,7 @@
         "__tuple__": true, 
         "items": [
             [
-                102780, 
+                102706, 
                 [
                     0.0, 
                     0.0, 
@@ -281,7 +285,9 @@
     }, 
     "hit_sound_effect": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            123320
+        ]
     }, 
     "influenced_by_cd_reduce": true, 
     "influenced_by_move": true, 
@@ -299,7 +305,7 @@
             "prop_cls": "PInt", 
             "remark": "", 
             "type": 2, 
-            "value": 102780
+            "value": 102706
         }, 
         "entry_cast_scale": {
             "annotation": "", 
@@ -329,7 +335,7 @@
             "prop_cls": "PInt", 
             "remark": "", 
             "type": 2, 
-            "value": 102780
+            "value": 102706
         }, 
         "entry_chain_scale": {
             "annotation": "", 
@@ -359,7 +365,7 @@
             "prop_cls": "PInt", 
             "remark": "", 
             "type": 2, 
-            "value": 102780
+            "value": 102706
         }, 
         "entry_charge_scale": {
             "annotation": "", 
@@ -389,7 +395,7 @@
             "prop_cls": "PInt", 
             "remark": "", 
             "type": 2, 
-            "value": 102780
+            "value": 102706
         }, 
         "entry_explosion_scale": {
             "annotation": "", 
@@ -419,7 +425,7 @@
             "prop_cls": "PInt", 
             "remark": "", 
             "type": 2, 
-            "value": 102780
+            "value": 102706
         }, 
         "entry_impact_scale": {
             "annotation": "", 
@@ -506,7 +512,7 @@
         "__tuple__": true, 
         "items": [
             [
-                102780, 
+                102706, 
                 [
                     0.0, 
                     0.0, 

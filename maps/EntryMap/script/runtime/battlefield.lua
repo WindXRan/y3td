@@ -30,8 +30,19 @@ function M.create(env)
     challenge = 0.76,
   }
   local ENEMY_SPAWN_STAGGER_INTERVAL = math.max(0, tonumber(CONFIG.enemy_spawn_stagger_interval) or 0.03)
+  local SLOW_ENEMY_SPAWN_THRESHOLD_MS = math.max(10, tonumber(CONFIG.slow_enemy_spawn_threshold_ms) or 25)
   local runtime_unit_editor_json_cache = {}
   local runtime_unit_rebuild_attempted = {}
+
+  local function get_wall_clock_ms()
+    if os and os.clock_banned then
+      return os.clock_banned() * 1000
+    end
+    if y3 and y3.ltimer and y3.ltimer.clock then
+      return y3.ltimer.clock()
+    end
+    return nil
+  end
 
   local function read_text_file(path)
     local handle = io.open(path, 'r')
@@ -245,6 +256,9 @@ function M.create(env)
   end
 
   local function debug_log_enemy_spawn(unit, info)
+    if CONFIG.debug_enemy_spawn_logging ~= true then
+      return
+    end
     if not y3 or not y3.game or not y3.game.is_debug_mode or not y3.game.is_debug_mode() then
       return
     end
@@ -1081,6 +1095,7 @@ function M.create(env)
 
   local function spawn_enemy(unit_id, area_id, facing, info)
     info = info or {}
+    local started_at_ms = get_wall_clock_ms()
     local spawn_point = random_point_in_area(area_id)
     local unit, err = try_create_player_unit(env.get_enemy_player(), unit_id, spawn_point, facing or 180.0)
     if not unit then
@@ -1103,7 +1118,23 @@ function M.create(env)
     apply_spawn_enemy_speed_tuning(unit, info)
     unit:set_reward_exp(0)
     unit:attack_move(STATE.defense_point)
-    return create_enemy_info(unit, info)
+    local created_info = create_enemy_info(unit, info)
+    local ended_at_ms = get_wall_clock_ms()
+    if started_at_ms and ended_at_ms then
+      local cost_ms = ended_at_ms - started_at_ms
+      if cost_ms >= SLOW_ENEMY_SPAWN_THRESHOLD_MS then
+        print(string.format(
+          '[diag.enemy_spawn_slow] kind=%s wave=%s challenge=%s unit=%s cost_ms=%.3f total_alive=%s',
+          tostring(info.kind or '?'),
+          tostring(info.wave_id or '-'),
+          tostring(info.challenge_id or '-'),
+          tostring(unit_id),
+          cost_ms,
+          tostring(STATE.total_enemy_alive)
+        ))
+      end
+    end
+    return created_info
   end
 
   local function get_spawn_interval(wave, elapsed, boss_spawned)
