@@ -5,22 +5,17 @@ local SLOT_ORDER = { 'weapon' }
 local SLOT_LABELS = {
   weapon = '成长武器',
 }
-local DIRECT_ATTR_KEYS = {
-  ['物理攻击'] = { is_percent = false },
-  ['法术攻击'] = { is_percent = false },
-  ['攻击速度'] = { is_percent = true },
-  ['暴击率'] = { is_percent = true },
-  ['暴击伤害'] = { is_percent = true },
-  ['生命值'] = { is_percent = false },
-  ['生命恢复'] = { is_percent = false },
-  ['护甲'] = { is_percent = false },
-  ['魔法抗性'] = { is_percent = false },
-  ['移动速度'] = { is_percent = false },
+local GROWTH_ATTR_LINE_ORDER = {
+  { attr_name = '攻击', label = '攻击力' },
+  { attr_name = '力量', label = '力量' },
+  { attr_name = '敏捷', label = '敏捷' },
+  { attr_name = '智力', label = '智力' },
 }
 
 local MAX_LEVEL = 100
 local AFFIX_NODE_INTERVAL = 10
 local CHOICE_COUNT = 3
+local compute_item_bonus
 
 local function get_config(config)
   return config or DefaultConfig
@@ -131,32 +126,19 @@ local function format_number(value)
   return string.format('%.2f', value):gsub('0+$', ''):gsub('%.+$', '')
 end
 
-local function format_attr_value(value, attr_cfg)
-  if attr_cfg and attr_cfg.is_percent then
-    return string.format('%s%%', format_number(value * 100))
-  end
-  return format_number(value)
-end
-
-local function build_attr_lines(item_key, item_api)
-  if not item_key or not item_api or not item_api.attr_pick_by_key or not item_api.get_attribute_by_key then
-    return { '当前无直接属性增幅' }
-  end
-
-  local picked = item_api.attr_pick_by_key(item_key) or {}
+local function build_growth_attr_lines(item, config)
+  local total = compute_item_bonus(item, config)
   local lines = {}
-  for _, key in ipairs(picked) do
-    local attr_cfg = DIRECT_ATTR_KEYS[key]
-    if attr_cfg then
-      local value = tonumber(item_api.get_attribute_by_key(item_key, key)) or 0
-      if value ~= 0 then
-        lines[#lines + 1] = string.format('%s +%s', key, format_attr_value(value, attr_cfg))
-      end
+
+  for _, entry in ipairs(GROWTH_ATTR_LINE_ORDER) do
+    local value = tonumber(total[entry.attr_name]) or 0
+    if value ~= 0 then
+      lines[#lines + 1] = string.format('+%s%s', format_number(value), entry.label)
     end
   end
 
   if #lines == 0 then
-    return { '当前无直接属性增幅' }
+    return { '当前无基础属性增幅' }
   end
   return lines
 end
@@ -292,11 +274,11 @@ local function queue_affix_choice(runtime, slot, level)
   runtime.current_choices = make_affix_choices(slot, item, level, runtime.config)
 end
 
-local function compute_item_bonus(item, config)
+compute_item_bonus = function(item, config)
   local total = {}
   local current_level = tonumber(item and item.level) or 1
 
-  for level = 1, math.max(1, current_level) - 1, 1 do
+  for level = 1, math.max(1, current_level), 1 do
     local level_cfg = get_level_config(item.slot, level, config, item.weapon_id)
     if level_cfg and level_cfg.bonus_pack then
       add_bonus_pack(total, level_cfg.bonus_pack)
@@ -374,8 +356,7 @@ function M.get_upgrade_cost(slot, current_level, config)
   if level_cfg then
     return level_cfg.gold_cost
   end
-  local band_index = math.floor(math.max(0, current_level - 1) / 10)
-  return 100 + band_index * 50
+  return math.max(1, math.floor(tonumber(current_level) or 1)) * 50
 end
 
 function M.try_upgrade_levels(env, slot, count)
@@ -500,7 +481,7 @@ function M.build_tip_payload(state, slot, config, item_api)
     subtitle_text = string.format('%s Lv.%d', SLOT_LABELS[slot] or tostring(slot), item.level),
     cost_text = cost > 0 and string.format('升级所需：%d 金币', cost) or '升级所需：已满级',
     icon_res = icon_res,
-    attr_lines = build_attr_lines(item_key, item_api),
+    attr_lines = build_growth_attr_lines(item, runtime.config),
     affix_lines = build_affix_lines(item),
   }
 end

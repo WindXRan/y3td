@@ -143,11 +143,7 @@ function M.create(env)
 
   local function resolve_inventory_slot_ui(slot)
     local runtime_hud = STATE.runtime_hud
-    local slot_ui = runtime_hud and runtime_hud.editor_bottom_inventory_anchors and runtime_hud.editor_bottom_inventory_anchors[slot] or nil
-    if is_ui_alive(slot_ui) then
-      return slot_ui
-    end
-    slot_ui = runtime_hud and runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[slot] or nil
+    local slot_ui = runtime_hud and runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[slot] or nil
     if is_ui_alive(slot_ui) then
       return slot_ui
     end
@@ -1432,6 +1428,49 @@ function M.create(env)
     end
   end
 
+  local function is_bottom_inventory_slot_ui(slot_ui)
+    return is_ui_alive(slot_ui)
+      and is_ui_alive(UIRoot.resolve_child(slot_ui, 'icon'))
+      and is_ui_alive(UIRoot.resolve_child(slot_ui, 'stack'))
+  end
+
+  local function style_bottom_inventory_slot(slot_ui)
+    if not is_ui_alive(slot_ui) then
+      return
+    end
+
+    set_visible_if_alive(UIRoot.resolve_child(slot_ui, 'bg'), false)
+    set_visible_if_alive(UIRoot.resolve_child(slot_ui, 'hot_key_bg'), false)
+    set_visible_if_alive(slot_ui, true)
+  end
+
+  local function ensure_bottom_inventory_slots(runtime_hud)
+    if not runtime_hud then
+      return
+    end
+
+    runtime_hud.editor_bottom_inventory_anchors = runtime_hud.bottom_backpack_slots or {}
+    runtime_hud.editor_bottom_inventory_slots = runtime_hud.editor_bottom_inventory_slots or {}
+
+    for slot = 1, 6 do
+      local anchor = runtime_hud.editor_bottom_inventory_anchors[slot]
+      local slot_ui = runtime_hud.editor_bottom_inventory_slots[slot]
+
+      if not is_bottom_inventory_slot_ui(slot_ui) and is_ui_alive(anchor) then
+        slot_ui = try_create_child_ui(anchor, '物品')
+        runtime_hud.editor_bottom_inventory_slots[slot] = slot_ui
+      end
+
+      if is_ui_alive(anchor) and is_ui_alive(slot_ui) then
+        local width, height = get_ui_size(anchor, 66, 66)
+        slot_ui:set_ui_size(width, height)
+        slot_ui:set_anchor(0.5, 0.5)
+        slot_ui:set_pos(width * 0.5, height * 0.5)
+        style_bottom_inventory_slot(slot_ui)
+      end
+    end
+  end
+
   local function get_bottom_slot_anchor(slot_nodes)
     if type(slot_nodes) ~= 'table' then
       return slot_nodes
@@ -1901,6 +1940,7 @@ function M.create(env)
     runtime_hud.editor_bottom_intelligence_text = runtime_hud.bottom_intelligence_value
     runtime_hud.editor_bottom_inventory_anchors = runtime_hud.bottom_backpack_slots or {}
     runtime_hud.editor_bottom_inventory_slots = runtime_hud.editor_bottom_inventory_slots or {}
+    ensure_bottom_inventory_slots(runtime_hud)
     ensure_bottom_skill_slots(runtime_hud)
     runtime_hud.editor_bottom_bond_slots = runtime_hud.editor_bottom_bond_slots or {}
     runtime_hud.editor_bottom_bond_slot_bound = runtime_hud.editor_bottom_bond_slot_bound or {}
@@ -1941,11 +1981,10 @@ function M.create(env)
       return runtime_hud
     end
 
-    runtime_hud.editor_bottom_inventory_anchors = runtime_hud.bottom_backpack_slots or {}
-    runtime_hud.editor_bottom_inventory_slots = runtime_hud.editor_bottom_inventory_slots or {}
+    ensure_bottom_inventory_slots(runtime_hud)
 
     for slot = 1, 6 do
-      local slot_ui = runtime_hud.editor_bottom_inventory_anchors[slot]
+      local slot_ui = runtime_hud.editor_bottom_inventory_slots[slot]
       if not is_ui_alive(slot_ui) then
         slot_ui = resolve_inventory_slot_ui(slot)
       end

@@ -1,8 +1,12 @@
 group,key,value
-global_rules,debug_time_scale_debug,0.2
+global_rules,debug_time_scale_debug,1.0
 global_rules,debug_time_scale_release,1.0
 global_rules,enemy_player_id,31
+global_rules,enemy_move_speed_scale,1.0
+global_rules,enemy_spawn_batch_scale,1.0
+global_rules,enemy_alive_cap_scale,1.0
 global_rules,player_id,1
+global_rules,total_enemy_soft_cap_scale,1.0
 global_rules,total_enemy_soft_cap,40
 flags,debug_apply_hero_bonus_on_spawn,false
 progression_rules,engine_exp_cap_level,15

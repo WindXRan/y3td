@@ -5,7 +5,6 @@ local M = {}
 
 function M.create(env)
   local STATE = env.STATE
-  local CONFIG = env.CONFIG or {}
   local y3 = env.y3
   local hero_attr_system = env.hero_attr_system
   local ATTACK_SKILL_VFX = env.ATTACK_SKILL_VFX
@@ -28,12 +27,12 @@ function M.create(env)
     return math.max(0.05, (seconds or 0.30) / VISUAL_ANIMATION_SPEED)
   end
 
-  local function apply_visual_animation_speed(target)
+  local function apply_visual_animation_speed(target, animation_speed)
     if not target or not target.set_animation_speed then
       return
     end
     pcall(function()
-      target:set_animation_speed(VISUAL_ANIMATION_SPEED)
+      target:set_animation_speed(animation_speed or VISUAL_ANIMATION_SPEED)
     end)
   end
 
@@ -303,7 +302,7 @@ function M.create(env)
     pcall(function()
       projectile:set_height(PROJECTILE_FLIGHT_HEIGHT)
     end)
-    apply_visual_animation_speed(projectile)
+    apply_visual_animation_speed(projectile, 1.0)
 
     if launch_angle ~= nil then
       pcall(function()
@@ -337,7 +336,7 @@ function M.create(env)
     local ok_move = pcall(function()
       projectile:mover_target({
         target = target,
-        speed = vfx.projectile_speed or 1000,
+        speed = tonumber(vfx and vfx.projectile_speed) or 1000,
         target_distance = vfx.target_distance or 60,
         height = PROJECTILE_FLIGHT_HEIGHT,
         init_angle = launch_angle,

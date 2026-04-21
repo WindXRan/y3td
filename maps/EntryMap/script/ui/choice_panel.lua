@@ -199,6 +199,7 @@ end
 
 function M.create(env)
   local STATE = env.STATE
+  local CONFIG = env.CONFIG or {}
   local y3 = env.y3
   local factory = Factory.create(env)
   local ITEM_DESC_DEBUG = true
@@ -274,6 +275,14 @@ function M.create(env)
 
   local function is_panel_alive(panel)
     return panel and panel.root and is_ui_alive(panel.root)
+  end
+
+  local function get_current_choice_panel_model()
+    return env.get_current_choice_panel_model and env.get_current_choice_panel_model() or nil
+  end
+
+  local function is_choice_panel_active(model)
+    return model ~= nil and STATE.session_phase == 'battle'
   end
 
   local function create_ui_prefab_safe(player, prefab_name, parent, debug_scope)
@@ -410,6 +419,15 @@ function M.create(env)
       return
     end
     print('[choice_panel.lifecycle] ' .. tostring(message))
+  end
+
+  local last_refresh_panel_lifecycle_message
+  local function debug_refresh_panel_lifecycle(message)
+    if message == last_refresh_panel_lifecycle_message then
+      return
+    end
+    last_refresh_panel_lifecycle_message = message
+    debug_choice_panel_lifecycle(message)
   end
 
   debug_choice_panel_lifecycle('create')
@@ -802,7 +820,7 @@ function M.create(env)
     card.hovered = hovered == true
 
     stop_card_hover_timer(card)
-    if immediate == true then
+    if CONFIG.choice_panel_hover_animations_enabled ~= true or immediate == true then
       apply_card_hover_offset(card, target_offset)
       return
     end
@@ -1381,17 +1399,22 @@ function M.create(env)
   end
 
   local function create_choice_panel()
+    if is_panel_alive(STATE.choice_panel) then
+      debug_choice_panel_lifecycle('create_panel reuse_existing')
+      refresh_panel()
+      return STATE.choice_panel
+    end
+
+    local model = get_current_choice_panel_model()
+    if not is_choice_panel_active(model) then
+      return nil
+    end
+
     debug_choice_panel_lifecycle('create_panel')
     local hud = get_hud_root()
     if not hud then
       debug_choice_panel_lifecycle('create_panel no_hud')
       return nil
-    end
-
-    if is_panel_alive(STATE.choice_panel) then
-      debug_choice_panel_lifecycle('create_panel reuse_existing')
-      refresh_panel()
-      return STATE.choice_panel
     end
 
     local scale = get_hud_scale(hud, y3)
@@ -1452,7 +1475,7 @@ function M.create(env)
     stage_shell:set_image(ui_res.common.empty)
     stage_shell:set_image_color(255, 255, 255, 0)
 
-    local model = env.get_current_choice_panel_model and env.get_current_choice_panel_model() or nil
+    local model = get_current_choice_panel_model()
     local card_left_positions = get_card_left_positions(get_model_choice_count(model))
 
     local cards = {
@@ -1570,6 +1593,7 @@ function M.create(env)
       panel.root:remove()
     end
     STATE.choice_panel = nil
+    last_refresh_panel_lifecycle_message = nil
   end
 
   refresh_panel = function()
@@ -1579,11 +1603,11 @@ function M.create(env)
       return nil
     end
 
-    local model = env.get_current_choice_panel_model and env.get_current_choice_panel_model() or nil
+    local model = get_current_choice_panel_model()
     local card_images = get_choice_panel_images()
-    local visible = model ~= nil and STATE.session_phase == 'battle'
+    local visible = is_choice_panel_active(model)
     local renderer_signature = get_choice_panel_renderer_signature(model)
-    debug_choice_panel_lifecycle(string.format(
+    debug_refresh_panel_lifecycle(string.format(
       'refresh_panel kind=%s visible=%s hidden=%s session=%s signature=%s panel_signature=%s',
       tostring(model and model.kind or 'nil'),
       tostring(visible),
@@ -1592,11 +1616,6 @@ function M.create(env)
       renderer_signature,
       tostring(panel.renderer_signature or 'nil')
     ))
-    if panel.renderer_signature ~= renderer_signature then
-      debug_choice_panel_lifecycle('refresh_panel renderer_signature_changed recreate')
-      destroy_panel()
-      return create_choice_panel()
-    end
     panel.root:set_visible(visible)
     if not visible then
       bond_tip_panel.hide()
@@ -1604,6 +1623,12 @@ function M.create(env)
         reset_choice_card_transform(card)
       end
       return panel
+    end
+
+    if panel.renderer_signature ~= renderer_signature then
+      debug_choice_panel_lifecycle('refresh_panel renderer_signature_changed recreate')
+      destroy_panel()
+      return create_choice_panel()
     end
 
     if panel.title_text then
@@ -1776,11 +1801,28 @@ function M.create(env)
 
   return {
     ensure_panel = function()
-      debug_choice_panel_lifecycle('ensure_panel')
+      local panel = STATE.choice_panel
+      if is_panel_alive(panel) then
+        return panel
+      end
+
+      local model = get_current_choice_panel_model()
+      if not is_choice_panel_active(model) then
+        return nil
+      end
+
       return create_choice_panel()
     end,
     refresh_panel = function()
-      debug_choice_panel_lifecycle('refresh_panel api')
+      local panel = STATE.choice_panel
+      if not is_panel_alive(panel) then
+        local model = get_current_choice_panel_model()
+        if not is_choice_panel_active(model) then
+          return nil
+        end
+        return create_choice_panel()
+      end
+
       return refresh_panel()
     end,
     set_visible = function(visible)

@@ -14,9 +14,18 @@
                 0.0, 
                 0.0
             ], 
+            "cap_insets": {
+                "__tuple__": true, 
+                "items": [
+                    188, 
+                    138, 
+                    188, 
+                    138
+                ]
+            }, 
             "children": [], 
             "event_list": [], 
-            "image": 110020, 
+            "image": 110001, 
             "name": "loading_background", 
             "open_adapter": true, 
             "pos_data": {

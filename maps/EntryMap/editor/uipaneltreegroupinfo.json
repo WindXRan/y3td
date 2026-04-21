@@ -34,13 +34,6 @@
    {
     "__tuple__": true, 
     "items": [
-     "970943c1-8d78-405e-ac37-896598c03a2d", 
-     "bottom_bg"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
      "7029d6cb-b7c1-4fc6-936d-f2b5c6f67bef", 
      "\u80cc\u5305\u7cfb\u7edf"
     ]
@@ -69,15 +62,15 @@
    {
     "__tuple__": true, 
     "items": [
-     "9b35ec72-a685-43a1-a4e8-3ff3ca031490", 
-     "\u5b58\u6863\u7cfb\u7edf"
+     "1ae3c58f-32b7-41b6-a259-bcfe2a6f455f", 
+     "\u7b7e\u5230\u7cfb\u7edf"
     ]
    }, 
    {
     "__tuple__": true, 
     "items": [
-     "1ae3c58f-32b7-41b6-a259-bcfe2a6f455f", 
-     "\u7b7e\u5230\u7cfb\u7edf"
+     "72e6c08a-be7e-4460-9975-3782d4dbc8c1", 
+     "bottom_bg"
     ]
    }
   ]

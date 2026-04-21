@@ -32,13 +32,15 @@ def test_basic_attack_code_uses_snapshot_center_and_bonus_chain_attrs() -> None:
     attack_content = ATTACK_SKILLS.read_text(encoding="utf-8")
     boot_content = BOOT.read_text(encoding="utf-8")
 
-    assert "local impact_center = impact_point or get_unit_point_snapshot(target)" in attack_content
-    assert "local splash_center = impact_center or target" in attack_content
-    assert "get_enemies_in_range(\n          splash_center," in attack_content
+    assert "local impact_center = impact_point or get_unit_point_snapshot(victim)" in attack_content
+    assert "local splash_center = impact_center or victim" in attack_content
+    assert "local function collect_basic_attack_multishot_targets(primary_target, extra_count)" in attack_content
+    assert "local function launch_basic_attack_projectile(skill, vfx, victim, damage, options)" in attack_content
+    assert "for index, victim in ipairs(multishot_targets) do" in attack_content
     assert "local explosion_ratio = math.max(0, get_effective_skill_value(skill, 'explosion_ratio'))" in attack_content
     assert "local runtime_chain_count, runtime_chain_chance, runtime_chain_ratio = get_basic_attack_runtime_chain_stats()" in attack_content
     assert "local bonus_chain_count, bonus_chain_ratio = get_basic_attack_bonus_chain_stats()" in attack_content
-    assert "play_skill_audio(skill, 'impact', target or impact_center)" in attack_content
+    assert "play_skill_audio(skill, 'impact', victim or impact_center)" in attack_content
     assert "local function deal_basic_attack_secondary_damage(skill, unit, amount, options)" in attack_content
     assert "get_bond_runtime_bonus('chain_bounces') + get_hero_attr_value('弹射次数')" in boot_content
     assert "get_hero_attr_ratio('弹射伤害')" in boot_content
@@ -46,7 +48,7 @@ def test_basic_attack_code_uses_snapshot_center_and_bonus_chain_attrs() -> None:
     assert "deal_skill_damage(unit, data.damage * bond_chain_ratio, basic_attack_def, {" in boot_content
 
 
-def test_basic_attack_multishot_and_split_survive_killshot_center() -> None:
+def test_basic_attack_multishot_launches_extra_projectiles() -> None:
     syntax = run([str(LUAC), "-p", str(ATTACK_SKILLS)])
     assert_ok(syntax, "runtime/attack_skills.lua syntax check failed")
 
@@ -62,6 +64,7 @@ def test_basic_attack_multishot_and_split_survive_killshot_center() -> None:
         "local main_point = make_point() "
         "local hero_point = make_point() "
         "local damage_log = {} "
+        "local launch_log = {} "
         "local search_centers = {} "
         "local main_target = { name = 'main', alive = true, point = main_point } "
         "function main_target:is_exist() return self.alive end "
@@ -81,22 +84,12 @@ def test_basic_attack_multishot_and_split_survive_killshot_center() -> None:
         "function hero:get_attr(_) return 0 end "
         "function hero:damage(payload) "
         "  damage_log[#damage_log + 1] = payload.target.name "
-        "  if payload.target == main_target then "
-        "    main_target.alive = false "
-        "  end "
         "end "
         "local selector = {} "
         "function selector:is_enemy(_) return self end "
         "function selector:in_range(_, _) return self end "
         "function selector:sort_type(_) return self end "
         "function selector:pick() return { main_target } end "
-        "local projectile = { removed = false, point = make_point() } "
-        "function projectile:is_exist() return not self.removed end "
-        "function projectile:get_point() return self.point end "
-        "function projectile:remove() self.removed = true end "
-        "function projectile:set_facing(_) end "
-        "function projectile:set_height(_) end "
-        "function projectile:mover_target(args) args.on_finish() end "
         "local system = attack_skills.create({ "
         "  CONFIG = { damage_hit_effect_enabled = false }, "
         "  STATE = { "
@@ -123,7 +116,19 @@ def test_basic_attack_multishot_and_split_survive_killshot_center() -> None:
         "  y3 = { "
         "    helper = { tonumber = tonumber }, "
         "    selector = { create = function() return selector end }, "
-        "    projectile = { create = function() return projectile end }, "
+        "    projectile = { create = function() "
+        "      local projectile = { removed = false, point = make_point() } "
+        "      function projectile:is_exist() return not self.removed end "
+        "      function projectile:get_point() return self.point end "
+        "      function projectile:remove() self.removed = true end "
+        "      function projectile:set_facing(_) end "
+        "      function projectile:set_height(_) end "
+        "      function projectile:mover_target(args) "
+        "        launch_log[#launch_log + 1] = args.target.name "
+        "        args.on_finish() "
+        "      end "
+        "      return projectile "
+        "    end }, "
         "    particle = { create = function() return { is_exist = function() return false end, remove = function() end } end }, "
         "    ltimer = { wait = function(_, fn) fn() end } "
         "  }, "
@@ -135,7 +140,7 @@ def test_basic_attack_multishot_and_split_survive_killshot_center() -> None:
         "    get_attr = function(_, name) "
         "      if name == '攻击范围' then return 600 end "
         "      if name == '攻击结算值' or name == '攻击' then return 100 end "
-        "      if name == '多重数量' then return 1 end "
+        "      if name == '多重数量' then return 2 end "
         "      if name == '多重伤害' then return 0.5 end "
         "      return 0 "
         "    end "
@@ -150,8 +155,8 @@ def test_basic_attack_multishot_and_split_survive_killshot_center() -> None:
         "  get_enemies_in_range = function(center, _, _, max_count) "
         "    search_centers[#search_centers + 1] = center and center.kind or type(center) "
         "    if center and center.kind == 'point' then "
-        "      if max_count == 1 then return { extra_a, extra_b } end "
-        "      return { extra_a, extra_b } "
+        "      if max_count == 2 then return { extra_a, extra_b } end "
+        "      return {} "
         "    end "
         "    return {} "
         "  end, "
@@ -161,13 +166,16 @@ def test_basic_attack_multishot_and_split_survive_killshot_center() -> None:
         "  notify_auto_active_skill_cast = function() end "
         "}) "
         "system.update_attack_skills(0.1) "
-        "assert(#damage_log == 3, 'basic attack should still hit main + multishot + split after main target dies') "
+        "assert(#launch_log == 3, 'basic attack multishot should launch three projectiles') "
+        "assert(launch_log[1] == 'main', 'first projectile should target the selected enemy') "
+        "assert(launch_log[2] == 'extra_a', 'second projectile should target the first multishot enemy') "
+        "assert(launch_log[3] == 'extra_b', 'third projectile should target the second multishot enemy') "
+        "assert(#damage_log == 3, 'basic attack multishot should apply three direct hits') "
         "assert(damage_log[1] == 'main', 'first hit should target the selected enemy') "
-        "assert(damage_log[2] == 'extra_a', 'multishot should use snapshot center to find another enemy') "
-        "assert(damage_log[3] == 'extra_a', 'split should also use snapshot center after killshot') "
-        "assert(search_centers[1] == 'point', 'multishot center should come from projectile impact snapshot') "
-        "assert(search_centers[2] == 'point', 'split center should come from projectile impact snapshot') "
-        "print('basic attack extra targets smoke ok')"
+        "assert(damage_log[2] == 'extra_a', 'second hit should come from the second projectile') "
+        "assert(damage_log[3] == 'extra_b', 'third hit should come from the third projectile') "
+        "assert(search_centers[1] == 'point', 'multishot target selection should use the primary target snapshot point') "
+        "print('basic attack multishot projectile smoke ok')"
     )
 
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".lua", delete=False) as handle:

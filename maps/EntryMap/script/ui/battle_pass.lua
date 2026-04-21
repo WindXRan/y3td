@@ -10,13 +10,11 @@ local PAGE_ARMORY = 'armory'
 local PAGE_SHOP = 'shop'
 local PAGE_ACHIEVEMENT = 'achievement'
 local PANEL_ROOT_CANDIDATES = { '通行证系统', '存档系统' }
-local COMPACT_MARKER_STATUS_LABELS = {
-  claimed = '领',
-  claimable = '取',
-  premium_locked = '锁',
-  locked = '待',
-  empty = '-',
-}
+local PASS_TRACK_FREE = 'free'
+local PASS_TRACK_PAID = 'paid'
+local PASS_LEVEL_CELL_WIDTH = 105
+local PASS_LEVEL_CELL_HEIGHT = 105
+local PASS_LEVEL_CELL_SPACING = 30
 local BIND_FLAG_KEYS = {
   'bound_open_hotspot',
   'bound_open_button',
@@ -110,6 +108,7 @@ function M.create(env)
     ui_warned = false,
     markers = {},
     markers_count = 0,
+    pass_grid_owned = false,
   }
   local api = {}
 
@@ -257,6 +256,49 @@ function M.create(env)
     runtime.markers_count = 0
   end
 
+  local function prepare_pass_grid_for_lua(ui)
+    if not UIRoot.is_alive(ui and ui.pass_grid) or not ui.pass_grid.get_childs then
+      return
+    end
+
+    local ok, children = pcall(ui.pass_grid.get_childs, ui.pass_grid)
+    if not ok or type(children) ~= 'table' then
+      return
+    end
+
+    local marker_handles = {}
+    for _, marker in ipairs(runtime.markers) do
+      if UIRoot.is_alive(marker.root) and marker.root.handle then
+        marker_handles[marker.root.handle] = true
+      end
+    end
+
+    local has_foreign_children = false
+    for _, child in ipairs(children) do
+      if UIRoot.is_alive(child) and not marker_handles[child.handle] then
+        has_foreign_children = true
+        break
+      end
+    end
+
+    if runtime.pass_grid_owned and not has_foreign_children then
+      return
+    end
+
+    clear_markers()
+
+    local ok_after_clear, remaining_children = pcall(ui.pass_grid.get_childs, ui.pass_grid)
+    if ok_after_clear and type(remaining_children) == 'table' then
+      for _, child in ipairs(remaining_children) do
+        if UIRoot.is_alive(child) and child.remove then
+          child:remove()
+        end
+      end
+    end
+
+    runtime.pass_grid_owned = true
+  end
+
   local function create_level_marker(parent)
     local ok, prefab = pcall(y3.ui_prefab.create, get_player(), '通行证第几级', parent)
     if not ok or not prefab then
@@ -272,11 +314,13 @@ function M.create(env)
       return nil
     end
 
-    root:set_ui_size(105, 84)
-    text:set_ui_size(100, 78)
+    root:set_anchor(0.5, 0.5)
+    root:set_pos(PASS_LEVEL_CELL_WIDTH * 0.5, PASS_LEVEL_CELL_HEIGHT * 0.5)
+    root:set_ui_size(PASS_LEVEL_CELL_WIDTH, PASS_LEVEL_CELL_HEIGHT)
+    text:set_ui_size(PASS_LEVEL_CELL_WIDTH - 8, 42)
     text:set_anchor(0.5, 0.5)
-    text:set_pos(52.5, 42)
-    text:set_font_size(13)
+    text:set_pos(PASS_LEVEL_CELL_WIDTH * 0.5, PASS_LEVEL_CELL_HEIGHT * 0.5)
+    text:set_font_size(16)
     text:set_text_alignment('中', '中')
     text:set_text('Lv.01')
 
@@ -287,67 +331,160 @@ function M.create(env)
     }
   end
 
-  local function ensure_level_markers(ui, count)
-    if runtime.markers_count == count then
-      local all_alive = true
-      for _, marker in ipairs(runtime.markers) do
-        if not UIRoot.is_alive(marker.text) then
-          all_alive = false
-          break
-        end
-      end
-      if all_alive then
-        return
+  local function create_reward_cell(parent)
+    local ok, prefab = pcall(y3.ui_prefab.create, get_player(), '商品图标', parent)
+    if not ok or not prefab then
+      return nil
+    end
+
+    local root = prefab:get_child()
+    local frame = prefab:get_child('卡框')
+    local claimed_text = prefab:get_child('已领取遮罩.文本')
+    local claimed_mask = prefab:get_child('已领取遮罩')
+    local claimable_frame = prefab:get_child('可领取框')
+    local lock_mask = prefab:get_child('遮罩')
+    local lock_icon = prefab:get_child('遮罩.锁定')
+    local icon = prefab:get_child('图标')
+    local card_clip = prefab:get_child('卡图裁剪')
+    local quantity_bg = prefab:get_child('数量背景')
+    local skill_icon = prefab:get_child('技能图标')
+    local selected = prefab:get_child('选中框')
+    local text
+
+    if root and root.create_child then
+      local ok_text, label = pcall(root.create_child, root, '文本')
+      if ok_text then
+        text = label
       end
     end
 
-    clear_markers()
-    for _ = 1, count do
-      local marker = create_level_marker(ui.pass_grid)
-      if marker then
-        runtime.markers[#runtime.markers + 1] = marker
+    if not root or not frame or not text then
+      if prefab.remove then
+        prefab:remove()
       end
+      return nil
     end
-    runtime.markers_count = #runtime.markers
+
+    root:set_anchor(0.5, 0.5)
+    root:set_pos(PASS_LEVEL_CELL_WIDTH * 0.5, PASS_LEVEL_CELL_HEIGHT * 0.5)
+    root:set_ui_size(PASS_LEVEL_CELL_WIDTH, PASS_LEVEL_CELL_HEIGHT)
+    frame:set_ui_size(110, 110)
+    text:set_anchor(0.5, 0.5)
+    text:set_pos(PASS_LEVEL_CELL_WIDTH * 0.5, PASS_LEVEL_CELL_HEIGHT * 0.5)
+    text:set_ui_size(PASS_LEVEL_CELL_WIDTH - 16, PASS_LEVEL_CELL_HEIGHT - 16)
+    text:set_text_alignment('中', '中')
+    text:set_font_size(13)
+    if text.set_intercepts_operations then
+      text:set_intercepts_operations(false)
+    end
+    if claimed_text then
+      claimed_text:set_text('已领')
+      claimed_text:set_font_size(18)
+      claimed_text:set_text_alignment('中', '中')
+    end
+
+    set_visible_if_alive(icon, false)
+    set_visible_if_alive(card_clip, false)
+    set_visible_if_alive(quantity_bg, false)
+    set_visible_if_alive(skill_icon, false)
+    set_visible_if_alive(selected, false)
+    set_visible_if_alive(claimed_mask, false)
+    set_visible_if_alive(claimable_frame, false)
+    set_visible_if_alive(lock_mask, false)
+
+    return {
+      prefab = prefab,
+      root = root,
+      frame = frame,
+      text = text,
+      claimed_mask = claimed_mask,
+      claimable_frame = claimable_frame,
+      lock_mask = lock_mask,
+      lock_icon = lock_icon,
+    }
   end
 
-  local function get_marker_text(item, compact_mode)
+  local function get_reward_cell_label(item, track, compact_mode)
     if not item then
       return ''
     end
-    if not compact_mode then
-      return item.cell_text or ''
-    end
 
-    local free_status = COMPACT_MARKER_STATUS_LABELS[item.free_status] or '?'
-    local paid_status = COMPACT_MARKER_STATUS_LABELS[item.paid_status] or '?'
-    return string.format(
-      'Lv.%02d\n免%s·%s\n付%s·%s',
-      tonumber(item.level) or 0,
-      tostring(item.free_short_label or item.free_label or '无'),
-      free_status,
-      tostring(item.paid_short_label or item.paid_label or '无'),
-      paid_status
-    )
+    local short_label = track == PASS_TRACK_PAID and item.paid_short_label or item.free_short_label
+    local full_label = track == PASS_TRACK_PAID and item.paid_label or item.free_label
+    local title = track == PASS_TRACK_PAID and '付费' or '免费'
+    local label = compact_mode and short_label or full_label
+    label = tostring(label or short_label or full_label or '无')
+    return string.format('%s\n%s', title, label)
   end
 
-  local function update_level_markers(ui, model, compact_mode)
-    ensure_level_markers(ui, #(model.level_items or {}))
-    for index, marker in ipairs(runtime.markers) do
-      local item = model.level_items and model.level_items[index] or nil
-      set_visible_if_alive(marker.root, item ~= nil and not compact_mode)
-      if item then
-        if marker.root and marker.root.set_ui_size then
-          marker.root:set_ui_size(105, compact_mode and 88 or 84)
-        end
-        if marker.text and marker.text.set_ui_size then
-          marker.text:set_ui_size(104, compact_mode and 82 or 78)
-        end
-        set_font_size_if_alive(marker.text, compact_mode and 11 or 13)
-        set_text_if_alive(marker.text, get_marker_text(item, compact_mode))
-        set_text_color_if_alive(marker.text, item.cell_color)
+  local function get_reward_frame_color(track, status)
+    if status == 'claimed' then
+      return { 178, 178, 178, 255 }
+    end
+    if status == 'locked' or status == 'premium_locked' then
+      return { 144, 144, 144, 255 }
+    end
+    if track == PASS_TRACK_PAID then
+      return { 255, 222, 138, 255 }
+    end
+    return { 173, 214, 255, 255 }
+  end
+
+  local function get_reward_text_color(track, status)
+    if status == 'claimed' then
+      return { 222, 222, 222, 255 }
+    end
+    if status == 'locked' or status == 'premium_locked' then
+      return { 196, 196, 196, 255 }
+    end
+    if track == PASS_TRACK_PAID then
+      return { 255, 243, 205, 255 }
+    end
+    return { 232, 241, 255, 255 }
+  end
+
+  local function update_reward_cell(cell, item, track, compact_mode)
+    if not cell or not item then
+      return
+    end
+
+    local status = track == PASS_TRACK_PAID and item.paid_status or item.free_status
+    set_visible_if_alive(cell.root, true)
+    set_text_if_alive(cell.text, get_reward_cell_label(item, track, compact_mode))
+    set_font_size_if_alive(cell.text, compact_mode and 12 or 13)
+    set_text_color_if_alive(cell.text, get_reward_text_color(track, status))
+    set_image_color_if_alive(cell.frame, get_reward_frame_color(track, status))
+    set_visible_if_alive(cell.claimable_frame, status == 'claimable')
+    set_visible_if_alive(cell.claimed_mask, status == 'claimed')
+    set_visible_if_alive(cell.lock_mask, status == 'locked' or status == 'premium_locked')
+    set_visible_if_alive(cell.lock_icon, status == 'premium_locked')
+  end
+
+  local function rebuild_pass_grid(ui, model, compact_mode)
+    clear_markers()
+
+    for _, item in ipairs(model.level_items or {}) do
+      local level_marker = create_level_marker(ui.pass_grid)
+      if level_marker then
+        set_text_if_alive(level_marker.text, string.format('Lv.%02d', tonumber(item.level) or 0))
+        set_text_color_if_alive(level_marker.text, item.cell_color)
+        runtime.markers[#runtime.markers + 1] = level_marker
+      end
+
+      local free_cell = create_reward_cell(ui.pass_grid)
+      if free_cell then
+        update_reward_cell(free_cell, item, PASS_TRACK_FREE, compact_mode)
+        runtime.markers[#runtime.markers + 1] = free_cell
+      end
+
+      local paid_cell = create_reward_cell(ui.pass_grid)
+      if paid_cell then
+        update_reward_cell(paid_cell, item, PASS_TRACK_PAID, compact_mode)
+        runtime.markers[#runtime.markers + 1] = paid_cell
       end
     end
+
+    runtime.markers_count = #runtime.markers
   end
 
   local function is_battle_compact_mode()
@@ -372,6 +509,37 @@ function M.create(env)
       tonumber(model.paid_claimable_count) or 0,
       tostring(model.premium_name or '至尊征战之路')
     )
+  end
+
+  local function get_pass_list_visible_columns(ui)
+    local list_width = 950
+    if UIRoot.is_alive(ui and ui.pass_list) and ui.pass_list.get_width then
+      list_width = math.max(PASS_LEVEL_CELL_WIDTH, ui.pass_list:get_width() or list_width)
+    end
+
+    local stride = PASS_LEVEL_CELL_WIDTH + PASS_LEVEL_CELL_SPACING
+    return math.max(1, math.floor((list_width + PASS_LEVEL_CELL_SPACING) / stride))
+  end
+
+  local function get_pass_list_percent(ui, model, compact_mode)
+    if compact_mode or not model then
+      return 0
+    end
+
+    local max_level = math.max(1, tonumber(model.max_level) or 1)
+    if max_level <= 1 then
+      return 0
+    end
+
+    local current_level = math.max(1, math.min(max_level, tonumber(model.current_level) or 1))
+    local visible_columns = get_pass_list_visible_columns(ui)
+    local scrollable_columns = math.max(0, max_level - visible_columns)
+    if scrollable_columns <= 0 then
+      return 0
+    end
+
+    local first_visible_level = math.max(1, current_level - visible_columns + 1)
+    return math.max(0, math.min(((first_visible_level - 1) / scrollable_columns) * 100, 100))
   end
 
   local function set_root_visible(visible)
@@ -578,6 +746,7 @@ function M.create(env)
 
     clear_markers()
     reset_bind_flags()
+    runtime.pass_grid_owned = false
 
     local root = resolve_panel_ui('通行证系统')
     local panel_root = resolve_panel_ui('通行证系统.通行证界面')
@@ -823,15 +992,12 @@ function M.create(env)
     set_text_if_alive(ui.achievement_subtitle, model.achievement_subtitle)
     set_text_if_alive(ui.achievement_points_value, tostring(model.achievement_points))
 
+    prepare_pass_grid_for_lua(ui)
     set_progress_if_alive(ui.pass_progress_bar, model.total_exp, model.total_exp_max)
-    update_level_markers(ui, model, compact_mode)
+    rebuild_pass_grid(ui, model, compact_mode)
 
     if UIRoot.is_alive(ui.pass_list) and ui.pass_list.set_list_view_percent then
-      local percent = 0
-      if model.max_level > 1 then
-        percent = ((model.current_level - 1) / (model.max_level - 1)) * 100
-      end
-      ui.pass_list:set_list_view_percent(percent)
+      ui.pass_list:set_list_view_percent(get_pass_list_percent(ui, model, compact_mode))
     end
   end
 

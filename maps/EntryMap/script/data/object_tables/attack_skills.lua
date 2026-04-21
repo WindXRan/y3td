@@ -96,12 +96,21 @@ local EDITOR_JSON_CACHE = {
 local EDITOR_JSON_PATH_PATTERNS = {
   'maps/EntryMap/editor_table/%s/%s.json',
   'editor_table/%s/%s.json',
+  '../editor_table/%s/%s.json',
 }
 
 local LEGACY_DAMAGE_TYPE_MAP = {
   ['物理'] = { damage_form = 'weapon', element = 'none', damage_label = '兵刃伤害' },
   ['法术'] = { damage_form = 'spell', element = 'none', damage_label = '术法伤害' },
 }
+
+local LEGACY_VFX_FALLBACKS = {}
+do
+  local ok_basic_attack, basic_attack_def = pcall(require, 'entry_objects.attack_skills.basic_attack')
+  if ok_basic_attack and type(basic_attack_def) == 'table' and type(basic_attack_def.vfx) == 'table' then
+    LEGACY_VFX_FALLBACKS.basic_attack = basic_attack_def.vfx
+  end
+end
 
 local function unwrap_editor_kv_entry(raw)
   if type(raw) == 'table' and raw.value ~= nil then
@@ -171,6 +180,14 @@ end
 local function get_editor_object_data(table_name, object_key)
   if not table_name or not object_key then
     return nil
+  end
+
+  -- Runtime-generated manifests are synced into editor_table first.
+  -- Prefer the local JSON so gameplay sees the latest generated values
+  -- even if the editor object pool or GMP has not been hotfixed yet.
+  local local_json_data = load_editor_json(table_name, object_key)
+  if local_json_data then
+    return local_json_data
   end
 
   local y3_runtime = rawget(_G, 'y3')
@@ -268,6 +285,20 @@ local function apply_manifest_vfx(result, manifest)
   end
 end
 
+local function apply_fallback_vfx(result, fallback)
+  if type(fallback) ~= 'table' then
+    return
+  end
+  for field_name, _ in pairs(OPTIONAL_VFX_NUMBER_FIELDS) do
+    if result[field_name] == nil then
+      local value = to_optional_number(fallback[field_name])
+      if value ~= nil then
+        result[field_name] = value
+      end
+    end
+  end
+end
+
 local function normalize_vfx(result)
   for field_name, _ in pairs(POSITIVE_ONLY_VFX_FIELDS) do
     local value = to_optional_number(result[field_name])
@@ -278,12 +309,13 @@ local function normalize_vfx(result)
   return result
 end
 
-local function build_vfx(ability_key, projectile_key)
+local function build_vfx(skill_id, ability_key, projectile_key)
   local result = {}
   local ability_data = get_editor_object_data('abilityall', ability_key)
   apply_manifest_vfx(result, get_editor_kv('projectileall', projectile_key))
   apply_manifest_vfx(result, get_editor_kv('abilityall', ability_key))
   apply_visible_ability_vfx(result, ability_data)
+  apply_fallback_vfx(result, LEGACY_VFX_FALLBACKS[skill_id])
   if projectile_key and result.projectile_key == nil then
     result.projectile_key = projectile_key
   end
@@ -342,7 +374,7 @@ for _, row in ipairs(skill_rows) do
     damage_label = damage_label,
     editor_ability_key = editor_ability_key,
     editor_projectile_key = editor_projectile_key,
-    vfx = build_vfx(editor_ability_key, editor_projectile_key),
+    vfx = build_vfx(row.id, editor_ability_key, editor_projectile_key),
   }
 
   for field_name, _ in pairs(OPTIONAL_NUMBER_FIELDS) do
@@ -387,7 +419,7 @@ for _, blueprint in ipairs(SecondBatchBlueprints.list or {}) do
       base_bounce = blueprint.base and blueprint.base.bounce or 0,
       evolution_name = blueprint.evolution and blueprint.evolution.name or nil,
       evolution_summary = blueprint.evolution and blueprint.evolution.summary or nil,
-      vfx = build_vfx(editor_ability_key, editor_projectile_key),
+      vfx = build_vfx(blueprint.id, editor_ability_key, editor_projectile_key),
     }
     apply_taxonomy(defs_by_id[blueprint.id], blueprint.id)
     vfx_by_id[blueprint.id] = defs_by_id[blueprint.id].vfx

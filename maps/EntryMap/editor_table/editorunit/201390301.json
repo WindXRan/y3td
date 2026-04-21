@@ -47,7 +47,7 @@
     }, 
     "billboard_scale_x": 1.0, 
     "billboard_scale_y": 1.5, 
-    "blood_bar": 262148, 
+    "blood_bar": 134251599, 
     "blood_show_type": 0, 
     "body_size": 1, 
     "build_ignore_dyn_collision": false, 
@@ -275,7 +275,7 @@
         "order_play_anim": false, 
         "order_play_reset_time": 0.5, 
         "trajectory_radian": 1.0, 
-        "trajectory_speed": 1000.0
+        "trajectory_speed": 4000.0
     }, 
     "sound_event_list": {
         "__tuple__": true, 

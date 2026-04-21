@@ -377,7 +377,7 @@ def main():
         assert "缩放 0 / 时长 0" not in description, f"projectile {projectile_id} description should skip zero stage payloads"
 
     basic_attack_projectile = load_json(PROJECTILE_DIR / "134267104.json")["kv"]
-    assert kv_value(basic_attack_projectile["entry_projectile_speed"]) == 940.0, (
+    assert kv_value(basic_attack_projectile["entry_projectile_speed"]) == 3760.0, (
         "basic attack projectile should expose flight speed"
     )
     assert kv_value(basic_attack_projectile["entry_projectile_time"]) == 2.9, (

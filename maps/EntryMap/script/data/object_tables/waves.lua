@@ -1,5 +1,6 @@
 local CsvLoader = require 'data.csv_loader'
 local helpers = require 'entry_objects.helpers'
+local config_helpers = require 'entry_objects.config_helpers'
 
 local wave_rows = CsvLoader.read_rows('data_csv/waves.csv')
 local segment_rows = CsvLoader.read_rows('data_csv/wave_spawn_segments.csv')
@@ -8,10 +9,8 @@ local attr_rows = CsvLoader.read_rows('data_csv/wave_main_attr_overrides.csv')
 local segment_groups = CsvLoader.group_by(segment_rows, 'wave_id')
 local attr_groups = CsvLoader.group_by(attr_rows, 'wave_id')
 
-local DEBUG_TIME_SCALE = ((y3 and y3.game and y3.game.is_debug_mode and y3.game.is_debug_mode()) and 0.2) or 1.0
-
 local function scale(seconds)
-  return (seconds or 0) * DEBUG_TIME_SCALE
+  return config_helpers.scale(seconds or 0)
 end
 
 local function segment(start_sec, interval_sec)
