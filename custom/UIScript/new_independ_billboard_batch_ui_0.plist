@@ -7,33 +7,33 @@
 		<key>RL_Blood-bar_03.png</key>
 		<dict>
 			<key>frame</key>
-			<string>{{4,28},{116,8}}</string>
+			<string>{{4,560},{116,8}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
-			<false/>
+			<true/>
 			<key>sourceColorRect</key>
 			<string>{{0,0},{116,8}}</string>
 			<key>sourceSize</key>
 			<string>{116,8}</string>
 		</dict>
-		<key>Tem_act_bossshengyuxueliang.png</key>
+		<key>RL_dt_liaotian_02.png</key>
 		<dict>
 			<key>frame</key>
-			<string>{{4,4},{424,20}}</string>
+			<string>{{4,4},{528,552}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0,0},{424,20}}</string>
+			<string>{{0,0},{528,552}}</string>
 			<key>sourceSize</key>
-			<string>{424,20}</string>
+			<string>{528,552}</string>
 		</dict>
 		<key>kongbai.png</key>
 		<dict>
 			<key>frame</key>
-			<string>{{4,40},{1,1}}</string>
+			<string>{{4,680},{1,1}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -51,7 +51,7 @@
 		<key>realTextureFileName</key>
 		<string>new_independ_billboard_batch_ui_0.png</string>
 		<key>size</key>
-		<string>{512,64}</string>
+		<string>{1024,1024}</string>
 		<key>textureFileName</key>
 		<string>new_independ_billboard_batch_ui_0.png</string>
 	</dict>
