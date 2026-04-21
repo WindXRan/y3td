@@ -29,6 +29,7 @@ function M.create(env)
   local hero_attr_system = env.hero_attr_system
   local runtime_tick = 0.25
   local battle_ui_refresh_interval = math.max(0.25, tonumber(CONFIG.runtime_ui_refresh_interval) or 0.5)
+  local loops_started = false
 
   local function get_hero_attack_value()
     if not STATE.hero or not STATE.hero:is_exist() then
@@ -43,9 +44,17 @@ function M.create(env)
   end
 
   local function try_refresh_battle_ui()
+    STATE.debug_battle_ui_refresh_count = (STATE.debug_battle_ui_refresh_count or 0) + 1
+    if (STATE.debug_battle_ui_refresh_count % 10) == 1 then
+      print(string.format(
+        '[diag.loops] battle_ui_refresh count=%s phase=%s visible=%s',
+        tostring(STATE.debug_battle_ui_refresh_count),
+        tostring(STATE.session_phase),
+        tostring(STATE.runtime_battle_ui_visible)
+      ))
+    end
     local ok, err = pcall(function()
       ensure_runtime_hud()
-      set_battle_hud_visible(true)
       refresh_runtime_hud()
       refresh_choice_panel()
       if refresh_swallow_panel then
@@ -73,7 +82,10 @@ function M.create(env)
 
   local function refresh_non_battle_ui()
     STATE.runtime_ui_refresh_elapsed = 0
-    set_battle_hud_visible(false)
+    if STATE.runtime_battle_ui_visible == true then
+      set_battle_hud_visible(false)
+      STATE.runtime_battle_ui_visible = false
+    end
     if outgame_system then
       outgame_system.refresh_ui()
     end
@@ -93,8 +105,20 @@ function M.create(env)
   end
 
   local function start_runtime_loops()
+    if loops_started then
+      print('[diag.loops] start_runtime_loops skipped duplicate_start')
+      return false
+    end
+    loops_started = true
+    STATE.debug_runtime_loops_start_count = (STATE.debug_runtime_loops_start_count or 0) + 1
+    print(string.format('[diag.loops] start_runtime_loops count=%s', tostring(STATE.debug_runtime_loops_start_count)))
+
     y3.ltimer.loop(runtime_tick, function()
       if is_battle_active() then
+        if STATE.runtime_battle_ui_visible ~= true then
+          set_battle_hud_visible(true)
+          STATE.runtime_battle_ui_visible = true
+        end
         STATE.runtime_elapsed = (STATE.runtime_elapsed or 0) + runtime_tick
         update_passive_resources(runtime_tick)
         battlefield_system.update_wave(runtime_tick)

@@ -7,8 +7,8 @@ assert(type(cfg.temp_unit_labels) == 'table', 'temp_unit_labels should be a tabl
 assert(type(cfg.fixed_unit_ids) == 'table', 'fixed_unit_ids should be a table')
 
 assert(cfg.temp_unit_labels.hero == '守关弓手', 'hero temp label should stay intact')
-assert(cfg.temp_unit_labels.wave_5_boss == '赵云', 'wave_5_boss temp label should stay intact')
-assert(cfg.temp_unit_labels.treasure_trial_guard == '刘备', 'treasure_trial_guard temp label should stay intact')
+assert(cfg.temp_unit_labels.wave_5_boss == '深渊炎魔', 'wave_5_boss temp label should stay intact')
+assert(cfg.temp_unit_labels.treasure_trial_guard == '宝库魔蝎', 'treasure_trial_guard temp label should stay intact')
 
 assert(cfg.fixed_unit_ids.hero == 201390301, 'hero unit id should stay intact')
 

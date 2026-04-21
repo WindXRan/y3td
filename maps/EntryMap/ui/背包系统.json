@@ -44787,7 +44787,8 @@
                                 94.0
                             ], 
                             "type": 7, 
-                            "uid": "d596a561-a87d-40c1-9e1f-db9689fd0bcf"
+                            "uid": "d596a561-a87d-40c1-9e1f-db9689fd0bcf", 
+                            "visible": false
                         }
                     ], 
                     "event_list": [], 

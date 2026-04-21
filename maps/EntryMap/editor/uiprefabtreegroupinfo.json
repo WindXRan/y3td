@@ -6,7 +6,29 @@
    {
     "name": "\u88c5\u5907", 
     "key": "YLserTmFEfG1dq8vlGLNba", 
-    "group": []
+    "group": [
+     {
+      "__tuple__": true, 
+      "items": [
+       "59b82a9e-12a6-4d18-88a3-3b67bc25c40f", 
+       "\u653b\u51fbskill"
+      ]
+     }, 
+     {
+      "__tuple__": true, 
+      "items": [
+       "b7f4d6fd-01a4-4708-97a7-995a99885140", 
+       "\u88c5\u5907\u7269\u54c1"
+      ]
+     }, 
+     {
+      "__tuple__": true, 
+      "items": [
+       "881813f2-250f-447f-b563-8fb034b75931", 
+       "\u4e09\u9009\u4e00"
+      ]
+     }
+    ]
    }, 
    {
     "name": "\u722c\u5854\u6311\u6218", 
@@ -298,6 +320,13 @@
     "items": [
      "5253a9c6-50dd-41bc-9ba8-1520dddfa4b0", 
      "skill"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "49966a95-592f-40f8-92e7-927b9d8af83a", 
+     "\u65b0\u5efa\u81ea\u5b9a\u4e49\u6a21\u5757"
     ]
    }
   ]

@@ -66,6 +66,13 @@ function M.create(env)
   local attack_skill_slot_count = math.max(1, tonumber(env.attack_skill_slot_count) or 4)
   local bottom_bond_slot_count = 7
 
+  local function debug_log_hud_binding(scope, detail)
+    if not y3 or not y3.game or not y3.game.is_debug_mode or not y3.game.is_debug_mode() then
+      return
+    end
+    print(string.format('[diag.runtime_hud] %s %s', tostring(scope), tostring(detail)))
+  end
+
   local function fallback_create_styled_text(parent, x, y, width, height, style_key, value, z_order, h_align, v_align, font_size, color)
     local text = create_text(
       parent,
@@ -1316,52 +1323,98 @@ function M.create(env)
 
     local width, height = get_ui_size(slot_host, 66, 66)
 
-    local icon = create_image(
-      slot_host,
-      width * 0.5,
-      height * 0.5,
-      width,
-      height,
-      9411,
-      ui_res.common.empty,
-      { 255, 255, 255, 255 }
-    )
-    local slot_hint = create_text(
-      slot_host,
-      math.floor(width * 0.16),
-      math.floor(height * 0.82),
-      math.max(14, math.floor(width * 0.24)),
-      10,
-      8,
-      { 170, 188, 208, 255 },
-      '中',
-      '中',
-      9412
-    )
-    local badge = create_text(
-      slot_host,
-      math.floor(width * 0.76),
-      math.floor(height * 0.82),
-      math.max(24, math.floor(width * 0.32)),
-      10,
-      8,
-      { 255, 230, 182, 255 },
-      '中',
-      '中',
-      9412
-    )
-    local meta = create_text(
-      slot_host,
-      math.floor(width * 0.5),
-      math.max(8, math.floor(height * 0.14)),
-      math.max(58, width - 8),
-      10,
-      8,
-      { 236, 242, 250, 255 },
-      '中',
-      '中',
-      9412
-    )
+    local slot_ui = nil
+    if kind == 'attack' then
+      slot_ui = try_create_child_ui(slot_host, '攻击skill')
+    end
+    if is_ui_alive(slot_ui) then
+      debug_log_hud_binding('attack_slot_prefab', string.format('slot=%s prefab=%s', tostring(slot_index), '攻击skill'))
+      slot_ui:set_ui_size(width, height)
+      slot_ui:set_anchor(0.5, 0.5)
+      slot_ui:set_pos(width * 0.5, height * 0.5)
+    end
+
+    local frame = is_ui_alive(slot_ui) and (
+      UIRoot.resolve_child(slot_ui, 'skill_btn_9.skill_frame_img')
+      or UIRoot.resolve_child(slot_ui, 'skill_frame_img')
+    ) or nil
+    local icon = is_ui_alive(slot_ui) and (
+      UIRoot.resolve_child(slot_ui, 'skill_btn_9.skill_icon_img')
+      or UIRoot.resolve_child(slot_ui, 'skill_icon_img')
+      or UIRoot.resolve_child(slot_ui, 'icon')
+    ) or nil
+    local slot_hint = is_ui_alive(slot_ui) and (
+      UIRoot.resolve_child(slot_ui, 'skill_btn_9.skill_shortcut_label')
+      or UIRoot.resolve_child(slot_ui, 'skill_shortcut_label')
+    ) or nil
+    local badge = is_ui_alive(slot_ui) and (
+      UIRoot.resolve_child(slot_ui, 'skill_btn_9.skill_level_label')
+      or UIRoot.resolve_child(slot_ui, 'skill_level_label')
+      or UIRoot.resolve_child(slot_ui, 'skill_stack_label')
+    ) or nil
+    local name_label = is_ui_alive(slot_ui) and (
+      UIRoot.resolve_child(slot_ui, 'skill_btn_9.skill_name_label')
+      or UIRoot.resolve_child(slot_ui, 'skill_name_label')
+    ) or nil
+    local meta = is_ui_alive(slot_ui) and (
+      UIRoot.resolve_child(slot_ui, 'skill_btn_9.skill_cd_label')
+      or UIRoot.resolve_child(slot_ui, 'skill_cd_label')
+    ) or nil
+
+    if not is_ui_alive(icon) then
+      icon = create_image(
+        slot_host,
+        width * 0.5,
+        height * 0.5,
+        width,
+        height,
+        9411,
+        ui_res.common.empty,
+        { 255, 255, 255, 255 }
+      )
+    end
+    if not is_ui_alive(slot_hint) then
+      slot_hint = create_text(
+        slot_host,
+        math.floor(width * 0.16),
+        math.floor(height * 0.82),
+        math.max(14, math.floor(width * 0.24)),
+        10,
+        8,
+        { 170, 188, 208, 255 },
+        '中',
+        '中',
+        9412
+      )
+    end
+    if not is_ui_alive(badge) then
+      badge = create_text(
+        slot_host,
+        math.floor(width * 0.76),
+        math.floor(height * 0.82),
+        math.max(24, math.floor(width * 0.32)),
+        10,
+        8,
+        { 255, 230, 182, 255 },
+        '中',
+        '中',
+        9412
+      )
+    end
+    if not is_ui_alive(meta) then
+      meta = create_text(
+        slot_host,
+        math.floor(width * 0.5),
+        math.max(8, math.floor(height * 0.14)),
+        math.max(58, width - 8),
+        10,
+        8,
+        { 236, 242, 250, 255 },
+        '中',
+        '中',
+        9412
+      )
+    end
 
     if is_ui_alive(slot_hint) then
       slot_hint:set_anchor(0.5, 0.5)
@@ -1371,6 +1424,9 @@ function M.create(env)
     end
     if is_ui_alive(meta) then
       meta:set_anchor(0.5, 0.5)
+    end
+    if is_ui_alive(name_label) then
+      name_label:set_anchor(0.5, 0.5)
     end
     if is_ui_alive(icon) then
       icon:set_anchor(0.5, 0.5)
@@ -1384,9 +1440,12 @@ function M.create(env)
 
     return {
       host = slot_host,
+      slot_ui = slot_ui,
+      frame = frame,
       icon = icon,
       slot_hint = slot_hint,
       badge = badge,
+      name_label = name_label,
       meta = meta,
       kind = kind,
       slot_index = slot_index,
@@ -1429,9 +1488,16 @@ function M.create(env)
   end
 
   local function is_bottom_inventory_slot_ui(slot_ui)
-    return is_ui_alive(slot_ui)
-      and is_ui_alive(UIRoot.resolve_child(slot_ui, 'icon'))
+    if not is_ui_alive(slot_ui) then
+      return false
+    end
+    return (
+      is_ui_alive(UIRoot.resolve_child(slot_ui, 'icon'))
       and is_ui_alive(UIRoot.resolve_child(slot_ui, 'stack'))
+    ) or (
+      is_ui_alive(UIRoot.resolve_child(slot_ui, 'equip_slot_2.equip_icon_img'))
+      or is_ui_alive(UIRoot.resolve_child(slot_ui, 'equip_icon_img'))
+    )
   end
 
   local function style_bottom_inventory_slot(slot_ui)
@@ -1441,7 +1507,23 @@ function M.create(env)
 
     set_visible_if_alive(UIRoot.resolve_child(slot_ui, 'bg'), false)
     set_visible_if_alive(UIRoot.resolve_child(slot_ui, 'hot_key_bg'), false)
+    set_visible_if_alive(UIRoot.resolve_child(slot_ui, 'equip_slot_2.equip_bg_img'), true)
+    set_visible_if_alive(UIRoot.resolve_child(slot_ui, 'equip_bg_img'), true)
     set_visible_if_alive(slot_ui, true)
+  end
+
+  local function get_bottom_inventory_bind_target(slot_ui)
+    if not is_ui_alive(slot_ui) then
+      return nil
+    end
+    local bind_target = UIRoot.resolve_child(slot_ui, 'equip_slot_2') or slot_ui
+    debug_log_hud_binding('inventory_bind_target', string.format(
+      'target=%s has_nested_icon=%s has_root_icon=%s',
+      bind_target == slot_ui and 'slot_ui' or 'equip_slot_2',
+      tostring(is_ui_alive(UIRoot.resolve_child(slot_ui, 'equip_slot_2.equip_icon_img'))),
+      tostring(is_ui_alive(UIRoot.resolve_child(slot_ui, 'equip_icon_img')))
+    ))
+    return bind_target
   end
 
   local function ensure_bottom_inventory_slots(runtime_hud)
@@ -1451,14 +1533,41 @@ function M.create(env)
 
     runtime_hud.editor_bottom_inventory_anchors = runtime_hud.bottom_backpack_slots or {}
     runtime_hud.editor_bottom_inventory_slots = runtime_hud.editor_bottom_inventory_slots or {}
+    runtime_hud.editor_bottom_inventory_slot_hosts = runtime_hud.editor_bottom_inventory_slot_hosts or {}
+    runtime_hud.editor_bottom_inventory_slot_create_attempted = runtime_hud.editor_bottom_inventory_slot_create_attempted or {}
 
     for slot = 1, 6 do
       local anchor = runtime_hud.editor_bottom_inventory_anchors[slot]
       local slot_ui = runtime_hud.editor_bottom_inventory_slots[slot]
+      local last_host = runtime_hud.editor_bottom_inventory_slot_hosts[slot]
 
-      if not is_bottom_inventory_slot_ui(slot_ui) and is_ui_alive(anchor) then
-        slot_ui = try_create_child_ui(anchor, '物品')
+      if last_host ~= anchor then
+        runtime_hud.editor_bottom_inventory_slot_hosts[slot] = anchor
+        runtime_hud.editor_bottom_inventory_slot_create_attempted[slot] = false
+        if not is_ui_alive(slot_ui) then
+          runtime_hud.editor_bottom_inventory_slots[slot] = nil
+          slot_ui = nil
+        end
+      end
+
+      if not is_ui_alive(slot_ui)
+        and is_ui_alive(anchor)
+        and runtime_hud.editor_bottom_inventory_slot_create_attempted[slot] ~= true
+      then
+        runtime_hud.editor_bottom_inventory_slot_create_attempted[slot] = true
+        slot_ui = try_create_child_ui(anchor, '装备物品')
+        if is_ui_alive(slot_ui) then
+          debug_log_hud_binding('inventory_slot_prefab', string.format('slot=%s prefab=%s', tostring(slot), '装备物品'))
+        end
+        if not is_bottom_inventory_slot_ui(slot_ui) then
+          slot_ui = try_create_child_ui(anchor, '物品')
+        end
         runtime_hud.editor_bottom_inventory_slots[slot] = slot_ui
+      end
+
+      if is_ui_alive(slot_ui) and not is_bottom_inventory_slot_ui(slot_ui) then
+        runtime_hud.editor_bottom_inventory_slots[slot] = nil
+        slot_ui = nil
       end
 
       if is_ui_alive(anchor) and is_ui_alive(slot_ui) then
@@ -1474,6 +1583,9 @@ function M.create(env)
   local function get_bottom_slot_anchor(slot_nodes)
     if type(slot_nodes) ~= 'table' then
       return slot_nodes
+    end
+    if is_ui_alive(slot_nodes.slot_ui) then
+      return slot_nodes.slot_ui
     end
     if is_ui_alive(slot_nodes.host) then
       return slot_nodes.host
@@ -1494,20 +1606,31 @@ function M.create(env)
     set_text_if_alive(slot_nodes.slot_hint, tostring(slot))
 
     if skill then
-      set_image_if_alive(host, nil, { 255, 255, 255, 255 })
+      set_image_if_alive(slot_nodes.frame or host, nil, { 255, 255, 255, 255 })
       set_image_if_alive(slot_nodes.icon, skill.ui_icon or skill.icon or ui_res.game_hud.unit_icon, { 255, 255, 255, 255 })
       set_text_if_alive(slot_nodes.badge, 'Lv' .. tostring(skill.level or 1))
-      set_text_if_alive(slot_nodes.meta, skill.name or '')
+      set_text_if_alive(slot_nodes.name_label, skill.name or '')
+      set_text_if_alive(slot_nodes.meta, '')
+      if not is_ui_alive(slot_nodes.name_label) then
+        set_text_if_alive(slot_nodes.meta, skill.name or '')
+      end
+      if is_ui_alive(slot_nodes.name_label) and slot_nodes.name_label.set_text_color then
+        slot_nodes.name_label:set_text_color(236, 242, 250, 255)
+      end
       if is_ui_alive(slot_nodes.meta) and slot_nodes.meta.set_text_color then
         slot_nodes.meta:set_text_color(236, 242, 250, 255)
       end
       return
     end
 
-    set_image_if_alive(host, nil, { 132, 132, 132, 190 })
+    set_image_if_alive(slot_nodes.frame or host, nil, { 132, 132, 132, 190 })
     set_image_if_alive(slot_nodes.icon, ui_res.common.empty, { 86, 104, 128, 180 })
     set_text_if_alive(slot_nodes.badge, '')
+    set_text_if_alive(slot_nodes.name_label, '')
     set_text_if_alive(slot_nodes.meta, '')
+    if is_ui_alive(slot_nodes.name_label) and slot_nodes.name_label.set_text_color then
+      slot_nodes.name_label:set_text_color(132, 148, 174, 255)
+    end
     if is_ui_alive(slot_nodes.meta) and slot_nodes.meta.set_text_color then
       slot_nodes.meta:set_text_color(132, 148, 174, 255)
     end
@@ -1621,7 +1744,7 @@ function M.create(env)
       runtime_hud.growth_weapon_slot = runtime_hud.editor_bottom_inventory_anchors and runtime_hud.editor_bottom_inventory_anchors[1] or nil
     end
 
-    local slot_ui = runtime_hud.growth_weapon_slot
+    local slot_ui = get_bottom_inventory_bind_target(runtime_hud.growth_weapon_slot)
     if is_ui_alive(slot_ui) then
       call_ui_method_safely(slot_ui, 'set_equip_slot_use_operation', '无')
       call_ui_method_safely(slot_ui, 'set_equip_slot_drag_operation', '无')
@@ -1982,6 +2105,9 @@ function M.create(env)
     end
 
     ensure_bottom_inventory_slots(runtime_hud)
+    runtime_hud.editor_bottom_inventory_bound_targets = runtime_hud.editor_bottom_inventory_bound_targets or {}
+    runtime_hud.editor_bottom_inventory_bound_hero = runtime_hud.editor_bottom_inventory_bound_hero or {}
+    runtime_hud.editor_bottom_inventory_use_op_applied = runtime_hud.editor_bottom_inventory_use_op_applied or {}
 
     for slot = 1, 6 do
       local slot_ui = runtime_hud.editor_bottom_inventory_slots[slot]
@@ -1991,10 +2117,19 @@ function M.create(env)
       runtime_hud.editor_bottom_inventory_slots[slot] = slot_ui
 
       if is_ui_alive(slot_ui) and STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() then
-        call_ui_method_safely(slot_ui, 'set_ui_unit_slot', STATE.hero, y3.const.SlotType.BAR, slot - 1)
-        if slot == 1 then
-          call_ui_method_safely(slot_ui, 'set_equip_slot_use_operation', '无')
-          call_ui_method_safely(slot_ui, 'set_equip_slot_drag_operation', '无')
+        local bind_target = get_bottom_inventory_bind_target(slot_ui)
+        if runtime_hud.editor_bottom_inventory_bound_targets[slot] ~= bind_target
+          or runtime_hud.editor_bottom_inventory_bound_hero[slot] ~= STATE.hero
+        then
+          call_ui_method_safely(bind_target, 'set_ui_unit_slot', STATE.hero, y3.const.SlotType.BAR, slot - 1)
+          runtime_hud.editor_bottom_inventory_bound_targets[slot] = bind_target
+          runtime_hud.editor_bottom_inventory_bound_hero[slot] = STATE.hero
+          runtime_hud.editor_bottom_inventory_use_op_applied[slot] = false
+        end
+        if slot == 1 and runtime_hud.editor_bottom_inventory_use_op_applied[slot] ~= true then
+          call_ui_method_safely(bind_target, 'set_equip_slot_use_operation', '无')
+          call_ui_method_safely(bind_target, 'set_equip_slot_drag_operation', '无')
+          runtime_hud.editor_bottom_inventory_use_op_applied[slot] = true
         end
       end
     end

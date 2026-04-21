@@ -612,7 +612,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1644036097, 
             "trigger_name": "AbilityPercastEnds", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "PROJECTILE_ENTITY": {

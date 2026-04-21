@@ -10,8 +10,8 @@ return {
   cost_charge = 1,
   spawn_area_id = 'challenge_treasure_elite_spawn',
   reward = { gold = 60, wood = 30, exp = 0, special = nil },
-  boss_unit_id = 134228855,
-  guard_unit_id = 134241735,
+  boss_unit_id = 400014,
+  guard_unit_id = 200017,
   batches = {
     challenge_batch(0, 5),
   },

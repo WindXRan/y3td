@@ -1542,7 +1542,7 @@
             "p_trigger_id": null, 
             "trigger_id": 284295170, 
             "trigger_name": "\u65bd\u6cd5\u51fa\u624b", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "INTEGER": {
@@ -1688,7 +1688,7 @@
             "p_trigger_id": null, 
             "trigger_id": 751591425, 
             "trigger_name": "\u65bd\u6cd5\u5f00\u59cb", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "FLOAT": {}

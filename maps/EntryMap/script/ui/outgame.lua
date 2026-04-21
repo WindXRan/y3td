@@ -1502,6 +1502,10 @@ function M.create(env)
   end
 
   function api.start_selected_stage()
+    if STATE.stage_start_in_progress == true then
+      return false
+    end
+
     local profile = load_profile()
     local stage_id = STATE.selected_stage_id or profile.selected_stage_id
     local mode_id = SINGLE_MODE_ID
@@ -1510,6 +1514,10 @@ function M.create(env)
       message(build_start_hint(profile, stage_id, mode_id))
       refresh_ui()
       return false
+    end
+
+    if is_ui_alive(STATE.outgame_ui and STATE.outgame_ui.start_button) then
+      STATE.outgame_ui.start_button:set_button_enable(false)
     end
 
     local ok = env.stage_runtime
@@ -1522,7 +1530,6 @@ function M.create(env)
       api.set_ui_visible(false)
       return true
     end
-
     api.set_ui_visible(true)
     refresh_ui()
     return false

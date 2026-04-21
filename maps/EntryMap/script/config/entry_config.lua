@@ -62,9 +62,10 @@ local M = {
   attack_skill_animations_enabled = false,
   effect_debug_auto_update_enabled = false,
   gm_panel_auto_refresh_enabled = false,
-  runtime_ui_refresh_interval = 0.5,
+  runtime_ui_refresh_interval = 1.0,
   main_enemy_lane_slow_enabled = false,
   enemy_spawn_stagger_interval = 0.03,
+  hero_custom_blood_bar_enabled = false,
   player_id = global_rules.player_id,
   enemy_player_id = global_rules.enemy_player_id,
   total_enemy_soft_cap = scale_positive_int(global_rules.total_enemy_soft_cap, TOTAL_ENEMY_SOFT_CAP_SCALE, 40),
@@ -78,8 +79,8 @@ local M = {
   hero_level_progression = hero_level_progression,
   resource_rules = resource_rules,
 
-  -- 当前地图里尚未发现专门的主线怪/Boss物编，这里先用现成英雄单位做临时替身，
-  -- 目的是先把 5 波主线、Boss 和挑战流程跑通，后续再替换成正式怪物资源。
+  -- 这里保留一份 CSV 驱动的敌人标签映射，方便 UI / 调试输出读取敌人显示名。
+  -- 主线波次与挑战实际刷怪已经切到正式怪物物编，不再复用会触发英雄台词的替身单位。
   temp_unit_labels = battlefield_unit_config.temp_unit_labels,
 
   unit_ids = {

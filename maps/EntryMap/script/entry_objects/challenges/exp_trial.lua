@@ -10,7 +10,7 @@ return {
   cost_charge = 1,
   spawn_area_id = 'challenge_spawn_mid',
   reward = { gold = 0, wood = 0, exp = 280, special = nil },
-  unit_id = 134275571,
+  unit_id = 200016,
   batches = {
     challenge_batch(0, 10),
   },

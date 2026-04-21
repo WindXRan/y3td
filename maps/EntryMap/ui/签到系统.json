@@ -158,6 +158,15 @@
                         0.0, 
                         0.0
                     ], 
+                    "cap_insets": {
+                        "__tuple__": true, 
+                        "items": [
+                            488, 
+                            278, 
+                            488, 
+                            278
+                        ]
+                    }, 
                     "children": [], 
                     "event_list": [], 
                     "image": 134281589, 

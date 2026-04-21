@@ -1,0 +1,18 @@
+[
+  { "id": 200009, "name": "饥饿地精战士", "type": "近战小怪", "model": 211078, "icon": 905189, "hit_effect": 104716 },
+  { "id": 200010, "name": "腐甲骸兵", "type": "近战小怪", "model": 211078, "icon": 906031, "hit_effect": 101558 },
+  { "id": 200011, "name": "投矛蜥蜴猎手", "type": "远程小怪", "model": 211111, "icon": 906746, "projectile": 104350, "hit_effect": 104344 },
+  { "id": 200012, "name": "裂爪火狼", "type": "近战小怪", "model": 211026, "icon": 906192, "hit_effect": 104154 },
+  { "id": 200013, "name": "深渊咒徒", "type": "远程小怪", "model": 211034, "icon": 906698, "projectile": 104775, "hit_effect": 104776 },
+  { "id": 200014, "name": "运财小鬼", "type": "远程小怪", "model": 211090, "icon": 133739, "projectile": 103353, "hit_effect": 102397 },
+  { "id": 200015, "name": "伐木蛮工", "type": "近战小怪", "model": 211032, "icon": 906656, "hit_effect": 103504 },
+  { "id": 200016, "name": "求知幽魂", "type": "远程小怪", "model": 211102, "icon": 907186, "projectile": 104927, "hit_effect": 104672 },
+  { "id": 200017, "name": "宝库魔蝎", "type": "近战小怪", "model": 211071, "icon": 906203, "hit_effect": 105180 },
+
+  { "id": 400009, "name": "贪食监工", "type": "近战boss", "model": 211123, "icon": 906097, "hit_effect": 104327 },
+  { "id": 400010, "name": "腐骨战王", "type": "近战boss", "model": 211052, "icon": 906424, "hit_effect": 104764 },
+  { "id": 400011, "name": "猎头祭司", "type": "远程boss", "model": 211112, "icon": 906444, "projectile": 104378, "hit_effect": 101420 },
+  { "id": 400012, "name": "裂爪魔猿", "type": "近战boss", "model": 211040, "icon": 906492, "projectile": 0, "hit_effect": 104694 },
+  { "id": 400013, "name": "深渊炎魔", "type": "远程boss", "model": 211060, "icon": 906702, "projectile": 104673, "hit_effect": 105110 },
+  { "id": 400014, "name": "宝库镇守者", "type": "近战boss", "model": 211061, "icon": 906522, "hit_effect": 104627 }
+]

@@ -202,7 +202,7 @@ function M.create(env)
   local CONFIG = env.CONFIG or {}
   local y3 = env.y3
   local factory = Factory.create(env)
-  local ITEM_DESC_DEBUG = true
+  local ITEM_DESC_DEBUG = false
 
   local create_panel = factory.create_panel
   local create_text = factory.create_text
@@ -279,6 +279,10 @@ function M.create(env)
 
   local function get_current_choice_panel_model()
     return env.get_current_choice_panel_model and env.get_current_choice_panel_model() or nil
+  end
+
+  local function is_choice_panel_debug_enabled()
+    return y3 and y3.game and y3.game.is_debug_mode and y3.game.is_debug_mode() == true
   end
 
   local function is_choice_panel_active(model)
@@ -403,7 +407,7 @@ function M.create(env)
   end
 
   local function debug_item_desc(message)
-    if not ITEM_DESC_DEBUG then
+    if not ITEM_DESC_DEBUG or not is_choice_panel_debug_enabled() then
       return
     end
     if log and log.info then
@@ -414,6 +418,9 @@ function M.create(env)
   end
 
   debug_choice_panel_lifecycle = function(message)
+    if not is_choice_panel_debug_enabled() then
+      return
+    end
     if log and log.info then
       log.info('[choice_panel.lifecycle] ' .. tostring(message))
       return

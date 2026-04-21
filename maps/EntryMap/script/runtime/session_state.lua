@@ -176,6 +176,7 @@ function M.create(env)
     STATE.treasure_runtime = create_treasure_runtime()
     STATE.auto_active_effects = nil
     STATE.enemy_info_map = {}
+    STATE.spawn_failure_reported = {}
     STATE.skill_points = 0
     STATE.hero_progress = nil
     STATE.awaiting_upgrade = false
@@ -197,6 +198,7 @@ function M.create(env)
     STATE.game_finished = false
     STATE.runtime_ui_fault_logged = false
     STATE.runtime_ui_fault_message = nil
+    STATE.stage_start_in_progress = false
   end
 
   local function reset_session_state()
@@ -219,6 +221,7 @@ function M.create(env)
     STATE.gm_ui = nil
     STATE.debug_ctrl_down_count = 0
     STATE.game_finished = true
+    STATE.stage_start_in_progress = false
     STATE.events_registered = STATE.events_registered or false
     STATE.dev_commands_registered = STATE.dev_commands_registered or false
   end
@@ -234,6 +237,8 @@ function M.create(env)
   end
 
   local function try_initialize_battle_ui()
+    STATE.debug_battle_ui_init_count = (STATE.debug_battle_ui_init_count or 0) + 1
+    print(string.format('[diag.session_state] try_initialize_battle_ui count=%s phase=%s', tostring(STATE.debug_battle_ui_init_count), tostring(STATE.session_phase)))
     local ok, err = pcall(function()
       ensure_runtime_hud()
       set_battle_hud_visible(true)
@@ -269,6 +274,24 @@ function M.create(env)
   end
 
   local function start_selected_stage(stage_id, mode_id)
+    if STATE.stage_start_in_progress == true then
+      return false
+    end
+    if STATE.session_phase == 'battle' and STATE.game_finished ~= true then
+      return false
+    end
+
+    STATE.stage_start_in_progress = true
+    STATE.debug_stage_start_count = (STATE.debug_stage_start_count or 0) + 1
+    print(string.format(
+      '[diag.session_state] start_selected_stage count=%s stage=%s mode=%s phase=%s in_progress=%s',
+      tostring(STATE.debug_stage_start_count),
+      tostring(stage_id),
+      tostring(mode_id),
+      tostring(STATE.session_phase),
+      tostring(STATE.stage_start_in_progress)
+    ))
+
     local stage_def = CONFIG.stages and CONFIG.stages.by_id and CONFIG.stages.by_id[stage_id] or nil
     local mode_def = CONFIG.stage_modes and CONFIG.stage_modes.by_id and CONFIG.stage_modes.by_id[mode_id] or nil
     local content_source_stage_id = stage_def and (stage_def.content_source_stage_id or stage_def.stage_id) or nil
@@ -279,6 +302,7 @@ function M.create(env)
       or nil
 
     if not stage_def or not mode_def then
+      STATE.stage_start_in_progress = false
       return show_stage_start_error('当前关卡或模式配置无效。')
     end
 
@@ -290,10 +314,12 @@ function M.create(env)
       end
     end
     if not mode_supported then
+      STATE.stage_start_in_progress = false
       return show_stage_start_error('当前章节不支持所选模式。')
     end
 
     if not content_source_stage_def then
+      STATE.stage_start_in_progress = false
       return show_stage_start_error('当前章节复用源配置无效。')
     end
 
@@ -350,6 +376,7 @@ function M.create(env)
     end
 
     env.start_wave(1)
+    STATE.stage_start_in_progress = false
     return true
   end
 

@@ -2346,7 +2346,7 @@
             "p_trigger_id": null, 
             "trigger_id": 555839491, 
             "trigger_name": "\u5373\u5c06\u65bd\u6cd5", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "UNIT_ENTITY": {
@@ -4064,7 +4064,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1447989252, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 

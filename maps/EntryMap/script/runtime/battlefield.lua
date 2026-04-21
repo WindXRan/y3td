@@ -1,3 +1,5 @@
+local Json = require 'y3.tools.json'
+
 local M = {}
 
 function M.create(env)
@@ -16,12 +18,75 @@ function M.create(env)
   local VISUAL_ANIMATION_SPEED = 0.5
   local HERO_RUNTIME_FALLBACK_UNIT_ID = 134274912
   local HERO_CUSTOM_BLOOD_BAR_ID = 134251599
+  local EDITOR_UNIT_JSON_PATH_PATTERNS = {
+    'maps/EntryMap/editor_table/editorunit/%s.json',
+    'editor_table/editorunit/%s.json',
+    '../editor_table/editorunit/%s.json',
+  }
+  local finish_game
   local ENEMY_BASE_SPEED_FACTORS = {
     main = 0.76,
     boss = 0.82,
     challenge = 0.76,
   }
   local ENEMY_SPAWN_STAGGER_INTERVAL = math.max(0, tonumber(CONFIG.enemy_spawn_stagger_interval) or 0.03)
+  local runtime_unit_editor_json_cache = {}
+  local runtime_unit_rebuild_attempted = {}
+
+  local function read_text_file(path)
+    local handle = io.open(path, 'r')
+    if not handle then
+      return nil
+    end
+    local content = handle:read('*a')
+    handle:close()
+    return content
+  end
+
+  local function load_editor_unit_json(unit_id)
+    if unit_id == nil then
+      return nil
+    end
+    if runtime_unit_editor_json_cache[unit_id] ~= nil then
+      return runtime_unit_editor_json_cache[unit_id] or nil
+    end
+
+    local content
+    for _, path_pattern in ipairs(EDITOR_UNIT_JSON_PATH_PATTERNS) do
+      local path = string.format(path_pattern, tostring(unit_id))
+      content = read_text_file(path)
+      if content and content ~= '' then
+        break
+      end
+    end
+
+    if not content or content == '' then
+      runtime_unit_editor_json_cache[unit_id] = false
+      return nil
+    end
+
+    local ok, data = pcall(Json.decode, content)
+    if not ok or type(data) ~= 'table' then
+      runtime_unit_editor_json_cache[unit_id] = false
+      return nil
+    end
+
+    runtime_unit_editor_json_cache[unit_id] = data
+    return data
+  end
+
+  local function clone_editor_unit_data(raw)
+    if type(raw) ~= 'table' then
+      return nil
+    end
+    local cloned = {}
+    for key, value in pairs(raw) do
+      if key ~= '_custom_' and key ~= '_ref_' and key ~= 'uid' then
+        cloned[key] = value
+      end
+    end
+    return cloned
+  end
 
   local function scale_visual_duration(seconds)
     return math.max(0.05, (seconds or 0.30) / VISUAL_ANIMATION_SPEED)
@@ -49,6 +114,55 @@ function M.create(env)
       return unit_or_err, nil
     end
     return nil, unit_or_err
+  end
+
+  local function build_spawn_failure_key(unit_id, info)
+    return table.concat({
+      tostring(info and info.kind or 'unknown'),
+      tostring(unit_id),
+      tostring(info and info.wave_id or info and info.challenge_id or '-'),
+    }, '|')
+  end
+
+  local function report_spawn_failure_once(unit_id, info, err)
+    STATE.spawn_failure_reported = STATE.spawn_failure_reported or {}
+    local key = build_spawn_failure_key(unit_id, info)
+    if STATE.spawn_failure_reported[key] then
+      return
+    end
+    STATE.spawn_failure_reported[key] = true
+
+    if message then
+      message(string.format(
+        '刷怪失败：单位 %s 创建失败，请检查物编/模型资源是否已加载。原因：%s',
+        tostring(unit_id),
+        tostring(err)
+      ))
+    end
+    print(string.format(
+      '[diag.spawn_fail] kind=%s wave=%s challenge=%s unit=%s err=%s',
+      tostring(info and info.kind or '?'),
+      tostring(info and info.wave_id or '-'),
+      tostring(info and info.challenge_id or '-'),
+      tostring(unit_id),
+      tostring(err)
+    ))
+  end
+
+  local function abort_wave_on_spawn_failure(runner, unit_id, err)
+    if not runner or runner.spawn_failed == true then
+      return
+    end
+    runner.spawn_failed = true
+    runner.active = false
+    runner.next_spawn_sec = math.huge
+    finish_game(false, string.format('波次刷怪异常：单位 %s 无法创建。', tostring(unit_id)))
+    print(string.format(
+      '[diag.wave_abort] wave=%s unit=%s err=%s',
+      tostring(runner.wave and runner.wave.id or '?'),
+      tostring(unit_id),
+      tostring(err)
+    ))
   end
 
   local function refresh_legacy_challenge_summary()
@@ -104,7 +218,49 @@ function M.create(env)
   end
 
   local function has_unit_data(unit_id)
-    return unit_id ~= nil and y3.object.unit[unit_id] and y3.object.unit[unit_id].data ~= nil
+    if unit_id == nil then
+      return false
+    end
+
+    local editor_unit = y3.object.unit[unit_id]
+    if editor_unit and editor_unit.data ~= nil then
+      return true
+    end
+
+    -- `api_get_editor_type_data` occasionally returns nil during bootstrap even when
+    -- the engine can already resolve the prefab by key, so fall back to stable runtime queries.
+    if y3 and y3.unit then
+      local ok_name, unit_name = pcall(y3.unit.get_name_by_key, unit_id)
+      if ok_name and unit_name and unit_name ~= '' then
+        return true
+      end
+
+      local ok_model, model_id = pcall(y3.unit.get_model_by_key, unit_id)
+      if ok_model and tonumber(model_id) and tonumber(model_id) ~= 0 then
+        return true
+      end
+    end
+
+    return false
+  end
+
+  local function debug_log_enemy_spawn(unit, info)
+    if not y3 or not y3.game or not y3.game.is_debug_mode or not y3.game.is_debug_mode() then
+      return
+    end
+    if not unit or not unit.is_exist or not unit:is_exist() then
+      return
+    end
+    local unit_key = unit.get_key and unit:get_key() or 'unknown'
+    local unit_name = unit.get_name and unit:get_name() or 'unknown'
+    print(string.format(
+      '[diag.enemy_spawn] kind=%s wave=%s challenge=%s key=%s name=%s',
+      tostring(info and info.kind or '?'),
+      tostring(info and info.wave_id or '-'),
+      tostring(info and info.challenge_id or '-'),
+      tostring(unit_key),
+      tostring(unit_name)
+    ))
   end
 
   local function is_active_enemy(unit)
@@ -712,7 +868,7 @@ function M.create(env)
     return profile.remove_delay or 0.55
   end
 
-  local function finish_game(is_win, reason)
+  finish_game = function(is_win, reason)
     if STATE.game_finished then
       return
     end
@@ -758,6 +914,7 @@ function M.create(env)
     STATE.enemy_info_map[unit] = info
     STATE.all_enemies:add_unit(unit)
     STATE.total_enemy_alive = STATE.total_enemy_alive + 1
+    debug_log_enemy_spawn(unit, info)
 
     if info.owner then
       info.owner.alive_count = (info.owner.alive_count or 0) + 1
@@ -925,14 +1082,14 @@ function M.create(env)
   local function spawn_enemy(unit_id, area_id, facing, info)
     info = info or {}
     local spawn_point = random_point_in_area(area_id)
-    local ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), unit_id, spawn_point, facing or 180.0)
-    if not ok or not unit_or_err then
-      if message then
-        message(string.format('刷怪失败：单位 %s 创建失败，请检查物编/模型资源是否已加载。', tostring(unit_id)))
+    local unit, err = try_create_player_unit(env.get_enemy_player(), unit_id, spawn_point, facing or 180.0)
+    if not unit then
+      report_spawn_failure_once(unit_id, info, err)
+      if info.owner and info.owner.wave then
+        abort_wave_on_spawn_failure(info.owner, unit_id, err)
       end
       return nil
     end
-    local unit = unit_or_err
     if info and info.attr_overrides then
       set_attr_pack(unit, info.attr_overrides)
     end
@@ -1013,23 +1170,23 @@ function M.create(env)
   end
 
   local function spawn_boss(runner)
-    if not runner or runner.boss_spawned or STATE.game_finished then
+    if not runner or runner.boss_spawned or runner.spawn_failed or STATE.game_finished then
       return
     end
 
-    runner.boss_spawned = true
-    message(string.format('%s 登场。', get_boss_name(runner.wave)))
-
-    runner.boss_info = spawn_enemy(runner.wave.boss_unit_id, runner.wave.boss_spawn_area_id, 180.0, {
+    local boss_info = spawn_enemy(runner.wave.boss_unit_id, runner.wave.boss_spawn_area_id, 180.0, {
       kind = 'boss',
       owner = runner,
       wave = runner.wave,
       reward = runner.wave.boss_kill_reward,
     })
-    if not runner.boss_info then
-      runner.boss_spawned = false
+    if not boss_info then
       return
     end
+
+    runner.boss_spawned = true
+    runner.boss_info = boss_info
+    message(string.format('%s 登场。', get_boss_name(runner.wave)))
     if env.on_boss_spawned then
       env.on_boss_spawned(runner.boss_info)
     end
@@ -1079,6 +1236,7 @@ function M.create(env)
       wave = wave,
       elapsed = 0,
       active = true,
+      spawn_failed = false,
       boss_spawned = false,
       boss_warning_sent = false,
       boss_info = nil,
@@ -1279,6 +1437,9 @@ function M.create(env)
     runner.elapsed = runner.elapsed + dt
 
     while runner.next_spawn_sec <= runner.elapsed do
+      if runner.spawn_failed or STATE.game_finished then
+        break
+      end
       if can_spawn_main_batch(runner) then
         spawn_main_batch(runner)
       end
@@ -1411,6 +1572,12 @@ function M.create(env)
 
   local function apply_hero_custom_blood_bar(hero)
     if not hero then
+      return
+    end
+
+    if CONFIG.hero_custom_blood_bar_enabled ~= true then
+      STATE.hero_blood_bar_type = nil
+      STATE.hero_blood_bar_unit = nil
       return
     end
 

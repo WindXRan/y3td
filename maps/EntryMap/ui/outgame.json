@@ -20,6 +20,7 @@
                             "children": [], 
                             "event_list": [], 
                             "image": 108445, 
+                            "is_scale9_enable": true, 
                             "name": "\u5e95\u677f", 
                             "pos_data": {
                                 "__tuple__": true, 

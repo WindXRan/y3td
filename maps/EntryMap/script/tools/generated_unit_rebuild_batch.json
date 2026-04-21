@@ -1,0 +1,524 @@
+[
+  {
+    "id": 201390301,
+    "name": "守关弓手",
+    "type": "远程英雄",
+    "model": 211116,
+    "icon": 906302,
+    "projectile": 104656,
+    "hit_effect": 104657
+  },
+  {
+    "id": 100001,
+    "name": "赤髯罗汉",
+    "type": "近战英雄",
+    "model": 211055,
+    "icon": 906081,
+    "hit_effect": 103947
+  },
+  {
+    "id": 100002,
+    "name": "玄甲都统",
+    "type": "近战英雄",
+    "model": 206612,
+    "icon": 903952,
+    "hit_effect": 102115
+  },
+  {
+    "id": 100003,
+    "name": "天机灵女",
+    "type": "远程英雄",
+    "model": 211106,
+    "icon": 906517,
+    "projectile": 101175,
+    "hit_effect": 104931
+  },
+  {
+    "id": 100004,
+    "name": "霹雳弩姬",
+    "type": "远程英雄",
+    "model": 211017,
+    "icon": 906229,
+    "projectile": 104958,
+    "hit_effect": 104959
+  },
+  {
+    "id": 100005,
+    "name": "九黎战将",
+    "type": "近战英雄",
+    "model": 211123,
+    "icon": 906097,
+    "hit_effect": 104327
+  },
+  {
+    "id": 100006,
+    "name": "沧澜战魂",
+    "type": "近战英雄",
+    "model": 211092,
+    "icon": 906794,
+    "hit_effect": 105084
+  },
+  {
+    "id": 100007,
+    "name": "逐日神弓",
+    "type": "远程英雄",
+    "model": 206848,
+    "icon": 906302,
+    "projectile": 104656,
+    "hit_effect": 104657
+  },
+  {
+    "id": 100008,
+    "name": "显圣真君",
+    "type": "近战英雄",
+    "model": 211079,
+    "icon": 133739,
+    "hit_effect": 103504
+  },
+  {
+    "id": 100009,
+    "name": "幽都天相",
+    "type": "近战英雄",
+    "model": 211052,
+    "icon": 906424,
+    "hit_effect": 104764
+  },
+  {
+    "id": 100010,
+    "name": "瑶池仙姝",
+    "type": "远程英雄",
+    "model": 211054,
+    "icon": 906829,
+    "projectile": 104888,
+    "hit_effect": 104889
+  },
+  {
+    "id": 100011,
+    "name": "云渊少君",
+    "type": "近战英雄",
+    "model": 211018,
+    "icon": 906573,
+    "hit_effect": 104982
+  },
+  {
+    "id": 100012,
+    "name": "巡海枪使",
+    "type": "近战英雄",
+    "model": 211031,
+    "icon": 907016,
+    "hit_effect": 104370
+  },
+  {
+    "id": 100013,
+    "name": "赤羽天弓",
+    "type": "远程英雄",
+    "model": 211081,
+    "icon": 133739,
+    "projectile": 104656,
+    "hit_effect": 104716
+  },
+  {
+    "id": 100014,
+    "name": "月华仙姝",
+    "type": "近战英雄",
+    "model": 211024,
+    "icon": 906260,
+    "hit_effect": 106048
+  },
+  {
+    "id": 100015,
+    "name": "玉笛药仙",
+    "type": "远程英雄",
+    "model": 211119,
+    "icon": 906811,
+    "projectile": 102651,
+    "hit_effect": 102198
+  },
+  {
+    "id": 100016,
+    "name": "流云剑侯",
+    "type": "近战英雄",
+    "model": 211047,
+    "icon": 906712,
+    "hit_effect": 104562
+  },
+  {
+    "id": 100017,
+    "name": "火德真君",
+    "type": "远程英雄",
+    "model": 211036,
+    "icon": 907155,
+    "projectile": 104514,
+    "hit_effect": 104515
+  },
+  {
+    "id": 100018,
+    "name": "白虹枪仙",
+    "type": "远程英雄",
+    "model": 211014,
+    "icon": 906058,
+    "projectile": 105067,
+    "hit_effect": 105069
+  },
+  {
+    "id": 100019,
+    "name": "北辰帝君",
+    "type": "近战英雄",
+    "model": 211015,
+    "icon": 907032,
+    "hit_effect": 104836
+  },
+  {
+    "id": 100020,
+    "name": "镇岳金刚",
+    "type": "近战英雄",
+    "model": 211049,
+    "icon": 906552,
+    "hit_effect": 104646
+  },
+  {
+    "id": 100021,
+    "name": "青莲君子",
+    "type": "远程英雄",
+    "model": 211016,
+    "icon": 907251,
+    "projectile": 104044,
+    "hit_effect": 102994
+  },
+  {
+    "id": 100022,
+    "name": "铁壁山君",
+    "type": "近战英雄",
+    "model": 211086,
+    "icon": 133739,
+    "hit_effect": 101560
+  },
+  {
+    "id": 100023,
+    "name": "黄天法王",
+    "type": "远程英雄",
+    "model": 211117,
+    "icon": 906868,
+    "projectile": 104990,
+    "hit_effect": 104991
+  },
+  {
+    "id": 100024,
+    "name": "踏浪夜叉",
+    "type": "近战英雄",
+    "model": 211045,
+    "icon": 906206,
+    "hit_effect": 104742
+  },
+  {
+    "id": 100025,
+    "name": "桃华仙姝",
+    "type": "远程英雄",
+    "model": 211038,
+    "icon": 906114,
+    "projectile": 104598,
+    "hit_effect": 104599
+  },
+  {
+    "id": 100026,
+    "name": "灵台天师",
+    "type": "远程英雄",
+    "model": 211010,
+    "icon": 906352,
+    "projectile": 105273,
+    "hit_effect": 105271
+  },
+  {
+    "id": 100027,
+    "name": "破阵刀卫",
+    "type": "近战英雄",
+    "model": 211011,
+    "icon": 906769,
+    "hit_effect": 102994
+  },
+  {
+    "id": 100028,
+    "name": "太虚谋圣",
+    "type": "远程英雄",
+    "model": 211022,
+    "icon": 906998,
+    "projectile": 105056,
+    "hit_effect": 105057
+  },
+  {
+    "id": 100029,
+    "name": "独目战魄",
+    "type": "近战英雄",
+    "model": 211043,
+    "icon": 907188,
+    "hit_effect": 101223
+  },
+  {
+    "id": 100030,
+    "name": "玄锋真君",
+    "type": "近战英雄",
+    "model": 211030,
+    "icon": 906907,
+    "hit_effect": 104639
+  },
+  {
+    "id": 200001,
+    "name": "小鬼",
+    "type": "近战小怪",
+    "model": 211120,
+    "icon": 906983,
+    "hit_effect": 103579
+  },
+  {
+    "id": 200002,
+    "name": "虚空行者",
+    "type": "近战小怪",
+    "model": 211037,
+    "icon": 907380,
+    "hit_effect": 104742
+  },
+  {
+    "id": 200003,
+    "name": "地狱犬",
+    "type": "近战小怪",
+    "model": 211026,
+    "icon": 906192,
+    "hit_effect": 104154
+  },
+  {
+    "id": 200004,
+    "name": "眼魔",
+    "type": "远程小怪",
+    "model": 211102,
+    "icon": 907186,
+    "projectile": 104927,
+    "hit_effect": 104672
+  },
+  {
+    "id": 200005,
+    "name": "魁魔",
+    "type": "近战小怪",
+    "model": 211100,
+    "icon": 907106,
+    "hit_effect": 105180
+  },
+  {
+    "id": 200006,
+    "name": "恶魔守卫",
+    "type": "近战小怪",
+    "model": 211011,
+    "icon": 906769,
+    "hit_effect": 102994
+  },
+  {
+    "id": 200007,
+    "name": "痛苦女王",
+    "type": "远程小怪",
+    "model": 211108,
+    "icon": 907111,
+    "projectile": 100358,
+    "hit_effect": 102295
+  },
+  {
+    "id": 200008,
+    "name": "恶魔术士",
+    "type": "远程小怪",
+    "model": 211036,
+    "icon": 907155,
+    "projectile": 104514,
+    "hit_effect": 104515
+  },
+  {
+    "id": 400001,
+    "name": "地狱火",
+    "type": "近战boss",
+    "model": 211061,
+    "icon": 906522,
+    "hit_effect": 104627
+  },
+  {
+    "id": 400002,
+    "name": "末日守卫",
+    "type": "近战boss",
+    "model": 211145,
+    "icon": 905201,
+    "hit_effect": 102725
+  },
+  {
+    "id": 400003,
+    "name": "魔犬",
+    "type": "近战boss",
+    "model": 211124,
+    "icon": 132326,
+    "hit_effect": 102600
+  },
+  {
+    "id": 400004,
+    "name": "古尔丹",
+    "type": "远程boss",
+    "model": 211034,
+    "icon": 906698,
+    "projectile": 104775,
+    "hit_effect": 104776
+  },
+  {
+    "id": 400005,
+    "name": "辛辛诺斯",
+    "type": "近战boss",
+    "model": 211128,
+    "icon": 133748,
+    "hit_effect": 102401
+  },
+  {
+    "id": 400006,
+    "name": "卡扎克",
+    "type": "远程boss",
+    "model": 211060,
+    "icon": 906702,
+    "projectile": 104673,
+    "hit_effect": 105110
+  },
+  {
+    "id": 400007,
+    "name": "提克迪奥斯",
+    "type": "近战boss",
+    "model": 211146,
+    "icon": 903778,
+    "hit_effect": 102460
+  },
+  {
+    "id": 400008,
+    "name": "玛诺洛斯",
+    "type": "近战boss",
+    "model": 211147,
+    "icon": 903800,
+    "hit_effect": 104827
+  },
+  {
+    "id": 200009,
+    "name": "饥饿地精战士",
+    "type": "近战小怪",
+    "model": 211104,
+    "icon": 905189,
+    "hit_effect": 104716
+  },
+  {
+    "id": 200010,
+    "name": "腐甲骸兵",
+    "type": "近战小怪",
+    "model": 211008,
+    "icon": 906635,
+    "hit_effect": 104564
+  },
+  {
+    "id": 200011,
+    "name": "投矛蜥蜴猎手",
+    "type": "远程小怪",
+    "model": 211111,
+    "icon": 906746,
+    "projectile": 104350,
+    "hit_effect": 104344
+  },
+  {
+    "id": 200012,
+    "name": "裂爪火狼",
+    "type": "近战小怪",
+    "model": 211026,
+    "icon": 906192,
+    "hit_effect": 104154
+  },
+  {
+    "id": 200013,
+    "name": "深渊咒徒",
+    "type": "远程小怪",
+    "model": 211034,
+    "icon": 906698,
+    "projectile": 104775,
+    "hit_effect": 104776
+  },
+  {
+    "id": 200014,
+    "name": "运财小鬼",
+    "type": "远程小怪",
+    "model": 211090,
+    "icon": 133739,
+    "projectile": 103353,
+    "hit_effect": 102397
+  },
+  {
+    "id": 200015,
+    "name": "伐木蛮工",
+    "type": "近战小怪",
+    "model": 211099,
+    "icon": 906240,
+    "hit_effect": 105180
+  },
+  {
+    "id": 200016,
+    "name": "求知幽魂",
+    "type": "远程小怪",
+    "model": 211102,
+    "icon": 907186,
+    "projectile": 104927,
+    "hit_effect": 104672
+  },
+  {
+    "id": 200017,
+    "name": "宝库魔蝎",
+    "type": "近战小怪",
+    "model": 211071,
+    "icon": 906203,
+    "hit_effect": 105180
+  },
+  {
+    "id": 400009,
+    "name": "贪食监工",
+    "type": "近战boss",
+    "model": 211123,
+    "icon": 906097,
+    "hit_effect": 104327
+  },
+  {
+    "id": 400010,
+    "name": "腐骨战王",
+    "type": "近战boss",
+    "model": 211052,
+    "icon": 906424,
+    "hit_effect": 104764
+  },
+  {
+    "id": 400011,
+    "name": "猎头祭司",
+    "type": "远程boss",
+    "model": 211112,
+    "icon": 906444,
+    "projectile": 104378,
+    "hit_effect": 101420
+  },
+  {
+    "id": 400012,
+    "name": "裂爪魔猿",
+    "type": "远程boss",
+    "model": 211040,
+    "icon": 906492,
+    "projectile": 104692,
+    "hit_effect": 104694
+  },
+  {
+    "id": 400013,
+    "name": "深渊炎魔",
+    "type": "远程boss",
+    "model": 211060,
+    "icon": 906702,
+    "projectile": 104673,
+    "hit_effect": 105110
+  },
+  {
+    "id": 400014,
+    "name": "宝库镇守者",
+    "type": "近战boss",
+    "model": 211164,
+    "icon": 101516,
+    "hit_effect": 104714
+  }
+]

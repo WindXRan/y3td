@@ -38,8 +38,8 @@ assert(treasure_trial.reward.gold == 60, 'expected treasure_trial gold reward to
 assert(treasure_trial.reward.wood == 30, 'expected treasure_trial wood reward to match')
 assert(treasure_trial.kill_reward.gold == 8, 'expected treasure_trial kill reward gold to match')
 assert(treasure_trial.kill_reward.wood == 3, 'expected treasure_trial kill reward wood to match')
-assert(treasure_trial.boss_unit_id == 134228855, 'expected treasure_trial boss_unit_id to match')
-assert(treasure_trial.guard_unit_id == 134241735, 'expected treasure_trial guard_unit_id to match')
+assert(treasure_trial.boss_unit_id == 400014, 'expected treasure_trial boss_unit_id to match')
+assert(treasure_trial.guard_unit_id == 200017, 'expected treasure_trial guard_unit_id to match')
 assert(treasure_trial.unit_id == nil, 'expected treasure_trial unit_id to stay nil')
 assert(treasure_trial.batches[1].count == 1, 'expected treasure_trial batch count to match')
 
