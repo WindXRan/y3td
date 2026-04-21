@@ -1,41 +1,42 @@
-local ui_res = require 'ui.res'
+﻿local ui_res = require 'ui.res'
 local skin = require 'ui.skin'
 local theme = require 'ui.theme'
 local UIStyle = require 'ui.style'
 local Factory = require 'ui.factory'
 local layout = require 'ui.runtime_hud_layout'
 local RuntimeHudNodes = require 'ui.runtime_hud_nodes'
-local UIRoot = require 'ui.ui_root'
 local BondTipPanel = require 'ui.bond_tip_panel'
 local GrowthWeaponItemTip = require 'ui.growth_weapon_item_tip'
-local GearUpgrades = require 'runtime.gear_upgrades'
 
 local M = {}
 
-  local BOND_SLOT_QUALITY_COLORS = {
+local BOND_SLOT_QUALITY_COLORS = {
   common = { 68, 162, 88, 255 },
   rare = { 72, 126, 210, 255 },
   epic = { 164, 108, 216, 255 },
   legendary = { 224, 172, 86, 255 },
 }
 
-local TOP_BG_BREATH_INTERVAL = 1.8
-  local TOP_BOSS_WARNING_THRESHOLD = 5
-  local GROWTH_WEAPON_LEVEL_ATTACK_GAIN = 10
-  local GROWTH_WEAPON_LEVEL_ALL_ATTR_GAIN = 2
-  local BOTTOM_INVENTORY_BIND_TARGET_CACHE = setmetatable({}, { __mode = 'k' })
-  local BOTTOM_INVENTORY_BIND_TARGET_DIAG_CACHE = setmetatable({}, { __mode = 'k' })
-
 local function resolve_ui(y3, player, path)
-  return UIRoot.resolve_ui(y3, player, path)
+  local ok, ui = pcall(y3.ui.get_ui, player, path)
+  if not ok or not ui then
+    return nil
+  end
+  return ui
 end
 
 local function resolve_first_ui(y3, player, paths)
-  return UIRoot.resolve_first_ui(y3, player, paths)
+  for _, path in ipairs(paths or {}) do
+    local ui = resolve_ui(y3, player, path)
+    if ui then
+      return ui
+    end
+  end
+  return nil
 end
 
 local function is_ui_alive(ui)
-  return UIRoot.is_alive(ui)
+  return ui and (not ui.is_removed or not ui:is_removed())
 end
 
 function M.create(env)
@@ -63,26 +64,6 @@ function M.create(env)
   local scaled = factory.scaled
   local runtime_skin = skin.images.runtime_hud or {}
   local refresh_runtime_hud
-  local bind_growth_weapon_slot
-  local bind_default_item_slot_hover
-  local attack_skill_slot_count = math.max(1, tonumber(env.attack_skill_slot_count) or 4)
-  local bottom_bond_slot_count = 7
-  local hud_binding_debug_seen = {}
-
-  local function debug_log_hud_binding(scope, detail)
-    if CONFIG.runtime_hud_binding_debug ~= true then
-      return
-    end
-    if not y3 or not y3.game or not y3.game.is_debug_mode or not y3.game.is_debug_mode() then
-      return
-    end
-    local key = tostring(scope) .. '|' .. tostring(detail)
-    if hud_binding_debug_seen[key] then
-      return
-    end
-    hud_binding_debug_seen[key] = true
-    print(string.format('[diag.runtime_hud] %s %s', tostring(scope), tostring(detail)))
-  end
 
   local function fallback_create_styled_text(parent, x, y, width, height, style_key, value, z_order, h_align, v_align, font_size, color)
     local text = create_text(
@@ -102,10 +83,6 @@ function M.create(env)
   end
 
   local create_styled_text = factory.create_styled_text or fallback_create_styled_text
-
-  local function is_runtime_ui_animation_enabled()
-    return CONFIG.runtime_ui_animations_enabled == true
-  end
 
   local function get_challenge_charge_count(challenge_id)
     if STATE.challenge_charge_map and STATE.challenge_charge_map[challenge_id] ~= nil then
@@ -156,34 +133,11 @@ function M.create(env)
   end
 
   local function get_hud_root()
-    return UIRoot.get_overlay_parent(y3, env.get_player())
-  end
-
-  local function resolve_inventory_slot_ui(slot)
-    local runtime_hud = STATE.runtime_hud
-    local slot_ui = runtime_hud and runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[slot] or nil
-    if is_ui_alive(slot_ui) then
-      return slot_ui
+    local ok, hud = pcall(y3.ui.get_ui, env.get_player(), 'GameHUD')
+    if not ok or not hud then
+      return nil
     end
-
-    local player = env.get_player()
-    local paths
-    if slot == 1 then
-      paths = {
-        'GameHUD.main.inventory.equip_slot_bg_1.equip_slot_1',
-        'GameHUD.layout_3.inventory.equip_slot_bg_1.equip_slot_1',
-      }
-    else
-      paths = {
-        string.format('GameHUD.main.inventory.equip_slot_bg_%d.equip_slot_1', slot),
-        string.format('GameHUD.layout_3.inventory.equip_slot_bg_%d.equip_slot_1', slot),
-      }
-    end
-    local resolved_ui = resolve_first_ui(y3, player, paths)
-    if is_ui_alive(resolved_ui) then
-      return resolved_ui
-    end
-    return nil
+    return hud
   end
 
   local function format_time(seconds)
@@ -264,110 +218,6 @@ function M.create(env)
     end
   end
 
-  local function call_ui_method_safely(ui, method_name, ...)
-    if not is_ui_alive(ui) then
-      return false
-    end
-    local method = ui[method_name]
-    if type(method) ~= 'function' then
-      return false
-    end
-    local ok = pcall(method, ui, ...)
-    return ok
-  end
-
-  local function safe_remove_timer(timer)
-    if timer and timer.remove then
-      timer:remove()
-    end
-  end
-
-  local function safe_remove_ui(ui)
-    if ui and ui.remove then
-      ui:remove()
-    end
-  end
-
-  local function try_create_child_ui(parent, ui_type)
-    if not is_ui_alive(parent) or type(parent.create_child) ~= 'function' then
-      return nil
-    end
-    local ok, child = pcall(parent.create_child, parent, ui_type)
-    if not ok or not child then
-      return nil
-    end
-    return child
-  end
-
-  local function create_image(parent, x, y, width, height, z_order, image, color)
-    local node = try_create_child_ui(parent, '图片')
-    if not is_ui_alive(node) then
-      return nil
-    end
-    node:set_ui_size(width, height)
-    node:set_pos(x, y)
-    call_ui_method_safely(node, 'set_ui_9_enable', false)
-    if z_order then
-      node:set_z_order(z_order)
-    end
-    set_image_if_alive(node, image or ui_res.common.empty, color)
-    return node
-  end
-
-  local function get_ui_relative_pos(ui)
-    if not is_ui_alive(ui) then
-      return 0, 0
-    end
-    local x = ui.get_relative_x and ui:get_relative_x() or 0
-    local y = ui.get_relative_y and ui:get_relative_y() or 0
-    return x, y
-  end
-
-  local function get_ui_size(ui, fallback_width, fallback_height)
-    if not is_ui_alive(ui) then
-      return fallback_width or 0, fallback_height or 0
-    end
-    local width = ui.get_width and ui:get_width() or ui.get_real_width and ui:get_real_width() or fallback_width or 0
-    local height = ui.get_height and ui:get_height() or ui.get_real_height and ui:get_real_height() or fallback_height or 0
-    return math.max(1, math.floor((width or 0) + 0.5)), math.max(1, math.floor((height or 0) + 0.5))
-  end
-
-  local function play_ui_pop(ui, peak_scale, rise_duration, settle_duration)
-    if not is_ui_alive(ui) then
-      return false
-    end
-
-    local peak = peak_scale or 1.06
-    local rise = rise_duration or 0.14
-    local settle = settle_duration or 0.18
-    if not call_ui_method_safely(ui, 'set_anim_scale', 1.0, 1.0, peak, peak, rise, 0) then
-      return false
-    end
-
-    y3.ltimer.wait(rise, function()
-      if is_ui_alive(ui) then
-        call_ui_method_safely(ui, 'set_anim_scale', peak, peak, 1.0, 1.0, settle, 0)
-      end
-    end)
-    return true
-  end
-
-  local function play_ui_float_fade(ui, start_offset_y, duration)
-    if not is_ui_alive(ui) then
-      return false
-    end
-
-    local x, y = get_ui_relative_pos(ui)
-    local offset_y = start_offset_y or 6
-    local anim_duration = duration or 0.18
-    if ui.set_pos then
-      ui:set_pos(x, y + offset_y)
-    end
-    call_ui_method_safely(ui, 'set_anim_pos', x, y + offset_y, x, y, anim_duration, 0)
-    call_ui_method_safely(ui, 'set_anim_opacity', 0, 255, anim_duration, 0)
-    return true
-  end
-
   local function normalize_percent_bonus(value)
     local number = y3.helper.tonumber(value) or 0
     if math.abs(number) <= 1 then
@@ -395,126 +245,6 @@ function M.create(env)
     local text = string.format('%.1f', abs_total):gsub('%.0$', '')
     local prefix = total >= 0 and '+' or '-'
     return string.format('%s%s%%', prefix, text)
-  end
-
-  local function format_compact_breakdown_text(value, percent_bonus_a, percent_bonus_b, flat_bonus)
-    local parts = {}
-    local percent_text = format_percent_bonus_text(percent_bonus_a, percent_bonus_b)
-    local flat_text = format_signed_compact(flat_bonus)
-    if percent_text ~= '+0%' then
-      parts[#parts + 1] = percent_text
-    end
-    if flat_text ~= '+0' then
-      parts[#parts + 1] = flat_text
-    end
-
-    local base = format_compact(value)
-    if #parts == 0 then
-      return base
-    end
-    return string.format('%s (%s)', base, table.concat(parts, ', '))
-  end
-
-  local function format_editor_top_wave_time_text(text)
-    if not text or text == '' then
-      return '--s'
-    end
-    local seconds = tostring(text):match('([%d%.]+)%s*秒后登场')
-    if seconds then
-      return string.format('%ss', tostring(math.floor(tonumber(seconds) or 0)))
-    end
-    if tostring(text):find('已击败', 1, true) then
-      return '已击败'
-    end
-    if tostring(text):find('HP ', 1, true) then
-      return 'BOSS'
-    end
-    return tostring(text)
-  end
-
-  local function format_editor_top_boss_text(name, state)
-    local boss_name = tostring(name or '')
-    local boss_state = tostring(state or '')
-
-    if boss_name == '' and boss_state == '' then
-      return '准备迎战'
-    end
-    if boss_state == '' then
-      return boss_name
-    end
-    if boss_state:find('HP ', 1, true) then
-      if boss_name ~= '' then
-        return boss_name .. ' 交战中'
-      end
-      return 'Boss 交战中'
-    end
-    if boss_state:find('已击败', 1, true) then
-      if boss_name ~= '' then
-        return boss_name .. ' 已击败'
-      end
-      return 'Boss 已击败'
-    end
-    if boss_state:match('([%d%.]+)%s*秒后登场') then
-      if boss_name ~= '' then
-        return boss_name .. ' 即将登场'
-      end
-      return 'Boss 即将登场'
-    end
-    if boss_name ~= '' then
-      return boss_name .. ' ' .. boss_state
-    end
-    return boss_state
-  end
-
-  local function format_editor_top_game_time_text(text)
-    local value = tostring(text or '')
-    value = value:gsub('^战斗计时%s*', '')
-    if value == '' then
-      return '00：00'
-    end
-    return value:gsub(':', '：')
-  end
-
-  local function get_editor_top_boss_state_kind(state_text)
-    local text = tostring(state_text or '')
-    if text:match('([%d%.]+)%s*秒后登场') then
-      return 'countdown'
-    end
-    if text:find('HP ', 1, true) then
-      return 'fighting'
-    end
-    if text:find('已击败', 1, true) then
-      return 'defeated'
-    end
-    return 'idle'
-  end
-
-  local function get_editor_top_boss_countdown_seconds(state_text)
-    local seconds = tostring(state_text or ''):match('([%d%.]+)%s*秒后登场')
-    if not seconds then
-      return nil
-    end
-    return math.max(0, math.floor(tonumber(seconds) or 0))
-  end
-
-  local function format_growth_weapon_upgrade_bonus_text(next_level)
-    local level = math.max(1, math.floor(tonumber(next_level) or 1))
-    return string.format(
-      'Lv.%d\n攻击 +%d  全属性 +%d',
-      level,
-      GROWTH_WEAPON_LEVEL_ATTACK_GAIN,
-      GROWTH_WEAPON_LEVEL_ALL_ATTR_GAIN
-    )
-  end
-
-  local function get_growth_weapon_current_level()
-    local gear_state = STATE and STATE.gear_state or nil
-    local weapon = gear_state and gear_state.items and gear_state.items.weapon or nil
-    return math.max(1, math.floor(tonumber(weapon and weapon.level) or 1))
-  end
-
-  local function get_growth_weapon_next_upgrade_cost()
-    return GearUpgrades.get_upgrade_cost('weapon', get_growth_weapon_current_level(), CONFIG and CONFIG.gear_upgrade_config) or 0
   end
 
   local function get_stage_text()
@@ -878,8 +608,8 @@ function M.create(env)
     if kind == 'bond' then
       return '仙缘抉择'
     end
-    if kind == 'evolution' or kind == 'mark' then
-      return '真身抉择'
+    if kind == 'mark' then
+      return '进化抉择'
     end
     if kind == 'treasure' then
       return '宝物抉择'
@@ -894,8 +624,8 @@ function M.create(env)
     if kind == 'bond' then
       return string.format('按 %d 收下此缘', index)
     end
-    if kind == 'evolution' or kind == 'mark' then
-      return string.format('按 %d 选择此真身', index)
+    if kind == 'mark' then
+      return string.format('按 %d 选择此进化', index)
     end
     return string.format('按 %d 确认选择', index)
   end
@@ -907,8 +637,8 @@ function M.create(env)
     if kind == 'bond' then
       return '仙缘感应进行中'
     end
-    if kind == 'evolution' or kind == 'mark' then
-      return '真身进化进行中'
+    if kind == 'mark' then
+      return '进化正在抉择'
     end
     if kind == 'treasure' then
       return '宝物选择进行中'
@@ -961,327 +691,6 @@ function M.create(env)
     return item and item_key and item.get_key and item:get_key() == item_key
   end
 
-  local function clear_top_center_fx(runtime_hud)
-    if not runtime_hud then
-      return
-    end
-    safe_remove_timer(runtime_hud.editor_top_breath_timer)
-    safe_remove_timer(runtime_hud.editor_top_breath_reset_timer)
-    runtime_hud.editor_top_breath_timer = nil
-    runtime_hud.editor_top_breath_reset_timer = nil
-    runtime_hud.editor_top_last_wave_text = nil
-    runtime_hud.editor_top_last_boss_state_kind = nil
-    runtime_hud.editor_top_last_boss_warning_second = nil
-  end
-
-  local function ensure_top_center_fx(runtime_hud)
-    if not runtime_hud or not is_ui_alive(runtime_hud.editor_top_bg_root) then
-      return nil
-    end
-    return runtime_hud.editor_top_bg_root
-  end
-
-  local function start_top_center_breath_fx(runtime_hud)
-    if not is_runtime_ui_animation_enabled() then
-      clear_top_center_fx(runtime_hud)
-      return
-    end
-    local bg_root = ensure_top_center_fx(runtime_hud)
-    if not bg_root or runtime_hud.editor_top_breath_timer then
-      return
-    end
-
-    local function pulse_once()
-      if not is_ui_alive(bg_root) then
-        clear_top_center_fx(runtime_hud)
-        return
-      end
-      call_ui_method_safely(bg_root, 'set_anim_scale', 1.0, 1.0, 1.016, 1.032, TOP_BG_BREATH_INTERVAL * 0.5, 0)
-      safe_remove_timer(runtime_hud.editor_top_breath_reset_timer)
-      runtime_hud.editor_top_breath_reset_timer = y3.ltimer.wait(TOP_BG_BREATH_INTERVAL * 0.5, function()
-        if is_ui_alive(bg_root) then
-          call_ui_method_safely(bg_root, 'set_anim_scale', 1.016, 1.032, 1.0, 1.0, TOP_BG_BREATH_INTERVAL * 0.5, 0)
-        end
-        runtime_hud.editor_top_breath_reset_timer = nil
-      end)
-    end
-
-    pulse_once()
-    runtime_hud.editor_top_breath_timer = y3.ltimer.loop(TOP_BG_BREATH_INTERVAL, function()
-      pulse_once()
-    end)
-  end
-
-  local function play_top_wave_transition_fx(runtime_hud)
-    if not is_runtime_ui_animation_enabled() then
-      return
-    end
-    play_ui_pop(runtime_hud and runtime_hud.editor_top_bg_root, 1.018, 0.12, 0.16)
-    play_ui_pop(runtime_hud and runtime_hud.editor_top_wave_value, 1.10, 0.12, 0.18)
-    play_ui_float_fade(runtime_hud and runtime_hud.editor_top_stage_value, 8, 0.18)
-  end
-
-  local function play_top_boss_warning_fx(runtime_hud)
-    if not is_runtime_ui_animation_enabled() then
-      return
-    end
-    play_ui_pop(runtime_hud and runtime_hud.editor_top_bg_root, 1.02, 0.10, 0.14)
-    play_ui_pop(runtime_hud and runtime_hud.editor_top_boss_value, 1.06, 0.10, 0.14)
-    play_ui_pop(runtime_hud and runtime_hud.editor_top_boss_countdown_value, 1.12, 0.10, 0.16)
-  end
-
-  local function play_top_boss_spawn_fx(runtime_hud)
-    if not is_runtime_ui_animation_enabled() then
-      return
-    end
-    play_ui_pop(runtime_hud and runtime_hud.editor_top_bg_root, 1.04, 0.10, 0.18)
-    play_ui_pop(runtime_hud and runtime_hud.editor_top_boss_value, 1.10, 0.10, 0.18)
-    play_ui_pop(runtime_hud and runtime_hud.editor_top_boss_countdown_value, 1.08, 0.10, 0.16)
-  end
-
-  local function play_top_boss_defeated_fx(runtime_hud)
-    if not is_runtime_ui_animation_enabled() then
-      return
-    end
-    play_ui_pop(runtime_hud and runtime_hud.editor_top_bg_root, 1.025, 0.10, 0.16)
-    play_ui_pop(runtime_hud and runtime_hud.editor_top_boss_value, 1.06, 0.10, 0.16)
-  end
-
-  local function update_top_center_fx(runtime_hud, wave_text, stage_text, boss_display)
-    if not runtime_hud then
-      return
-    end
-
-    start_top_center_breath_fx(runtime_hud)
-
-    local boss_kind = get_editor_top_boss_state_kind(boss_display and boss_display.state or nil)
-    local boss_countdown_seconds = get_editor_top_boss_countdown_seconds(boss_display and boss_display.state or nil)
-
-    if runtime_hud.editor_top_last_wave_text ~= nil and runtime_hud.editor_top_last_wave_text ~= wave_text then
-      play_top_wave_transition_fx(runtime_hud)
-    end
-    runtime_hud.editor_top_last_wave_text = wave_text
-    runtime_hud.editor_top_last_stage_text = stage_text
-
-    if runtime_hud.editor_top_last_boss_state_kind ~= nil and runtime_hud.editor_top_last_boss_state_kind ~= boss_kind then
-      if boss_kind == 'fighting' then
-        play_top_boss_spawn_fx(runtime_hud)
-      elseif boss_kind == 'defeated' then
-        play_top_boss_defeated_fx(runtime_hud)
-      elseif boss_kind == 'countdown' then
-        play_top_boss_warning_fx(runtime_hud)
-      end
-    end
-
-    if boss_kind == 'countdown' and boss_countdown_seconds and boss_countdown_seconds <= TOP_BOSS_WARNING_THRESHOLD then
-      if runtime_hud.editor_top_last_boss_warning_second ~= boss_countdown_seconds then
-        play_top_boss_warning_fx(runtime_hud)
-      end
-      runtime_hud.editor_top_last_boss_warning_second = boss_countdown_seconds
-    else
-      runtime_hud.editor_top_last_boss_warning_second = nil
-    end
-
-    runtime_hud.editor_top_last_boss_state_kind = boss_kind
-  end
-
-  local function clear_growth_weapon_slot_fx(runtime_hud)
-    if not runtime_hud then
-      return
-    end
-    safe_remove_timer(runtime_hud.growth_weapon_ready_pulse_timer)
-    runtime_hud.growth_weapon_ready_pulse_timer = nil
-    if is_ui_alive(runtime_hud.growth_weapon_ready_pulse_glow) then
-      runtime_hud.growth_weapon_ready_pulse_glow:set_visible(false)
-      runtime_hud.growth_weapon_ready_pulse_glow:set_alpha(0)
-    end
-    safe_remove_timer(runtime_hud.growth_weapon_hover_hide_timer)
-    runtime_hud.growth_weapon_hover_hide_timer = nil
-    if is_ui_alive(runtime_hud.growth_weapon_hover_glow) then
-      runtime_hud.growth_weapon_hover_glow:set_visible(false)
-      runtime_hud.growth_weapon_hover_glow:set_alpha(0)
-    end
-  end
-
-  local function clear_growth_weapon_ready_pulse(runtime_hud)
-    if not runtime_hud then
-      return
-    end
-    safe_remove_timer(runtime_hud.growth_weapon_ready_pulse_timer)
-    runtime_hud.growth_weapon_ready_pulse_timer = nil
-    if is_ui_alive(runtime_hud.growth_weapon_ready_pulse_glow) then
-      runtime_hud.growth_weapon_ready_pulse_glow:set_visible(false)
-      runtime_hud.growth_weapon_ready_pulse_glow:set_alpha(0)
-    end
-  end
-
-  local function ensure_growth_weapon_slot_fx(runtime_hud)
-    if not runtime_hud then
-      return nil
-    end
-
-    bind_growth_weapon_slot(runtime_hud)
-    local host = runtime_hud.growth_weapon_slot or runtime_hud.growth_weapon_tip_anchor
-    if not is_ui_alive(host) then
-      return nil
-    end
-
-    if runtime_hud.growth_weapon_slot_fx_host ~= host then
-      safe_remove_ui(runtime_hud.growth_weapon_ready_pulse_glow)
-      safe_remove_ui(runtime_hud.growth_weapon_hover_glow)
-      runtime_hud.growth_weapon_ready_pulse_glow = nil
-      runtime_hud.growth_weapon_hover_glow = nil
-      runtime_hud.growth_weapon_slot_fx_host = host
-      clear_growth_weapon_slot_fx(runtime_hud)
-    end
-
-    local width, height = get_ui_size(host, 64, 64)
-
-    if not is_ui_alive(runtime_hud.growth_weapon_ready_pulse_glow) then
-      local pulse_glow = try_create_child_ui(host, '图片')
-      if pulse_glow then
-        pulse_glow:set_ui_size(width + 18, height + 18)
-        pulse_glow:set_pos(width * 0.5, height * 0.5)
-        pulse_glow:set_anchor(0.5, 0.5)
-        pulse_glow:set_image(ui_res.common_tip.panel_bg)
-        pulse_glow:set_image_color(theme.palette.gold[1], theme.palette.gold[2], theme.palette.gold[3], 0)
-        pulse_glow:set_ui_9_enable(true)
-        pulse_glow:set_ui_9(
-          theme.insets.normal[1],
-          theme.insets.normal[2],
-          theme.insets.normal[3],
-          theme.insets.normal[4]
-        )
-        pulse_glow:set_z_order(9817)
-        pulse_glow:set_visible(false)
-        if pulse_glow.set_intercepts_operations then
-          pulse_glow:set_intercepts_operations(false)
-        end
-        runtime_hud.growth_weapon_ready_pulse_glow = pulse_glow
-      end
-    end
-
-    if not is_ui_alive(runtime_hud.growth_weapon_hover_glow) then
-      local hover_glow = try_create_child_ui(host, '图片')
-      if hover_glow then
-        hover_glow:set_ui_size(width + 12, height + 12)
-        hover_glow:set_pos(width * 0.5, height * 0.5)
-        hover_glow:set_anchor(0.5, 0.5)
-        hover_glow:set_image(ui_res.common_tip.panel_bg)
-        hover_glow:set_image_color(theme.palette.accent_bright[1], theme.palette.accent_bright[2], theme.palette.accent_bright[3], 0)
-        hover_glow:set_ui_9_enable(true)
-        hover_glow:set_ui_9(
-          theme.insets.normal[1],
-          theme.insets.normal[2],
-          theme.insets.normal[3],
-          theme.insets.normal[4]
-        )
-        hover_glow:set_z_order(9818)
-        hover_glow:set_visible(false)
-        if hover_glow.set_intercepts_operations then
-          hover_glow:set_intercepts_operations(false)
-        end
-        runtime_hud.growth_weapon_hover_glow = hover_glow
-      end
-    end
-
-    if is_ui_alive(runtime_hud.growth_weapon_ready_pulse_glow) then
-      runtime_hud.growth_weapon_ready_pulse_glow:set_ui_size(width + 18, height + 18)
-      runtime_hud.growth_weapon_ready_pulse_glow:set_pos(width * 0.5, height * 0.5)
-    end
-    if is_ui_alive(runtime_hud.growth_weapon_hover_glow) then
-      runtime_hud.growth_weapon_hover_glow:set_ui_size(width + 12, height + 12)
-      runtime_hud.growth_weapon_hover_glow:set_pos(width * 0.5, height * 0.5)
-    end
-
-    return {
-      host = host,
-      width = width,
-      height = height,
-      pulse_glow = runtime_hud.growth_weapon_ready_pulse_glow,
-      hover_glow = runtime_hud.growth_weapon_hover_glow,
-    }
-  end
-
-  local function should_growth_weapon_ready_pulse()
-    local item = get_hero_bar_item(1)
-    if not is_growth_weapon_item(item) then
-      return false
-    end
-    local next_cost = get_growth_weapon_next_upgrade_cost()
-    if next_cost <= 0 then
-      return false
-    end
-    return (STATE.resources and STATE.resources.gold or 0) >= next_cost
-  end
-
-  local function set_growth_weapon_slot_hover_fx(runtime_hud, hovered)
-    if not is_runtime_ui_animation_enabled() then
-      clear_growth_weapon_slot_fx(runtime_hud)
-      return
-    end
-    local fx = ensure_growth_weapon_slot_fx(runtime_hud)
-    if not fx or not is_ui_alive(fx.host) then
-      return
-    end
-
-    safe_remove_timer(runtime_hud.growth_weapon_hover_hide_timer)
-    runtime_hud.growth_weapon_hover_hide_timer = nil
-
-    if hovered == true and is_growth_weapon_item(get_hero_bar_item(1)) then
-      if is_ui_alive(fx.hover_glow) then
-        fx.hover_glow:set_visible(true)
-        fx.hover_glow:set_alpha(148)
-        fx.hover_glow:set_anim_opacity(0, 148, 0.12, 0)
-      end
-      call_ui_method_safely(fx.host, 'set_anim_scale', 1.0, 1.0, 1.05, 1.05, 0.12, 0)
-      return
-    end
-
-    if is_ui_alive(fx.hover_glow) then
-      fx.hover_glow:set_alpha(88)
-      fx.hover_glow:set_anim_opacity(88, 0, 0.12, 0)
-      runtime_hud.growth_weapon_hover_hide_timer = y3.ltimer.wait(0.12, function()
-        if is_ui_alive(fx.hover_glow) then
-          fx.hover_glow:set_visible(false)
-          fx.hover_glow:set_alpha(0)
-        end
-        runtime_hud.growth_weapon_hover_hide_timer = nil
-      end)
-    end
-    call_ui_method_safely(fx.host, 'set_anim_scale', 1.05, 1.05, 1.0, 1.0, 0.14, 0)
-  end
-
-  local function update_growth_weapon_ready_fx(runtime_hud)
-    if not is_runtime_ui_animation_enabled() then
-      clear_growth_weapon_ready_pulse(runtime_hud)
-      return
-    end
-    local fx = ensure_growth_weapon_slot_fx(runtime_hud)
-    if not fx or not should_growth_weapon_ready_pulse() then
-      clear_growth_weapon_ready_pulse(runtime_hud)
-      return
-    end
-
-    local function pulse_once()
-      if not is_ui_alive(fx.pulse_glow) then
-        clear_growth_weapon_slot_fx(runtime_hud)
-        return
-      end
-      fx.pulse_glow:set_visible(true)
-      fx.pulse_glow:set_alpha(164)
-      fx.pulse_glow:set_anim_scale(0.94, 0.94, 1.16, 1.16, 0.46, 0)
-      fx.pulse_glow:set_anim_opacity(164, 0, 0.46, 0)
-    end
-
-    if not runtime_hud.growth_weapon_ready_pulse_timer then
-      pulse_once()
-      runtime_hud.growth_weapon_ready_pulse_timer = y3.ltimer.loop(1.25, function()
-        pulse_once()
-      end)
-    end
-  end
-
   local function bind_ui_click_once(runtime_hud, key, ui, callback)
     if not runtime_hud or not is_ui_alive(ui) then
       return
@@ -1311,388 +720,27 @@ function M.create(env)
       return
     end
 
-    local root = UIRoot.get_bottom_root(y3, env.get_player())
+    local hud = get_hud_root()
+    if not hud then
+      return
+    end
+
+    local prefab = y3.ui_prefab.create(env.get_player(), 'bottom_bg', hud)
+    local root = prefab and prefab:get_child() or nil
     if not root then
       return
     end
 
-    RuntimeHudNodes.attach_bottom_bg(runtime_hud, root)
-  end
+    root:set_anchor(0.5, 0)
+    root:set_relative_parent_pos('底部', 0)
+    set_percent_pos(env.get_player(), root, 50, 0)
+    if root.set_widget_relative_scale then
+      local prefab_scale = math.max(0.84, math.min(1.02, get_hud_scale(hud, y3) * 0.94))
+      root:set_widget_relative_scale(prefab_scale, prefab_scale)
+    end
+    root:set_z_order(9392)
 
-  local function hide_legacy_bottom_panels(runtime_hud)
-    if not runtime_hud then
-      return
-    end
-    set_visible_if_alive(runtime_hud.legacy_game_hud_inventory, false)
-    set_visible_if_alive(runtime_hud.legacy_game_hud_skill_list, false)
-  end
-
-  local function create_bottom_skill_slot_nodes(slot_host, slot_index, kind)
-    if not is_ui_alive(slot_host) then
-      return nil
-    end
-
-    local width, height = get_ui_size(slot_host, 66, 66)
-
-    local slot_ui = nil
-    if kind == 'attack' then
-      slot_ui = try_create_child_ui(slot_host, '攻击skill')
-    end
-    if is_ui_alive(slot_ui) then
-      debug_log_hud_binding('attack_slot_prefab', string.format('slot=%s prefab=%s', tostring(slot_index), '攻击skill'))
-      slot_ui:set_ui_size(width, height)
-      slot_ui:set_anchor(0.5, 0.5)
-      slot_ui:set_pos(width * 0.5, height * 0.5)
-    end
-
-    local frame = is_ui_alive(slot_ui) and (
-      UIRoot.resolve_child(slot_ui, 'skill_btn_9.skill_frame_img')
-      or UIRoot.resolve_child(slot_ui, 'skill_frame_img')
-    ) or nil
-    local icon = is_ui_alive(slot_ui) and (
-      UIRoot.resolve_child(slot_ui, 'skill_btn_9.skill_icon_img')
-      or UIRoot.resolve_child(slot_ui, 'skill_icon_img')
-      or UIRoot.resolve_child(slot_ui, 'icon')
-    ) or nil
-    local slot_hint = is_ui_alive(slot_ui) and (
-      UIRoot.resolve_child(slot_ui, 'skill_btn_9.skill_shortcut_label')
-      or UIRoot.resolve_child(slot_ui, 'skill_shortcut_label')
-    ) or nil
-    local badge = is_ui_alive(slot_ui) and (
-      UIRoot.resolve_child(slot_ui, 'skill_btn_9.skill_level_label')
-      or UIRoot.resolve_child(slot_ui, 'skill_level_label')
-      or UIRoot.resolve_child(slot_ui, 'skill_stack_label')
-    ) or nil
-    local name_label = is_ui_alive(slot_ui) and (
-      UIRoot.resolve_child(slot_ui, 'skill_btn_9.skill_name_label')
-      or UIRoot.resolve_child(slot_ui, 'skill_name_label')
-    ) or nil
-    local meta = is_ui_alive(slot_ui) and (
-      UIRoot.resolve_child(slot_ui, 'skill_btn_9.skill_cd_label')
-      or UIRoot.resolve_child(slot_ui, 'skill_cd_label')
-    ) or nil
-
-    if not is_ui_alive(icon) then
-      icon = create_image(
-        slot_host,
-        width * 0.5,
-        height * 0.5,
-        width,
-        height,
-        9411,
-        ui_res.common.empty,
-        { 255, 255, 255, 255 }
-      )
-    end
-    if not is_ui_alive(slot_hint) then
-      slot_hint = create_text(
-        slot_host,
-        math.floor(width * 0.16),
-        math.floor(height * 0.82),
-        math.max(14, math.floor(width * 0.24)),
-        10,
-        8,
-        { 170, 188, 208, 255 },
-        '中',
-        '中',
-        9412
-      )
-    end
-    if not is_ui_alive(badge) then
-      badge = create_text(
-        slot_host,
-        math.floor(width * 0.76),
-        math.floor(height * 0.82),
-        math.max(24, math.floor(width * 0.32)),
-        10,
-        8,
-        { 255, 230, 182, 255 },
-        '中',
-        '中',
-        9412
-      )
-    end
-    if not is_ui_alive(meta) then
-      meta = create_text(
-        slot_host,
-        math.floor(width * 0.5),
-        math.max(8, math.floor(height * 0.14)),
-        math.max(58, width - 8),
-        10,
-        8,
-        { 236, 242, 250, 255 },
-        '中',
-        '中',
-        9412
-      )
-    end
-
-    if is_ui_alive(slot_hint) then
-      slot_hint:set_anchor(0.5, 0.5)
-    end
-    if is_ui_alive(badge) then
-      badge:set_anchor(0.5, 0.5)
-    end
-    if is_ui_alive(meta) then
-      meta:set_anchor(0.5, 0.5)
-    end
-    if is_ui_alive(name_label) then
-      name_label:set_anchor(0.5, 0.5)
-    end
-    if is_ui_alive(icon) then
-      icon:set_anchor(0.5, 0.5)
-    end
-    if slot_host.set_intercepts_operations then
-      slot_host:set_intercepts_operations(true)
-    end
-    if is_ui_alive(icon) and icon.set_intercepts_operations then
-      icon:set_intercepts_operations(false)
-    end
-
-    return {
-      host = slot_host,
-      slot_ui = slot_ui,
-      frame = frame,
-      icon = icon,
-      slot_hint = slot_hint,
-      badge = badge,
-      name_label = name_label,
-      meta = meta,
-      kind = kind,
-      slot_index = slot_index,
-    }
-  end
-
-  local function ensure_bottom_slot_entry(runtime_hud, key, host, slot_index, kind)
-    runtime_hud.bottom_dynamic_slot_nodes = runtime_hud.bottom_dynamic_slot_nodes or {}
-
-    local slot_nodes = runtime_hud.bottom_dynamic_slot_nodes[key]
-    if slot_nodes and slot_nodes.host == host and is_ui_alive(slot_nodes.host) then
-      slot_nodes.kind = kind
-      slot_nodes.slot_index = slot_index
-      return slot_nodes
-    end
-
-    slot_nodes = create_bottom_skill_slot_nodes(host, slot_index, kind)
-    runtime_hud.bottom_dynamic_slot_nodes[key] = slot_nodes
-    return slot_nodes
-  end
-
-  local function ensure_bottom_skill_slots(runtime_hud)
-    if not runtime_hud then
-      return
-    end
-
-    runtime_hud.skill_slots = runtime_hud.skill_slots or {}
-    runtime_hud.editor_bottom_bond_slots = runtime_hud.editor_bottom_bond_slots or {}
-
-    local hosts = runtime_hud.bottom_skill_slot_hosts or {}
-    for slot = 1, attack_skill_slot_count do
-      local host = hosts[slot]
-      runtime_hud.skill_slots[slot] = ensure_bottom_slot_entry(runtime_hud, 'attack_' .. tostring(slot), host, slot, 'attack')
-    end
-
-    for slot = 1, bottom_bond_slot_count do
-      local host = hosts[attack_skill_slot_count + slot]
-      runtime_hud.editor_bottom_bond_slots[slot] = ensure_bottom_slot_entry(runtime_hud, 'bond_' .. tostring(slot), host, slot, 'bond')
-    end
-  end
-
-  local function is_bottom_inventory_slot_ui(slot_ui)
-    if not is_ui_alive(slot_ui) then
-      return false
-    end
-    return (
-      is_ui_alive(UIRoot.resolve_child(slot_ui, 'icon'))
-      and is_ui_alive(UIRoot.resolve_child(slot_ui, 'stack'))
-    ) or (
-      is_ui_alive(UIRoot.resolve_child(slot_ui, 'equip_slot_2.equip_icon_img'))
-      or is_ui_alive(UIRoot.resolve_child(slot_ui, 'equip_icon_img'))
-    )
-  end
-
-  local function style_bottom_inventory_slot(slot_ui)
-    if not is_ui_alive(slot_ui) then
-      return
-    end
-
-    set_visible_if_alive(UIRoot.resolve_child(slot_ui, 'bg'), false)
-    set_visible_if_alive(UIRoot.resolve_child(slot_ui, 'hot_key_bg'), false)
-    set_visible_if_alive(UIRoot.resolve_child(slot_ui, 'equip_slot_2.equip_bg_img'), true)
-    set_visible_if_alive(UIRoot.resolve_child(slot_ui, 'equip_bg_img'), true)
-    set_visible_if_alive(slot_ui, true)
-  end
-
-  local function resolve_bottom_inventory_bind_target(slot_ui)
-    if not is_ui_alive(slot_ui) then
-      return nil
-    end
-    local cached_target = BOTTOM_INVENTORY_BIND_TARGET_CACHE[slot_ui]
-    if is_ui_alive(cached_target) then
-      return cached_target
-    end
-    local bind_target = UIRoot.resolve_child(slot_ui, 'equip_slot_2') or slot_ui
-    BOTTOM_INVENTORY_BIND_TARGET_CACHE[slot_ui] = bind_target
-    return bind_target
-  end
-
-  local function get_bottom_inventory_bind_target(slot_ui)
-    local bind_target = resolve_bottom_inventory_bind_target(slot_ui)
-    if not is_ui_alive(bind_target) then
-      return nil
-    end
-
-    local detail = string.format(
-      'target=%s has_nested_icon=%s has_root_icon=%s',
-      bind_target == slot_ui and 'slot_ui' or 'equip_slot_2',
-      tostring(is_ui_alive(UIRoot.resolve_child(slot_ui, 'equip_slot_2.equip_icon_img'))),
-      tostring(is_ui_alive(UIRoot.resolve_child(slot_ui, 'equip_icon_img')))
-    )
-    if BOTTOM_INVENTORY_BIND_TARGET_DIAG_CACHE[slot_ui] ~= detail then
-      BOTTOM_INVENTORY_BIND_TARGET_DIAG_CACHE[slot_ui] = detail
-      debug_log_hud_binding('inventory_bind_target', detail)
-    end
-    return bind_target
-  end
-
-  local function ensure_bottom_inventory_slots(runtime_hud)
-    if not runtime_hud then
-      return
-    end
-
-    runtime_hud.editor_bottom_inventory_anchors = runtime_hud.bottom_backpack_slots or {}
-    runtime_hud.editor_bottom_inventory_slots = runtime_hud.editor_bottom_inventory_slots or {}
-    runtime_hud.editor_bottom_inventory_slot_hosts = runtime_hud.editor_bottom_inventory_slot_hosts or {}
-    runtime_hud.editor_bottom_inventory_slot_create_attempted = runtime_hud.editor_bottom_inventory_slot_create_attempted or {}
-
-    for slot = 1, 6 do
-      local anchor = runtime_hud.editor_bottom_inventory_anchors[slot]
-      local slot_ui = runtime_hud.editor_bottom_inventory_slots[slot]
-      local last_host = runtime_hud.editor_bottom_inventory_slot_hosts[slot]
-
-      if last_host ~= anchor then
-        runtime_hud.editor_bottom_inventory_slot_hosts[slot] = anchor
-        runtime_hud.editor_bottom_inventory_slot_create_attempted[slot] = false
-        if not is_ui_alive(slot_ui) then
-          runtime_hud.editor_bottom_inventory_slots[slot] = nil
-          slot_ui = nil
-        end
-      end
-
-      if not is_ui_alive(slot_ui)
-        and is_ui_alive(anchor)
-        and runtime_hud.editor_bottom_inventory_slot_create_attempted[slot] ~= true
-      then
-        runtime_hud.editor_bottom_inventory_slot_create_attempted[slot] = true
-        slot_ui = try_create_child_ui(anchor, '装备物品')
-        if is_ui_alive(slot_ui) then
-          debug_log_hud_binding('inventory_slot_prefab', string.format('slot=%s prefab=%s', tostring(slot), '装备物品'))
-        end
-        if not is_bottom_inventory_slot_ui(slot_ui) then
-          slot_ui = try_create_child_ui(anchor, '物品')
-        end
-        runtime_hud.editor_bottom_inventory_slots[slot] = slot_ui
-      end
-
-      if is_ui_alive(slot_ui) and not is_bottom_inventory_slot_ui(slot_ui) then
-        runtime_hud.editor_bottom_inventory_slots[slot] = nil
-        slot_ui = nil
-      end
-
-      if is_ui_alive(anchor) and is_ui_alive(slot_ui) then
-        local width, height = get_ui_size(anchor, 66, 66)
-        slot_ui:set_ui_size(width, height)
-        slot_ui:set_anchor(0.5, 0.5)
-        slot_ui:set_pos(width * 0.5, height * 0.5)
-        style_bottom_inventory_slot(slot_ui)
-      end
-    end
-  end
-
-  local function get_bottom_slot_anchor(slot_nodes)
-    if type(slot_nodes) ~= 'table' then
-      return slot_nodes
-    end
-    if is_ui_alive(slot_nodes.slot_ui) then
-      return slot_nodes.slot_ui
-    end
-    if is_ui_alive(slot_nodes.host) then
-      return slot_nodes.host
-    end
-    if is_ui_alive(slot_nodes.icon) then
-      return slot_nodes.icon
-    end
-    return nil
-  end
-
-  local function render_bottom_attack_skill_slot(slot_nodes, slot, skill)
-    local host = get_bottom_slot_anchor(slot_nodes)
-    if not is_ui_alive(host) then
-      return
-    end
-
-    set_visible_if_alive(host, true)
-    set_text_if_alive(slot_nodes.slot_hint, tostring(slot))
-
-    if skill then
-      set_image_if_alive(slot_nodes.frame or host, nil, { 255, 255, 255, 255 })
-      set_image_if_alive(slot_nodes.icon, skill.ui_icon or skill.icon or ui_res.game_hud.unit_icon, { 255, 255, 255, 255 })
-      set_text_if_alive(slot_nodes.badge, 'Lv' .. tostring(skill.level or 1))
-      set_text_if_alive(slot_nodes.name_label, skill.name or '')
-      set_text_if_alive(slot_nodes.meta, '')
-      if not is_ui_alive(slot_nodes.name_label) then
-        set_text_if_alive(slot_nodes.meta, skill.name or '')
-      end
-      if is_ui_alive(slot_nodes.name_label) and slot_nodes.name_label.set_text_color then
-        slot_nodes.name_label:set_text_color(236, 242, 250, 255)
-      end
-      if is_ui_alive(slot_nodes.meta) and slot_nodes.meta.set_text_color then
-        slot_nodes.meta:set_text_color(236, 242, 250, 255)
-      end
-      return
-    end
-
-    set_image_if_alive(slot_nodes.frame or host, nil, { 132, 132, 132, 190 })
-    set_image_if_alive(slot_nodes.icon, ui_res.common.empty, { 86, 104, 128, 180 })
-    set_text_if_alive(slot_nodes.badge, '')
-    set_text_if_alive(slot_nodes.name_label, '')
-    set_text_if_alive(slot_nodes.meta, '')
-    if is_ui_alive(slot_nodes.name_label) and slot_nodes.name_label.set_text_color then
-      slot_nodes.name_label:set_text_color(132, 148, 174, 255)
-    end
-    if is_ui_alive(slot_nodes.meta) and slot_nodes.meta.set_text_color then
-      slot_nodes.meta:set_text_color(132, 148, 174, 255)
-    end
-  end
-
-  local function render_bottom_bond_slot(slot_nodes, slot, payload)
-    local host = get_bottom_slot_anchor(slot_nodes)
-    if not is_ui_alive(host) then
-      return
-    end
-
-    set_visible_if_alive(host, true)
-    set_text_if_alive(slot_nodes.slot_hint, tostring(slot))
-
-    if payload then
-      local color = BOND_SLOT_QUALITY_COLORS[payload.quality or 'common'] or BOND_SLOT_QUALITY_COLORS.common
-      set_image_if_alive(host, nil, color)
-      set_image_if_alive(slot_nodes.icon, payload.icon_res or ui_res.hero_prefab.icon_1, { 255, 255, 255, 255 })
-      set_text_if_alive(slot_nodes.badge, '缘')
-      set_text_if_alive(slot_nodes.meta, payload.item_name_text or payload.title_text or '羁绊')
-      if is_ui_alive(slot_nodes.meta) and slot_nodes.meta.set_text_color then
-        slot_nodes.meta:set_text_color(236, 242, 250, 255)
-      end
-      return
-    end
-
-    set_image_if_alive(host, nil, { 116, 130, 154, 148 })
-    set_image_if_alive(slot_nodes.icon, ui_res.common.empty, { 72, 88, 112, 220 })
-    set_text_if_alive(slot_nodes.badge, '')
-    set_text_if_alive(slot_nodes.meta, '')
-    if is_ui_alive(slot_nodes.meta) and slot_nodes.meta.set_text_color then
-      slot_nodes.meta:set_text_color(132, 148, 174, 255)
-    end
+    RuntimeHudNodes.attach_bottom_bg(runtime_hud, prefab)
   end
 
   local function bind_bottom_bond_icons(runtime_hud)
@@ -1701,9 +749,8 @@ function M.create(env)
     end
     runtime_hud.editor_bottom_bond_slot_bound = runtime_hud.editor_bottom_bond_slot_bound or {}
     runtime_hud.editor_bottom_bond_payloads = runtime_hud.editor_bottom_bond_payloads or {}
-    for slot = 1, bottom_bond_slot_count do
-      local slot_nodes = runtime_hud.editor_bottom_bond_slots and runtime_hud.editor_bottom_bond_slots[slot] or nil
-      local icon_ui = get_bottom_slot_anchor(slot_nodes)
+    for slot = 1, 7 do
+      local icon_ui = runtime_hud.bottom_bond_icons and runtime_hud.bottom_bond_icons[slot] or nil
       if is_ui_alive(icon_ui) and runtime_hud.editor_bottom_bond_slot_bound[slot] ~= icon_ui then
         runtime_hud.editor_bottom_bond_slot_bound[slot] = icon_ui
         if icon_ui.set_intercepts_operations then
@@ -1764,263 +811,42 @@ function M.create(env)
     end)
   end
 
-  bind_growth_weapon_slot = function(runtime_hud)
-    if not runtime_hud then
-      return runtime_hud
-    end
-    runtime_hud.growth_weapon_slot = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[1] or nil
-    if not is_ui_alive(runtime_hud.growth_weapon_slot) then
-      runtime_hud.growth_weapon_slot = runtime_hud.editor_bottom_inventory_anchors and runtime_hud.editor_bottom_inventory_anchors[1] or nil
-    end
-
-    local slot_ui = get_bottom_inventory_bind_target(runtime_hud.growth_weapon_slot)
-    if is_ui_alive(slot_ui) then
-      call_ui_method_safely(slot_ui, 'set_equip_slot_use_operation', '无')
-      call_ui_method_safely(slot_ui, 'set_equip_slot_drag_operation', '无')
-    end
-    return runtime_hud
-  end
-
-  local function clear_growth_weapon_upgrade_fx(runtime_hud)
+  local function bind_growth_weapon_slot(runtime_hud)
     if not runtime_hud then
       return
     end
-    safe_remove_timer(runtime_hud.growth_weapon_upgrade_fx_timer)
-    safe_remove_timer(runtime_hud.growth_weapon_upgrade_scale_reset_timer)
-    runtime_hud.growth_weapon_upgrade_fx_timer = nil
-    runtime_hud.growth_weapon_upgrade_scale_reset_timer = nil
-    if is_ui_alive(runtime_hud.growth_weapon_upgrade_flash) then
-      runtime_hud.growth_weapon_upgrade_flash:set_visible(false)
-      runtime_hud.growth_weapon_upgrade_flash:set_alpha(0)
-    end
-    if is_ui_alive(runtime_hud.growth_weapon_upgrade_label) then
-      runtime_hud.growth_weapon_upgrade_label:set_visible(false)
-      runtime_hud.growth_weapon_upgrade_label:set_alpha(0)
-    end
-    if is_ui_alive(runtime_hud.growth_weapon_upgrade_shine) then
-      runtime_hud.growth_weapon_upgrade_shine:set_visible(false)
-      runtime_hud.growth_weapon_upgrade_shine:set_alpha(0)
-    end
-    if is_ui_alive(runtime_hud.growth_weapon_upgrade_bonus_label) then
-      runtime_hud.growth_weapon_upgrade_bonus_label:set_visible(false)
-      runtime_hud.growth_weapon_upgrade_bonus_label:set_alpha(0)
-    end
-  end
 
-  local function ensure_growth_weapon_upgrade_fx(runtime_hud)
-    if not runtime_hud then
-      return nil
+    local slot_ui = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[1] or nil
+    if not slot_ui then
+      slot_ui = resolve_first_ui(y3, env.get_player(), {
+        'GameHUD.layout_3.inventory.equip_slot_bg_1.equip_slot_1',
+        'GameHUD.main.inventory.equip_slot_bg_1.equip_slot_1',
+      })
     end
-
-    bind_growth_weapon_slot(runtime_hud)
-    local host = runtime_hud.growth_weapon_slot
-    if not is_ui_alive(host) then
-      host = runtime_hud.growth_weapon_tip_anchor
-    end
-    if not is_ui_alive(host) then
-      return nil
-    end
-
-    if runtime_hud.growth_weapon_upgrade_fx_host ~= host then
-      safe_remove_ui(runtime_hud.growth_weapon_upgrade_flash)
-      safe_remove_ui(runtime_hud.growth_weapon_upgrade_label)
-      safe_remove_ui(runtime_hud.growth_weapon_upgrade_shine)
-      safe_remove_ui(runtime_hud.growth_weapon_upgrade_bonus_label)
-      runtime_hud.growth_weapon_upgrade_flash = nil
-      runtime_hud.growth_weapon_upgrade_label = nil
-      runtime_hud.growth_weapon_upgrade_shine = nil
-      runtime_hud.growth_weapon_upgrade_bonus_label = nil
-      runtime_hud.growth_weapon_upgrade_fx_host = host
-    end
-
-    local width = math.max(1, math.floor(((host.get_width and host:get_width()) or 64) + 0.5))
-    local height = math.max(1, math.floor(((host.get_height and host:get_height()) or 64) + 0.5))
-
-    if not is_ui_alive(runtime_hud.growth_weapon_upgrade_flash) then
-      local flash = try_create_child_ui(host, '图片')
-      if flash then
-        flash:set_ui_size(width + 18, height + 18)
-        flash:set_pos(width * 0.5, height * 0.5)
-        flash:set_anchor(0.5, 0.5)
-        flash:set_image(ui_res.common_tip.panel_bg)
-        flash:set_image_color(theme.palette.gold[1], theme.palette.gold[2], theme.palette.gold[3], 0)
-        flash:set_ui_9_enable(true)
-        flash:set_ui_9(
-          theme.insets.normal[1],
-          theme.insets.normal[2],
-          theme.insets.normal[3],
-          theme.insets.normal[4]
-        )
-        flash:set_z_order(9820)
-        flash:set_visible(false)
-        if flash.set_intercepts_operations then
-          flash:set_intercepts_operations(false)
-        end
-        runtime_hud.growth_weapon_upgrade_flash = flash
-      end
-    end
-
-    if not is_ui_alive(runtime_hud.growth_weapon_upgrade_label) then
-      local label = try_create_child_ui(host, '文本')
-      if label then
-        label:set_ui_size(width + 28, math.max(24, math.floor(height * 0.72)))
-        label:set_pos(width * 0.5, height * 0.5)
-        label:set_anchor(0.5, 0.5)
-        label:set_font_size(18)
-        label:set_text_alignment('中', '中')
-        label:set_text_color(theme.palette.gold[1], theme.palette.gold[2], theme.palette.gold[3], 255)
-        label:set_z_order(9821)
-        label:set_visible(false)
-        if label.set_intercepts_operations then
-          label:set_intercepts_operations(false)
-        end
-        runtime_hud.growth_weapon_upgrade_label = label
-      end
-    end
-
-    if not is_ui_alive(runtime_hud.growth_weapon_upgrade_shine) then
-      local shine = try_create_child_ui(host, '图片')
-      if shine then
-        shine:set_ui_size(math.max(18, math.floor(width * 0.46)), height + 12)
-        shine:set_pos(width * 0.5, height * 0.5)
-        shine:set_anchor(0.5, 0.5)
-        shine:set_image(ui_res.common_tip.panel_bg)
-        shine:set_image_color(theme.palette.gold[1], theme.palette.gold[2], theme.palette.gold[3], 0)
-        shine:set_ui_9_enable(true)
-        shine:set_ui_9(
-          theme.insets.normal[1],
-          theme.insets.normal[2],
-          theme.insets.normal[3],
-          theme.insets.normal[4]
-        )
-        shine:set_z_order(9821)
-        shine:set_visible(false)
-        if shine.set_intercepts_operations then
-          shine:set_intercepts_operations(false)
-        end
-        runtime_hud.growth_weapon_upgrade_shine = shine
-      end
-    end
-
-    if not is_ui_alive(runtime_hud.growth_weapon_upgrade_bonus_label) then
-      local bonus_label = try_create_child_ui(host, '文本')
-      if bonus_label then
-        bonus_label:set_ui_size(width + 84, math.max(42, height))
-        bonus_label:set_pos(width * 0.5, height * 0.28)
-        bonus_label:set_anchor(0.5, 0.5)
-        bonus_label:set_font_size(14)
-        bonus_label:set_text_alignment('中', '中')
-        bonus_label:set_text_color(theme.palette.gold[1], theme.palette.gold[2], theme.palette.gold[3], 255)
-        bonus_label:set_z_order(9822)
-        bonus_label:set_visible(false)
-        if bonus_label.set_intercepts_operations then
-          bonus_label:set_intercepts_operations(false)
-        end
-        runtime_hud.growth_weapon_upgrade_bonus_label = bonus_label
-      end
-    end
-
-    if is_ui_alive(runtime_hud.growth_weapon_upgrade_flash) then
-      runtime_hud.growth_weapon_upgrade_flash:set_ui_size(width + 18, height + 18)
-      runtime_hud.growth_weapon_upgrade_flash:set_pos(width * 0.5, height * 0.5)
-    end
-    if is_ui_alive(runtime_hud.growth_weapon_upgrade_label) then
-      runtime_hud.growth_weapon_upgrade_label:set_ui_size(width + 28, math.max(24, math.floor(height * 0.72)))
-      runtime_hud.growth_weapon_upgrade_label:set_pos(width * 0.5, height * 0.5)
-    end
-    if is_ui_alive(runtime_hud.growth_weapon_upgrade_shine) then
-      runtime_hud.growth_weapon_upgrade_shine:set_ui_size(math.max(18, math.floor(width * 0.46)), height + 12)
-      runtime_hud.growth_weapon_upgrade_shine:set_pos(width * 0.5, height * 0.5)
-    end
-    if is_ui_alive(runtime_hud.growth_weapon_upgrade_bonus_label) then
-      runtime_hud.growth_weapon_upgrade_bonus_label:set_ui_size(width + 84, math.max(42, height))
-      runtime_hud.growth_weapon_upgrade_bonus_label:set_pos(width * 0.5, height * 0.28)
-    end
-
-    return {
-      host = host,
-      width = width,
-      height = height,
-      flash = runtime_hud.growth_weapon_upgrade_flash,
-      label = runtime_hud.growth_weapon_upgrade_label,
-      shine = runtime_hud.growth_weapon_upgrade_shine,
-      bonus_label = runtime_hud.growth_weapon_upgrade_bonus_label,
-    }
-  end
-
-  local function play_growth_weapon_upgrade_fx(runtime_hud, next_level)
-    if not is_runtime_ui_animation_enabled() then
-      clear_growth_weapon_upgrade_fx(runtime_hud)
-      return
-    end
-    local fx = ensure_growth_weapon_upgrade_fx(runtime_hud)
-    if not fx then
+    if not slot_ui then
       return
     end
 
-    clear_growth_weapon_upgrade_fx(runtime_hud)
-
-    if is_ui_alive(fx.flash) then
-      fx.flash:set_visible(true)
-      fx.flash:set_alpha(245)
-      fx.flash:set_anim_scale(0.82, 0.82, 1.42, 1.42, 0.28, 0)
-      fx.flash:set_anim_opacity(245, 0, 0.28, 0)
+    runtime_hud.growth_weapon_slot = slot_ui
+    if runtime_hud.growth_weapon_slot_bound_target == slot_ui then
+      return
     end
 
-    if is_ui_alive(fx.label) then
-      fx.label:set_visible(true)
-      fx.label:set_text(string.format('Lv.%d', math.max(1, math.floor(tonumber(next_level) or 1))))
-      fx.label:set_alpha(255)
-      fx.label:set_pos(fx.width * 0.5, fx.height * 0.42)
-      fx.label:set_anim_pos(fx.width * 0.5, fx.height * 0.42, fx.width * 0.5, fx.height * 0.78, 0.42, 0)
-      fx.label:set_anim_opacity(255, 0, 0.42, 0)
+    runtime_hud.growth_weapon_slot_bound_target = slot_ui
+    if slot_ui.set_equip_slot_use_operation then
+      slot_ui:set_equip_slot_use_operation('无')
     end
-
-    if is_ui_alive(fx.shine) then
-      fx.shine:set_visible(true)
-      fx.shine:set_alpha(188)
-      fx.shine:set_pos(-math.floor(fx.width * 0.18), fx.height * 0.5)
-      fx.shine:set_anim_pos(-math.floor(fx.width * 0.18), fx.height * 0.5, math.floor(fx.width * 1.18), fx.height * 0.5, 0.22, 0)
-      fx.shine:set_anim_opacity(188, 0, 0.22, 0)
+    if slot_ui.set_equip_slot_drag_operation then
+      slot_ui:set_equip_slot_drag_operation('无')
     end
-
-    if is_ui_alive(fx.bonus_label) then
-      fx.bonus_label:set_visible(true)
-      fx.bonus_label:set_text(format_growth_weapon_upgrade_bonus_text(next_level))
-      fx.bonus_label:set_alpha(255)
-      fx.bonus_label:set_pos(fx.width * 0.5, fx.height * 0.24)
-      fx.bonus_label:set_anim_pos(fx.width * 0.5, fx.height * 0.24, fx.width * 0.5, -math.floor(fx.height * 0.12), 0.45, 0)
-      fx.bonus_label:set_anim_opacity(255, 0, 0.45, 0)
-    end
-
-    if is_ui_alive(fx.host) and fx.host.set_anim_scale then
-      fx.host:set_anim_scale(1.0, 1.0, 1.12, 1.12, 0.10, 0)
-      runtime_hud.growth_weapon_upgrade_scale_reset_timer = y3.ltimer.wait(0.10, function()
-        if is_ui_alive(fx.host) and fx.host.set_anim_scale then
-          fx.host:set_anim_scale(1.12, 1.12, 1.0, 1.0, 0.16, 0)
-        end
-        runtime_hud.growth_weapon_upgrade_scale_reset_timer = nil
-      end)
-    end
-
-    runtime_hud.growth_weapon_upgrade_fx_timer = y3.ltimer.wait(0.46, function()
-      if is_ui_alive(fx.flash) then
-        fx.flash:set_visible(false)
-        fx.flash:set_alpha(0)
-      end
-      if is_ui_alive(fx.label) then
-        fx.label:set_visible(false)
-        fx.label:set_alpha(0)
-      end
-      if is_ui_alive(fx.shine) then
-        fx.shine:set_visible(false)
-        fx.shine:set_alpha(0)
-      end
-      if is_ui_alive(fx.bonus_label) then
-        fx.bonus_label:set_visible(false)
-        fx.bonus_label:set_alpha(0)
-      end
-      runtime_hud.growth_weapon_upgrade_fx_timer = nil
+    slot_ui:add_fast_event('鼠标-移入', function()
+      show_growth_weapon_tip(slot_ui)
+    end)
+    slot_ui:add_fast_event('鼠标-移出', function()
+      hide_growth_weapon_tip()
+    end)
+    slot_ui:add_fast_event('左键-点击', function()
+      hide_growth_weapon_tip()
     end)
   end
 
@@ -2030,55 +856,18 @@ function M.create(env)
     end
     local player = env.get_player()
 
-    runtime_hud.editor_top_panel = UIRoot.get_top_sheet(y3, player)
-    runtime_hud.editor_top_root = UIRoot.get_top_root(y3, player)
-    runtime_hud.editor_top_bg_root = resolve_first_ui(y3, player, {
-      'top.top.layout_2.bg',
-      'top.layout_2.bg',
+    runtime_hud.editor_top_panel = resolve_ui(y3, player, 'top')
+    runtime_hud.editor_top_root = resolve_first_ui(y3, player, {
+      'top.top',
+      'top',
     })
-    runtime_hud.editor_top_gold_value = resolve_first_ui(y3, player, {
-      'top.top.layout_2.金币.image_3.label_2',
-      'top.layout_2.金币.image_3.label_2',
-      'top.top.金币.image_3.label_2',
-    })
-    runtime_hud.editor_top_wood_value = resolve_first_ui(y3, player, {
-      'top.top.layout_2.木材.image_3.label_2',
-      'top.layout_2.木材.image_3.label_2',
-      'top.top.木材.image_3.label_2',
-    })
-    runtime_hud.editor_top_kill_value = resolve_first_ui(y3, player, {
-      'top.top.layout_2.杀敌数.image_3.label_2',
-      'top.layout_2.杀敌数.image_3.label_2',
-      'top.top.人口.image_3.label_2',
-    })
-    runtime_hud.editor_top_wave_value = resolve_first_ui(y3, player, {
-      'top.top.layout_2.bg.第X波',
-      'top.layout_2.bg.第X波',
-    })
-    runtime_hud.editor_top_stage_value = resolve_first_ui(y3, player, {
-      'top.top.layout_2.bg.关卡',
-      'top.layout_2.bg.关卡',
-    })
-    runtime_hud.editor_top_game_time_value = resolve_first_ui(y3, player, {
-      'top.top.layout_2.bg.游戏时长',
-      'top.layout_2.bg.游戏时长',
-    })
-    runtime_hud.editor_top_boss_value = resolve_first_ui(y3, player, {
-      'top.top.layout_2.bg.boss',
-      'top.layout_2.bg.boss',
-    })
-    runtime_hud.editor_top_boss_countdown_value = resolve_first_ui(y3, player, {
-      'top.top.layout_2.bg.BOSS倒计时',
-      'top.layout_2.bg.BOSS倒计时',
-      'top.top.layout_2.bg.boss_daojishi',
-      'top.layout_2.bg.boss_daojishi',
-    })
-    runtime_hud.legacy_game_hud_inventory = resolve_ui(y3, player, 'GameHUD.main.inventory')
-    runtime_hud.legacy_game_hud_skill_list = resolve_ui(y3, player, 'GameHUD.main.skill_list')
+    runtime_hud.editor_top_gold_value = resolve_ui(y3, player, 'top.top.金币.image_3.label_2')
+    runtime_hud.editor_top_wood_value = resolve_ui(y3, player, 'top.top.木材.image_3.label_2')
+    runtime_hud.editor_top_kill_value = resolve_ui(y3, player, 'top.top.人口.image_3.label_2')
 
     attach_bottom_bg_prefab(runtime_hud)
 
-    runtime_hud.editor_bottom_panel = UIRoot.get_bottom_sheet(y3, player)
+    runtime_hud.editor_bottom_panel = runtime_hud.bottom_bg_root
     runtime_hud.editor_bottom_root = runtime_hud.bottom_bg_root
     runtime_hud.editor_bottom_layout = runtime_hud.bottom_bg_root
     runtime_hud.editor_bottom_hp_bar = runtime_hud.bottom_hp_fill
@@ -2090,20 +879,29 @@ function M.create(env)
     runtime_hud.editor_bottom_strength_text = runtime_hud.bottom_strength_value
     runtime_hud.editor_bottom_agility_text = runtime_hud.bottom_agility_value
     runtime_hud.editor_bottom_intelligence_text = runtime_hud.bottom_intelligence_value
-    runtime_hud.editor_bottom_inventory_anchors = runtime_hud.bottom_backpack_slots or {}
-    runtime_hud.editor_bottom_inventory_slots = runtime_hud.editor_bottom_inventory_slots or {}
-    ensure_bottom_inventory_slots(runtime_hud)
-    ensure_bottom_skill_slots(runtime_hud)
-    runtime_hud.editor_bottom_bond_slots = runtime_hud.editor_bottom_bond_slots or {}
+    runtime_hud.editor_bottom_inventory_slots = runtime_hud.bottom_backpack_slots or {}
+    runtime_hud.editor_bottom_bond_slots = runtime_hud.bottom_bond_icons or {}
     runtime_hud.editor_bottom_bond_slot_bound = runtime_hud.editor_bottom_bond_slot_bound or {}
     runtime_hud.editor_bottom_bond_payloads = runtime_hud.editor_bottom_bond_payloads or {}
-    runtime_hud.legacy_bottom_nodes = {}
 
-    hide_legacy_bottom_panels(runtime_hud)
+    runtime_hud.legacy_bottom_nodes = runtime_hud.legacy_bottom_nodes or {
+      resolve_ui(y3, player, 'GameHUD.layout_3.main_hp_bar'),
+      resolve_ui(y3, player, 'GameHUD.layout_3.hp_value'),
+      resolve_ui(y3, player, 'GameHUD.layout_3.hp_recover'),
+      resolve_ui(y3, player, 'GameHUD.layout_3.exp'),
+      resolve_ui(y3, player, 'GameHUD.layout_3.zuobian'),
+      resolve_ui(y3, player, 'GameHUD.layout_3.inventory'),
+      resolve_ui(y3, player, 'GameHUD.jiban_list'),
+      resolve_ui(y3, player, 'GameHUD.main'),
+    }
+    for _, legacy_node in ipairs(runtime_hud.legacy_bottom_nodes) do
+      set_visible_if_alive(legacy_node, false)
+    end
+
     bind_bottom_bond_icons(runtime_hud)
     bind_bottom_bg_actions(runtime_hud)
 
-    set_visible_if_alive(runtime_hud.bottom_bg_backpack, false)
+    bind_growth_weapon_slot(runtime_hud)
   end
 
   local function has_editor_top(runtime_hud)
@@ -2116,56 +914,19 @@ function M.create(env)
       or is_ui_alive(runtime_hud and runtime_hud.editor_bottom_panel)
   end
 
-  local function has_editor_bottom_bond_icons(runtime_hud)
-    if not runtime_hud or not runtime_hud.editor_bottom_bond_slots then
-      return false
-    end
-    for slot = 1, bottom_bond_slot_count do
-      if is_ui_alive(get_bottom_slot_anchor(runtime_hud.editor_bottom_bond_slots[slot])) then
-        return true
-      end
-    end
-    return false
-  end
-
   local function sync_editor_inventory_slots(runtime_hud)
-    if not runtime_hud then
-      return runtime_hud
+    if not runtime_hud or not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then
+      return
     end
-
-    ensure_bottom_inventory_slots(runtime_hud)
-    runtime_hud.editor_bottom_inventory_bound_targets = runtime_hud.editor_bottom_inventory_bound_targets or {}
-    runtime_hud.editor_bottom_inventory_bound_hero = runtime_hud.editor_bottom_inventory_bound_hero or {}
-    runtime_hud.editor_bottom_inventory_use_op_applied = runtime_hud.editor_bottom_inventory_use_op_applied or {}
-
     for slot = 1, 6 do
-      local slot_ui = runtime_hud.editor_bottom_inventory_slots[slot]
-      if not is_ui_alive(slot_ui) then
-        slot_ui = resolve_inventory_slot_ui(slot)
-      end
-      runtime_hud.editor_bottom_inventory_slots[slot] = slot_ui
-
-      if is_ui_alive(slot_ui) and STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() then
-        local bind_target = get_bottom_inventory_bind_target(slot_ui)
-        if runtime_hud.editor_bottom_inventory_bound_targets[slot] ~= bind_target
-          or runtime_hud.editor_bottom_inventory_bound_hero[slot] ~= STATE.hero
-        then
-          call_ui_method_safely(bind_target, 'set_ui_unit_slot', STATE.hero, y3.const.SlotType.BAR, slot - 1)
-          runtime_hud.editor_bottom_inventory_bound_targets[slot] = bind_target
-          runtime_hud.editor_bottom_inventory_bound_hero[slot] = STATE.hero
-          runtime_hud.editor_bottom_inventory_use_op_applied[slot] = false
-        end
-        if slot == 1 and runtime_hud.editor_bottom_inventory_use_op_applied[slot] ~= true then
-          call_ui_method_safely(bind_target, 'set_equip_slot_use_operation', '无')
-          call_ui_method_safely(bind_target, 'set_equip_slot_drag_operation', '无')
-          runtime_hud.editor_bottom_inventory_use_op_applied[slot] = true
-        end
+      local slot_ui = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[slot] or nil
+      if is_ui_alive(slot_ui) and slot_ui.set_ui_unit_slot then
+        slot_ui:set_ui_unit_slot(STATE.hero, y3.const.SlotType.BAR, slot - 1)
       end
     end
-
-    bind_growth_weapon_slot(runtime_hud)
-    bind_default_item_slot_hover(runtime_hud)
-    return runtime_hud
+    if is_ui_alive(runtime_hud.growth_weapon_slot) and runtime_hud.growth_weapon_slot.set_ui_unit_slot then
+      runtime_hud.growth_weapon_slot:set_ui_unit_slot(STATE.hero, y3.const.SlotType.BAR, 0)
+    end
   end
 
   local function refresh_editor_overlay(runtime_hud)
@@ -2174,31 +935,9 @@ function M.create(env)
     end
     bind_editor_overlay_nodes(runtime_hud)
 
-    local wave_text = get_wave_title_text()
-    local stage_text = get_stage_text()
-    local game_time_text = format_editor_top_game_time_text(format_time(STATE.runtime_elapsed or 0))
-    local boss_display = get_boss_display()
-    local boss_text = format_editor_top_boss_text(boss_display.name, boss_display.state)
-    local boss_countdown_text = format_editor_top_wave_time_text(boss_display.state)
-
     set_text_if_alive(runtime_hud.editor_top_gold_value, format_compact(STATE.resources and STATE.resources.gold or 0))
     set_text_if_alive(runtime_hud.editor_top_wood_value, format_compact(STATE.resources and STATE.resources.wood or 0))
     set_text_if_alive(runtime_hud.editor_top_kill_value, format_compact(STATE.total_kills or 0))
-    set_text_if_alive(runtime_hud.editor_top_wave_value, wave_text)
-    set_text_if_alive(runtime_hud.editor_top_stage_value, stage_text)
-    set_text_if_alive(
-      runtime_hud.editor_top_game_time_value,
-      game_time_text
-    )
-    set_text_if_alive(
-      runtime_hud.editor_top_boss_value,
-      boss_text
-    )
-    set_text_if_alive(
-      runtime_hud.editor_top_boss_countdown_value,
-      boss_countdown_text
-    )
-    update_top_center_fx(runtime_hud, wave_text, stage_text, boss_display)
 
     local current_hp = 0
     if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() then
@@ -2271,56 +1010,7 @@ function M.create(env)
     ))
     set_optional_text(runtime_hud.bottom_armor_value_bonus, format_signed_compact(get_hero_attr('护甲绿字')))
 
-    if is_ui_alive(runtime_hud.bottom_compact_stats_root) then
-      set_text_if_alive(
-        runtime_hud.bottom_attack_value,
-        format_compact_breakdown_text(
-          get_hero_attr('攻击结算值', '攻击'),
-          get_hero_attr('攻击增幅'),
-          get_hero_attr('最终攻击'),
-          get_hero_attr('攻击绿字')
-        )
-      )
-      set_text_if_alive(
-        runtime_hud.bottom_strength_value,
-        format_compact_breakdown_text(
-          get_hero_attr('最终力量', '力量'),
-          get_hero_attr('力量增幅'),
-          get_hero_attr('最终力量增幅'),
-          get_hero_attr('力量绿字')
-        )
-      )
-      set_text_if_alive(
-        runtime_hud.bottom_agility_value,
-        format_compact_breakdown_text(
-          get_hero_attr('最终敏捷', '敏捷'),
-          get_hero_attr('敏捷增幅'),
-          get_hero_attr('最终敏捷增幅'),
-          get_hero_attr('敏捷绿字')
-        )
-      )
-      set_text_if_alive(
-        runtime_hud.bottom_intelligence_value,
-        format_compact_breakdown_text(
-          get_hero_attr('最终智力', '智力'),
-          get_hero_attr('智力增幅'),
-          get_hero_attr('最终智力增幅'),
-          get_hero_attr('智力绿字')
-        )
-      )
-      set_text_if_alive(
-        runtime_hud.bottom_armor_value,
-        format_compact_breakdown_text(
-          get_hero_attr('护甲结算值', '护甲'),
-          get_hero_attr('护甲增幅'),
-          get_hero_attr('最终护甲'),
-          get_hero_attr('护甲绿字')
-        )
-      )
-    end
-
     sync_editor_inventory_slots(runtime_hud)
-    update_growth_weapon_ready_fx(runtime_hud)
   end
 
   local function apply_runtime_hud_visibility(runtime_hud, visible)
@@ -2328,7 +1018,6 @@ function M.create(env)
       return
     end
     bind_editor_overlay_nodes(runtime_hud)
-    hide_legacy_bottom_panels(runtime_hud)
 
     local show = visible == true
     local use_editor_top = has_editor_top(runtime_hud)
@@ -2341,68 +1030,42 @@ function M.create(env)
     set_visible_if_alive(runtime_hud.editor_bottom_panel, show)
     set_visible_if_alive(runtime_hud.editor_bottom_root, show)
     set_visible_if_alive(runtime_hud.editor_bottom_layout, show)
-    set_visible_if_alive(runtime_hud.bottom_bg_backpack, false)
-    set_visible_if_alive(runtime_hud.bond_slot_bar, show and (not use_editor_bottom or not has_editor_bottom_bond_icons(runtime_hud)))
-    if not show then
-      clear_top_center_fx(runtime_hud)
-      clear_growth_weapon_slot_fx(runtime_hud)
-      clear_growth_weapon_upgrade_fx(runtime_hud)
-      return
-    end
-    start_top_center_breath_fx(runtime_hud)
-    update_growth_weapon_ready_fx(runtime_hud)
+    -- Use the prefab bond widgets under the equipment area as the only bond UI.
+    set_visible_if_alive(runtime_hud.bond_slot_bar, false)
   end
 
-  -- local function bind_default_item_slot_hover(runtime_hud)
-  bind_default_item_slot_hover = function(runtime_hud)
-    if not runtime_hud then
-      return runtime_hud
-    end
-
-    runtime_hud.editor_bottom_inventory_anchors = runtime_hud.bottom_backpack_slots or {}
-    runtime_hud.editor_bottom_inventory_slots = runtime_hud.editor_bottom_inventory_slots or {}
-
-    local anchor_ui = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[1] or nil
-    if not is_ui_alive(anchor_ui) then
-      anchor_ui = runtime_hud.editor_bottom_inventory_anchors[1] or nil
-    end
-    if not is_ui_alive(anchor_ui) then
-      return runtime_hud
-    end
-
-    runtime_hud.bound_inventory_targets = runtime_hud.bound_inventory_targets or {}
-    if runtime_hud.bound_inventory_targets.growth_weapon == anchor_ui then
-      return runtime_hud
-    end
-    runtime_hud.bound_inventory_targets.growth_weapon = anchor_ui
-
-    if anchor_ui.set_intercepts_operations then
-      anchor_ui:set_intercepts_operations(true)
-    end
-
-    anchor_ui:add_fast_event('鼠标-移入', function()
-      local item = get_hero_bar_item(1)
-      if is_growth_weapon_item(item) then
-        runtime_hud.growth_weapon_tip_anchor = anchor_ui
-        set_growth_weapon_slot_hover_fx(runtime_hud, true)
-        show_growth_weapon_tip(anchor_ui)
-      else
-        set_growth_weapon_slot_hover_fx(runtime_hud, false)
-        hide_growth_weapon_tip()
+  local function bind_default_item_slot_hover(runtime_hud)
+    runtime_hud.default_item_slots = runtime_hud.default_item_slots or {}
+    runtime_hud.default_item_slot_targets = runtime_hud.default_item_slot_targets or {}
+    for slot = 1, 6 do
+      local slot_ui = runtime_hud.editor_bottom_inventory_slots and runtime_hud.editor_bottom_inventory_slots[slot] or nil
+      if not slot_ui then
+        slot_ui = resolve_first_ui(y3, env.get_player(), {
+          string.format('GameHUD.layout_3.inventory.equip_slot_bg_%d.equip_slot_1', slot),
+          string.format('GameHUD.main.inventory.equip_slot_bg_%d.equip_slot_1', slot),
+          string.format('GameHUD.main.goods.equip_slot_bg_%d.goods', slot),
+        })
       end
-    end)
-    anchor_ui:add_fast_event('鼠标-移出', function()
-      set_growth_weapon_slot_hover_fx(runtime_hud, false)
-      hide_growth_weapon_tip()
-    end)
-    anchor_ui:add_fast_event('左键-点击', function()
-      set_growth_weapon_slot_hover_fx(runtime_hud, false)
-      hide_growth_weapon_tip()
-      if is_growth_weapon_item(get_hero_bar_item(1)) and env.try_upgrade_growth_weapon then
-        env.try_upgrade_growth_weapon('hud_click')
+
+      runtime_hud.default_item_slots[slot] = slot_ui or false
+      if is_ui_alive(slot_ui) and runtime_hud.default_item_slot_targets[slot] ~= slot_ui then
+        runtime_hud.default_item_slot_targets[slot] = slot_ui
+        slot_ui:add_fast_event('鼠标-移入', function()
+          local item = get_hero_bar_item(slot)
+          if is_growth_weapon_item(item) then
+            show_growth_weapon_tip(slot_ui)
+          else
+            hide_growth_weapon_tip()
+          end
+        end)
+        slot_ui:add_fast_event('鼠标-移出', function()
+          hide_growth_weapon_tip()
+        end)
+        slot_ui:add_fast_event('左键-点击', function()
+          hide_growth_weapon_tip()
+        end)
       end
-    end)
-    return runtime_hud
+    end
   end
 
   local function show_latest_bond_tip(anchor_ui)
@@ -2435,7 +1098,6 @@ function M.create(env)
     end
 
     bind_editor_overlay_nodes(runtime_hud)
-    hide_legacy_bottom_panels(runtime_hud)
 
     if runtime_hud.gold_value then
       runtime_hud.gold_value:set_text(format_compact(STATE.resources and STATE.resources.gold or 0))
@@ -2453,10 +1115,19 @@ function M.create(env)
     refresh_editor_overlay(runtime_hud)
 
     runtime_hud.editor_bottom_bond_payloads = runtime_hud.editor_bottom_bond_payloads or {}
-    for slot = 1, bottom_bond_slot_count do
+    for slot = 1, 7 do
       local payload = env.build_bond_slot_tip_payload and env.build_bond_slot_tip_payload(slot) or nil
       runtime_hud.editor_bottom_bond_payloads[slot] = payload
-      render_bottom_bond_slot(runtime_hud.editor_bottom_bond_slots and runtime_hud.editor_bottom_bond_slots[slot] or nil, slot, payload)
+
+      local bottom_icon = runtime_hud.bottom_bond_icons and runtime_hud.bottom_bond_icons[slot] or nil
+      if is_ui_alive(bottom_icon) then
+        if payload then
+          set_image_if_alive(bottom_icon, payload.icon_res or ui_res.common.empty, { 255, 255, 255, 255 })
+        elseif bottom_icon.set_image_color then
+          bottom_icon:set_image_color(116, 130, 154, 148)
+        end
+        bottom_icon:set_visible(true)
+      end
 
       local slot_ui = runtime_hud.bond_slot_icons and runtime_hud.bond_slot_icons[slot] or nil
       if slot_ui then
@@ -2484,11 +1155,36 @@ function M.create(env)
       end
     end
 
-    for slot = 1, attack_skill_slot_count do
-      local skill = STATE.attack_skill_state and STATE.attack_skill_state.slots and STATE.attack_skill_state.slots[slot] or nil
-      render_bottom_attack_skill_slot(runtime_hud.skill_slots and runtime_hud.skill_slots[slot] or nil, slot, skill)
+    for slot = 1, 4 do
+      local slot_nodes = runtime_hud.skill_slots and runtime_hud.skill_slots[slot] or nil
+      if slot_nodes then
+        local slot_text = env.build_attack_skill_slot_text and env.build_attack_skill_slot_text(slot) or string.format('%d号位 空', slot)
+        local title_text = slot_text
+        local meta_text = ''
+        local separator_start = string.find(slot_text, ' | ', 1, true)
+        if separator_start then
+          title_text = string.sub(slot_text, 1, separator_start - 1)
+          meta_text = string.sub(slot_text, separator_start + 3)
+        end
+
+        if slot_nodes.text then
+          slot_nodes.text:set_text(title_text)
+        end
+        if slot_nodes.meta then
+          slot_nodes.meta:set_text(meta_text ~= '' and meta_text or '已装配')
+        end
+      end
     end
 
+    local growth_slot = runtime_hud.growth_weapon_slot
+    if growth_slot then
+      local payload = env.build_growth_weapon_tip_payload and env.build_growth_weapon_tip_payload() or nil
+      if payload then
+        if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and growth_slot.set_ui_unit_slot then
+          growth_slot:set_ui_unit_slot(STATE.hero, y3.const.SlotType.BAR, 0)
+        end
+      end
+    end
     hide_legacy_decision_panel(runtime_hud)
   end
 
@@ -3048,13 +1744,33 @@ function M.create(env)
       bond_slot_bar = bond_slot_bar,
       bond_slot_label = bond_slot_label,
       bond_slot_icons = bond_slot_icons,
-      growth_weapon_slot = nil,
-      skill_slots = {},
+      growth_weapon_slot = resolve_first_ui(y3, env.get_player(), {
+        'GameHUD.layout_3.inventory.equip_slot_bg_1.equip_slot_1',
+        'GameHUD.main.inventory.equip_slot_bg_1.equip_slot_1',
+      }),
+      skill_slots = {
+        [1] = {
+          root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_1'),
+          text = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_1.skill_slot_1_text'),
+          meta = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_1.skill_slot_1_meta'),
+        },
+        [2] = {
+          root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_2'),
+          text = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_2.skill_slot_2_text'),
+          meta = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_2.skill_slot_2_meta'),
+        },
+        [3] = {
+          root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_3'),
+          text = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_3.skill_slot_3_text'),
+          meta = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_3.skill_slot_3_meta'),
+        },
+        [4] = {
+          root = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_4'),
+          text = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_4.skill_slot_4_text'),
+          meta = resolve_ui(y3, env.get_player(), 'GameHUD.hud_root.bottom_action_bar.skill_hotbar.skill_slot_4.skill_slot_4_meta'),
+        },
+      },
     }
-
-    if is_ui_alive(bond_slot_bar) then
-      bond_slot_bar:set_visible(false)
-    end
 
     bind_editor_overlay_nodes(STATE.runtime_hud)
     bind_default_item_slot_hover(STATE.runtime_hud)
@@ -3069,14 +1785,6 @@ function M.create(env)
     end,
     refresh_hud = function()
       return refresh_runtime_hud()
-    end,
-    play_growth_weapon_upgrade_effect = function(next_level)
-      local runtime_hud = create_runtime_hud()
-      if not is_hud_alive(runtime_hud) then
-        return
-      end
-      bind_editor_overlay_nodes(runtime_hud)
-      play_growth_weapon_upgrade_fx(runtime_hud, next_level)
     end,
     set_visible = function(visible)
       local runtime_hud = STATE.runtime_hud

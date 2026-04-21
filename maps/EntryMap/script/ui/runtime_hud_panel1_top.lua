@@ -2,6 +2,11 @@ local BaseHud = require 'ui.runtime_hud_v2'
 local UIStyle = require 'ui.style'
 
 local M = {}
+local TRACKER_REFRESH_INTERVAL = 0.75
+local UI_TEXT_CACHE = setmetatable({}, { __mode = 'k' })
+local UI_TEXT_COLOR_CACHE = setmetatable({}, { __mode = 'k' })
+local UI_IMAGE_COLOR_CACHE = setmetatable({}, { __mode = 'k' })
+local UI_VISIBLE_CACHE = setmetatable({}, { __mode = 'k' })
 
 local function resolve_ui(y3, player, path)
   local ok, ui = pcall(y3.ui.get_ui, player, path)
@@ -25,6 +30,30 @@ local function is_alive(ui)
   return ui and (not ui.is_removed or not ui:is_removed())
 end
 
+local function set_visible_if_changed(node, visible)
+  if not is_alive(node) then
+    return
+  end
+  local final_visible = visible == true
+  if UI_VISIBLE_CACHE[node] == final_visible then
+    return
+  end
+  UI_VISIBLE_CACHE[node] = final_visible
+  node:set_visible(final_visible)
+end
+
+local function set_text_if_changed(node, text)
+  if not is_alive(node) then
+    return
+  end
+  local final_text = tostring(text or '')
+  if UI_TEXT_CACHE[node] == final_text then
+    return
+  end
+  UI_TEXT_CACHE[node] = final_text
+  node:set_text(final_text)
+end
+
 local function set_panel1_top_visible(env, visible)
   local y3 = env.y3
   local player = env.get_player()
@@ -32,10 +61,10 @@ local function set_panel1_top_visible(env, visible)
   local top_root = resolve_ui(y3, player, 'panel_1.tophud')
 
   if panel1 then
-    panel1:set_visible(visible == true)
+    set_visible_if_changed(panel1, visible == true)
   end
   if top_root then
-    top_root:set_visible(visible == true)
+    set_visible_if_changed(top_root, visible == true)
   end
 end
 
@@ -48,6 +77,11 @@ end
 
 local function set_text_rgba(node, color)
   if is_alive(node) and color then
+    local color_key = string.format('%s,%s,%s,%s', color[1], color[2], color[3], color[4] or 255)
+    if UI_TEXT_COLOR_CACHE[node] == color_key then
+      return
+    end
+    UI_TEXT_COLOR_CACHE[node] = color_key
     node:set_text_color(color[1], color[2], color[3], color[4] or 255)
   end
 end
@@ -57,6 +91,11 @@ local function set_image_rgba(node, color)
     return
   end
   if node.set_image_color then
+    local color_key = string.format('%s,%s,%s,%s', color[1], color[2], color[3], color[4] or 255)
+    if UI_IMAGE_COLOR_CACHE[node] == color_key then
+      return
+    end
+    UI_IMAGE_COLOR_CACHE[node] = color_key
     node:set_image_color(color[1], color[2], color[3], color[4] or 255)
   end
 end
@@ -72,7 +111,7 @@ local function make_text_proxy(node, transform)
   return {
     set_text = function(_, text)
       if is_alive(node) then
-        node:set_text(transform and transform(text) or text or '')
+        set_text_if_changed(node, transform and transform(text) or text or '')
       end
     end,
     set_text_color = function(_, color)
@@ -158,10 +197,10 @@ local function flush_panel1_boss(runtime_hud)
       runtime_hud.panel1_boss_name_text,
       runtime_hud.panel1_boss_state_text
     )
-    runtime_hud.panel1_tips_node:set_text(tips_text)
+    set_text_if_changed(runtime_hud.panel1_tips_node, tips_text)
   end
   if is_alive(runtime_hud.panel1_wavetime_node) then
-    runtime_hud.panel1_wavetime_node:set_text(format_wave_time_text(runtime_hud.panel1_boss_state_text))
+    set_text_if_changed(runtime_hud.panel1_wavetime_node, format_wave_time_text(runtime_hud.panel1_boss_state_text))
   end
   set_text_rgba(runtime_hud.panel1_tips_node, runtime_hud.panel1_boss_color)
   set_text_rgba(runtime_hud.panel1_wavetime_node, runtime_hud.panel1_boss_color)
@@ -352,7 +391,7 @@ end
 local function refresh_tracker_panel(env, runtime_hud)
   resolve_tracker_nodes(env, runtime_hud)
   if runtime_hud.right_tracker_panel and not runtime_hud.right_tracker_panel:is_removed() then
-    runtime_hud.right_tracker_panel:set_visible(true)
+    set_visible_if_changed(runtime_hud.right_tracker_panel, true)
   end
 
   local summary, tracker_state = get_task_panel_summary(env)
@@ -370,15 +409,15 @@ local function refresh_tracker_panel(env, runtime_hud)
     if not is_alive(runtime_hud.tracker_shortcut_chip_key) and visual_state.key and visual_state.key ~= '' then
       shortcut_text = string.format('%s  快捷键%s', visual_state.label, visual_state.key)
     end
-    runtime_hud.tracker_shortcut_chip_label:set_text(shortcut_text)
+    set_text_if_changed(runtime_hud.tracker_shortcut_chip_label, shortcut_text)
     set_text_rgba(runtime_hud.tracker_shortcut_chip_label, visual_state.chip_text)
   end
   if is_alive(runtime_hud.tracker_shortcut_chip_key) then
-    runtime_hud.tracker_shortcut_chip_key:set_text(visual_state.key)
+    set_text_if_changed(runtime_hud.tracker_shortcut_chip_key, visual_state.key)
     set_text_rgba(runtime_hud.tracker_shortcut_chip_key, visual_state.chip_text)
   end
   if is_alive(runtime_hud.tracker_shortcut_chip_arrow) then
-    runtime_hud.tracker_shortcut_chip_arrow:set_text(visual_state.arrow)
+    set_text_if_changed(runtime_hud.tracker_shortcut_chip_arrow, visual_state.arrow)
     set_text_rgba(runtime_hud.tracker_shortcut_chip_arrow, visual_state.chip_text)
   end
 
@@ -465,6 +504,7 @@ local function bind_panel1_top(env, runtime_hud)
 
   flush_panel1_boss(runtime_hud)
   refresh_tracker_panel(env, runtime_hud)
+  runtime_hud.panel1_tracker_refresh_at = env.STATE and env.STATE.runtime_elapsed or 0
   return true
 end
 
@@ -485,19 +525,29 @@ function M.create(env)
     refresh_hud = function()
       local hud = env.STATE and env.STATE.runtime_hud
       if hud then
-        bind_panel1_top(env, hud)
+        if hud.panel1_top_bound ~= true
+          or not is_alive(hud.panel1_tips_node)
+          or not is_alive(hud.panel1_wavetime_node)
+        then
+          bind_panel1_top(env, hud)
+        end
       end
       local result = base.refresh_hud()
       if hud then
         flush_panel1_boss(hud)
-        refresh_tracker_panel(env, hud)
+        local now_elapsed = env.STATE and env.STATE.runtime_elapsed or 0
+        local last_refresh = tonumber(hud.panel1_tracker_refresh_at) or -TRACKER_REFRESH_INTERVAL
+        if (now_elapsed - last_refresh) >= TRACKER_REFRESH_INTERVAL then
+          hud.panel1_tracker_refresh_at = now_elapsed
+          refresh_tracker_panel(env, hud)
+        end
       end
       return result
     end,
     set_visible = function(visible)
       local hud = env.STATE and env.STATE.runtime_hud
       if hud and hud.right_tracker_panel and is_alive(hud.right_tracker_panel) then
-        hud.right_tracker_panel:set_visible(visible == true)
+        set_visible_if_changed(hud.right_tracker_panel, visible == true)
       end
       set_panel1_top_visible(env, visible == true)
       return base.set_visible(visible)

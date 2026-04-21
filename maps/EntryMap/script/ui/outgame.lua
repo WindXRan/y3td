@@ -713,6 +713,25 @@ function M.create(env)
     return string.format('当前关卡：%s。%s', stage_name, hint)
   end
 
+  local function build_ui_refresh_signature(profile)
+    local window_width, window_height = get_window_metrics()
+    local last_result = profile and profile.last_result or nil
+    return table.concat({
+      tostring(STATE.session_phase or ''),
+      tostring(STATE.stage_start_in_progress or false),
+      tostring(STATE.outgame_profile_save_enabled or false),
+      tostring(STATE.outgame_save_backend_ready or false),
+      tostring(STATE.selected_stage_id or (profile and profile.selected_stage_id) or ''),
+      tostring((profile and profile.selected_mode_id) or ''),
+      tostring((profile and profile.selected_view_mode) or ''),
+      tostring(last_result and last_result.stage_id or ''),
+      tostring(last_result and last_result.is_win or ''),
+      tostring(last_result and last_result.reached_wave_index or ''),
+      tostring(window_width),
+      tostring(window_height),
+    }, '|')
+  end
+
   local function build_stage_slot_text(profile, stage_def)
     local display = get_stage_display_text(stage_def, stage_def.stage_id)
     local progress = get_stage_progress(profile, stage_def.stage_id)
@@ -1346,13 +1365,19 @@ function M.create(env)
     return selected_chapter_id
   end
 
-  local function refresh_ui()
+  local function refresh_ui(force_refresh)
     local ui = ensure_ui()
     if not is_outgame_ui_alive(ui) then
-      return
+      return false
     end
 
     local profile = load_profile()
+    local refresh_signature = build_ui_refresh_signature(profile)
+    if force_refresh ~= true and STATE.outgame_ui_refresh_signature == refresh_signature then
+      return false
+    end
+    STATE.outgame_ui_refresh_signature = refresh_signature
+
     local selected_stage_id = STATE.selected_stage_id or profile.selected_stage_id
     local selected_mode_id = SINGLE_MODE_ID
     local selected_view_mode = get_selected_view_mode(profile)
@@ -1364,7 +1389,7 @@ function M.create(env)
     refresh_save_entry_ui(ui, profile)
 
     if not selected_stage_def then
-      return
+      return true
     end
 
     if profile.selected_mode_id ~= SINGLE_MODE_ID then
@@ -1391,6 +1416,7 @@ function M.create(env)
       set_image_color_if_alive(ui.start_button, COLOR.start_locked_bg)
       set_text_color_if_alive(ui.start_button, COLOR.locked_text)
     end
+    return true
   end
 
   function api.load_profile()
@@ -1418,8 +1444,8 @@ function M.create(env)
     if not is_outgame_ui_alive(STATE.outgame_ui) then
       ensure_ui()
     end
-    refresh_ui()
-    if battle_pass_panel and battle_pass_panel.refresh_ui then
+    local did_refresh = refresh_ui()
+    if did_refresh and battle_pass_panel and battle_pass_panel.refresh_ui then
       battle_pass_panel.refresh_ui()
     end
   end
@@ -1428,6 +1454,9 @@ function M.create(env)
     local ui = ensure_ui()
     if not is_outgame_ui_alive(ui) then
       return
+    end
+    if visible == true then
+      STATE.outgame_ui_refresh_signature = nil
     end
     set_visible_if_alive(ui.root, visible == true)
     set_visible_if_alive(ui.hall_root, visible == true)
@@ -1450,12 +1479,13 @@ function M.create(env)
 
     STATE.session_phase = 'outgame'
     STATE.game_finished = true
+    STATE.outgame_ui_refresh_signature = nil
     if ensure_music_loop then
       ensure_music_loop()
     end
     env.set_battle_hud_visible(false)
     ensure_ui()
-    refresh_ui()
+    refresh_ui(true)
     api.set_ui_visible(true)
     if battle_pass_panel and battle_pass_panel.enter_outgame then
       battle_pass_panel.enter_outgame()

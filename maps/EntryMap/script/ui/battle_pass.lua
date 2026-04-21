@@ -248,8 +248,11 @@ function M.create(env)
 
   local function clear_markers()
     for _, marker in ipairs(runtime.markers) do
-      if marker.prefab and marker.prefab.remove then
-        marker.prefab:remove()
+      local entries = { marker.level_marker, marker.free_cell, marker.paid_cell }
+      for _, entry in ipairs(entries) do
+        if entry and entry.prefab and entry.prefab.remove then
+          entry.prefab:remove()
+        end
       end
     end
     runtime.markers = {}
@@ -260,43 +263,79 @@ function M.create(env)
     if not UIRoot.is_alive(ui and ui.pass_grid) or not ui.pass_grid.get_childs then
       return
     end
+    if runtime.pass_grid_owned then
+      return
+    end
 
     local ok, children = pcall(ui.pass_grid.get_childs, ui.pass_grid)
     if not ok or type(children) ~= 'table' then
       return
     end
 
-    local marker_handles = {}
-    for _, marker in ipairs(runtime.markers) do
-      if UIRoot.is_alive(marker.root) and marker.root.handle then
-        marker_handles[marker.root.handle] = true
-      end
-    end
-
-    local has_foreign_children = false
-    for _, child in ipairs(children) do
-      if UIRoot.is_alive(child) and not marker_handles[child.handle] then
-        has_foreign_children = true
-        break
-      end
-    end
-
-    if runtime.pass_grid_owned and not has_foreign_children then
-      return
-    end
-
     clear_markers()
-
-    local ok_after_clear, remaining_children = pcall(ui.pass_grid.get_childs, ui.pass_grid)
-    if ok_after_clear and type(remaining_children) == 'table' then
-      for _, child in ipairs(remaining_children) do
-        if UIRoot.is_alive(child) and child.remove then
-          child:remove()
-        end
+    for _, child in ipairs(children) do
+      if UIRoot.is_alive(child) and child.remove then
+        child:remove()
       end
     end
 
     runtime.pass_grid_owned = true
+  end
+
+  local function is_pass_grid_marker_alive(marker)
+    if type(marker) ~= 'table' then
+      return false
+    end
+    local entries = { marker.level_marker, marker.free_cell, marker.paid_cell }
+    for _, entry in ipairs(entries) do
+      if not entry or not UIRoot.is_alive(entry.root) then
+        return false
+      end
+    end
+    return true
+  end
+
+  local function has_valid_pass_grid_markers(expected_count)
+    if runtime.markers_count ~= expected_count then
+      return false
+    end
+    for _, marker in ipairs(runtime.markers) do
+      if not is_pass_grid_marker_alive(marker) then
+        return false
+      end
+    end
+    return true
+  end
+
+  local function ensure_pass_grid_markers(ui, level_items)
+    local expected_count = #(level_items or {})
+    if has_valid_pass_grid_markers(expected_count) then
+      return
+    end
+
+    clear_markers()
+    for _, item in ipairs(level_items or {}) do
+      local level_marker = create_level_marker(ui.pass_grid)
+      local free_cell = create_reward_cell(ui.pass_grid)
+      local paid_cell = create_reward_cell(ui.pass_grid)
+      if level_marker and free_cell and paid_cell then
+        runtime.markers[#runtime.markers + 1] = {
+          level = tonumber(item.level) or 0,
+          level_marker = level_marker,
+          free_cell = free_cell,
+          paid_cell = paid_cell,
+        }
+      else
+        local cleanup_entries = { level_marker, free_cell, paid_cell }
+        for _, entry in ipairs(cleanup_entries) do
+          if entry and entry.prefab and entry.prefab.remove then
+            entry.prefab:remove()
+          end
+        end
+      end
+    end
+
+    runtime.markers_count = #runtime.markers
   end
 
   local function create_level_marker(parent)
@@ -460,31 +499,29 @@ function M.create(env)
     set_visible_if_alive(cell.lock_icon, status == 'premium_locked')
   end
 
-  local function rebuild_pass_grid(ui, model, compact_mode)
-    clear_markers()
+  local function update_pass_grid(ui, model, compact_mode)
+    local level_items = model.level_items or {}
+    ensure_pass_grid_markers(ui, level_items)
 
-    for _, item in ipairs(model.level_items or {}) do
-      local level_marker = create_level_marker(ui.pass_grid)
-      if level_marker then
-        set_text_if_alive(level_marker.text, string.format('Lv.%02d', tonumber(item.level) or 0))
-        set_text_color_if_alive(level_marker.text, item.cell_color)
-        runtime.markers[#runtime.markers + 1] = level_marker
+    for index, marker in ipairs(runtime.markers) do
+      local item = level_items[index]
+      local visible = item ~= nil
+      if marker.level_marker then
+        set_visible_if_alive(marker.level_marker.root, visible)
       end
-
-      local free_cell = create_reward_cell(ui.pass_grid)
-      if free_cell then
-        update_reward_cell(free_cell, item, PASS_TRACK_FREE, compact_mode)
-        runtime.markers[#runtime.markers + 1] = free_cell
+      if marker.free_cell then
+        set_visible_if_alive(marker.free_cell.root, visible)
       end
-
-      local paid_cell = create_reward_cell(ui.pass_grid)
-      if paid_cell then
-        update_reward_cell(paid_cell, item, PASS_TRACK_PAID, compact_mode)
-        runtime.markers[#runtime.markers + 1] = paid_cell
+      if marker.paid_cell then
+        set_visible_if_alive(marker.paid_cell.root, visible)
+      end
+      if item then
+        set_text_if_alive(marker.level_marker.text, string.format('Lv.%02d', tonumber(item.level) or 0))
+        set_text_color_if_alive(marker.level_marker.text, item.cell_color)
+        update_reward_cell(marker.free_cell, item, PASS_TRACK_FREE, compact_mode)
+        update_reward_cell(marker.paid_cell, item, PASS_TRACK_PAID, compact_mode)
       end
     end
-
-    runtime.markers_count = #runtime.markers
   end
 
   local function is_battle_compact_mode()
@@ -994,7 +1031,7 @@ function M.create(env)
 
     prepare_pass_grid_for_lua(ui)
     set_progress_if_alive(ui.pass_progress_bar, model.total_exp, model.total_exp_max)
-    rebuild_pass_grid(ui, model, compact_mode)
+    update_pass_grid(ui, model, compact_mode)
 
     if UIRoot.is_alive(ui.pass_list) and ui.pass_list.set_list_view_percent then
       ui.pass_list:set_list_view_percent(get_pass_list_percent(ui, model, compact_mode))
