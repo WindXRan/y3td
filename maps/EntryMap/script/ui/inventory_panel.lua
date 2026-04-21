@@ -459,18 +459,6 @@ function M.create(env)
     safe_set_visible(panel.big_panel, runtime.visible and runtime.panel_visible)
     refresh_public_visibility(panel)
 
-    if runtime.visible ~= true then
-      hide_tooltip()
-      return panel
-    end
-
-    if runtime.panel_visible ~= true then
-      if runtime.tip_state then
-        hide_tooltip()
-      end
-      return panel
-    end
-
     local hero = get_hero()
     if not hero then
       hide_tooltip()

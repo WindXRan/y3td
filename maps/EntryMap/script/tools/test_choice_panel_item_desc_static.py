@@ -43,13 +43,15 @@ def main() -> None:
 
     assert_contains(model, "use_item_desc_card = true", "choice panel model should mark cards for item desc rendering")
     assert_contains(model, "local function build_upgrade_item_desc_payload", "choice panel model should define a skill template helper")
+    assert_contains(model, "local function build_gear_item_desc_payload", "choice panel model should define a gear template helper")
     assert_contains(model, "local function build_bond_item_desc_payload", "choice panel model should define a bond template helper")
     assert_contains(model, "local function build_treasure_item_desc_payload", "choice panel model should define a treasure template helper")
-    assert_contains(model, "local function build_mark_item_desc_payload", "choice panel model should define a mark template helper")
+    assert_contains(model, "local function build_evolution_item_desc_payload", "choice panel model should define an evolution template helper")
     assert_contains(model, "item_desc_payload = build_upgrade_item_desc_payload", "choice panel model should use the skill template helper")
+    assert_contains(model, "item_desc_payload = build_gear_item_desc_payload", "choice panel model should use the gear template helper")
     assert_contains(model, "item_desc_payload = build_bond_item_desc_payload", "choice panel model should use the bond template helper")
     assert_contains(model, "item_desc_payload = build_treasure_item_desc_payload", "choice panel model should use the treasure template helper")
-    assert_contains(model, "item_desc_payload = build_mark_item_desc_payload", "choice panel model should use the mark template helper")
+    assert_contains(model, "item_desc_payload = build_evolution_item_desc_payload", "choice panel model should use the evolution template helper")
     assert_contains(model, "split_compound_bonus_segments", "choice panel model should split compound bonus text into multiple attr rows")
 
     print("choice panel item desc static ok")

@@ -1,0 +1,219 @@
+{
+  "name": "RuntimeAttrTabPanel",
+  "uid": "b3376c13-e109-4124-af57-8c11265ca2e6",
+  "type": 2,
+  "children": [
+    {
+      "name": "block",
+      "uid": "8c79e8b8-e1e8-49ac-bb0c-60f86a43227b",
+      "type": 7,
+      "children": [
+        {
+          "name": "mask_bg",
+          "uid": "c84a4134-89c0-4567-b9ab-d3f7da2506d1",
+          "type": 4
+        },
+        {
+          "name": "main_frame",
+          "uid": "c4234816-793e-4db8-9b8c-3310cc155566",
+          "type": 7,
+          "children": [
+            {
+              "name": "main_frame_bg",
+              "uid": "5e5f63ae-92c6-4bba-af92-0efe292a89b7",
+              "type": 4
+            },
+            {
+              "name": "main_frame_glow",
+              "uid": "e6697ed9-1b75-4f6e-8ef8-346b75143eee",
+              "type": 4
+            },
+            {
+              "name": "title_bar_bg",
+              "uid": "83d11311-802d-4774-8c58-d04322d1535c",
+              "type": 4
+            },
+            {
+              "name": "close_button",
+              "uid": "b3a817b0-4929-42c6-88d4-a2bacb735cd6",
+              "type": 4,
+              "children": [
+                {
+                  "name": "close_button_label",
+                  "uid": "dca63f86-5a01-4c78-a60f-4019f7e53785",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "content",
+              "uid": "aec465eb-c182-42be-8b8d-bd569876d089",
+              "type": 7,
+              "children": [
+                {
+                  "name": "content_bg",
+                  "uid": "8486bfc5-b571-4442-a140-07322eeb6066",
+                  "type": 4
+                },
+                {
+                  "name": "section_divider",
+                  "uid": "84495e75-4d5b-4396-9979-04f58a8a62a1",
+                  "type": 4
+                },
+                {
+                  "name": "empty_tip",
+                  "uid": "d2907bc3-7cf1-4806-9641-efaad4ec4359",
+                  "type": 3
+                },
+                {
+                  "name": "section_title",
+                  "uid": "7417418f-0d31-4157-8f40-4f3b49f388e7",
+                  "type": 3
+                },
+                {
+                  "name": "row_1",
+                  "uid": "cc05a6ab-6e46-482d-9f60-ff7eea83a640",
+                  "type": 3
+                },
+                {
+                  "name": "row_2",
+                  "uid": "e630720c-c26a-4153-ae9e-9b5bfa20fc26",
+                  "type": 3
+                },
+                {
+                  "name": "row_3",
+                  "uid": "fbe42c2e-006f-4fb4-825c-b0efa22ffa30",
+                  "type": 3
+                },
+                {
+                  "name": "row_4",
+                  "uid": "a6c07673-64c0-464b-96a7-a0a7e787a67d",
+                  "type": 3
+                },
+                {
+                  "name": "row_5",
+                  "uid": "59653571-c192-44d5-9c32-d16f2ba1e972",
+                  "type": 3
+                },
+                {
+                  "name": "row_6",
+                  "uid": "62930233-9c4b-4135-b88c-d77c40dcc158",
+                  "type": 3
+                },
+                {
+                  "name": "row_7",
+                  "uid": "b5dbe96c-41b3-4209-9677-00bbc3d5636a",
+                  "type": 3
+                },
+                {
+                  "name": "row_8",
+                  "uid": "a8b5787b-b398-4861-80e4-c0c655242687",
+                  "type": 3
+                },
+                {
+                  "name": "panel_footer",
+                  "uid": "93208729-8b7b-43cb-8215-d092eb353f64",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "tab_bar",
+              "uid": "d02b7aad-0774-443a-aabc-2b95759b331a",
+              "type": 7,
+              "children": [
+                {
+                  "name": "tab_bar_bg",
+                  "uid": "39cf03db-2bf5-44e4-aed5-eaecca3d7ada",
+                  "type": 4
+                },
+                {
+                  "name": "tab_summary",
+                  "uid": "d51c82e9-2882-4df2-92be-91402c4c223d",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "tab_summary_label",
+                      "uid": "671a0600-af93-412a-bd7a-e525341e17ab",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "tab_skills",
+                  "uid": "c335959d-d2d0-496e-bf1c-ae2ed703a971",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "tab_skills_label",
+                      "uid": "85681527-ed76-40a1-9c7d-35fd5558cb79",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "tab_bonds",
+                  "uid": "4d61e3ae-7db8-46ea-978c-c8216d16fc4b",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "tab_bonds_label",
+                      "uid": "2a7d4c05-d0db-4668-9032-4023aa8de952",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "tab_treasures",
+                  "uid": "c50111c4-b8a6-41b6-8451-4f3929608c22",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "tab_treasures_label",
+                      "uid": "3f304b85-73a4-473e-b59a-2374f3ccf2ed",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "tab_pending",
+                  "uid": "a65a8e78-7e00-4a57-bba5-8c18bcd24b1c",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "tab_pending_label",
+                      "uid": "23b319eb-1afc-4ff6-a57b-8de5a669c605",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "tab_progress",
+                  "uid": "91644450-1e11-493c-ace5-771f006d91c5",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "tab_progress_label",
+                      "uid": "f982d5b5-7b10-479d-98aa-398391e5cb8e",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "panel_subtitle",
+              "uid": "2964c5d8-b28d-4333-8a26-4ad8f747cd18",
+              "type": 3
+            },
+            {
+              "name": "panel_title",
+              "uid": "4838abad-665d-4d7f-aef0-88aa4905af20",
+              "type": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

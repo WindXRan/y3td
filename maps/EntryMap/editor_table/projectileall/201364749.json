@@ -1,159 +1,159 @@
 {
-    "_custom_": true, 
-    "_ref_": 201364749, 
-    "async_effect": false, 
-    "description": 1135910721, 
-    "effect_destroy_way_is_immediately": false, 
+    "_custom_": true,
+    "_ref_": 201364749,
+    "async_effect": false,
+    "description": 1135910721,
+    "effect_destroy_way_is_immediately": false,
     "effect_foes": {
-        "__tuple__": true, 
+        "__tuple__": true,
         "items": [
-            101175, 
+            101175,
             [
-                0.0, 
-                0.0, 
+                0.0,
+                0.0,
                 0.0
-            ], 
+            ],
             [
-                0.0, 
-                0.0, 
+                0.0,
+                0.0,
                 0.0
-            ], 
+            ],
             [
-                1.0, 
-                1.0, 
+                1.0,
+                1.0,
                 1.0
-            ], 
-            1.0, 
+            ],
+            1.0,
             {
-                "anim": "idle1", 
-                "base_color_mod": 1, 
+                "anim": "idle1",
+                "base_color_mod": 1,
                 "base_tint_color": [
-                    255, 
-                    255, 
-                    255, 
+                    255,
+                    255,
+                    255,
                     0.5
-                ], 
-                "is_loop": true, 
-                "model": 103014, 
-                "model_opacity": 1, 
+                ],
+                "is_loop": true,
+                "model": 103014,
+                "model_opacity": 1,
                 "offset": [
-                    0, 
-                    0, 
+                    0,
+                    0,
                     0
-                ], 
+                ],
                 "rotate": [
-                    0, 
-                    0, 
+                    0,
+                    0,
                     0
-                ], 
+                ],
                 "scale": [
-                    1, 
-                    1, 
+                    1,
+                    1,
                     1
-                ], 
+                ],
                 "use_base_tint_color": false
             }
         ]
-    }, 
+    },
     "effect_friend": {
-        "__tuple__": true, 
+        "__tuple__": true,
         "items": [
-            101175, 
+            101175,
             [
-                0.0, 
-                0.0, 
+                0.0,
+                0.0,
                 0.0
-            ], 
+            ],
             [
-                0.0, 
-                0.0, 
+                0.0,
+                0.0,
                 0.0
-            ], 
+            ],
             [
-                1.0, 
-                1.0, 
+                1.0,
+                1.0,
                 1.0
-            ], 
-            1.0, 
+            ],
+            1.0,
             {
-                "anim": "idle1", 
-                "base_color_mod": 1, 
+                "anim": "idle1",
+                "base_color_mod": 1,
                 "base_tint_color": [
-                    255, 
-                    255, 
-                    255, 
+                    255,
+                    255,
+                    255,
                     0.5
-                ], 
-                "is_loop": true, 
-                "model": 103014, 
-                "model_opacity": 1, 
+                ],
+                "is_loop": true,
+                "model": 103014,
+                "model_opacity": 1,
                 "offset": [
-                    0, 
-                    0, 
+                    0,
+                    0,
                     0
-                ], 
+                ],
                 "rotate": [
-                    0, 
-                    0, 
+                    0,
+                    0,
                     0
-                ], 
+                ],
                 "scale": [
-                    1, 
-                    1, 
+                    1,
+                    1,
                     1
-                ], 
+                ],
                 "use_base_tint_color": false
             }
         ]
-    }, 
-    "icon": 100000, 
-    "key": 201364749, 
+    },
+    "icon": 100000,
+    "key": 201364749,
     "kv": {
         "entry_projectile_speed": {
-            "annotation": "", 
-            "desc": "", 
-            "etype": 2, 
-            "key": "entry_projectile_speed", 
-            "prop_cls": "PFloat", 
-            "remark": "", 
-            "type": 1, 
+            "annotation": "",
+            "desc": "",
+            "key": "entry_projectile_speed",
+            "remark": "",
+            "etype": 2,
+            "prop_cls": "PFloat",
+            "type": 1,
             "value": 1960.0
-        }, 
+        },
         "entry_projectile_time": {
-            "annotation": "", 
-            "desc": "", 
-            "etype": 2, 
-            "key": "entry_projectile_time", 
-            "prop_cls": "PFloat", 
-            "remark": "", 
-            "type": 1, 
+            "annotation": "",
+            "desc": "",
+            "key": "entry_projectile_time",
+            "remark": "",
+            "etype": 2,
+            "prop_cls": "PFloat",
+            "type": 1,
             "value": 6.0
-        }, 
+        },
         "entry_target_distance": {
-            "annotation": "", 
-            "desc": "", 
-            "etype": 2, 
-            "key": "entry_target_distance", 
-            "prop_cls": "PFloat", 
-            "remark": "", 
-            "type": 1, 
+            "annotation": "",
+            "desc": "",
+            "key": "entry_target_distance",
+            "remark": "",
+            "etype": 2,
+            "prop_cls": "PFloat",
+            "type": 1,
             "value": 75.0
         }
-    }, 
-    "max_duration": 60, 
-    "move_channel": 0, 
-    "move_limitation": 1, 
-    "name": 780649294, 
-    "poolable": 0, 
-    "sfx_loop": false, 
+    },
+    "max_duration": 60,
+    "move_channel": 0,
+    "move_limitation": 1,
+    "name": 780649294,
+    "poolable": 0,
+    "sfx_loop": false,
     "sound_event_list": {
-        "__tuple__": true, 
+        "__tuple__": true,
         "items": []
-    }, 
-    "suffix": "", 
+    },
+    "suffix": "",
     "tags": {
-        "__tuple__": true, 
+        "__tuple__": true,
         "items": []
-    }, 
+    },
     "uid": "201364749"
 }

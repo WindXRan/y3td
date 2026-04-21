@@ -25,6 +25,16 @@ local function get_bond_quality_text(quality)
   return '普通'
 end
 
+local function get_gear_quality_text(quality)
+  if quality == 'epic' then
+    return '史诗词条'
+  end
+  if quality == 'rare' then
+    return '稀有词条'
+  end
+  return '普通词条'
+end
+
 local function get_evolution_hero_entry(def)
   local unit_id = def and def.hero_unit_id or nil
   if unit_id == nil then
@@ -604,6 +614,103 @@ local function build_treasure_item_desc_payload(def, active_count, quality_text,
   })
 end
 
+local GEAR_BONUS_ATTR_ORDER = {
+  '攻击',
+  '生命',
+  '护甲',
+  '力量',
+  '敏捷',
+  '智力',
+  '攻击范围',
+  '攻击速度',
+  '普攻伤害',
+  '技能伤害',
+  '物理伤害',
+  '魔法伤害',
+  '挑战伤害',
+  '精控伤害',
+  '攻击增幅',
+  '伤害减免',
+  '最终攻击',
+  '最终生命',
+  '多重数量',
+  '弹射次数',
+  '多重伤害',
+  '弹射伤害',
+}
+
+local GEAR_PERCENT_ATTRS = {
+  ['攻击速度'] = true,
+  ['普攻伤害'] = true,
+  ['技能伤害'] = true,
+  ['物理伤害'] = true,
+  ['魔法伤害'] = true,
+  ['挑战伤害'] = true,
+  ['精控伤害'] = true,
+  ['攻击增幅'] = true,
+  ['伤害减免'] = true,
+  ['最终攻击'] = true,
+  ['最终生命'] = true,
+  ['多重伤害'] = true,
+  ['弹射伤害'] = true,
+}
+
+local function format_gear_bonus_value(attr_name, value)
+  local number = tonumber(value) or 0
+  if GEAR_PERCENT_ATTRS[attr_name] then
+    return string.format('+%d%%', math.floor(number * 100 + 0.5))
+  end
+  if number == math.floor(number) then
+    return string.format('+%d', math.floor(number))
+  end
+  return string.format('+%.2f', number):gsub('0+$', ''):gsub('%.+$', '')
+end
+
+local function build_gear_bonus_lines(choice)
+  local lines = {}
+  local pack = choice and choice.bonus_pack or {}
+  local seen = {}
+
+  for _, attr_name in ipairs(GEAR_BONUS_ATTR_ORDER) do
+    local value = tonumber(pack and pack[attr_name]) or 0
+    if value ~= 0 then
+      lines[#lines + 1] = string.format('%s %s', attr_name, format_gear_bonus_value(attr_name, value))
+      seen[attr_name] = true
+    end
+  end
+
+  for attr_name, value in pairs(pack or {}) do
+    local number = tonumber(value) or 0
+    if not seen[attr_name] and number ~= 0 then
+      lines[#lines + 1] = string.format('%s %s', tostring(attr_name), format_gear_bonus_value(attr_name, number))
+    end
+  end
+
+  return lines
+end
+
+local function build_gear_item_desc_payload(choice, icon_res)
+  local attr_lines = {
+    '适用槽位：成长武器',
+    string.format('领悟节点：Lv.%d', tonumber(choice and choice.level) or 0),
+  }
+
+  append_display_lines(attr_lines, build_gear_bonus_lines(choice), 6)
+
+  local affix_lines = {}
+  append_affix_line(affix_lines, '词条效果', choice and choice.summary or '', 3)
+
+  return build_item_desc_payload({
+    title_text = choice and choice.display_name or '成长词条',
+    subtitle_text = '成长武器',
+    extra_subtitle_text = get_gear_quality_text(choice and choice.quality),
+    cost_text = get_gear_quality_text(choice and choice.quality),
+    icon_res = icon_res,
+    attr_lines = attr_lines,
+    affix_lines = affix_lines,
+  })
+end
+
 local function build_evolution_item_desc_payload(def, index, quality_text, icon_res)
   local skill, entry = get_evolution_hero_skill(def)
   local attr_lines = {}
@@ -656,6 +763,44 @@ function M.create(env)
   local pick_treasure_choices = env.pick_treasure_choices
   local create_bond_env = env.create_bond_env
   local refresh_upgrade_choices = env.refresh_upgrade_choices
+
+  local function build_gear_choice_cards()
+    local runtime = STATE.gear_state
+    local cards = {}
+    for index, choice in ipairs(runtime and runtime.current_choices or {}) do
+      local quality = choice and choice.quality or 'common'
+      local icon_res = get_choice_default_icon('upgrade', quality)
+      cards[#cards + 1] = {
+        index = index,
+        badge_text = get_choice_badge_text(quality),
+        quality = quality,
+        icon_res = icon_res,
+        title_text = choice.display_name or string.format('成长词条 %d', index),
+        progress_text = '',
+        subtitle_text = get_gear_quality_text(quality),
+        use_item_desc_card = true,
+        item_desc_payload = build_gear_item_desc_payload(choice, icon_res),
+        body_blocks = build_choice_text_blocks(
+          {
+            kind = 'value',
+            text = join_non_empty_lines(build_gear_bonus_lines(choice), '\n'),
+            color = quality == 'epic' and 'purple' or (quality == 'rare' and 'blue' or 'green'),
+          },
+          {
+            kind = 'effect_title',
+            text = '词条效果',
+            color = 'gold',
+          },
+          {
+            kind = 'effect',
+            text = choice.summary or '',
+            color = 'dim',
+          }
+        ),
+      }
+    end
+    return cards
+  end
 
   local function refresh_treasure_choices()
     local runtime = get_treasure_runtime()
@@ -905,6 +1050,21 @@ function M.create(env)
           wood_cost = get_choice_refresh_cost(round.refresh_paid_count or 0),
         },
         cards = build_upgrade_choice_cards(),
+      }
+    end
+
+    if kind == 'gear' then
+      return {
+        kind = kind,
+        panel_title = '成长武器词条',
+        hide_enabled = true,
+        refresh = {
+          visible = false,
+          enabled = false,
+          free_left = 0,
+          wood_cost = 0,
+        },
+        cards = build_gear_choice_cards(),
       }
     end
 

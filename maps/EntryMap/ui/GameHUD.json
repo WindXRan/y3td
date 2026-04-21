@@ -1,7 +1,7 @@
 {
     "adapt_mode": 2, 
     "anim_data": {}, 
-    "auto_create": false, 
+    "auto_create": true, 
     "children": [
         {
             "children": [
@@ -3602,7 +3602,7 @@
                                 true, 
                                 true, 
                                 true, 
-                                128.9699, 
+                                127.9699, 
                                 -4.9999, 
                                 159.6685, 
                                 -504.9985
@@ -3617,9 +3617,9 @@
                                 "__tuple__": true, 
                                 "items": [
                                     400.6685, 
-                                    2.5001, 
+                                    3.0001, 
                                     293.1649, 
-                                    1.799, 
+                                    2.1588, 
                                     1, 
                                     1
                                 ]
@@ -47746,9 +47746,9 @@
                     100
                 ]
             }, 
+            "visible": false, 
             "type": 7, 
-            "uid": "bdfaffc9-cf4e-4fbe-9027-696abc3165ba", 
-            "visible": false
+            "uid": "bdfaffc9-cf4e-4fbe-9027-696abc3165ba"
         }, 
         {
             "children": [], 
@@ -47808,6 +47808,6 @@
     "type": 2, 
     "ui_anims": [], 
     "uid": "ba9bec29-6a9d-47f3-a343-e4fe081e58dc", 
-    "visible": false, 
+    "visible": true, 
     "zorder": 400
 }

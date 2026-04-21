@@ -186,8 +186,29 @@ def main():
     updated_count = 0
     pending_language_entries = {}
     language_replace_count = 0
+    latest_items_by_id = {}
 
     for item in config_list:
+        latest_items_by_id[item['id']] = item
+
+    for item in config_list:
+        name_hash = murmur3_hash(item['name'])
+        desc_hash = murmur3_hash(f"{item['name']}_desc")
+
+        name_key = str(name_hash)
+        desc_key = str(desc_hash)
+        if language.get(name_key) != item['name']:
+            if name_key in language:
+                language_replace_count += 1
+            language[name_key] = item['name']
+            pending_language_entries[name_key] = item['name']
+        if language.get(desc_key) != item['description']:
+            if desc_key in language:
+                language_replace_count += 1
+            language[desc_key] = item['description']
+            pending_language_entries[desc_key] = item['description']
+
+    for item in latest_items_by_id.values():
         ability_path = ABILITY_DIR / f"{item['id']}.json"
         ability = json.loads(ability_path.read_text(encoding='utf-8'))
         name_hash = murmur3_hash(item['name'])
@@ -207,19 +228,6 @@ def main():
         if changed:
             write_json(ability_path, ability)
             updated_count += 1
-
-        name_key = str(name_hash)
-        desc_key = str(desc_hash)
-        if language.get(name_key) != item['name']:
-            if name_key in language:
-                language_replace_count += 1
-            language[name_key] = item['name']
-            pending_language_entries[name_key] = item['name']
-        if language.get(desc_key) != item['description']:
-            if desc_key in language:
-                language_replace_count += 1
-            language[desc_key] = item['description']
-            pending_language_entries[desc_key] = item['description']
 
     if pending_language_entries:
         if language_replace_count > 0:

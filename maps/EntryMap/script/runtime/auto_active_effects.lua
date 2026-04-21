@@ -27,12 +27,12 @@ function M.create(env)
     return math.max(0.05, (seconds or 0.30) / VISUAL_ANIMATION_SPEED)
   end
 
-  local function apply_visual_animation_speed(target, animation_speed)
+  local function apply_visual_animation_speed(target)
     if not target or not target.set_animation_speed then
       return
     end
     pcall(function()
-      target:set_animation_speed(animation_speed or VISUAL_ANIMATION_SPEED)
+      target:set_animation_speed(VISUAL_ANIMATION_SPEED)
     end)
   end
 
@@ -302,7 +302,7 @@ function M.create(env)
     pcall(function()
       projectile:set_height(PROJECTILE_FLIGHT_HEIGHT)
     end)
-    apply_visual_animation_speed(projectile, 1.0)
+    apply_visual_animation_speed(projectile)
 
     if launch_angle ~= nil then
       pcall(function()

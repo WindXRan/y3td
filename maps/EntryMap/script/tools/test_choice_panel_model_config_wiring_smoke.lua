@@ -72,6 +72,103 @@ assert(panel.cards[1].item_desc_payload.attr_lines[2] == '作用技能：普攻'
 assert(panel.cards[1].item_desc_payload.affix_lines[1].title == '技能说明', 'upgrade item desc should expose skill summary section')
 assert(panel.cards[1].item_desc_payload.affix_lines[2].title == '强化效果', 'upgrade item desc should expose upgrade effect section')
 
+local gear_state = {
+  choice_panel_hidden = false,
+  gear_state = {
+    awaiting_choice = true,
+    current_choices = {
+      {
+        id = 'gear_common',
+        level = 10,
+        quality = 'common',
+        display_name = '砺锋',
+        summary = '攻击 +30，适合稳定抬高成长武器白值',
+        bonus_pack = {
+          ['攻击'] = 30,
+        },
+      },
+      {
+        id = 'gear_rare',
+        level = 10,
+        quality = 'rare',
+        display_name = '重弓',
+        summary = '力量 +60，同时提高力量成长收益',
+        bonus_pack = {
+          ['力量'] = 60,
+        },
+      },
+      {
+        id = 'gear_epic',
+        level = 10,
+        quality = 'epic',
+        display_name = '猎心',
+        summary = '普攻伤害 +10%，并额外获得 20 攻击',
+        bonus_pack = {
+          ['攻击'] = 20,
+          ['普攻伤害'] = 0.10,
+        },
+      },
+    },
+  },
+  resources = {
+    wood = 999,
+  },
+}
+
+local gear_api = model.create({
+  STATE = gear_state,
+  message = function() end,
+  BondSystem = {
+    refresh_choice = function()
+      return true
+    end,
+  },
+  ATTACK_SKILL_DEFS = {},
+  TREASURE_DEFS = {},
+  get_pending_round_choice_kind = function()
+    return 'gear'
+  end,
+  get_treasure_runtime = function()
+    return {}
+  end,
+  get_treasure_quality_label = function(quality)
+    return quality
+  end,
+  get_treasure_active_count = function()
+    return 0
+  end,
+  pick_treasure_choices = function()
+    return {}
+  end,
+  create_bond_env = function()
+    return {}
+  end,
+  refresh_upgrade_choices = function()
+    return true
+  end,
+})
+
+local gear_panel = gear_api.get_current_choice_panel_model()
+assert(gear_panel ~= nil, 'gear choice panel model should exist')
+assert(gear_panel.kind == 'gear', 'gear panel should expose gear kind')
+assert(gear_panel.panel_title == '成长武器词条', 'gear panel should expose dedicated panel title')
+assert(gear_panel.refresh.visible == false, 'gear panel should hide refresh action')
+assert(gear_panel.cards[1].badge_text == 'N', 'gear common card should use common badge text')
+assert(gear_panel.cards[2].badge_text == 'R', 'gear rare card should use rare badge text')
+assert(gear_panel.cards[3].badge_text == 'E', 'gear epic card should use epic badge text')
+assert(gear_panel.cards[1].subtitle_text == '普通词条', 'gear card should expose readable quality subtitle')
+assert(gear_panel.cards[2].subtitle_text == '稀有词条', 'gear card should expose readable rare subtitle')
+assert(gear_panel.cards[3].subtitle_text == '史诗词条', 'gear card should expose readable epic subtitle')
+assert(gear_panel.cards[1].use_item_desc_card == true, 'gear card should opt into item desc card rendering')
+assert(gear_panel.cards[3].body_blocks[1].text == '攻击 +20\n普攻伤害 +10%', 'gear epic card should summarize structured bonus lines')
+assert(gear_panel.cards[3].item_desc_payload.title_text == '猎心', 'gear item desc should use the affix name as title')
+assert(gear_panel.cards[3].item_desc_payload.subtitle_text == '成长武器 史诗词条', 'gear item desc should compose slot and quality subtitle')
+assert(gear_panel.cards[3].item_desc_payload.cost_text == '史诗词条', 'gear item desc should expose readable quality text')
+assert(gear_panel.cards[3].item_desc_payload.attr_lines[1] == '适用槽位：成长武器', 'gear item desc should describe the target slot')
+assert(gear_panel.cards[3].item_desc_payload.attr_lines[3] == '攻击 +20', 'gear item desc should list flat bonus lines')
+assert(gear_panel.cards[3].item_desc_payload.attr_lines[4] == '普攻伤害 +10%', 'gear item desc should list percent bonus lines')
+assert(gear_panel.cards[3].item_desc_payload.affix_lines[1].title == '词条效果', 'gear item desc should expose the summary section')
+
 local bond_state = {
   choice_panel_hidden = false,
   bond_runtime = {

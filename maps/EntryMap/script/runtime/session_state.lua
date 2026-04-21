@@ -153,8 +153,6 @@ function M.create(env)
     end
     STATE.hero = nil
     STATE.hero_common_attack = nil
-    STATE.hero_blood_bar_type = nil
-    STATE.hero_blood_bar_unit = nil
     STATE.hero_spawn_point = make_point(CONFIG.points.hero_spawn)
     STATE.defense_point = make_point(CONFIG.points.defense_point)
     STATE.all_enemies = y3.unit_group.create()

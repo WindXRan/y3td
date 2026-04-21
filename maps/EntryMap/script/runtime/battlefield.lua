@@ -15,13 +15,11 @@ function M.create(env)
   local api = {}
   local VISUAL_ANIMATION_SPEED = 0.5
   local HERO_RUNTIME_FALLBACK_UNIT_ID = 134274912
-  local HERO_CUSTOM_BLOOD_BAR_ID = 134251599
   local ENEMY_BASE_SPEED_FACTORS = {
     main = 0.76,
     boss = 0.82,
     challenge = 0.76,
   }
-  local ENEMY_SPAWN_STAGGER_INTERVAL = math.max(0, tonumber(CONFIG.enemy_spawn_stagger_interval) or 0.03)
 
   local function scale_visual_duration(seconds)
     return math.max(0.05, (seconds or 0.30) / VISUAL_ANIMATION_SPEED)
@@ -908,20 +906,6 @@ function M.create(env)
     end
   end
 
-  local function clear_main_enemy_lane_slow(info)
-    if not info or not info.alive or info.kind ~= 'main' or not info.unit or not info.unit:is_exist() then
-      return
-    end
-    if info.lane_slow_applied then
-      local base_move_speed = info.base_move_speed or info.unit:get_attr('移动速度')
-      if base_move_speed and base_move_speed > 0 then
-        info.unit:set_attr('移动速度', base_move_speed)
-      end
-      info.lane_slow_applied = false
-      info.lane_slow_factor = 1
-    end
-  end
-
   local function spawn_enemy(unit_id, area_id, facing, info)
     info = info or {}
     local spawn_point = random_point_in_area(area_id)
@@ -989,11 +973,8 @@ function M.create(env)
     local wave_cap_left = get_wave_max_alive(wave) - runner.alive_count
     batch_count = math.min(batch_count, soft_cap_left, wave_cap_left)
 
-    local function spawn_one_enemy()
-      if not runner.active or STATE.game_finished or STATE.session_phase ~= 'battle' then
-        return
-      end
-      spawn_enemy(wave.main_unit_id, wave.spawn_area_id, 180.0, {
+    for _ = 1, batch_count, 1 do
+      local info = spawn_enemy(wave.main_unit_id, wave.spawn_area_id, 180.0, {
         kind = 'main',
         owner = runner,
         wave = wave,
@@ -1001,13 +982,8 @@ function M.create(env)
         spawn_hp = wave.main_spawn_hp,
         reward = wave.main_kill_reward,
       })
-    end
-
-    for index = 1, batch_count, 1 do
-      if index == 1 or ENEMY_SPAWN_STAGGER_INTERVAL <= 0 then
-        spawn_one_enemy()
-      else
-        y3.ltimer.wait((index - 1) * ENEMY_SPAWN_STAGGER_INTERVAL, spawn_one_enemy)
+      if not info then
+        break
       end
     end
   end
@@ -1303,13 +1279,9 @@ function M.create(env)
       spawn_boss(runner)
     end
 
-    if STATE.enemy_info_map and CONFIG.main_enemy_lane_slow_enabled == true then
+    if STATE.enemy_info_map then
       for _, info in pairs(STATE.enemy_info_map) do
         apply_main_enemy_lane_slow(info)
-      end
-    elseif STATE.enemy_info_map then
-      for _, info in pairs(STATE.enemy_info_map) do
-        clear_main_enemy_lane_slow(info)
       end
     end
   end
@@ -1409,19 +1381,6 @@ function M.create(env)
     return 1
   end
 
-  local function apply_hero_custom_blood_bar(hero)
-    if not hero then
-      return
-    end
-
-    STATE.hero_blood_bar_type = HERO_CUSTOM_BLOOD_BAR_ID
-    STATE.hero_blood_bar_unit = hero
-
-    if hero.set_blood_bar_type then
-      hero:set_blood_bar_type(HERO_CUSTOM_BLOOD_BAR_ID)
-    end
-  end
-
   local function build_hero_entry_stats()
     local result = {}
 
@@ -1504,7 +1463,6 @@ function M.create(env)
     if hero_attr_system and hero_attr_system.log_snapshot then
       hero_attr_system.log_snapshot(hero, 'create_hero_after_rebuild')
     end
-    apply_hero_custom_blood_bar(hero)
     hero:set_hp(hero_attr_system.get_attr(hero, '生命结算值'))
     STATE.hero_common_attack = hero:get_common_attack()
     local spawn_hp = resolve_hero_spawn_hp(hero)

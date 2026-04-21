@@ -175,6 +175,14 @@ function M.create(env)
     local pending_kind = env.get_pending_round_choice_kind()
     if pending_kind == 'upgrade' then
       lines[#lines + 1] = string.format('当前待选：技能强化，剩余技能点 %d', STATE.skill_points or 0)
+    elseif pending_kind == 'gear' then
+      local runtime = STATE.gear_state
+      local level = runtime
+        and runtime.pending_affix_choice
+        and runtime.pending_affix_choice.level
+        or (runtime and runtime.items and runtime.items.weapon and runtime.items.weapon.level)
+        or 0
+      lines[#lines + 1] = string.format('当前待选：成长武器词条三选一（Lv.%d）', tonumber(level) or 0)
     elseif pending_kind == 'bond' then
       lines[#lines + 1] = '当前待选：仙缘感应三选一'
       local runtime = STATE.bond_runtime
@@ -319,10 +327,10 @@ function M.create(env)
       return {
         title = '局内属性总览',
         subtitle = string.format(
-          '按 TAB 查看属性  按 B 返回构筑  当前战斗时长 %s',
+          '按 TAB 关闭属性面板  当前战斗时长 %s',
           os.date('!%M:%S', math.max(0, math.floor(STATE.runtime_elapsed or 0)))
         ),
-        close_label = '关闭 B',
+        close_label = '关闭 TAB',
         sections = {
           summary = {
             title = '英雄面板',

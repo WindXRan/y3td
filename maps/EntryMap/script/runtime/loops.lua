@@ -2,7 +2,6 @@ local M = {}
 
 function M.create(env)
   local STATE = env.STATE
-  local CONFIG = env.CONFIG or {}
   local y3 = env.y3
   local is_battle_active = env.is_battle_active
   local update_passive_resources = env.update_passive_resources
@@ -15,6 +14,7 @@ function M.create(env)
   local update_temporary_treasures = env.update_temporary_treasures
   local update_mainline_task = env.update_mainline_task
   local ensure_runtime_hud = env.ensure_runtime_hud
+  local ensure_choice_panel = env.ensure_choice_panel
   local set_battle_hud_visible = env.set_battle_hud_visible
   local refresh_runtime_hud = env.refresh_runtime_hud
   local refresh_choice_panel = env.refresh_choice_panel
@@ -27,8 +27,6 @@ function M.create(env)
   local get_enemies_in_range = env.get_enemies_in_range
   local deal_skill_damage = env.deal_skill_damage
   local hero_attr_system = env.hero_attr_system
-  local runtime_tick = 0.25
-  local battle_ui_refresh_interval = math.max(0.25, tonumber(CONFIG.runtime_ui_refresh_interval) or 0.5)
 
   local function get_hero_attack_value()
     if not STATE.hero or not STATE.hero:is_exist() then
@@ -45,6 +43,7 @@ function M.create(env)
   local function try_refresh_battle_ui()
     local ok, err = pcall(function()
       ensure_runtime_hud()
+      ensure_choice_panel()
       set_battle_hud_visible(true)
       refresh_runtime_hud()
       refresh_choice_panel()
@@ -71,75 +70,32 @@ function M.create(env)
     return false
   end
 
-  local function refresh_non_battle_ui()
-    STATE.runtime_ui_refresh_elapsed = 0
-    set_battle_hud_visible(false)
-    if outgame_system then
-      outgame_system.refresh_ui()
-    end
-  end
-
-  local function schedule_phase_loop(initial_delay, callback)
-    y3.ltimer.wait(math.max(0, initial_delay or 0), function()
-      if callback then
-        callback()
-      end
-      y3.ltimer.loop(runtime_tick, function()
-        if callback then
-          callback()
-        end
-      end)
-    end)
-  end
-
   local function start_runtime_loops()
-    y3.ltimer.loop(runtime_tick, function()
+    y3.ltimer.loop(0.25, function()
       if is_battle_active() then
-        STATE.runtime_elapsed = (STATE.runtime_elapsed or 0) + runtime_tick
-        update_passive_resources(runtime_tick)
-        battlefield_system.update_wave(runtime_tick)
-        battlefield_system.update_challenges(runtime_tick)
-        battlefield_system.update_challenge_charges(runtime_tick)
+        STATE.runtime_elapsed = (STATE.runtime_elapsed or 0) + 0.25
+        update_passive_resources(0.25)
+        battlefield_system.update_wave(0.25)
+        battlefield_system.update_challenges(0.25)
+        battlefield_system.update_challenge_charges(0.25)
         if update_mainline_task then
-          update_mainline_task(runtime_tick)
+          update_mainline_task(0.25)
         end
-        update_temporary_treasures(runtime_tick)
-        return
-      end
-
-      refresh_non_battle_ui()
-    end)
-
-    schedule_phase_loop(runtime_tick * 0.33, function()
-      if not is_battle_active() then
-        return
-      end
-
-      update_bond_effects(runtime_tick)
-      update_auto_active_effects(runtime_tick)
-      if update_effect_debug and CONFIG.effect_debug_auto_update_enabled == true then
-        update_effect_debug(runtime_tick)
-      end
-    end)
-
-    schedule_phase_loop(runtime_tick * 0.66, function()
-      if not is_battle_active() then
-        return
-      end
-
-      update_enemy_statuses(runtime_tick)
-      update_attack_skills(runtime_tick)
-    end)
-
-    schedule_phase_loop(runtime_tick * 0.16, function()
-      if not is_battle_active() then
-        return
-      end
-
-      STATE.runtime_ui_refresh_elapsed = (STATE.runtime_ui_refresh_elapsed or 0) + runtime_tick
-      if STATE.runtime_ui_refresh_elapsed >= battle_ui_refresh_interval then
-        STATE.runtime_ui_refresh_elapsed = 0
+        update_bond_effects(0.25)
+        update_auto_active_effects(0.25)
+        if update_effect_debug then
+          update_effect_debug(0.25)
+        end
+        update_enemy_statuses(0.25)
+        update_attack_skills(0.25)
+        update_temporary_treasures(0.25)
         try_refresh_battle_ui()
+        return
+      end
+
+      set_battle_hud_visible(false)
+      if outgame_system then
+        outgame_system.refresh_ui()
       end
     end)
 
@@ -171,8 +127,8 @@ function M.create(env)
       end
     end)
 
-    if y3.game.is_debug_mode() and CONFIG.gm_panel_auto_refresh_enabled == true then
-      y3.ltimer.loop(runtime_tick, function()
+    if y3.game.is_debug_mode() then
+      y3.ltimer.loop(0.25, function()
         debug_tools_system.ensure_gm_panel()
         debug_tools_system.refresh_gm_panel()
       end)

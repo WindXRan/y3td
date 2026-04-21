@@ -226,17 +226,9 @@ function M.create(env)
     message(string.format('成长武器升至 Lv.%d，消耗 %d 金币。', next_level, upgrade_cost))
 
     gear_runtime = GearUpgrades.ensure_runtime(STATE, CONFIG.gear_upgrade_config)
-    local pending_choice = gear_runtime and gear_runtime.current_choices and gear_runtime.current_choices[1] or nil
-    if gear_runtime and gear_runtime.awaiting_choice == true and pending_choice then
-      if GearUpgrades.apply_affix_choice({
-        STATE = STATE,
-        CONFIG = CONFIG,
-      }, 1) then
-        if audio_system and audio_system.play_confirm then
-          audio_system.play_confirm()
-        end
-        message(string.format('成长武器领悟词缀：%s。', pending_choice.display_name or pending_choice.id or '未知词缀'))
-      end
+    if gear_runtime and gear_runtime.awaiting_choice == true then
+      STATE.choice_panel_hidden = false
+      message(string.format('成长武器达到 Lv.%d，出现 3 个不同品质的词条，请选择其一。', next_level))
     end
 
     if sync_gear_runtime_effects and STATE.hero then
@@ -251,10 +243,6 @@ function M.create(env)
     local inventory_panel_system = get_inventory_panel_system and get_inventory_panel_system() or nil
     if inventory_panel_system and inventory_panel_system.refresh_panel then
       inventory_panel_system.refresh_panel()
-    end
-
-    if runtime_hud_system and runtime_hud_system.play_growth_weapon_upgrade_effect then
-      runtime_hud_system.play_growth_weapon_upgrade_effect(next_level)
     end
 
     return true

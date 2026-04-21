@@ -110,6 +110,7 @@ for _, row in ipairs(affix_rows) do
     affix_id = row.affix_id,
     pool_id = row.pool_id,
     order_index = tonumber(row.order_index) or 0,
+    quality = row.quality ~= '' and row.quality or 'common',
     display_name = row.display_name,
     summary = row.summary ~= '' and row.summary or row.display_name,
     attr_name = row.attr_name,

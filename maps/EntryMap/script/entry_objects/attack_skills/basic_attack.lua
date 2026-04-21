@@ -16,8 +16,8 @@ local M = {
 
 M.vfx = {
     projectile_key = 134267104,
-    projectile_speed = 3760,
-    projectile_time = 2.9,
+    projectile_speed = 1880,
+    projectile_time = 1.45,
     target_distance = 28,
   }
 

@@ -332,7 +332,7 @@
                                                     1
                                                 ]
                                             }, 
-                                            "prefab_sub_key": "232ce7d2-8543-412b-b4d1-850b83f187cb", 
+                                            "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
                                                 160.0, 
@@ -363,7 +363,7 @@
                                             1
                                         ]
                                     }, 
-                                    "prefab_sub_key": "0484d953-f905-4fbf-a4a8-dc23840cab57", 
+                                    "prefab_sub_key": null, 
                                     "scene_ui_name": null, 
                                     "size": [
                                         117.0, 
@@ -374,7 +374,6 @@
                                     "visible": false
                                 }
                             ], 
-                            "custom_kv": {}, 
                             "event_list": [
                                 {
                                     "action_list": [
@@ -478,7 +477,6 @@
                                     1
                                 ]
                             }, 
-                            "prefab_key": "8f8f9d57-078d-4c05-9d45-af11c468ecfd", 
                             "prefab_sub_key": null, 
                             "scene_ui_name": null, 
                             "size": [
@@ -2208,9 +2206,9 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    -691.6665, 
+                                                    475.0, 
                                                     200.0, 
-                                                    -72.807, 
+                                                    50.0, 
                                                     50.0, 
                                                     0, 
                                                     0

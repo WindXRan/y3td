@@ -1,13 +1,14 @@
 local CsvLoader = require 'data.csv_loader'
 local helpers = require 'entry_objects.helpers'
-local config_helpers = require 'entry_objects.config_helpers'
 
 local challenge_rows = CsvLoader.read_rows('data_csv/challenges.csv')
 local batch_rows = CsvLoader.read_rows('data_csv/challenge_batches.csv')
 local batch_groups = CsvLoader.group_by(batch_rows, 'challenge_id')
 
+local DEBUG_TIME_SCALE = ((y3 and y3.game and y3.game.is_debug_mode and y3.game.is_debug_mode()) and 0.2) or 1.0
+
 local function scale(seconds)
-  return config_helpers.scale(seconds or 0)
+  return (seconds or 0) * DEBUG_TIME_SCALE
 end
 
 local function challenge_batch(time_sec, count)

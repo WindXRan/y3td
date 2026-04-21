@@ -66,13 +66,6 @@
        "5d66295f-abb0-4868-ba04-09f69433cc68", 
        "\u4fee\u4ed9\u6a21\u5f0ftips"
       ]
-     }, 
-     {
-      "__tuple__": true, 
-      "items": [
-       "8f8f9d57-078d-4c05-9d45-af11c468ecfd", 
-       "\u5c40\u5916\u9875\u7b7e"
-      ]
      }
     ]
    }, 
@@ -142,6 +135,13 @@
    {
     "__tuple__": true, 
     "items": [
+     "d611dce9-828f-418f-ae3e-af252aa67599", 
+     "TaskDetailItem"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
      "ffdfeabe-cb4a-42c4-a685-6eec0bb83431", 
      "Btn"
     ]
@@ -200,6 +200,20 @@
     "items": [
      "5114d7dc-300a-4b78-b7f4-0f25549c1f86", 
      "\u5361\u724c"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "099c8514-b62e-43aa-89ad-a5bc28516e17", 
+     "\u7f81\u7eca"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "025aa808-1d9a-4d17-9b91-25131259795e", 
+     "\u65b0\u5efa\u81ea\u5b9a\u4e49\u6a21\u5757_1"
     ]
    }, 
    {
@@ -284,20 +298,6 @@
     "items": [
      "e0052525-488d-4c99-b38b-53db1df63fd5", 
      "\u5730\u56fe\u7b49\u7ea7"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "60de0051-0934-4ce4-abcc-2e3eb1c8626a", 
-     "skill"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "5253a9c6-50dd-41bc-9ba8-1520dddfa4b0", 
-     "skill"
     ]
    }
   ]

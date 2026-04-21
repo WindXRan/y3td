@@ -45,7 +45,7 @@ def main() -> None:
         "assert(system.get_attr(hero, '最终力量') == 70, 'expected final strength without ratios') "
         "assert(system.get_attr(hero, '最终敏捷') == 35, 'expected final agility without ratios') "
         "assert(system.get_attr(hero, '最终智力') == 55, 'expected final intelligence without ratios') "
-        "assert(system.get_attr(hero, '攻击结算值') == 26, 'expected attack to include split main stats') "
+        "assert(system.get_attr(hero, '攻击结算值') == 810, 'expected attack to include split main stats with the new factor') "
         "print('hero_attr_main_stat_split smoke ok') "
     )
     with tempfile.NamedTemporaryFile('w', encoding='utf-8', suffix='.lua', delete=False) as handle:

@@ -337,6 +337,8 @@ local STATE = {
   choice_panel_hidden = false,
   runtime_overview = nil,
   runtime_overview_mode = 'build',
+  runtime_attr_tab_panel = nil,
+  runtime_attr_tab_selected = 'summary',
   hero_attr_runtime = nil,
   hero_form_skill_runtime = nil,
   gm_ui = nil,
@@ -553,6 +555,12 @@ local function build_runtime_attr_dialog_chunks()
 end
 
 local function show_runtime_attr_dialog()
+  if runtime_hud_system and runtime_hud_system.toggle_attr_panel then
+    local visible = runtime_hud_system.toggle_attr_panel()
+    if visible ~= nil then
+      return visible
+    end
+  end
   local chunks = build_runtime_attr_dialog_chunks()
   for index, text in ipairs(chunks) do
     y3.ltimer.wait((index - 1) * 0.08, function()
@@ -1490,6 +1498,9 @@ local function get_pending_round_choice_kind()
   if STATE.awaiting_upgrade and STATE.current_upgrade_choices then
     return 'upgrade'
   end
+  if STATE.gear_state and STATE.gear_state.awaiting_choice and STATE.gear_state.current_choices then
+    return 'gear'
+  end
   if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice and STATE.bond_runtime.current_choices then
     return 'bond'
   end
@@ -1514,6 +1525,9 @@ local function get_pending_round_choice_label(kind)
   end
   if kind == 'bond' then
     return 'F 仙缘感应'
+  end
+  if kind == 'gear' then
+    return '成长武器词条'
   end
   if kind == 'evolution' or kind == 'mark' then
     return '真身进化'
@@ -1576,6 +1590,9 @@ local function show_pending_round_choice(kind)
     BondSystem.try_draw(create_bond_env())
     return
   end
+  if current_kind == 'gear' then
+    return
+  end
   if current_kind == 'evolution' or current_kind == 'mark' then
     show_mark_choices()
     return
@@ -1627,6 +1644,20 @@ local function apply_round_choice(index)
   if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice then
     apply_bond_choice(index)
     return true
+  end
+  if STATE.gear_state and STATE.gear_state.awaiting_choice then
+    if GearUpgrades.apply_affix_choice({
+      STATE = STATE,
+      CONFIG = CONFIG,
+      message = message,
+    }, index) then
+      if STATE.hero and sync_gear_runtime_effects then
+        sync_gear_runtime_effects(STATE, STATE.hero, CONFIG.gear_upgrade_config)
+      end
+      STATE.choice_panel_hidden = false
+      return true
+    end
+    return false
   end
   local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
   if evolution_runtime and evolution_runtime.awaiting_choice then
@@ -1962,6 +1993,9 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
       and CONFIG.gear_upgrade_config.slots.weapon
       or nil
     return slot_cfg and slot_cfg.item_key or nil
+  end,
+  get_runtime_overview_model = function()
+    return get_runtime_overview_model and get_runtime_overview_model() or nil
   end,
   try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
   build_attack_skill_slot_text = function(slot)
