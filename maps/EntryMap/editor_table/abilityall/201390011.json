@@ -198,7 +198,7 @@
     "cst_sound_effect": {
         "__tuple__": true, 
         "items": [
-            126042
+            201390431
         ]
     }, 
     "customized_pointer_sfx": 100000, 
@@ -236,7 +236,7 @@
     "end_sound_effect": {
         "__tuple__": true, 
         "items": [
-            126054
+            201390433
         ]
     }, 
     "filter_condition_camp": 5, 
@@ -286,7 +286,7 @@
     "hit_sound_effect": {
         "__tuple__": true, 
         "items": [
-            123320
+            201390432
         ]
     }, 
     "influenced_by_cd_reduce": true, 

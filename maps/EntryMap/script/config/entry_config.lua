@@ -11,8 +11,8 @@ local resource_rules = battle_base.resource_rules
 local challenge_rules = battle_base.challenge_rules
 
 local DEBUG_TIME_SCALE = y3.game.is_debug_mode()
-  and global_rules.debug_time_scale_debug
-  or global_rules.debug_time_scale_release
+    and global_rules.debug_time_scale_debug
+    or global_rules.debug_time_scale_release
 
 local function scale(seconds)
   return seconds * DEBUG_TIME_SCALE
@@ -48,22 +48,26 @@ local TreasureCatalogObjects = require 'entry_objects.treasure_catalog'
 local TreasureCatalogCompatObjects = require 'data.object_tables.treasure_catalog_compat'
 local OutgameAttrBonusConfig = require 'data.object_tables.outgame_attr_bonus_config'
 local GearUpgradeConfig = require 'data.object_tables.gear_upgrade_config'
+local OutgameTreasureHuntConfig = require 'data.object_tables.outgame_treasure_hunt_config'
 
 local M = {
   debug_time_scale = DEBUG_TIME_SCALE,
-  debug_auto_unlock_attack_skills_on_stage_start = y3.game.is_debug_mode(),
+  debug_auto_unlock_attack_skills_on_stage_start = true,
   enemy_hit_reaction_enabled = false,
   enemy_death_reaction_enabled = false,
   damage_hit_effect_enabled = false,
-  runtime_ui_animations_enabled = false,
-  choice_panel_hover_animations_enabled = false,
-  attack_skill_particles_enabled = false,
-  attack_skill_projectiles_enabled = false,
-  attack_skill_animations_enabled = false,
-  effect_debug_auto_update_enabled = false,
-  gm_panel_auto_refresh_enabled = false,
-  runtime_ui_refresh_interval = 1.0,
-  main_enemy_lane_slow_enabled = false,
+  runtime_ui_animations_enabled = true,
+  choice_panel_hover_animations_enabled = true,
+  attack_skill_particles_enabled = true,
+  attack_skill_projectiles_enabled = true,
+  attack_skill_animations_enabled = true,
+  effect_debug_auto_update_enabled = true,
+  gm_panel_auto_refresh_enabled = true,
+  runtime_ui_refresh_interval = 0.2,
+  runtime_perf_diag_enabled = true,
+  runtime_perf_diag_log_to_file = true,
+  runtime_perf_diag_cooldown_ms = 500,
+  main_enemy_lane_slow_enabled = true,
   enemy_spawn_stagger_interval = 0.03,
   hero_custom_blood_bar_enabled = false,
   player_id = global_rules.player_id,
@@ -113,6 +117,7 @@ local M = {
   treasure_catalog_compat = TreasureCatalogCompatObjects,
   outgame_attr_bonus_config = OutgameAttrBonusConfig,
   gear_upgrade_config = GearUpgradeConfig,
+  outgame_treasure_hunt_config = OutgameTreasureHuntConfig,
 }
 
 for _, wave in ipairs(M.waves) do

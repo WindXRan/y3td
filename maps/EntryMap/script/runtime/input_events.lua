@@ -24,8 +24,25 @@ function M.create(env)
   local debug_tools_system = env.debug_tools_system
   local toggle_talk_input = env.toggle_talk_input
   local toggle_inventory_panel = env.toggle_inventory_panel
+  local toggle_attr_panel = env.toggle_attr_panel
   local open_save_panel = env.open_save_panel
   local try_upgrade_growth_weapon = env.try_upgrade_growth_weapon
+
+  local function try_use_bar_item(slot)
+    if not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then
+      return false
+    end
+    local item = STATE.hero:get_item_by_slot(y3.const.SlotType.BAR, slot - 1)
+        or STATE.hero:get_item_by_slot(y3.const.SlotType.BAR, slot)
+    if not item then
+      return false
+    end
+    if STATE.hero.use_item then
+      STATE.hero:use_item(item)
+      return true
+    end
+    return false
+  end
 
   local function register_runtime_events()
     if STATE.events_registered then
@@ -86,7 +103,9 @@ function M.create(env)
       if not is_battle_active() then
         return
       end
-      if show_runtime_attr_dialog then
+      if toggle_attr_panel then
+        toggle_attr_panel()
+      elseif show_runtime_attr_dialog then
         show_runtime_attr_dialog()
       end
     end)
@@ -165,6 +184,9 @@ function M.create(env)
       if apply_round_choice(1) then
         return
       end
+      if try_use_bar_item(1) then
+        return
+      end
       if try_upgrade_growth_weapon then
         try_upgrade_growth_weapon('hotkey')
       end
@@ -173,13 +195,37 @@ function M.create(env)
       if not is_battle_active() then
         return
       end
-      apply_round_choice(2)
+      if apply_round_choice(2) then
+        return
+      end
+      try_use_bar_item(2)
     end)
     y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_3'], function()
       if not is_battle_active() then
         return
       end
-      apply_round_choice(3)
+      if apply_round_choice(3) then
+        return
+      end
+      try_use_bar_item(3)
+    end)
+    y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_4'], function()
+      if not is_battle_active() then
+        return
+      end
+      try_use_bar_item(4)
+    end)
+    y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_5'], function()
+      if not is_battle_active() then
+        return
+      end
+      try_use_bar_item(5)
+    end)
+    y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_6'], function()
+      if not is_battle_active() then
+        return
+      end
+      try_use_bar_item(6)
     end)
     y3.game:event('键盘-按下', 'SPACE', function()
       if not is_battle_active() then

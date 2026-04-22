@@ -67,9 +67,25 @@ end
 
 function M.get_overlay_parent(y3, player)
   return resolve_first_ui(y3, player, {
-    'top',
     'panel_1',
+    'panel_1.tophud',
+    'top.top',
+    'top',
+    'GameHUD',
+    'GameHUD.main',
     'bottom_bg',
+  })
+end
+
+function M.get_fullscreen_overlay_parent(y3, player)
+  return resolve_first_ui(y3, player, {
+    'top',
+    'GameHUD',
+    'bottom_bg',
+    'top.top',
+    'panel_1',
+    'panel_1.tophud',
+    'GameHUD.main',
   })
 end
 

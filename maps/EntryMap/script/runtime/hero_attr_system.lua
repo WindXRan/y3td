@@ -369,38 +369,42 @@ function M.create()
     local intelligence = get_intelligence_total(hero)
 
     local final_strength = strength
-      * (1 + normalize_ratio(api.get_attr(hero, '力量增幅')))
-      * (1 + normalize_ratio(api.get_attr(hero, '最终力量增幅')))
+        * (1 + normalize_ratio(api.get_attr(hero, '力量增幅')))
+        * (1 + normalize_ratio(api.get_attr(hero, '最终力量增幅')))
     local final_agility = agility
-      * (1 + normalize_ratio(api.get_attr(hero, '敏捷增幅')))
-      * (1 + normalize_ratio(api.get_attr(hero, '最终敏捷增幅')))
+        * (1 + normalize_ratio(api.get_attr(hero, '敏捷增幅')))
+        * (1 + normalize_ratio(api.get_attr(hero, '最终敏捷增幅')))
     local final_intelligence = intelligence
-      * (1 + normalize_ratio(api.get_attr(hero, '智力增幅')))
-      * (1 + normalize_ratio(api.get_attr(hero, '最终智力增幅')))
+        * (1 + normalize_ratio(api.get_attr(hero, '智力增幅')))
+        * (1 + normalize_ratio(api.get_attr(hero, '最终智力增幅')))
 
     local attack_total = get_attack_white(hero) + get_attack_green(hero)
 
     local attack_value = (
-      attack_total
-      + final_strength * 0.1
-      + final_agility * 0.1
-      + final_intelligence * 0.1
-    ) * (1 + normalize_ratio(api.get_attr(hero, '攻击增幅')))
-      * (1 + normalize_ratio(api.get_attr(hero, '最终攻击')))
+          attack_total
+          + final_strength * 0.5
+          + final_agility * 0.5
+          + final_intelligence * 0.5
+        ) * (1 + normalize_ratio(api.get_attr(hero, '攻击增幅')))
+        * (1 + normalize_ratio(api.get_attr(hero, '最终攻击')))
 
     local life_total = get_life_white(hero) + get_life_green(hero)
     local armor_total = get_armor_white(hero) + get_armor_green(hero)
 
     local life_value = (
-      life_total
-      + final_strength * 1.0
-    ) * (1 + normalize_ratio(api.get_attr(hero, '生命增幅')))
-      * (1 + normalize_ratio(api.get_attr(hero, '最终生命')))
+          life_total
+          + final_strength * 100
+        ) * (1 + normalize_ratio(api.get_attr(hero, '生命增幅')))
+        * (1 + normalize_ratio(api.get_attr(hero, '最终生命')))
 
     local armor_value = (
-      armor_total
-    ) * (1 + normalize_ratio(api.get_attr(hero, '护甲增幅')))
-      * (1 + normalize_ratio(api.get_attr(hero, '最终护甲')))
+          armor_total
+        ) * (1 + normalize_ratio(api.get_attr(hero, '护甲增幅')))
+        * (1 + normalize_ratio(api.get_attr(hero, '最终护甲')))
+
+    api.set_attr(hero, '生命恢复', final_strength * 1.0)
+    api.set_attr(hero, '物理伤害', final_agility * 0.1)
+    api.set_attr(hero, '魔法伤害', final_intelligence * 0.1)
 
     api.set_attr(hero, '最终力量', final_strength)
     api.set_attr(hero, '最终敏捷', final_agility)

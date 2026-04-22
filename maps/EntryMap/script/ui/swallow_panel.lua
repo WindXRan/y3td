@@ -50,7 +50,7 @@ function M.create(env)
   local get_consumed_bond_entries = env.get_consumed_bond_entries
 
   local function get_hud_root()
-    return UIRoot.get_overlay_parent(y3, get_player())
+    return UIRoot.get_fullscreen_overlay_parent(y3, get_player())
   end
 
   local function resolve_prefab_node(prefab, path)

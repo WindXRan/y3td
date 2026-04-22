@@ -9,7 +9,135 @@ local PAGE_PASS = 'pass'
 local PAGE_ARMORY = 'armory'
 local PAGE_SHOP = 'shop'
 local PAGE_ACHIEVEMENT = 'achievement'
-local PANEL_ROOT_CANDIDATES = { '通行证系统', '存档系统' }
+local PANEL_ROOT_CANDIDATES = { '通行证系统', '存档系统', '局外系统' }
+local TOP_TAB_BUTTON_WIDTH = 132
+local TOP_TAB_BUTTON_HEIGHT = 42
+local TOP_TAB_BUTTON_GAP = 14
+local ENABLE_RUNTIME_TOP_NAV = false
+local TOP_TAB_DEFS = {
+  { page_key = PAGE_PASS, node_name = '按钮', label = '存档', page_field = 'pass_page' },
+  { page_key = PAGE_LOGIN, node_name = '按钮_8', label = '登录奖励', page_field = 'login_page' },
+  { page_key = PAGE_PREMIUM, node_name = '按钮_9', label = '军令状', page_field = 'premium_page' },
+  { page_key = PAGE_ARMORY, node_name = '按钮_10', label = '武库', page_field = 'armory_page' },
+  { page_key = PAGE_SHOP, node_name = '按钮_11', label = '商店', page_field = 'shop_page' },
+  { page_key = PAGE_ACHIEVEMENT, node_name = '按钮_12', label = '成就', page_field = 'achievement_page' },
+}
+local PANEL_PATH_ALIASES = {
+  ['通行证系统'] = {
+    '局外系统.局外系统',
+  },
+  ['通行证系统.通行证界面'] = {
+    '局外系统.局外系统',
+  },
+  ['通行证系统.按钮区域'] = {
+    '局外系统.局外系统.顶部页签',
+  },
+  ['通行证系统.按钮区域.仓库按钮'] = {
+    '局外系统.局外系统.顶部页签.按钮',
+  },
+  ['通行证系统.按钮区域.仓库按钮.仓库按钮图标'] = {
+    '局外系统.局外系统.顶部页签.按钮.文本',
+  },
+  ['通行证系统.通行证界面.仓库界面关闭按钮'] = {
+    '局外系统.局外系统.仓库界面关闭按钮',
+  },
+  ['通行证系统.通行证界面.左侧区域.登陆奖励'] = {
+    '局外系统.局外系统.备用.登陆奖励',
+  },
+  ['通行证系统.通行证界面.左侧区域.登陆奖励.登录奖励高亮'] = {
+    '局外系统.局外系统.备用.登陆奖励.登录奖励高亮',
+  },
+  ['通行证系统.通行证界面.左侧区域.军令状'] = {
+    '局外系统.局外系统.备用.军令状',
+  },
+  ['通行证系统.通行证界面.左侧区域.军令状.军令状高亮'] = {
+    '局外系统.局外系统.备用.军令状.军令状高亮',
+  },
+  ['通行证系统.通行证界面.左侧区域.征战之路'] = {
+    '局外系统.局外系统.顶部页签.按钮',
+  },
+  ['通行证系统.通行证界面.左侧区域.征战之路.征战之路高亮'] = {
+    '局外系统.局外系统.顶部页签.按钮.高亮',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面'] = {
+    '局外系统.局外系统.右侧区域.通行证页面',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面.标题'] = {
+    '局外系统.局外系统.右侧区域.通行证页面.标题',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面.副标题'] = {
+    '局外系统.局外系统.右侧区域.通行证页面.副标题',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面.当前征战之路经验'] = {
+    '局外系统.局外系统.右侧区域.通行证页面.当前征战之路经验',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面.当前征战之路经验.数字'] = {
+    '局外系统.局外系统.右侧区域.通行证页面.当前征战之路经验.数字',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面.距离下级所需经验'] = {
+    '局外系统.局外系统.右侧区域.通行证页面.距离下级所需经验',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面.距离下级所需经验.数字'] = {
+    '局外系统.局外系统.右侧区域.通行证页面.距离下级所需经验.数字',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面.通行证列表'] = {
+    '局外系统.局外系统.右侧区域.通行证页面.通行证列表',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面.通行证列表.列表背景'] = {
+    '局外系统.局外系统.右侧区域.通行证页面.通行证列表.列表背景',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面.通行证列表.列表背景.通行证进度条'] = {
+    '局外系统.局外系统.右侧区域.通行证页面.通行证列表.列表背景.通行证进度条',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面.通行证列表.列表背景.网格列表'] = {
+    '局外系统.局外系统.右侧区域.通行证页面.通行证列表.列表背景.网格列表',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面.领取按钮'] = {
+    '局外系统.局外系统.右侧区域.通行证页面.领取按钮',
+  },
+  ['通行证系统.通行证界面.右侧区域.通行证页面.通行证Tips'] = {
+    '局外系统.局外系统.右侧区域.通行证页面.通行证Tips',
+  },
+  ['通行证系统.通行证界面.右侧区域.武库页面'] = {
+    '局外系统.局外系统.右侧区域.武库',
+  },
+  ['通行证系统.通行证界面.右侧区域.武库页面.标题'] = {
+    '局外系统.局外系统.右侧区域.武库.标题',
+  },
+  ['通行证系统.通行证界面.右侧区域.武库页面.副标题'] = {
+    '局外系统.局外系统.右侧区域.武库.副标题',
+  },
+  ['通行证系统.通行证界面.右侧区域.商店页面'] = {
+    '局外系统.局外系统.右侧区域.商店页面',
+  },
+  ['通行证系统.通行证界面.右侧区域.商店页面.标题'] = {
+    '局外系统.局外系统.右侧区域.商店页面.标题',
+  },
+  ['通行证系统.通行证界面.右侧区域.商店页面.副标题'] = {
+    '局外系统.局外系统.右侧区域.商店页面.副标题',
+  },
+  ['通行证系统.通行证界面.右侧区域.商店页面.技能碎片.数量数值'] = {
+    '局外系统.局外系统.右侧区域.商店页面.技能碎片.数量数值',
+  },
+  ['通行证系统.通行证界面.右侧区域.成就页面'] = {
+    '局外系统.局外系统.右侧区域.成就页面',
+  },
+  ['通行证系统.通行证界面.右侧区域.成就页面.标题'] = {
+    '局外系统.局外系统.右侧区域.成就页面.标题',
+  },
+  ['通行证系统.通行证界面.右侧区域.成就页面.副标题'] = {
+    '局外系统.局外系统.右侧区域.成就页面.副标题',
+  },
+  ['通行证系统.通行证界面.右侧区域.成就页面.成就积分.数量数值'] = {
+    '局外系统.局外系统.右侧区域.成就页面.成就积分.数量数值',
+  },
+  ['通行证系统.通行证界面.右侧区域.确认购买'] = {
+    '局外系统.局外系统.右侧区域.确认购买',
+  },
+  ['通行证系统.通行证界面.存档数量显示'] = {
+    '局外系统.局外系统.存档数量显示',
+  },
+}
 local PASS_TRACK_FREE = 'free'
 local PASS_TRACK_PAID = 'paid'
 local PASS_LEVEL_CELL_WIDTH = 105
@@ -29,6 +157,18 @@ local BIND_FLAG_KEYS = {
   'bound_debug_add_exp_100',
   'bound_debug_add_exp_500',
   'bound_debug_reset_claims',
+  'bound_top_tab_pass',
+  'bound_top_tab_login',
+  'bound_top_tab_premium',
+  'bound_top_tab_armory',
+  'bound_top_tab_shop',
+  'bound_top_tab_achievement',
+  'bound_runtime_top_tab_pass',
+  'bound_runtime_top_tab_login',
+  'bound_runtime_top_tab_premium',
+  'bound_runtime_top_tab_armory',
+  'bound_runtime_top_tab_shop',
+  'bound_runtime_top_tab_achievement',
 }
 
 local function set_visible_if_alive(ui, visible)
@@ -100,6 +240,9 @@ function M.create(env)
   local mark_profile_dirty = env.mark_profile_dirty
   local rebuild_hero_attr_bonus_stats = env.rebuild_hero_attr_bonus_stats
   local play_ui_click = env.play_ui_click
+  local get_nav_host = env.get_nav_host
+
+  local outgame_panel = nil
 
   local runtime = {
     ui = nil,
@@ -123,6 +266,12 @@ function M.create(env)
   end
 
   local function resolve_panel_ui(path)
+    for _, alias in ipairs(PANEL_PATH_ALIASES[tostring(path or '')] or {}) do
+      local ui = resolve_ui(alias)
+      if ui then
+        return ui
+      end
+    end
     for _, root_name in ipairs(PANEL_ROOT_CANDIDATES) do
       local candidate = tostring(path or ''):gsub('^通行证系统', root_name, 1)
       local ui = resolve_ui(candidate)
@@ -149,6 +298,9 @@ function M.create(env)
 
   local function ensure_open_hotspot(ui)
     if not ui or not UIRoot.is_alive(ui.button_area) then
+      return nil
+    end
+    if UIRoot.is_alive(ui.open_button) and ui.open_button ~= ui.button_area then
       return nil
     end
     if can_bind_fast_event(runtime.open_hotspot) then
@@ -238,6 +390,175 @@ function M.create(env)
 
     ui.save_count_label = label
     return label
+  end
+
+  local function refresh_open_entry_label(ui)
+    if not ui then
+      return
+    end
+    set_text_if_alive(ui.open_button, '存档')
+    set_text_if_alive(ui.open_icon, '存档')
+  end
+
+  local function ensure_runtime_top_nav(ui)
+    if ENABLE_RUNTIME_TOP_NAV ~= true then
+      return nil
+    end
+    local host = get_nav_host and get_nav_host() or nil
+    if not UIRoot.is_alive(host) and STATE.session_phase == 'battle' then
+      host = UIRoot.get_overlay_parent(y3, get_player())
+    end
+    if not UIRoot.is_alive(host) and outgame_panel and outgame_panel.get_battle_pass_nav_host then
+      host = outgame_panel.get_battle_pass_nav_host()
+    end
+    host = UIRoot.is_alive(host) and host or ui and ui.root or nil
+    if not UIRoot.is_alive(host) or not host.create_child then
+      return nil
+    end
+    if ui.runtime_top_nav and UIRoot.is_alive(ui.runtime_top_nav.root) and ui.runtime_top_nav.host == host then
+      return ui.runtime_top_nav
+    end
+
+    if ui.runtime_top_nav and UIRoot.is_alive(ui.runtime_top_nav.root) and ui.runtime_top_nav.root.remove then
+      ui.runtime_top_nav.root:remove()
+      ui.runtime_top_nav = nil
+    end
+
+    local ok_root, nav_root = pcall(host.create_child, host, '图片')
+    if not ok_root or not nav_root then
+      return nil
+    end
+
+    if nav_root.set_image then
+      nav_root:set_image(999)
+    end
+    if nav_root.set_image_color then
+      nav_root:set_image_color(255, 255, 255, 0)
+    end
+    if nav_root.set_anchor then
+      nav_root:set_anchor(0.5, 0.5)
+    end
+    if nav_root.set_z_order then
+      nav_root:set_z_order(60)
+    end
+    if nav_root.set_intercepts_operations then
+      nav_root:set_intercepts_operations(false)
+    end
+
+    local buttons = {}
+    for _, def in ipairs(TOP_TAB_DEFS) do
+      local ok_button, button = pcall(nav_root.create_child, nav_root, '按钮')
+      if ok_button and button then
+        if button.set_ui_size then
+          button:set_ui_size(TOP_TAB_BUTTON_WIDTH, TOP_TAB_BUTTON_HEIGHT)
+        end
+        if button.set_font_size then
+          button:set_font_size(18)
+        end
+        if button.set_text_color then
+          button:set_text_color(235, 240, 248, 255)
+        end
+        if button.set_z_order then
+          button:set_z_order(61)
+        end
+        buttons[#buttons + 1] = {
+          page_key = def.page_key,
+          label = def.label,
+          page_field = def.page_field,
+          button = button,
+        }
+      end
+    end
+
+    ui.runtime_top_nav = {
+      host = host,
+      root = nav_root,
+      buttons = buttons,
+    }
+    return ui.runtime_top_nav
+  end
+
+  local function layout_runtime_top_nav(ui)
+    local nav = ensure_runtime_top_nav(ui)
+    if not nav or not UIRoot.is_alive(nav.root) then
+      return
+    end
+
+    local enabled_buttons = {}
+    for _, tab in ipairs(nav.buttons or {}) do
+      if tab.enabled ~= false then
+        enabled_buttons[#enabled_buttons + 1] = tab
+      end
+    end
+
+    local count = #enabled_buttons
+    local width = math.max(1, count * TOP_TAB_BUTTON_WIDTH + math.max(0, count - 1) * TOP_TAB_BUTTON_GAP)
+    local height = TOP_TAB_BUTTON_HEIGHT
+    local host = nav.host
+    local root_width = UIRoot.is_alive(host) and host.get_width and host:get_width() or 1600
+    local root_height = UIRoot.is_alive(ui.root) and ui.root.get_height and ui.root:get_height() or 900
+    if UIRoot.is_alive(host) and host.get_height then
+      root_height = host:get_height() or root_height
+    end
+
+    if nav.root.set_ui_size then
+      nav.root:set_ui_size(width, height)
+    end
+    if nav.root.set_pos then
+      local pos_x = math.max((width * 0.5) + 24, 110)
+      local pos_y = root_height - 40
+      nav.root:set_pos(pos_x, pos_y)
+    end
+
+    local start_x = TOP_TAB_BUTTON_WIDTH * 0.5
+    for index, tab in ipairs(enabled_buttons) do
+      if UIRoot.is_alive(tab.button) and tab.button.set_pos then
+        tab.button:set_pos(start_x + (index - 1) * (TOP_TAB_BUTTON_WIDTH + TOP_TAB_BUTTON_GAP), height * 0.5)
+      end
+    end
+  end
+
+  local function refresh_top_tabs(ui)
+    if not ui then
+      return
+    end
+
+    for _, tab in ipairs(ui.top_tabs or {}) do
+      local enabled = tab.enabled ~= false
+      local selected = runtime.current_page == tab.page_key
+      set_visible_if_alive(tab.button, false)
+      set_visible_if_alive(tab.highlight, false)
+      if enabled then
+        set_text_if_alive(tab.button, tab.label)
+        set_text_if_alive(tab.text, tab.label)
+      end
+    end
+
+    for _, extra in ipairs(ui.top_tabs_extra or {}) do
+      set_visible_if_alive(extra, false)
+    end
+
+    local nav = ensure_runtime_top_nav(ui)
+    if nav then
+      for _, tab in ipairs(nav.buttons or {}) do
+        local enabled = tab.enabled ~= false
+        local selected = runtime.current_page == tab.page_key
+        set_visible_if_alive(tab.button, enabled)
+        if enabled then
+          set_text_if_alive(tab.button, tab.label)
+          set_button_enable_if_alive(tab.button, true)
+          set_image_color_if_alive(
+            tab.button,
+            selected and { 84, 138, 226, 255 } or { 40, 58, 92, 236 }
+          )
+          set_text_color_if_alive(
+            tab.button,
+            selected and { 245, 248, 255, 255 } or { 220, 232, 246, 255 }
+          )
+        end
+      end
+      layout_runtime_top_nav(ui)
+    end
   end
 
   local function reset_bind_flags()
@@ -617,6 +938,7 @@ function M.create(env)
     set_visible_if_alive(ui.login_highlight, login_selected)
     set_visible_if_alive(ui.premium_highlight, premium_selected)
     set_visible_if_alive(ui.pass_highlight, pass_selected)
+    refresh_top_tabs(ui)
 
     if login_selected then
       set_visible_if_alive(ui.login_page, true)
@@ -844,6 +1166,22 @@ function M.create(env)
     local debug_add_exp_100 = resolve_panel_ui('通行证系统.通行证界面.测试按钮.加经验100')
     local debug_add_exp_500 = resolve_panel_ui('通行证系统.通行证界面.测试按钮.加经验500')
     local debug_reset_claims = resolve_panel_ui('通行证系统.通行证界面.测试按钮.重置领取状态')
+    local top_tabs = {}
+    for _, def in ipairs(TOP_TAB_DEFS) do
+      top_tabs[#top_tabs + 1] = {
+        page_key = def.page_key,
+        label = def.label,
+        page_field = def.page_field,
+        button = resolve_ui('局外系统.局外系统.顶部页签.' .. def.node_name),
+        highlight = resolve_ui('局外系统.局外系统.顶部页签.' .. def.node_name .. '.高亮'),
+        text = resolve_ui('局外系统.局外系统.顶部页签.' .. def.node_name .. '.文本'),
+        enabled = true,
+      }
+    end
+    local top_tabs_extra = {
+      resolve_ui('局外系统.局外系统.顶部页签.按钮_13'),
+      resolve_ui('局外系统.局外系统.顶部页签.按钮_14'),
+    }
 
     if not root or not panel_root or not open_button or not close_button or not pass_grid then
       if not runtime.ui_warned then
@@ -909,10 +1247,27 @@ function M.create(env)
       debug_add_exp_100 = debug_add_exp_100,
       debug_add_exp_500 = debug_add_exp_500,
       debug_reset_claims = debug_reset_claims,
+      top_tabs = top_tabs,
+      top_tabs_extra = top_tabs_extra,
     }
 
     runtime.ui.open_hotspot = ensure_open_hotspot(runtime.ui)
     runtime.ui.save_count_label = ensure_save_count_label(runtime.ui)
+    for _, tab in ipairs(runtime.ui.top_tabs or {}) do
+      if tab.page_field and tab.page_field ~= '' and tab.page_key ~= PAGE_PASS then
+        tab.enabled = UIRoot.is_alive(runtime.ui[tab.page_field])
+      end
+    end
+    local runtime_top_nav = ensure_runtime_top_nav(runtime.ui)
+    if runtime_top_nav then
+      for _, tab in ipairs(runtime_top_nav.buttons or {}) do
+        if tab.page_field and tab.page_field ~= '' and tab.page_key ~= PAGE_PASS then
+          tab.enabled = UIRoot.is_alive(runtime.ui[tab.page_field])
+        end
+      end
+    end
+    refresh_open_entry_label(runtime.ui)
+    refresh_top_tabs(runtime.ui)
     set_visible_if_alive(activity_panel_root, false)
     set_visible_if_alive(button_area, true)
 
@@ -937,6 +1292,22 @@ function M.create(env)
     bind_click_once(pass_tab, function()
       open_panel(PAGE_PASS)
     end, 'bound_pass_tab')
+    for _, tab in ipairs(runtime.ui.top_tabs or {}) do
+      local field_name = 'bound_top_tab_' .. tostring(tab.page_key)
+      if tab.enabled ~= false then
+        bind_click_once(tab.button, function()
+          open_panel(tab.page_key)
+        end, field_name)
+      end
+    end
+    for _, tab in ipairs((runtime.ui.runtime_top_nav and runtime.ui.runtime_top_nav.buttons) or {}) do
+      local field_name = 'bound_runtime_top_tab_' .. tostring(tab.page_key)
+      if tab.enabled ~= false then
+        bind_click_once(tab.button, function()
+          open_panel(tab.page_key)
+        end, field_name)
+      end
+    end
     bind_click_once(claim_button, function()
       handle_claim_click()
     end, 'bound_claim_button')
@@ -983,6 +1354,7 @@ function M.create(env)
       return
     end
 
+    refresh_open_entry_label(ui)
     apply_daily_profile_refresh(profile)
     local model = BattlePass.build_ui_model(profile)
     local compact_mode = is_battle_compact_mode()
@@ -1066,6 +1438,15 @@ function M.create(env)
     end
     ensure_ui()
     set_root_visible(visible == true)
+    local ui = get_ui()
+    if ui and ui.runtime_top_nav and UIRoot.is_alive(ui.runtime_top_nav.root) then
+      set_visible_if_alive(ui.runtime_top_nav.root, visible == true)
+    end
+  end
+
+  function api.set_outgame_panel(panel)
+    outgame_panel = panel
+    return outgame_panel
   end
 
   return api

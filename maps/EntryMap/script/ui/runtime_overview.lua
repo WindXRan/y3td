@@ -20,7 +20,7 @@ function M.create(env)
   local overview_skin = skin.images.overview or {}
 
   local function get_hud_root()
-    return UIRoot.get_overlay_parent(y3, env.get_player())
+    return UIRoot.get_fullscreen_overlay_parent(y3, env.get_player())
   end
 
   local function is_panel_alive(panel)

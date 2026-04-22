@@ -1,5 +1,7 @@
 local BaseHud = require 'ui.runtime_hud_v2'
 local UIStyle = require 'ui.style'
+local UIRoot = require 'ui.ui_root'
+local RuntimeHudSchema = require 'ui.runtime_hud_editor_schema'
 
 local M = {}
 local TRACKER_REFRESH_INTERVAL = 0.75
@@ -9,25 +11,15 @@ local UI_IMAGE_COLOR_CACHE = setmetatable({}, { __mode = 'k' })
 local UI_VISIBLE_CACHE = setmetatable({}, { __mode = 'k' })
 
 local function resolve_ui(y3, player, path)
-  local ok, ui = pcall(y3.ui.get_ui, player, path)
-  if not ok or not ui then
-    return nil
-  end
-  return ui
+  return UIRoot.resolve_ui(y3, player, path)
 end
 
 local function resolve_first_ui(y3, player, paths)
-  for _, path in ipairs(paths or {}) do
-    local ui = resolve_ui(y3, player, path)
-    if ui then
-      return ui
-    end
-  end
-  return nil
+  return UIRoot.resolve_first_ui(y3, player, paths)
 end
 
 local function is_alive(ui)
-  return ui and (not ui.is_removed or not ui:is_removed())
+  return UIRoot.is_alive(ui)
 end
 
 local function set_visible_if_changed(node, visible)
@@ -57,8 +49,15 @@ end
 local function set_panel1_top_visible(env, visible)
   local y3 = env.y3
   local player = env.get_player()
-  local panel1 = resolve_ui(y3, player, 'panel_1')
-  local top_root = resolve_ui(y3, player, 'panel_1.tophud')
+  local panel1 = resolve_first_ui(y3, player, {
+    'panel_1',
+    'top',
+  })
+  local top_root = resolve_first_ui(y3, player, {
+    'panel_1.tophud',
+    RuntimeHudSchema.top.root_paths[1],
+    RuntimeHudSchema.top.root_paths[2],
+  })
 
   if panel1 then
     set_visible_if_changed(panel1, visible == true)
@@ -257,6 +256,18 @@ local function clear_panel1_top_bindings(runtime_hud)
   runtime_hud.panel1_boss_color = nil
   runtime_hud.panel1_tip_overlay_text = nil
   runtime_hud.panel1_tip_overlay_timer = nil
+end
+
+local function has_panel1_top_runtime(env)
+  local y3 = env.y3
+  local player = env.get_player()
+  return resolve_first_ui(y3, player, {
+    'top.top.layout_2',
+    'top.top',
+    'top',
+    'panel_1.tophud.layout_2',
+    'panel_1.tophud',
+  }) ~= nil
 end
 
 local function resolve_tracker_nodes(env, runtime_hud)
@@ -473,15 +484,30 @@ local function bind_panel1_top(env, runtime_hud)
 
   local y3 = env.y3
   local player = env.get_player()
-  local wave_node = resolve_ui(y3, player, 'panel_1.tophud.layout_2.wave')
-  local wavetime_node = resolve_ui(y3, player, 'panel_1.tophud.layout_2.wavetime')
-  local tips_node = resolve_ui(y3, player, 'panel_1.tophud.layout_2.tips')
-  local curlevel_node = resolve_ui(y3, player, 'panel_1.tophud.layout_2.curlevel')
-  local gametime_node = resolve_ui(y3, player, 'panel_1.tophud.layout_2.gametime')
+  local wave_node = resolve_first_ui(y3, player, {
+    'panel_1.tophud.layout_2.wave',
+    'top.top.layout_2.第X波',
+  })
+  local wavetime_node = resolve_first_ui(y3, player, {
+    'panel_1.tophud.layout_2.wavetime',
+    'top.top.layout_2.bg.BOSS倒计时',
+  })
+  local tips_node = resolve_first_ui(y3, player, {
+    'panel_1.tophud.layout_2.tips',
+    'top.top.layout_2.bg.boss',
+  })
+  local curlevel_node = resolve_first_ui(y3, player, {
+    'panel_1.tophud.layout_2.curlevel',
+    'top.top.layout_2.bg.关卡',
+  })
+  local gametime_node = resolve_first_ui(y3, player, {
+    'panel_1.tophud.layout_2.gametime',
+    'top.top.layout_2.bg.游戏时长',
+  })
 
-  if not wave_node or not wavetime_node or not tips_node or not curlevel_node or not gametime_node then
+  if not wave_node and not wavetime_node and not tips_node and not curlevel_node and not gametime_node then
     clear_panel1_top_bindings(runtime_hud)
-    set_panel1_top_visible(env, false)
+    set_panel1_top_visible(env, has_panel1_top_runtime(env))
     refresh_tracker_panel(env, runtime_hud)
     return false
   end
@@ -494,10 +520,10 @@ local function bind_panel1_top(env, runtime_hud)
   runtime_hud.panel1_boss_state_text = runtime_hud.panel1_boss_state_text or ''
   runtime_hud.panel1_boss_color = runtime_hud.panel1_boss_color or { 255, 255, 255, 255 }
 
-  runtime_hud.stage_text = make_text_proxy(curlevel_node)
-  runtime_hud.wave_title = make_text_proxy(wave_node)
+  runtime_hud.stage_text = curlevel_node and make_text_proxy(curlevel_node) or make_noop_text()
+  runtime_hud.wave_title = wave_node and make_text_proxy(wave_node) or make_noop_text()
   runtime_hud.wave_status = make_noop_text()
-  runtime_hud.timer_text = make_text_proxy(gametime_node, format_game_time_text)
+  runtime_hud.timer_text = gametime_node and make_text_proxy(gametime_node, format_game_time_text) or make_noop_text()
   runtime_hud.boss_panel = nil
   runtime_hud.boss_name = make_boss_name_proxy(runtime_hud)
   runtime_hud.boss_state = make_boss_state_proxy(runtime_hud)

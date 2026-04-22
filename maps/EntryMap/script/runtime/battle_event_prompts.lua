@@ -2,6 +2,7 @@ local M = {}
 
 function M.create(env)
   local STATE = env.STATE
+  local y3 = env.y3
   local BattleEventFeedSystem = env.BattleEventFeedSystem
   local create_battle_event_feed_runtime = env.create_battle_event_feed_runtime
   local infer_battle_event_style = env.infer_battle_event_style
@@ -14,6 +15,21 @@ function M.create(env)
   local message = env.message
   local ensure_round_choice_available = env.ensure_round_choice_available
   local sync_gear_runtime_effects = env.sync_gear_runtime_effects
+  local QUEUE_FLUSH_DELAY = 0.06
+  local QUEUE_FLUSH_BATCH = 2
+
+  local function ensure_event_prompt_queue()
+    STATE.battle_event_prompt_queue = STATE.battle_event_prompt_queue or {}
+    return STATE.battle_event_prompt_queue
+  end
+
+  local function clear_event_prompt_flush_timer()
+    local timer = STATE.battle_event_prompt_flush_timer
+    if timer and timer.remove then
+      timer:remove()
+    end
+    STATE.battle_event_prompt_flush_timer = nil
+  end
 
   local function contains_any(content, patterns)
     for _, pattern in ipairs(patterns or {}) do
@@ -134,6 +150,18 @@ function M.create(env)
     return nil
   end
 
+  local function should_flush_immediately(text, style)
+    local content = tostring(text or '')
+    return contains_any(content, {
+      '游戏胜利',
+      '游戏失败',
+      ' 登场。',
+      ' 被击败，立即切换到 ',
+      '创建失败',
+      '刷怪失败',
+    }) or style == 'warning'
+  end
+
   local function route(text, style)
     local prompt_system = get_message_prompt_system and get_message_prompt_system() or nil
     if not prompt_system then
@@ -155,7 +183,7 @@ function M.create(env)
     end
   end
 
-  local function push_battle_event(text, style, duration)
+  local function deliver_battle_event(text, style, duration)
     local final_style = style or infer_battle_event_style(text)
     local prompt_system = get_message_prompt_system and get_message_prompt_system() or nil
     if prompt_system and prompt_system.push_list then
@@ -176,6 +204,52 @@ function M.create(env)
       style = final_style,
       duration = duration,
     })
+  end
+
+  local function flush_battle_event_queue()
+    clear_event_prompt_flush_timer()
+    local queue = ensure_event_prompt_queue()
+    if #queue == 0 then
+      return
+    end
+
+    local delivered = 0
+    while #queue > 0 and delivered < QUEUE_FLUSH_BATCH do
+      local entry = table.remove(queue, 1)
+      deliver_battle_event(entry.text, entry.style, entry.duration)
+      delivered = delivered + 1
+    end
+
+    if #queue > 0 and y3 and y3.ltimer and y3.ltimer.wait then
+      STATE.battle_event_prompt_flush_timer = y3.ltimer.wait(QUEUE_FLUSH_DELAY, flush_battle_event_queue)
+    end
+  end
+
+  local function schedule_battle_event_flush(immediate)
+    if immediate then
+      flush_battle_event_queue()
+      return
+    end
+    if STATE.battle_event_prompt_flush_timer or not y3 or not y3.ltimer or not y3.ltimer.wait then
+      return
+    end
+    STATE.battle_event_prompt_flush_timer = y3.ltimer.wait(QUEUE_FLUSH_DELAY, flush_battle_event_queue)
+  end
+
+  local function push_battle_event(text, style, duration)
+    local final_style = style or infer_battle_event_style(text)
+    if STATE.session_phase ~= 'battle' then
+      return deliver_battle_event(text, final_style, duration)
+    end
+
+    local queue = ensure_event_prompt_queue()
+    queue[#queue + 1] = {
+      text = text,
+      style = final_style,
+      duration = duration,
+    }
+    schedule_battle_event_flush(should_flush_immediately(text, final_style))
+    return true
   end
 
   local function try_upgrade_growth_weapon(source)

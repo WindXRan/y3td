@@ -1,0 +1,2 @@
+pool_id,display_name,currency_name,draw_cost_single,draw_cost_ten,default_selected,rarity_order,rate_n,rate_r,rate_sr,rate_ssr,refund_n,refund_r,refund_sr,refund_ssr,first_single_guarantee_rarity,first_ten_guarantee_rarity,pity_draw_count,pity_guarantee_rarity,notes
+treasure_hunt_pool_1,夺宝奇兵,夺宝积分,1,10,true,N|R|SR|SSR,80,13,5,2,10,50,120,400,SR,SSR,60,SSR,四档概率沿用当前公示规则并映射为 N-R-SR-SSR

@@ -4,6 +4,7 @@ local M = {}
 
 local LIST_LIMIT = 20
 local LIST_ROW_HEIGHT = 46
+local LIST_DEFAULT_DURATION = 6.0
 local BOARD_STAY_SEC = 2.0
 local BOARD_MAX_QUEUE = 5
 local MARQUEE_SPEED = 120
@@ -318,7 +319,10 @@ function M.create(env)
     local final_y = root:get_relative_y()
     root:set_anim_pos(-18, final_y, 0, final_y, 0.12, 0)
 
-    local duration = opts and opts.duration or nil
+    local duration = opts and opts.duration
+    if duration == nil then
+      duration = LIST_DEFAULT_DURATION
+    end
     if duration and duration > 0 then
       entry.timer = y3.ltimer.wait(duration, function()
         remove_list_entry(entry)

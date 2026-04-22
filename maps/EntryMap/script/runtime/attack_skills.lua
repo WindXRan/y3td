@@ -59,7 +59,10 @@ function M.create(env)
     return CONFIG.attack_skill_particles_enabled == true
   end
 
-  local function is_attack_skill_projectile_enabled()
+  local function is_attack_skill_projectile_enabled(skill_id)
+    if skill_id == 'basic_attack' then
+      return true
+    end
     return CONFIG.attack_skill_projectiles_enabled == true
   end
 
@@ -230,6 +233,46 @@ function M.create(env)
     end
     return math.max(1, round_number(range))
   end
+
+  local function try_get_sequence_items(raw)
+    if raw == nil then
+      return nil
+    end
+    if type(raw) == 'table' then
+      local ok_items, items = pcall(function()
+        return raw.items
+      end)
+      if ok_items and type(items) == 'table' then
+        return items
+      end
+      return raw
+    end
+
+    local ok_items, items = pcall(function()
+      return raw.items
+    end)
+    if ok_items and items ~= nil then
+      if type(items) == 'table' then
+        return items
+      end
+      raw = items
+    end
+
+    local list = {}
+    for index = 1, 16 do
+      local ok_value, value = pcall(function()
+        return raw[index]
+      end)
+      if not ok_value or value == nil then
+        break
+      end
+      list[#list + 1] = value
+    end
+    if #list > 0 then
+      return list
+    end
+    return nil
+  end
   
   local function get_basic_attack_animation_names()
     if STATE.basic_attack_animation_names then
@@ -240,12 +283,12 @@ function M.create(env)
     if STATE.hero and STATE.hero:is_exist() then
       local hero_key = STATE.hero:get_key()
       local editor_unit = hero_key and y3.object.unit[hero_key] or nil
-      local animation_items = editor_unit
+      local animation_items_raw = editor_unit
         and editor_unit.data
         and editor_unit.data.simple_common_atk
         and editor_unit.data.simple_common_atk.ability_animations
-        and editor_unit.data.simple_common_atk.ability_animations.items
         or nil
+      local animation_items = try_get_sequence_items(animation_items_raw)
       if type(animation_items) == 'table' then
         for _, name in ipairs(animation_items) do
           if type(name) == 'string' and name ~= '' then
@@ -582,6 +625,14 @@ function M.create(env)
     return clone_point(unit:get_point())
   end
 
+  local function finish_projectileless(on_finish, fallback_point, did_hit)
+    if not on_finish then
+      return true
+    end
+    on_finish(clone_point(fallback_point) or fallback_point, did_hit == true)
+    return true
+  end
+
   local function is_unit_alive_now(unit)
     if not unit or not unit.is_exist or not unit:is_exist() then
       return false
@@ -857,6 +908,38 @@ function M.create(env)
     return play_attack_skill_sound(skill, anchor or STATE.hero, stage)
   end
 
+  local function play_basic_attack_stage_particle(vfx, point, stage, height)
+    local effect_key
+    local scale
+    local time
+
+    if stage == 'cast' then
+      effect_key, scale, time = vfx.cast_particle, vfx.cast_scale, vfx.cast_time
+    elseif stage == 'impact' then
+      effect_key, scale, time = vfx.impact_particle, vfx.impact_scale, vfx.impact_time
+    elseif stage == 'burst' then
+      effect_key = vfx.explosion_particle or vfx.impact_particle
+      scale = vfx.explosion_scale or vfx.impact_scale
+      time = vfx.explosion_time or vfx.impact_time
+    elseif stage == 'chain' then
+      effect_key = vfx.chain_particle or vfx.impact_particle or vfx.explosion_particle
+      scale = vfx.chain_scale or vfx.impact_scale or vfx.explosion_scale
+      time = vfx.chain_time or vfx.impact_time or vfx.explosion_time
+    end
+
+    return play_particle_on_point(point, effect_key, scale, time, height)
+  end
+
+  local function play_basic_attack_hit_audio(anchor)
+    if play_attack_skill_sound then
+      local result = play_attack_skill_sound({ id = 'basic_attack', damage_form = 'weapon' }, anchor or STATE.hero, 'impact')
+      if result then
+        return result
+      end
+    end
+    return play_basic_attack_sound and play_basic_attack_sound(anchor or STATE.hero) or nil
+  end
+
   local function get_projectile_launch_angle(target)
     if not STATE.hero or not STATE.hero:is_exist() or not target or not target:is_exist() then
       return nil
@@ -871,7 +954,7 @@ function M.create(env)
 
   local PROJECTILE_FLIGHT_HEIGHT = 100
 
-  local function launch_projectile_to_target(vfx, target, on_finish, ability)
+  local function launch_projectile_to_target(vfx, target, on_finish, ability, opts)
     local impact_point = get_unit_point_snapshot(target)
     local launch_angle = get_projectile_launch_angle(target)
     if not vfx or not vfx.projectile_key or not STATE.hero or not STATE.hero:is_exist() then
@@ -880,21 +963,13 @@ function M.create(env)
       end
       return false
     end
-    if not is_attack_skill_projectile_enabled() then
-      local delay = resolve_projectileless_delay(vfx)
-      local function finish()
-        local final_point = get_unit_point_snapshot(target) or impact_point
-        local did_hit = target and target.is_exist and target:is_exist() or false
-        if on_finish then
-          on_finish(final_point, did_hit)
-        end
-      end
-      if y3 and y3.ltimer and y3.ltimer.wait then
-        y3.ltimer.wait(delay, finish)
-      else
-        finish()
-      end
-      return true
+    local projectile_skill_id = opts and opts.skill_id or nil
+    if not is_attack_skill_projectile_enabled(projectile_skill_id) then
+      return finish_projectileless(
+        on_finish,
+        get_unit_point_snapshot(target) or impact_point,
+        target and target.is_exist and target:is_exist() or false
+      )
     end
   
     local ok_create, projectile = pcall(y3.projectile.create, {
@@ -976,7 +1051,7 @@ function M.create(env)
     return true
   end
 
-  local function launch_projectile_from_point_to_target(vfx, source_point, target, on_finish, ability)
+  local function launch_projectile_from_point_to_target(vfx, source_point, target, on_finish, ability, opts)
     local origin_point = clone_point(source_point) or source_point
     local impact_point = get_unit_point_snapshot(target)
     if not origin_point then
@@ -991,21 +1066,13 @@ function M.create(env)
       end
       return false
     end
-    if not is_attack_skill_projectile_enabled() then
-      local delay = resolve_projectileless_delay(vfx)
-      local function finish()
-        local final_point = get_unit_point_snapshot(target) or impact_point or clone_point(origin_point) or origin_point
-        local did_hit = target and target.is_exist and target:is_exist() or false
-        if on_finish then
-          on_finish(final_point, did_hit)
-        end
-      end
-      if y3 and y3.ltimer and y3.ltimer.wait then
-        y3.ltimer.wait(delay, finish)
-      else
-        finish()
-      end
-      return true
+    local projectile_skill_id = opts and opts.skill_id or nil
+    if not is_attack_skill_projectile_enabled(projectile_skill_id) then
+      return finish_projectileless(
+        on_finish,
+        get_unit_point_snapshot(target) or impact_point or clone_point(origin_point) or origin_point,
+        target and target.is_exist and target:is_exist() or false
+      )
     end
 
     local launch_angle = nil
@@ -1092,7 +1159,7 @@ function M.create(env)
     return true
   end
 
-  local function launch_local_projectile(vfx, point, on_finish, ability)
+  local function launch_local_projectile(vfx, point, on_finish, ability, opts)
     local fallback_point = clone_point(point) or point or get_hero_point()
     if not vfx or not vfx.projectile_key or not STATE.hero or not STATE.hero:is_exist() then
       if on_finish then
@@ -1100,17 +1167,9 @@ function M.create(env)
       end
       return false
     end
-    if not is_attack_skill_projectile_enabled() then
-      if on_finish then
-        if y3 and y3.ltimer and y3.ltimer.wait then
-          y3.ltimer.wait(resolve_projectileless_delay(vfx), function()
-            on_finish(fallback_point, true)
-          end)
-        else
-          on_finish(fallback_point, true)
-        end
-      end
-      return true
+    local projectile_skill_id = opts and opts.skill_id or nil
+    if not is_attack_skill_projectile_enabled(projectile_skill_id) then
+      return finish_projectileless(on_finish, fallback_point, true)
     end
 
     local ok_create, projectile = pcall(y3.projectile.create, {
@@ -1197,6 +1256,89 @@ function M.create(env)
       end
     end, opts and opts.ability or nil)
   end
+
+  local function resolve_skill_projectile_hit(skill, target, amount, impact_point, opts)
+    if not skill or not target or not is_active_enemy(target) then
+      return false
+    end
+
+    local vfx = ATTACK_SKILL_VFX[skill.id] or {}
+    local projectile_particle = opts and opts.particle
+      or vfx.chain_particle
+      or vfx.impact_particle
+    local hit_stage = opts and opts.stage or 'impact'
+    local audio_stage = opts and opts.audio_stage
+    if audio_stage == nil then
+      audio_stage = hit_stage
+    end
+    local damage_meta = opts and opts.damage_meta or skill
+    local text_type = opts and opts.text_type or 'physics'
+    local hit_point = impact_point or get_unit_point_snapshot(target)
+
+    if hit_point then
+      play_skill_particle_on_point(skill, hit_point, hit_stage, opts and opts.height or 0)
+    end
+    if audio_stage then
+      play_skill_audio(skill, audio_stage, target or hit_point)
+    end
+    if not (opts and opts.skip_damage == true) and amount ~= 0 then
+      deal_skill_damage(target, amount, damage_meta, {
+        text_type = text_type,
+        particle = projectile_particle,
+      })
+    end
+    if opts and opts.on_hit then
+      opts.on_hit(target, hit_point)
+    else
+      apply_generic_skill_statuses(skill, target)
+    end
+
+    return true
+  end
+
+  local function launch_skill_projectile_hit(skill, source_point, target, amount, opts)
+    if not skill or not target or not is_active_enemy(target) then
+      return false
+    end
+
+    local vfx = ATTACK_SKILL_VFX[skill.id] or {}
+
+    local function on_hit(impact_point, did_hit)
+      if did_hit ~= true then
+        return
+      end
+      resolve_skill_projectile_hit(skill, target, amount, impact_point, opts)
+    end
+
+    if source_point then
+      return launch_projectile_from_point_to_target(
+        vfx,
+        source_point,
+        target,
+        on_hit,
+        opts and opts.ability or nil,
+        { skill_id = skill.id }
+      )
+    end
+
+    return launch_projectile_to_target(vfx, target, on_hit, opts and opts.ability or nil, {
+      skill_id = skill.id,
+    })
+  end
+
+  local function launch_skill_projectile_burst(skill, source_point, center, radius, amount, opts)
+    if not skill or not center or radius <= 0 or amount == 0 then
+      return {}
+    end
+    local targets = get_enemies_in_range(center, radius, opts and opts.except_unit or nil, opts and opts.max_hits or nil)
+    local launched = {}
+    for _, unit in ipairs(targets) do
+      if launch_skill_projectile_hit(skill, source_point, unit, amount, opts) then
+        launched[#launched + 1] = unit
+      end
+    end
+    return launched
+  end
   
   local function pick_skill_target(skill)
     if not STATE.hero or not STATE.hero:is_exist() then
@@ -1243,7 +1385,8 @@ function M.create(env)
       return
     end
 
-    local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false
+    local hit_effect_enabled = (options and options.force_hit_feedback == true)
+      or CONFIG.damage_hit_effect_enabled ~= false
     STATE.hero:damage({
       target = target,
       damage = round_number((amount or 0) * get_basic_attack_bonus_multiplier(skill, target)),
@@ -1298,16 +1441,24 @@ function M.create(env)
 
     local hit_center = get_secondary_hit_center(unit)
     if hit_center then
-      play_skill_particle_on_point(skill, hit_center, options and options.stage or 'chain', options and options.height or 16)
+      play_basic_attack_stage_particle(
+        get_basic_attack_vfx(),
+        hit_center,
+        options and options.stage or 'chain',
+        options and options.height or 16
+      )
     end
     if options and options.audio_stage then
-      play_skill_audio(skill, options.audio_stage, unit or hit_center)
+      if options.audio_stage == 'impact' then
+        play_basic_attack_hit_audio(hit_center or unit)
+      else
+        play_skill_audio(skill, options.audio_stage, hit_center or unit)
+      end
     end
 
     if options and options.use_skill_damage == true then
       deal_skill_damage(unit, amount, options.damage_meta or skill, {
         text_type = options.text_type or 'physics',
-        particle = options.particle,
         skip_hunter_first_hit = options.skip_hunter_first_hit == true,
       })
       return true
@@ -1315,8 +1466,8 @@ function M.create(env)
 
     deal_basic_attack_damage(skill, unit, amount, {
       text_type = options and options.text_type or 'physics',
-      particle = options and options.particle or nil,
       common_attack = false,
+      force_hit_feedback = false,
     })
     if not (options and options.apply_armor_break == false) then
       apply_armor_break_on_hit(unit)
@@ -1370,13 +1521,14 @@ function M.create(env)
     end
 
     if impact_center then
-      play_skill_particle_on_point(skill, impact_center, 'impact', 18)
+      play_basic_attack_stage_particle(vfx, impact_center, 'impact', 18)
     end
-    play_skill_audio(skill, 'impact', victim or impact_center)
+    play_basic_attack_hit_audio(impact_center or victim)
 
     if is_active_enemy(victim) then
       deal_basic_attack_damage(skill, victim, damage, {
         common_attack = false,
+        force_hit_feedback = false,
       })
       if (runtime.normal_attack_bonus_ratio or 0) > 0 then
         deal_skill_damage(victim, damage * runtime.normal_attack_bonus_ratio, '物理', {
@@ -1391,13 +1543,14 @@ function M.create(env)
       local splash_units = get_enemies_in_range(splash_center, explosion_radius, victim)
       if #splash_units > 0 then
         if impact_center then
-          play_skill_particle_on_point(skill, impact_center, 'burst', 18)
+          play_basic_attack_stage_particle(vfx, impact_center, 'burst', 18)
         end
         play_skill_audio(skill, 'burst', impact_center or splash_center)
         for _, unit in ipairs(splash_units) do
           deal_basic_attack_secondary_damage(skill, unit, damage * explosion_ratio, {
             particle = extra_hit_particle,
             stage = 'chain',
+            force_hit_feedback = true,
           })
         end
       end
@@ -1414,6 +1567,7 @@ function M.create(env)
         if deal_basic_attack_secondary_damage(skill, unit, damage * split_ratio, {
           particle = extra_hit_particle,
           audio_stage = split_hits == 0 and 'chain' or nil,
+          force_hit_feedback = true,
         }) then
           split_hits = split_hits + 1
         end
@@ -1427,7 +1581,7 @@ function M.create(env)
       local bonus_splash_units = get_enemies_in_range(splash_center, runtime.splash_radius, victim)
       if #bonus_splash_units > 0 then
         if impact_center then
-          play_skill_particle_on_point(skill, impact_center, 'burst', 18)
+          play_basic_attack_stage_particle(vfx, impact_center, 'burst', 18)
         end
         play_skill_audio(skill, 'burst', impact_center or splash_center)
         for _, unit in ipairs(bonus_splash_units) do
@@ -1495,7 +1649,9 @@ function M.create(env)
         return
       end
       resolve_basic_attack_projectile_hit(skill, vfx, victim, damage, impact_point, options)
-    end, STATE.hero_common_attack and STATE.hero_common_attack:is_exist() and STATE.hero_common_attack or nil)
+    end, STATE.hero_common_attack and STATE.hero_common_attack:is_exist() and STATE.hero_common_attack or nil, {
+      skill_id = 'basic_attack',
+    })
   end
 
   local function get_skill_archetype(skill)
@@ -1600,18 +1756,6 @@ function M.create(env)
     try_add_status_modifier(unit, ATTACK_STATUS_MODIFIER_KEYS.ignite, duration)
   end
 
-  local function deal_area_skill_damage(center, radius, skill, amount, options)
-    if not center or radius <= 0 then
-      return {}
-    end
-    local hit_units = {}
-    for _, unit in ipairs(get_enemies_in_range(center, radius)) do
-      hit_units[#hit_units + 1] = unit
-      deal_skill_damage(unit, amount, skill, options)
-    end
-    return hit_units
-  end
-
   local function apply_generic_skill_statuses(skill, unit)
     if not skill or not unit or not is_active_enemy(unit) then
       return
@@ -1654,28 +1798,26 @@ function M.create(env)
     end
     play_skill_particle_on_point(skill, center, 'terminal', 0)
     play_skill_audio(skill, 'burst', center)
-    for _, unit in ipairs(deal_area_skill_damage(center, radius, skill, get_skill_damage(skill) * ratio)) do
-      apply_generic_skill_statuses(skill, unit)
-    end
+    launch_skill_projectile_burst(skill, center, center, radius, get_skill_damage(skill) * ratio, {
+      stage = 'terminal',
+      audio_stage = 'burst',
+    })
   end
 
   local function trigger_skill_followup_hits(skill, center, except_unit)
     local count = math.max(0, round_number(skill and skill.followup_count or 0))
     local ratio = math.max(0, skill and skill.followup_ratio or 0)
-    local vfx = ATTACK_SKILL_VFX[skill and skill.id or ''] or {}
     if not center or count <= 0 or ratio <= 0 then
       return
     end
     local hit_count = 0
     for _, unit in ipairs(get_enemies_in_range(center, math.max(220, get_skill_radius(skill) or 0, 320), except_unit, count)) do
-      if hit_count == 0 then
-        play_skill_audio(skill, 'chain', unit)
+      if launch_skill_projectile_hit(skill, center, unit, get_skill_damage(skill) * ratio, {
+        stage = 'chain',
+        audio_stage = hit_count == 0 and 'chain' or nil,
+      }) then
+        hit_count = hit_count + 1
       end
-      deal_skill_damage(unit, get_skill_damage(skill) * ratio, skill, {
-        particle = vfx.chain_particle or vfx.impact_particle,
-      })
-      apply_generic_skill_statuses(skill, unit)
-      hit_count = hit_count + 1
       if hit_count >= count then
         break
       end
@@ -1699,39 +1841,38 @@ function M.create(env)
       end
       play_skill_particle_on_point(skill, center, 'sustain', 0)
       play_skill_audio(skill, 'tick', center)
-      local hit_units = deal_area_skill_damage(center, radius, skill, tick_damage)
-      for _, unit in ipairs(hit_units) do
-        if (opts and opts.control) or skill.persistent_field_control then
-          apply_hold_control(unit, 0.30)
-        end
-        if (opts and opts.ignite) or skill.persistent_field_ignite then
-          apply_simple_ignite(unit, 3, math.max(0.05, ratio * 0.25))
-        end
-        apply_generic_skill_statuses(skill, unit)
-      end
+      launch_skill_projectile_burst(skill, center, center, radius, tick_damage, {
+        stage = 'sustain',
+        audio_stage = 'tick',
+        on_hit = function(unit)
+          if (opts and opts.control) or skill.persistent_field_control then
+            apply_hold_control(unit, 0.30)
+          end
+          if (opts and opts.ignite) or skill.persistent_field_ignite then
+            apply_simple_ignite(unit, 3, math.max(0.05, ratio * 0.25))
+          end
+          apply_generic_skill_statuses(skill, unit)
+        end,
+      })
     end)
   end
 
   local function cast_blueprint_line_skill(skill, target, opts)
-    local vfx = ATTACK_SKILL_VFX[skill.id] or {}
     local damage = get_skill_damage(skill)
     local origin_point = get_hero_point()
     play_skill_particle_on_unit(skill, STATE.hero, 'cast')
 
-    launch_projectile_to_target(vfx, target, function(impact_point, did_hit)
+    run_skill_target_projectile(skill, target, function(impact_point, did_hit)
       if did_hit ~= true then
         return
       end
       local center = impact_point or get_unit_point_snapshot(target)
-      if center then
-        play_skill_particle_on_point(skill, center, 'impact', 18)
-      end
       if is_active_enemy(target) then
-        play_skill_audio(skill, 'impact', target)
-        deal_skill_damage(target, damage, skill, {
-          particle = vfx.impact_particle,
+        resolve_skill_projectile_hit(skill, target, damage, center, {
+          stage = 'impact',
+          height = 18,
+          particle = (ATTACK_SKILL_VFX[skill.id] or {}).impact_particle,
         })
-        apply_generic_skill_statuses(skill, target)
       end
       if origin_point and center then
         for _, unit in ipairs(get_enemies_on_line(
@@ -1742,11 +1883,10 @@ function M.create(env)
           math.max(0, skill.pierce or 0),
           target
         )) do
-          play_skill_audio(skill, 'chain', unit)
-          deal_skill_damage(unit, damage, skill, {
-            particle = vfx.chain_particle or vfx.impact_particle,
+          launch_skill_projectile_hit(skill, center, unit, damage, {
+            stage = 'chain',
+            audio_stage = 'chain',
           })
-          apply_generic_skill_statuses(skill, unit)
         end
         if (opts and opts.return_pass) or skill.return_pass_enabled then
           for _, unit in ipairs(get_enemies_on_line(
@@ -1757,16 +1897,18 @@ function M.create(env)
             math.max(1, math.max(0, skill.pierce or 0) + 1),
             nil
           )) do
-            deal_skill_damage(unit, damage * (opts and opts.return_ratio or skill.return_pass_ratio or 0.75), skill, {
-              particle = vfx.chain_particle or vfx.impact_particle,
+            launch_skill_projectile_hit(skill, center, unit, damage * (opts and opts.return_ratio or skill.return_pass_ratio or 0.75), {
+              stage = 'chain',
+              audio_stage = 'chain',
             })
-            apply_generic_skill_statuses(skill, unit)
           end
         end
         trigger_skill_followup_hits(skill, center, target)
         trigger_skill_terminal_burst(skill, center)
       end
-    end)
+    end, {
+      allow_fallback = true,
+    })
   end
 
   local function cast_blueprint_beam_skill(skill, target)
@@ -1796,8 +1938,10 @@ function M.create(env)
           99,
           nil
         )) do
-          deal_skill_damage(unit, tick_damage, skill)
-          apply_generic_skill_statuses(skill, unit)
+          launch_skill_projectile_hit(skill, start_point, unit, tick_damage, {
+            stage = 'sustain',
+            audio_stage = 'tick',
+          })
         end
         if skill.sweep_enabled then
           trigger_skill_followup_hits(skill, end_point, nil)
@@ -1825,10 +1969,14 @@ function M.create(env)
       end
       play_skill_particle_on_point(skill, burst_center, 'burst', 0)
       play_skill_audio(skill, 'burst', burst_center)
-      for _, unit in ipairs(deal_area_skill_damage(burst_center, radius, skill, get_skill_damage(skill))) do
-        apply_hold_control(unit, hold_duration)
-        apply_generic_skill_statuses(skill, unit)
-      end
+      launch_skill_projectile_burst(skill, burst_center, burst_center, radius, get_skill_damage(skill), {
+        stage = 'burst',
+        audio_stage = 'burst',
+        on_hit = function(unit)
+          apply_hold_control(unit, hold_duration)
+          apply_generic_skill_statuses(skill, unit)
+        end,
+      })
 
       if skill.echo_count and skill.echo_count > 0 and (skill.echo_ratio or 0) > 0 then
         for echo_index = 1, math.max(1, round_number(skill.echo_count)), 1 do
@@ -1838,10 +1986,14 @@ function M.create(env)
             end
             play_skill_particle_on_point(skill, burst_center, 'sustain', 0)
             play_skill_audio(skill, 'tick', burst_center)
-            for _, unit in ipairs(deal_area_skill_damage(burst_center, radius, skill, get_skill_damage(skill) * skill.echo_ratio)) do
-              apply_hold_control(unit, math.max(0.15, hold_duration * 0.5))
-              apply_generic_skill_statuses(skill, unit)
-            end
+            launch_skill_projectile_burst(skill, burst_center, burst_center, radius, get_skill_damage(skill) * skill.echo_ratio, {
+              stage = 'sustain',
+              audio_stage = 'tick',
+              on_hit = function(unit)
+                apply_hold_control(unit, math.max(0.15, hold_duration * 0.5))
+                apply_generic_skill_statuses(skill, unit)
+              end,
+            })
           end)
         end
       end
@@ -1856,7 +2008,7 @@ function M.create(env)
 
   local function cast_blueprint_chain_skill(skill, target)
     play_skill_particle_on_unit(skill, STATE.hero, 'cast')
-    run_skill_target_projectile(skill, target, function(impact_point, _, vfx)
+    run_skill_target_projectile(skill, target, function(impact_point)
       local damage = get_skill_damage(skill)
       local remaining = math.max(1, get_skill_bounce(skill))
       local current_target = target
@@ -1866,19 +2018,18 @@ function M.create(env)
       while current_target and remaining > 0 do
         hit_map[current_target] = true
         visited[#visited + 1] = current_target
-        if current_center then
-          play_skill_particle_on_point(skill, current_center, 'chain', 0)
-        end
-        play_skill_audio(skill, 'chain', current_target or current_center)
-        deal_skill_damage(current_target, damage, skill, {
-          particle = vfx.chain_particle or vfx.impact_particle,
+        launch_skill_projectile_hit(skill, current_center, current_target, damage, {
+          stage = 'chain',
+          audio_stage = 'chain',
+          on_hit = function(unit)
+            apply_generic_skill_statuses(skill, unit)
+            apply_enemy_status(unit, 'shock', {
+              remaining = 1.0,
+              bonus = 0.10,
+            })
+            try_add_status_modifier(unit, ATTACK_STATUS_MODIFIER_KEYS.shock, 1.0)
+          end,
         })
-        apply_generic_skill_statuses(skill, current_target)
-        apply_enemy_status(current_target, 'shock', {
-          remaining = 1.0,
-          bonus = 0.10,
-        })
-        try_add_status_modifier(current_target, ATTACK_STATUS_MODIFIER_KEYS.shock, 1.0)
         remaining = remaining - 1
         if remaining <= 0 then
           break
@@ -1901,12 +2052,10 @@ function M.create(env)
         for index = #visited - 1, 1, -1 do
           local unit = visited[index]
           if unit and is_active_enemy(unit) then
-            play_skill_particle_on_point(skill, unit:get_point(), 'chain', 0)
-            play_skill_audio(skill, 'chain', unit)
-            deal_skill_damage(unit, damage * (skill.return_pass_ratio or 0.65), skill, {
-              particle = vfx.chain_particle or vfx.impact_particle,
+            launch_skill_projectile_hit(skill, current_center or impact_point, unit, damage * (skill.return_pass_ratio or 0.65), {
+              stage = 'chain',
+              audio_stage = 'chain',
             })
-            apply_generic_skill_statuses(skill, unit)
           end
         end
       end
@@ -1928,10 +2077,10 @@ function M.create(env)
         play_skill_particle_on_point(skill, center, 'impact', 0)
         play_skill_particle_on_point(skill, center, 'burst', 0)
         play_skill_audio(skill, 'burst', center)
-        local hit_units = deal_area_skill_damage(center, radius, skill, get_skill_damage(skill))
-        for _, unit in ipairs(hit_units) do
-          apply_generic_skill_statuses(skill, unit)
-        end
+        launch_skill_projectile_burst(skill, center, center, radius, get_skill_damage(skill), {
+          stage = 'burst',
+          audio_stage = 'burst',
+        })
         if skill.echo_count and skill.echo_count > 0 and (skill.echo_ratio or 0) > 0 then
           for echo_index = 1, math.max(1, round_number(skill.echo_count)), 1 do
             y3.ltimer.wait(0.22 * echo_index, function()
@@ -1940,10 +2089,10 @@ function M.create(env)
               end
               play_skill_particle_on_point(skill, center, 'sustain', 0)
               play_skill_audio(skill, 'tick', center)
-              local echo_hits = deal_area_skill_damage(center, radius, skill, get_skill_damage(skill) * skill.echo_ratio)
-              for _, unit in ipairs(echo_hits) do
-                apply_generic_skill_statuses(skill, unit)
-              end
+              launch_skill_projectile_burst(skill, center, center, radius, get_skill_damage(skill) * skill.echo_ratio, {
+                stage = 'sustain',
+                audio_stage = 'tick',
+              })
             end)
           end
         end
@@ -1999,19 +2148,22 @@ function M.create(env)
         end
         play_skill_particle_on_point(skill, center, 'sustain', 0)
         play_skill_audio(skill, 'tick', center)
-        local hit_units = deal_area_skill_damage(center, radius, skill, tick_damage)
-        for _, unit in ipairs(hit_units) do
-          if opts and opts.control then
-            apply_hold_control(unit, math.min(0.35, duration))
-          end
-          if opts and opts.ignite then
-            apply_simple_ignite(unit, 3, 0.08)
-          end
-          if (skill.pull_strength or 0) > 0 then
-            pull_unit_towards_point(unit, center, skill.pull_strength)
-          end
-          apply_generic_skill_statuses(skill, unit)
-        end
+        launch_skill_projectile_burst(skill, center, center, radius, tick_damage, {
+          stage = 'sustain',
+          audio_stage = 'tick',
+          on_hit = function(unit)
+            if opts and opts.control then
+              apply_hold_control(unit, math.min(0.35, duration))
+            end
+            if opts and opts.ignite then
+              apply_simple_ignite(unit, 3, 0.08)
+            end
+            if (skill.pull_strength or 0) > 0 then
+              pull_unit_towards_point(unit, center, skill.pull_strength)
+            end
+            apply_generic_skill_statuses(skill, unit)
+          end,
+        })
         if current == tick_count then
           trigger_skill_terminal_burst(skill, center)
         end
@@ -2030,7 +2182,14 @@ function M.create(env)
         play_skill_particle_on_point(skill, center, 'charge', 120)
         play_skill_audio(skill, 'charge', center)
         for _, unit in ipairs(get_enemies_in_range(center, radius)) do
-          apply_hold_control(unit, delay)
+          launch_skill_projectile_hit(skill, center, unit, 0, {
+            stage = 'charge',
+            audio_stage = 'charge',
+            skip_damage = true,
+            on_hit = function(hit_unit)
+              apply_hold_control(hit_unit, delay)
+            end,
+          })
         end
       end
       y3.ltimer.wait(delay, function()
@@ -2040,10 +2199,10 @@ function M.create(env)
         play_skill_particle_on_point(skill, center, 'impact', 0)
         play_skill_particle_on_point(skill, center, 'burst', 0)
         play_skill_audio(skill, 'burst', center)
-        local hit_units = deal_area_skill_damage(center, radius, skill, get_skill_damage(skill))
-        for _, unit in ipairs(hit_units) do
-          apply_generic_skill_statuses(skill, unit)
-        end
+        launch_skill_projectile_burst(skill, center, center, radius, get_skill_damage(skill), {
+          stage = 'burst',
+          audio_stage = 'burst',
+        })
         if skill.echo_count and skill.echo_count > 0 and (skill.echo_ratio or 0) > 0 then
           for echo_index = 1, math.max(1, round_number(skill.echo_count)), 1 do
             y3.ltimer.wait(0.25 * echo_index, function()
@@ -2052,10 +2211,10 @@ function M.create(env)
               end
               play_skill_particle_on_point(skill, center, 'sustain', 0)
               play_skill_audio(skill, 'tick', center)
-              local echo_hits = deal_area_skill_damage(center, radius, skill, get_skill_damage(skill) * skill.echo_ratio)
-              for _, unit in ipairs(echo_hits) do
-                apply_generic_skill_statuses(skill, unit)
-              end
+              launch_skill_projectile_burst(skill, center, center, radius, get_skill_damage(skill) * skill.echo_ratio, {
+                stage = 'sustain',
+                audio_stage = 'tick',
+              })
             end)
           end
         end
@@ -2159,13 +2318,12 @@ function M.create(env)
         end
 
         local was_alive = is_unit_alive_now(victim)
-        play_skill_audio(skill, 'impact', victim)
-        deal_skill_damage(victim, amount, skill, {
+        local burst_center = impact_point or get_unit_point_snapshot(victim)
+        resolve_skill_projectile_hit(skill, victim, amount, impact_point, {
+          stage = 'impact',
+          height = 12,
           particle = vfx.impact_particle,
         })
-        apply_generic_skill_statuses(skill, victim)
-
-        local burst_center = impact_point or get_unit_point_snapshot(victim)
         if burst_center and split_count > 0 and split_ratio > 0 and remaining_split_depth > 0 then
           queue_seek_burst(
             burst_center,

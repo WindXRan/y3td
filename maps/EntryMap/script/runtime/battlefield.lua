@@ -279,9 +279,9 @@ function M.create(env)
 
   local function is_active_enemy(unit)
     return unit
-      and unit:is_exist()
-      and STATE.all_enemies
-      and unit:is_in_group(STATE.all_enemies)
+        and unit:is_exist()
+        and STATE.all_enemies
+        and unit:is_in_group(STATE.all_enemies)
   end
 
   local function get_enemy_runtime_info(unit)
@@ -509,8 +509,8 @@ function M.create(env)
     local damage_ratio = hit and hit.damage_ratio or 0
 
     if (hit and hit.is_critical)
-      or damage_ratio >= (is_boss and 0.08 or 0.12)
-      or damage >= (is_boss and 120 or 80)
+        or damage_ratio >= (is_boss and 0.08 or 0.12)
+        or damage >= (is_boss and 120 or 80)
     then
       return {
         hit_kind = 'heavy',
@@ -538,8 +538,8 @@ function M.create(env)
     end
 
     if is_elite
-      or damage_ratio >= (is_boss and 0.025 or 0.04)
-      or damage >= (is_boss and 42 or 22)
+        or damage_ratio >= (is_boss and 0.025 or 0.04)
+        or damage >= (is_boss and 42 or 22)
     then
       return {
         hit_kind = 'medium',
@@ -636,20 +636,6 @@ function M.create(env)
     )
     if burst then
       burst:set_rotate(0, 0, hit_angle)
-    end
-
-    local mist = create_point_particle(
-      102877,
-      hit_point,
-      hit_angle,
-      profile.mist_scale,
-      profile.mist_time,
-      profile.burst_height + 6,
-      { 110, 8, 8, 166 },
-      1.08
-    )
-    if mist then
-      spray_particle_line(mist, hit_angle, profile.mist_distance, profile.mist_speed)
     end
 
     if profile.hit_kind == 'medium' or profile.hit_kind == 'heavy' then
@@ -830,38 +816,10 @@ function M.create(env)
       blood_shock:set_rotate(0, 0, death_angle)
     end
 
-    local blood_mist = create_point_particle(
-      102877,
-      death_point,
-      death_angle,
-      profile.mist_scale,
-      profile.mist_time,
-      20,
-      { 110, 8, 8, 190 },
-      1.12
-    )
-    if blood_mist then
-      spray_particle_line(blood_mist, death_angle, math.max(50, profile.trail_distance * 0.55), math.max(320, profile.trail_speed * 0.55))
-    end
-
-    local blood_pool = create_point_particle(
-      102705,
-      death_point,
-      death_angle,
-      profile.pool_scale,
-      profile.pool_time,
-      8,
-      { 148, 12, 12, 190 },
-      0.96
-    )
-    if blood_pool then
-      blood_pool:set_rotate(0, 0, death_angle)
-    end
-
     for _, spray in ipairs({
       { angle = death_angle - 18, scale = profile.trail_scale * 0.72, distance = profile.trail_distance * 0.76, speed = profile.trail_speed * 0.82 },
-      { angle = death_angle - 7, scale = profile.trail_scale * 0.90, distance = profile.trail_distance * 0.92, speed = profile.trail_speed * 0.94 },
-      { angle = death_angle + 5, scale = profile.trail_scale, distance = profile.trail_distance, speed = profile.trail_speed },
+      { angle = death_angle - 7,  scale = profile.trail_scale * 0.90, distance = profile.trail_distance * 0.92, speed = profile.trail_speed * 0.94 },
+      { angle = death_angle + 5,  scale = profile.trail_scale,        distance = profile.trail_distance,        speed = profile.trail_speed },
       { angle = death_angle + 17, scale = profile.trail_scale * 0.82, distance = profile.trail_distance * 0.88, speed = profile.trail_speed * 0.88 },
     }) do
       local blood_trail = create_point_particle(
@@ -1680,11 +1638,11 @@ function M.create(env)
 
     hero:set_name('守关英雄')
     if hero_attr_system and hero_attr_system.log_snapshot then
-      hero_attr_system.log_snapshot(hero, 'create_hero_before_init', string.format('basic_attack_range=%s', tostring(basic_attack_range or 250)))
+      hero_attr_system.log_snapshot(hero, 'create_hero_before_init',
+        string.format('basic_attack_range=%s', tostring(basic_attack_range or 250)))
     end
     hero_attr_system.init_hero_attrs(hero, hero_entry_stats)
     hero_attr_system.set_attr(hero, '攻击范围', tonumber(hero_entry_stats['攻击范围']) or basic_attack_range or 2000)
-    hero:add_state('禁止普攻')
 
     hero:add_state('禁止移动')
     hero:stop()
@@ -1708,7 +1666,8 @@ function M.create(env)
     local spawn_hp = resolve_hero_spawn_hp(hero)
     hero:set_hp(spawn_hp)
     if hero_attr_system and hero_attr_system.log_snapshot then
-      hero_attr_system.log_snapshot(hero, 'create_hero_after_set_hp', string.format('spawn_hp=%s current_hp=%s', tostring(spawn_hp), tostring(hero:get_hp())))
+      hero_attr_system.log_snapshot(hero, 'create_hero_after_set_hp',
+        string.format('spawn_hp=%s current_hp=%s', tostring(spawn_hp), tostring(hero:get_hp())))
     end
 
     hero:event('单位-死亡', function()
@@ -1805,7 +1764,8 @@ function M.create(env)
         missing[#missing + 1] = string.format('mainline_task[%s].spawn_unit_id: 未配置', tostring(task.id))
       end
       if not task.spawn_area_id or not (CONFIG.areas and CONFIG.areas[task.spawn_area_id]) then
-        missing[#missing + 1] = string.format('mainline_task[%s].spawn_area_id: %s', tostring(task.id), tostring(task.spawn_area_id))
+        missing[#missing + 1] = string.format('mainline_task[%s].spawn_area_id: %s', tostring(task.id),
+          tostring(task.spawn_area_id))
       end
     end
 

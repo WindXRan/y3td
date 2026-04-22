@@ -148,9 +148,9 @@ local ATTACK_SKILL_SLOT_COUNT = math.max(
   4,
   tonumber(
     ATTACK_SKILL_BLUEPRINTS
-      and ATTACK_SKILL_BLUEPRINTS.system
-      and ATTACK_SKILL_BLUEPRINTS.system.slot_rule
-      and ATTACK_SKILL_BLUEPRINTS.system.slot_rule.total_attack_skills
+    and ATTACK_SKILL_BLUEPRINTS.system
+    and ATTACK_SKILL_BLUEPRINTS.system.slot_rule
+    and ATTACK_SKILL_BLUEPRINTS.system.slot_rule.total_attack_skills
   ) or 4
 )
 
@@ -190,7 +190,8 @@ local function create_attack_skill_instance(skill_id, slot)
     ui_icon = def.ui_icon or (blueprint and (blueprint.ui_icon or blueprint.icon)) or nil,
     icon = def.icon or def.ui_icon or (blueprint and (blueprint.icon or blueprint.ui_icon)) or nil,
     evolution_name = def.evolution_name or (blueprint and blueprint.evolution and blueprint.evolution.name) or nil,
-    evolution_summary = def.evolution_summary or (blueprint and blueprint.evolution and blueprint.evolution.summary) or nil,
+    evolution_summary = def.evolution_summary or (blueprint and blueprint.evolution and blueprint.evolution.summary) or
+        nil,
     damage_type = def.damage_type,
     damage_form = def.damage_form,
     element = def.element,
@@ -295,6 +296,18 @@ local function create_effect_debug_runtime()
   return EffectDebugSystem.create_runtime()
 end
 
+local DIAMOND_ITEM_KEY = 201390023
+
+local DIAMOND_ATTR_POOL = {
+  { id = 'attack', name = '攻击', attr_name = '攻击绿字', value = 10, desc = '攻击 +10' },
+  { id = 'hp', name = '最大生命', attr_name = '生命绿字', value = 100, desc = '最大生命 +100' },
+  { id = 'attack_speed', name = '攻击速度', attr_name = '攻击速度', value = 10, desc = '攻击速度 +10' },
+  { id = 'crit', name = '暴击率', attr_name = '物理暴击', value = 0.05, desc = '暴击率 +5%' },
+  { id = 'crit_dmg', name = '暴击伤害', attr_name = '物理暴伤', value = 0.15, desc = '暴击伤害 +15%' },
+  { id = 'armor', name = '护甲', attr_name = '护甲绿字', value = 5, desc = '护甲 +5' },
+  { id = 'attack_range', name = '攻击范围', attr_name = '攻击范围', value = 60, desc = '攻击范围 +60' },
+}
+
 local STATE = {
   hero = nil,
   hero_common_attack = nil,
@@ -321,6 +334,10 @@ local STATE = {
   awaiting_upgrade = false,
   current_upgrade_choices = nil,
   current_upgrade_round = nil,
+  awaiting_diamond_attr_choice = false,
+  current_diamond_attr_choices = nil,
+  diamond_item_pending_grants = 0,
+  diamond_item_granted_level = 0,
   skill_runtime = nil,
   attack_skill_state = nil,
   reward_queue = nil,
@@ -367,29 +384,29 @@ local function infer_battle_event_style(text)
     return 'neutral'
   end
   if string.find(content, '获得', 1, true)
-    or string.find(content, '奖励', 1, true)
-    or string.find(content, '刷新次数', 1, true)
-    or string.find(content, '金币 +', 1, true)
-    or string.find(content, '木材 +', 1, true)
-    or string.find(content, '经验 +', 1, true) then
+      or string.find(content, '奖励', 1, true)
+      or string.find(content, '刷新次数', 1, true)
+      or string.find(content, '金币 +', 1, true)
+      or string.find(content, '木材 +', 1, true)
+      or string.find(content, '经验 +', 1, true) then
     return 'reward'
   end
   if string.find(content, '开始', 1, true)
-    or string.find(content, '进攻', 1, true)
-    or string.find(content, '警告', 1, true)
-    or string.find(content, '失败', 1, true)
-    or string.find(content, '不足', 1, true) then
+      or string.find(content, '进攻', 1, true)
+      or string.find(content, '警告', 1, true)
+      or string.find(content, '失败', 1, true)
+      or string.find(content, '不足', 1, true) then
     return 'warning'
   end
   if string.find(content, '稀有', 1, true)
-    or string.find(content, '史诗', 1, true)
-    or string.find(content, '1星效果触发', 1, true) then
+      or string.find(content, '史诗', 1, true)
+      or string.find(content, '1星效果触发', 1, true) then
     return 'rare'
   end
   if string.find(content, '+1', 1, true)
-    or string.find(content, '恢复', 1, true)
-    or string.find(content, '升级', 1, true)
-    or string.find(content, '解锁', 1, true) then
+      or string.find(content, '恢复', 1, true)
+      or string.find(content, '升级', 1, true)
+      or string.find(content, '解锁', 1, true) then
     return 'positive'
   end
   return 'neutral'
@@ -397,6 +414,7 @@ end
 
 local BattleEventPrompts = BattleEventPromptsFactory.create({
   STATE = STATE,
+  y3 = y3,
   BattleEventFeedSystem = BattleEventFeedSystem,
   create_battle_event_feed_runtime = create_battle_event_feed_runtime,
   infer_battle_event_style = infer_battle_event_style,
@@ -425,9 +443,136 @@ local BattleEventPrompts = BattleEventPromptsFactory.create({
   end,
 })
 
+local function shuffle_array(list)
+  local result = {}
+  for index, value in ipairs(list or {}) do
+    result[index] = value
+  end
+  for index = #result, 2, -1 do
+    local swap_index = math.random(index)
+    result[index], result[swap_index] = result[swap_index], result[index]
+  end
+  return result
+end
+
+local function build_diamond_attr_choices()
+  local shuffled = shuffle_array(DIAMOND_ATTR_POOL)
+  local result = {}
+  for index = 1, math.min(3, #shuffled) do
+    result[index] = shuffled[index]
+  end
+  return result
+end
+
+local function grant_levelup_diamond_item(reason)
+  if not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() or not STATE.hero.add_item then
+    return false
+  end
+  STATE.hero:add_item(DIAMOND_ITEM_KEY, '物品栏')
+  STATE.diamond_item_pending_grants = math.max(0, (STATE.diamond_item_pending_grants or 0) + 1)
+  local suffix = reason and ('（' .. tostring(reason) .. '）') or ''
+  message('获得 1 个钻石物品，可在背包中使用后进行属性三选一' .. suffix .. '。')
+  return true
+end
+
+local function sync_levelup_diamond_rewards()
+  if STATE.session_phase ~= 'battle' then
+    return
+  end
+  local progress = STATE.hero_progress
+  local level = progress and tonumber(progress.level) or 0
+  if level <= 0 then
+    return
+  end
+  local granted_level = tonumber(STATE.diamond_item_granted_level) or 0
+  if level <= granted_level then
+    return
+  end
+  for current = granted_level + 1, level do
+    grant_levelup_diamond_item('Lv.' .. tostring(current))
+  end
+  STATE.diamond_item_granted_level = level
+end
+
+local function show_diamond_attr_choices()
+  if STATE.awaiting_diamond_attr_choice then
+    message('当前已有待选择的钻石属性三选一，请按 1/2/3 进行选择。')
+    local choices = STATE.current_diamond_attr_choices or {}
+    for index, choice in ipairs(choices) do
+      message(string.format('%d. %s', index, choice.desc or choice.name or '未知属性'))
+    end
+    return true
+  end
+  if STATE.awaiting_upgrade then
+    message('请先完成当前 G 三选一。')
+    return false
+  end
+  if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice then
+    message('请先完成当前 F 三选一。')
+    return false
+  end
+  local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
+  if evolution_runtime and evolution_runtime.awaiting_choice then
+    message('请先完成当前进化三选一。')
+    return false
+  end
+  if STATE.treasure_runtime and (STATE.treasure_runtime.awaiting_choice or STATE.treasure_runtime.awaiting_replace) then
+    message('请先完成当前宝物三选一。')
+    return false
+  end
+  STATE.current_diamond_attr_choices = build_diamond_attr_choices()
+  STATE.awaiting_diamond_attr_choice = true
+  message('钻石属性三选一已开启，请按 1/2/3 选择：')
+  for index, choice in ipairs(STATE.current_diamond_attr_choices or {}) do
+    message(string.format('%d. %s', index, choice.desc or choice.name or '未知属性'))
+  end
+  return true
+end
+
+local function apply_diamond_attr_choice(index)
+  if STATE.awaiting_diamond_attr_choice ~= true then
+    return false
+  end
+  local choice = STATE.current_diamond_attr_choices and STATE.current_diamond_attr_choices[index] or nil
+  if not choice or not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then
+    return false
+  end
+  hero_attr_system.add_attr(STATE.hero, choice.attr_name, choice.value)
+  hero_attr_system.rebuild_derived_attrs(STATE.hero)
+  STATE.awaiting_diamond_attr_choice = false
+  STATE.current_diamond_attr_choices = nil
+  message('已选择：' .. tostring(choice.desc or choice.name or '属性提升'))
+  return true
+end
+
+local function handle_diamond_item_use(data)
+  if STATE.session_phase ~= 'battle' then
+    return false
+  end
+  local item = data and data.item or nil
+  local unit = data and data.unit or nil
+  if not item or not unit or unit ~= STATE.hero or not item.get_key then
+    return false
+  end
+  if item:get_key() ~= DIAMOND_ITEM_KEY then
+    return false
+  end
+  if not show_diamond_attr_choices() then
+    return true
+  end
+  if unit.remove_item then
+    unit:remove_item(DIAMOND_ITEM_KEY, 1)
+  end
+  STATE.diamond_item_pending_grants = math.max(0, (STATE.diamond_item_pending_grants or 1) - 1)
+  return true
+end
+
 local function is_choice_panel_blocking_messages()
   if STATE.session_phase ~= 'battle' or STATE.choice_panel_hidden == true then
     return false
+  end
+  if STATE.awaiting_diamond_attr_choice == true then
+    return true
   end
   if STATE.current_upgrade_choices and #STATE.current_upgrade_choices > 0 then
     return true
@@ -437,9 +582,9 @@ local function is_choice_panel_blocking_messages()
   end
   local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
   if evolution_runtime
-    and evolution_runtime.awaiting_choice
-    and evolution_runtime.current_choices
-    and #evolution_runtime.current_choices > 0 then
+      and evolution_runtime.awaiting_choice
+      and evolution_runtime.current_choices
+      and #evolution_runtime.current_choices > 0 then
     return true
   end
   if STATE.treasure_runtime then
@@ -599,7 +744,8 @@ mainline_task_system = require('runtime.mainline_tasks').create({
     return reward_system.queue_treasure_round(source_type, source_name)
   end,
   start_mainline_task_challenge = function(task)
-    return battlefield_system and battlefield_system.start_mainline_task_challenge and battlefield_system.start_mainline_task_challenge(task) or nil
+    return battlefield_system and battlefield_system.start_mainline_task_challenge and
+        battlefield_system.start_mainline_task_challenge(task) or nil
   end,
 })
 
@@ -1039,7 +1185,8 @@ end
 
 local function show_runtime_status()
   if STATE.session_phase ~= 'battle' then
-    local stage_name = STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) or '未选择'
+    local stage_name = STATE.current_stage_def and
+        (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) or '未选择'
     local mode_name = STATE.current_mode_def and STATE.current_mode_def.display_name or '标准模式'
     message(string.format('当前处于局外选关阶段：%s %s。', stage_name, mode_name))
     return
@@ -1115,10 +1262,7 @@ local function trigger_td_skills_on_hit(data)
   }
   local basic_attack_vfx = AttackSkillObjects.vfx_by_id.basic_attack or {}
   local basic_chain_particle = basic_attack_vfx.chain_particle
-    or basic_attack_vfx.impact_particle
-  if CONFIG.damage_hit_effect_enabled == false then
-    basic_chain_particle = nil
-  end
+      or basic_attack_vfx.impact_particle
 
   if skill.normal_attack_bonus_ratio > 0 then
     deal_skill_damage(target, data.damage * skill.normal_attack_bonus_ratio, '物理', {
@@ -1234,7 +1378,8 @@ battlefield_system = BattlefieldSystem.create({
     return heal_hero(amount)
   end,
   play_enemy_death_sound = function(unit, info)
-    return audio_system and audio_system.play_enemy_death and audio_system.play_enemy_death(unit, info and info.kind == 'boss') or nil
+    return audio_system and audio_system.play_enemy_death and
+        audio_system.play_enemy_death(unit, info and info.kind == 'boss') or nil
   end,
   on_hero_damage = function(data)
     return trigger_td_skills_on_hit(data)
@@ -1392,7 +1537,8 @@ attack_skills_system = AttackSkillsSystem.create({
     return audio_system and audio_system.play_basic_attack and audio_system.play_basic_attack(source_unit) or nil
   end,
   play_attack_skill_sound = function(skill, source_anchor, stage)
-    return audio_system and audio_system.play_attack_skill and audio_system.play_attack_skill(skill, source_anchor, stage) or nil
+    return audio_system and audio_system.play_attack_skill and
+        audio_system.play_attack_skill(skill, source_anchor, stage) or nil
   end,
 })
 
@@ -1411,9 +1557,9 @@ auto_active_effects_system = AutoActiveEffectsSystem.create({
   end,
   is_debug_effect_mounted = function(effect_id)
     return STATE.effect_debug_runtime
-      and STATE.effect_debug_runtime.mounted_effect_ids
-      and STATE.effect_debug_runtime.mounted_effect_ids[effect_id] == true
-      or false
+        and STATE.effect_debug_runtime.mounted_effect_ids
+        and STATE.effect_debug_runtime.mounted_effect_ids[effect_id] == true
+        or false
   end,
   is_active_enemy = is_active_enemy,
   get_enemies_in_range = get_enemies_in_range,
@@ -1620,6 +1766,9 @@ local function apply_bond_choice(index)
 end
 
 local function apply_round_choice(index)
+  if STATE.awaiting_diamond_attr_choice then
+    return apply_diamond_attr_choice(index)
+  end
   if STATE.awaiting_upgrade then
     apply_upgrade(index)
     return true
@@ -1821,9 +1970,9 @@ end
 local function has_pending_evolution_choice()
   local runtime = reward_system.get_evolution_runtime()
   return runtime
-    and runtime.awaiting_choice == true
-    and runtime.current_choices
-    and #runtime.current_choices > 0
+      and runtime.awaiting_choice == true
+      and runtime.current_choices
+      and #runtime.current_choices > 0
 end
 
 local function try_evolution_entry()
@@ -1895,32 +2044,43 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
       return session_state_system.start_selected_stage(stage_id, mode_id)
     end,
   },
+  open_save_panel = function()
+    return outgame_system and outgame_system.open_save_panel and outgame_system.open_save_panel() or false
+  end,
   battle_objective_runtime = {
     get_summary = function()
-      return mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary() or nil
+      return mainline_task_system and mainline_task_system.get_current_task_summary and
+          mainline_task_system.get_current_task_summary() or nil
     end,
     get_tracker_state = function()
-      return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or nil
+      return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or
+          nil
     end,
     start_current_task_challenge = function()
-      return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
+      return mainline_task_system and mainline_task_system.start_current_task_challenge and
+          mainline_task_system.start_current_task_challenge() or nil
     end,
     toggle_auto_track = function()
-      return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or nil
+      return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or
+          nil
     end,
   },
   mainline_runtime = {
     get_summary = function()
-      return mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary() or nil
+      return mainline_task_system and mainline_task_system.get_current_task_summary and
+          mainline_task_system.get_current_task_summary() or nil
     end,
     get_tracker_state = function()
-      return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or nil
+      return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or
+          nil
     end,
     start_current_task_challenge = function()
-      return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
+      return mainline_task_system and mainline_task_system.start_current_task_challenge and
+          mainline_task_system.start_current_task_challenge() or nil
     end,
     toggle_auto_track = function()
-      return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or nil
+      return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or
+          nil
     end,
   },
   get_current_stage_text = function()
@@ -1930,16 +2090,20 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
     return '第1关'
   end,
   get_mainline_task_summary = function()
-    return mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary() or nil
+    return mainline_task_system and mainline_task_system.get_current_task_summary and
+        mainline_task_system.get_current_task_summary() or nil
   end,
   get_mainline_task_tracker_state = function()
-    return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or nil
+    return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or
+        nil
   end,
   start_current_task_challenge = function()
-    return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
+    return mainline_task_system and mainline_task_system.start_current_task_challenge and
+        mainline_task_system.start_current_task_challenge() or nil
   end,
   toggle_mainline_task_auto_track = function()
-    return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or nil
+    return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or
+        nil
   end,
   apply_round_choice = apply_round_choice,
   show_upgrade_choices = show_upgrade_choices,
@@ -1958,9 +2122,9 @@ runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
   end,
   get_growth_weapon_item_key = function()
     local slot_cfg = CONFIG.gear_upgrade_config
-      and CONFIG.gear_upgrade_config.slots
-      and CONFIG.gear_upgrade_config.slots.weapon
-      or nil
+        and CONFIG.gear_upgrade_config.slots
+        and CONFIG.gear_upgrade_config.slots.weapon
+        or nil
     return slot_cfg and slot_cfg.item_key or nil
   end,
   try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
@@ -2011,15 +2175,16 @@ end)()
 local runtime_ui_helpers = RuntimeUIHelpers.create({
   STATE = STATE,
   y3 = y3,
+  hero_attr_system = hero_attr_system,
   get_player = get_player,
   build_growth_weapon_tip_payload = function()
     return GearUpgrades.build_tip_payload(STATE, 'weapon', CONFIG.gear_upgrade_config, y3.item)
   end,
   get_growth_weapon_item_key = function()
     local slot_cfg = CONFIG.gear_upgrade_config
-      and CONFIG.gear_upgrade_config.slots
-      and CONFIG.gear_upgrade_config.slots.weapon
-      or nil
+        and CONFIG.gear_upgrade_config.slots
+        and CONFIG.gear_upgrade_config.slots.weapon
+        or nil
     return slot_cfg and slot_cfg.item_key or nil
   end,
   try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
@@ -2053,7 +2218,8 @@ hero_selection_range_system = HeroSelectionRangeSystem.create({
     return STATE.session_phase == 'battle' and STATE.game_finished ~= true
   end,
   get_current_basic_attack_range = function()
-    return attack_skills_system and attack_skills_system.get_current_basic_attack_range and attack_skills_system.get_current_basic_attack_range() or 0
+    return attack_skills_system and attack_skills_system.get_current_basic_attack_range and
+        attack_skills_system.get_current_basic_attack_range() or 0
   end,
 })
 
@@ -2091,8 +2257,8 @@ session_state_system = SessionStateSystem.create({
   unlock_attack_skill = unlock_attack_skill,
   collect_battle_pass_attack_skill_ids = function()
     local profile = STATE.outgame_profile
-      or (outgame_system and outgame_system.get_profile and outgame_system.get_profile())
-      or nil
+        or (outgame_system and outgame_system.get_profile and outgame_system.get_profile())
+        or nil
     if not BattlePass.collect_owned_attack_skill_ids then
       return {}
     end
@@ -2110,9 +2276,9 @@ session_state_system = SessionStateSystem.create({
   end,
   disable_local_attack_preview = function()
     return hero_selection_range_system
-      and hero_selection_range_system.disable_local_preview
-      and hero_selection_range_system.disable_local_preview()
-      or false
+        and hero_selection_range_system.disable_local_preview
+        and hero_selection_range_system.disable_local_preview()
+        or false
   end,
   get_outgame_system = function()
     return outgame_system
@@ -2163,7 +2329,7 @@ outgame_system = OutgameSystem.create({
   end,
 })
 
-outgame_system.set_battle_pass_panel(require 'ui.battle_pass'.create({
+local battle_pass_panel = require 'ui.battle_pass'.create({
   STATE = STATE,
   y3 = y3,
   message = message,
@@ -2175,12 +2341,20 @@ outgame_system.set_battle_pass_panel(require 'ui.battle_pass'.create({
     return outgame_system and outgame_system.mark_profile_dirty and outgame_system.mark_profile_dirty() or nil
   end,
   rebuild_hero_attr_bonus_stats = function(profile)
-    return outgame_system and outgame_system.rebuild_hero_attr_bonus_stats and outgame_system.rebuild_hero_attr_bonus_stats(profile) or nil
+    return outgame_system and outgame_system.rebuild_hero_attr_bonus_stats and
+        outgame_system.rebuild_hero_attr_bonus_stats(profile) or nil
   end,
   play_ui_click = function()
     return audio_system and audio_system.play_ui_click and audio_system.play_ui_click() or nil
   end,
-}))
+  get_nav_host = function()
+    return outgame_system and outgame_system.get_battle_pass_nav_host and outgame_system.get_battle_pass_nav_host() or nil
+  end,
+})
+outgame_system.set_battle_pass_panel(battle_pass_panel)
+if battle_pass_panel and battle_pass_panel.set_outgame_panel then
+  battle_pass_panel.set_outgame_panel(outgame_system)
+end
 
 input_events_system = InputEventsSystem.create({
   STATE = STATE,
@@ -2204,9 +2378,11 @@ input_events_system = InputEventsSystem.create({
     runtime_ui_helpers.show_runtime_attr_tip_panel(8)
   end,
   show_runtime_attr_dialog = show_runtime_attr_dialog,
+  toggle_attr_panel = runtime_ui_helpers.toggle_attr_panel,
   refresh_runtime_overview = runtime_ui_helpers.refresh_runtime_overview,
   start_current_task_challenge = function()
-    return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
+    return mainline_task_system and mainline_task_system.start_current_task_challenge and
+        mainline_task_system.start_current_task_challenge() or nil
   end,
   try_start_challenge = try_start_challenge,
   try_evolution_entry = try_evolution_entry,
@@ -2231,6 +2407,9 @@ local function register_runtime_events()
   if hero_selection_range_system and hero_selection_range_system.register_runtime_events then
     hero_selection_range_system.register_runtime_events()
   end
+  y3.game:event('单位-使用物品', function(_, data)
+    handle_diamond_item_use(data)
+  end)
 end
 
 runtime_loops_system = RuntimeLoopsSystem.create({
@@ -2258,6 +2437,7 @@ runtime_loops_system = RuntimeLoopsSystem.create({
   refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel,
   refresh_runtime_overview = runtime_ui_helpers.refresh_runtime_overview,
   refresh_inventory_panel = runtime_ui_helpers.refresh_inventory_panel,
+  refresh_attr_panel = runtime_ui_helpers.refresh_attr_panel,
   outgame_system = outgame_system,
   debug_tools_system = debug_tools_system,
   is_active_enemy = is_active_enemy,
@@ -2279,6 +2459,9 @@ function M.bootstrap()
   register_runtime_events()
   register_dev_commands()
   start_runtime_loops()
+  y3.ltimer.loop(0.2, function()
+    sync_levelup_diamond_rewards()
+  end)
   debug_tools_system.ensure_gm_panel()
   outgame_system.load_profile()
   outgame_system.enter_outgame()

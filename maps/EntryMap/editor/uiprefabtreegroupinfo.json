@@ -11,7 +11,7 @@
       "__tuple__": true, 
       "items": [
        "59b82a9e-12a6-4d18-88a3-3b67bc25c40f", 
-       "\u653b\u51fbskill"
+       "\u7f81\u7eca"
       ]
      }, 
      {
@@ -26,6 +26,13 @@
       "items": [
        "881813f2-250f-447f-b563-8fb034b75931", 
        "\u4e09\u9009\u4e00"
+      ]
+     }, 
+     {
+      "__tuple__": true, 
+      "items": [
+       "dcb3a531-7b86-40c5-9540-f87eaf817d61", 
+       "\u4e94\u54c1\u8d28\u6846"
       ]
      }
     ]
@@ -134,8 +141,8 @@
      {
       "__tuple__": true, 
       "items": [
-       "f7eb207c-b62f-4e7c-9b2a-c8dd9cac1114", 
-       "\u56fe\u9274\u5355\u54c1\u8d28\u5217\u8868"
+       "941931fc-a08b-4f42-adab-13de4614ce49", 
+       "\u5b58\u6863\u7cfb\u7edf"
       ]
      }
     ]
@@ -334,6 +341,13 @@
     "items": [
      "8339da09-2ecf-4dbd-988c-554d88bcbe3c", 
      "\u7d2f\u8ba1\u62bd\u5956"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "attr-panel-runtime-prefab", 
+     "\u5c5e\u6027\u9762\u677f"
     ]
    }
   ]

@@ -1,5 +1,9 @@
 {
     "local_variable": {
+        "62107655": {
+            "variable_dict": {}, 
+            "variable_length_dict": {}
+        }, 
         "531869699": {
             "variable_dict": {
                 "AUDIO_KEY": {
@@ -9,6 +13,10 @@
             "variable_length_dict": {
                 "\u6280\u80fd\u97f3\u6548": 0
             }
+        }, 
+        "738029569": {
+            "variable_dict": {}, 
+            "variable_length_dict": {}
         }
     }, 
     "trigger_dict": {

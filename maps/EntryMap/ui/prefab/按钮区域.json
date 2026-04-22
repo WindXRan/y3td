@@ -25,16 +25,16 @@
                     false, 
                     true, 
                     false, 
-                    40.0, 
-                    20.0, 
-                    50.0, 
-                    110.0
+                    30.0, 
+                    30.0, 
+                    53.0556, 
+                    106.9444
                 ], 
                 "alignment": {
                     "__tuple__": true, 
                     "items": [
                         2, 
-                        16
+                        0
                     ]
                 }, 
                 "anchor": {
@@ -591,17 +591,17 @@
                         0
                     ]
                 }, 
-                "name": "\u56fe\u9274\u6309\u94ae", 
+                "name": "\u5b58\u6863\u6309\u94ae", 
                 "opacity": 1.0, 
                 "open_adapter": true, 
                 "over_pattern": 3, 
                 "pos_data": {
                     "__tuple__": true, 
                     "items": [
-                        70.0, 
-                        40.0, 
-                        35.0, 
-                        40.0, 
+                        73.0556, 
+                        50.0, 
+                        36.5278, 
+                        50.0, 
                         1, 
                         1
                     ]
@@ -637,7 +637,7 @@
                 "text": {
                     "__tuple__": true, 
                     "items": [
-                        "\u56fe\u9274\nX", 
+                        "\u5b58\u6863", 
                         false
                     ]
                 }, 

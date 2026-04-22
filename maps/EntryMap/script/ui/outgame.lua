@@ -1,5 +1,3 @@
-local BattlePass = require 'runtime.battle_pass'
-
 local M = {}
 
 function M.create(env)
@@ -17,6 +15,9 @@ function M.create(env)
   local OUTGAME_ATTR_BONUS_BY_STAGE_MODE = CONFIG.outgame_attr_bonus_config
     and CONFIG.outgame_attr_bonus_config.by_stage_mode
     or {}
+  local OUTGAME_TREASURE_HUNT_CONFIG = CONFIG.outgame_treasure_hunt_config or {}
+  local OUTGAME_TREASURE_HUNT_ITEMS = OUTGAME_TREASURE_HUNT_CONFIG.list or {}
+  local OUTGAME_TREASURE_HUNT_BY_ID = OUTGAME_TREASURE_HUNT_CONFIG.by_id or {}
   local STAGE_PAGE_SIZE = 5
   local CHAPTER_LIST = {}
   local STAGES_BY_CHAPTER = {}
@@ -441,6 +442,207 @@ function M.create(env)
     return true
   end
 
+  local function normalize_string_array(list)
+    local normalized = {}
+    local seen = {}
+    local dirty = false
+    if type(list) ~= 'table' then
+      return normalized, list ~= nil
+    end
+
+    for _, value in ipairs(list) do
+      local text = tostring(value or '')
+      if text ~= '' and not seen[text] then
+        seen[text] = true
+        normalized[#normalized + 1] = text
+      else
+        dirty = true
+      end
+    end
+    return normalized, dirty
+  end
+
+  local function normalize_currency_map(map)
+    local normalized = {}
+    local dirty = false
+    if type(map) ~= 'table' then
+      return normalized, map ~= nil
+    end
+
+    for key, value in pairs(map) do
+      local currency_key = tostring(key or '')
+      local amount = math.floor(tonumber(value) or 0)
+      if currency_key ~= '' then
+        normalized[currency_key] = math.max(0, amount)
+        if normalized[currency_key] ~= value then
+          dirty = true
+        end
+      else
+        dirty = true
+      end
+    end
+    return normalized, dirty
+  end
+
+  local function normalize_lottery_state(profile)
+    local dirty = false
+    if type(profile.outgame_lottery) ~= 'table' then
+      profile.outgame_lottery = {}
+      dirty = true
+    end
+
+    local lottery = profile.outgame_lottery
+    local by_pool = {}
+    if type(lottery.by_pool) == 'table' then
+      for key, value in pairs(lottery.by_pool) do
+        local pool_id = tostring(key or '')
+        if pool_id ~= '' then
+          by_pool[pool_id] = math.max(0, math.floor(tonumber(value) or 0))
+          if by_pool[pool_id] ~= value then
+            dirty = true
+          end
+        else
+          dirty = true
+        end
+      end
+    elseif lottery.by_pool ~= nil then
+      dirty = true
+    end
+    lottery.by_pool = by_pool
+
+    local history = {}
+    if type(lottery.history) == 'table' then
+      for _, entry in ipairs(lottery.history) do
+        if type(entry) == 'table' then
+          local pool_id = tostring(entry.pool_id or '')
+          local draw_count = math.max(0, math.floor(tonumber(entry.draw_count) or 0))
+          if pool_id ~= '' and draw_count > 0 then
+            history[#history + 1] = {
+              pool_id = pool_id,
+              draw_count = draw_count,
+              timestamp = tonumber(entry.timestamp) or 0,
+              reward_id = entry.reward_id and tostring(entry.reward_id) or nil,
+            }
+          else
+            dirty = true
+          end
+        else
+          dirty = true
+        end
+      end
+    elseif lottery.history ~= nil then
+      dirty = true
+    end
+    lottery.history = history
+
+    local total_draw_count = 0
+    for _, value in pairs(by_pool) do
+      total_draw_count = total_draw_count + value
+    end
+    if math.floor(tonumber(lottery.total_draw_count) or -1) ~= total_draw_count then
+      lottery.total_draw_count = total_draw_count
+      dirty = true
+    end
+
+    if lottery.selected_pool_id ~= nil and tostring(lottery.selected_pool_id) == '' then
+      lottery.selected_pool_id = nil
+      dirty = true
+    end
+
+    return dirty
+  end
+
+  local function normalize_treasure_hunt_state(profile)
+    local dirty = false
+    if type(profile.outgame_treasure_hunt) ~= 'table' then
+      profile.outgame_treasure_hunt = {}
+      dirty = true
+    end
+
+    local treasure_hunt = profile.outgame_treasure_hunt
+
+    local version = math.max(1, math.floor(tonumber(treasure_hunt.version) or 1))
+    if treasure_hunt.version ~= version then
+      treasure_hunt.version = version
+      dirty = true
+    end
+
+    local points = math.max(0, math.floor(tonumber(treasure_hunt.points) or OUTGAME_TREASURE_HUNT_CONFIG.default_points or 0))
+    if treasure_hunt.points ~= points then
+      treasure_hunt.points = points
+      dirty = true
+    end
+
+    local item_counts = {}
+    if type(treasure_hunt.item_counts) == 'table' then
+      for key, value in pairs(treasure_hunt.item_counts) do
+        local item_id = tostring(key or '')
+        if item_id ~= '' then
+          local normalized_count = math.max(0, math.floor(tonumber(value) or 0))
+          item_counts[item_id] = normalized_count
+          if normalized_count ~= value then
+            dirty = true
+          end
+        else
+          dirty = true
+        end
+      end
+    elseif treasure_hunt.item_counts ~= nil then
+      dirty = true
+    end
+    for _, item in ipairs(OUTGAME_TREASURE_HUNT_ITEMS) do
+      if item_counts[item.id] == nil and (tonumber(item.initial_owned_count) or 0) > 0 then
+        item_counts[item.id] = math.max(0, math.floor(tonumber(item.initial_owned_count) or 0))
+        dirty = true
+      end
+    end
+    treasure_hunt.item_counts = item_counts
+
+    local history = {}
+    if type(treasure_hunt.exchange_history) == 'table' then
+      for _, entry in ipairs(treasure_hunt.exchange_history) do
+        if type(entry) == 'table' then
+          local item_id = tostring(entry.item_id or '')
+          local exchange_count = math.max(0, math.floor(tonumber(entry.exchange_count) or 0))
+          local granted_count = math.max(0, math.floor(tonumber(entry.granted_count) or 0))
+          local spent_points = math.max(0, math.floor(tonumber(entry.spent_points) or 0))
+          if item_id ~= '' and exchange_count > 0 then
+            history[#history + 1] = {
+              item_id = item_id,
+              exchange_count = exchange_count,
+              granted_count = granted_count,
+              spent_points = spent_points,
+              timestamp = tonumber(entry.timestamp) or 0,
+            }
+          else
+            dirty = true
+          end
+        else
+          dirty = true
+        end
+      end
+    elseif treasure_hunt.exchange_history ~= nil then
+      dirty = true
+    end
+    treasure_hunt.exchange_history = history
+
+    if treasure_hunt.selected_item_id ~= nil then
+      local selected_item_id = tostring(treasure_hunt.selected_item_id or '')
+      if selected_item_id == '' or not OUTGAME_TREASURE_HUNT_BY_ID[selected_item_id] then
+        treasure_hunt.selected_item_id = nil
+        dirty = true
+      else
+        treasure_hunt.selected_item_id = selected_item_id
+      end
+    end
+
+    return dirty
+  end
+
+  local function get_persistent_bonus_stats(profile)
+    return type(profile.outgame_persistent_bonus_stats) == 'table' and profile.outgame_persistent_bonus_stats or {}
+  end
+
   local function rebuild_hero_attr_bonus_stats(profile)
     local rebuilt = {}
     for _, stage_def in ipairs(STAGE_LIST) do
@@ -456,7 +658,7 @@ function M.create(env)
         end
       end
     end
-    merge_bonus_stats(rebuilt, BattlePass.collect_claimed_bonus_stats(profile))
+    merge_bonus_stats(rebuilt, get_persistent_bonus_stats(profile))
     if are_same_bonus_stats(profile.hero_attr_bonus_stats, rebuilt) then
       return false
     end
@@ -467,7 +669,7 @@ function M.create(env)
   local function ensure_profile_defaults(profile)
     local dirty = false
     if type(profile.version) ~= 'number' then
-      profile.version = 1
+      profile.version = 2
       dirty = true
     end
     if type(profile.stage_progress) ~= 'table' then
@@ -482,7 +684,36 @@ function M.create(env)
       profile.hero_attr_bonus_stats = {}
       dirty = true
     end
-    if BattlePass.ensure_profile_defaults(profile) then
+    if type(profile.outgame_currency) ~= 'table' then
+      profile.outgame_currency = {}
+      dirty = true
+    end
+    do
+      local normalized_currency, currency_dirty = normalize_currency_map(profile.outgame_currency)
+      profile.outgame_currency = normalized_currency
+      if currency_dirty then
+        dirty = true
+      end
+    end
+    if type(profile.outgame_persistent_bonus_stats) ~= 'table' then
+      profile.outgame_persistent_bonus_stats = {}
+      dirty = true
+    end
+    if type(profile.outgame_owned_attack_skill_ids) ~= 'table' then
+      profile.outgame_owned_attack_skill_ids = {}
+      dirty = true
+    end
+    do
+      local normalized_skill_ids, skill_dirty = normalize_string_array(profile.outgame_owned_attack_skill_ids)
+      profile.outgame_owned_attack_skill_ids = normalized_skill_ids
+      if skill_dirty then
+        dirty = true
+      end
+    end
+    if normalize_lottery_state(profile) then
+      dirty = true
+    end
+    if normalize_treasure_hunt_state(profile) then
       dirty = true
     end
     if profile.selected_view_mode ~= VIEW_MODE_MAINLINE and profile.selected_view_mode ~= VIEW_MODE_CULTIVATION then
@@ -1102,7 +1333,7 @@ function M.create(env)
 
     local window_width, window_height = get_window_metrics()
     save_entry.root:set_pos(window_width - 208, window_height - 124)
-    set_visible_if_alive(save_entry.root, STATE.session_phase == 'outgame')
+    set_visible_if_alive(save_entry.root, STATE.session_phase == 'outgame' or STATE.session_phase == 'battle')
     set_text_if_alive(save_entry.status, build_save_status_brief(profile))
     set_text_if_alive(save_entry.button, '打开存档')
     set_image_color_if_alive(
@@ -1426,6 +1657,7 @@ function M.create(env)
   end
 
   function api.open_save_panel()
+    local profile = load_profile()
     if battle_pass_panel and battle_pass_panel.open_panel then
       if battle_pass_panel.set_ui_visible then
         battle_pass_panel.set_ui_visible(true)
@@ -1434,8 +1666,6 @@ function M.create(env)
         return true
       end
     end
-
-    local profile = load_profile()
     message(build_save_status_detail(profile))
     return false
   end
@@ -1444,8 +1674,8 @@ function M.create(env)
     if not is_outgame_ui_alive(STATE.outgame_ui) then
       ensure_ui()
     end
-    local did_refresh = refresh_ui()
-    if did_refresh and battle_pass_panel and battle_pass_panel.refresh_ui then
+    refresh_ui()
+    if battle_pass_panel and battle_pass_panel.refresh_ui then
       battle_pass_panel.refresh_ui()
     end
   end
@@ -1459,19 +1689,19 @@ function M.create(env)
       STATE.outgame_ui_refresh_signature = nil
     end
     set_visible_if_alive(ui.root, visible == true)
-    set_visible_if_alive(ui.hall_root, visible == true)
+    set_visible_if_alive(ui.hall_root, (visible == true and STATE.session_phase == 'outgame'))
     if battle_pass_panel and battle_pass_panel.set_ui_visible then
       local battle_pass_visible = STATE.session_phase == 'battle'
         or (visible == true and STATE.session_phase == 'outgame')
       battle_pass_panel.set_ui_visible(battle_pass_visible)
     end
+    refresh_save_entry_ui(ui, load_profile())
   end
 
   function api.enter_outgame(result)
     local profile = api.load_profile()
-    local battle_pass_summary = nil
     if result then
-      battle_pass_summary = api.apply_battle_result(result)
+      api.apply_battle_result(result)
       profile = load_profile()
     end
 
@@ -1487,11 +1717,8 @@ function M.create(env)
     ensure_ui()
     refresh_ui(true)
     api.set_ui_visible(true)
-    if battle_pass_panel and battle_pass_panel.enter_outgame then
-      battle_pass_panel.enter_outgame()
-    end
-    if battle_pass_summary and battle_pass_summary.added_exp and battle_pass_summary.added_exp > 0 then
-      message(BattlePass.build_gain_message(battle_pass_summary))
+    if battle_pass_panel and battle_pass_panel.refresh_ui then
+      battle_pass_panel.refresh_ui()
     end
   end
 
@@ -1525,10 +1752,26 @@ function M.create(env)
       end
     end
 
-    local battle_pass_summary = BattlePass.apply_battle_result(profile, result)
+    if type(result.outgame_persistent_bonus_stats) == 'table' then
+      merge_bonus_stats(profile.outgame_persistent_bonus_stats, result.outgame_persistent_bonus_stats)
+    end
+    if type(result.outgame_owned_attack_skill_ids) == 'table' then
+      local merged_skill_ids = {}
+      for _, skill_id in ipairs(profile.outgame_owned_attack_skill_ids or {}) do
+        merged_skill_ids[#merged_skill_ids + 1] = skill_id
+      end
+      for _, skill_id in ipairs(result.outgame_owned_attack_skill_ids) do
+        merged_skill_ids[#merged_skill_ids + 1] = skill_id
+      end
+      profile.outgame_owned_attack_skill_ids = normalize_string_array(merged_skill_ids)
+    end
     rebuild_hero_attr_bonus_stats(profile)
     mark_profile_dirty()
-    return battle_pass_summary
+    return {
+      stage_id = stage_id,
+      is_win = result.is_win == true,
+      reached_wave_index = profile.last_result.reached_wave_index,
+    }
   end
 
   function api.start_selected_stage()
@@ -1554,9 +1797,6 @@ function M.create(env)
       and env.stage_runtime.start_selected_stage
       and env.stage_runtime.start_selected_stage(stage_id, mode_id)
     if ok then
-      if battle_pass_panel and battle_pass_panel.leave_outgame then
-        battle_pass_panel.leave_outgame()
-      end
       api.set_ui_visible(false)
       return true
     end
@@ -1584,12 +1824,309 @@ function M.create(env)
     return load_profile()
   end
 
+  function api.get_battle_pass_nav_host()
+    local ui = ensure_ui()
+    if is_outgame_ui_alive(ui) and is_ui_alive(ui.hall_root) then
+      return ui.hall_root
+    end
+    return nil
+  end
+
   function api.mark_profile_dirty()
     return mark_profile_dirty()
   end
 
+  function api.get_currency_amount(currency_key)
+    local profile = load_profile()
+    return math.max(0, math.floor(tonumber(profile.outgame_currency[tostring(currency_key or '')]) or 0))
+  end
+
+  function api.set_currency_amount(currency_key, amount)
+    local key = tostring(currency_key or '')
+    if key == '' then
+      return 0
+    end
+    local profile = load_profile()
+    local value = math.max(0, math.floor(tonumber(amount) or 0))
+    profile.outgame_currency[key] = value
+    mark_profile_dirty()
+    return value
+  end
+
+  function api.add_currency(currency_key, delta)
+    local current = api.get_currency_amount(currency_key)
+    return api.set_currency_amount(currency_key, current + (tonumber(delta) or 0))
+  end
+
+  function api.get_owned_attack_skill_ids()
+    local profile = load_profile()
+    local owned = {}
+    for _, skill_id in ipairs(profile.outgame_owned_attack_skill_ids or {}) do
+      owned[#owned + 1] = skill_id
+    end
+    return owned
+  end
+
+  api.collect_owned_attack_skill_ids = api.get_owned_attack_skill_ids
+
+  function api.add_owned_attack_skill(skill_id)
+    local normalized = tostring(skill_id or '')
+    if normalized == '' then
+      return false
+    end
+    local profile = load_profile()
+    local merged = {}
+    for _, owned_skill_id in ipairs(profile.outgame_owned_attack_skill_ids or {}) do
+      merged[#merged + 1] = owned_skill_id
+    end
+    merged[#merged + 1] = normalized
+    local normalized_list, dirty = normalize_string_array(merged)
+    profile.outgame_owned_attack_skill_ids = normalized_list
+    if dirty then
+      mark_profile_dirty()
+    end
+    return dirty
+  end
+
+  function api.has_owned_attack_skill(skill_id)
+    local normalized = tostring(skill_id or '')
+    if normalized == '' then
+      return false
+    end
+    for _, owned_skill_id in ipairs(load_profile().outgame_owned_attack_skill_ids or {}) do
+      if owned_skill_id == normalized then
+        return true
+      end
+    end
+    return false
+  end
+
+  function api.get_total_lottery_count()
+    local player = env.get_player and env.get_player() or nil
+    local handle = player and player.handle or nil
+    if handle and handle.api_get_number_of_all_lottery then
+      local ok, count = pcall(handle.api_get_number_of_all_lottery, handle)
+      if ok and count ~= nil then
+        return math.max(0, math.floor(tonumber(count) or 0))
+      end
+    end
+    local profile = load_profile()
+    local lottery = profile.outgame_lottery or {}
+    return math.max(0, math.floor(tonumber(lottery.total_draw_count) or 0))
+  end
+
+  function api.get_lottery_count(pool_id)
+    local normalized_pool_id = tostring(pool_id or '')
+    if normalized_pool_id == '' then
+      return api.get_total_lottery_count()
+    end
+    local player = env.get_player and env.get_player() or nil
+    local handle = player and player.handle or nil
+    local lottery_number = tonumber(pool_id)
+    if handle and handle.api_get_number_of_lottery and lottery_number then
+      local ok, count = pcall(handle.api_get_number_of_lottery, handle, lottery_number)
+      if ok and count ~= nil then
+        return math.max(0, math.floor(tonumber(count) or 0))
+      end
+    end
+    local profile = load_profile()
+    local lottery = profile.outgame_lottery or {}
+    local by_pool = lottery.by_pool or {}
+    return math.max(0, math.floor(tonumber(by_pool[normalized_pool_id]) or 0))
+  end
+
+  function api.add_lottery_draw_count(pool_id, draw_count, reward_id)
+    local normalized_pool_id = tostring(pool_id or '')
+    if normalized_pool_id == '' then
+      return nil
+    end
+    local profile = load_profile()
+    local lottery = profile.outgame_lottery
+    lottery.by_pool[normalized_pool_id] = math.max(
+      0,
+      math.floor(tonumber(lottery.by_pool[normalized_pool_id]) or 0) + math.max(0, math.floor(tonumber(draw_count) or 0))
+    )
+    lottery.total_draw_count = 0
+    for _, value in pairs(lottery.by_pool or {}) do
+      lottery.total_draw_count = lottery.total_draw_count + (tonumber(value) or 0)
+    end
+    if (tonumber(draw_count) or 0) > 0 then
+      lottery.history[#lottery.history + 1] = {
+        pool_id = normalized_pool_id,
+        draw_count = math.max(0, math.floor(tonumber(draw_count) or 0)),
+        timestamp = os.time(),
+        reward_id = reward_id and tostring(reward_id) or nil,
+      }
+    end
+    mark_profile_dirty()
+    return lottery.by_pool[normalized_pool_id]
+  end
+
+  function api.get_selected_lottery_pool()
+    local profile = load_profile()
+    local lottery = profile.outgame_lottery or {}
+    return lottery.selected_pool_id
+  end
+
+  function api.set_selected_lottery_pool(pool_id)
+    local normalized_pool_id = tostring(pool_id or '')
+    local profile = load_profile()
+    profile.outgame_lottery.selected_pool_id = normalized_pool_id ~= '' and normalized_pool_id or nil
+    mark_profile_dirty()
+    return profile.outgame_lottery.selected_pool_id
+  end
+
+  function api.get_lottery_snapshot(pool_id)
+    local normalized_pool_id = pool_id ~= nil and tostring(pool_id) or api.get_selected_lottery_pool()
+    return {
+      selected_pool_id = api.get_selected_lottery_pool(),
+      total_draw_count = api.get_total_lottery_count(),
+      pool_draw_count = api.get_lottery_count(normalized_pool_id),
+      history = load_profile().outgame_lottery and load_profile().outgame_lottery.history or {},
+    }
+  end
+
+  function api.get_treasure_hunt_catalog()
+    return OUTGAME_TREASURE_HUNT_CONFIG
+  end
+
+  function api.get_treasure_hunt_profile()
+    return load_profile().outgame_treasure_hunt
+  end
+
+  function api.get_treasure_hunt_points()
+    local treasure_hunt = api.get_treasure_hunt_profile() or {}
+    return math.max(0, math.floor(tonumber(treasure_hunt.points) or 0))
+  end
+
+  function api.get_treasure_hunt_item_count(item_id)
+    local normalized_item_id = tostring(item_id or '')
+    if normalized_item_id == '' then
+      return 0
+    end
+    local treasure_hunt = api.get_treasure_hunt_profile() or {}
+    local item_counts = treasure_hunt.item_counts or {}
+    return math.max(0, math.floor(tonumber(item_counts[normalized_item_id]) or 0))
+  end
+
+  function api.has_treasure_hunt_item(item_id)
+    return api.get_treasure_hunt_item_count(item_id) > 0
+  end
+
+  function api.set_treasure_hunt_points(points)
+    local profile = load_profile()
+    profile.outgame_treasure_hunt.points = math.max(0, math.floor(tonumber(points) or 0))
+    mark_profile_dirty()
+    return profile.outgame_treasure_hunt.points
+  end
+
+  function api.add_treasure_hunt_points(delta_points)
+    local profile = load_profile()
+    profile.outgame_treasure_hunt.points = math.max(
+      0,
+      math.floor(tonumber(profile.outgame_treasure_hunt.points) or 0) + math.floor(tonumber(delta_points) or 0)
+    )
+    mark_profile_dirty()
+    return profile.outgame_treasure_hunt.points
+  end
+
+  function api.get_selected_treasure_hunt_item()
+    local treasure_hunt = api.get_treasure_hunt_profile() or {}
+    return treasure_hunt.selected_item_id
+  end
+
+  function api.set_selected_treasure_hunt_item(item_id)
+    local normalized_item_id = tostring(item_id or '')
+    local profile = load_profile()
+    if normalized_item_id == '' or not OUTGAME_TREASURE_HUNT_BY_ID[normalized_item_id] then
+      profile.outgame_treasure_hunt.selected_item_id = nil
+    else
+      profile.outgame_treasure_hunt.selected_item_id = normalized_item_id
+    end
+    mark_profile_dirty()
+    return profile.outgame_treasure_hunt.selected_item_id
+  end
+
+  function api.can_exchange_treasure_hunt_item(item_id, exchange_count)
+    local normalized_item_id = tostring(item_id or '')
+    local item_def = OUTGAME_TREASURE_HUNT_BY_ID[normalized_item_id]
+    local normalized_exchange_count = math.max(1, math.floor(tonumber(exchange_count) or 1))
+    if not item_def or item_def.is_exchangeable ~= true then
+      return false, 'item_unavailable'
+    end
+    local total_cost = math.max(0, math.floor(tonumber(item_def.cost_points) or 0)) * normalized_exchange_count
+    if api.get_treasure_hunt_points() < total_cost then
+      return false, 'insufficient_points'
+    end
+    return true, total_cost
+  end
+
+  function api.exchange_treasure_hunt_item(item_id, exchange_count)
+    local normalized_item_id = tostring(item_id or '')
+    local normalized_exchange_count = math.max(1, math.floor(tonumber(exchange_count) or 1))
+    local item_def = OUTGAME_TREASURE_HUNT_BY_ID[normalized_item_id]
+    local allowed, payload = api.can_exchange_treasure_hunt_item(normalized_item_id, normalized_exchange_count)
+    if not allowed then
+      return false, payload
+    end
+
+    local total_cost = payload
+    local grant_count = math.max(1, math.floor(tonumber(item_def and item_def.bundle_count) or 1)) * normalized_exchange_count
+    local profile = load_profile()
+    local treasure_hunt = profile.outgame_treasure_hunt
+    treasure_hunt.points = math.max(0, math.floor(tonumber(treasure_hunt.points) or 0) - total_cost)
+    treasure_hunt.item_counts[normalized_item_id] = math.max(
+      0,
+      math.floor(tonumber(treasure_hunt.item_counts[normalized_item_id]) or 0) + grant_count
+    )
+    treasure_hunt.exchange_history[#treasure_hunt.exchange_history + 1] = {
+      item_id = normalized_item_id,
+      exchange_count = normalized_exchange_count,
+      granted_count = grant_count,
+      spent_points = total_cost,
+      timestamp = os.time(),
+    }
+    mark_profile_dirty()
+    return true, treasure_hunt.item_counts[normalized_item_id]
+  end
+
+  function api.get_treasure_hunt_snapshot()
+    local treasure_hunt = api.get_treasure_hunt_profile() or {}
+    return {
+      pool_id = OUTGAME_TREASURE_HUNT_CONFIG.pool_id,
+      display_name = OUTGAME_TREASURE_HUNT_CONFIG.display_name,
+      currency_name = OUTGAME_TREASURE_HUNT_CONFIG.currency_name,
+      points = api.get_treasure_hunt_points(),
+      selected_item_id = treasure_hunt.selected_item_id,
+      item_counts = treasure_hunt.item_counts or {},
+      exchange_history = treasure_hunt.exchange_history or {},
+      catalog = OUTGAME_TREASURE_HUNT_CONFIG,
+    }
+  end
+
+  function api.get_system_snapshot()
+    local profile = load_profile()
+    return {
+      selected_stage_id = profile.selected_stage_id,
+      selected_mode_id = profile.selected_mode_id,
+      selected_view_mode = profile.selected_view_mode,
+      save_enabled = STATE.outgame_profile_save_enabled == true,
+      save_error = STATE.outgame_profile_save_error,
+      currency = profile.outgame_currency,
+      owned_attack_skill_ids = api.get_owned_attack_skill_ids(),
+      lottery = api.get_lottery_snapshot(),
+      treasure_hunt = api.get_treasure_hunt_snapshot(),
+      hero_attr_bonus_stats = profile.hero_attr_bonus_stats,
+    }
+  end
+
   function api.set_battle_pass_panel(panel)
     battle_pass_panel = panel
+    return battle_pass_panel
+  end
+
+  function api.set_outgame_panel(_)
+    return api
   end
 
   api.rebuild_hero_attr_bonus_stats = rebuild_hero_attr_bonus_stats

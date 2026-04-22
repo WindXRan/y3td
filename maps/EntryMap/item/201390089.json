@@ -202,7 +202,7 @@
             }, 
             "trigger_id": 460754948, 
             "trigger_name": "\u5b50\u89e6\u53d1\u5668", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 
@@ -330,7 +330,7 @@
             }, 
             "trigger_id": 964063236, 
             "trigger_name": "\u5b50\u89e6\u53d1\u5668_4", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 
@@ -445,7 +445,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1500684294, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668_2", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 
@@ -496,7 +496,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1735192577, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 

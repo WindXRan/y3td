@@ -1,4 +1,5 @@
 local UIRoot = require 'ui.ui_root'
+local RuntimeHudSchema = require 'ui.runtime_hud_editor_schema'
 
 local M = {}
 
@@ -16,6 +17,10 @@ local function resolve_prefab_first(prefab, paths)
   return nil
 end
 
+local function resolve_prefab_pair(prefab, pair)
+  return resolve_prefab_first(prefab, pair or {})
+end
+
 function M.attach_bottom_bg(nodes, prefab)
   if not nodes or not prefab then
     return nodes
@@ -25,34 +30,27 @@ function M.attach_bottom_bg(nodes, prefab)
     bottom_bg_root = prefab,
     bottom_bg_backpack = resolve_prefab_node(prefab, 'layout_1.backpack'),
     bottom_skill_bar = resolve_prefab_node(prefab, '技能栏'),
-    bottom_skill_slot_hosts = {
-      resolve_prefab_node(prefab, '技能栏.物品2'),
-      resolve_prefab_node(prefab, '技能栏.物品2_10'),
-      resolve_prefab_node(prefab, '技能栏.物品2_11'),
-      resolve_prefab_node(prefab, '技能栏.物品2_12'),
-      resolve_prefab_node(prefab, '技能栏.物品2_13'),
-      resolve_prefab_node(prefab, '技能栏.物品2_14'),
-      resolve_prefab_node(prefab, '技能栏.物品2_15'),
-      resolve_prefab_node(prefab, '技能栏.物品2_16'),
-      resolve_prefab_node(prefab, '技能栏.物品2_17'),
-      resolve_prefab_node(prefab, '技能栏.物品2_18'),
-      resolve_prefab_node(prefab, '技能栏.物品2_19'),
-      resolve_prefab_node(prefab, '技能栏.物品2_20'),
-    },
-    bottom_backpack_slots = {
-      resolve_prefab_node(prefab, 'layout_1.backpack.物品1')
-        or resolve_prefab_node(prefab, '物品栏.物品2'),
-      resolve_prefab_node(prefab, 'layout_1.backpack.物品2')
-        or resolve_prefab_node(prefab, '物品栏.物品2_10'),
-      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1_1')
-        or resolve_prefab_node(prefab, '物品栏.物品2_11'),
-      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1_1_1')
-        or resolve_prefab_node(prefab, '物品栏.物品2_12'),
-      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1')
-        or resolve_prefab_node(prefab, '物品栏.物品2_13'),
-      resolve_prefab_node(prefab, 'layout_1.backpack.image_4_1_2')
-        or resolve_prefab_node(prefab, '物品栏.物品2_14'),
-    },
+    bottom_skill_slot_hosts = (function()
+      local slots = {}
+      for index, path in ipairs(RuntimeHudSchema.bottom.skill_slot_host_paths or {}) do
+        slots[index] = resolve_prefab_node(prefab, path)
+      end
+      return slots
+    end)(),
+    bottom_backpack_slot_hosts = (function()
+      local slots = {}
+      for index, pair in ipairs(RuntimeHudSchema.bottom.backpack_slot_host_paths or {}) do
+        slots[index] = resolve_prefab_pair(prefab, pair)
+      end
+      return slots
+    end)(),
+    bottom_backpack_slots = (function()
+      local slots = {}
+      for index, pair in ipairs(RuntimeHudSchema.bottom.backpack_slot_host_paths or {}) do
+        slots[index] = resolve_prefab_pair(prefab, pair)
+      end
+      return slots
+    end)(),
     bottom_portrait = resolve_prefab_node(prefab, 'layout_1.mid.头像.英雄头像')
       or resolve_prefab_node(prefab, 'layout_1.mid.头像.touxiang'),
     bottom_name = resolve_prefab_node(prefab, 'layout_1.mid.头像.name'),

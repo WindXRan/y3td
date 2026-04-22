@@ -21,6 +21,7 @@ function M.create(env)
   local refresh_swallow_panel = env.refresh_swallow_panel
   local refresh_runtime_overview = env.refresh_runtime_overview
   local refresh_inventory_panel = env.refresh_inventory_panel
+  local refresh_attr_panel = env.refresh_attr_panel
   local outgame_system = env.outgame_system
   local debug_tools_system = env.debug_tools_system
   local is_active_enemy = env.is_active_enemy
@@ -202,6 +203,9 @@ function M.create(env)
       if slice_index == 3 then
         if refresh_inventory_panel then
           refresh_inventory_panel()
+        end
+        if refresh_attr_panel then
+          refresh_attr_panel()
         end
         return
       end

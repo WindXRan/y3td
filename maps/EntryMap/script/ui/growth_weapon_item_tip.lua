@@ -1,11 +1,61 @@
+local UIRoot = require 'ui.ui_root'
+
 local M = {}
 
-local ROOT_PATH = '物品说明.物品说明.shopTip'
-local TITLE_PATH = '物品说明.物品说明.shopTip.basic.title.title_TEXT'
-local SUBTITLE_PATH = '物品说明.物品说明.shopTip.basic.title.subtitle_TEXT'
-local ICON_PATH = '物品说明.物品说明.shopTip.basic.avatar.icon'
-local ATTR_LIST_PATH = '物品说明.物品说明.shopTip.attr_LIST'
-local DESCR_LIST_PATH = '物品说明.物品说明.shopTip.descr_LIST'
+local ROOT_PATHS = {
+  '物品说明.layout_15.shopTip',
+  '物品说明.shopTip',
+  '物品说明.物品说明.shopTip',
+  '背包系统.背包系统.物品说明',
+}
+
+local TITLE_PATHS = {
+  '物品说明.layout_15.shopTip.basic.title.title_TEXT',
+  '物品说明.shopTip.basic.title.title_TEXT',
+  '物品说明.物品说明.shopTip.basic.title.title_TEXT',
+  '背包系统.背包系统.物品说明.basic.title.title_TEXT',
+}
+
+local SUBTITLE_PATHS = {
+  '物品说明.layout_15.shopTip.basic.title.subtitle_TEXT',
+  '物品说明.shopTip.basic.title.subtitle_TEXT',
+  '物品说明.物品说明.shopTip.basic.title.subtitle_TEXT',
+  '背包系统.背包系统.物品说明.basic.title.subtitle_TEXT',
+}
+
+local ICON_PATHS = {
+  '物品说明.layout_15.shopTip.basic.avatar.icon',
+  '物品说明.shopTip.basic.avatar.icon',
+  '物品说明.物品说明.shopTip.basic.avatar.icon',
+  '背包系统.背包系统.物品说明.basic.avatar.icon',
+}
+
+local ATTR_LIST_PATHS = {
+  '物品说明.layout_15.shopTip.attr_LIST',
+  '物品说明.shopTip.attr_LIST',
+  '物品说明.物品说明.shopTip.attr_LIST',
+}
+
+local DESCR_LIST_PATHS = {
+  '物品说明.layout_15.shopTip.descr_LIST',
+  '物品说明.shopTip.descr_LIST',
+  '物品说明.物品说明.shopTip.descr_LIST',
+  '背包系统.背包系统.物品说明.descr_LIST',
+}
+
+local NOTE_ROOT_PATHS = {
+  '物品说明.layout_15.shopTip.note',
+  '物品说明.shopTip.note',
+  '物品说明.物品说明.shopTip.note',
+  '背包系统.背包系统.物品说明.note',
+}
+
+local NOTE_TEXT_PATHS = {
+  '物品说明.layout_15.shopTip.note.note_TEXT',
+  '物品说明.shopTip.note.note_TEXT',
+  '物品说明.物品说明.shopTip.note.note_TEXT',
+  '背包系统.背包系统.物品说明.note.note_TEXT',
+}
 
 local QUALITY_PALETTES = {
   common = {
@@ -23,26 +73,29 @@ local QUALITY_PALETTES = {
 }
 
 local function resolve_ui(y3, player, path)
-  local ok, ui = pcall(y3.ui.get_ui, player, path)
-  if not ok or not ui then
-    return nil
-  end
-  return ui
+  return UIRoot.resolve_ui(y3, player, path)
+end
+
+local function resolve_first_ui(y3, player, paths)
+  return UIRoot.resolve_first_ui(y3, player, paths)
 end
 
 local function resolve_child(node, path)
-  if not node or not path or path == '' then
-    return nil
-  end
-  local ok, child = pcall(node.get_child, node, path)
-  if ok and child then
-    return child
-  end
-  return nil
+  return UIRoot.resolve_child(node, path)
 end
 
 local function is_alive(node)
-  return node and (not node.is_removed or not node:is_removed())
+  return UIRoot.is_alive(node)
+end
+
+local function trim_text(text)
+  if type(text) ~= 'string' then
+    return ''
+  end
+  local value = text:gsub('\r', '')
+  value = value:gsub('^%s+', '')
+  value = value:gsub('%s+$', '')
+  return value
 end
 
 local function set_text(node, text)
@@ -71,6 +124,21 @@ local function get_quality_palette(quality)
   return QUALITY_PALETTES[quality or 'common'] or QUALITY_PALETTES.common
 end
 
+local function flatten_line(line)
+  if type(line) == 'table' then
+    local title_text = trim_text(line.title or line.text or '')
+    local body_text = trim_text(line.body or line.desc or '')
+    if title_text ~= '' and body_text ~= '' then
+      return title_text .. '：' .. body_text
+    end
+    if body_text ~= '' then
+      return body_text
+    end
+    return title_text
+  end
+  return trim_text(line)
+end
+
 local function set_list_lines(list_nodes, lines, title_key, body_key)
   for index, entry in ipairs(list_nodes or {}) do
     local line = lines and lines[index] or nil
@@ -84,12 +152,21 @@ local function set_list_lines(list_nodes, lines, title_key, body_key)
         title_text = line or ''
       end
 
-      set_text(entry[title_key], title_text)
+      local single_text = trim_text(flatten_line(line))
+      if entry[title_key] then
+        set_text(entry[title_key], title_text)
+      end
       if body_key then
-        set_text(entry[body_key], body_text)
+        local body_value = body_text
+        if not entry[title_key] then
+          body_value = single_text
+        elseif body_value == '' then
+          body_value = title_text
+        end
+        set_text(entry[body_key], body_value)
       end
       if entry.root and is_alive(entry.root) then
-        local visible = title_text ~= '' or body_text ~= ''
+        local visible = single_text ~= '' or body_text ~= ''
         entry.root:set_visible(visible)
       end
     end
@@ -107,13 +184,13 @@ function M.create(env)
     end
 
     local player = get_player()
-    local panel = resolve_ui(y3, player, ROOT_PATH)
+    local panel = resolve_first_ui(y3, player, ROOT_PATHS)
     if not panel then
       return nil
     end
 
-    local attr_root = resolve_ui(y3, player, ATTR_LIST_PATH)
-    local descr_root = resolve_ui(y3, player, DESCR_LIST_PATH)
+    local attr_root = resolve_first_ui(y3, player, ATTR_LIST_PATHS)
+    local descr_root = resolve_first_ui(y3, player, DESCR_LIST_PATHS)
     local attr_nodes = {}
     local descr_nodes = {}
 
@@ -135,13 +212,19 @@ function M.create(env)
 
     cache = {
       panel = panel,
-      title = resolve_ui(y3, player, TITLE_PATH),
-      subtitle = resolve_ui(y3, player, SUBTITLE_PATH),
-      icon = resolve_ui(y3, player, ICON_PATH),
+      title = resolve_first_ui(y3, player, TITLE_PATHS),
+      subtitle = resolve_first_ui(y3, player, SUBTITLE_PATHS),
+      icon = resolve_first_ui(y3, player, ICON_PATHS),
+      note_root = resolve_first_ui(y3, player, NOTE_ROOT_PATHS),
+      note = resolve_first_ui(y3, player, NOTE_TEXT_PATHS),
       attr_nodes = attr_nodes,
       descr_nodes = descr_nodes,
+      use_inventory_desc = attr_root == nil,
     }
     cache.panel:set_visible(false)
+    if cache.note_root and is_alive(cache.note_root) then
+      cache.note_root:set_visible(false)
+    end
     return cache
   end
 
@@ -185,7 +268,28 @@ function M.create(env)
 
     local palette = get_quality_palette(payload.quality)
     set_text(nodes.title, payload.title_text or '')
-    set_text(nodes.subtitle, string.format('%s  %s', payload.subtitle_text or '', payload.cost_text or ''))
+    local subtitle_text = trim_text(payload.subtitle_text or '')
+    local cost_text = trim_text(payload.cost_text or '')
+    if nodes.use_inventory_desc then
+      set_text(nodes.subtitle, subtitle_text)
+      set_text(nodes.note, cost_text)
+      if nodes.note_root and is_alive(nodes.note_root) then
+        nodes.note_root:set_visible(cost_text ~= '')
+      end
+    else
+      local subtitle_parts = {}
+      if subtitle_text ~= '' then
+        subtitle_parts[#subtitle_parts + 1] = subtitle_text
+      end
+      if cost_text ~= '' then
+        subtitle_parts[#subtitle_parts + 1] = cost_text
+      end
+      set_text(nodes.subtitle, table.concat(subtitle_parts, '  '))
+      set_text(nodes.note, cost_text)
+      if nodes.note_root and is_alive(nodes.note_root) then
+        nodes.note_root:set_visible(cost_text ~= '')
+      end
+    end
     set_text_color(nodes.title, palette.title)
     set_text_color(nodes.subtitle, palette.subtitle)
     set_image(nodes.icon, payload.icon_res)

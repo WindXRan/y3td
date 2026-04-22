@@ -5,6 +5,7 @@ local HeroRoster = require 'data.object_tables.hero_roster'
 local HeroFormSkills = require 'data.object_tables.hero_form_skills'
 
 local M = {}
+local CHOICE_PANEL_MODEL_STICKY_MS = 1200
 
 local function get_choice_refresh_cost(paid_count)
   local index = math.max(0, tonumber(paid_count) or 0)
@@ -657,6 +658,38 @@ function M.create(env)
   local create_bond_env = env.create_bond_env
   local refresh_upgrade_choices = env.refresh_upgrade_choices
 
+  local function get_wall_clock_ms()
+    if os and os.clock_banned then
+      return os.clock_banned() * 1000
+    end
+    return nil
+  end
+
+  local function remember_choice_panel_model(model)
+    if not model then
+      return model
+    end
+    STATE.choice_panel_last_model = model
+    STATE.choice_panel_last_model_at_ms = get_wall_clock_ms()
+    return model
+  end
+
+  local function get_sticky_choice_panel_model()
+    if STATE.choice_panel_hidden == true then
+      return nil
+    end
+    local model = STATE.choice_panel_last_model
+    local cached_at_ms = STATE.choice_panel_last_model_at_ms
+    local now_ms = get_wall_clock_ms()
+    if not model or not cached_at_ms or not now_ms then
+      return nil
+    end
+    if (now_ms - cached_at_ms) > CHOICE_PANEL_MODEL_STICKY_MS then
+      return nil
+    end
+    return model
+  end
+
   local function refresh_treasure_choices()
     local runtime = get_treasure_runtime()
     if runtime.awaiting_replace and runtime.pending_replace_choice then
@@ -895,7 +928,7 @@ function M.create(env)
         free_refresh_left = 3,
         refresh_paid_count = 0,
       }
-      return {
+      return remember_choice_panel_model({
         kind = kind,
         hide_enabled = true,
         refresh = {
@@ -905,7 +938,7 @@ function M.create(env)
           wood_cost = get_choice_refresh_cost(round.refresh_paid_count or 0),
         },
         cards = build_upgrade_choice_cards(),
-      }
+      })
     end
 
     if kind == 'bond' then
@@ -914,7 +947,7 @@ function M.create(env)
         free_refresh_left = 0,
         refresh_paid_count = 0,
       }
-      return {
+      return remember_choice_panel_model({
         kind = kind,
         card_renderer = 'default',
         hide_enabled = true,
@@ -925,14 +958,14 @@ function M.create(env)
           wood_cost = get_choice_refresh_cost(round.refresh_paid_count or 0),
         },
         cards = build_bond_choice_cards(),
-      }
+      })
     end
 
     if kind == 'evolution' or kind == 'mark' then
       local runtime = (get_evolution_runtime and get_evolution_runtime()) or STATE.evolution_runtime or STATE.mark_runtime
       local cards = build_evolution_choice_cards()
       local round = runtime and runtime.current_round or nil
-      return {
+      return remember_choice_panel_model({
         kind = 'evolution',
         panel_title = round and round.ui_title or '进化选择',
         hide_enabled = true,
@@ -943,7 +976,7 @@ function M.create(env)
           wood_cost = 0,
         },
         cards = cards,
-      }
+      })
     end
 
     if kind == 'treasure' then
@@ -953,7 +986,7 @@ function M.create(env)
         refresh_paid_count = 0,
       }
       local is_replace = runtime and runtime.awaiting_replace and runtime.pending_replace_choice
-      return {
+      return remember_choice_panel_model({
         kind = is_replace and 'treasure_replace' or 'treasure',
         hide_enabled = true,
         refresh = {
@@ -963,10 +996,10 @@ function M.create(env)
           wood_cost = get_choice_refresh_cost(round.refresh_paid_count or 0),
         },
         cards = build_treasure_choice_cards(),
-      }
+      })
     end
 
-    return nil
+    return get_sticky_choice_panel_model()
   end
 
   return {

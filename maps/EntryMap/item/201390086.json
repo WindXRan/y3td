@@ -63,7 +63,7 @@
             "p_trigger_id": null, 
             "trigger_id": 460103681, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "SFX_ENTITY": {
@@ -364,7 +364,7 @@
             }, 
             "trigger_id": 596217863, 
             "trigger_name": "\u5b50\u89e6\u53d1\u5668", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 

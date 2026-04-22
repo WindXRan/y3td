@@ -83,6 +83,25 @@ local function load_projectile_json(skill_id)
   error('projectile json missing for ' .. tostring(skill_id))
 end
 
+local function load_sound_json(sound_key)
+  local path_patterns = {
+    'maps/EntryMap/editor_table/soundall/%s.json',
+    'editor_table/soundall/%s.json',
+    '../editor_table/soundall/%s.json',
+  }
+
+  for _, pattern in ipairs(path_patterns) do
+    local content = read_text_file(string.format(pattern, tostring(sound_key)))
+    if content and content ~= '' then
+      local ok, data = pcall(Json.decode, content)
+      assert(ok and type(data) == 'table', 'expected valid sound json for ' .. tostring(sound_key))
+      return data
+    end
+  end
+
+  error('sound json missing for ' .. tostring(sound_key))
+end
+
 for _, skill_id in ipairs(unique_skill_ids) do
   local ability_data = load_ability_json(skill_id)
   local projectile_data = load_projectile_json(skill_id)
@@ -108,6 +127,9 @@ for _, skill_id in ipairs(unique_skill_ids) do
   assert(type(object_cast_audio_items) == 'table' and object_cast_audio_items[1] ~= nil, 'expected object cst_sound_effect for ' .. tostring(skill_id))
   local object_end_audio_items = ability_data.end_sound_effect and ability_data.end_sound_effect.items or nil
   assert(type(object_end_audio_items) == 'table' and object_end_audio_items[1] ~= nil, 'expected object end_sound_effect for ' .. tostring(skill_id))
+  assert(load_sound_json(object_cast_audio_items[1]).key == object_cast_audio_items[1], 'expected cast sound object for ' .. tostring(skill_id))
+  assert(load_sound_json(object_audio_items[1]).key == object_audio_items[1], 'expected impact sound object for ' .. tostring(skill_id))
+  assert(load_sound_json(object_end_audio_items[1]).key == object_end_audio_items[1], 'expected burst sound object for ' .. tostring(skill_id))
 
   local _, impact_config = runtime_audio.debug_get_attack_skill_stage_config(skill_id, 'impact')
   assert(type(impact_config) == 'table', 'expected impact audio config for ' .. tostring(skill_id))

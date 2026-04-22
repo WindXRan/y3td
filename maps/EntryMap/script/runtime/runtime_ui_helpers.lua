@@ -35,6 +35,13 @@ function M.create(env)
       build_growth_weapon_tip_payload = build_growth_weapon_tip_payload,
       try_upgrade_growth_weapon = try_upgrade_growth_weapon,
     })
+
+    STATE.hero_attr_panel_view_system = require('ui.hero_attr_panel_view').create({
+      STATE = STATE,
+      y3 = y3,
+      get_player = get_player,
+      hero_attr_system = env.hero_attr_system,
+    })
   end
 
   local function ensure_runtime_hud()
@@ -126,6 +133,9 @@ function M.create(env)
     if STATE.inventory_panel_system and STATE.inventory_panel_system.set_visible then
       STATE.inventory_panel_system.set_visible(visible)
     end
+    if STATE.hero_attr_panel_view_system and STATE.hero_attr_panel_view_system.set_visible then
+      STATE.hero_attr_panel_view_system.set_visible(visible)
+    end
   end
 
   local function toggle_talk_input()
@@ -140,6 +150,20 @@ function M.create(env)
     return STATE.inventory_panel_system and STATE.inventory_panel_system.refresh_panel and STATE.inventory_panel_system.refresh_panel() or nil
   end
 
+  local function toggle_attr_panel()
+    return STATE.hero_attr_panel_view_system
+      and STATE.hero_attr_panel_view_system.toggle_panel
+      and STATE.hero_attr_panel_view_system.toggle_panel()
+      or nil
+  end
+
+  local function refresh_attr_panel()
+    return STATE.hero_attr_panel_view_system
+      and STATE.hero_attr_panel_view_system.refresh_panel
+      and STATE.hero_attr_panel_view_system.refresh_panel()
+      or nil
+  end
+
   return {
     destroy_choice_panel = destroy_choice_panel,
     ensure_choice_panel = ensure_choice_panel,
@@ -147,11 +171,13 @@ function M.create(env)
     install_panel_systems = install_panel_systems,
     refresh_choice_panel = refresh_choice_panel,
     refresh_inventory_panel = refresh_inventory_panel,
+    refresh_attr_panel = refresh_attr_panel,
     refresh_runtime_hud = refresh_runtime_hud,
     refresh_runtime_overview = function()
     end,
     set_battle_hud_visible = set_battle_hud_visible,
     show_runtime_attr_tip_panel = show_runtime_attr_tip_panel,
+    toggle_attr_panel = toggle_attr_panel,
     toggle_inventory_panel = toggle_inventory_panel,
     toggle_talk_input = toggle_talk_input,
   }

@@ -229,7 +229,7 @@
                                 "anim_type": 0, 
                                 "comp": "f6da7147-70a8-49bc-8821-95baf39fa7e8", 
                                 "ease_type": 0, 
-                                "name": "Hide_1", 
+                                "name": "Hide_99", 
                                 "open_timeline": true, 
                                 "type": 3
                             }
@@ -924,7 +924,7 @@
                                         "anim_type": 0, 
                                         "comp": "730c1909-c831-4834-998a-8bfaf8f25011", 
                                         "ease_type": 0, 
-                                        "name": "Show_3", 
+                                        "name": "Show_23", 
                                         "open_timeline": true, 
                                         "type": 2
                                     }, 
@@ -934,7 +934,7 @@
                                         "anim_type": 0, 
                                         "comp": "ef6d4a3d-d750-476c-a08e-c30c3aaa60ae", 
                                         "ease_type": 0, 
-                                        "name": "Hide_12", 
+                                        "name": "Hide_100", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -944,7 +944,7 @@
                                         "anim_type": 0, 
                                         "comp": "a99f63de-c1bb-494c-b258-15b56471d06c", 
                                         "ease_type": 0, 
-                                        "name": "Hide_13", 
+                                        "name": "Hide_101", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -954,7 +954,7 @@
                                         "anim_type": 0, 
                                         "comp": "0d244f5b-f82c-4f3c-9820-8654c21167f7", 
                                         "ease_type": 0, 
-                                        "name": "Hide_14", 
+                                        "name": "Hide_102", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -964,7 +964,7 @@
                                         "anim_type": 0, 
                                         "comp": "a3ebf922-4566-48d6-88f1-2f1b00d3bf8d", 
                                         "ease_type": 0, 
-                                        "name": "Hide_15", 
+                                        "name": "Hide_103", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -974,7 +974,7 @@
                                         "anim_type": 0, 
                                         "comp": "a34d3cf8-83a6-4ac4-9e29-ce2fc364f490", 
                                         "ease_type": 0, 
-                                        "name": "Hide_16", 
+                                        "name": "Hide_104", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }
@@ -1452,7 +1452,7 @@
                                         "anim_type": 0, 
                                         "comp": "730c1909-c831-4834-998a-8bfaf8f25011", 
                                         "ease_type": 0, 
-                                        "name": "Show_5", 
+                                        "name": "Show_24", 
                                         "open_timeline": true, 
                                         "type": 2
                                     }, 
@@ -1462,7 +1462,7 @@
                                         "anim_type": 0, 
                                         "comp": "ef6d4a3d-d750-476c-a08e-c30c3aaa60ae", 
                                         "ease_type": 0, 
-                                        "name": "Hide_24", 
+                                        "name": "Hide_105", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -1472,7 +1472,7 @@
                                         "anim_type": 0, 
                                         "comp": "a99f63de-c1bb-494c-b258-15b56471d06c", 
                                         "ease_type": 0, 
-                                        "name": "Hide_25", 
+                                        "name": "Hide_106", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -1482,7 +1482,7 @@
                                         "anim_type": 0, 
                                         "comp": "0d244f5b-f82c-4f3c-9820-8654c21167f7", 
                                         "ease_type": 0, 
-                                        "name": "Hide_26", 
+                                        "name": "Hide_107", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -1492,7 +1492,7 @@
                                         "anim_type": 0, 
                                         "comp": "a3ebf922-4566-48d6-88f1-2f1b00d3bf8d", 
                                         "ease_type": 0, 
-                                        "name": "Hide_27", 
+                                        "name": "Hide_108", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -1502,7 +1502,7 @@
                                         "anim_type": 0, 
                                         "comp": "a34d3cf8-83a6-4ac4-9e29-ce2fc364f490", 
                                         "ease_type": 0, 
-                                        "name": "Hide_28", 
+                                        "name": "Hide_109", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }
@@ -1980,7 +1980,7 @@
                                         "anim_type": 0, 
                                         "comp": "730c1909-c831-4834-998a-8bfaf8f25011", 
                                         "ease_type": 0, 
-                                        "name": "Show_6", 
+                                        "name": "Show_25", 
                                         "open_timeline": true, 
                                         "type": 2
                                     }, 
@@ -1990,7 +1990,7 @@
                                         "anim_type": 0, 
                                         "comp": "ef6d4a3d-d750-476c-a08e-c30c3aaa60ae", 
                                         "ease_type": 0, 
-                                        "name": "Hide_29", 
+                                        "name": "Hide_110", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -2000,7 +2000,7 @@
                                         "anim_type": 0, 
                                         "comp": "a99f63de-c1bb-494c-b258-15b56471d06c", 
                                         "ease_type": 0, 
-                                        "name": "Hide_30", 
+                                        "name": "Hide_111", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -2010,7 +2010,7 @@
                                         "anim_type": 0, 
                                         "comp": "0d244f5b-f82c-4f3c-9820-8654c21167f7", 
                                         "ease_type": 0, 
-                                        "name": "Hide_31", 
+                                        "name": "Hide_112", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -2020,7 +2020,7 @@
                                         "anim_type": 0, 
                                         "comp": "a3ebf922-4566-48d6-88f1-2f1b00d3bf8d", 
                                         "ease_type": 0, 
-                                        "name": "Hide_32", 
+                                        "name": "Hide_113", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -2030,7 +2030,7 @@
                                         "anim_type": 0, 
                                         "comp": "a34d3cf8-83a6-4ac4-9e29-ce2fc364f490", 
                                         "ease_type": 0, 
-                                        "name": "Hide_33", 
+                                        "name": "Hide_114", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }
@@ -2508,7 +2508,7 @@
                                         "anim_type": 0, 
                                         "comp": "730c1909-c831-4834-998a-8bfaf8f25011", 
                                         "ease_type": 0, 
-                                        "name": "Show_7", 
+                                        "name": "Show_26", 
                                         "open_timeline": true, 
                                         "type": 2
                                     }, 
@@ -2518,7 +2518,7 @@
                                         "anim_type": 0, 
                                         "comp": "ef6d4a3d-d750-476c-a08e-c30c3aaa60ae", 
                                         "ease_type": 0, 
-                                        "name": "Hide_34", 
+                                        "name": "Hide_115", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -2528,7 +2528,7 @@
                                         "anim_type": 0, 
                                         "comp": "a99f63de-c1bb-494c-b258-15b56471d06c", 
                                         "ease_type": 0, 
-                                        "name": "Hide_35", 
+                                        "name": "Hide_116", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -2538,7 +2538,7 @@
                                         "anim_type": 0, 
                                         "comp": "0d244f5b-f82c-4f3c-9820-8654c21167f7", 
                                         "ease_type": 0, 
-                                        "name": "Hide_36", 
+                                        "name": "Hide_117", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -2548,7 +2548,7 @@
                                         "anim_type": 0, 
                                         "comp": "a3ebf922-4566-48d6-88f1-2f1b00d3bf8d", 
                                         "ease_type": 0, 
-                                        "name": "Hide_37", 
+                                        "name": "Hide_118", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -2558,7 +2558,7 @@
                                         "anim_type": 0, 
                                         "comp": "a34d3cf8-83a6-4ac4-9e29-ce2fc364f490", 
                                         "ease_type": 0, 
-                                        "name": "Hide_38", 
+                                        "name": "Hide_119", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }
@@ -3036,7 +3036,7 @@
                                         "anim_type": 0, 
                                         "comp": "730c1909-c831-4834-998a-8bfaf8f25011", 
                                         "ease_type": 0, 
-                                        "name": "Show_8", 
+                                        "name": "Show_27", 
                                         "open_timeline": true, 
                                         "type": 2
                                     }, 
@@ -3046,7 +3046,7 @@
                                         "anim_type": 0, 
                                         "comp": "ef6d4a3d-d750-476c-a08e-c30c3aaa60ae", 
                                         "ease_type": 0, 
-                                        "name": "Hide_39", 
+                                        "name": "Hide_120", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -3056,7 +3056,7 @@
                                         "anim_type": 0, 
                                         "comp": "a99f63de-c1bb-494c-b258-15b56471d06c", 
                                         "ease_type": 0, 
-                                        "name": "Hide_40", 
+                                        "name": "Hide_121", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -3066,7 +3066,7 @@
                                         "anim_type": 0, 
                                         "comp": "0d244f5b-f82c-4f3c-9820-8654c21167f7", 
                                         "ease_type": 0, 
-                                        "name": "Hide_41", 
+                                        "name": "Hide_122", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -3076,7 +3076,7 @@
                                         "anim_type": 0, 
                                         "comp": "a3ebf922-4566-48d6-88f1-2f1b00d3bf8d", 
                                         "ease_type": 0, 
-                                        "name": "Hide_42", 
+                                        "name": "Hide_123", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -3086,7 +3086,7 @@
                                         "anim_type": 0, 
                                         "comp": "a34d3cf8-83a6-4ac4-9e29-ce2fc364f490", 
                                         "ease_type": 0, 
-                                        "name": "Hide_43", 
+                                        "name": "Hide_124", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }
@@ -3564,7 +3564,7 @@
                                         "anim_type": 0, 
                                         "comp": "730c1909-c831-4834-998a-8bfaf8f25011", 
                                         "ease_type": 0, 
-                                        "name": "Show_9", 
+                                        "name": "Show_28", 
                                         "open_timeline": true, 
                                         "type": 2
                                     }, 
@@ -3574,7 +3574,7 @@
                                         "anim_type": 0, 
                                         "comp": "ef6d4a3d-d750-476c-a08e-c30c3aaa60ae", 
                                         "ease_type": 0, 
-                                        "name": "Hide_44", 
+                                        "name": "Hide_125", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -3584,7 +3584,7 @@
                                         "anim_type": 0, 
                                         "comp": "a99f63de-c1bb-494c-b258-15b56471d06c", 
                                         "ease_type": 0, 
-                                        "name": "Hide_45", 
+                                        "name": "Hide_126", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -3594,7 +3594,7 @@
                                         "anim_type": 0, 
                                         "comp": "0d244f5b-f82c-4f3c-9820-8654c21167f7", 
                                         "ease_type": 0, 
-                                        "name": "Hide_46", 
+                                        "name": "Hide_127", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -3604,7 +3604,7 @@
                                         "anim_type": 0, 
                                         "comp": "a3ebf922-4566-48d6-88f1-2f1b00d3bf8d", 
                                         "ease_type": 0, 
-                                        "name": "Hide_47", 
+                                        "name": "Hide_128", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -3614,7 +3614,7 @@
                                         "anim_type": 0, 
                                         "comp": "a34d3cf8-83a6-4ac4-9e29-ce2fc364f490", 
                                         "ease_type": 0, 
-                                        "name": "Hide_48", 
+                                        "name": "Hide_129", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }
@@ -4092,7 +4092,7 @@
                                         "anim_type": 0, 
                                         "comp": "730c1909-c831-4834-998a-8bfaf8f25011", 
                                         "ease_type": 0, 
-                                        "name": "Show_10", 
+                                        "name": "Show_29", 
                                         "open_timeline": true, 
                                         "type": 2
                                     }, 
@@ -4102,7 +4102,7 @@
                                         "anim_type": 0, 
                                         "comp": "ef6d4a3d-d750-476c-a08e-c30c3aaa60ae", 
                                         "ease_type": 0, 
-                                        "name": "Hide_49", 
+                                        "name": "Hide_130", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -4112,7 +4112,7 @@
                                         "anim_type": 0, 
                                         "comp": "a99f63de-c1bb-494c-b258-15b56471d06c", 
                                         "ease_type": 0, 
-                                        "name": "Hide_50", 
+                                        "name": "Hide_131", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -4122,7 +4122,7 @@
                                         "anim_type": 0, 
                                         "comp": "0d244f5b-f82c-4f3c-9820-8654c21167f7", 
                                         "ease_type": 0, 
-                                        "name": "Hide_51", 
+                                        "name": "Hide_132", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -4132,7 +4132,7 @@
                                         "anim_type": 0, 
                                         "comp": "a3ebf922-4566-48d6-88f1-2f1b00d3bf8d", 
                                         "ease_type": 0, 
-                                        "name": "Hide_52", 
+                                        "name": "Hide_133", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -4142,7 +4142,7 @@
                                         "anim_type": 0, 
                                         "comp": "a34d3cf8-83a6-4ac4-9e29-ce2fc364f490", 
                                         "ease_type": 0, 
-                                        "name": "Hide_53", 
+                                        "name": "Hide_134", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }
@@ -4927,7 +4927,7 @@
                                         "anim_type": 0, 
                                         "comp": "730c1909-c831-4834-998a-8bfaf8f25011", 
                                         "ease_type": 0, 
-                                        "name": "Show_1", 
+                                        "name": "Show_30", 
                                         "open_timeline": true, 
                                         "type": 2
                                     }, 
@@ -4937,7 +4937,7 @@
                                         "anim_type": 0, 
                                         "comp": "ef6d4a3d-d750-476c-a08e-c30c3aaa60ae", 
                                         "ease_type": 0, 
-                                        "name": "Hide_2", 
+                                        "name": "Hide_135", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -4947,7 +4947,7 @@
                                         "anim_type": 0, 
                                         "comp": "a99f63de-c1bb-494c-b258-15b56471d06c", 
                                         "ease_type": 0, 
-                                        "name": "Hide_3", 
+                                        "name": "Hide_136", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -4957,7 +4957,7 @@
                                         "anim_type": 0, 
                                         "comp": "0d244f5b-f82c-4f3c-9820-8654c21167f7", 
                                         "ease_type": 0, 
-                                        "name": "Hide_4", 
+                                        "name": "Hide_137", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -4967,7 +4967,7 @@
                                         "anim_type": 0, 
                                         "comp": "a3ebf922-4566-48d6-88f1-2f1b00d3bf8d", 
                                         "ease_type": 0, 
-                                        "name": "Hide_5", 
+                                        "name": "Hide_138", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -4977,7 +4977,7 @@
                                         "anim_type": 0, 
                                         "comp": "a34d3cf8-83a6-4ac4-9e29-ce2fc364f490", 
                                         "ease_type": 0, 
-                                        "name": "Hide_6", 
+                                        "name": "Hide_139", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }
@@ -5455,7 +5455,7 @@
                                         "anim_type": 0, 
                                         "comp": "a99f63de-c1bb-494c-b258-15b56471d06c", 
                                         "ease_type": 0, 
-                                        "name": "Show_2", 
+                                        "name": "Show_31", 
                                         "open_timeline": true, 
                                         "type": 2
                                     }, 
@@ -5465,7 +5465,7 @@
                                         "anim_type": 0, 
                                         "comp": "ef6d4a3d-d750-476c-a08e-c30c3aaa60ae", 
                                         "ease_type": 0, 
-                                        "name": "Hide_7", 
+                                        "name": "Hide_140", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -5475,7 +5475,7 @@
                                         "anim_type": 0, 
                                         "comp": "730c1909-c831-4834-998a-8bfaf8f25011", 
                                         "ease_type": 0, 
-                                        "name": "Hide_8", 
+                                        "name": "Hide_141", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -5485,7 +5485,7 @@
                                         "anim_type": 0, 
                                         "comp": "0d244f5b-f82c-4f3c-9820-8654c21167f7", 
                                         "ease_type": 0, 
-                                        "name": "Hide_9", 
+                                        "name": "Hide_142", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -5495,7 +5495,7 @@
                                         "anim_type": 0, 
                                         "comp": "a3ebf922-4566-48d6-88f1-2f1b00d3bf8d", 
                                         "ease_type": 0, 
-                                        "name": "Hide_10", 
+                                        "name": "Hide_143", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }, 
@@ -5505,7 +5505,7 @@
                                         "anim_type": 0, 
                                         "comp": "a34d3cf8-83a6-4ac4-9e29-ce2fc364f490", 
                                         "ease_type": 0, 
-                                        "name": "Hide_11", 
+                                        "name": "Hide_144", 
                                         "open_timeline": true, 
                                         "type": 3
                                     }
@@ -17400,665 +17400,6 @@
                             true, 
                             true, 
                             true, 
-                            0.0002514854430728519, 
-                            0.0, 
-                            -0.0007500000000391083, 
-                            0.0006274909974308684
-                        ], 
-                        "anchor": {
-                            "__tuple__": true, 
-                            "items": [
-                                0.5, 
-                                0.5
-                            ]
-                        }, 
-                        "can_drag": false, 
-                        "children": [
-                            {
-                                "adapter_option": [
-                                    true, 
-                                    false, 
-                                    true, 
-                                    false, 
-                                    5.0, 
-                                    592.2684, 
-                                    275.0, 
-                                    570.5225
-                                ], 
-                                "alignment": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        2, 
-                                        8
-                                    ]
-                                }, 
-                                "anchor": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0.5, 
-                                        0.5
-                                    ]
-                                }, 
-                                "bold": false, 
-                                "border": false, 
-                                "can_drag": false, 
-                                "children": [], 
-                                "comp_type": "TextLabel", 
-                                "event_list": [], 
-                                "font": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        "HKSongW9", 
-                                        32
-                                    ]
-                                }, 
-                                "font_color": [
-                                    230, 
-                                    211, 
-                                    152, 
-                                    255
-                                ], 
-                                "font_min_size": 15, 
-                                "gradient": false, 
-                                "gradient_bl_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        255, 
-                                        255, 
-                                        255, 
-                                        255
-                                    ]
-                                }, 
-                                "gradient_br_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        255, 
-                                        255, 
-                                        255, 
-                                        255
-                                    ]
-                                }, 
-                                "gradient_tl_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        255, 
-                                        255, 
-                                        255, 
-                                        255
-                                    ]
-                                }, 
-                                "gradient_tr_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        255, 
-                                        255, 
-                                        255, 
-                                        255
-                                    ]
-                                }, 
-                                "hover_child": "", 
-                                "italics": false, 
-                                "label_effect": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false
-                                    ]
-                                }, 
-                                "line_space": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0.0, 
-                                        3.0
-                                    ]
-                                }, 
-                                "name": "\u6807\u9898", 
-                                "opacity": 1.0, 
-                                "open_adapter": true, 
-                                "over_pattern": false, 
-                                "pos_data": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        474.9999, 
-                                        617.2682, 
-                                        38.1366, 
-                                        95.3651, 
-                                        1, 
-                                        1
-                                    ]
-                                }, 
-                                "prefab_sub_key": "8e41c8f9-5028-4454-9d58-8d5e5bfe49c4", 
-                                "review_word": false, 
-                                "rotation": 0, 
-                                "scale": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        1, 
-                                        1
-                                    ]
-                                }, 
-                                "scene_ui_name": null, 
-                                "shadow": false, 
-                                "size": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        400.0, 
-                                        50.0
-                                    ]
-                                }, 
-                                "strike_through": false, 
-                                "strike_through_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0, 
-                                        0, 
-                                        0, 
-                                        255
-                                    ]
-                                }, 
-                                "strike_through_size": 0, 
-                                "swallow_touches": false, 
-                                "text": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        "\u519b\u4ee4\u72b6", 
-                                        false
-                                    ]
-                                }, 
-                                "text_bind": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        null, 
-                                        null
-                                    ]
-                                }, 
-                                "text_border_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0, 
-                                        0, 
-                                        0, 
-                                        255
-                                    ]
-                                }, 
-                                "text_border_width": 0, 
-                                "text_format": "", 
-                                "text_italic_radius": 0.5, 
-                                "text_shadow_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        123, 
-                                        123, 
-                                        123, 
-                                        255
-                                    ]
-                                }, 
-                                "text_shadow_offset": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0, 
-                                        0
-                                    ]
-                                }, 
-                                "type": 3, 
-                                "typewriter_effect": 0, 
-                                "typewriter_space": 0, 
-                                "under_line": false, 
-                                "visible": true
-                            }, 
-                            {
-                                "adapter_option": [
-                                    true, 
-                                    false, 
-                                    true, 
-                                    true, 
-                                    52.0, 
-                                    565.2684, 
-                                    275.00005, 
-                                    274.99995
-                                ], 
-                                "alignment": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        2, 
-                                        8
-                                    ]
-                                }, 
-                                "anchor": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0.5, 
-                                        0.5
-                                    ]
-                                }, 
-                                "bold": false, 
-                                "border": false, 
-                                "can_drag": false, 
-                                "children": [], 
-                                "comp_type": "TextLabel", 
-                                "event_list": [], 
-                                "font": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        "HKWeiBeiW7", 
-                                        22
-                                    ]
-                                }, 
-                                "font_color": [
-                                    150, 
-                                    146, 
-                                    133, 
-                                    255
-                                ], 
-                                "font_min_size": 15, 
-                                "gradient": false, 
-                                "gradient_bl_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        255, 
-                                        255, 
-                                        255, 
-                                        255
-                                    ]
-                                }, 
-                                "gradient_br_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        255, 
-                                        255, 
-                                        255, 
-                                        255
-                                    ]
-                                }, 
-                                "gradient_tl_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        255, 
-                                        255, 
-                                        255, 
-                                        255
-                                    ]
-                                }, 
-                                "gradient_tr_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        255, 
-                                        255, 
-                                        255, 
-                                        255
-                                    ]
-                                }, 
-                                "hover_child": "", 
-                                "italics": false, 
-                                "label_effect": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false
-                                    ]
-                                }, 
-                                "line_space": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0, 
-                                        0
-                                    ]
-                                }, 
-                                "name": "\u526f\u6807\u9898", 
-                                "opacity": 1.0, 
-                                "open_adapter": true, 
-                                "over_pattern": false, 
-                                "pos_data": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        622.7613, 
-                                        580.2684, 
-                                        50.0, 
-                                        89.6488, 
-                                        1, 
-                                        1
-                                    ]
-                                }, 
-                                "prefab_sub_key": "b5a5fd10-51d4-4b96-8457-6be663170b96", 
-                                "review_word": false, 
-                                "rotation": 0, 
-                                "scale": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        1, 
-                                        1
-                                    ]
-                                }, 
-                                "scene_ui_name": null, 
-                                "shadow": false, 
-                                "size": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        695.5225, 
-                                        30.0
-                                    ]
-                                }, 
-                                "strike_through": false, 
-                                "strike_through_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0, 
-                                        0, 
-                                        0, 
-                                        255
-                                    ]
-                                }, 
-                                "strike_through_size": 0, 
-                                "swallow_touches": false, 
-                                "text": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        "\u58eb\u4e0d\u53ef\u4ee5\u4e0d\u5f18\u6bc5\uff0c\u4efb\u91cd\u800c\u9053\u8fdc", 
-                                        false
-                                    ]
-                                }, 
-                                "text_bind": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        null, 
-                                        null
-                                    ]
-                                }, 
-                                "text_border_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0, 
-                                        0, 
-                                        0, 
-                                        255
-                                    ]
-                                }, 
-                                "text_border_width": 0, 
-                                "text_format": "", 
-                                "text_italic_radius": 0.5, 
-                                "text_shadow_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        123, 
-                                        123, 
-                                        123, 
-                                        255
-                                    ]
-                                }, 
-                                "text_shadow_offset": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0, 
-                                        0
-                                    ]
-                                }, 
-                                "type": 3, 
-                                "typewriter_effect": 0, 
-                                "typewriter_space": 0, 
-                                "under_line": false, 
-                                "visible": true
-                            }, 
-                            {
-                                "adapter_option": [
-                                    false, 
-                                    true, 
-                                    true, 
-                                    false, 
-                                    577.2684, 
-                                    10.0, 
-                                    175.0, 
-                                    470.52250000000004
-                                ], 
-                                "alignment": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        2, 
-                                        8
-                                    ]
-                                }, 
-                                "anchor": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0.5, 
-                                        0.5
-                                    ]
-                                }, 
-                                "bold": false, 
-                                "border": false, 
-                                "can_drag": false, 
-                                "children": [], 
-                                "comp_type": "TextLabel", 
-                                "event_list": [], 
-                                "font": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        "HKSongW9", 
-                                        18
-                                    ]
-                                }, 
-                                "font_color": [
-                                    206, 
-                                    205, 
-                                    206, 
-                                    255
-                                ], 
-                                "font_min_size": 15, 
-                                "gradient": false, 
-                                "gradient_bl_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        255, 
-                                        255, 
-                                        255, 
-                                        255
-                                    ]
-                                }, 
-                                "gradient_br_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        255, 
-                                        255, 
-                                        255, 
-                                        255
-                                    ]
-                                }, 
-                                "gradient_tl_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        255, 
-                                        255, 
-                                        255, 
-                                        255
-                                    ]
-                                }, 
-                                "gradient_tr_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        255, 
-                                        255, 
-                                        255, 
-                                        255
-                                    ]
-                                }, 
-                                "hover_child": "", 
-                                "italics": false, 
-                                "label_effect": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false
-                                    ]
-                                }, 
-                                "line_space": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        5.0, 
-                                        0.0
-                                    ]
-                                }, 
-                                "name": "\u4ecb\u7ecd\u6587\u672c", 
-                                "opacity": 1.0, 
-                                "open_adapter": true, 
-                                "over_pattern": false, 
-                                "pos_data": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        474.9999, 
-                                        39.9999, 
-                                        38.1366, 
-                                        6.1798, 
-                                        1, 
-                                        1
-                                    ]
-                                }, 
-                                "prefab_sub_key": "00973a8c-88a9-44a0-b42d-c3851763fa58", 
-                                "review_word": false, 
-                                "rotation": 0, 
-                                "scale": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        1, 
-                                        1
-                                    ]
-                                }, 
-                                "scene_ui_name": null, 
-                                "shadow": false, 
-                                "size": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        600.0, 
-                                        60.0
-                                    ]
-                                }, 
-                                "strike_through": false, 
-                                "strike_through_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0, 
-                                        0, 
-                                        0, 
-                                        255
-                                    ]
-                                }, 
-                                "strike_through_size": 0, 
-                                "swallow_touches": false, 
-                                "text": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        "\u65e0\u9700\u767b\u9646\uff0c\u6bcf\u5929\u81ea\u52a8\u83b7\u5f971\u5f20\u519b\u4ee4\u72b6\uff0c\u6700\u591a\u53ef\u4fdd\u5b584\u5f20\n\u5b8c\u6210\u519b\u4ee4\u72b6\u53ef\u83b7\u5f97\u5bf9\u5e94\u5956\u52b1", 
-                                        false
-                                    ]
-                                }, 
-                                "text_bind": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        null, 
-                                        null
-                                    ]
-                                }, 
-                                "text_border_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0, 
-                                        0, 
-                                        0, 
-                                        255
-                                    ]
-                                }, 
-                                "text_border_width": 0, 
-                                "text_format": "", 
-                                "text_italic_radius": 0.5, 
-                                "text_shadow_color": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        123, 
-                                        123, 
-                                        123, 
-                                        255
-                                    ]
-                                }, 
-                                "text_shadow_offset": {
-                                    "__tuple__": true, 
-                                    "items": [
-                                        0, 
-                                        0
-                                    ]
-                                }, 
-                                "type": 3, 
-                                "typewriter_effect": 0, 
-                                "typewriter_space": 0, 
-                                "under_line": false, 
-                                "visible": true
-                            }
-                        ], 
-                        "clip_enabled": false, 
-                        "clipping_type": 1, 
-                        "color": {
-                            "__tuple__": true, 
-                            "items": [
-                                255, 
-                                255, 
-                                255, 
-                                0
-                            ]
-                        }, 
-                        "comp_type": "Layout", 
-                        "event_list": [], 
-                        "hover_child": "", 
-                        "mask_image": 100445, 
-                        "name": "\u519b\u4ee4\u72b6\u9875\u9762", 
-                        "opacity": 1.0, 
-                        "open_adapter": true, 
-                        "pos_data": {
-                            "__tuple__": true, 
-                            "items": [
-                                622.7599, 
-                                323.6343, 
-                                49.9999, 
-                                50.0, 
-                                1, 
-                                1
-                            ]
-                        }, 
-                        "prefab_sub_key": "b81cecaf-2807-4247-a841-0eb95ee9f49d", 
-                        "rotation": 0, 
-                        "scale": {
-                            "__tuple__": true, 
-                            "items": [
-                                1, 
-                                1
-                            ]
-                        }, 
-                        "scene_ui_name": null, 
-                        "size": {
-                            "__tuple__": true, 
-                            "items": [
-                                1245.5225, 
-                                647.2684
-                            ]
-                        }, 
-                        "swallow_touches": true, 
-                        "type": 7, 
-                        "visible": false
-                    }, 
-                    {
-                        "adapter_option": [
-                            true, 
-                            true, 
-                            true, 
-                            true, 
                             -0.3655485145568491, 
                             0.3657999999999788, 
                             0.2390500000000202, 
@@ -29464,7 +28805,7 @@
                                                 "anim_type": 0, 
                                                 "comp": "21a7e650-f998-415f-a0a1-5bc26662dc50", 
                                                 "ease_type": 0, 
-                                                "name": "Hide_17", 
+                                                "name": "Hide_145", 
                                                 "open_timeline": true, 
                                                 "type": 3
                                             }
@@ -29947,7 +29288,7 @@
                                                 "anim_type": 0, 
                                                 "comp": "21a7e650-f998-415f-a0a1-5bc26662dc50", 
                                                 "ease_type": 0, 
-                                                "name": "Hide_18", 
+                                                "name": "Hide_146", 
                                                 "open_timeline": true, 
                                                 "type": 3
                                             }

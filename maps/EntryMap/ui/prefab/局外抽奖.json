@@ -10573,10 +10573,10 @@
                                         "bg_cap_insets": {
                                             "__tuple__": true, 
                                             "items": [
-                                                54.0, 
-                                                58.0, 
-                                                54.0, 
-                                                58.0
+                                                42.0, 
+                                                42.0, 
+                                                42.0, 
+                                                42.0
                                             ]
                                         }, 
                                         "bg_color": {
@@ -10588,7 +10588,7 @@
                                                 255
                                             ]
                                         }, 
-                                        "bg_image": 106397, 
+                                        "bg_image": 999, 
                                         "block_scrolling": false, 
                                         "bounce_enabled": false, 
                                         "can_drag": false, 

@@ -525,7 +525,7 @@
             }, 
             "trigger_id": 1374224387, 
             "trigger_name": "\u5706\u6708\u5f2f\u5200\u56db\u9636\u88ab\u52a8_2", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 
@@ -575,7 +575,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1527357441, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "FLOAT": {

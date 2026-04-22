@@ -266,7 +266,13 @@ function M.create(env)
   local apply_text_style = factory.apply_text_style or fallback_apply_text_style
 
   local function get_hud_root()
-    return UIRoot.get_overlay_parent(y3, env.get_player())
+    local player = env.get_player()
+    return UIRoot.resolve_first_ui(y3, player, {
+      'top',
+      'GameHUD',
+      'bottom_bg',
+      'top.top',
+    })
   end
 
   local function is_ui_alive(ui)

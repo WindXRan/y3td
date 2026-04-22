@@ -87,32 +87,7 @@
     "auto_pick": true, 
     "bs_sfx_list": {
         "__tuple__": true, 
-        "items": [
-            [
-                102877, 
-                [
-                    0.0, 
-                    0.0, 
-                    0.0
-                ], 
-                [
-                    0.0, 
-                    0.0, 
-                    0.0
-                ], 
-                [
-                    0.88, 
-                    0.88, 
-                    0.88
-                ], 
-                0.2, 
-                "origin", 
-                true, 
-                true, 
-                1, 
-                false
-            ]
-        ]
+        "items": []
     }, 
     "bs_sound_effect": {
         "__tuple__": true, 
@@ -168,37 +143,12 @@
     "csp_move_interrupt": true, 
     "cst_sfx_list": {
         "__tuple__": true, 
-        "items": [
-            [
-                102877, 
-                [
-                    0.0, 
-                    0.0, 
-                    0.0
-                ], 
-                [
-                    0.0, 
-                    0.0, 
-                    0.0
-                ], 
-                [
-                    0.84, 
-                    0.84, 
-                    0.84
-                ], 
-                0.18, 
-                "origin", 
-                true, 
-                true, 
-                1, 
-                false
-            ]
-        ]
+        "items": []
     }, 
     "cst_sound_effect": {
         "__tuple__": true, 
         "items": [
-            125774
+            201390443
         ]
     }, 
     "customized_pointer_sfx": 100000, 
@@ -206,37 +156,12 @@
     "enable_customized_pointer_sfx": false, 
     "end_sfx_list": {
         "__tuple__": true, 
-        "items": [
-            [
-                102877, 
-                [
-                    0.0, 
-                    0.0, 
-                    0.0
-                ], 
-                [
-                    0.0, 
-                    0.0, 
-                    0.0
-                ], 
-                [
-                    1.14, 
-                    1.14, 
-                    1.14
-                ], 
-                0.34, 
-                "origin", 
-                true, 
-                true, 
-                1, 
-                false
-            ]
-        ]
+        "items": []
     }, 
     "end_sound_effect": {
         "__tuple__": true, 
         "items": [
-            125773
+            201390445
         ]
     }, 
     "filter_condition_camp": 5, 
@@ -256,37 +181,12 @@
     }, 
     "hit_sfx_list": {
         "__tuple__": true, 
-        "items": [
-            [
-                102877, 
-                [
-                    0.0, 
-                    0.0, 
-                    0.0
-                ], 
-                [
-                    0.0, 
-                    0.0, 
-                    0.0
-                ], 
-                [
-                    1.04, 
-                    1.04, 
-                    1.04
-                ], 
-                0.28, 
-                "origin", 
-                true, 
-                true, 
-                1, 
-                false
-            ]
-        ]
+        "items": []
     }, 
     "hit_sound_effect": {
         "__tuple__": true, 
         "items": [
-            134257420
+            201390444
         ]
     }, 
     "influenced_by_cd_reduce": true, 
@@ -305,7 +205,7 @@
             "prop_cls": "PInt", 
             "remark": "", 
             "type": 2, 
-            "value": 102877
+            "value": 0
         }, 
         "entry_cast_scale": {
             "annotation": "", 
@@ -335,7 +235,7 @@
             "prop_cls": "PInt", 
             "remark": "", 
             "type": 2, 
-            "value": 102877
+            "value": 0
         }, 
         "entry_chain_scale": {
             "annotation": "", 
@@ -365,7 +265,7 @@
             "prop_cls": "PInt", 
             "remark": "", 
             "type": 2, 
-            "value": 102877
+            "value": 0
         }, 
         "entry_charge_scale": {
             "annotation": "", 
@@ -395,7 +295,7 @@
             "prop_cls": "PInt", 
             "remark": "", 
             "type": 2, 
-            "value": 102877
+            "value": 0
         }, 
         "entry_explosion_scale": {
             "annotation": "", 
@@ -425,7 +325,7 @@
             "prop_cls": "PInt", 
             "remark": "", 
             "type": 2, 
-            "value": 102877
+            "value": 0
         }, 
         "entry_impact_scale": {
             "annotation": "", 
@@ -510,32 +410,7 @@
     "sp_count_down": false, 
     "sp_sfx_list": {
         "__tuple__": true, 
-        "items": [
-            [
-                102877, 
-                [
-                    0.0, 
-                    0.0, 
-                    0.0
-                ], 
-                [
-                    0.0, 
-                    0.0, 
-                    0.0
-                ], 
-                [
-                    0.9, 
-                    0.9, 
-                    0.9
-                ], 
-                0.22, 
-                "origin", 
-                true, 
-                true, 
-                1, 
-                false
-            ]
-        ]
+        "items": []
     }, 
     "sp_sound_effect": {
         "__tuple__": true, 
