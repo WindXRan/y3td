@@ -1,0 +1,12 @@
+{
+  "name": "签到系统",
+  "uid": "8fcf8884-f7ba-449e-a04d-b3f189f33d34",
+  "type": 2,
+  "children": [
+    {
+      "name": "活动",
+      "uid": "b5c553bf-2837-4a12-b3d0-dfcf2d72b8d1",
+      "type": 7
+    }
+  ]
+}

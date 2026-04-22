@@ -227,6 +227,11 @@ function M.create(env)
     return false
   end
 
+  local function try_refresh_battle_ui()
+    STATE.runtime_ui_refresh_slice = ((STATE.runtime_ui_refresh_slice or 0) % 4) + 1
+    return try_refresh_battle_ui_slice(STATE.runtime_ui_refresh_slice)
+  end
+
   local function refresh_non_battle_ui()
     STATE.runtime_ui_refresh_elapsed = 0
     if STATE.runtime_battle_ui_visible == true then
@@ -354,11 +359,10 @@ function M.create(env)
 
   local function run_ui_slice_phase()
     log_frame_gap('phase_ui_slice', 'debug_last_phase_ui_slice_wall_ms', battle_ui_refresh_slice_interval_ms + frame_gap_threshold_ms)
-    STATE.runtime_ui_refresh_slice = ((STATE.runtime_ui_refresh_slice or 0) % 4) + 1
     profile_if_slow(
-      'battle_ui_slice_' .. tostring(STATE.runtime_ui_refresh_slice),
+      'battle_ui_slice_' .. tostring(((STATE.runtime_ui_refresh_slice or 0) % 4) + 1),
       function()
-        try_refresh_battle_ui_slice(STATE.runtime_ui_refresh_slice)
+        try_refresh_battle_ui()
       end
     )
   end

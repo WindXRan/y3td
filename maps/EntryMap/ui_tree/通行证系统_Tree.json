@@ -1,0 +1,50 @@
+{
+  "name": "通行证系统",
+  "uid": "37531c44-d084-4bf4-b102-bdd17f9e99d6",
+  "type": 2,
+  "children": [
+    {
+      "name": "按钮区域",
+      "uid": "1dd5f6e5-369a-4180-a25a-273cae83e760",
+      "type": 7,
+      "children": [
+        {
+          "name": "仓库按钮",
+          "uid": "797259c0-e667-4202-ae42-e937f21164df",
+          "type": 3,
+          "children": [
+            {
+              "name": "仓库按钮图标",
+              "uid": "67c8f372-c166-4ad9-bc7d-bd7f8480066a",
+              "type": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "通行证界面",
+      "uid": "7f1b2bf1-2b12-4263-b5cf-e6feae2a2f9f",
+      "type": 7,
+      "children": [
+        {
+          "name": "仓库界面关闭按钮",
+          "uid": "ff5e7557-a18f-4adb-97cc-3ff9f3c946b4",
+          "type": 1
+        },
+        {
+          "name": "左侧区域",
+          "uid": "9a388bd4-0d2f-4462-8ccc-b0cd3dd6530f",
+          "type": 7,
+          "children": [
+            {
+              "name": "登陆奖励",
+              "uid": "c7830f0d-f821-4ec7-83ea-b3b6a074d4b5",
+              "type": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
