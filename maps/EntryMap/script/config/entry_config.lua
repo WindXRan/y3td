@@ -48,6 +48,8 @@ local TreasureCatalogObjects = require 'entry_objects.treasure_catalog'
 local TreasureCatalogCompatObjects = require 'data.object_tables.treasure_catalog_compat'
 local OutgameAttrBonusConfig = require 'data.object_tables.outgame_attr_bonus_config'
 local GearUpgradeConfig = require 'data.object_tables.gear_upgrade_config'
+local OutgameLotteryPoolCatalog = require 'data.object_tables.outgame_lottery_pool_catalog'
+local OutgameLotteryPoolRules = require 'data.object_tables.outgame_lottery_pool_rules'
 local OutgameTreasureHuntConfig = require 'data.object_tables.outgame_treasure_hunt_config'
 
 local M = {
@@ -117,6 +119,8 @@ local M = {
   treasure_catalog_compat = TreasureCatalogCompatObjects,
   outgame_attr_bonus_config = OutgameAttrBonusConfig,
   gear_upgrade_config = GearUpgradeConfig,
+  outgame_lottery_pool_catalog = OutgameLotteryPoolCatalog,
+  outgame_lottery_pool_rules = OutgameLotteryPoolRules,
   outgame_treasure_hunt_config = OutgameTreasureHuntConfig,
 }
 

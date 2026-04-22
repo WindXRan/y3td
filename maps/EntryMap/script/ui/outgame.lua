@@ -7,6 +7,7 @@ function M.create(env)
   local message = env.message
   local play_ui_click = env.play_ui_click
   local ensure_music_loop = env.ensure_music_loop
+  local random_int = env.random_int or math.random
 
   local STAGE_LIST = CONFIG.stages and CONFIG.stages.list or {}
   local STAGES_BY_ID = CONFIG.stages and CONFIG.stages.by_id or {}
@@ -15,6 +16,15 @@ function M.create(env)
   local OUTGAME_ATTR_BONUS_BY_STAGE_MODE = CONFIG.outgame_attr_bonus_config
     and CONFIG.outgame_attr_bonus_config.by_stage_mode
     or {}
+  local OUTGAME_LOTTERY_POOL_CATALOG = CONFIG.outgame_lottery_pool_catalog or {}
+  local OUTGAME_LOTTERY_POOL_RULES = CONFIG.outgame_lottery_pool_rules or {}
+  local OUTGAME_LOTTERY_POOLS = OUTGAME_LOTTERY_POOL_CATALOG.list or {}
+  local OUTGAME_LOTTERY_POOLS_BY_ID = OUTGAME_LOTTERY_POOL_CATALOG.by_id or {}
+  local OUTGAME_LOTTERY_ITEMS_BY_ID = OUTGAME_LOTTERY_POOL_CATALOG.items_by_id or {}
+  local OUTGAME_LOTTERY_RULES_BY_ID = OUTGAME_LOTTERY_POOL_RULES.by_id or {}
+  local DEFAULT_LOTTERY_POOL_ID = OUTGAME_LOTTERY_POOL_RULES.default_pool_id
+    or (OUTGAME_LOTTERY_POOLS[1] and OUTGAME_LOTTERY_POOLS[1].pool_id)
+    or nil
   local OUTGAME_TREASURE_HUNT_CONFIG = CONFIG.outgame_treasure_hunt_config or {}
   local OUTGAME_TREASURE_HUNT_ITEMS = OUTGAME_TREASURE_HUNT_CONFIG.list or {}
   local OUTGAME_TREASURE_HUNT_BY_ID = OUTGAME_TREASURE_HUNT_CONFIG.by_id or {}
@@ -484,6 +494,80 @@ function M.create(env)
     return normalized, dirty
   end
 
+  local function clone_table(source)
+    local target = {}
+    for key, value in pairs(source or {}) do
+      target[key] = value
+    end
+    return target
+  end
+
+  local function get_lottery_pool_rules(pool_id)
+    return OUTGAME_LOTTERY_RULES_BY_ID[tostring(pool_id or '')]
+  end
+
+  local function get_lottery_pool_def(pool_id)
+    return OUTGAME_LOTTERY_POOLS_BY_ID[tostring(pool_id or '')]
+  end
+
+  local function normalize_lottery_pool_state(raw_state)
+    local state = type(raw_state) == 'table' and raw_state or {}
+    return {
+      first_single_consumed = state.first_single_consumed == true,
+      first_ten_consumed = state.first_ten_consumed == true,
+      draws_since_pity_hit = math.max(0, math.floor(tonumber(state.draws_since_pity_hit) or 0)),
+    }
+  end
+
+  local function normalize_owned_lottery_item_map(raw_map)
+    local normalized = {}
+    local dirty = false
+    if type(raw_map) ~= 'table' then
+      return normalized, raw_map ~= nil
+    end
+
+    for key, value in pairs(raw_map) do
+      local item_id = tostring(key or '')
+      if item_id ~= '' then
+        local owned = value == true
+        if owned then
+          normalized[item_id] = true
+        end
+        if owned ~= value then
+          dirty = true
+        end
+      else
+        dirty = true
+      end
+    end
+    return normalized, dirty
+  end
+
+  local function get_rarity_rank(pool_rules, rarity)
+    local normalized_rarity = tostring(rarity or '')
+    if normalized_rarity == '' then
+      return 0
+    end
+    for index, rarity_key in ipairs(pool_rules and pool_rules.rarity_order or {}) do
+      if rarity_key == normalized_rarity then
+        return index
+      end
+    end
+    return 0
+  end
+
+  local function is_rarity_at_least(pool_rules, rarity, target_rarity)
+    if target_rarity == nil or target_rarity == '' then
+      return true
+    end
+    local rarity_rank = get_rarity_rank(pool_rules, rarity)
+    local target_rank = get_rarity_rank(pool_rules, target_rarity)
+    if rarity_rank <= 0 or target_rank <= 0 then
+      return tostring(rarity or '') == tostring(target_rarity or '')
+    end
+    return rarity_rank >= target_rank
+  end
+
   local function normalize_lottery_state(profile)
     local dirty = false
     if type(profile.outgame_lottery) ~= 'table' then
@@ -510,6 +594,35 @@ function M.create(env)
     end
     lottery.by_pool = by_pool
 
+    local pool_state_by_id = {}
+    if type(lottery.pool_state_by_id) == 'table' then
+      for key, value in pairs(lottery.pool_state_by_id) do
+        local pool_id = tostring(key or '')
+        if pool_id ~= '' then
+          local normalized_state = normalize_lottery_pool_state(value)
+          pool_state_by_id[pool_id] = normalized_state
+          if type(value) ~= 'table'
+            or normalized_state.first_single_consumed ~= value.first_single_consumed
+            or normalized_state.first_ten_consumed ~= value.first_ten_consumed
+            or normalized_state.draws_since_pity_hit ~= value.draws_since_pity_hit
+          then
+            dirty = true
+          end
+        else
+          dirty = true
+        end
+      end
+    elseif lottery.pool_state_by_id ~= nil then
+      dirty = true
+    end
+    lottery.pool_state_by_id = pool_state_by_id
+
+    local owned_item_ids, owned_dirty = normalize_owned_lottery_item_map(lottery.owned_item_ids)
+    if owned_dirty then
+      dirty = true
+    end
+    lottery.owned_item_ids = owned_item_ids
+
     local history = {}
     if type(lottery.history) == 'table' then
       for _, entry in ipairs(lottery.history) do
@@ -522,6 +635,7 @@ function M.create(env)
               draw_count = draw_count,
               timestamp = tonumber(entry.timestamp) or 0,
               reward_id = entry.reward_id and tostring(entry.reward_id) or nil,
+              reward_rarity = entry.reward_rarity and tostring(entry.reward_rarity) or nil,
             }
           else
             dirty = true
@@ -544,6 +658,10 @@ function M.create(env)
       dirty = true
     end
 
+    if lottery.selected_pool_id == nil and DEFAULT_LOTTERY_POOL_ID ~= nil then
+      lottery.selected_pool_id = DEFAULT_LOTTERY_POOL_ID
+      dirty = true
+    end
     if lottery.selected_pool_id ~= nil and tostring(lottery.selected_pool_id) == '' then
       lottery.selected_pool_id = nil
       dirty = true
@@ -1901,6 +2019,117 @@ function M.create(env)
     return false
   end
 
+  local function ensure_lottery_pool_state(profile, pool_id)
+    local normalized_pool_id = tostring(pool_id or '')
+    if normalized_pool_id == '' then
+      return nil
+    end
+    profile.outgame_lottery.pool_state_by_id = profile.outgame_lottery.pool_state_by_id or {}
+    local state = normalize_lottery_pool_state(profile.outgame_lottery.pool_state_by_id[normalized_pool_id])
+    profile.outgame_lottery.pool_state_by_id[normalized_pool_id] = state
+    return state
+  end
+
+  local function get_lottery_pool_state_snapshot(pool_id)
+    local profile = load_profile()
+    local state = ensure_lottery_pool_state(profile, pool_id)
+    if not state then
+      return {
+        first_single_consumed = false,
+        first_ten_consumed = false,
+        draws_since_pity_hit = 0,
+      }
+    end
+    return clone_table(state)
+  end
+
+  local function record_lottery_draw_count(profile, pool_id, draw_count, reward_id, reward_rarity)
+    local normalized_pool_id = tostring(pool_id or '')
+    local normalized_draw_count = math.max(0, math.floor(tonumber(draw_count) or 0))
+    if normalized_pool_id == '' or normalized_draw_count <= 0 then
+      return nil
+    end
+
+    local lottery = profile.outgame_lottery
+    lottery.by_pool[normalized_pool_id] = math.max(
+      0,
+      math.floor(tonumber(lottery.by_pool[normalized_pool_id]) or 0) + normalized_draw_count
+    )
+    lottery.total_draw_count = 0
+    for _, value in pairs(lottery.by_pool or {}) do
+      lottery.total_draw_count = lottery.total_draw_count + (tonumber(value) or 0)
+    end
+
+    local pool_rules = get_lottery_pool_rules(normalized_pool_id)
+    local pool_state = ensure_lottery_pool_state(profile, normalized_pool_id)
+    if pool_state then
+      if normalized_draw_count == 1 then
+        pool_state.first_single_consumed = true
+      elseif normalized_draw_count >= 10 then
+        pool_state.first_ten_consumed = true
+      end
+      if is_rarity_at_least(pool_rules, reward_rarity, pool_rules and pool_rules.pity_guarantee_rarity or nil) then
+        pool_state.draws_since_pity_hit = 0
+      else
+        pool_state.draws_since_pity_hit = pool_state.draws_since_pity_hit + normalized_draw_count
+      end
+    end
+
+    lottery.history[#lottery.history + 1] = {
+      pool_id = normalized_pool_id,
+      draw_count = normalized_draw_count,
+      timestamp = os.time(),
+      reward_id = reward_id and tostring(reward_id) or nil,
+      reward_rarity = reward_rarity and tostring(reward_rarity) or nil,
+    }
+
+    mark_profile_dirty()
+    return lottery.by_pool[normalized_pool_id]
+  end
+
+  local function pick_weighted_rarity(pool_rules, minimum_rarity)
+    local candidates = {}
+    local total_weight = 0
+    for _, rarity in ipairs(pool_rules and pool_rules.rarity_order or {}) do
+      if is_rarity_at_least(pool_rules, rarity, minimum_rarity) then
+        local weight = math.max(0, math.floor(tonumber(pool_rules.rates and pool_rules.rates[rarity]) or 0))
+        if weight > 0 then
+          total_weight = total_weight + weight
+          candidates[#candidates + 1] = { rarity = rarity, weight = weight }
+        end
+      end
+    end
+    if total_weight <= 0 then
+      return minimum_rarity or (pool_rules and pool_rules.rarity_order and pool_rules.rarity_order[#pool_rules.rarity_order]) or nil
+    end
+
+    local cursor = math.max(1, math.floor(tonumber(random_int(1, total_weight)) or 1))
+    for _, candidate in ipairs(candidates) do
+      cursor = cursor - candidate.weight
+      if cursor <= 0 then
+        return candidate.rarity
+      end
+    end
+    return candidates[#candidates] and candidates[#candidates].rarity or minimum_rarity
+  end
+
+  local function pick_random_pool_item(pool_def, rarity)
+    local rarity_items = pool_def and pool_def.by_rarity and pool_def.by_rarity[rarity] or nil
+    if type(rarity_items) ~= 'table' or #rarity_items <= 0 then
+      return nil
+    end
+    local index = math.max(1, math.floor(tonumber(random_int(1, #rarity_items)) or 1))
+    return rarity_items[index]
+  end
+
+  local function compute_draw_cost(pool_rules, draw_count)
+    local normalized_draw_count = math.max(1, math.floor(tonumber(draw_count) or 1))
+    if normalized_draw_count >= 10 then
+      return math.max(0, math.floor(tonumber(pool_rules and pool_rules.draw_cost_ten) or normalized_draw_count))
+    end
+    return math.max(0, math.floor(tonumber(pool_rules and pool_rules.draw_cost_single) or normalized_draw_count))
+  end
+
   function api.get_total_lottery_count()
     local player = env.get_player and env.get_player() or nil
     local handle = player and player.handle or nil
@@ -1935,31 +2164,13 @@ function M.create(env)
     return math.max(0, math.floor(tonumber(by_pool[normalized_pool_id]) or 0))
   end
 
-  function api.add_lottery_draw_count(pool_id, draw_count, reward_id)
+  function api.add_lottery_draw_count(pool_id, draw_count, reward_id, reward_rarity)
     local normalized_pool_id = tostring(pool_id or '')
     if normalized_pool_id == '' then
       return nil
     end
     local profile = load_profile()
-    local lottery = profile.outgame_lottery
-    lottery.by_pool[normalized_pool_id] = math.max(
-      0,
-      math.floor(tonumber(lottery.by_pool[normalized_pool_id]) or 0) + math.max(0, math.floor(tonumber(draw_count) or 0))
-    )
-    lottery.total_draw_count = 0
-    for _, value in pairs(lottery.by_pool or {}) do
-      lottery.total_draw_count = lottery.total_draw_count + (tonumber(value) or 0)
-    end
-    if (tonumber(draw_count) or 0) > 0 then
-      lottery.history[#lottery.history + 1] = {
-        pool_id = normalized_pool_id,
-        draw_count = math.max(0, math.floor(tonumber(draw_count) or 0)),
-        timestamp = os.time(),
-        reward_id = reward_id and tostring(reward_id) or nil,
-      }
-    end
-    mark_profile_dirty()
-    return lottery.by_pool[normalized_pool_id]
+    return record_lottery_draw_count(profile, normalized_pool_id, draw_count, reward_id, reward_rarity)
   end
 
   function api.get_selected_lottery_pool()
@@ -1978,11 +2189,130 @@ function M.create(env)
 
   function api.get_lottery_snapshot(pool_id)
     local normalized_pool_id = pool_id ~= nil and tostring(pool_id) or api.get_selected_lottery_pool()
+    local pool_rules = get_lottery_pool_rules(normalized_pool_id)
+    local pool_def = get_lottery_pool_def(normalized_pool_id)
     return {
       selected_pool_id = api.get_selected_lottery_pool(),
       total_draw_count = api.get_total_lottery_count(),
       pool_draw_count = api.get_lottery_count(normalized_pool_id),
       history = load_profile().outgame_lottery and load_profile().outgame_lottery.history or {},
+      pool_state = get_lottery_pool_state_snapshot(normalized_pool_id),
+      pool_rules = pool_rules,
+      pool_def = pool_def,
+    }
+  end
+
+  function api.get_lottery_catalog()
+    return {
+      default_pool_id = DEFAULT_LOTTERY_POOL_ID,
+      pools = OUTGAME_LOTTERY_POOLS,
+      pools_by_id = OUTGAME_LOTTERY_POOLS_BY_ID,
+      items_by_id = OUTGAME_LOTTERY_ITEMS_BY_ID,
+      rules_by_id = OUTGAME_LOTTERY_RULES_BY_ID,
+    }
+  end
+
+  function api.has_lottery_item(item_id)
+    local normalized_item_id = tostring(item_id or '')
+    if normalized_item_id == '' then
+      return false
+    end
+    local profile = load_profile()
+    return profile.outgame_lottery
+      and profile.outgame_lottery.owned_item_ids
+      and profile.outgame_lottery.owned_item_ids[normalized_item_id] == true
+      or false
+  end
+
+  function api.draw_lottery(pool_id, draw_count)
+    local normalized_pool_id = tostring(pool_id or api.get_selected_lottery_pool() or DEFAULT_LOTTERY_POOL_ID or '')
+    local normalized_draw_count = math.max(1, math.floor(tonumber(draw_count) or 1))
+    local pool_rules = get_lottery_pool_rules(normalized_pool_id)
+    local pool_def = get_lottery_pool_def(normalized_pool_id)
+    if normalized_pool_id == '' or not pool_rules or not pool_def then
+      return false, 'pool_unavailable'
+    end
+
+    local profile = load_profile()
+    local treasure_hunt = profile.outgame_treasure_hunt or {}
+    local points_before = math.max(0, math.floor(tonumber(treasure_hunt.points) or 0))
+    local cost = compute_draw_cost(pool_rules, normalized_draw_count)
+    if points_before < cost then
+      return false, 'insufficient_points'
+    end
+
+    local pool_state = ensure_lottery_pool_state(profile, normalized_pool_id)
+    local rewards = {}
+    local refund_points = 0
+    local batch_hit_guaranteed_rarity = false
+
+    treasure_hunt.points = math.max(0, points_before - cost)
+    for draw_index = 1, normalized_draw_count do
+      local minimum_rarity = nil
+      if normalized_draw_count == 1 and pool_state and pool_state.first_single_consumed ~= true then
+        minimum_rarity = pool_rules.first_single_guarantee_rarity
+      elseif normalized_draw_count >= 10 and pool_state and pool_state.first_ten_consumed ~= true then
+        if batch_hit_guaranteed_rarity ~= true and draw_index == normalized_draw_count then
+          minimum_rarity = pool_rules.first_ten_guarantee_rarity
+        end
+      end
+
+      if pool_state and (tonumber(pool_rules.pity_draw_count) or 0) > 0 then
+        local pity_draw_count = math.max(0, math.floor(tonumber(pool_rules.pity_draw_count) or 0))
+        if pool_state.draws_since_pity_hit >= pity_draw_count - 1 then
+          minimum_rarity = pool_rules.pity_guarantee_rarity or minimum_rarity
+        end
+      end
+
+      local picked_rarity = pick_weighted_rarity(pool_rules, minimum_rarity)
+      local reward = pick_random_pool_item(pool_def, picked_rarity)
+      if not reward then
+        treasure_hunt.points = points_before
+        return false, 'reward_unavailable'
+      end
+
+      local reward_id = tostring(reward.id or reward.item_id or '')
+      local reward_rarity = tostring(reward.rarity or picked_rarity or '')
+      local duplicate = profile.outgame_lottery.owned_item_ids[reward_id] == true
+      local reward_refund = duplicate and math.max(
+        0,
+        math.floor(tonumber(pool_rules.repeat_refunds and pool_rules.repeat_refunds[reward_rarity]) or 0)
+      ) or 0
+      if not duplicate then
+        profile.outgame_lottery.owned_item_ids[reward_id] = true
+      end
+      if is_rarity_at_least(pool_rules, reward_rarity, pool_rules.first_ten_guarantee_rarity) then
+        batch_hit_guaranteed_rarity = true
+      end
+
+      refund_points = refund_points + reward_refund
+      rewards[#rewards + 1] = {
+        reward_id = reward_id,
+        item_id = reward_id,
+        name = reward.name,
+        rarity = reward_rarity,
+        duplicate = duplicate,
+        refund_points = reward_refund,
+        source_exchange_points = reward.source_exchange_points,
+      }
+
+      record_lottery_draw_count(profile, normalized_pool_id, 1, reward_id, reward_rarity)
+    end
+
+    treasure_hunt.points = math.max(0, math.floor(tonumber(treasure_hunt.points) or 0) + refund_points)
+    if normalized_draw_count >= 10 then
+      pool_state.first_ten_consumed = true
+    end
+    mark_profile_dirty()
+
+    return true, {
+      pool_id = normalized_pool_id,
+      cost = cost,
+      refund_points = refund_points,
+      points_before = points_before,
+      points_after = math.max(0, math.floor(tonumber(treasure_hunt.points) or 0)),
+      rewards = rewards,
+      pool_state = get_lottery_pool_state_snapshot(normalized_pool_id),
     }
   end
 

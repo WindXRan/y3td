@@ -24,21 +24,27 @@ local TOP_TAB_DEFS = {
 }
 local PANEL_PATH_ALIASES = {
   ['通行证系统'] = {
+    '存档系统.存档系统',
     '局外系统.局外系统',
   },
   ['通行证系统.通行证界面'] = {
+    '存档系统.存档系统',
     '局外系统.局外系统',
   },
   ['通行证系统.按钮区域'] = {
+    '存档系统.存档系统.入口',
     '局外系统.局外系统.顶部页签',
   },
   ['通行证系统.按钮区域.仓库按钮'] = {
+    '存档系统.存档系统.入口',
     '局外系统.局外系统.顶部页签.按钮',
   },
   ['通行证系统.按钮区域.仓库按钮.仓库按钮图标'] = {
+    '存档系统.存档系统.入口.label_5',
     '局外系统.局外系统.顶部页签.按钮.文本',
   },
   ['通行证系统.通行证界面.仓库界面关闭按钮'] = {
+    '存档系统.存档系统.仓库界面关闭按钮',
     '局外系统.局外系统.仓库界面关闭按钮',
   },
   ['通行证系统.通行证界面.左侧区域.登陆奖励'] = {
@@ -135,6 +141,7 @@ local PANEL_PATH_ALIASES = {
     '局外系统.局外系统.右侧区域.确认购买',
   },
   ['通行证系统.通行证界面.存档数量显示'] = {
+    '存档系统.存档系统.存档数量显示',
     '局外系统.局外系统.存档数量显示',
   },
 }
@@ -152,6 +159,7 @@ local BIND_FLAG_KEYS = {
   'bound_premium_tab',
   'bound_pass_tab',
   'bound_claim_button',
+  'bound_draw_ten_button',
   'bound_counter_cycle',
   'bound_debug_paid',
   'bound_debug_add_exp_100',
@@ -252,6 +260,9 @@ function M.create(env)
     markers = {},
     markers_count = 0,
     pass_grid_owned = false,
+    lottery_page_index = 1,
+    lottery_page_size = 12,
+    using_save_system_ui = false,
   }
   local api = {}
 
@@ -396,8 +407,155 @@ function M.create(env)
     if not ui then
       return
     end
-    set_text_if_alive(ui.open_button, '存档')
-    set_text_if_alive(ui.open_icon, '存档')
+    local label = runtime.using_save_system_ui and '奖池' or '存档'
+    set_text_if_alive(ui.open_button, label)
+    set_text_if_alive(ui.open_icon, label)
+  end
+
+  local function create_transparent_image(parent)
+    if not UIRoot.is_alive(parent) or not parent.create_child then
+      return nil
+    end
+    local ok, node = pcall(parent.create_child, parent, '图片')
+    if not ok or not node then
+      return nil
+    end
+    if node.set_image then
+      node:set_image(999)
+    end
+    set_image_color_if_alive(node, { 255, 255, 255, 0 })
+    return node
+  end
+
+  local function create_text_node(parent, font_size, color)
+    local node = create_transparent_image(parent)
+    if not UIRoot.is_alive(node) or not node.create_child then
+      return nil
+    end
+    local ok, text = pcall(node.create_child, node, '文本')
+    if not ok or not text then
+      return nil
+    end
+    if text.set_font_size then
+      text:set_font_size(font_size or 20)
+    end
+    if text.set_text_alignment then
+      text:set_text_alignment('左', '中')
+    end
+    if text.set_intercepts_operations then
+      text:set_intercepts_operations(false)
+    end
+    set_text_color_if_alive(text, color or { 232, 241, 255, 255 })
+    return node, text
+  end
+
+  local function create_button_node(parent, width, height, font_size)
+    if not UIRoot.is_alive(parent) or not parent.create_child then
+      return nil
+    end
+    local ok, button = pcall(parent.create_child, parent, '按钮')
+    if not ok or not button then
+      return nil
+    end
+    if button.set_ui_size then
+      button:set_ui_size(width or 180, height or 48)
+    end
+    if button.set_font_size then
+      button:set_font_size(font_size or 18)
+    end
+    set_image_color_if_alive(button, { 40, 58, 92, 236 })
+    set_text_color_if_alive(button, { 232, 241, 255, 255 })
+    return button
+  end
+
+  local function ensure_dynamic_lottery_page(ui)
+    if not runtime.using_save_system_ui then
+      return
+    end
+    if UIRoot.is_alive(ui.pass_page) and UIRoot.is_alive(ui.pass_grid) then
+      return
+    end
+
+    local host = resolve_ui('存档系统.存档系统.右侧区域') or ui.panel_root or ui.root
+    if not UIRoot.is_alive(host) then
+      return
+    end
+
+    local pass_page = create_transparent_image(host)
+    if not UIRoot.is_alive(pass_page) then
+      return
+    end
+    if pass_page.set_anchor then
+      pass_page:set_anchor(0, 0)
+    end
+    if pass_page.set_pos then
+      pass_page:set_pos(44, 120)
+    end
+    if pass_page.set_ui_size then
+      pass_page:set_ui_size(1200, 760)
+    end
+
+    local title_root, title = create_text_node(pass_page, 32, { 245, 248, 255, 255 })
+    local subtitle_root, subtitle = create_text_node(pass_page, 20, { 190, 208, 236, 255 })
+    local current_root, current_value = create_text_node(pass_page, 18, { 255, 222, 138, 255 })
+    local next_root, next_value = create_text_node(pass_page, 18, { 255, 222, 138, 255 })
+    local tips_root, tips = create_text_node(pass_page, 16, { 208, 216, 228, 255 })
+    local page_root, page_text = create_text_node(pass_page, 16, { 173, 214, 255, 255 })
+    local grid_root = create_transparent_image(pass_page)
+    local single_button = create_button_node(pass_page, 180, 52, 20)
+    local ten_button = create_button_node(pass_page, 200, 52, 20)
+
+    if UIRoot.is_alive(title_root) and title_root.set_pos and title_root.set_ui_size then
+      title_root:set_pos(0, 690)
+      title_root:set_ui_size(900, 40)
+    end
+    if UIRoot.is_alive(subtitle_root) and subtitle_root.set_pos and subtitle_root.set_ui_size then
+      subtitle_root:set_pos(0, 646)
+      subtitle_root:set_ui_size(1080, 32)
+    end
+    if UIRoot.is_alive(current_root) and current_root.set_pos and current_root.set_ui_size then
+      current_root:set_pos(0, 604)
+      current_root:set_ui_size(360, 28)
+    end
+    if UIRoot.is_alive(next_root) and next_root.set_pos and next_root.set_ui_size then
+      next_root:set_pos(380, 604)
+      next_root:set_ui_size(360, 28)
+    end
+    if UIRoot.is_alive(page_root) and page_root.set_pos and page_root.set_ui_size then
+      page_root:set_pos(760, 604)
+      page_root:set_ui_size(320, 28)
+    end
+    if UIRoot.is_alive(grid_root) and grid_root.set_pos and grid_root.set_ui_size then
+      grid_root:set_pos(0, 116)
+      grid_root:set_ui_size(1120, 460)
+    end
+    if UIRoot.is_alive(tips_root) and tips_root.set_pos and tips_root.set_ui_size then
+      tips_root:set_pos(0, 60)
+      tips_root:set_ui_size(1120, 40)
+    end
+    if UIRoot.is_alive(single_button) and single_button.set_pos then
+      single_button:set_pos(900, 690)
+    end
+    if UIRoot.is_alive(ten_button) and ten_button.set_pos then
+      ten_button:set_pos(1110, 690)
+    end
+
+    ui.pass_page = pass_page
+    ui.pass_title = title
+    ui.pass_subtitle = subtitle
+    ui.current_exp_group = current_root
+    ui.current_exp_value = current_value
+    ui.exp_to_next_group = next_root
+    ui.exp_to_next_value = next_value
+    ui.pass_tips = tips
+    ui.pass_list = grid_root
+    ui.pass_list_bg = grid_root
+    ui.pass_progress_bar = nil
+    ui.pass_grid = grid_root
+    ui.claim_button = single_button
+    ui.draw_ten_button = ten_button
+    ui.lottery_page_label = page_text
+    ui.dynamic_pass_page = true
   end
 
   local function ensure_runtime_top_nav(ui)
@@ -803,6 +961,73 @@ function M.create(env)
     return { 232, 241, 255, 255 }
   end
 
+  local function get_lottery_color_by_rarity(rarity)
+    if rarity == 'SSR' then
+      return { 255, 196, 96, 255 }
+    end
+    if rarity == 'SR' then
+      return { 221, 152, 255, 255 }
+    end
+    if rarity == 'R' then
+      return { 110, 202, 255, 255 }
+    end
+    return { 214, 222, 234, 255 }
+  end
+
+  local function ensure_lottery_markers(ui, item_count)
+    local expected_count = math.max(0, math.floor(tonumber(item_count) or 0))
+    if has_valid_pass_grid_markers(expected_count) then
+      return
+    end
+    clear_markers()
+    for _ = 1, expected_count do
+      local free_cell = create_reward_cell(ui.pass_grid)
+      if free_cell then
+        runtime.markers[#runtime.markers + 1] = {
+          free_cell = free_cell,
+        }
+      end
+    end
+    runtime.markers_count = #runtime.markers
+  end
+
+  local function update_lottery_grid(ui, model)
+    local items = model.items or {}
+    ensure_lottery_markers(ui, #items)
+    local columns = 4
+    local stride_x = PASS_LEVEL_CELL_WIDTH + 22
+    local stride_y = PASS_LEVEL_CELL_HEIGHT + 28
+    for index, marker in ipairs(runtime.markers) do
+      local cell = marker.free_cell
+      local item = items[index]
+      local visible = item ~= nil
+      if cell then
+        set_visible_if_alive(cell.root, visible)
+      end
+      if item and cell and UIRoot.is_alive(cell.root) then
+        local row = math.floor((index - 1) / columns)
+        local col = (index - 1) % columns
+        if cell.root.set_pos then
+          cell.root:set_pos(
+            PASS_LEVEL_CELL_WIDTH * 0.5 + col * stride_x,
+            (model.compact_mode and 300 or 360) - row * stride_y
+          )
+        end
+        set_text_if_alive(
+          cell.text,
+          string.format('%s\n%s%s', item.rarity or 'N', item.name or '未命名', item.owned and '\n已获得' or '')
+        )
+        set_font_size_if_alive(cell.text, 12)
+        set_text_color_if_alive(cell.text, get_lottery_color_by_rarity(item.rarity))
+        set_image_color_if_alive(cell.frame, get_lottery_color_by_rarity(item.rarity))
+        set_visible_if_alive(cell.claimed_mask, item.owned)
+        set_visible_if_alive(cell.claimable_frame, item.featured == true)
+        set_visible_if_alive(cell.lock_mask, false)
+        set_visible_if_alive(cell.lock_icon, false)
+      end
+    end
+  end
+
   local function update_reward_cell(cell, item, track, compact_mode)
     if not cell or not item then
       return
@@ -843,6 +1068,10 @@ function M.create(env)
         update_reward_cell(marker.paid_cell, item, PASS_TRACK_PAID, compact_mode)
       end
     end
+  end
+
+  local function rebuild_pass_grid(ui, model, compact_mode)
+    update_pass_grid(ui, model, compact_mode)
   end
 
   local function is_battle_compact_mode()
@@ -900,6 +1129,82 @@ function M.create(env)
     return math.max(0, math.min(((first_visible_level - 1) / scrollable_columns) * 100, 100))
   end
 
+  local function is_lottery_mode()
+    return runtime.using_save_system_ui == true and outgame_panel and outgame_panel.get_lottery_catalog ~= nil
+  end
+
+  local function build_lottery_model()
+    local catalog = outgame_panel and outgame_panel.get_lottery_catalog and outgame_panel.get_lottery_catalog() or nil
+    local selected_pool_id = outgame_panel and outgame_panel.get_selected_lottery_pool and outgame_panel.get_selected_lottery_pool() or nil
+    local snapshot = outgame_panel and outgame_panel.get_lottery_snapshot and outgame_panel.get_lottery_snapshot(selected_pool_id) or nil
+    if not catalog or not snapshot or not selected_pool_id then
+      return nil
+    end
+
+    local pool_def = snapshot.pool_def or (catalog.pools_by_id and catalog.pools_by_id[selected_pool_id]) or nil
+    local pool_rules = snapshot.pool_rules or (catalog.rules_by_id and catalog.rules_by_id[selected_pool_id]) or nil
+    local all_items = pool_def and pool_def.list or {}
+    local total_items = #all_items
+    local total_pages = math.max(1, math.ceil(total_items / runtime.lottery_page_size))
+    runtime.lottery_page_index = math.max(1, math.min(runtime.lottery_page_index, total_pages))
+
+    local start_index = (runtime.lottery_page_index - 1) * runtime.lottery_page_size + 1
+    local end_index = math.min(total_items, start_index + runtime.lottery_page_size - 1)
+    local items = {}
+    local owned_count = 0
+    for _, item in ipairs(all_items) do
+      if outgame_panel.has_lottery_item and outgame_panel.has_lottery_item(item.id) then
+        owned_count = owned_count + 1
+      end
+    end
+    for index = start_index, end_index do
+      local item = all_items[index]
+      items[#items + 1] = {
+        id = item.id,
+        name = item.name,
+        rarity = item.rarity,
+        owned = outgame_panel.has_lottery_item and outgame_panel.has_lottery_item(item.id) or false,
+        featured = index == start_index,
+      }
+    end
+
+    local pity_limit = pool_rules and math.max(0, math.floor(tonumber(pool_rules.pity_draw_count) or 0)) or 0
+    local pity_left = math.max(
+      0,
+      pity_limit - math.max(0, math.floor(tonumber(snapshot.pool_state and snapshot.pool_state.draws_since_pity_hit) or 0))
+    )
+
+    return {
+      title = pool_rules and pool_rules.display_name or pool_def and pool_def.display_name or '首个奖池',
+      subtitle = string.format(
+        '总抽数 %d · 本池 %d · 保底剩余 %d',
+        tonumber(snapshot.total_draw_count) or 0,
+        tonumber(snapshot.pool_draw_count) or 0,
+        pity_left
+      ),
+      points_text = string.format(
+        '%s：%d',
+        pool_rules and pool_rules.currency_name or '积分',
+        outgame_panel.get_treasure_hunt_points and outgame_panel.get_treasure_hunt_points() or 0
+      ),
+      cost_text = string.format(
+        '单抽 %d · 十连 %d',
+        math.max(0, math.floor(tonumber(pool_rules and pool_rules.draw_cost_single) or 0)),
+        math.max(0, math.floor(tonumber(pool_rules and pool_rules.draw_cost_ten) or 0))
+      ),
+      page_text = string.format('图鉴页 %d / %d · 已获得 %d / %d', runtime.lottery_page_index, total_pages, owned_count, total_items),
+      tips_text = string.format(
+        '首单保底 %s，首十保底 %s，点击下方计数条切页。',
+        tostring(pool_rules and pool_rules.first_single_guarantee_rarity or '无'),
+        tostring(pool_rules and pool_rules.first_ten_guarantee_rarity or '无')
+      ),
+      single_button_text = string.format('单抽 x1'),
+      ten_button_text = string.format('十连 x10'),
+      items = items,
+      compact_mode = is_battle_compact_mode(),
+    }
+  end
+
   local function set_root_visible(visible)
     local ui = get_ui()
     if not ui then
@@ -955,6 +1260,7 @@ function M.create(env)
     end
 
     set_visible_if_alive(ui.claim_button, pass_selected)
+    set_visible_if_alive(ui.draw_ten_button, pass_selected and is_lottery_mode())
   end
 
   local function open_panel(page_key)
@@ -1000,6 +1306,21 @@ function M.create(env)
   end
 
   local function cycle_showcase_page()
+    if is_lottery_mode() then
+      local model = build_lottery_model()
+      if model and model.items then
+        local catalog = outgame_panel.get_lottery_catalog and outgame_panel.get_lottery_catalog() or nil
+        local selected_pool_id = outgame_panel.get_selected_lottery_pool and outgame_panel.get_selected_lottery_pool() or nil
+        local pool_def = catalog and catalog.pools_by_id and catalog.pools_by_id[selected_pool_id] or nil
+        local total_items = pool_def and #pool_def.list or 0
+        local total_pages = math.max(1, math.ceil(total_items / runtime.lottery_page_size))
+        runtime.lottery_page_index = runtime.lottery_page_index + 1
+        if runtime.lottery_page_index > total_pages then
+          runtime.lottery_page_index = 1
+        end
+      end
+      return
+    end
     local sequence = {
       PAGE_PASS,
       PAGE_LOGIN,
@@ -1024,6 +1345,25 @@ function M.create(env)
   end
 
   local function handle_claim_click()
+    if is_lottery_mode() then
+      local pool_id = outgame_panel.get_selected_lottery_pool and outgame_panel.get_selected_lottery_pool() or nil
+      local ok, payload = false, 'unavailable'
+      if outgame_panel.draw_lottery then
+        ok, payload = outgame_panel.draw_lottery(pool_id, 1)
+      end
+      if ok then
+        local reward = payload and payload.rewards and payload.rewards[1] or nil
+        message(string.format(
+          '单抽获得：%s [%s]%s',
+          reward and reward.name or '未知奖励',
+          reward and reward.rarity or 'N',
+          reward and reward.duplicate and '，重复已返还积分' or ''
+        ))
+      else
+        message(payload == 'insufficient_points' and '夺宝积分不足，无法继续抽取。' or '当前奖池暂不可用。')
+      end
+      return
+    end
     local profile = get_profile and get_profile() or nil
     if not profile then
       return
@@ -1033,6 +1373,28 @@ function M.create(env)
       commit_profile(profile)
     end
     message(BattlePass.build_claim_message(summary))
+  end
+
+  local function handle_draw_ten_click()
+    if not is_lottery_mode() then
+      return
+    end
+    local pool_id = outgame_panel.get_selected_lottery_pool and outgame_panel.get_selected_lottery_pool() or nil
+    local ok, payload = false, 'unavailable'
+    if outgame_panel.draw_lottery then
+      ok, payload = outgame_panel.draw_lottery(pool_id, 10)
+    end
+    if ok then
+      local ssr_count = 0
+      for _, reward in ipairs(payload.rewards or {}) do
+        if reward.rarity == 'SSR' then
+          ssr_count = ssr_count + 1
+        end
+      end
+      message(string.format('十连完成，获得 %d 个奖励，其中 SSR %d 个。', #(payload.rewards or {}), ssr_count))
+    else
+      message(payload == 'insufficient_points' and '夺宝积分不足，无法进行十连。' or '当前奖池暂不可用。')
+    end
   end
 
   local function handle_toggle_paid()
@@ -1098,7 +1460,7 @@ function M.create(env)
       and UIRoot.is_alive(ui.root)
       and UIRoot.is_alive(ui.panel_root)
       and UIRoot.is_alive(ui.open_button)
-      and UIRoot.is_alive(ui.pass_grid)
+      and ((runtime.using_save_system_ui and UIRoot.is_alive(ui.pass_page)) or UIRoot.is_alive(ui.pass_grid))
     then
       return ui
     end
@@ -1109,6 +1471,7 @@ function M.create(env)
 
     local root = resolve_panel_ui('通行证系统')
     local panel_root = resolve_panel_ui('通行证系统.通行证界面')
+    local save_panel_root = resolve_ui('存档系统.存档系统')
     local button_area = resolve_panel_ui('通行证系统.按钮区域')
     local open_button = resolve_panel_ui('通行证系统.按钮区域.仓库按钮')
     local open_icon = resolve_panel_ui('通行证系统.按钮区域.仓库按钮.仓库按钮图标')
@@ -1160,6 +1523,7 @@ function M.create(env)
     local achievement_points_value = resolve_panel_ui('通行证系统.通行证界面.右侧区域.成就页面.成就积分.数量数值')
     local confirm_purchase = resolve_panel_ui('通行证系统.通行证界面.右侧区域.确认购买')
     local save_count = resolve_panel_ui('通行证系统.通行证界面.存档数量显示')
+    runtime.using_save_system_ui = UIRoot.is_alive(save_panel_root) and root == save_panel_root
 
     local debug_root = resolve_panel_ui('通行证系统.通行证界面.测试按钮')
     local debug_paid = resolve_panel_ui('通行证系统.通行证界面.测试按钮.付费开关')
@@ -1168,22 +1532,33 @@ function M.create(env)
     local debug_reset_claims = resolve_panel_ui('通行证系统.通行证界面.测试按钮.重置领取状态')
     local top_tabs = {}
     for _, def in ipairs(TOP_TAB_DEFS) do
+      local button_path = runtime.using_save_system_ui
+        and ('存档系统.存档系统.左侧页签.' .. def.node_name)
+        or ('局外系统.局外系统.顶部页签.' .. def.node_name)
+      local highlight_path = runtime.using_save_system_ui
+        and ('存档系统.存档系统.左侧页签.' .. def.node_name .. '.高亮')
+        or ('局外系统.局外系统.顶部页签.' .. def.node_name .. '.高亮')
+      local text_path = runtime.using_save_system_ui
+        and ('存档系统.存档系统.左侧页签.' .. def.node_name .. '.文本')
+        or ('局外系统.局外系统.顶部页签.' .. def.node_name .. '.文本')
       top_tabs[#top_tabs + 1] = {
         page_key = def.page_key,
-        label = def.label,
+        label = runtime.using_save_system_ui and (def.page_key == PAGE_PASS and '奖池' or def.label) or def.label,
         page_field = def.page_field,
-        button = resolve_ui('局外系统.局外系统.顶部页签.' .. def.node_name),
-        highlight = resolve_ui('局外系统.局外系统.顶部页签.' .. def.node_name .. '.高亮'),
-        text = resolve_ui('局外系统.局外系统.顶部页签.' .. def.node_name .. '.文本'),
-        enabled = true,
+        button = resolve_ui(button_path),
+        highlight = resolve_ui(highlight_path),
+        text = resolve_ui(text_path),
+        enabled = runtime.using_save_system_ui and def.page_key == PAGE_PASS or true,
       }
     end
     local top_tabs_extra = {
-      resolve_ui('局外系统.局外系统.顶部页签.按钮_13'),
-      resolve_ui('局外系统.局外系统.顶部页签.按钮_14'),
+      runtime.using_save_system_ui and resolve_ui('存档系统.存档系统.左侧页签.按钮_13')
+        or resolve_ui('局外系统.局外系统.顶部页签.按钮_13'),
+      runtime.using_save_system_ui and resolve_ui('存档系统.存档系统.左侧页签.按钮_14')
+        or resolve_ui('局外系统.局外系统.顶部页签.按钮_14'),
     }
 
-    if not root or not panel_root or not open_button or not close_button or not pass_grid then
+    if not root or not panel_root or not open_button or not close_button then
       if not runtime.ui_warned then
         runtime.ui_warned = true
         message('未找到存档/通行证系统画板节点，请确认 maps/EntryMap/ui/通行证系统.json 或 存档系统.json 已加载。')
@@ -1249,8 +1624,12 @@ function M.create(env)
       debug_reset_claims = debug_reset_claims,
       top_tabs = top_tabs,
       top_tabs_extra = top_tabs_extra,
+      draw_ten_button = nil,
+      lottery_page_label = nil,
+      dynamic_pass_page = false,
     }
 
+    ensure_dynamic_lottery_page(runtime.ui)
     runtime.ui.open_hotspot = ensure_open_hotspot(runtime.ui)
     runtime.ui.save_count_label = ensure_save_count_label(runtime.ui)
     for _, tab in ipairs(runtime.ui.top_tabs or {}) do
@@ -1311,6 +1690,9 @@ function M.create(env)
     bind_click_once(claim_button, function()
       handle_claim_click()
     end, 'bound_claim_button')
+    bind_click_once(runtime.ui.draw_ten_button, function()
+      handle_draw_ten_click()
+    end, 'bound_draw_ten_button')
     bind_click_once(save_count, function()
       cycle_showcase_page()
     end, 'bound_counter_cycle')
@@ -1356,6 +1738,32 @@ function M.create(env)
 
     refresh_open_entry_label(ui)
     apply_daily_profile_refresh(profile)
+    if is_lottery_mode() then
+      local model = build_lottery_model()
+      if not model then
+        return
+      end
+      ensure_dynamic_lottery_page(ui)
+      set_root_visible(true)
+      refresh_page_switch(ui)
+      set_text_if_alive(ui.pass_title, model.title)
+      set_text_if_alive(ui.pass_subtitle, model.subtitle)
+      set_visible_if_alive(ui.pass_subtitle, true)
+      set_visible_if_alive(ui.current_exp_group, true)
+      set_visible_if_alive(ui.exp_to_next_group, true)
+      set_text_if_alive(ui.current_exp_value, model.points_text)
+      set_text_if_alive(ui.exp_to_next_value, model.cost_text)
+      set_text_if_alive(ui.pass_tips, model.tips_text)
+      set_visible_if_alive(ui.pass_tips, true)
+      set_text_if_alive(ui.lottery_page_label, model.page_text)
+      set_text_if_alive(ui.save_count_label or ui.save_count, model.page_text)
+      set_text_if_alive(ui.claim_button, model.single_button_text)
+      set_button_enable_if_alive(ui.claim_button, true)
+      set_text_if_alive(ui.draw_ten_button, model.ten_button_text)
+      set_button_enable_if_alive(ui.draw_ten_button, true)
+      update_lottery_grid(ui, model)
+      return
+    end
     local model = BattlePass.build_ui_model(profile)
     local compact_mode = is_battle_compact_mode()
 
@@ -1403,7 +1811,7 @@ function M.create(env)
 
     prepare_pass_grid_for_lua(ui)
     set_progress_if_alive(ui.pass_progress_bar, model.total_exp, model.total_exp_max)
-    update_pass_grid(ui, model, compact_mode)
+    rebuild_pass_grid(ui, model, compact_mode)
 
     if UIRoot.is_alive(ui.pass_list) and ui.pass_list.set_list_view_percent then
       ui.pass_list:set_list_view_percent(get_pass_list_percent(ui, model, compact_mode))
