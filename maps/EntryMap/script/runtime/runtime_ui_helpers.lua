@@ -23,6 +23,9 @@ function M.create(env)
     BondChoice4 = nil,
   }
   local choice_panel_bound = {}
+  local LEGACY_GAME_HUD_Z = 9500
+  local LEGACY_GAME_HUD_SETTING_PANEL_Z = 9510
+  local LEGACY_GAME_HUD_BUTTON_Z = 9520
 
   local function install_panel_systems()
     STATE.message_prompt_system = nil
@@ -231,22 +234,47 @@ function M.create(env)
 
     local battle_bottom_hud = UIRoot.resolve_ui(y3, player, 'BattleBottomHUD')
     local game_hud = UIRoot.resolve_ui(y3, player, 'GameHUD')
+    local game_hud_main = UIRoot.resolve_ui(y3, player, 'GameHUD.main')
     local game_hud_setting_btn = UIRoot.resolve_ui(y3, player, 'GameHUD.setting_btn')
     local game_hud_exit_btn = UIRoot.resolve_ui(y3, player, 'GameHUD.exit_btn')
     local game_hud_setting_panel = UIRoot.resolve_ui(y3, player, 'GameHUD.setting_panel')
 
-    -- Keep the built-in settings UI above the custom top/bottom HUD layers.
-    set_z_order_if_alive(game_hud, 530)
-    set_z_order_if_alive(game_hud_setting_panel, 531)
-    set_z_order_if_alive(game_hud_setting_btn, 532)
-    set_z_order_if_alive(game_hud_exit_btn, 532)
+    -- Keep the built-in settings UI above the custom HUD and runtime overlay popups.
+    set_z_order_if_alive(game_hud, LEGACY_GAME_HUD_Z)
+    set_z_order_if_alive(game_hud_setting_panel, LEGACY_GAME_HUD_SETTING_PANEL_Z)
+    set_z_order_if_alive(game_hud_setting_btn, LEGACY_GAME_HUD_BUTTON_Z)
+    set_z_order_if_alive(game_hud_exit_btn, LEGACY_GAME_HUD_BUTTON_Z)
 
     set_visible_if_alive(battle_bottom_hud, visible)
 
     if visible == true then
       set_visible_if_alive(game_hud, true)
+      set_visible_if_alive(game_hud_main, true)
       set_visible_if_alive(game_hud_setting_btn, false)
       set_visible_if_alive(game_hud_exit_btn, false)
+
+      -- BattleBottomHUD is the active bottom combat bar; keep legacy bottoms hidden
+      -- so we do not end up with nested frames or split spacing.
+      set_visible_if_alive(UIRoot.resolve_ui(y3, player, 'bottom_bg.bottom_bg'), false)
+      set_visible_if_alive(UIRoot.resolve_ui(y3, player, 'bottom_bg'), false)
+
+      if battle_bottom_hud then
+        local duplicate_paths = {
+          'GameHUD.main.main_unit',
+          'GameHUD.main.main_unit_name',
+          'GameHUD.main.attr_list',
+          'GameHUD.main.skill_list',
+          'GameHUD.main.main_hp_bar',
+          'GameHUD.main.main_mp_bar',
+          'GameHUD.main.inventory',
+          'GameHUD.main.bag_btn',
+          'GameHUD.player_attr_list',
+          'GameHUD.main.player_attr_list',
+        }
+        for _, path in ipairs(duplicate_paths) do
+          set_visible_if_alive(UIRoot.resolve_ui(y3, player, path), false)
+        end
+      end
       return
     end
 

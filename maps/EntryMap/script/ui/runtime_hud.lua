@@ -90,6 +90,22 @@ function M.create(env)
     return ui
   end
 
+  local function resolve_first_ui(paths)
+    local runtime = get_runtime()
+    local cache_key = '__first__:' .. table.concat(paths or {}, '|')
+    local cached = runtime.nodes[cache_key]
+    if is_ui_alive(cached) then
+      return cached
+    end
+    local player = get_player_safe()
+    if not player then
+      return nil
+    end
+    local ui = UIRoot.resolve_first_ui(y3, player, paths)
+    runtime.nodes[cache_key] = ui
+    return ui
+  end
+
   local function call_ui(ui, method_name, ...)
     if not is_ui_alive(ui) then
       return false
@@ -183,6 +199,12 @@ function M.create(env)
     return string.format('%+d%%', math.floor(total + (total >= 0 and 0.5 or -0.5)))
   end
 
+  local function format_signed_compact_number(value)
+    local number = tonumber(value) or 0
+    local sign = number >= 0 and '+' or '-'
+    return sign .. compact_number(math.abs(number))
+  end
+
   local function count_entries(source)
     if type(source) ~= 'table' then
       return 0
@@ -237,6 +259,236 @@ function M.create(env)
       end
     end
     return '玩家'
+  end
+
+  local function get_hero_hp_data()
+    local current_hp = STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and (tonumber(STATE.hero:get_hp()) or 0) or 0
+    local max_hp = math.max(1, get_attr('生命结算值', '生命'))
+    return current_hp, max_hp
+  end
+
+  local function get_hero_exp_data()
+    local exp_current = tonumber(STATE.hero_progress and STATE.hero_progress.exp) or 0
+    local exp_max = tonumber(STATE.hero_progress and STATE.hero_progress.exp_to_next) or 1
+    if exp_max <= 0 then
+      exp_max = math.max(1, exp_current)
+    end
+    return exp_current, exp_max
+  end
+
+  local function get_growth_weapon_level()
+    return STATE.gear_state
+      and STATE.gear_state.items
+      and STATE.gear_state.items.weapon
+      and STATE.gear_state.items.weapon.level
+      or 0
+  end
+
+  local function get_growth_weapon_item_key()
+    local slot_cfg = CONFIG.gear_upgrade_config
+      and CONFIG.gear_upgrade_config.slots
+      and CONFIG.gear_upgrade_config.slots.weapon
+      or nil
+    return slot_cfg and slot_cfg.item_key or nil
+  end
+
+  local function get_inventory_item(slot_index)
+    if not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() or not STATE.hero.get_item_by_slot then
+      return nil
+    end
+    local ok, item = pcall(STATE.hero.get_item_by_slot, STATE.hero, '物品栏', slot_index)
+    if not ok then
+      return nil
+    end
+    return item
+  end
+
+  local function is_growth_weapon_item(item)
+    if not item or not item.get_key then
+      return false
+    end
+    local growth_item_key = get_growth_weapon_item_key()
+    if not growth_item_key then
+      return false
+    end
+    return tostring(item:get_key()) == tostring(growth_item_key)
+  end
+
+  local function build_growth_weapon_tip_text(payload)
+    if not payload then
+      return '当前没有成长武器数据。'
+    end
+
+    local lines = {}
+    if payload.subtitle_text and payload.subtitle_text ~= '' then
+      lines[#lines + 1] = tostring(payload.subtitle_text)
+    end
+    if payload.cost_text and payload.cost_text ~= '' then
+      lines[#lines + 1] = tostring(payload.cost_text)
+    end
+
+    local attr_lines = payload.attr_lines or {}
+    if #attr_lines > 0 then
+      if #lines > 0 then
+        lines[#lines + 1] = ''
+      end
+      lines[#lines + 1] = '当前属性增幅'
+      for _, line in ipairs(attr_lines) do
+        lines[#lines + 1] = tostring(line)
+      end
+    end
+
+    local affix_lines = payload.affix_lines or {}
+    if #affix_lines > 0 then
+      if #lines > 0 then
+        lines[#lines + 1] = ''
+      end
+      for _, affix in ipairs(affix_lines) do
+        if affix.title and affix.title ~= '' then
+          lines[#lines + 1] = tostring(affix.title)
+        end
+        if affix.body and affix.body ~= '' then
+          lines[#lines + 1] = tostring(affix.body)
+        end
+      end
+    end
+
+    if #lines == 0 then
+      return '当前没有成长武器数据。'
+    end
+    return table.concat(lines, '\n')
+  end
+
+  local function build_item_tip(item)
+    if not item then
+      return nil, nil
+    end
+    local title = item.get_name and item:get_name() or '物品'
+    local lines = {}
+    local description = item.get_description and item:get_description() or nil
+    if description and description ~= '' then
+      lines[#lines + 1] = tostring(description)
+    end
+    local stack = item.get_stack and tonumber(item:get_stack()) or 0
+    if stack and stack > 1 then
+      lines[#lines + 1] = string.format('层数：%d', stack)
+    end
+    local charge = item.get_charge and tonumber(item:get_charge()) or 0
+    if charge and charge > 0 then
+      lines[#lines + 1] = string.format('充能：%d', charge)
+    end
+    if #lines == 0 then
+      lines[#lines + 1] = '当前没有额外说明。'
+    end
+    return tostring(title), table.concat(lines, '\n')
+  end
+
+  local function build_attack_skill_display_entry(skill, display_index)
+    if not skill then
+      return nil
+    end
+    local lines = {}
+    if skill.summary and skill.summary ~= '' then
+      lines[#lines + 1] = tostring(skill.summary)
+    end
+    local damage_ratio = tonumber(skill.damage_ratio) or 0
+    if damage_ratio > 0 then
+      lines[#lines + 1] = string.format('倍率：%.0f%%', damage_ratio * 100)
+    end
+    local cast_range = math.max(0, tonumber(skill.cast_range or 0) + tonumber(skill.range_bonus or 0))
+    if cast_range > 0 then
+      lines[#lines + 1] = string.format('射程：%d', math.floor(cast_range + 0.5))
+    end
+    local base_cooldown = tonumber(skill.base_cooldown) or 0
+    if base_cooldown > 0 and skill.id ~= 'basic_attack' then
+      lines[#lines + 1] = string.format('基础冷却：%.1fs', base_cooldown)
+    end
+    if skill.id == 'basic_attack' then
+      lines[#lines + 1] = string.format('攻速：%s', compact_number(get_attr('攻击速度')))
+    end
+
+    local cooldown_remaining = tonumber(skill.cooldown_remaining) or 0
+    return {
+      id = tostring(skill.id or ('skill_' .. tostring(display_index))),
+      name = tostring(skill.name or skill.id or ('技能' .. tostring(display_index))),
+      icon = skill.ui_icon or skill.icon,
+      key = display_index == 1 and '普' or tostring(display_index),
+      cooldown_text = cooldown_remaining > 0 and string.format('%.1fs', cooldown_remaining) or '就绪',
+      legacy_cooldown_text = cooldown_remaining > 0 and string.format('%.1f', cooldown_remaining) or '',
+      badge_text = skill.level and ('Lv.' .. tostring(skill.level)) or '',
+      stack_text = '',
+      tip_title = tostring(skill.name or skill.id or '技能'),
+      tip_text = #lines > 0 and table.concat(lines, '\n') or '当前没有技能说明。',
+    }
+  end
+
+  local function build_form_skill_display_entry(display_index)
+    local form_system = STATE.hero_form_skills_system
+    if not form_system or not form_system.get_active_skill then
+      return nil
+    end
+
+    local skill = form_system.get_active_skill()
+    if not skill then
+      return nil
+    end
+
+    local entry = form_system.get_active_entry and form_system.get_active_entry() or nil
+    local runtime = STATE.hero_form_skill_runtime or {}
+    local cooldown_remaining = tonumber(runtime.cooldowns and runtime.cooldowns[skill.id]) or 0
+    local counter = tonumber(runtime.counters and runtime.counters[skill.id]) or 0
+    local trigger_value = math.max(0, math.floor(tonumber(skill.trigger_value) or 0))
+    local lines = {}
+
+    if entry and entry.title and entry.title ~= '' then
+      lines[#lines + 1] = '真身：' .. tostring(entry.title)
+    end
+    if skill.subtitle and skill.subtitle ~= '' then
+      lines[#lines + 1] = tostring(skill.subtitle)
+    end
+    if skill.summary and skill.summary ~= '' then
+      lines[#lines + 1] = tostring(skill.summary)
+    end
+    if skill.item_desc and skill.item_desc ~= '' then
+      lines[#lines + 1] = tostring(skill.item_desc)
+    end
+    if tonumber(skill.cooldown) and tonumber(skill.cooldown) > 0 then
+      lines[#lines + 1] = string.format('冷却：%.1fs', tonumber(skill.cooldown))
+    end
+
+    return {
+      id = tostring(skill.id or ('form_skill_' .. tostring(display_index))),
+      name = tostring(skill.name or '真身神通'),
+      icon = get_hero_icon(),
+      key = '真',
+      cooldown_text = cooldown_remaining > 0 and string.format('%.1fs', cooldown_remaining) or '就绪',
+      legacy_cooldown_text = cooldown_remaining > 0 and string.format('%.1f', cooldown_remaining) or '',
+      badge_text = entry and entry.rarity or '',
+      stack_text = trigger_value > 1 and string.format('%d/%d', math.min(counter, trigger_value), trigger_value) or '',
+      tip_title = tostring(skill.name or '真身神通'),
+      tip_text = #lines > 0 and table.concat(lines, '\n') or '当前没有神通说明。',
+    }
+  end
+
+  local function get_display_skill_entries(max_slots)
+    local entries = {}
+    local attack_slots = STATE.attack_skill_state and STATE.attack_skill_state.slots or nil
+
+    for slot = 1, 4 do
+      local skill = attack_slots and attack_slots[slot] or nil
+      if skill then
+        entries[#entries + 1] = build_attack_skill_display_entry(skill, #entries + 1)
+      end
+    end
+
+    if #entries < max_slots then
+      local form_entry = build_form_skill_display_entry(#entries + 1)
+      if form_entry then
+        entries[#entries + 1] = form_entry
+      end
+    end
+
+    return entries
   end
 
   local function get_pending_choice_notice()
@@ -469,10 +721,42 @@ function M.create(env)
     end)
   end
 
+  local function bind_hover_once(key, ui, on_enter, on_leave)
+    local runtime = get_runtime()
+    if runtime.bound_events[key] == ui and is_ui_alive(ui) then
+      return
+    end
+    if not is_ui_alive(ui) or not ui.add_fast_event then
+      return
+    end
+    runtime.bound_events[key] = ui
+    ui:add_fast_event('鼠标-移入', function()
+      if on_enter then
+        on_enter(ui)
+      end
+    end)
+    ui:add_fast_event('鼠标-移出', function()
+      if on_leave then
+        on_leave(ui)
+      end
+    end)
+  end
+
+  local function hide_tip_panel()
+    local runtime = get_runtime()
+    runtime.tip_expires_at = 0
+    set_visible_if_alive(runtime.tip_panel, false)
+  end
+
   local function show_tip_panel(text, duration, title)
     ensure_hud()
     local runtime = get_runtime()
-    runtime.tip_expires_at = (STATE.runtime_elapsed or 0) + math.max(1, tonumber(duration) or NOTICE_DURATION)
+    local final_duration = tonumber(duration)
+    if final_duration ~= nil and final_duration <= 0 then
+      runtime.tip_expires_at = math.huge
+    else
+      runtime.tip_expires_at = (STATE.runtime_elapsed or 0) + math.max(1, final_duration or NOTICE_DURATION)
+    end
     runtime.tip_title_text = title or '系统提示'
     runtime.tip_body_text = tostring(text or '')
     set_text_if_alive(runtime.tip_panel_title, title or '系统提示')
@@ -575,6 +859,237 @@ function M.create(env)
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.fish_button.hotkey'), 'P')
   end
 
+  local function show_growth_weapon_tip_panel()
+    local payload = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil
+    if not payload then
+      hide_tip_panel()
+      return
+    end
+    show_tip_panel(build_growth_weapon_tip_text(payload), 0, payload.title_text or '成长武器')
+  end
+
+  local function show_inventory_slot_tip(slot_index)
+    local item = get_inventory_item(slot_index)
+    if item and is_growth_weapon_item(item) then
+      show_growth_weapon_tip_panel()
+      return
+    end
+
+    local title, body = build_item_tip(item)
+    if title and body then
+      show_tip_panel(body, 0, title)
+      return
+    end
+    hide_tip_panel()
+  end
+
+  local function show_skill_entry_tip(slot_index, max_slots)
+    local entries = get_display_skill_entries(max_slots or 4)
+    local entry = entries[slot_index]
+    if not entry then
+      hide_tip_panel()
+      return
+    end
+    show_tip_panel(entry.tip_text or '当前没有技能说明。', 0, entry.tip_title or entry.name or '技能')
+  end
+
+  local function refresh_gamehud_main_unit()
+    local current_hp, max_hp = get_hero_hp_data()
+    local exp_current, exp_max = get_hero_exp_data()
+
+    set_text_if_alive(resolve_ui('GameHUD.main.main_unit_name.main_unit_name'), get_hero_name())
+    set_text_if_alive(resolve_ui('GameHUD.main.main_unit.lv_bg.lv'), tostring(get_hero_level()))
+    set_progress_if_alive(resolve_ui('GameHUD.main.main_unit.exp'), exp_current, exp_max)
+
+    set_progress_if_alive(resolve_ui('GameHUD.main.main_hp_bar'), current_hp, max_hp)
+    set_text_if_alive(resolve_ui('GameHUD.main.main_hp_bar.hp_value'),
+      string.format('%s/%s', compact_number(current_hp), compact_number(max_hp)))
+    set_text_if_alive(resolve_ui('GameHUD.main.main_hp_bar.hp_recover'),
+      string.format('+%s', compact_number(get_attr('生命恢复'))))
+
+    set_progress_if_alive(resolve_ui('GameHUD.main.main_mp_bar'), exp_current, exp_max)
+    set_text_if_alive(resolve_ui('GameHUD.main.main_mp_bar.mp_value'),
+      string.format('%s/%s', compact_number(exp_current), compact_number(exp_max)))
+    set_text_if_alive(resolve_ui('GameHUD.main.main_mp_bar.mp_recover'),
+      string.format('%d%%', math.floor(exp_current / math.max(1, exp_max) * 100 + 0.5)))
+  end
+
+  local function refresh_gamehud_attr_list()
+    local values = {
+      attack = compact_number(get_attr('攻击结算值', '攻击')),
+      defence = compact_number(get_attr('护甲结算值', '护甲')),
+      attack_speed = compact_number(get_attr('攻击速度')),
+      move_speed = compact_number(get_attr('移动速度')),
+      strength = compact_number(get_attr('最终力量', '力量')),
+      agility = compact_number(get_attr('最终敏捷', '敏捷')),
+      intelligence = compact_number(get_attr('最终智力', '智力')),
+    }
+
+    for key, value in pairs(values) do
+      set_text_if_alive(resolve_ui(string.format('GameHUD.main.attr_list.%s.attr_value', key)), value)
+    end
+  end
+
+  local function refresh_gamehud_skill_bar()
+    local entries = get_display_skill_entries(8)
+    for index = 1, 8 do
+      local root_path = string.format('GameHUD.main.skill_list.skill_btn_%d', index)
+      local prefix = root_path .. '.skill_btn'
+      local entry = entries[index]
+      local icon_ui = resolve_ui(prefix .. '.icon')
+
+      set_visible_if_alive(resolve_ui(root_path), entry ~= nil)
+      if entry then
+        set_visible_if_alive(icon_ui, entry.icon ~= nil)
+        set_image_if_alive(icon_ui, entry.icon)
+        set_visible_if_alive(resolve_ui(prefix .. '.cd'), false)
+        set_visible_if_alive(resolve_ui(prefix .. '.disable'), false)
+        set_visible_if_alive(resolve_ui(prefix .. '.out_of_mana'), false)
+        set_visible_if_alive(resolve_ui(prefix .. '.learn'), false)
+        set_text_if_alive(resolve_ui(prefix .. '.hot_key_bg.hot_key'), entry.key or tostring(index))
+        set_text_if_alive(resolve_ui(prefix .. '.cd_text'), entry.legacy_cooldown_text or '')
+        set_text_if_alive(resolve_ui(prefix .. '.lv_bg.lv'), entry.badge_text or '')
+        set_text_if_alive(resolve_ui(prefix .. '.stack'), entry.stack_text or '')
+      else
+        set_visible_if_alive(icon_ui, false)
+      end
+    end
+  end
+
+  local function refresh_gamehud_inventory()
+    local growth_payload = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil
+    local growth_level = get_growth_weapon_level()
+
+    for slot = 1, 6 do
+      local prefix = string.format('GameHUD.main.inventory.equip_slot_bg_%d.equip_slot_1', slot)
+      local item = get_inventory_item(slot)
+      local icon = item and item.get_icon and item:get_icon() or nil
+      local icon_ui = resolve_ui(prefix .. '.icon')
+
+      if not icon and slot == 1 and growth_payload then
+        icon = growth_payload.icon_res
+      end
+
+      set_visible_if_alive(icon_ui, icon ~= nil)
+      set_image_if_alive(icon_ui, icon)
+      set_visible_if_alive(resolve_ui(prefix .. '.cd'), false)
+      set_visible_if_alive(resolve_ui(prefix .. '.disable'), false)
+      set_text_if_alive(resolve_ui(prefix .. '.hot_key_bg.hot_key'),
+        slot == 1 and '武' or tostring(slot))
+
+      if item and is_growth_weapon_item(item) then
+        set_text_if_alive(resolve_ui(prefix .. '.stack'),
+          growth_level > 0 and ('Lv.' .. tostring(growth_level)) or '')
+      elseif item and item.get_stack and tonumber(item:get_stack()) and tonumber(item:get_stack()) > 1 then
+        set_text_if_alive(resolve_ui(prefix .. '.stack'), tostring(math.floor(tonumber(item:get_stack()) or 0)))
+      else
+        set_text_if_alive(resolve_ui(prefix .. '.stack'), '')
+      end
+    end
+  end
+
+  local function refresh_battle_loadout_row()
+    local growth_payload = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil
+    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), '物品栏')
+
+    for slot = 1, 6 do
+      local prefix = string.format('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_%d', slot)
+      local item = get_inventory_item(slot)
+      local icon = item and item.get_icon and item:get_icon() or nil
+      local icon_ui = resolve_ui(prefix .. '.icon')
+
+      if not icon and slot == 1 and growth_payload then
+        icon = growth_payload.icon_res
+      end
+
+      set_visible_if_alive(icon_ui, icon ~= nil)
+      set_image_if_alive(icon_ui, icon)
+    end
+  end
+
+  local function refresh_bottom_bg_mid()
+    local current_hp, max_hp = get_hero_hp_data()
+    local exp_current, exp_max = get_hero_exp_data()
+
+    set_image_if_alive(resolve_ui('bottom_bg.layout_1.mid.头像.英雄头像'), get_hero_icon())
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.头像.name'), get_hero_name())
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.头像.等级'), 'Lv.' .. tostring(get_hero_level()))
+    set_progress_if_alive(resolve_ui('bottom_bg.layout_1.mid.头像.血条'), current_hp, max_hp)
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.头像.血条.progress_percent_label'),
+      string.format('%s/%s', compact_number(current_hp), compact_number(max_hp)))
+
+    set_progress_if_alive(resolve_ui('bottom_bg.layout_1.mid.进化进度条'), exp_current, exp_max)
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.进化进度条.progress_percent_label'),
+      string.format('%s/%s', compact_number(exp_current), compact_number(exp_max)))
+
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.攻击力.名称+加成百分比'), '攻击力')
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.攻击力.value'),
+      compact_number(get_attr('攻击结算值', '攻击')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.攻击力.百分比加成'),
+      format_signed_percent_pair(get_attr('攻击增幅'), get_attr('最终攻击')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.攻击力.数值加成'),
+      format_signed_compact_number(get_attr('攻击绿字')))
+
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.力量.percent'),
+      format_signed_percent_pair(get_attr('力量增幅'), get_attr('最终力量增幅')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.力量.value_1'),
+      compact_number(get_attr('最终力量', '力量')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.力量.数值加成'),
+      format_signed_compact_number(get_attr('力量绿字')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.力量.百分比加成'),
+      format_signed_percent_pair(get_attr('力量增幅'), get_attr('最终力量增幅')))
+
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.敏捷.percent'),
+      format_signed_percent_pair(get_attr('敏捷增幅'), get_attr('最终敏捷增幅')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.敏捷.value'),
+      compact_number(get_attr('最终敏捷', '敏捷')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.敏捷.数值加成'),
+      format_signed_compact_number(get_attr('敏捷绿字')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.敏捷.百分比加成'),
+      format_signed_percent_pair(get_attr('敏捷增幅'), get_attr('最终敏捷增幅')))
+
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.智力.percent'),
+      format_signed_percent_pair(get_attr('智力增幅'), get_attr('最终智力增幅')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.智力.value'),
+      compact_number(get_attr('最终智力', '智力')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.智力.数值加成'),
+      format_signed_compact_number(get_attr('智力绿字')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.智力.百分比加成'),
+      format_signed_percent_pair(get_attr('智力增幅'), get_attr('最终智力增幅')))
+
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.护甲值.percent'),
+      format_signed_percent_pair(get_attr('护甲增幅'), get_attr('最终护甲')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.护甲值.value'),
+      compact_number(get_attr('护甲结算值', '护甲')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.护甲值.数值加成'),
+      format_signed_compact_number(get_attr('护甲绿字')))
+    set_text_if_alive(resolve_ui('bottom_bg.layout_1.mid.panel.护甲值.百分比加成'),
+      format_signed_percent_pair(get_attr('护甲增幅'), get_attr('最终护甲')))
+  end
+
+  local function refresh_bottom_bg_backpack()
+    local growth_payload = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil
+    for slot = 1, 2 do
+      local ui = resolve_ui(string.format('bottom_bg.layout_1.backpack.物品%d', slot))
+      local item = get_inventory_item(slot)
+      local icon = item and item.get_icon and item:get_icon() or nil
+      if not icon and slot == 1 and growth_payload then
+        icon = growth_payload.icon_res
+      end
+      set_visible_if_alive(ui, icon ~= nil)
+      set_image_if_alive(ui, icon)
+    end
+  end
+
+  local function refresh_bottom_bg_bond_bar()
+    for slot = 1, 7 do
+      local ui = resolve_ui(string.format('bottom_bg.layout_1.UP.羁绊图片%d', slot))
+      local icon = get_bond_slot_icon and get_bond_slot_icon(slot) or nil
+      set_visible_if_alive(ui, icon ~= nil)
+      set_image_if_alive(ui, icon)
+    end
+  end
+
   ensure_hud = function()
     ensure_preferences()
     ensure_overlay_widgets()
@@ -653,6 +1168,127 @@ function M.create(env)
       end
       refresh_hud()
     end)
+    bind_hover_once('growth_weapon_slot_hover', resolve_ui('BattleBottomHUD.layout.center_hub.growth_weapon_slot'), function()
+      show_growth_weapon_tip_panel()
+    end, function()
+      hide_tip_panel()
+    end)
+    bind_click_once('battle_loadout_slot_1', resolve_ui('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_1'), function()
+      if try_upgrade_growth_weapon then
+        try_upgrade_growth_weapon('loadout_slot_click')
+      end
+      refresh_hud()
+    end)
+
+    for slot = 1, 6 do
+      bind_hover_once('battle_loadout_hover_' .. tostring(slot),
+        resolve_ui(string.format('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_%d', slot)),
+        function()
+          show_inventory_slot_tip(slot)
+        end,
+        function()
+          hide_tip_panel()
+        end)
+    end
+
+    for slot = 1, 4 do
+      bind_hover_once('battle_skill_hover_' .. tostring(slot),
+        resolve_ui(string.format('BattleBottomHUD.layout.center_hub.skill_bar.skill_slot_%d', slot)),
+        function()
+          show_skill_entry_tip(slot, 4)
+        end,
+        function()
+          hide_tip_panel()
+        end)
+    end
+
+    for slot = 1, 7 do
+      bind_click_once('battle_bond_slot_' .. tostring(slot),
+        resolve_ui(string.format('BattleBottomHUD.layout.right_station.card_panel.card_slot_%d', slot)),
+        function()
+          if show_bond_progress then
+            show_bond_progress()
+          else
+            show_tip_panel('当前没有羁绊进度可展示。', 4, '羁绊进度')
+          end
+        end)
+    end
+
+    bind_click_once('gamehud_main_unit', resolve_ui('GameHUD.main.main_unit'), function()
+      toggle_attr_panel()
+    end)
+    bind_click_once('gamehud_attr_list', resolve_ui('GameHUD.main.attr_list'), function()
+      toggle_attr_panel()
+    end)
+
+    for slot = 1, 8 do
+      bind_hover_once('gamehud_skill_hover_' .. tostring(slot),
+        resolve_ui(string.format('GameHUD.main.skill_list.skill_btn_%d.skill_btn', slot)),
+        function()
+          show_skill_entry_tip(slot, 8)
+        end,
+        function()
+          hide_tip_panel()
+        end)
+    end
+
+    for slot = 1, 6 do
+      bind_hover_once('gamehud_inventory_hover_' .. tostring(slot),
+        resolve_ui(string.format('GameHUD.main.inventory.equip_slot_bg_%d.equip_slot_1', slot)),
+        function()
+          show_inventory_slot_tip(slot)
+        end,
+        function()
+          hide_tip_panel()
+        end)
+    end
+
+    bind_click_once('bottom_bg_skill_draw', resolve_ui('bottom_bg.layout_1.button.技能抽卡'), function()
+      if show_upgrade_choices then
+        show_upgrade_choices()
+      end
+      refresh_hud()
+    end)
+    bind_click_once('bottom_bg_bond_draw', resolve_ui('bottom_bg.layout_1.button.羁绊抽卡'), function()
+      if try_bond_draw then
+        try_bond_draw()
+      end
+      refresh_hud()
+    end)
+    bind_click_once('bottom_bg_attr_panel', resolve_ui('bottom_bg.layout_1.mid.panel'), function()
+      toggle_attr_panel()
+    end)
+    bind_click_once('bottom_bg_avatar', resolve_ui('bottom_bg.layout_1.mid.头像'), function()
+      toggle_attr_panel()
+    end)
+    bind_click_once('bottom_bg_backpack_1', resolve_ui('bottom_bg.layout_1.backpack.物品1'), function()
+      if try_upgrade_growth_weapon then
+        try_upgrade_growth_weapon('legacy_backpack_click')
+      end
+      refresh_hud()
+    end)
+    bind_hover_once('bottom_bg_backpack_hover_1', resolve_ui('bottom_bg.layout_1.backpack.物品1'), function()
+      show_growth_weapon_tip_panel()
+    end, function()
+      hide_tip_panel()
+    end)
+    bind_hover_once('bottom_bg_backpack_hover_2', resolve_ui('bottom_bg.layout_1.backpack.物品2'), function()
+      show_inventory_slot_tip(2)
+    end, function()
+      hide_tip_panel()
+    end)
+
+    for slot = 1, 7 do
+      bind_click_once('bottom_bg_bond_slot_' .. tostring(slot),
+        resolve_ui(string.format('bottom_bg.layout_1.UP.羁绊图片%d', slot)),
+        function()
+          if show_bond_progress then
+            show_bond_progress()
+          else
+            show_tip_panel('当前没有羁绊进度可展示。', 4, '羁绊进度')
+          end
+        end)
+    end
 
     refresh_button_texts()
     return get_runtime()
@@ -731,13 +1367,8 @@ function M.create(env)
   end
 
   local function refresh_hero_panel()
-    local current_hp = STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and (tonumber(STATE.hero:get_hp()) or 0) or 0
-    local max_hp = math.max(1, get_attr('生命结算值', '生命'))
-    local exp_current = tonumber(STATE.hero_progress and STATE.hero_progress.exp) or 0
-    local exp_max = tonumber(STATE.hero_progress and STATE.hero_progress.exp_to_next) or 1
-    if exp_max <= 0 then
-      exp_max = math.max(1, exp_current)
-    end
+    local current_hp, max_hp = get_hero_hp_data()
+    local exp_current, exp_max = get_hero_exp_data()
 
     set_image_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_portrait'), get_hero_icon())
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_name'), get_hero_name())
@@ -777,11 +1408,7 @@ function M.create(env)
 
   local function refresh_growth_weapon_slot()
     local payload = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil
-    local weapon_level = STATE.gear_state
-      and STATE.gear_state.items
-      and STATE.gear_state.items.weapon
-      and STATE.gear_state.items.weapon.level
-      or 0
+    local weapon_level = get_growth_weapon_level()
     set_image_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.growth_weapon_slot.icon'),
       payload and payload.icon_res or nil)
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.growth_weapon_slot.title'),
@@ -791,23 +1418,19 @@ function M.create(env)
   end
 
   local function refresh_skill_bar()
+    local entries = get_display_skill_entries(4)
     for slot = 1, 4 do
-      local skill = STATE.attack_skill_state and STATE.attack_skill_state.slots and STATE.attack_skill_state.slots[slot] or nil
       local prefix = string.format('BattleBottomHUD.layout.center_hub.skill_bar.skill_slot_%d', slot)
-      set_image_if_alive(resolve_ui(prefix .. '.icon'), skill and (skill.ui_icon or skill.icon) or nil)
-      if slot == 1 then
-        set_text_if_alive(resolve_ui(prefix .. '.key'), '普')
+      local entry = entries[slot]
+      local icon_ui = resolve_ui(prefix .. '.icon')
+      set_visible_if_alive(icon_ui, entry ~= nil and entry.icon ~= nil)
+      set_image_if_alive(icon_ui, entry and entry.icon or nil)
+      if entry then
+        set_text_if_alive(resolve_ui(prefix .. '.key'), entry.key or tostring(slot))
+        set_text_if_alive(resolve_ui(prefix .. '.label'), entry.name or ('技能' .. tostring(slot)))
+        set_text_if_alive(resolve_ui(prefix .. '.cooldown'), entry.cooldown_text or '就绪')
       else
         set_text_if_alive(resolve_ui(prefix .. '.key'), tostring(slot))
-      end
-      if skill then
-        set_text_if_alive(resolve_ui(prefix .. '.label'), tostring(skill.name or skill.id or ('技能' .. slot)))
-        if tonumber(skill.cooldown_remaining) and skill.cooldown_remaining > 0 then
-          set_text_if_alive(resolve_ui(prefix .. '.cooldown'), string.format('%.1fs', skill.cooldown_remaining))
-        else
-          set_text_if_alive(resolve_ui(prefix .. '.cooldown'), '就绪')
-        end
-      else
         set_text_if_alive(resolve_ui(prefix .. '.label'), '未解锁')
         set_text_if_alive(resolve_ui(prefix .. '.cooldown'), '')
       end
@@ -854,6 +1477,14 @@ function M.create(env)
     refresh_skill_bar()
     refresh_action_area()
     refresh_bond_slots()
+    refresh_battle_loadout_row()
+    refresh_gamehud_main_unit()
+    refresh_gamehud_attr_list()
+    refresh_gamehud_skill_bar()
+    refresh_gamehud_inventory()
+    refresh_bottom_bg_mid()
+    refresh_bottom_bg_backpack()
+    refresh_bottom_bg_bond_bar()
 
     set_visible_if_alive(runtime.big_cursor, runtime.visible ~= false and ensure_preferences().big_cursor)
     set_visible_if_alive(runtime.attr_panel, runtime.visible ~= false and runtime.attr_panel_visible)
