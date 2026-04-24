@@ -111,10 +111,14 @@ def test_bottom_hud_contains_expected_runtime_nodes():
     hero_panel = find_child(center_hub, "hero_panel")
     hero_names = {child["name"] for child in hero_panel["children"]}
     assert "hero_name" in hero_names
+    assert "hero_model" in hero_names
     assert "hero_hp_bg" in hero_names
     assert "hero_hp_text" in hero_names
-    hero_portrait = find_child(hero_panel, "hero_portrait")
-    assert hero_portrait["image"] != 999
+    assert "hero_portrait" not in hero_names
+    hero_model = find_child(hero_panel, "hero_model")
+    assert hero_model["type"] == 6
+    hero_name = find_child(hero_panel, "hero_name")
+    assert hero_name["alignment"]["items"][0] == 1
 
 
 def test_bottom_hud_tree_and_registration_exists():

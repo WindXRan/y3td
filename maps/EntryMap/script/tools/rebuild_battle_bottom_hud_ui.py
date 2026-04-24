@@ -142,6 +142,18 @@ def minimap(name, x, y, width, height):
     return node
 
 
+def model(name, x, y, width, height):
+    node = base_node(name, 6, x, y, width, height)
+    node["adapter_option"] = [False, False, False, False, 0, 0, 0, 0]
+    node["anchor"] = tuple_value(0.5, 0.5)
+    node["open_adapter"] = False
+    node["opacity"] = 1.0
+    node["rotation"] = 0
+    node["scale"] = tuple_value(1, 1)
+    node["swallow_touches"] = False
+    return node
+
+
 def text(name, x, y, width, height, value, font_size, color, align_h=1):
     node = base_node(name, 3, x, y, width, height)
     node["adapter_option"] = [False, False, False, False, 0, 0, 0, 0]
@@ -547,21 +559,22 @@ def build_reference_action_button(name, x, y, label, hotkey, palette="yellow"):
 
 
 def build_reference_hover_tip_panel():
-    root = layout("hover_tip_panel", 400, 345, 320, 192)
+    root = layout("hover_tip_panel", 232, 296, 360, 236)
     root["visible"] = False
     root["children"] = [
-        image("tip_bg", 160, 96, 320, 192, BG_BLACK, [255, 255, 255, 236], True),
-        image("tip_inner", 160, 96, 310, 182, SHOP_CONTENT_BG, [255, 255, 255, 214], True),
-        image("tip_head_bg", 160, 154, 310, 54, SHOP_BG_ALT, [255, 255, 255, 145], True),
-        image("icon_bg", 34, 156, 34, 34, PROP_FRAME_ALT, [255, 255, 255, 255], False),
-        image("icon", 34, 156, 28, 28, ICON_ITEM_1, [255, 255, 255, 255], False),
-        text("title", 178, 164, 240, 24, "提示标题", 18, [245, 248, 255, 255], 0),
-        text("subtitle", 178, 138, 240, 18, "提示副标题", 12, [255, 223, 131, 255], 0),
-        image("divider", 160, 116, 286, 1, SHOP_LINE, [255, 255, 255, 126], True),
-        text("body", 160, 54, 284, 96, "提示内容", 14, [219, 229, 241, 255], 0),
+        image("tip_bg", 180, 118, 360, 236, SHOP_BG, [12, 18, 27, 246], True),
+        image("tip_inner", 180, 118, 348, 224, BG_BLACK, [18, 29, 43, 236], True),
+        image("tip_head_bg", 180, 191, 348, 72, BG_BLACK, [23, 39, 59, 226], True),
+        image("tip_top_line", 180, 227, 320, 1, SHOP_LINE, [123, 181, 238, 172], True),
+        image("icon_bg", 38, 194, 42, 42, SHOP_CONTENT_BG, [105, 160, 225, 238], True),
+        image("icon", 38, 194, 30, 30, ICON_ITEM_1, [255, 255, 255, 255], False),
+        text("title", 214, 208, 276, 24, "\u63d0\u793a\u6807\u9898", 16, [204, 226, 255, 255], 0),
+        text("subtitle", 214, 181, 276, 20, "\u7f81\u7eca\uff1a\u7384\u95e8\u6cd5(2/3)", 13, [255, 213, 96, 255], 0),
+        image("divider", 180, 154, 320, 1, SHOP_LINE, [111, 154, 204, 160], True),
+        image("section_divider", 180, 96, 320, 1, SHOP_LINE, [76, 107, 145, 118], True),
+        text("body", 180, 73, 320, 136, "[\u541e\u566c\u6761\u4ef6]\n\u9760\u8fd1\u76ee\u6807\u540e\u70b9\u51fb\u541e\u566c\n\n[\u609f\u5f97\u7384\u95e8\u6cd5]\n\u63d0\u5347\u6280\u80fd\u6548\u679c\u5e76\u6fc0\u6d3b\u7f81\u7eca", 14, [222, 232, 244, 255], 0),
     ]
     return root
-
 
 def build_reference_buff_slot(name, x, icon_id):
     root = layout(name, x, 18, 34, 34)
@@ -655,10 +668,10 @@ def build_bottom_hud():
 
     hero_panel = panel("hero_panel", 100, 134, 184, 214, [28, 32, 42, 92])
     hero_panel["children"] = [
-        image("portrait_frame", 92, 140, 120, 148, HERO_FRAME, [255, 255, 255, 255], False),
-        image("hero_portrait", 92, 142, 98, 98, PORTRAIT_MAIN, [255, 255, 255, 255], False),
-        text("hero_name", 92, 52, 140, 22, "六边形战士", 18, [246, 248, 251, 255]),
-        image("hero_name_line", 92, 66, 120, 1, SHOP_LINE, [255, 255, 255, 106], True),
+        image("portrait_frame", 92, 138, 126, 154, HERO_FRAME, [255, 255, 255, 255], False),
+        model("hero_model", 92, 142, 102, 112),
+        text("hero_name", 92, 54, 160, 22, "守关英雄", 17, [246, 248, 251, 255], 1),
+        image("hero_name_line", 92, 68, 128, 1, SHOP_LINE, [255, 255, 255, 106], True),
         image("hero_hp_bg", 92, 26, 146, 18, HP_BAR_BG, [255, 255, 255, 235], True),
         panel("hero_hp_fill", 78, 26, 118, 12, [35, 166, 90, 255]),
         text("hero_hp_text", 92, 26, 130, 14, "3680/3680", 10, [255, 255, 255, 255]),

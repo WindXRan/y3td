@@ -150,6 +150,12 @@ function M.create(env)
     end
   end
 
+  local function set_font_size_if_alive(ui, size)
+    if size then
+      call_ui(ui, 'set_font_size', size)
+    end
+  end
+
   local function set_image_if_alive(ui, image)
     if image ~= nil then
       call_ui(ui, 'set_image', image)
@@ -170,6 +176,38 @@ function M.create(env)
     local final_current = math.max(0, math.min(final_max, math.floor((tonumber(current) or 0) + 0.5)))
     call_ui(ui, 'set_max_progress_bar_value', final_max)
     call_ui(ui, 'set_current_progress_bar_value', final_current, 0)
+  end
+
+  local function set_ui_model_unit_if_alive(ui, unit, clone_effect, clone_attach, clone_material)
+    if unit and unit.is_exist and not unit:is_exist() then
+      unit = nil
+    end
+    if not is_ui_alive(ui) or not unit then
+      return
+    end
+    call_ui(ui, 'set_ui_model_unit', unit, clone_effect == true, clone_attach == true, clone_material == true)
+  end
+
+  local function tune_ui_model_if_alive(ui, config)
+    if not is_ui_alive(ui) or not config then
+      return
+    end
+    if config.focus then
+      call_ui(ui, 'set_ui_model_focus_pos', config.focus[1], config.focus[2], config.focus[3])
+    end
+    if config.fov then
+      call_ui(ui, 'change_showroom_fov', config.fov)
+    end
+    if config.camera_pos then
+      call_ui(ui, 'change_showroom_cposition', config.camera_pos[1], config.camera_pos[2], config.camera_pos[3])
+    end
+    if config.camera_rot then
+      call_ui(ui, 'change_showroom_crotation', config.camera_rot[1], config.camera_rot[2], config.camera_rot[3])
+    end
+    if config.background then
+      call_ui(ui, 'set_show_room_background_color',
+        config.background[1], config.background[2], config.background[3], config.background[4] or 0)
+    end
   end
 
   local function set_percent_pos_if_alive(ui, x, y)
@@ -1030,6 +1068,12 @@ function M.create(env)
     set_text_if_alive(runtime.hover_tip_panel_title, payload.title or '说明')
     set_text_if_alive(runtime.hover_tip_panel_subtitle, payload.subtitle or '')
     set_text_if_alive(runtime.hover_tip_panel_body, payload.body or '')
+    set_font_size_if_alive(runtime.hover_tip_panel_title, 16)
+    set_font_size_if_alive(runtime.hover_tip_panel_subtitle, 13)
+    set_font_size_if_alive(runtime.hover_tip_panel_body, 14)
+    set_text_color_if_alive(runtime.hover_tip_panel_title, { 204, 226, 255, 255 })
+    set_text_color_if_alive(runtime.hover_tip_panel_subtitle, { 255, 213, 96, 255 })
+    set_text_color_if_alive(runtime.hover_tip_panel_body, { 222, 232, 244, 255 })
     set_visible_if_alive(runtime.hover_tip_panel_subtitle, payload.subtitle ~= nil and payload.subtitle ~= '')
     set_visible_if_alive(runtime.hover_tip_panel_icon_bg, payload.icon ~= nil)
     set_visible_if_alive(runtime.hover_tip_panel_icon, payload.icon ~= nil)
@@ -1816,8 +1860,17 @@ function M.create(env)
   local function refresh_hero_panel()
     local current_hp, max_hp = get_hero_hp_data()
     local exp_current, exp_max = get_hero_exp_data()
+    local hero_model_ui = resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_model')
 
-    set_image_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_portrait'), get_hero_icon())
+    set_visible_if_alive(hero_model_ui, STATE.hero ~= nil and STATE.hero.is_exist and STATE.hero:is_exist())
+    set_ui_model_unit_if_alive(hero_model_ui, STATE.hero, true, true, true)
+    tune_ui_model_if_alive(hero_model_ui, {
+      focus = {0, 0, 88},
+      fov = 32,
+      camera_pos = {156, -108, 88},
+      camera_rot = {0, 0, 0},
+      background = {0, 0, 0, 0},
+    })
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_name'), get_hero_name())
     set_progress_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_fill'), current_hp, max_hp)
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_text'),
