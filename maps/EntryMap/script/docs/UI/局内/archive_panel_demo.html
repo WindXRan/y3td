@@ -933,11 +933,72 @@
       height: 100%;
     }
 
+    .top-tabs {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .top-tab.active {
+      border-color: #5a6070;
+      background: linear-gradient(180deg, #717684, #4a4f5d 58%, #2f333d);
+      color: #ffffff;
+    }
+
+    .universal-main {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .universal-stage {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(22, 23, 31, 0.96), rgba(16, 17, 24, 0.98));
+      overflow: hidden;
+    }
+
+    .universal-panel,
+    .universal-detail {
+      display: none;
+    }
+
+    .universal-panel.is-active,
+    .universal-detail.is-active {
+      display: block;
+    }
+
+    .universal-panel {
+      position: absolute;
+      inset: 0;
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .universal-panel::-webkit-scrollbar,
+    .pool-board::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .universal-panel::-webkit-scrollbar-thumb,
+    .pool-board::-webkit-scrollbar-thumb {
+      background: rgba(98, 108, 133, 0.72);
+      border-radius: 999px;
+    }
+
+    .universal-panel::-webkit-scrollbar-track,
+    .pool-board::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
     .badge-grid {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 12px;
-      margin-top: 4px;
     }
 
     .difficulty-badge {
@@ -946,6 +1007,15 @@
       border-radius: 12px;
       background: linear-gradient(180deg, #1a1c23, #101219);
       text-align: center;
+    }
+
+    .difficulty-icon,
+    .level-scroll,
+    .feature-icon,
+    .pool-glyph,
+    .fish-tile-icon {
+      position: relative;
+      overflow: hidden;
     }
 
     .difficulty-icon {
@@ -957,7 +1027,6 @@
         radial-gradient(circle at 50% 36%, rgba(255, 213, 92, 0.2), transparent 30%),
         linear-gradient(180deg, #302c23, #181713 56%, #0e0f11);
       clip-path: polygon(50% 0, 78% 16%, 100% 48%, 86% 88%, 50% 100%, 14% 88%, 0 48%, 20% 16%);
-      position: relative;
     }
 
     .difficulty-icon::before {
@@ -982,6 +1051,348 @@
       font-weight: 700;
     }
 
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .level-card,
+    .feature-card,
+    .fish-card,
+    .pool-item {
+      position: relative;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .level-card {
+      display: grid;
+      gap: 6px;
+      justify-items: center;
+    }
+
+    .level-scroll {
+      width: 78px;
+      height: 78px;
+      border: 1px solid #0d5474;
+      background: linear-gradient(180deg, #07253c, #0d1622 58%, #0b0f17);
+      box-shadow: inset 0 0 0 1px rgba(64, 186, 255, 0.12);
+    }
+
+    .level-scroll::before {
+      content: "卷";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #f2d08a;
+      font-size: 26px;
+      font-weight: 900;
+      z-index: 1;
+    }
+
+    .level-scroll::after {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 10px 14px 16px 12px;
+      background:
+        radial-gradient(circle at 24% 26%, #ffefb7 0 14%, transparent 15%),
+        linear-gradient(180deg, #d2a45b, #f2d7aa 34%, #c59755 35% 82%, #7f4a22 83% 100%);
+      clip-path: polygon(18% 2%, 84% 4%, 98% 18%, 92% 84%, 14% 90%, 2% 72%, 8% 12%);
+    }
+
+    .level-card .caption,
+    .feature-card .caption,
+    .fish-card .caption,
+    .tool-card .caption {
+      font-size: 13px;
+      line-height: 1.2;
+      color: #f1eee4;
+    }
+
+    .feature-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    .feature-card {
+      display: grid;
+      gap: 6px;
+      justify-items: center;
+    }
+
+    .feature-icon {
+      width: 84px;
+      height: 78px;
+      border: 1px solid #66531b;
+      background: linear-gradient(180deg, #33280d, #17130e 58%, #0d0f12);
+      box-shadow: inset 0 0 0 1px rgba(255, 206, 90, 0.08);
+    }
+
+    .feature-icon::before {
+      content: attr(data-glyph);
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #fff4d4;
+      font-size: 24px;
+      font-weight: 900;
+      z-index: 1;
+    }
+
+    .feature-icon.gold::after,
+    .feature-icon.blue::after,
+    .feature-icon.purple::after,
+    .feature-icon.green::after,
+    .feature-icon.red::after {
+      content: "";
+      position: absolute;
+      inset: 11px;
+      border-radius: 14px;
+      opacity: 0.96;
+    }
+
+    .feature-icon.gold::after { background: radial-gradient(circle at 34% 30%, #fff0a5 0 16%, #cf9f35 17% 58%, #432f0d 59% 100%); }
+    .feature-icon.blue::after { background: radial-gradient(circle at 34% 30%, #dcf7ff 0 16%, #35a4ff 17% 58%, #122842 59% 100%); }
+    .feature-icon.purple::after { background: radial-gradient(circle at 34% 30%, #f0deff 0 16%, #9558ff 17% 58%, #28153f 59% 100%); }
+    .feature-icon.green::after { background: radial-gradient(circle at 34% 30%, #efffcf 0 16%, #6bc03f 17% 58%, #173319 59% 100%); }
+    .feature-icon.red::after { background: radial-gradient(circle at 34% 30%, #ffd9cf 0 16%, #e34938 17% 58%, #451915 59% 100%); }
+
+    .feature-card.dim .feature-icon {
+      border-color: #4e355f;
+      filter: saturate(0.18) brightness(0.62);
+    }
+
+    .feature-card.dim .caption {
+      color: #9c97aa;
+    }
+
+    .lottery-footer {
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+      margin-top: 26px;
+      color: #d2cbc0;
+    }
+
+    .lottery-action {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .lottery-input {
+      width: 176px;
+      height: 36px;
+      border: 1px solid #434754;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .lottery-count {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .fish-feature-row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .fish-card {
+      padding: 6px 6px 10px;
+      border: 1px solid #3a4b61;
+      background: linear-gradient(180deg, #11161e, #0c1015 58%, #080a0f);
+    }
+
+    .fish-card.selected {
+      border-color: #8f8f96;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .fish-card .fish-tile-icon {
+      width: 100%;
+      height: 72px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: linear-gradient(180deg, #0b1c26, #112030 58%, #0a1117);
+    }
+
+    .fish-tile-icon::before {
+      content: attr(data-glyph);
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      font-weight: 900;
+      color: #ffe073;
+      z-index: 1;
+    }
+
+    .fish-tile-icon.blue::after,
+    .fish-tile-icon.green::after,
+    .fish-tile-icon.purple::after,
+    .fish-tile-icon.gold::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 12px;
+      opacity: 0.96;
+    }
+
+    .fish-tile-icon.blue::after { background: radial-gradient(circle at 34% 30%, #d9f8ff 0 16%, #2fa7ff 17% 58%, #112a44 59% 100%); }
+    .fish-tile-icon.green::after { background: radial-gradient(circle at 34% 30%, #edffd3 0 16%, #68c441 17% 58%, #18331b 59% 100%); }
+    .fish-tile-icon.purple::after { background: radial-gradient(circle at 34% 30%, #f0deff 0 16%, #975cff 17% 58%, #291540 59% 100%); }
+    .fish-tile-icon.gold::after { background: radial-gradient(circle at 34% 30%, #fff1a7 0 16%, #d4a53a 17% 58%, #48330d 59% 100%); }
+
+    .fish-count {
+      color: #8dff41;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tool-card {
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+    }
+
+    .tool-icon {
+      width: 58px;
+      height: 58px;
+      border: 1px solid #66531b;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #3a2b0f, #181410 58%, #0e1012);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tool-icon::before {
+      content: attr(data-glyph);
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #ffe39a;
+      font-size: 20px;
+      font-weight: 900;
+      z-index: 1;
+    }
+
+    .tool-icon::after {
+      content: "";
+      position: absolute;
+      inset: 9px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 34% 30%, #ffe9b7 0 14%, #b98932 15% 58%, #3f2c0d 59% 100%);
+    }
+
+    .rarity-bar {
+      position: relative;
+      height: 24px;
+      margin: 12px 0 10px;
+      border-radius: 4px;
+      overflow: hidden;
+      font-size: 0;
+    }
+
+    .rarity-bar::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 900;
+      z-index: 1;
+    }
+
+    .rarity-bar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 26%, rgba(255, 255, 255, 0.18) 26% 28%, transparent 28% 31%, rgba(255, 255, 255, 0.12) 31% 33%, transparent 33% 100%);
+      opacity: 0.9;
+    }
+
+    .rarity-bar.n { background: linear-gradient(90deg, #1bc35d, #12994a 30%, rgba(19, 153, 74, 0.14)); }
+    .rarity-bar.r { background: linear-gradient(90deg, #24aee8, #187fbe 30%, rgba(24, 127, 190, 0.14)); }
+    .rarity-bar.sr { background: linear-gradient(90deg, #b64cff, #7a2bc2 30%, rgba(122, 43, 194, 0.14)); }
+
+    .fish-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .fish-mini {
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+    }
+
+    .fish-mini-icon {
+      width: 72px;
+      height: 50px;
+      border: 1px solid #2c7ba6;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #0e2432, #101823 58%, #0b0f15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .fish-mini-icon::before {
+      content: attr(data-glyph);
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #f2fbff;
+      font-size: 22px;
+      font-weight: 900;
+      z-index: 1;
+    }
+
+    .fish-mini-icon.green::after,
+    .fish-mini-icon.blue::after,
+    .fish-mini-icon.purple::after {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border-radius: 10px;
+      opacity: 0.96;
+    }
+
+    .fish-mini-icon.green::after { background: radial-gradient(circle at 34% 30%, #efffd3 0 16%, #69c541 17% 58%, #19331c 59% 100%); }
+    .fish-mini-icon.blue::after { background: radial-gradient(circle at 34% 30%, #dcf7ff 0 16%, #31a7ff 17% 58%, #122942 59% 100%); }
+    .fish-mini-icon.purple::after { background: radial-gradient(circle at 34% 30%, #f1deff 0 16%, #9860ff 17% 58%, #281640 59% 100%); }
+
+    .universal-side,
+    .reward-side,
+    .pool-side {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
     .side-title {
       color: #ffffff;
       font-size: 28px;
@@ -995,12 +1406,35 @@
       background: rgba(255, 255, 255, 0.08);
     }
 
-    .reward-lines {
+    .detail-label {
+      color: #f0ad3e;
+      font-size: 15px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .reward-lines,
+    .detail-lines {
       display: grid;
-      gap: 12px;
+      gap: 10px;
       color: #d9d4ca;
       font-size: 16px;
       line-height: 1.4;
+    }
+
+    .compact-copy {
+      color: #bbb6aa;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .score-box-inline {
+      margin-top: 16px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      text-align: center;
     }
 
     .chest-scene {
@@ -1147,12 +1581,6 @@
       margin-top: 6px;
     }
 
-    .reward-side {
-      display: grid;
-      gap: 12px;
-      align-content: start;
-    }
-
     .reward-strip,
     .reward-item {
       padding: 10px 12px;
@@ -1176,111 +1604,173 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       margin-bottom: 12px;
+    }
+
+    .pool-header .back-btn {
+      border-color: #725313;
+      background: linear-gradient(180deg, #1a1a19, #0f0f12 58%, #08090d);
+      color: #ffd54f;
+      padding: 0 14px;
     }
 
     .pool-board {
-      height: calc(100% - 48px);
-      overflow: hidden;
+      height: calc(100% - 58px);
+      overflow: auto;
+      padding-right: 8px;
     }
 
     .rarity-section + .rarity-section {
-      margin-top: 14px;
+      margin-top: 18px;
     }
 
-    .rarity-title {
-      display: inline-block;
-      min-width: 74px;
-      margin-bottom: 8px;
-      font-size: 20px;
-      font-weight: 900;
-    }
-
-    .rarity-title.green { color: #6fe55b; }
-    .rarity-title.blue { color: #56c6ff; }
-    .rarity-title.purple { color: #c07bff; }
-
-    .rarity-line {
-      height: 1px;
-      margin-bottom: 12px;
-      background: currentColor;
-      opacity: 0.35;
-    }
-
-    .item-grid {
-      display: grid;
-      gap: 10px;
-    }
-
-    .item-grid.n { grid-template-columns: repeat(6, 60px); }
-    .item-grid.r { grid-template-columns: repeat(5, 60px); }
-    .item-grid.sr { grid-template-columns: repeat(4, 60px); }
-
-    .item {
+    .rarity-banner {
       position: relative;
-      width: 60px;
-      height: 60px;
-      border: 1px solid #444854;
-      border-radius: 10px;
-      background: linear-gradient(180deg, #1c1f27, #11131a);
+      display: inline-flex;
+      align-items: center;
+      min-width: 110px;
+      height: 28px;
+      padding: 0 20px 0 16px;
+      margin-bottom: 12px;
+      clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%);
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .rarity-banner::after {
+      content: "";
+      position: absolute;
+      left: calc(100% + 10px);
+      top: 50%;
+      width: 126px;
+      height: 8px;
+      transform: translateY(-50%);
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06) 36%, transparent 36% 42%, rgba(255, 255, 255, 0.18) 42% 48%, transparent 48% 54%, rgba(255, 255, 255, 0.12) 54% 100%);
+      opacity: 0.9;
+    }
+
+    .rarity-banner.green { background: linear-gradient(90deg, #1bc35d, #11974a); }
+    .rarity-banner.blue { background: linear-gradient(90deg, #25aee8, #1a82bf); }
+    .rarity-banner.purple { background: linear-gradient(90deg, #b94eff, #7b2ac4); }
+
+    .pool-item-grid {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(10, 1fr);
+    }
+
+    .pool-item {
+      width: 62px;
+      height: 74px;
+      border: 1px solid #585d68;
+      border-radius: 4px;
+      background: linear-gradient(180deg, #171a22, #101219 58%, #0b0d12);
       overflow: hidden;
     }
 
-    .item::before {
-      content: attr(data-label);
+    .pool-glyph {
+      position: absolute;
+      left: 6px;
+      right: 6px;
+      top: 6px;
+      height: 48px;
+      border-radius: 4px;
+      background: linear-gradient(180deg, #ece7d9, #98938a 58%, #66615b);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+    }
+
+    .pool-glyph::before {
+      content: attr(data-glyph);
       position: absolute;
       inset: 0;
       display: grid;
       place-items: center;
-      color: #ffffff;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 900;
+      color: #111;
       z-index: 1;
     }
 
-    .item::after {
-      content: "";
-      position: absolute;
-      inset: 8px;
-      border-radius: 8px;
-      opacity: 0.96;
+    .pool-item.neutral .pool-glyph {
+      background: linear-gradient(180deg, #ece7d9, #98938a 58%, #66615b);
     }
 
-    .item.n::after { background: radial-gradient(circle at 34% 30%, #f7ffd4 0 16%, #78be43 17% 58%, #18311a 59% 100%); }
-    .item.r::after { background: radial-gradient(circle at 34% 30%, #ddf7ff 0 16%, #3798ff 17% 58%, #122540 59% 100%); }
-    .item.sr::after { background: radial-gradient(circle at 34% 30%, #f1deff 0 16%, #9b61ff 17% 58%, #28163f 59% 100%); }
+    .pool-item.blue {
+      border-color: #145d82;
+    }
 
-    .item.selected {
+    .pool-item.blue .pool-glyph {
+      background: linear-gradient(180deg, #d8f6ff, #5da6d8 58%, #19415f);
+    }
+
+    .pool-item.purple {
+      border-color: #5d278c;
+    }
+
+    .pool-item.purple .pool-glyph {
+      background: linear-gradient(180deg, #efdfff, #9d67e1 58%, #3a1e5d);
+    }
+
+    .pool-item.green {
+      border-color: #2f7f3c;
+    }
+
+    .pool-item.green .pool-glyph {
+      background: linear-gradient(180deg, #eefed8, #7cc16b 58%, #244826);
+    }
+
+    .pool-item.selected {
       border-color: #d1ab53;
       box-shadow: 0 0 14px rgba(255, 194, 87, 0.18);
     }
 
-    .item-count {
+    .pool-count {
       position: absolute;
       right: 4px;
-      bottom: 4px;
+      top: 48px;
       z-index: 1;
       color: #ffffff;
       font-size: 10px;
       font-weight: 700;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.56);
     }
 
-    .pool-side {
-      display: grid;
-      gap: 12px;
-      align-content: start;
+    .pool-item-name {
+      position: absolute;
+      left: 4px;
+      right: 4px;
+      bottom: 5px;
+      color: #d8d3c6;
+      font-size: 9px;
+      line-height: 1.1;
+      text-align: center;
     }
 
     .big-item {
+      position: relative;
       width: 112px;
       height: 112px;
       border: 1px solid #9d7c37;
-      border-radius: 16px;
-      background:
-        radial-gradient(circle at 35% 35%, #fff0a0 0 16%, transparent 17%),
-        radial-gradient(circle at 54% 54%, #44d0ff 0 18%, transparent 19%),
-        linear-gradient(180deg, #74511f, #392613 58%, #19120d);
+      border-radius: 4px;
+      background: linear-gradient(180deg, #f1efe9, #b5b1a8 58%, #6c675f);
       margin-top: 2px;
+      overflow: hidden;
+    }
+
+    .big-item::before {
+      content: "东";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #111;
+      font-size: 44px;
+      font-weight: 900;
     }
 
     .pool-name {
