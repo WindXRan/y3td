@@ -543,6 +543,23 @@ def build_reference_action_button(name, x, y, label, hotkey, palette="yellow"):
     return root
 
 
+def build_reference_hover_tip_panel():
+    root = layout("hover_tip_panel", 400, 345, 320, 192)
+    root["visible"] = False
+    root["children"] = [
+        image("tip_bg", 160, 96, 320, 192, BG_BLACK, [255, 255, 255, 236], True),
+        image("tip_inner", 160, 96, 310, 182, SHOP_CONTENT_BG, [255, 255, 255, 214], True),
+        image("tip_head_bg", 160, 154, 310, 54, SHOP_BG_ALT, [255, 255, 255, 145], True),
+        image("icon_bg", 34, 156, 34, 34, PROP_FRAME_ALT, [255, 255, 255, 255], False),
+        image("icon", 34, 156, 28, 28, ICON_ITEM_1, [255, 255, 255, 255], False),
+        text("title", 178, 164, 240, 24, "提示标题", 18, [245, 248, 255, 255], 0),
+        text("subtitle", 178, 138, 240, 18, "提示副标题", 12, [255, 223, 131, 255], 0),
+        image("divider", 160, 116, 286, 1, SHOP_LINE, [255, 255, 255, 126], True),
+        text("body", 160, 54, 284, 96, "提示内容", 14, [219, 229, 241, 255], 0),
+    ]
+    return root
+
+
 def build_reference_buff_slot(name, x, icon_id):
     root = layout(name, x, 18, 34, 34)
     root["children"] = [
@@ -737,6 +754,7 @@ def build_bottom_hud():
             loadout_row,
             consumable_panel,
             card_panel,
+            build_reference_hover_tip_panel(),
         ]
     )
 

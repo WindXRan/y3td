@@ -48,6 +48,7 @@ def test_bottom_hud_contains_expected_runtime_nodes():
     right_names = {child["name"] for child in right_station["children"]}
     assert "loadout_row" in right_names
     assert "consumable_panel" in right_names
+    assert "hover_tip_panel" in right_names
     assert "card_panel" in right_names
 
     loadout_row = next(child for child in right_station["children"] if child["name"] == "loadout_row")

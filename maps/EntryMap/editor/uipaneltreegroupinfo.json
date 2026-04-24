@@ -1,137 +1,137 @@
 [
  {
-  "name": "code_ui_custom_panel_tree", 
-  "key": 2147483647, 
+  "name": "code_ui_custom_panel_tree",
+  "key": 2147483647,
   "group": [
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "38ddddb2-6785-4804-9b5c-dfb479bd62b3", 
+     "38ddddb2-6785-4804-9b5c-dfb479bd62b3",
      "outgame"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "7286beeb-c99d-48b3-bd3a-104d56f3699f", 
+     "7286beeb-c99d-48b3-bd3a-104d56f3699f",
      "top"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "bb0f0d4c-15c1-4f41-942c-f12d6560a06f", 
+     "bb0f0d4c-15c1-4f41-942c-f12d6560a06f",
      "BondChoice3"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "43f05a64-da68-4f0c-867b-4b6761d4e7ab", 
+     "43f05a64-da68-4f0c-867b-4b6761d4e7ab",
      "BondChoice4"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "c9214407-a628-4db3-b18a-f3f1280d07e6", 
-     "BattleBottomHUD"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "dd36f541-8e33-4c4e-9c03-6797b5d62514", 
+     "dd36f541-8e33-4c4e-9c03-6797b5d62514",
      "ArchivePageChest"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "c54957ab-d16d-40f0-b930-ea46514d72f6", 
+     "c54957ab-d16d-40f0-b930-ea46514d72f6",
      "ArchivePageEquipment"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "f3a95060-1921-4acf-9b64-b6d4f255dec1", 
+     "f3a95060-1921-4acf-9b64-b6d4f255dec1",
      "ArchivePagePool"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "b4e26034-ae76-4240-bce4-33c831141b02", 
+     "b4e26034-ae76-4240-bce4-33c831141b02",
      "ArchivePageProfile"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "4d653ea0-efac-4a25-9331-7b3eb00eb871", 
+     "4d653ea0-efac-4a25-9331-7b3eb00eb871",
      "ArchivePageTalent"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "dfc50bbb-ad33-4a49-8fa7-f290325420ce", 
+     "dfc50bbb-ad33-4a49-8fa7-f290325420ce",
      "ArchivePageUniversal"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "467420f4-71d6-4ee1-89aa-b850dd021e21", 
+     "467420f4-71d6-4ee1-89aa-b850dd021e21",
      "ArchivePanel"
+    ]
+   },
+   {
+    "__tuple__": true,
+    "items": [
+     "92dbd204-f6df-445b-ac91-db1cdd541026",
+     "BattleBottomHUD"
     ]
    }
   ]
- }, 
+ },
  {
-  "name": "code_ui_preset_panel_tree", 
-  "key": 2147483646, 
+  "name": "code_ui_preset_panel_tree",
+  "key": 2147483646,
   "group": [
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "33f0362d-5a70-45e2-850b-d89082015a64", 
+     "33f0362d-5a70-45e2-850b-d89082015a64",
      "CommonTip"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "ba9bec29-6a9d-47f3-a343-e4fe081e58dc", 
+     "ba9bec29-6a9d-47f3-a343-e4fe081e58dc",
      "GameHUD"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "aa7ea525-8c73-4585-a6b6-ac706cf0e2f6", 
+     "aa7ea525-8c73-4585-a6b6-ac706cf0e2f6",
      "LoadingPanel"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "f09f15f5-e2d0-441e-be6f-325a88472a01", 
+     "f09f15f5-e2d0-441e-be6f-325a88472a01",
      "LogoPanel"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "f5e50920-7b3d-4076-b6a8-599b70783552", 
+     "f5e50920-7b3d-4076-b6a8-599b70783552",
      "loss"
     ]
-   }, 
+   },
    {
-    "__tuple__": true, 
+    "__tuple__": true,
     "items": [
-     "d4c01f64-7413-4c8e-b0e5-4297d4a59c7a", 
+     "d4c01f64-7413-4c8e-b0e5-4297d4a59c7a",
      "win"
     ]
    }

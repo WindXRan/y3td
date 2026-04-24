@@ -602,6 +602,38 @@ function M.create(env)
     }
   end
 
+  local function build_consumable_hover_tip_payload(slot_index)
+    if slot_index == 1 then
+      return {
+        title = '属性宝石',
+        subtitle = '类型：消耗品',
+        body = table.concat({
+          '[点击使用]',
+          '可选择一条随机属性强化。',
+          '英雄每升 5 级，或完成宝石挑战时，可获得 1 颗。',
+        }, '\n'),
+        icon = 300540000,
+      }
+    end
+    if slot_index == 2 then
+      return {
+        title = '快捷道具 2',
+        subtitle = '特殊栏位',
+        body = '当前用于特殊功能扩展。',
+        icon = nil,
+      }
+    end
+    if slot_index == 3 then
+      return {
+        title = '快捷道具 3',
+        subtitle = '特殊栏位',
+        body = '当前用于特殊功能扩展。',
+        icon = nil,
+      }
+    end
+    return nil
+  end
+
   local function build_attack_skill_display_entry(skill, display_index)
     if not skill then
       return nil
@@ -931,63 +963,13 @@ function M.create(env)
       set_visible_if_alive(panel, false)
     end
 
-    if not is_ui_alive(runtime.hover_tip_panel) then
-      local panel = hud:create_child('图片')
-      panel:set_image(999)
-      panel:set_ui_size(520, 220)
-      panel:set_anchor(0.5, 0.5)
-      set_percent_pos_if_alive(panel, 78, 60)
-      panel:set_image_color(13, 21, 33, 236)
-      panel:set_z_order(9395)
-      panel:set_intercepts_operations(false)
-
-      local icon_bg = panel:create_child('图片')
-      icon_bg:set_image(999)
-      icon_bg:set_ui_size(42, 42)
-      icon_bg:set_pos(42, 178)
-      icon_bg:set_image_color(30, 44, 66, 235)
-
-      local icon = panel:create_child('图片')
-      icon:set_image(999)
-      icon:set_ui_size(34, 34)
-      icon:set_pos(42, 178)
-      icon:set_image_color(255, 255, 255, 255)
-
-      local title = panel:create_child('文本')
-      title:set_ui_size(420, 30)
-      title:set_pos(90, 186)
-      title:set_font_size(22)
-      title:set_text_color(245, 248, 255, 255)
-      title:set_text_alignment('左', '中')
-
-      local subtitle = panel:create_child('文本')
-      subtitle:set_ui_size(420, 22)
-      subtitle:set_pos(90, 156)
-      subtitle:set_font_size(14)
-      subtitle:set_text_color(255, 221, 108, 255)
-      subtitle:set_text_alignment('左', '中')
-
-      local line = panel:create_child('图片')
-      line:set_image(999)
-      line:set_ui_size(486, 1)
-      line:set_pos(260, 130)
-      line:set_image_color(84, 104, 131, 255)
-
-      local body = panel:create_child('文本')
-      body:set_ui_size(476, 108)
-      body:set_pos(260, 60)
-      body:set_font_size(15)
-      body:set_text_color(216, 226, 239, 255)
-      body:set_text_alignment('左', '中')
-
-      runtime.hover_tip_panel = panel
-      runtime.hover_tip_panel_icon_bg = icon_bg
-      runtime.hover_tip_panel_icon = icon
-      runtime.hover_tip_panel_title = title
-      runtime.hover_tip_panel_subtitle = subtitle
-      runtime.hover_tip_panel_body = body
-      set_visible_if_alive(panel, false)
-    end
+    runtime.hover_tip_panel = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel')
+    runtime.hover_tip_panel_icon_bg = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.icon_bg')
+    runtime.hover_tip_panel_icon = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.icon')
+    runtime.hover_tip_panel_title = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.title')
+    runtime.hover_tip_panel_subtitle = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.subtitle')
+    runtime.hover_tip_panel_body = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.body')
+    set_visible_if_alive(runtime.hover_tip_panel, runtime.hover_tip_visible == true)
 
     if not is_ui_alive(runtime.big_cursor) then
       local text = hud:create_child('文本')
@@ -1021,22 +1003,12 @@ function M.create(env)
 
   local function refresh_hover_tip_panel_position()
     local runtime = get_runtime()
-    local panel = runtime.hover_tip_panel
-    local anchor = resolve_ui('BattleBottomHUD.layout.right_station.card_panel')
-    if not is_ui_alive(panel) or not is_ui_alive(anchor) then
-      return
-    end
-
-    local anchor_x = anchor.get_absolute_x and anchor:get_absolute_x() or 0
-    local anchor_y = anchor.get_absolute_y and anchor:get_absolute_y() or 0
-    local anchor_h = anchor.get_real_height and anchor:get_real_height() or anchor.get_height and anchor:get_height() or 0
-    local panel_h = panel.get_real_height and panel:get_real_height() or panel.get_height and panel:get_height() or 0
-
-    if panel.set_absolute_pos and anchor_x ~= 0 and anchor_y ~= 0 then
-      panel:set_absolute_pos(anchor_x, anchor_y + anchor_h / 2 + panel_h / 2 + 18)
-    else
-      set_percent_pos_if_alive(panel, 78, 60)
-    end
+    runtime.hover_tip_panel = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel')
+    runtime.hover_tip_panel_icon_bg = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.icon_bg')
+    runtime.hover_tip_panel_icon = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.icon')
+    runtime.hover_tip_panel_title = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.title')
+    runtime.hover_tip_panel_subtitle = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.subtitle')
+    runtime.hover_tip_panel_body = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.body')
   end
 
   local function hide_hover_tip_panel()
@@ -1058,6 +1030,7 @@ function M.create(env)
     set_text_if_alive(runtime.hover_tip_panel_title, payload.title or '说明')
     set_text_if_alive(runtime.hover_tip_panel_subtitle, payload.subtitle or '')
     set_text_if_alive(runtime.hover_tip_panel_body, payload.body or '')
+    set_visible_if_alive(runtime.hover_tip_panel_subtitle, payload.subtitle ~= nil and payload.subtitle ~= '')
     set_visible_if_alive(runtime.hover_tip_panel_icon_bg, payload.icon ~= nil)
     set_visible_if_alive(runtime.hover_tip_panel_icon, payload.icon ~= nil)
     set_image_if_alive(runtime.hover_tip_panel_icon, payload.icon)
@@ -1308,6 +1281,10 @@ function M.create(env)
 
   local function show_fish_button_hover_tip()
     show_hover_tip_panel(build_fish_button_hover_tip_payload())
+  end
+
+  local function show_consumable_hover_tip(slot_index)
+    show_hover_tip_panel(build_consumable_hover_tip_payload(slot_index))
   end
 
   local function refresh_gamehud_main_unit()
@@ -1595,6 +1572,17 @@ function M.create(env)
     end, function()
       hide_hover_tip_panel()
     end)
+
+    for slot = 1, 3 do
+      bind_hover_once('battle_consumable_hover_' .. tostring(slot),
+        resolve_ui(string.format('BattleBottomHUD.layout.right_station.consumable_panel.slot_%d', slot)),
+        function()
+          show_consumable_hover_tip(slot)
+        end,
+        function()
+          hide_hover_tip_panel()
+        end)
+    end
 
     bind_click_once('gold_trial', resolve_center_module_ui('challenge_row.gold_trial'), function()
       if try_start_challenge then
