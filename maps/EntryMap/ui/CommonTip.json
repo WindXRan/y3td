@@ -43,7 +43,8 @@
             ], 
             "swallow_touches": true, 
             "type": 7, 
-            "uid": "72a77fb2-6a33-4eed-96d5-5c67babb72fe"
+            "uid": "72a77fb2-6a33-4eed-96d5-5c67babb72fe", 
+            "visible": false
         }, 
         {
             "adapter_option": [
@@ -564,7 +565,8 @@
             ], 
             "swallow_touches": true, 
             "type": 4, 
-            "uid": "d97fa97f-ea5e-4b7d-8818-8a12cea58df8"
+            "uid": "d97fa97f-ea5e-4b7d-8818-8a12cea58df8", 
+            "visible": false
         }, 
         {
             "children": [
@@ -689,6 +691,6 @@
     "type": 2, 
     "ui_anims": [], 
     "uid": "33f0362d-5a70-45e2-850b-d89082015a64", 
-    "visible": true, 
+    "visible": false, 
     "zorder": 400
 }

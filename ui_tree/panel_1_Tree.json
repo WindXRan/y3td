@@ -1,51 +1,131 @@
 {
   "name": "panel_1",
-  "uid": "bfa58868-0dd0-4bcb-9ec5-39a28a69b624",
+  "uid": "5158e992-bf27-41e6-b8e1-8af989293fa7",
   "type": 2,
   "children": [
     {
       "name": "tophud",
-      "uid": "c5a71f4f-8d97-4627-980f-65b068a426bb",
+      "uid": "bcb0a1d6-c32e-449d-8eec-f2d1c6fb39f7",
       "type": 7,
       "children": [
         {
           "name": "layout_2",
-          "uid": "5e6f6c23-6133-40f8-8648-9a89eb590fcf",
+          "uid": "4794e6eb-8be0-4d88-88d5-c82a686b7b1e",
           "type": 7,
           "children": [
             {
-              "name": "image_3",
-              "uid": "da21c3d2-4b07-432c-87df-698dac2f2467",
+              "name": "center_shadow",
+              "uid": "cb6d6dc5-b0e7-46e8-942a-19de221a6d1d",
+              "type": 7
+            },
+            {
+              "name": "left_wing",
+              "uid": "7bf51fb2-8290-4277-ae6f-78854be96ae8",
               "type": 4
             },
             {
-              "name": "image_3_1",
-              "uid": "968f5f3e-3327-4754-8b23-1e94ec3aa509",
+              "name": "right_wing",
+              "uid": "63ad1c28-8f2e-4e03-b71d-85866d26680b",
               "type": 4
             },
             {
-              "name": "wave",
-              "uid": "bcfdea87-f490-45f5-946e-4230ec3a546b",
-              "type": 3
+              "name": "mode_bg",
+              "uid": "c306c34b-7b03-43a9-9068-43cc092027fd",
+              "type": 4
             },
             {
-              "name": "wavetime",
-              "uid": "34274527-9bd0-4656-bff5-92949530da7a",
-              "type": 3
+              "name": "center_plate",
+              "uid": "5cb85cf2-7ab7-4d3b-ac74-c7d0fcd2a865",
+              "type": 4
             },
             {
-              "name": "tips",
-              "uid": "d95028ae-6d25-4bf4-b24c-aa61f362a878",
-              "type": 3
+              "name": "mode_glow",
+              "uid": "3ac2bc88-e964-486c-ad03-b96cbef1b320",
+              "type": 4
+            },
+            {
+              "name": "wave_plate",
+              "uid": "d6c24e7e-83f4-4183-a110-6ee2e9a11c25",
+              "type": 4
+            },
+            {
+              "name": "tip_bar",
+              "uid": "ab18fd2f-eb1f-42d0-bc42-46e484a69161",
+              "type": 4
+            },
+            {
+              "name": "boss_badge",
+              "uid": "50861346-9d56-4cfb-a83c-71f1b0a7a9fd",
+              "type": 4
+            },
+            {
+              "name": "reward_badge",
+              "uid": "03c9cacc-c80a-4b3d-a56e-66c1f6f809bd",
+              "type": 4
+            },
+            {
+              "name": "top_line",
+              "uid": "400046df-92c7-433a-b06e-366f800eb71f",
+              "type": 4
             },
             {
               "name": "curlevel",
-              "uid": "a9b240ee-a65b-4aa6-963f-9f886cb780c3",
+              "uid": "1b89ec2b-55a2-43bc-8cc1-0c6457f85384",
               "type": 3
             },
             {
               "name": "gametime",
-              "uid": "6c8163a7-f701-4624-b538-f53744817e0d",
+              "uid": "5df83c3e-8fa7-45ea-9a95-704ba0517b69",
+              "type": 3
+            },
+            {
+              "name": "wave",
+              "uid": "51162471-a03d-48f8-b06f-bee70b8c1fa9",
+              "type": 3
+            },
+            {
+              "name": "tips",
+              "uid": "c8f04663-d758-4aac-92a4-979a5b70387e",
+              "type": 3
+            },
+            {
+              "name": "wavetime",
+              "uid": "b8298892-6e22-40f4-9a55-d141a98fe0b8",
+              "type": 3
+            },
+            {
+              "name": "left_time_bg",
+              "uid": "856d8232-572d-48f2-9402-8f3187d15869",
+              "type": 4
+            },
+            {
+              "name": "boss_affix",
+              "uid": "b226816b-8969-449c-91b6-d27279244f39",
+              "type": 3
+            },
+            {
+              "name": "right_time_bg",
+              "uid": "36747029-b35f-480d-90ae-dd4359b5c725",
+              "type": 4
+            },
+            {
+              "name": "boss_label",
+              "uid": "03b4e737-af96-459f-a933-b7b709971dde",
+              "type": 3
+            },
+            {
+              "name": "reward_label",
+              "uid": "a40ef790-db9c-4f8c-935a-c6317754ce46",
+              "type": 3
+            },
+            {
+              "name": "left_hint",
+              "uid": "42859577-7b90-4afb-adc7-d1fa518db74e",
+              "type": 3
+            },
+            {
+              "name": "right_hint",
+              "uid": "58239d55-c91e-4f76-bbc5-4863d7a1ba3e",
               "type": 3
             }
           ]

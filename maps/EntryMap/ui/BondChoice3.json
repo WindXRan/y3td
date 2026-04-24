@@ -1,0 +1,3131 @@
+{
+    "adapt_mode": 2, 
+    "anim_data": {}, 
+    "auto_create": true, 
+    "children": [
+        {
+            "adapter_option": [
+                true, 
+                true, 
+                true, 
+                true, 
+                0.0, 
+                0.0, 
+                0.0, 
+                0.0
+            ], 
+            "children": [
+                {
+                    "adapter_option": [
+                        true, 
+                        true, 
+                        true, 
+                        true, 
+                        0.0, 
+                        0.0, 
+                        0.0, 
+                        0.0
+                    ], 
+                    "children": [], 
+                    "event_list": [], 
+                    "image": 906896, 
+                    "name": "bond_choice_3_bg", 
+                    "open_adapter": true, 
+                    "pos_data": {
+                        "__tuple__": true, 
+                        "items": [
+                            960.0, 
+                            540.0, 
+                            50.0, 
+                            50.0, 
+                            1, 
+                            1
+                        ]
+                    }, 
+                    "prefab_sub_key": null, 
+                    "scene_ui_name": null, 
+                    "size": [
+                        1920.0, 
+                        1080.0
+                    ], 
+                    "type": 4, 
+                    "uid": "d197bf5d-6979-46d5-8022-6902d929771f", 
+                    "visible": false
+                }, 
+                {
+                    "children": [
+                        {
+                            "adapter_option": [
+                                true, 
+                                true, 
+                                true, 
+                                true, 
+                                0.0, 
+                                0.0, 
+                                0.0, 
+                                0.0
+                            ], 
+                            "children": [], 
+                            "color": [
+                                5, 
+                                8, 
+                                14, 
+                                184
+                            ], 
+                            "event_list": [], 
+                            "image": 999, 
+                            "name": "dim_bg_bg", 
+                            "open_adapter": true, 
+                            "pos_data": {
+                                "__tuple__": true, 
+                                "items": [
+                                    960.0, 
+                                    540.0, 
+                                    50.0, 
+                                    50.0, 
+                                    1, 
+                                    1
+                                ]
+                            }, 
+                            "prefab_sub_key": null, 
+                            "scene_ui_name": null, 
+                            "size": [
+                                1920.0, 
+                                1080.0
+                            ], 
+                            "type": 4, 
+                            "uid": "dfa47ddd-c92d-47f0-8faa-ac46c48315dd"
+                        }
+                    ], 
+                    "color": [
+                        5, 
+                        8, 
+                        14, 
+                        184
+                    ], 
+                    "event_list": [], 
+                    "name": "dim_bg", 
+                    "open_adapter": true, 
+                    "pos_data": {
+                        "__tuple__": true, 
+                        "items": [
+                            960.0, 
+                            540.0, 
+                            50.0, 
+                            50.0, 
+                            1, 
+                            1
+                        ]
+                    }, 
+                    "prefab_sub_key": null, 
+                    "scene_ui_name": null, 
+                    "size": [
+                        1920.0, 
+                        1080.0
+                    ], 
+                    "swallow_touches": true, 
+                    "type": 7, 
+                    "uid": "8ea00683-9d6a-4eb0-9b53-6dfbc4078d7d", 
+                    "visible": false
+                }, 
+                {
+                    "adapter_option": [
+                        false, 
+                        false, 
+                        false, 
+                        false, 
+                        56.0, 
+                        682.0, 
+                        514.0, 
+                        514.0
+                    ], 
+                    "children": [
+                        {
+                            "adapter_option": [
+                                true, 
+                                true, 
+                                true, 
+                                true, 
+                                0.0, 
+                                0.0, 
+                                0.0, 
+                                0.0
+                            ], 
+                            "children": [], 
+                            "event_list": [], 
+                            "image": 100062, 
+                            "name": "cards_row_bg", 
+                            "open_adapter": true, 
+                            "pos_data": {
+                                "__tuple__": true, 
+                                "items": [
+                                    446.0, 
+                                    171.0, 
+                                    50.0, 
+                                    50.0, 
+                                    1, 
+                                    1
+                                ]
+                            }, 
+                            "prefab_sub_key": null, 
+                            "scene_ui_name": null, 
+                            "size": [
+                                892.0, 
+                                342.0
+                            ], 
+                            "type": 4, 
+                            "uid": "5e8a2c7c-c4e6-4022-855a-6e98258a0fdc"
+                        }, 
+                        {
+                            "adapter_option": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                0.0, 
+                                4.0, 
+                                0.0, 
+                                640.0
+                            ], 
+                            "children": [
+                                {
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            20, 
+                                            20, 
+                                            20, 
+                                            20
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        9, 
+                                        18, 
+                                        26, 
+                                        243
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 131998, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_bg_1", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            169.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        252.0, 
+                                        338.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "dd835e8b-c7d0-4eb6-88bb-a325469dc7f5"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        2.0, 
+                                        2.0, 
+                                        2.0, 
+                                        2.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        91, 
+                                        149, 
+                                        214, 
+                                        36
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_edge_1", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            169.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        248.0, 
+                                        334.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "57afc14d-409a-43ef-aa96-8d5c8cbdf3d7"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        4.0, 
+                                        4.0, 
+                                        4.0, 
+                                        4.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        19, 
+                                        34, 
+                                        53, 
+                                        70
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_inner_1", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            169.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        244.0, 
+                                        330.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "242b6bd7-8d5c-422b-b6a7-bf70c942e114"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        182.0, 
+                                        106.0, 
+                                        14.0, 
+                                        14.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        0, 
+                                        0, 
+                                        0, 
+                                        30
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "value_shadow_1", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            131.0, 
+                                            50.0, 
+                                            38.7574, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        224.0, 
+                                        50.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "5603f4e4-d4e1-40cd-a1c1-8261a8c1c85d"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        0.0, 
+                                        304.0, 
+                                        0.0, 
+                                        0.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        10, 
+                                        36, 
+                                        71, 
+                                        255
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_header_1", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            321.0, 
+                                            50.0, 
+                                            94.9704, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        252.0, 
+                                        34.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "89c78f5b-9b05-461a-bcc9-a9856e3031b4"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        4.0, 
+                                        308.0, 
+                                        6.0, 
+                                        6.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        91, 
+                                        149, 
+                                        214, 
+                                        28
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_header_line_1", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            321.0, 
+                                            50.0, 
+                                            94.9704, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        240.0, 
+                                        26.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "4f79658f-198c-4166-8f57-28497ef7f80f"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        54.0, 
+                                        210.0, 
+                                        89.0, 
+                                        89.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            16, 
+                                            16, 
+                                            16, 
+                                            16
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        31, 
+                                        79, 
+                                        135, 
+                                        56
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100061, 
+                                    "is_scale9_enable": true, 
+                                    "name": "icon_glow_1", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            246.9999, 
+                                            50.0, 
+                                            73.0769, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        74.0, 
+                                        74.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "8870ce7a-de46-4394-ab71-757a4941a838"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        60.0, 
+                                        216.0, 
+                                        95.0, 
+                                        95.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            16, 
+                                            16, 
+                                            16, 
+                                            16
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        10, 
+                                        23, 
+                                        48, 
+                                        255
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100061, 
+                                    "is_scale9_enable": true, 
+                                    "name": "icon_frame_1", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            246.9999, 
+                                            50.0, 
+                                            73.0769, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        62.0, 
+                                        62.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "2f050cf0-b05f-46d5-8789-5fb6302e681e"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        63.0, 
+                                        219.0, 
+                                        98.0, 
+                                        98.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            16, 
+                                            16, 
+                                            16, 
+                                            16
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        113, 
+                                        181, 
+                                        255, 
+                                        34
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "icon_edge_1", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            246.9999, 
+                                            50.0, 
+                                            73.0769, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        56.0, 
+                                        56.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "a4499dbc-2453-47f6-90ef-998832910848"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        64.0, 
+                                        220.0, 
+                                        99.0, 
+                                        99.0
+                                    ], 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "image": 107004, 
+                                    "name": "icon_1", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            246.9999, 
+                                            50.0, 
+                                            73.0769, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        54.0, 
+                                        54.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "c85fae5d-bee5-4cbe-8441-fd07b450a7a1"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        162.0, 
+                                        174.0, 
+                                        16.0, 
+                                        16.0
+                                    ], 
+                                    "children": [], 
+                                    "color": [
+                                        109, 
+                                        142, 
+                                        180, 
+                                        51
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 999, 
+                                    "name": "divider_1", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            174.9998, 
+                                            50.0, 
+                                            51.7751, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        220.0, 
+                                        2.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "8b4aea6b-03eb-46ff-a295-6226fd3ec1fe"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        31.0, 
+                                        306.0, 
+                                        10.0, 
+                                        10.0
+                                    ], 
+                                    "children": [], 
+                                    "color": [
+                                        136, 
+                                        183, 
+                                        239, 
+                                        85
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 999, 
+                                    "name": "card_header_cut_1", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            306.5001, 
+                                            50.0, 
+                                            90.6805, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        232.0, 
+                                        1.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "1f45e743-9f76-4548-b64d-dd76408e4357"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        8.0, 
+                                        312.0, 
+                                        18.0, 
+                                        18.0
+                                    ], 
+                                    "alignment": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            2, 
+                                            8
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "font": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "MSYH", 
+                                            16
+                                        ]
+                                    }, 
+                                    "font_color": [
+                                        45, 
+                                        176, 
+                                        255, 
+                                        255
+                                    ], 
+                                    "font_min_size": 12, 
+                                    "name": "title_1", 
+                                    "open_adapter": true, 
+                                    "over_pattern": 2, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            321.0, 
+                                            50.0, 
+                                            94.9704, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        216.0, 
+                                        18.0
+                                    ], 
+                                    "text": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "\u7a7f\u7532\u5c04\u51fb", 
+                                            false
+                                        ]
+                                    }, 
+                                    "type": 3, 
+                                    "uid": "6c827507-8ded-40da-abfe-563295337e8d"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        136.0, 
+                                        184.0, 
+                                        18.0, 
+                                        20.0
+                                    ], 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "font": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "MSYH", 
+                                            15
+                                        ]
+                                    }, 
+                                    "font_color": [
+                                        232, 
+                                        237, 
+                                        243, 
+                                        255
+                                    ], 
+                                    "font_min_size": 11, 
+                                    "name": "bond_1", 
+                                    "open_adapter": true, 
+                                    "over_pattern": 2, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            125.0001, 
+                                            193.0, 
+                                            49.6032, 
+                                            57.1006, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        214.0, 
+                                        18.0
+                                    ], 
+                                    "text": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "\u7f81\u7eca\uff1a \u795e\u5c04\u624b (3/5)", 
+                                            false
+                                        ]
+                                    }, 
+                                    "type": 3, 
+                                    "uid": "1a70f505-0409-4165-afcf-683c70344f8a"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        216.0, 
+                                        104.0, 
+                                        18.0, 
+                                        46.0
+                                    ], 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "font": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "MSYH", 
+                                            15
+                                        ]
+                                    }, 
+                                    "font_color": [
+                                        25, 
+                                        234, 
+                                        63, 
+                                        255
+                                    ], 
+                                    "font_min_size": 11, 
+                                    "name": "value_2_1", 
+                                    "open_adapter": true, 
+                                    "over_pattern": 2, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            111.9999, 
+                                            113.0002, 
+                                            44.4444, 
+                                            33.432, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        188.0, 
+                                        18.0
+                                    ], 
+                                    "text": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "+5%\u62a4\u7532\u7a7f\u900f", 
+                                            false
+                                        ]
+                                    }, 
+                                    "type": 3, 
+                                    "uid": "7e3746aa-5e3c-4c5b-8e24-1425bc6b6498"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        190.0, 
+                                        130.0, 
+                                        18.0, 
+                                        56.0
+                                    ], 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "font": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "MSYH", 
+                                            15
+                                        ]
+                                    }, 
+                                    "font_color": [
+                                        25, 
+                                        234, 
+                                        63, 
+                                        255
+                                    ], 
+                                    "font_min_size": 11, 
+                                    "name": "value_1_1", 
+                                    "open_adapter": true, 
+                                    "over_pattern": 2, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            107.0, 
+                                            139.0001, 
+                                            42.4603, 
+                                            41.1243, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        178.0, 
+                                        18.0
+                                    ], 
+                                    "text": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "+20\u653b\u51fb\u529b", 
+                                            false
+                                        ]
+                                    }, 
+                                    "type": 3, 
+                                    "uid": "94a4ccef-9bf6-4dae-bd75-759c40a86e7a"
+                                }, 
+                                {
+                                    "children": [], 
+                                    "disabled_picture": 999, 
+                                    "disabled_status_added": true, 
+                                    "event_list": [], 
+                                    "hover_status_added": true, 
+                                    "name": "pick_btn_1", 
+                                    "normal_cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            33.0, 
+                                            33.0, 
+                                            33.0, 
+                                            33.0
+                                        ]
+                                    }, 
+                                    "normal_picture": 999, 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            169.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "press_picture": 999, 
+                                    "pressed_status_added": true, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        252.0, 
+                                        338.0
+                                    ], 
+                                    "suspend_picture": 999, 
+                                    "swallow_touches": true, 
+                                    "type": 1, 
+                                    "uid": "26bf7799-58bd-48cc-b5cd-e481aae8f55a"
+                                }
+                            ], 
+                            "event_list": [], 
+                            "name": "card_1", 
+                            "open_adapter": true, 
+                            "pos_data": {
+                                "__tuple__": true, 
+                                "items": [
+                                    126.0004, 
+                                    173.0, 
+                                    14.1256, 
+                                    50.5848, 
+                                    1, 
+                                    1
+                                ]
+                            }, 
+                            "prefab_sub_key": null, 
+                            "scene_ui_name": null, 
+                            "size": [
+                                252.0, 
+                                338.0
+                            ], 
+                            "type": 7, 
+                            "uid": "577df86e-149f-4897-b353-950a1434567b"
+                        }, 
+                        {
+                            "adapter_option": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                0.0, 
+                                4.0, 
+                                320.0, 
+                                320.0
+                            ], 
+                            "children": [
+                                {
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            20, 
+                                            20, 
+                                            20, 
+                                            20
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        9, 
+                                        18, 
+                                        26, 
+                                        243
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 131998, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_bg_2", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            169.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        252.0, 
+                                        338.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "f0176d0d-af66-488e-bc7f-3dd096141553"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        2.0, 
+                                        2.0, 
+                                        2.0, 
+                                        2.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        91, 
+                                        149, 
+                                        214, 
+                                        36
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_edge_2", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            169.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        248.0, 
+                                        334.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "64d1befc-eba5-4c8f-8a6b-7f079ce62c4e"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        4.0, 
+                                        4.0, 
+                                        4.0, 
+                                        4.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        19, 
+                                        34, 
+                                        53, 
+                                        70
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_inner_2", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            169.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        244.0, 
+                                        330.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "5b750157-094e-49b8-9f87-800d90d671ce"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        182.0, 
+                                        106.0, 
+                                        14.0, 
+                                        14.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        0, 
+                                        0, 
+                                        0, 
+                                        30
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "value_shadow_2", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            131.0, 
+                                            50.0, 
+                                            38.7574, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        224.0, 
+                                        50.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "0253b56f-e329-4c67-92e0-69d9f2211454"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        0.0, 
+                                        304.0, 
+                                        0.0, 
+                                        0.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        10, 
+                                        36, 
+                                        71, 
+                                        255
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_header_2", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            321.0, 
+                                            50.0, 
+                                            94.9704, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        252.0, 
+                                        34.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "d07f7614-3a82-4c36-ac3d-0f93f3d5b26d"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        4.0, 
+                                        308.0, 
+                                        6.0, 
+                                        6.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        91, 
+                                        149, 
+                                        214, 
+                                        28
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_header_line_2", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            321.0, 
+                                            50.0, 
+                                            94.9704, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        240.0, 
+                                        26.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "e8b833bc-d88c-45a9-9056-2b977bc04a87"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        54.0, 
+                                        210.0, 
+                                        89.0, 
+                                        89.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            16, 
+                                            16, 
+                                            16, 
+                                            16
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        31, 
+                                        79, 
+                                        135, 
+                                        56
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100061, 
+                                    "is_scale9_enable": true, 
+                                    "name": "icon_glow_2", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            246.9999, 
+                                            50.0, 
+                                            73.0769, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        74.0, 
+                                        74.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "540233b9-60b5-4b8a-9464-7649d8c06649"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        60.0, 
+                                        216.0, 
+                                        95.0, 
+                                        95.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            16, 
+                                            16, 
+                                            16, 
+                                            16
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        10, 
+                                        23, 
+                                        48, 
+                                        255
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100061, 
+                                    "is_scale9_enable": true, 
+                                    "name": "icon_frame_2", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            246.9999, 
+                                            50.0, 
+                                            73.0769, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        62.0, 
+                                        62.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "eacd22fb-ed6b-4539-b81c-82083838eb73"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        63.0, 
+                                        219.0, 
+                                        98.0, 
+                                        98.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            16, 
+                                            16, 
+                                            16, 
+                                            16
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        113, 
+                                        181, 
+                                        255, 
+                                        34
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "icon_edge_2", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            246.9999, 
+                                            50.0, 
+                                            73.0769, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        56.0, 
+                                        56.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "bae97322-5bc3-465b-9ede-5757c52bceca"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        64.0, 
+                                        220.0, 
+                                        99.0, 
+                                        99.0
+                                    ], 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "image": 107362, 
+                                    "name": "icon_2", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            246.9999, 
+                                            50.0, 
+                                            73.0769, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        54.0, 
+                                        54.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "16100be0-14cc-4184-8c11-6022fbda8d23"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        162.0, 
+                                        174.0, 
+                                        16.0, 
+                                        16.0
+                                    ], 
+                                    "children": [], 
+                                    "color": [
+                                        109, 
+                                        142, 
+                                        180, 
+                                        51
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 999, 
+                                    "name": "divider_2", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            174.9998, 
+                                            50.0, 
+                                            51.7751, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        220.0, 
+                                        2.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "c010a1ca-9dab-4ba0-ac77-47efd5140586"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        31.0, 
+                                        306.0, 
+                                        10.0, 
+                                        10.0
+                                    ], 
+                                    "children": [], 
+                                    "color": [
+                                        136, 
+                                        183, 
+                                        239, 
+                                        85
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 999, 
+                                    "name": "card_header_cut_2", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            306.5001, 
+                                            50.0, 
+                                            90.6805, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        232.0, 
+                                        1.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "b06889f4-a59e-48e1-a2c3-217a4779951b"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        8.0, 
+                                        312.0, 
+                                        18.0, 
+                                        18.0
+                                    ], 
+                                    "alignment": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            2, 
+                                            8
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "font": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "MSYH", 
+                                            16
+                                        ]
+                                    }, 
+                                    "font_color": [
+                                        45, 
+                                        176, 
+                                        255, 
+                                        255
+                                    ], 
+                                    "font_min_size": 12, 
+                                    "name": "title_2", 
+                                    "open_adapter": true, 
+                                    "over_pattern": 2, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            321.0, 
+                                            50.0, 
+                                            94.9704, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        216.0, 
+                                        18.0
+                                    ], 
+                                    "text": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "\u7834\u7bad\u5f0f", 
+                                            false
+                                        ]
+                                    }, 
+                                    "type": 3, 
+                                    "uid": "3f9e42fb-a8af-4701-8152-ef5840dad24b"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        136.0, 
+                                        184.0, 
+                                        18.0, 
+                                        20.0
+                                    ], 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "font": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "MSYH", 
+                                            15
+                                        ]
+                                    }, 
+                                    "font_color": [
+                                        232, 
+                                        237, 
+                                        243, 
+                                        255
+                                    ], 
+                                    "font_min_size": 11, 
+                                    "name": "bond_2", 
+                                    "open_adapter": true, 
+                                    "over_pattern": 2, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            125.0001, 
+                                            193.0, 
+                                            49.6032, 
+                                            57.1006, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        214.0, 
+                                        18.0
+                                    ], 
+                                    "text": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "\u7f81\u7eca\uff1a \u5c0f\u6210\u7bad\u672f (0/3)", 
+                                            false
+                                        ]
+                                    }, 
+                                    "type": 3, 
+                                    "uid": "dd9b036a-4c9e-48c9-8acb-3e7c4c480a15"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        216.0, 
+                                        104.0, 
+                                        18.0, 
+                                        46.0
+                                    ], 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "font": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "MSYH", 
+                                            15
+                                        ]
+                                    }, 
+                                    "font_color": [
+                                        25, 
+                                        234, 
+                                        63, 
+                                        255
+                                    ], 
+                                    "font_min_size": 11, 
+                                    "name": "value_2_2", 
+                                    "open_adapter": true, 
+                                    "over_pattern": 2, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            111.9999, 
+                                            113.0002, 
+                                            44.4444, 
+                                            33.432, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        188.0, 
+                                        18.0
+                                    ], 
+                                    "text": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "+2%\u5c04\u7bad\u4f24\u5bb3", 
+                                            false
+                                        ]
+                                    }, 
+                                    "type": 3, 
+                                    "uid": "48b5b412-e81b-4210-80b6-c06692215675"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        190.0, 
+                                        130.0, 
+                                        18.0, 
+                                        56.0
+                                    ], 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "font": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "MSYH", 
+                                            15
+                                        ]
+                                    }, 
+                                    "font_color": [
+                                        25, 
+                                        234, 
+                                        63, 
+                                        255
+                                    ], 
+                                    "font_min_size": 11, 
+                                    "name": "value_1_2", 
+                                    "open_adapter": true, 
+                                    "over_pattern": 2, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            107.0, 
+                                            139.0001, 
+                                            42.4603, 
+                                            41.1243, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        178.0, 
+                                        18.0
+                                    ], 
+                                    "text": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "+20\u653b\u51fb\u529b", 
+                                            false
+                                        ]
+                                    }, 
+                                    "type": 3, 
+                                    "uid": "c51ef40e-2e40-4c2e-b783-518e1a7a778f"
+                                }, 
+                                {
+                                    "children": [], 
+                                    "disabled_picture": 999, 
+                                    "disabled_status_added": true, 
+                                    "event_list": [], 
+                                    "hover_status_added": true, 
+                                    "name": "pick_btn_2", 
+                                    "normal_cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            33.0, 
+                                            33.0, 
+                                            33.0, 
+                                            33.0
+                                        ]
+                                    }, 
+                                    "normal_picture": 999, 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            169.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "press_picture": 999, 
+                                    "pressed_status_added": true, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        252.0, 
+                                        338.0
+                                    ], 
+                                    "suspend_picture": 999, 
+                                    "swallow_touches": true, 
+                                    "type": 1, 
+                                    "uid": "ed7030b3-0e2e-4058-b5ce-119833d25bc6"
+                                }
+                            ], 
+                            "event_list": [], 
+                            "name": "card_2", 
+                            "open_adapter": true, 
+                            "pos_data": {
+                                "__tuple__": true, 
+                                "items": [
+                                    446.0, 
+                                    173.0, 
+                                    50.0, 
+                                    50.5848, 
+                                    1, 
+                                    1
+                                ]
+                            }, 
+                            "prefab_sub_key": null, 
+                            "scene_ui_name": null, 
+                            "size": [
+                                252.0, 
+                                338.0
+                            ], 
+                            "type": 7, 
+                            "uid": "6279c181-4799-4234-8d19-de27c328e3b5"
+                        }, 
+                        {
+                            "adapter_option": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                0.0, 
+                                4.0, 
+                                640.0, 
+                                0.0
+                            ], 
+                            "children": [
+                                {
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            20, 
+                                            20, 
+                                            20, 
+                                            20
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        9, 
+                                        18, 
+                                        26, 
+                                        243
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 131998, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_bg_3", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            169.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        252.0, 
+                                        338.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "cfa21bc3-58d2-4c8f-bc7f-134e9572c57c"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        2.0, 
+                                        2.0, 
+                                        2.0, 
+                                        2.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        91, 
+                                        149, 
+                                        214, 
+                                        36
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_edge_3", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            169.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        248.0, 
+                                        334.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "588fa78c-3417-4eb5-abf0-8094f916e161"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        4.0, 
+                                        4.0, 
+                                        4.0, 
+                                        4.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        19, 
+                                        34, 
+                                        53, 
+                                        70
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_inner_3", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            169.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        244.0, 
+                                        330.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "24fd5699-599a-45f8-96e0-cbb759fa01ff"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        182.0, 
+                                        106.0, 
+                                        14.0, 
+                                        14.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        0, 
+                                        0, 
+                                        0, 
+                                        30
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "value_shadow_3", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            131.0, 
+                                            50.0, 
+                                            38.7574, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        224.0, 
+                                        50.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "dc42b97c-f257-49c4-8414-c9ec8a4974f8"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        0.0, 
+                                        304.0, 
+                                        0.0, 
+                                        0.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        10, 
+                                        36, 
+                                        71, 
+                                        255
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_header_3", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            321.0, 
+                                            50.0, 
+                                            94.9704, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        252.0, 
+                                        34.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "6f1fc673-6765-4928-bbf3-152589b5b57b"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        4.0, 
+                                        308.0, 
+                                        6.0, 
+                                        6.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            18, 
+                                            18, 
+                                            18
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        91, 
+                                        149, 
+                                        214, 
+                                        28
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "card_header_line_3", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            321.0, 
+                                            50.0, 
+                                            94.9704, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        240.0, 
+                                        26.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "aa6ae995-6661-460d-99a0-7a3ab8dcc8c4"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        54.0, 
+                                        210.0, 
+                                        89.0, 
+                                        89.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            16, 
+                                            16, 
+                                            16, 
+                                            16
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        31, 
+                                        79, 
+                                        135, 
+                                        56
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100061, 
+                                    "is_scale9_enable": true, 
+                                    "name": "icon_glow_3", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            246.9999, 
+                                            50.0, 
+                                            73.0769, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        74.0, 
+                                        74.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "efea90c8-c1d4-4998-9d62-1ee3b28db8e4"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        60.0, 
+                                        216.0, 
+                                        95.0, 
+                                        95.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            16, 
+                                            16, 
+                                            16, 
+                                            16
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        10, 
+                                        23, 
+                                        48, 
+                                        255
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100061, 
+                                    "is_scale9_enable": true, 
+                                    "name": "icon_frame_3", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            246.9999, 
+                                            50.0, 
+                                            73.0769, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        62.0, 
+                                        62.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "2ba8fb76-b82f-490f-9fb7-089bb23e7611"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        63.0, 
+                                        219.0, 
+                                        98.0, 
+                                        98.0
+                                    ], 
+                                    "cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            16, 
+                                            16, 
+                                            16, 
+                                            16
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "color": [
+                                        113, 
+                                        181, 
+                                        255, 
+                                        34
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 100062, 
+                                    "is_scale9_enable": true, 
+                                    "name": "icon_edge_3", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            246.9999, 
+                                            50.0, 
+                                            73.0769, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        56.0, 
+                                        56.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "185170ca-ebe1-45d8-a872-6e17a0f8ac3a"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        64.0, 
+                                        220.0, 
+                                        99.0, 
+                                        99.0
+                                    ], 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "image": 108148, 
+                                    "name": "icon_3", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            246.9999, 
+                                            50.0, 
+                                            73.0769, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        54.0, 
+                                        54.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "ab204ebb-ba09-4472-8975-b7bec22805f3"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        162.0, 
+                                        174.0, 
+                                        16.0, 
+                                        16.0
+                                    ], 
+                                    "children": [], 
+                                    "color": [
+                                        109, 
+                                        142, 
+                                        180, 
+                                        51
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 999, 
+                                    "name": "divider_3", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            174.9998, 
+                                            50.0, 
+                                            51.7751, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        220.0, 
+                                        2.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "2b1c7d24-4ab6-4c22-a1f5-5429cf305f76"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        31.0, 
+                                        306.0, 
+                                        10.0, 
+                                        10.0
+                                    ], 
+                                    "children": [], 
+                                    "color": [
+                                        136, 
+                                        183, 
+                                        239, 
+                                        85
+                                    ], 
+                                    "event_list": [], 
+                                    "image": 999, 
+                                    "name": "card_header_cut_3", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            306.5001, 
+                                            50.0, 
+                                            90.6805, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        232.0, 
+                                        1.0
+                                    ], 
+                                    "type": 4, 
+                                    "uid": "2c8d760f-d281-49a8-8254-6a8376f09a36"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        8.0, 
+                                        312.0, 
+                                        18.0, 
+                                        18.0
+                                    ], 
+                                    "alignment": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            2, 
+                                            8
+                                        ]
+                                    }, 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "font": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "MSYH", 
+                                            16
+                                        ]
+                                    }, 
+                                    "font_color": [
+                                        45, 
+                                        176, 
+                                        255, 
+                                        255
+                                    ], 
+                                    "font_min_size": 12, 
+                                    "name": "title_3", 
+                                    "open_adapter": true, 
+                                    "over_pattern": 2, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            321.0, 
+                                            50.0, 
+                                            94.9704, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        216.0, 
+                                        18.0
+                                    ], 
+                                    "text": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "\u8fde\u5c04", 
+                                            false
+                                        ]
+                                    }, 
+                                    "type": 3, 
+                                    "uid": "1c4116e0-87f9-4478-b53a-e7777a203853"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        136.0, 
+                                        184.0, 
+                                        18.0, 
+                                        20.0
+                                    ], 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "font": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "MSYH", 
+                                            15
+                                        ]
+                                    }, 
+                                    "font_color": [
+                                        232, 
+                                        237, 
+                                        243, 
+                                        255
+                                    ], 
+                                    "font_min_size": 11, 
+                                    "name": "bond_3", 
+                                    "open_adapter": true, 
+                                    "over_pattern": 2, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            125.0001, 
+                                            193.0, 
+                                            49.6032, 
+                                            57.1006, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        214.0, 
+                                        18.0
+                                    ], 
+                                    "text": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "\u7f81\u7eca\uff1a \u795e\u5c04\u624b (3/5)", 
+                                            false
+                                        ]
+                                    }, 
+                                    "type": 3, 
+                                    "uid": "855e75ad-4d04-412d-9c0d-a37524e6ae2d"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        190.0, 
+                                        130.0, 
+                                        18.0, 
+                                        46.0
+                                    ], 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "font": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "MSYH", 
+                                            15
+                                        ]
+                                    }, 
+                                    "font_color": [
+                                        25, 
+                                        234, 
+                                        63, 
+                                        255
+                                    ], 
+                                    "font_min_size": 11, 
+                                    "name": "value_1_3", 
+                                    "open_adapter": true, 
+                                    "over_pattern": 2, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            111.9999, 
+                                            139.0001, 
+                                            44.4444, 
+                                            41.1243, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        188.0, 
+                                        18.0
+                                    ], 
+                                    "text": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "+15%\u653b\u51fb\u901f\u5ea6", 
+                                            false
+                                        ]
+                                    }, 
+                                    "type": 3, 
+                                    "uid": "919b5c25-4007-4dcf-b245-1c7c9e0eb44d"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        216.0, 
+                                        104.0, 
+                                        18.0, 
+                                        46.0
+                                    ], 
+                                    "children": [], 
+                                    "event_list": [], 
+                                    "font": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "MSYH", 
+                                            15
+                                        ]
+                                    }, 
+                                    "font_color": [
+                                        25, 
+                                        234, 
+                                        63, 
+                                        255
+                                    ], 
+                                    "font_min_size": 11, 
+                                    "name": "value_2_3", 
+                                    "open_adapter": true, 
+                                    "over_pattern": 2, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            111.9999, 
+                                            113.0002, 
+                                            44.4444, 
+                                            33.432, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        188.0, 
+                                        18.0
+                                    ], 
+                                    "text": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "+1\u591a\u91cd\u6570\u91cf", 
+                                            false
+                                        ]
+                                    }, 
+                                    "type": 3, 
+                                    "uid": "0fef1ef9-ca26-4935-818c-8b5fd7487217"
+                                }, 
+                                {
+                                    "children": [], 
+                                    "disabled_picture": 999, 
+                                    "disabled_status_added": true, 
+                                    "event_list": [], 
+                                    "hover_status_added": true, 
+                                    "name": "pick_btn_3", 
+                                    "normal_cap_insets": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            33.0, 
+                                            33.0, 
+                                            33.0, 
+                                            33.0
+                                        ]
+                                    }, 
+                                    "normal_picture": 999, 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            126.0, 
+                                            169.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "press_picture": 999, 
+                                    "pressed_status_added": true, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        252.0, 
+                                        338.0
+                                    ], 
+                                    "suspend_picture": 999, 
+                                    "swallow_touches": true, 
+                                    "type": 1, 
+                                    "uid": "14cbb105-2ff1-4bfa-8d95-c498b68f02df"
+                                }
+                            ], 
+                            "event_list": [], 
+                            "name": "card_3", 
+                            "open_adapter": true, 
+                            "pos_data": {
+                                "__tuple__": true, 
+                                "items": [
+                                    765.9996, 
+                                    173.0, 
+                                    85.8744, 
+                                    50.5848, 
+                                    1, 
+                                    1
+                                ]
+                            }, 
+                            "prefab_sub_key": null, 
+                            "scene_ui_name": null, 
+                            "size": [
+                                252.0, 
+                                338.0
+                            ], 
+                            "type": 7, 
+                            "uid": "fe962060-fa48-4fd7-bb8c-80981eafcba1"
+                        }
+                    ], 
+                    "event_list": [], 
+                    "name": "cards_row", 
+                    "open_adapter": true, 
+                    "pos_data": {
+                        "__tuple__": true, 
+                        "items": [
+                            960.0, 
+                            853.0002, 
+                            50.0, 
+                            78.9815, 
+                            1, 
+                            1
+                        ]
+                    }, 
+                    "prefab_sub_key": null, 
+                    "scene_ui_name": null, 
+                    "size": [
+                        892.0, 
+                        342.0
+                    ], 
+                    "type": 7, 
+                    "uid": "acdb5fb5-5a7a-4349-ba3f-d5d5c0fca232"
+                }, 
+                {
+                    "adapter_option": [
+                        false, 
+                        false, 
+                        false, 
+                        false, 
+                        437.0, 
+                        604.0, 
+                        872.0, 
+                        872.0
+                    ], 
+                    "children": [], 
+                    "disabled_font_color": [
+                        238, 
+                        243, 
+                        250, 
+                        255
+                    ], 
+                    "disabled_picture": 134242808, 
+                    "disabled_status_added": true, 
+                    "disabled_text": {
+                        "__tuple__": true, 
+                        "items": [
+                            "\u514d\u8d39\u5237\u65b0\uff1a 9", 
+                            false
+                        ]
+                    }, 
+                    "event_list": [], 
+                    "font": {
+                        "__tuple__": true, 
+                        "items": [
+                            "MSYH", 
+                            16
+                        ]
+                    }, 
+                    "hover_status_added": true, 
+                    "name": "refresh_btn", 
+                    "normal_cap_insets": {
+                        "__tuple__": true, 
+                        "items": [
+                            41.0, 
+                            10.0, 
+                            41.0, 
+                            10.0
+                        ]
+                    }, 
+                    "normal_font_color": [
+                        238, 
+                        243, 
+                        250, 
+                        255
+                    ], 
+                    "normal_picture": 134242808, 
+                    "normal_text": {
+                        "__tuple__": true, 
+                        "items": [
+                            "\u514d\u8d39\u5237\u65b0\uff1a 9", 
+                            false
+                        ]
+                    }, 
+                    "open_adapter": true, 
+                    "pos_data": {
+                        "__tuple__": true, 
+                        "items": [
+                            960.0, 
+                            623.5002, 
+                            50.0, 
+                            57.7315, 
+                            1, 
+                            1
+                        ]
+                    }, 
+                    "prefab_sub_key": null, 
+                    "press_font_color": [
+                        238, 
+                        243, 
+                        250, 
+                        255
+                    ], 
+                    "press_picture": 134242808, 
+                    "press_text": {
+                        "__tuple__": true, 
+                        "items": [
+                            "\u514d\u8d39\u5237\u65b0\uff1a 9", 
+                            false
+                        ]
+                    }, 
+                    "pressed_status_added": true, 
+                    "scene_ui_name": null, 
+                    "size": [
+                        176.0, 
+                        39.0
+                    ], 
+                    "suspend_font_color": [
+                        238, 
+                        243, 
+                        250, 
+                        255
+                    ], 
+                    "suspend_picture": 134242808, 
+                    "suspend_text": {
+                        "__tuple__": true, 
+                        "items": [
+                            "\u514d\u8d39\u5237\u65b0\uff1a 9", 
+                            false
+                        ]
+                    }, 
+                    "swallow_touches": true, 
+                    "type": 1, 
+                    "uid": "b7321e7c-d1b4-4ada-b92b-3340a527f667"
+                }, 
+                {
+                    "adapter_option": [
+                        false, 
+                        false, 
+                        false, 
+                        false, 
+                        491.0, 
+                        562.0, 
+                        905.0, 
+                        905.0
+                    ], 
+                    "children": [], 
+                    "disabled_font_color": [
+                        242, 
+                        242, 
+                        242, 
+                        255
+                    ], 
+                    "disabled_picture": 134242808, 
+                    "disabled_status_added": true, 
+                    "disabled_text": {
+                        "__tuple__": true, 
+                        "items": [
+                            "\u7b49\u4f1a\u518d\u9009", 
+                            false
+                        ]
+                    }, 
+                    "event_list": [], 
+                    "font": {
+                        "__tuple__": true, 
+                        "items": [
+                            "MSYH", 
+                            11
+                        ]
+                    }, 
+                    "hover_status_added": true, 
+                    "name": "later_btn", 
+                    "normal_cap_insets": {
+                        "__tuple__": true, 
+                        "items": [
+                            41.0, 
+                            10.0, 
+                            41.0, 
+                            10.0
+                        ]
+                    }, 
+                    "normal_font_color": [
+                        242, 
+                        242, 
+                        242, 
+                        255
+                    ], 
+                    "normal_picture": 134242808, 
+                    "normal_text": {
+                        "__tuple__": true, 
+                        "items": [
+                            "\u7b49\u4f1a\u518d\u9009", 
+                            false
+                        ]
+                    }, 
+                    "open_adapter": true, 
+                    "pos_data": {
+                        "__tuple__": true, 
+                        "items": [
+                            960.0, 
+                            575.4996, 
+                            50.0, 
+                            53.287, 
+                            1, 
+                            1
+                        ]
+                    }, 
+                    "prefab_sub_key": null, 
+                    "press_font_color": [
+                        242, 
+                        242, 
+                        242, 
+                        255
+                    ], 
+                    "press_picture": 134242808, 
+                    "press_text": {
+                        "__tuple__": true, 
+                        "items": [
+                            "\u7b49\u4f1a\u518d\u9009", 
+                            false
+                        ]
+                    }, 
+                    "pressed_status_added": true, 
+                    "scene_ui_name": null, 
+                    "size": [
+                        110.0, 
+                        27.0
+                    ], 
+                    "suspend_font_color": [
+                        242, 
+                        242, 
+                        242, 
+                        255
+                    ], 
+                    "suspend_picture": 134242808, 
+                    "suspend_text": {
+                        "__tuple__": true, 
+                        "items": [
+                            "\u7b49\u4f1a\u518d\u9009", 
+                            false
+                        ]
+                    }, 
+                    "swallow_touches": true, 
+                    "type": 1, 
+                    "uid": "7805a98c-a7a2-4a68-8065-344afab05cc2"
+                }
+            ], 
+            "event_list": [], 
+            "name": "bond_choice_3", 
+            "open_adapter": true, 
+            "pos_data": {
+                "__tuple__": true, 
+                "items": [
+                    960.0, 
+                    540.0, 
+                    50.0, 
+                    50.0, 
+                    1, 
+                    1
+                ]
+            }, 
+            "prefab_sub_key": null, 
+            "scene_ui_name": null, 
+            "size": [
+                1920.0, 
+                1080.0
+            ], 
+            "type": 7, 
+            "uid": "3138b961-f47c-4f00-8338-12054c81eae9"
+        }
+    ], 
+    "name": "BondChoice3", 
+    "opacity": 1.0, 
+    "script_name": "", 
+    "type": 2, 
+    "ui_anims": [], 
+    "uid": "bb0f0d4c-15c1-4f41-942c-f12d6560a06f", 
+    "visible": true, 
+    "zorder": 520
+}
