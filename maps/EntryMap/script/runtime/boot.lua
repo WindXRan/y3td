@@ -11,6 +11,7 @@ local InputEventsSystem = require 'runtime.input_events'
 local RuntimeLoopsSystem = require 'runtime.loops'
 local BattleEventPromptsFactory = require 'runtime.battle_event_prompts'
 local RuntimeUIHelpers = require 'runtime.runtime_ui_helpers'
+local RuntimeHudSystem = require 'ui.runtime_hud'
 local OutgameSystem = require 'ui.outgame'
 local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
@@ -1486,8 +1487,7 @@ attack_upgrade_system = AttackUpgradeSystem.create({
 
 local function get_pending_round_choice_kind()
   if STATE.awaiting_upgrade and STATE.current_upgrade_choices then
-    STATE.awaiting_upgrade = false
-    STATE.current_upgrade_choices = nil
+    return 'upgrade'
   end
   if STATE.gear_state and STATE.gear_state.awaiting_choice and STATE.gear_state.current_choices then
     return 'gear'
@@ -1574,7 +1574,7 @@ local function show_pending_round_choice(kind)
   local current_kind = kind or get_pending_round_choice_kind()
   STATE.choice_panel_hidden = false
   if current_kind == 'upgrade' then
-    return
+    return show_upgrade_choices()
   end
   if current_kind == 'bond' then
     BondSystem.try_draw(create_bond_env())
@@ -1604,10 +1604,9 @@ ensure_round_choice_available = function(allowed_kind)
 end
 
 local function show_upgrade_choices()
-  STATE.skill_points = 0
-  STATE.awaiting_upgrade = false
-  STATE.current_upgrade_choices = nil
-  STATE.current_upgrade_round = nil
+  if attack_upgrade_system and attack_upgrade_system.show_upgrade_choices then
+    return attack_upgrade_system.show_upgrade_choices()
+  end
   return false
 end
 
@@ -1879,7 +1878,37 @@ local function try_treasure_entry()
   message('当前没有待领取的宝物三选一。')
 end
 
-runtime_hud_system = nil
+runtime_hud_system = RuntimeHudSystem.create({
+  STATE = STATE,
+  CONFIG = CONFIG,
+  y3 = y3,
+  get_player = get_player,
+  hero_attr_system = hero_attr_system,
+  message = message,
+  show_upgrade_choices = show_upgrade_choices,
+  try_bond_draw = try_bond_draw,
+  show_bond_progress = function()
+    return BondSystem.show_bond_progress(create_bond_env())
+  end,
+  try_evolution_entry = try_evolution_entry,
+  try_treasure_entry = try_treasure_entry,
+  try_start_challenge = try_start_challenge,
+  open_save_panel = function()
+    return outgame_system and outgame_system.open_save_panel and outgame_system.open_save_panel() or false
+  end,
+  try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
+  show_runtime_status = show_runtime_status,
+  build_runtime_attr_dialog_chunks = build_runtime_attr_dialog_chunks,
+  build_growth_weapon_tip_payload = function()
+    return GearUpgrades.build_tip_payload(STATE, 'weapon', CONFIG.gear_upgrade_config, y3.item)
+  end,
+  get_bond_slot_icon = function(slot)
+    return BondSystem.get_slot_icon(STATE, slot)
+  end,
+  play_ui_click = function()
+    return audio_system and audio_system.play_ui_click and audio_system.play_ui_click() or nil
+  end,
+})
 choice_panel_system = nil
 
   local runtime_ui_helpers = RuntimeUIHelpers.create({
