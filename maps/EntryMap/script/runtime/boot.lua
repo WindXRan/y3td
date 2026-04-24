@@ -1,6 +1,7 @@
 ﻿local CONFIG = require 'entry_config'
 local BondSystem = require 'runtime.bonds'
 local AttackSkillObjects = require 'entry_objects.attack_skills'
+local BondDrawConfig = require 'data.object_tables.bond_draw_config'
 local BondNodeObjects = require 'data.object_tables.bond_nodes'
 local EvolutionObjects = require 'data.object_tables.marks'
 local ProgressionSystem = require 'runtime.progression'
@@ -2094,6 +2095,10 @@ runtime_hud_system = RuntimeHudSystem.create({
   build_growth_weapon_tip_payload = function()
     return GearUpgrades.build_tip_payload(STATE, 'weapon', CONFIG.gear_upgrade_config, y3.item)
   end,
+  build_bond_slot_tip_payload = function(slot)
+    return BondSystem.build_slot_tip_payload(STATE, slot)
+  end,
+  bond_draw_cost = BondDrawConfig.draw_cost or 100,
   get_bond_slot_icon = function(slot)
     return BondSystem.get_slot_icon(STATE, slot)
   end,
