@@ -472,11 +472,7 @@ def build_reference_skill_slot(name, x, key_text, icon_id):
     root = layout(name, x, 36, 72, 72)
     root["children"] = [
         image("frame", 36, 36, 72, 72, SKILL_EMPTY, [255, 255, 255, 255], False),
-        image("icon", 36, 38, 50, 50, icon_id, [255, 255, 255, 255], False),
-        image("label_band", 36, 9, 58, 10, SHOP_CONTENT_BG_ALT, [255, 255, 255, 235], True),
-        text("key", 13, 60, 18, 12, key_text, 10, [255, 223, 143, 255], 0),
-        text("cooldown", 58, 60, 18, 12, "0", 10, [220, 235, 255, 255], 2),
-        text("label", 36, 9, 42, 10, "", 9, [185, 196, 212, 255]),
+        image("icon", 36, 36, 54, 54, icon_id, [255, 255, 255, 255], False),
     ]
     return root
 
@@ -548,10 +544,9 @@ def build_reference_action_button(name, x, y, label, hotkey, palette="yellow"):
 
 
 def build_reference_buff_slot(name, x, icon_id):
-    root = layout(name, x, 12, 24, 24)
+    root = layout(name, x, 18, 34, 34)
     root["children"] = [
-        image("frame", 12, 12, 22, 22, PROP_FRAME_ALT, [255, 255, 255, 255], False),
-        image("icon", 12, 12, 16, 16, icon_id, [255, 255, 255, 255], False),
+        image("icon", 17, 17, 28, 28, icon_id, [255, 255, 255, 255], False),
     ]
     return root
 
@@ -652,15 +647,7 @@ def build_bottom_hud():
     combat_module = panel("combat_module", 404, 134, 400, 214, [18, 22, 30, 96])
     combat_module["children"] = [image("module_line", 200, 194, 388, 1, SHOP_LINE, [255, 255, 255, 96], True)]
 
-    challenge_row = layout("challenge_row", 200, 174, 400, 70)
-    challenge_row["children"] = [
-        build_reference_challenge_badge("gold_trial", 53, "金币挑战", "40", ICON_ATTACK, [155, 124, 22, 255]),
-        build_reference_challenge_badge("treasure_trial", 147, "宝石挑战", "53", ICON_DEFENSE, [86, 144, 188, 255]),
-        build_reference_challenge_badge("climb_layer", 241, "爬塔8层", "8", ICON_FAST, [168, 89, 35, 255]),
-        build_reference_challenge_badge("realm_progress", 335, "奇遇幻境", "157/700", ICON_ATTACK_SPEED, [58, 102, 164, 255]),
-    ]
-
-    skill_bar = panel("skill_bar", 200, 106, 388, 72, [21, 26, 36, 92])
+    skill_bar = panel("skill_bar", 200, 146, 388, 72, [21, 26, 36, 0])
     skill_bar["children"] = [
         build_reference_skill_slot("skill_slot_1", 42, "1", SKILL_ICON_1),
         build_reference_skill_slot("skill_slot_2", 118, "2", SKILL_ICON_2),
@@ -669,30 +656,18 @@ def build_bottom_hud():
         build_reference_skill_slot("skill_slot_5", 346, "5", SKILL_ICON_1),
     ]
 
-    exp_bar = panel("exp_bar", 222, 44, 300, 24, [18, 22, 31, 92])
-    exp_bar["children"] = [
-        image("bar_bg", 150, 12, 300, 24, SHOP_CONTENT_BG, [255, 255, 255, 222], True),
-        image("bar_inner", 150, 12, 286, 18, BG_BLACK, [255, 255, 255, 118], True),
-        panel("fill", 118, 12, 222, 12, [197, 56, 177, 255]),
-        text("exp_text", 150, 12, 270, 14, "54/100", 11, [255, 255, 255, 255]),
-    ]
-
-    buff_row = layout("buff_row", 208, 16, 184, 24)
+    buff_row = panel("buff_row", 200, 44, 388, 40, [12, 15, 22, 54])
     buff_row["children"] = [
-        build_reference_buff_slot("buff_slot_1", 14, ICON_ITEM_1),
-        build_reference_buff_slot("buff_slot_2", 50, ICON_ITEM_2),
-        build_reference_buff_slot("buff_slot_3", 86, ICON_ITEM_3),
-        build_reference_buff_slot("buff_slot_4", 122, SKILL_ICON_1),
-        build_reference_buff_slot("buff_slot_5", 158, SKILL_ICON_3),
+        build_reference_buff_slot("buff_slot_1", 42, ICON_ITEM_1),
+        build_reference_buff_slot("buff_slot_2", 118, ICON_ITEM_2),
+        build_reference_buff_slot("buff_slot_3", 194, ICON_ITEM_3),
+        build_reference_buff_slot("buff_slot_4", 270, SKILL_ICON_1),
+        build_reference_buff_slot("buff_slot_5", 346, SKILL_ICON_3),
     ]
 
     combat_module["children"].extend(
         [
-            challenge_row,
             skill_bar,
-            text("hero_level", 40, 44, 74, 16, "等级：17", 12, [255, 214, 117, 255], 0),
-            exp_bar,
-            text("status_text", 40, 16, 62, 16, "状态：", 12, [245, 247, 250, 255], 0),
             buff_row,
         ]
     )

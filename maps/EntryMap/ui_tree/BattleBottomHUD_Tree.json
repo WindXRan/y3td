@@ -1,73 +1,73 @@
 {
   "name": "BattleBottomHUD",
-  "uid": "a0e28df0-4425-4542-a7c4-9faf8c3e6154",
+  "uid": "7bbb761c-4658-4042-8086-379c67da1d44",
   "type": 2,
   "children": [
     {
       "name": "layout",
-      "uid": "66418733-1e36-415e-a619-d65c9c70fb89",
+      "uid": "e3c5ca99-59f2-4209-8c78-51c4e8181567",
       "type": 7,
       "children": [
         {
           "name": "bottom_shell",
-          "uid": "94683093-e1cf-4439-a37a-6c33ce638544",
+          "uid": "25d4ab5d-b208-411b-8d12-909a85f17654",
           "type": 7,
           "children": [
             {
               "name": "shell_bg",
-              "uid": "af192b77-d1d8-4a63-b890-39f3c276ac2c",
+              "uid": "2d584eac-bdbc-4035-b139-d841776deaca",
               "type": 4
             },
             {
               "name": "top_line",
-              "uid": "bfe8823c-585c-4a84-8b51-eed16b8791c4",
+              "uid": "b7481c11-6528-4b9a-9529-48959f9a88b0",
               "type": 4
             }
           ]
         },
         {
           "name": "left_station",
-          "uid": "32f6bbbf-bb5e-4210-819b-591b2e6cf356",
+          "uid": "c07a55f3-df87-41e5-baf7-6f5c7cf3c2c4",
           "type": 7,
           "children": [
             {
               "name": "station_bg",
-              "uid": "3ce28ec0-ae55-40ff-92b5-1c5b6ce671c9",
+              "uid": "8c87db34-cbaa-4749-a491-fcee84c4301e",
               "type": 4
             },
             {
               "name": "station_title_line",
-              "uid": "0c3f7532-8d90-4ace-a6e4-569658bcf939",
+              "uid": "dc2878c6-14e1-4ec2-9087-f21413bd7065",
               "type": 4
             },
             {
               "name": "map_frame",
-              "uid": "07915f84-6caa-46c2-ab4b-1af9f2044089",
+              "uid": "44bbb675-25c1-443e-9b12-9738855126b0",
               "type": 4
             },
             {
               "name": "map_badge_bg",
-              "uid": "8d711f20-23ce-4a28-a6e8-22e023d5a54e",
+              "uid": "37b4f9d4-df55-4775-b184-05fadba2410b",
               "type": 4
             },
             {
               "name": "map_badge",
-              "uid": "e3eafa90-fd0e-48da-ac68-173c54b21498",
+              "uid": "02ac68fa-f609-4ea9-b98b-737875335993",
               "type": 3
             },
             {
               "name": "mini_map",
-              "uid": "01d0d922-08f8-451f-88ce-413d86f6197f",
+              "uid": "2005c8ca-c4e9-498e-9a4f-7949fc7ad146",
               "type": 4,
               "children": [
                 {
                   "name": "mini_map_o",
-                  "uid": "9863c729-54b3-4b90-996d-737934182538",
+                  "uid": "de19d5c5-bbeb-4e11-9167-3d6286af3d35",
                   "type": 7,
                   "children": [
                     {
                       "name": "mini_map_1",
-                      "uid": "53d68946-8a68-4dec-a825-807b0d2cb9a7",
+                      "uid": "8fb1da56-c33c-4a6f-9031-1da80e7d71db",
                       "type": 16
                     }
                   ]
@@ -76,61 +76,61 @@
             },
             {
               "name": "map_grid_v",
-              "uid": "64e4b1dc-1a9f-4d55-b0e1-80244f6810f8",
+              "uid": "367a0005-afb9-4b50-a71c-14cfdaed63dc",
               "type": 4
             },
             {
               "name": "map_grid_h",
-              "uid": "2ab4ddf4-bce1-41bd-91fb-3a7931e9ae01",
+              "uid": "ef7d568e-c2c6-40e8-8793-a3de91bf3ece",
               "type": 4
             },
             {
               "name": "map_corner_mark",
-              "uid": "85b77619-2320-49c8-aebb-fe3abfed1e5d",
+              "uid": "33010e5f-6c80-4d23-a97a-f46cd1d77d00",
               "type": 4
             },
             {
               "name": "toggle_frame",
-              "uid": "df6328f5-ab44-4c67-996e-60885b7e7573",
+              "uid": "adc74730-5315-483d-b241-05afbdc68abb",
               "type": 7,
               "children": [
                 {
                   "name": "frame_bg",
-                  "uid": "7ad998c3-30f2-4ec4-9459-b78a2a0b93fe",
+                  "uid": "1ac124e8-b088-46d4-9bb0-464ef77bc87a",
                   "type": 4
                 },
                 {
                   "name": "toggle_damage",
-                  "uid": "5cec65e1-6c8f-4796-90b3-470706f7b04e",
+                  "uid": "7fbd7319-158e-45a2-a490-1623aa32029a",
                   "type": 7,
                   "children": [
                     {
                       "name": "button",
-                      "uid": "9a9edf0a-c0e3-4d9f-937b-bf09f7281621",
+                      "uid": "07d2e88e-0352-46bf-9ce0-786e8470a81f",
                       "type": 1
                     }
                   ]
                 },
                 {
                   "name": "toggle_sfx",
-                  "uid": "f61eab51-8b30-4313-9daa-bb6c68cce0e5",
+                  "uid": "45a3dd5e-6410-49fb-a570-377847ab2a9b",
                   "type": 7,
                   "children": [
                     {
                       "name": "button",
-                      "uid": "a8ae5ed3-d835-41d1-b9e4-c6fa056fceb2",
+                      "uid": "9d9f61cb-f056-4938-9679-6b60869672ac",
                       "type": 1
                     }
                   ]
                 },
                 {
                   "name": "toggle_cursor",
-                  "uid": "133f7ba1-2266-4305-98cb-b07741d3563c",
+                  "uid": "f34a0c14-45fe-4436-aca6-c317ee25858e",
                   "type": 7,
                   "children": [
                     {
                       "name": "button",
-                      "uid": "8508512c-7562-410b-90a4-323a1ffa906b",
+                      "uid": "7e010a8c-6b83-45ac-ae2f-06d45e55d456",
                       "type": 1
                     }
                   ]
@@ -139,242 +139,242 @@
             },
             {
               "name": "player_attr_list",
-              "uid": "540e3c32-5fbf-4d7d-b7eb-5159c7681183",
+              "uid": "f061dec2-a8ea-4ab4-ba62-161706d73877",
               "type": 7,
               "children": [
                 {
                   "name": "section_line",
-                  "uid": "bebe8e05-083f-4440-9511-2e623a53717b",
+                  "uid": "bbd36d2d-30ab-4719-bbb7-c8cc39f5dc29",
                   "type": 4
                 },
                 {
                   "name": "brand_name",
-                  "uid": "9c74e4e1-1604-4829-848a-f013561df4b3",
+                  "uid": "327d6870-f4fe-466a-89ab-dd2c8801c66a",
                   "type": 3
                 },
                 {
                   "name": "brand_site",
-                  "uid": "1ade8f2e-5152-44aa-aae4-9d484656c03f",
+                  "uid": "d37ffa30-926d-4b07-95f9-170363bc556b",
                   "type": 3
                 },
                 {
                   "name": "battle_power_row",
-                  "uid": "6f0ebfe6-ba0c-4ec6-836a-c59e0710959c",
+                  "uid": "774426f2-e2ab-4935-8025-7203acf69043",
                   "type": 7,
                   "children": [
                     {
                       "name": "strip",
-                      "uid": "d20bca6a-0a33-4a94-b89e-978527e95bf5",
+                      "uid": "0c1be030-9ccd-49fd-b7a5-8074dc0336b8",
                       "type": 4
                     },
                     {
                       "name": "icon_frame",
-                      "uid": "fe73419d-c489-4baa-bf7c-639377c6df4b",
+                      "uid": "7cb23bf9-d080-4ec0-a9a0-23a954d0d86b",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "eec1deee-2a9a-42d1-84ce-26c52183bfde",
+                      "uid": "f59c4e4e-cb57-4aa3-9c83-e78986c5062e",
                       "type": 4
                     },
                     {
                       "name": "label",
-                      "uid": "81ea04cf-e2b5-463c-a080-3ff1622f49ed",
+                      "uid": "0e5eb1ac-b18d-4957-8f4e-660a0e5a4702",
                       "type": 3
                     },
                     {
                       "name": "value",
-                      "uid": "ec4bf9d6-bc21-4328-961b-fc0c7f141088",
+                      "uid": "1de93197-bc14-4777-a836-4b9c6a3ac897",
                       "type": 3
                     },
                     {
                       "name": "delta",
-                      "uid": "5036d422-fb53-48a8-94b0-77d3e585785d",
+                      "uid": "5c4a981e-4564-4468-907f-c99670c1ce97",
                       "type": 3
                     }
                   ]
                 },
                 {
                   "name": "hero_attack_row",
-                  "uid": "4234781e-4ff6-40c5-aa9e-34897de3b760",
+                  "uid": "6d5505a2-2a53-4ad6-a1a3-65ec6c85031b",
                   "type": 7,
                   "children": [
                     {
                       "name": "strip",
-                      "uid": "cac98b8f-dc76-477e-8e81-d2dfe4d2aedf",
+                      "uid": "95bc35cb-0952-4b28-9711-d39f3093e6fd",
                       "type": 4
                     },
                     {
                       "name": "icon_frame",
-                      "uid": "20a5b05a-70c1-4743-82d0-aed706eadecb",
+                      "uid": "1465b6a8-028a-4a63-9010-ea2ef626d4c0",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "5a7b0d52-149e-4f58-af4b-f90ac4b52496",
+                      "uid": "b881756f-c467-4cfc-8db7-c929eb5aab60",
                       "type": 4
                     },
                     {
                       "name": "label",
-                      "uid": "1daa093c-b5ce-48cb-9d3e-3464320243f0",
+                      "uid": "3bcfb49f-80c5-4afb-bf99-93e689387a17",
                       "type": 3
                     },
                     {
                       "name": "value",
-                      "uid": "ab281446-d346-49d9-a6af-36aa7223ed6d",
+                      "uid": "00cbdcf6-e575-4d81-8628-8eb9455b2364",
                       "type": 3
                     },
                     {
                       "name": "delta",
-                      "uid": "0e364e5c-37a1-4be2-95b7-a0b65ffc32b0",
+                      "uid": "f374ef3e-5751-4460-830b-dedd77fe406c",
                       "type": 3
                     }
                   ]
                 },
                 {
                   "name": "hero_defense_row",
-                  "uid": "0f860e98-2703-4d73-905f-e60730f10c2b",
+                  "uid": "42b113ad-eac6-41ab-ba3e-26f150b96e97",
                   "type": 7,
                   "children": [
                     {
                       "name": "strip",
-                      "uid": "f3dbdb16-4e2e-4827-bce0-7dfc5267c415",
+                      "uid": "63690311-d731-4ab3-ba70-c7c4f545f657",
                       "type": 4
                     },
                     {
                       "name": "icon_frame",
-                      "uid": "941327cc-4101-4a2d-ad1d-b1ac3fa08f49",
+                      "uid": "558532ae-db1f-410b-93f3-83a4c4fcbb61",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "f9edbb0e-c294-44b0-ab6e-ad7512bbd39f",
+                      "uid": "8248e18f-83b5-4a7c-9e87-b1b708f44b30",
                       "type": 4
                     },
                     {
                       "name": "label",
-                      "uid": "4d80ee43-04ed-4b51-a144-809ce434f19d",
+                      "uid": "50e4ce3b-3084-4b93-9079-77ac58a88b99",
                       "type": 3
                     },
                     {
                       "name": "value",
-                      "uid": "fa55b847-73d6-4ea6-ad21-677e7fac0d81",
+                      "uid": "d33b6e23-98c3-46f4-ae61-689dff1f4e8e",
                       "type": 3
                     },
                     {
                       "name": "delta",
-                      "uid": "71da9839-63cd-4aa3-b3aa-9feae776e562",
+                      "uid": "4905d891-391e-440c-a51c-165b214198ad",
                       "type": 3
                     }
                   ]
                 },
                 {
                   "name": "hero_power_row",
-                  "uid": "e98ab9ff-7b07-41de-a340-35772c204b25",
+                  "uid": "33c1a187-06b4-4a52-a08e-0842f3767021",
                   "type": 7,
                   "children": [
                     {
                       "name": "strip",
-                      "uid": "717148bb-1759-436d-9329-bf8becababf5",
+                      "uid": "5e5ee3cd-f024-40cf-b4e5-29ba8e08f75c",
                       "type": 4
                     },
                     {
                       "name": "icon_frame",
-                      "uid": "e1979d76-d90f-436a-a85e-a0a5f7d42d3b",
+                      "uid": "e0048b74-2208-4332-9762-72c888bd29ec",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "aa992409-c903-464b-9ec1-f795fa8fb350",
+                      "uid": "4dc42e5a-8ff4-4a80-a9d6-abec2f8f3e10",
                       "type": 4
                     },
                     {
                       "name": "label",
-                      "uid": "088f0937-c488-4cd1-a8db-89c978d7c469",
+                      "uid": "0655b6c2-ed9f-4f7c-a29d-24d492139832",
                       "type": 3
                     },
                     {
                       "name": "value",
-                      "uid": "11207cd3-f1ab-4d52-b970-bd9f2d01cc0f",
+                      "uid": "4c193841-9e6f-4201-bb30-3330f8c33ed0",
                       "type": 3
                     },
                     {
                       "name": "delta",
-                      "uid": "feae559f-76ae-487f-b220-f9b66d2fac76",
+                      "uid": "d50894f3-13af-4b12-8d86-b635023b07b4",
                       "type": 3
                     }
                   ]
                 },
                 {
                   "name": "hero_intelligence_row",
-                  "uid": "3a8f0fe8-1654-4aa9-8729-2271d2f108af",
+                  "uid": "6da3ea9d-bceb-4f99-9845-a7076b4c2ff3",
                   "type": 7,
                   "children": [
                     {
                       "name": "strip",
-                      "uid": "e9d20526-9ef7-44c6-b2b4-aeff4af4fa2f",
+                      "uid": "50a3d98e-f84e-4df2-99ba-2d9a359574b2",
                       "type": 4
                     },
                     {
                       "name": "icon_frame",
-                      "uid": "facfdc36-88c6-4bc8-a1c0-eb84b8629ada",
+                      "uid": "e4fe67a3-6397-43b7-a4ac-80a177541509",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "0c78b972-7e1f-4a87-9b66-982cb6b430e3",
+                      "uid": "55a4100f-427a-4e45-a0fc-8d20a1b1514c",
                       "type": 4
                     },
                     {
                       "name": "label",
-                      "uid": "8a54abb2-97bb-48ce-a403-9d9d29466d50",
+                      "uid": "5f0e4689-f107-446f-874c-134216b65d6a",
                       "type": 3
                     },
                     {
                       "name": "value",
-                      "uid": "fa5d825d-d83f-448e-83e9-496f8ef0afa9",
+                      "uid": "acc4072b-4cd4-4266-beef-8bc9b4b0a638",
                       "type": 3
                     },
                     {
                       "name": "delta",
-                      "uid": "4a3ff9da-4489-4157-afa8-ec1b81c2c309",
+                      "uid": "c2f95d5a-0384-4594-bf15-284d8a6e5ae0",
                       "type": 3
                     }
                   ]
                 },
                 {
                   "name": "hero_agility_row",
-                  "uid": "05d8fa63-8255-4c37-8556-b1f94103dfe9",
+                  "uid": "eed9091b-ca4e-4ea6-b469-481674ba8e3b",
                   "type": 7,
                   "children": [
                     {
                       "name": "strip",
-                      "uid": "1e7f3700-5a88-47da-b49c-64e6dbe970d4",
+                      "uid": "59fe5b85-8844-4f14-a90c-81d920a064f4",
                       "type": 4
                     },
                     {
                       "name": "icon_frame",
-                      "uid": "3e25cbee-0522-4adb-baf5-80d9ee7d5caa",
+                      "uid": "dd394158-b498-4aa4-bc9d-a022971d6840",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "2674b642-7a04-4382-b6f0-e50cc992426b",
+                      "uid": "9487d473-22e4-4d2e-9c45-a5d3683f4c06",
                       "type": 4
                     },
                     {
                       "name": "label",
-                      "uid": "40320ccc-2edf-4fc4-8edb-57001e9f2c32",
+                      "uid": "dadae194-43c6-4976-bf31-202a4060dbf3",
                       "type": 3
                     },
                     {
                       "name": "value",
-                      "uid": "12d99941-de4c-4732-bb33-8a70543c6b92",
+                      "uid": "1b0358e9-3c3a-4749-a932-595545b89c65",
                       "type": 3
                     },
                     {
                       "name": "delta",
-                      "uid": "0e1a7be8-4b18-48d6-a4ce-f59134d29f26",
+                      "uid": "961b43c6-8cc1-4efc-9eda-3cded039c680",
                       "type": 3
                     }
                   ]
@@ -385,531 +385,214 @@
         },
         {
           "name": "center_hub",
-          "uid": "a61ef316-ccce-495d-bfaa-175e347e51e6",
+          "uid": "376a4330-fbc1-42b1-8f2b-653393a6666a",
           "type": 7,
           "children": [
             {
               "name": "hero_panel",
-              "uid": "2bb8ac83-8cb7-4f8f-9cde-adacccba2258",
+              "uid": "19e4120d-be8c-43d2-b337-6469949d05cd",
               "type": 7,
               "children": [
                 {
                   "name": "portrait_frame",
-                  "uid": "6451d7d2-488e-4a64-a4e5-fa0702db2130",
+                  "uid": "f240cf05-cf59-4ff6-b82b-b31e47bfa45d",
                   "type": 4
                 },
                 {
                   "name": "hero_portrait",
-                  "uid": "9d561480-4b35-4948-88f7-1e19adb9ec05",
+                  "uid": "823f7a21-bcbb-4807-89c3-417f68b9341e",
                   "type": 4
                 },
                 {
                   "name": "hero_name",
-                  "uid": "16d10b19-a4f3-42bf-a9aa-32b0b24e0895",
+                  "uid": "69f0bf6e-3c84-43af-843a-66b245c620f4",
                   "type": 3
                 },
                 {
                   "name": "hero_name_line",
-                  "uid": "87dd7505-f17c-4e9d-96d0-71c7e77ed9e9",
+                  "uid": "756d6850-3dfa-4198-8303-1ab8bc580e97",
                   "type": 4
                 },
                 {
                   "name": "hero_hp_bg",
-                  "uid": "54a3798f-d867-403c-a52a-47cf7a0f169a",
+                  "uid": "53e2733f-f7e3-4353-aad2-90c3c25424d9",
                   "type": 4
                 },
                 {
                   "name": "hero_hp_fill",
-                  "uid": "41804d55-7d88-4ad7-ab5f-aaa5cea715fb",
+                  "uid": "23ca8151-3a7f-4fe6-9116-84d28079f520",
                   "type": 7
                 },
                 {
                   "name": "hero_hp_text",
-                  "uid": "b22d6672-8741-4d85-ac1d-aaff3a8cb7a5",
+                  "uid": "56f64b6a-efb8-481a-a99c-cf71afcd6ef0",
                   "type": 3
                 }
               ]
             },
             {
               "name": "combat_module",
-              "uid": "9de75611-7f55-445c-929b-86a80851599e",
+              "uid": "8e9e4dfc-fa4d-40f1-8379-494ebccd7e1b",
               "type": 7,
               "children": [
                 {
                   "name": "module_line",
-                  "uid": "9c963d1a-77b1-412f-9514-741455f4930a",
+                  "uid": "022a0fd6-1938-466b-b5c7-b2604a6fa488",
                   "type": 4
                 },
                 {
-                  "name": "challenge_row",
-                  "uid": "ab36ef4a-be99-486b-8489-82b4e4d3e0c2",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "gold_trial",
-                      "uid": "e297dbf1-694f-4682-9f4a-e385fc875482",
-                      "type": 7,
-                      "children": [
-                        {
-                          "name": "plate",
-                          "uid": "25393555-ddeb-4e83-95a0-4467beb8805b",
-                          "type": 4
-                        },
-                        {
-                          "name": "accent",
-                          "uid": "adfe2fef-80dd-472a-9d45-195194be73a2",
-                          "type": 7
-                        },
-                        {
-                          "name": "icon_frame",
-                          "uid": "56cd2a92-9d5c-42a9-b02c-19f85b539918",
-                          "type": 4
-                        },
-                        {
-                          "name": "icon",
-                          "uid": "015b342b-8b81-42e1-a680-6a720adf088c",
-                          "type": 4
-                        },
-                        {
-                          "name": "count",
-                          "uid": "9d0aa024-c88e-4094-9654-dc2d9c6944d4",
-                          "type": 3
-                        },
-                        {
-                          "name": "title",
-                          "uid": "7ae2e071-62d4-47ff-867a-9d3d3cf3c1e2",
-                          "type": 3
-                        }
-                      ]
-                    },
-                    {
-                      "name": "treasure_trial",
-                      "uid": "bc5332d9-d085-4f34-9e2c-f8a18d3c67bb",
-                      "type": 7,
-                      "children": [
-                        {
-                          "name": "plate",
-                          "uid": "4b29a650-ec9b-4714-a63e-6540d3361ea2",
-                          "type": 4
-                        },
-                        {
-                          "name": "accent",
-                          "uid": "ea05451b-4452-44a5-bbb8-d2137572e33a",
-                          "type": 7
-                        },
-                        {
-                          "name": "icon_frame",
-                          "uid": "8355c701-ddd0-4418-a28f-8cef809d3679",
-                          "type": 4
-                        },
-                        {
-                          "name": "icon",
-                          "uid": "d20ba209-1579-4bde-994e-8c5bc1ffbe04",
-                          "type": 4
-                        },
-                        {
-                          "name": "count",
-                          "uid": "717ec3e7-3d48-48d7-9f92-6bbd9bc5da41",
-                          "type": 3
-                        },
-                        {
-                          "name": "title",
-                          "uid": "c15cfd7d-d384-4153-a5ec-823f4a1e0bac",
-                          "type": 3
-                        }
-                      ]
-                    },
-                    {
-                      "name": "climb_layer",
-                      "uid": "c38dc373-2b34-4534-9f44-33a1e939893c",
-                      "type": 7,
-                      "children": [
-                        {
-                          "name": "plate",
-                          "uid": "a2a01e25-83d6-422f-9878-b37a6d808321",
-                          "type": 4
-                        },
-                        {
-                          "name": "accent",
-                          "uid": "4450951b-03c2-4f59-9981-db724a1735f0",
-                          "type": 7
-                        },
-                        {
-                          "name": "icon_frame",
-                          "uid": "e29b302b-bebb-428e-9b03-bf878eb48cfc",
-                          "type": 4
-                        },
-                        {
-                          "name": "icon",
-                          "uid": "ec23470a-b88f-4aa8-9ed4-26016da16a2e",
-                          "type": 4
-                        },
-                        {
-                          "name": "count",
-                          "uid": "54720cf8-0c79-4076-a99b-cee61232906a",
-                          "type": 3
-                        },
-                        {
-                          "name": "title",
-                          "uid": "5b0149ab-2ead-4c71-9239-5f0094455fbb",
-                          "type": 3
-                        }
-                      ]
-                    },
-                    {
-                      "name": "realm_progress",
-                      "uid": "8709201b-963c-4020-a8f3-fec94e9b1ed6",
-                      "type": 7,
-                      "children": [
-                        {
-                          "name": "plate",
-                          "uid": "99ea9190-8a9c-481e-82c3-0a1140191b45",
-                          "type": 4
-                        },
-                        {
-                          "name": "accent",
-                          "uid": "2a77a040-a8a0-4ac4-a159-ce5a509ef5ba",
-                          "type": 7
-                        },
-                        {
-                          "name": "icon_frame",
-                          "uid": "7409b75d-1bb2-4225-bfd5-b592fac4636f",
-                          "type": 4
-                        },
-                        {
-                          "name": "icon",
-                          "uid": "83037bd6-d13b-4a45-b13f-155eecf09450",
-                          "type": 4
-                        },
-                        {
-                          "name": "count",
-                          "uid": "aaedf754-244f-4cf5-a570-763414ff9746",
-                          "type": 3
-                        },
-                        {
-                          "name": "title",
-                          "uid": "5a396905-56f2-4779-87ee-413f4a408ba1",
-                          "type": 3
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
                   "name": "skill_bar",
-                  "uid": "4435b0da-52b8-4c34-8e19-40bfefd5f1ad",
+                  "uid": "c0b3fcdc-eefa-4829-ba62-9a618531aaaf",
                   "type": 7,
                   "children": [
                     {
                       "name": "skill_slot_1",
-                      "uid": "48937dd0-7fff-49b9-a325-ebac40dbeba5",
+                      "uid": "bbd0e563-8a14-4a95-b1c2-65232503f9f3",
                       "type": 7,
                       "children": [
                         {
                           "name": "frame",
-                          "uid": "253ecde3-f984-4d92-bd77-1da153fc97a8",
+                          "uid": "383a9d91-1eb9-4248-ae4f-f8d5f8144d9f",
                           "type": 4
                         },
                         {
                           "name": "icon",
-                          "uid": "d1a112ff-f1e7-4fd2-9ac5-dc96e9dd33af",
+                          "uid": "1fd89065-7196-467d-a231-4f9c4604f180",
                           "type": 4
-                        },
-                        {
-                          "name": "label_band",
-                          "uid": "6a8b6765-92b7-43b1-988f-32b2e40549a1",
-                          "type": 4
-                        },
-                        {
-                          "name": "key",
-                          "uid": "45809394-704e-43e7-9df7-9f8244762be3",
-                          "type": 3
-                        },
-                        {
-                          "name": "cooldown",
-                          "uid": "194bad5c-0c16-44d9-a46b-55bd805c33d6",
-                          "type": 3
-                        },
-                        {
-                          "name": "label",
-                          "uid": "61598dcf-15cb-41ee-886e-ebc3599c03d5",
-                          "type": 3
                         }
                       ]
                     },
                     {
                       "name": "skill_slot_2",
-                      "uid": "f5222983-81ab-40e2-a939-0112494618e6",
+                      "uid": "b8b75ba4-7a90-45fe-afd3-e890b43b1345",
                       "type": 7,
                       "children": [
                         {
                           "name": "frame",
-                          "uid": "25b1114a-3611-467a-8895-92930bda0c56",
+                          "uid": "b37ac947-c4ac-400e-99d4-92114f012b3e",
                           "type": 4
                         },
                         {
                           "name": "icon",
-                          "uid": "50340df9-7b94-4e91-a69f-02bc7dfa6995",
+                          "uid": "187429c3-f445-47dd-ba6c-eeb2da39a98d",
                           "type": 4
-                        },
-                        {
-                          "name": "label_band",
-                          "uid": "70158219-c6a4-4ad0-850e-28a8234356f6",
-                          "type": 4
-                        },
-                        {
-                          "name": "key",
-                          "uid": "6cd430a0-25fb-4fbd-81f1-91ba7948da76",
-                          "type": 3
-                        },
-                        {
-                          "name": "cooldown",
-                          "uid": "8c116262-fd23-4f3b-8e7c-9d5363805454",
-                          "type": 3
-                        },
-                        {
-                          "name": "label",
-                          "uid": "29e91a5f-1ed6-478d-91b3-cf30dfb7bf9e",
-                          "type": 3
                         }
                       ]
                     },
                     {
                       "name": "skill_slot_3",
-                      "uid": "bbb83062-a8d5-4b85-ac42-4d68220a8f4f",
+                      "uid": "e3afce85-b7ee-4fcb-89fd-785c2d821435",
                       "type": 7,
                       "children": [
                         {
                           "name": "frame",
-                          "uid": "5c231e4e-742b-40ea-9a52-3e6a0157a6bf",
+                          "uid": "95f76e62-e5c3-4cc2-a09c-6cf810526183",
                           "type": 4
                         },
                         {
                           "name": "icon",
-                          "uid": "269aa302-8aee-4b8a-b3e3-323a88deaeca",
+                          "uid": "42425a52-cfca-44a6-a86f-55a5aa450f5f",
                           "type": 4
-                        },
-                        {
-                          "name": "label_band",
-                          "uid": "23c6641f-9e8c-42cb-a3bd-30eb11b82f30",
-                          "type": 4
-                        },
-                        {
-                          "name": "key",
-                          "uid": "5a26c3fa-d798-466d-959e-3c4f15ecbdc8",
-                          "type": 3
-                        },
-                        {
-                          "name": "cooldown",
-                          "uid": "9d893875-d16e-463f-9502-c99f038cb7a8",
-                          "type": 3
-                        },
-                        {
-                          "name": "label",
-                          "uid": "eb89adf8-f5cc-4b7c-964c-6a664de5025f",
-                          "type": 3
                         }
                       ]
                     },
                     {
                       "name": "skill_slot_4",
-                      "uid": "94368955-7c09-46fc-8389-5809278efd70",
+                      "uid": "41a3cd0f-2a0f-42cc-8b46-45eb0e4275fa",
                       "type": 7,
                       "children": [
                         {
                           "name": "frame",
-                          "uid": "c01a9d05-196f-4fdb-b8f1-259765426689",
+                          "uid": "3653d03e-3d9b-4565-a609-2dcb6a8f9826",
                           "type": 4
                         },
                         {
                           "name": "icon",
-                          "uid": "eba389b6-5343-43ec-aa7f-e47758f7f10f",
+                          "uid": "82972c79-25b6-4289-ae03-2fb6afb6adb2",
                           "type": 4
-                        },
-                        {
-                          "name": "label_band",
-                          "uid": "f48aa990-2fea-4a5d-9f08-9a3099edb7d7",
-                          "type": 4
-                        },
-                        {
-                          "name": "key",
-                          "uid": "80ca2e83-5aab-4876-9417-e7d705454c99",
-                          "type": 3
-                        },
-                        {
-                          "name": "cooldown",
-                          "uid": "76668625-006c-4baf-be4e-4fba3c636a93",
-                          "type": 3
-                        },
-                        {
-                          "name": "label",
-                          "uid": "f126f5d0-e45b-4758-81a4-c7807a6e9a31",
-                          "type": 3
                         }
                       ]
                     },
                     {
                       "name": "skill_slot_5",
-                      "uid": "912b5fd2-8153-48a4-a139-34ab483e73c9",
+                      "uid": "d8b9c7ba-c5b4-4e6f-868e-9d425efeeea3",
                       "type": 7,
                       "children": [
                         {
                           "name": "frame",
-                          "uid": "e1a3ba3b-e7a7-4ebc-81da-dda81940dbe5",
+                          "uid": "9311b3f4-082c-402f-94ab-8fc0f410ec0d",
                           "type": 4
                         },
                         {
                           "name": "icon",
-                          "uid": "93975a87-cde6-4c2e-b0b0-afb916aca78a",
+                          "uid": "aee1cda9-bf28-4c24-9d27-de809aa275ba",
                           "type": 4
-                        },
-                        {
-                          "name": "label_band",
-                          "uid": "07f4dc4f-874c-41a9-a298-050fa78d3988",
-                          "type": 4
-                        },
-                        {
-                          "name": "key",
-                          "uid": "85fac594-051c-4245-b63c-5b91627689c8",
-                          "type": 3
-                        },
-                        {
-                          "name": "cooldown",
-                          "uid": "fdf5702b-9efd-42be-9578-84d643757d7b",
-                          "type": 3
-                        },
-                        {
-                          "name": "label",
-                          "uid": "f66bdb22-f0ca-4128-b83f-03b653a78366",
-                          "type": 3
                         }
                       ]
                     }
                   ]
                 },
                 {
-                  "name": "hero_level",
-                  "uid": "2cfb080c-d8a1-4091-acd1-35eccee465b1",
-                  "type": 3
-                },
-                {
-                  "name": "exp_bar",
-                  "uid": "253d410d-9b30-4605-ae2b-e1667ec3cf77",
-                  "type": 7,
-                  "children": [
-                    {
-                      "name": "bar_bg",
-                      "uid": "e5353bf6-0290-475d-83a9-1fafb404fbe5",
-                      "type": 4
-                    },
-                    {
-                      "name": "bar_inner",
-                      "uid": "b201707b-caca-41de-8e22-578214405ca3",
-                      "type": 4
-                    },
-                    {
-                      "name": "fill",
-                      "uid": "14d88833-7a9b-42aa-aec1-b26c1b94574a",
-                      "type": 7
-                    },
-                    {
-                      "name": "exp_text",
-                      "uid": "bfc4ae9a-4e63-4ed3-a275-c97c101c16ba",
-                      "type": 3
-                    }
-                  ]
-                },
-                {
-                  "name": "status_text",
-                  "uid": "c5c630c7-7095-4589-9850-21888792f915",
-                  "type": 3
-                },
-                {
                   "name": "buff_row",
-                  "uid": "da458be4-5f6c-4760-8aec-9d0857a481c4",
+                  "uid": "a05987e1-39ca-4710-85b9-3e2a44063ad8",
                   "type": 7,
                   "children": [
                     {
                       "name": "buff_slot_1",
-                      "uid": "1ebc8d5f-9fb9-41a1-9171-5b2eb878630b",
+                      "uid": "189deb15-66fc-411b-9e40-621250975b0a",
                       "type": 7,
                       "children": [
                         {
-                          "name": "frame",
-                          "uid": "8647c2fa-dddd-41ad-9a42-5d85fc99177e",
-                          "type": 4
-                        },
-                        {
                           "name": "icon",
-                          "uid": "96adbdd8-56e8-4012-9266-09c0641c890d",
+                          "uid": "ce4ef38d-f18b-41e6-9e3d-a0c0a6f304ed",
                           "type": 4
                         }
                       ]
                     },
                     {
                       "name": "buff_slot_2",
-                      "uid": "2714a84a-4dc7-4f98-9c14-debfb9105c53",
+                      "uid": "2770ef0c-2fff-4ce4-9bb7-31e8f5b1d9df",
                       "type": 7,
                       "children": [
                         {
-                          "name": "frame",
-                          "uid": "27dd919d-c387-485f-82a3-f9449ad2fe79",
-                          "type": 4
-                        },
-                        {
                           "name": "icon",
-                          "uid": "ff0ee62a-7078-43dc-aa79-23c898a3f518",
+                          "uid": "e11f3b14-0946-4f4b-b667-12588b351d29",
                           "type": 4
                         }
                       ]
                     },
                     {
                       "name": "buff_slot_3",
-                      "uid": "0351bdc8-f378-4eef-b8bf-e8833e76f815",
+                      "uid": "3c38f15b-9a32-41b9-8b3b-62bb476bb65c",
                       "type": 7,
                       "children": [
                         {
-                          "name": "frame",
-                          "uid": "4c557dcc-3228-4c4d-8ed2-2721881341be",
-                          "type": 4
-                        },
-                        {
                           "name": "icon",
-                          "uid": "397ac376-2926-41e4-a7a2-257f337af0fc",
+                          "uid": "cc350e74-8c8a-463b-ac45-9ab594c03950",
                           "type": 4
                         }
                       ]
                     },
                     {
                       "name": "buff_slot_4",
-                      "uid": "0932682e-d441-42cd-955e-232a6984e7da",
+                      "uid": "b29ab07d-244d-445d-b84b-253205e18148",
                       "type": 7,
                       "children": [
                         {
-                          "name": "frame",
-                          "uid": "004748dd-ab4b-45ca-813d-e1bcb018f520",
-                          "type": 4
-                        },
-                        {
                           "name": "icon",
-                          "uid": "4e1e8c76-9251-497e-8bad-65e63481d200",
+                          "uid": "f580d392-5f45-4d65-9534-90fbc8d76a62",
                           "type": 4
                         }
                       ]
                     },
                     {
                       "name": "buff_slot_5",
-                      "uid": "500b20a2-3f72-41f0-aef0-3b1cc0db6cd7",
+                      "uid": "7d9f69fc-6755-4285-879f-13377761b50e",
                       "type": 7,
                       "children": [
                         {
-                          "name": "frame",
-                          "uid": "abe16da4-f9a1-4dea-b703-6817481382bb",
-                          "type": 4
-                        },
-                        {
                           "name": "icon",
-                          "uid": "20ea6e2b-0e99-45e2-8589-c7c9047a1dc1",
+                          "uid": "dce58557-376e-4554-afca-c10aa813e798",
                           "type": 4
                         }
                       ]
@@ -922,107 +605,107 @@
         },
         {
           "name": "right_station",
-          "uid": "6d8ea302-1105-4587-9e81-1be38fcc2035",
+          "uid": "af759af7-29d3-4174-a49c-203b490c8754",
           "type": 7,
           "children": [
             {
               "name": "loadout_row",
-              "uid": "64bf5e8b-d8c7-4873-87bd-4cbf5c2d6fdd",
+              "uid": "b6684ca0-e8e4-4e3a-b2d6-025f1491796f",
               "type": 7,
               "children": [
                 {
                   "name": "loadout_title",
-                  "uid": "59af5594-ed5b-4f94-b801-e60fad7fb58a",
+                  "uid": "cb6c903a-993b-4f8e-84d5-3c7f108ec4e1",
                   "type": 3
                 },
                 {
                   "name": "loadout_slot_1",
-                  "uid": "7672a6cb-0815-4e8f-a172-e59d2ccd68c7",
+                  "uid": "ec179dc2-fc64-47a2-a6db-6d9cc0641343",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "de23ba5b-b15c-48c8-be64-038d98a3f665",
+                      "uid": "881c309e-4b3f-4aa0-9deb-7fff549767af",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "09ff5193-90fe-4c02-80a1-d0ac351bdd08",
+                      "uid": "0f431e68-6862-45a5-be15-5d40c52b6fc4",
                       "type": 4
                     }
                   ]
                 },
                 {
                   "name": "loadout_slot_2",
-                  "uid": "8dafbec0-118b-49d4-bf00-2406cc487c4e",
+                  "uid": "61d26cf5-178c-41ae-93fb-4de8fbc9a7df",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "f16273f6-4d09-429e-aac7-4d39343fbf5c",
+                      "uid": "eae945c3-7cbf-4af9-9835-cb05f859f1f5",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "8655da35-25db-465b-8366-e015179d8d05",
+                      "uid": "aa98edf2-94fe-4df5-80ce-b820c3f69346",
                       "type": 4
                     }
                   ]
                 },
                 {
                   "name": "loadout_slot_3",
-                  "uid": "87841e15-95d6-4f58-8ce3-254d530acb00",
+                  "uid": "63b893c7-de04-4cbb-8788-df8b6309cde0",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "ed6ae084-9a6e-47e3-9f92-882f5194f2c1",
+                      "uid": "068c9820-d4fb-4db6-b9b8-cac937c2a949",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "971b701b-4faf-464a-9f0f-6051c5e4a864",
+                      "uid": "350eaaf2-d900-49f4-9fed-f7904720a042",
                       "type": 4
                     }
                   ]
                 },
                 {
                   "name": "loadout_slot_4",
-                  "uid": "1170806d-e7cc-41a0-b04e-c2acc0773de1",
+                  "uid": "79149959-7742-4916-8675-8cd68f016760",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "5466687c-9cdc-4439-976d-e824ecb526f0",
+                      "uid": "7583ed77-3a73-4f47-9a53-e0a2d2cabbc6",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "4c546d39-d3b5-4eb1-ab38-9a5a59caac6a",
+                      "uid": "5e651315-7f3b-4171-9a6d-4ca187b8384c",
                       "type": 4
                     }
                   ]
                 },
                 {
                   "name": "loadout_slot_5",
-                  "uid": "d336abf2-b428-4cd2-9e5e-05a2e810bb8c",
+                  "uid": "4af47575-877b-46a3-8a55-2cb94ce18889",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "24848e4a-5b5e-4700-9859-2e3c2eb4f047",
+                      "uid": "de4db306-b57c-4eef-942d-367cfe51e145",
                       "type": 4
                     }
                   ]
                 },
                 {
                   "name": "loadout_slot_6",
-                  "uid": "53367baa-a886-47de-ad4b-d48261d2db25",
+                  "uid": "5abefb18-cf37-4e51-9dcd-10891c03a48d",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "ab457b94-23b1-46a4-983d-a3c3e6b534dc",
+                      "uid": "320b53ab-4b21-462d-8999-10f7d531d331",
                       "type": 4
                     }
                   ]
@@ -1031,86 +714,86 @@
             },
             {
               "name": "consumable_panel",
-              "uid": "034a3bbd-4b78-4893-b2f5-90ce78158933",
+              "uid": "b33f5b9b-aea5-4a1a-9411-6a11bd8a8c2a",
               "type": 7,
               "children": [
                 {
                   "name": "slot_1",
-                  "uid": "9e4f8584-78b8-4543-8999-41d8eef79556",
+                  "uid": "a0d41aa1-914f-43ff-85ef-af433ff10a6e",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "d74afe14-64d5-409d-bad9-27c82802b859",
+                      "uid": "716d1cdd-f1ff-4bd3-8a77-0ee2b34f87e8",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "646d24ed-a1bb-4918-8a13-8a22aa0b6dd2",
+                      "uid": "d73f88c9-cb66-45dc-abea-4fba5aa4b724",
                       "type": 4
                     },
                     {
                       "name": "hotkey",
-                      "uid": "d89635db-ca92-44fe-aefa-81f3c6817054",
+                      "uid": "4bf55a0b-931b-4f46-b444-b56108774625",
                       "type": 3
                     },
                     {
                       "name": "count",
-                      "uid": "a63fee42-ab36-45ab-a30f-c34f71040e35",
+                      "uid": "d061163b-296b-4f3c-99f1-2acb94259cbf",
                       "type": 3
                     }
                   ]
                 },
                 {
                   "name": "slot_2",
-                  "uid": "22c65fba-4b1b-4397-b376-d015548690f0",
+                  "uid": "9677d6c1-744a-4f9d-9414-a59796ea88f8",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "c761f993-6fa4-4e44-a9ae-193d46395598",
+                      "uid": "64ec753d-3af6-4649-9b68-85b03f8f916a",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "5a718ef0-a954-43bf-8bb1-e5c154121180",
+                      "uid": "8dc7ae8e-8ca6-46be-bdbf-1297a638cab7",
                       "type": 4
                     },
                     {
                       "name": "hotkey",
-                      "uid": "e7d16733-dd24-4a66-9583-70f1d96d28c8",
+                      "uid": "30164104-b8e0-4e1f-b83c-f953bbc83d02",
                       "type": 3
                     },
                     {
                       "name": "count",
-                      "uid": "090f747c-7ad5-4d23-a040-70f9d1c5e22b",
+                      "uid": "56dc12bd-3eae-45cf-9a24-135a0cd3b90c",
                       "type": 3
                     }
                   ]
                 },
                 {
                   "name": "slot_3",
-                  "uid": "8c8d1428-30e3-4dc9-89e2-27e178dbd130",
+                  "uid": "6bd24c33-ce80-4946-ac97-bf25a0f1895a",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "00d10f0f-cb07-4778-854b-97c7c2c3a81e",
+                      "uid": "0ef12e5e-a54f-4a4a-b585-1cb180f08137",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "92a96076-c498-4188-885d-62a40b6a43bb",
+                      "uid": "21bdc5da-12da-45e4-9d8e-8cf45b0554aa",
                       "type": 4
                     },
                     {
                       "name": "hotkey",
-                      "uid": "8ff6bd48-d7b6-4f4b-a136-cf99a732e4af",
+                      "uid": "f59828c9-fef6-4d1e-add9-651b7547ddb8",
                       "type": 3
                     },
                     {
                       "name": "count",
-                      "uid": "70b6ab92-71b2-4ca3-9fbb-f696ca7116b5",
+                      "uid": "d533a04d-1e6f-4707-a743-02dee94f0542",
                       "type": 3
                     }
                   ]
@@ -1119,214 +802,214 @@
             },
             {
               "name": "card_panel",
-              "uid": "7f2f7d2c-238e-47d3-914e-27dece68fe0e",
+              "uid": "0ff82540-4f41-4603-a835-c07045af089c",
               "type": 7,
               "children": [
                 {
                   "name": "station_hint_bg",
-                  "uid": "65fdd0ba-bf20-4c53-8b3e-aa99ded6957e",
+                  "uid": "acf0f384-700d-4eb5-b577-60ae55f294df",
                   "type": 4
                 },
                 {
                   "name": "station_hint",
-                  "uid": "1fb1800a-545b-474b-b4a6-802eab48bb43",
+                  "uid": "d29aa589-8089-4494-bb1d-66c9616e9df2",
                   "type": 3
                 },
                 {
                   "name": "draw_button",
-                  "uid": "07075152-9b34-41de-a103-84b3c97dec92",
+                  "uid": "bb9660a1-bf7f-41b8-88df-fd23621e9969",
                   "type": 7,
                   "children": [
                     {
                       "name": "button",
-                      "uid": "1bfe1352-4ce5-441c-b790-52ee67b988b3",
+                      "uid": "f6b8b719-be81-4bc4-a992-8853536b5ff6",
                       "type": 1
                     },
                     {
                       "name": "hotkey",
-                      "uid": "3d8788ae-7271-4e3a-8a0c-62d995d99a0a",
+                      "uid": "0daa2d7c-9575-46a3-a979-de5b3d13f198",
                       "type": 3
                     }
                   ]
                 },
                 {
                   "name": "reward_button",
-                  "uid": "11fb006f-f1d5-429b-be66-37bc927cee3e",
+                  "uid": "e80c8f9d-7320-42e9-9090-e841f8ad33b8",
                   "type": 7,
                   "children": [
                     {
                       "name": "button",
-                      "uid": "1a866ec5-908f-4b8c-9b55-a29f7ab10336",
+                      "uid": "e67dbd01-c029-4a1d-b665-223098947b0d",
                       "type": 1
                     },
                     {
                       "name": "hotkey",
-                      "uid": "090f1688-fb88-46da-beb7-2c4c5a469a9e",
+                      "uid": "152fa98f-c96b-4d47-bdf3-3fc872d582c1",
                       "type": 3
                     }
                   ]
                 },
                 {
                   "name": "kill_reward_button",
-                  "uid": "c53d0485-f433-4c9e-8b27-4757e93221b7",
+                  "uid": "48d1b4a2-b0e0-48fa-ba94-89d42a68d7f8",
                   "type": 7,
                   "children": [
                     {
                       "name": "button",
-                      "uid": "45c655c7-4cfa-4a37-b4ac-392145bf2df6",
+                      "uid": "5134a601-f4c1-4c54-a4dd-e062ce49240a",
                       "type": 1
                     },
                     {
                       "name": "hotkey",
-                      "uid": "d5f08419-9336-4b8e-9c7f-c944a384fc99",
+                      "uid": "e8a4c1bb-e989-4838-a12e-b3ee57005d7c",
                       "type": 3
                     }
                   ]
                 },
                 {
                   "name": "fish_button",
-                  "uid": "cd077b42-7673-4994-9e07-fbc6b3253bc8",
+                  "uid": "41dadb46-81de-4588-9269-1d77d2df26e9",
                   "type": 7,
                   "children": [
                     {
                       "name": "button",
-                      "uid": "1ca29d08-827b-44f8-9fb5-7873b92d7ca1",
+                      "uid": "ede8679e-61b8-43cf-aff0-02108a6859f2",
                       "type": 1
                     },
                     {
                       "name": "hotkey",
-                      "uid": "74488278-02d1-4a13-98fc-77726551bbce",
+                      "uid": "840ff348-e80d-448a-8b8c-a7c6b8a64d85",
                       "type": 3
                     }
                   ]
                 },
                 {
                   "name": "card_slot_1",
-                  "uid": "2bb06665-8281-4ba8-b163-f52fac9c653b",
+                  "uid": "4fbb1b44-c79a-4876-aa7f-88ff46aa1ecb",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "fe36567e-2e9b-4218-baaf-2de81cb1936e",
+                      "uid": "16b0286e-ce39-4a66-b30a-6c33557ab2f5",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "2dc7ee65-b475-4902-94e1-3b3eef4b436f",
+                      "uid": "8e535a5d-e304-49da-837b-09534f0495dc",
                       "type": 4
                     }
                   ]
                 },
                 {
                   "name": "card_slot_2",
-                  "uid": "5477def5-5dba-4707-a128-375126d5592f",
+                  "uid": "65d23122-4e77-45e5-8e24-7d79150d4b1c",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "1f21488a-2bf8-4419-bf07-a156c9b109ef",
+                      "uid": "12fbee9a-71d4-4af6-8388-122ee4f50fdb",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "86114993-b194-4201-9552-5462562d5bb2",
+                      "uid": "8fdf1180-c68c-4b79-8d87-fe5a54c69e17",
                       "type": 4
                     }
                   ]
                 },
                 {
                   "name": "card_slot_3",
-                  "uid": "9dd2fb4f-90f3-4f83-b5ed-e127b21f7453",
+                  "uid": "97ecca36-7d0b-4c12-83c9-e8badcb81993",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "8a89b75f-bc4c-4842-b001-3841b8931fb0",
+                      "uid": "293c7ffa-4f4b-4add-b26f-db6560a520cb",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "af07ae06-3092-4708-943b-0fb8e0ac7692",
+                      "uid": "c53a9010-594e-42d0-886f-890724fb46bf",
                       "type": 4
                     }
                   ]
                 },
                 {
                   "name": "card_slot_4",
-                  "uid": "f98d2bf4-aacc-4d85-ba34-3aadcac73cd9",
+                  "uid": "bf54a4c1-394e-4410-9898-c9c079151a99",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "50e4a1fb-32a8-49dc-981e-ebf59bd0e250",
+                      "uid": "d0bd6d7d-7ec8-4432-9b48-3df89688e834",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "282ed082-3893-4a59-8f06-57cfe704e106",
+                      "uid": "7b61bf92-5136-4bc5-9882-cab13926efef",
                       "type": 4
                     }
                   ]
                 },
                 {
                   "name": "card_slot_5",
-                  "uid": "a50ac044-da05-4650-89eb-6ad757c19c4f",
+                  "uid": "d77f3513-bcbc-4d6f-82d1-e5ddebafbe76",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "5427819c-5a66-4e01-998b-6e4390b2550b",
+                      "uid": "3dcf14cb-c99d-4284-ab14-f6942e442393",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "a99d713e-b283-498a-8e67-0c54938a00cf",
+                      "uid": "33bbd9b7-a6fc-40f3-9079-4741d23066f7",
                       "type": 4
                     }
                   ]
                 },
                 {
                   "name": "card_slot_6",
-                  "uid": "4b2cd25c-5dbe-4fe9-aaf7-b5f95df73fe9",
+                  "uid": "fa6a5d1a-c13d-41a1-9d6d-f3a5c6b4bee8",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "113560ac-8386-484d-8715-9781a86371e9",
+                      "uid": "c417cc3b-3997-4ab4-91b3-2397aac7a169",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "ca533ace-0df9-4c9f-8a3b-fa70437efb5e",
+                      "uid": "8cb489bf-fbb7-417d-879d-3ee57b933fce",
                       "type": 4
                     }
                   ]
                 },
                 {
                   "name": "card_slot_7",
-                  "uid": "700c09fd-893e-49fc-bed9-75d4bd2c61b6",
+                  "uid": "3601ade0-ce9c-4de0-b422-f7b32aa7745e",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "185107c3-b8aa-46e2-b97c-be9c4e07f6ef",
+                      "uid": "50391ced-2ffc-49b7-9dc0-921cec36122c",
                       "type": 4
                     },
                     {
                       "name": "icon",
-                      "uid": "179fa144-979c-47af-98aa-7578cae4af74",
+                      "uid": "0559a0d6-6fc5-473f-a79d-b3f4dd6ff8ca",
                       "type": 4
                     }
                   ]
                 },
                 {
                   "name": "card_slot_8",
-                  "uid": "6e8f1091-ffa3-48f1-81d1-423d3e9f6933",
+                  "uid": "66ff06ff-efda-4a9e-b10f-2b7ca796f4ec",
                   "type": 7,
                   "children": [
                     {
                       "name": "frame",
-                      "uid": "38a801d0-dc37-42d6-a454-9ba0c734cc22",
+                      "uid": "a183fbae-72a0-4e51-a3c5-606952a8fa1b",
                       "type": 4
                     }
                   ]
