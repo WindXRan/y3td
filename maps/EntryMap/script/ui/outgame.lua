@@ -1,4 +1,4 @@
-local BattlePass = require 'runtime.battle_pass'
+local theme = require 'ui.theme'
 
 local M = {}
 
@@ -17,7 +17,7 @@ function M.create(env)
   local OUTGAME_ATTR_BONUS_BY_STAGE_MODE = CONFIG.outgame_attr_bonus_config
     and CONFIG.outgame_attr_bonus_config.by_stage_mode
     or {}
-  local STAGE_PAGE_SIZE = 5
+  local STAGE_PAGE_SIZE = 7
   local CHAPTER_LIST = {}
   local STAGES_BY_CHAPTER = {}
   local PAGE_LIST = {}
@@ -31,14 +31,8 @@ function M.create(env)
   local VIEW_MODE_CULTIVATION = 'cultivation'
   local VIEW_MODE_LABELS = {
     [VIEW_MODE_MAINLINE] = '主线模式',
-    [VIEW_MODE_CULTIVATION] = '修仙模式',
+    [VIEW_MODE_CULTIVATION] = '打鱼模式',
   }
-  local DIFFICULTY_BUTTON_SLOT_WIDTH = 428
-  local DIFFICULTY_BUTTON_SLOT_HEIGHT = 100
-  local DIFFICULTY_BUTTON_WIDTH = 204
-  local DIFFICULTY_BUTTON_HEIGHT = 68
-  local DIFFICULTY_BUTTON_GAP = 12
-  local DIFFICULTY_BUTTON_TOP_PADDING = 18
   local COLOR = {
     selected_bg = { 84, 138, 226, 255 },
     selected_text = { 245, 248, 255, 255 },
@@ -53,8 +47,47 @@ function M.create(env)
   }
 
   local api = {}
-  local battle_pass_panel = nil
+  local ensure_ui
+  local refresh_ui
+  local ui_retry_timer = nil
+  local ui_retry_remaining = 0
 
+  local function clear_ui_retry_timer()
+    if ui_retry_timer and ui_retry_timer.remove then
+      ui_retry_timer:remove()
+    end
+    ui_retry_timer = nil
+    ui_retry_remaining = 0
+  end
+
+  local function schedule_ui_retry()
+    if not y3 or not y3.ltimer or type(y3.ltimer.wait) ~= 'function' then
+      return
+    end
+    if ui_retry_timer then
+      return
+    end
+    if ui_retry_remaining <= 0 then
+      ui_retry_remaining = 12
+    end
+    ui_retry_timer = y3.ltimer.wait(0.2, function()
+      ui_retry_timer = nil
+      ui_retry_remaining = math.max(0, (ui_retry_remaining or 1) - 1)
+      if STATE.session_phase ~= 'outgame' then
+        clear_ui_retry_timer()
+        return
+      end
+      local ui = ensure_ui()
+      if is_outgame_ui_alive(ui) then
+        clear_ui_retry_timer()
+        refresh_ui()
+        return
+      end
+      if ui_retry_remaining > 0 then
+        schedule_ui_retry()
+      end
+    end)
+  end
   local function resolve_ui(path)
     local ok, ui = pcall(y3.ui.get_ui, env.get_player(), path)
     if not ok or not ui then
@@ -91,9 +124,36 @@ function M.create(env)
     end
   end
 
-  local function set_intercepts_if_alive(ui, intercepts)
-    if is_ui_alive(ui) and ui.set_intercepts_operations then
-      ui:set_intercepts_operations(intercepts == true)
+  local function set_image_if_alive(ui, image)
+    if is_ui_alive(ui) and ui.set_image and image ~= nil and image ~= '' then
+      ui:set_image(image)
+    end
+  end
+
+  local function set_image_url_if_alive(ui, url, aid)
+    if is_ui_alive(ui) and ui.set_image_url and type(url) == 'string' and url ~= '' then
+      ui:set_image_url(url, aid)
+    end
+  end
+
+  local function set_non_outgame_ui_visible(visible)
+    local hidden_paths = {
+      'GameHUD',
+      'top',
+      'bottom_bg',
+      'BattleBottomHUD',
+      'panel_1',
+      'CommonTip',
+      'SceneUI',
+    }
+    for _, path in ipairs(hidden_paths) do
+      local ui = resolve_ui(path)
+      set_visible_if_alive(ui, visible == true)
+    end
+
+    if STATE.gm_ui then
+      set_visible_if_alive(STATE.gm_ui.panel, visible == true)
+      set_visible_if_alive(STATE.gm_ui.toggle_button, visible == true)
     end
   end
 
@@ -456,7 +516,6 @@ function M.create(env)
         end
       end
     end
-    merge_bonus_stats(rebuilt, BattlePass.collect_claimed_bonus_stats(profile))
     if are_same_bonus_stats(profile.hero_attr_bonus_stats, rebuilt) then
       return false
     end
@@ -480,9 +539,6 @@ function M.create(env)
     end
     if type(profile.hero_attr_bonus_stats) ~= 'table' then
       profile.hero_attr_bonus_stats = {}
-      dirty = true
-    end
-    if BattlePass.ensure_profile_defaults(profile) then
       dirty = true
     end
     if profile.selected_view_mode ~= VIEW_MODE_MAINLINE and profile.selected_view_mode ~= VIEW_MODE_CULTIVATION then
@@ -670,6 +726,9 @@ function M.create(env)
     if not stage_def then
       return '当前选择无效，请重新确认关卡。'
     end
+    if get_selected_view_mode(profile) == VIEW_MODE_CULTIVATION then
+      return '打鱼模式当前先保留为局外入口展示，暂不开放进入战斗。'
+    end
     if mode_id ~= SINGLE_MODE_ID then
       return '当前版本仅保留主线模式。'
     end
@@ -725,6 +784,206 @@ function M.create(env)
     return display
   end
 
+  local function format_bonus_summary(profile)
+    local stats = profile and profile.hero_attr_bonus_stats or nil
+    if type(stats) ~= 'table' then
+      return '尚未获得局外属性奖励'
+    end
+
+    local parts = {}
+    for _, attr_name in ipairs({ '攻击白字', '生命白字', '攻击范围' }) do
+      local value = tonumber(stats[attr_name])
+      if value and value ~= 0 then
+        parts[#parts + 1] = string.format('%s +%s', attr_name, value)
+      end
+    end
+
+    if #parts == 0 then
+      return '尚未获得局外属性奖励'
+    end
+    return table.concat(parts, ' / ')
+  end
+
+  local function build_daily_task_rows(profile, selected_stage_id)
+    local selected_stage_def = STAGES_BY_ID[selected_stage_id]
+    local chapter_id = get_selected_chapter_id(selected_stage_id)
+    local unlocked_count, cleared_count = get_chapter_progress_state(profile, chapter_id)
+    local chapter_total = #get_chapter_stage_list(chapter_id)
+    local stage_status = selected_stage_def and get_stage_status_text(profile, selected_stage_def) or '未选择'
+    local stage_progress = get_stage_progress(profile, selected_stage_id)
+    local stage_cleared = stage_progress and stage_progress.standard_cleared == true
+    local result_text = format_last_result(profile)
+
+    return {
+      {
+        title = string.format('章节 %s 推进', tostring(chapter_id or 1)),
+        reward = '奖励：解锁后续关卡',
+        progress = string.format('%d/%d', cleared_count, math.max(1, chapter_total)),
+        status = cleared_count >= chapter_total and '完成' or '进行中',
+      },
+      {
+        title = selected_stage_def and get_stage_display_text(selected_stage_def, selected_stage_id) or '当前关卡',
+        reward = '奖励：推进当前主线',
+        progress = stage_cleared and '1/1' or '0/1',
+        status = stage_status,
+      },
+      {
+        title = '关卡开放情况',
+        reward = string.format('奖励：已开放 %d 个节点', unlocked_count),
+        progress = string.format('%d/%d', unlocked_count, math.max(1, chapter_total)),
+        status = unlocked_count >= chapter_total and '已满' or '开放中',
+      },
+      {
+        title = '最近战报',
+        reward = result_text ~= '' and result_text or '奖励：完成一局后写入战报',
+        progress = result_text ~= '' and '1/1' or '0/1',
+        status = result_text ~= '' and '已记录' or '待开始',
+      },
+      {
+        title = '局外属性加成',
+        reward = format_bonus_summary(profile),
+        progress = next(profile.hero_attr_bonus_stats or {}) and '1/1' or '0/1',
+        status = next(profile.hero_attr_bonus_stats or {}) and '生效中' or '未获得',
+      },
+    }
+  end
+
+  local function refresh_daily_rows(ui, profile, selected_stage_id)
+    local rows = build_daily_task_rows(profile, selected_stage_id)
+    for index, row_ui in ipairs(ui.daily_rows or {}) do
+      local row = rows[index]
+      set_visible_if_alive(row_ui.root, row ~= nil)
+      if row then
+        set_text_if_alive(row_ui.title, row.title)
+        set_text_if_alive(row_ui.reward, row.reward)
+        set_text_if_alive(row_ui.progress, row.progress)
+        set_text_if_alive(row_ui.status, row.status)
+
+        local status_bg = COLOR.available_bg
+        local status_text = COLOR.available_text
+        if row.status == '完成' or row.status == '已满' or row.status == '已通关' or row.status == '已记录' then
+          status_bg = COLOR.cleared_bg
+          status_text = COLOR.cleared_text
+        elseif row.status == '未解锁' or row.status == '待开始' then
+          status_bg = COLOR.locked_bg
+          status_text = COLOR.locked_text
+        end
+        set_image_color_if_alive(row_ui.bg, theme.palette.panel)
+        set_image_color_if_alive(row_ui.status_bg, status_bg)
+        set_text_color_if_alive(row_ui.status, status_text)
+      end
+    end
+  end
+
+  local function refresh_reward_card(ui, profile, selected_stage_id)
+    local selected_stage_def = STAGES_BY_ID[selected_stage_id]
+    set_image_color_if_alive(ui.reward_card, theme.palette.panel_alt)
+    set_text_if_alive(ui.reward_title, '当前关卡奖励')
+    if selected_stage_def then
+      set_text_if_alive(ui.reward_code, string.format('章节：%s', get_stage_display_text(selected_stage_def, selected_stage_id)))
+    else
+      set_text_if_alive(ui.reward_code, '章节：未选择')
+    end
+    set_text_if_alive(ui.reward_hint, format_bonus_summary(profile))
+  end
+
+  local get_player_display_name
+  local DEFAULT_PLAYER_AVATAR = 134223473
+
+  local function get_player_avatar_payload(player)
+    if not player then
+      return 'icon', DEFAULT_PLAYER_AVATAR
+    end
+
+    local icon_url = ''
+    local ok_url, result_url = pcall(function()
+      if player.get_platform_icon_url then
+        return player:get_platform_icon_url()
+      end
+      return ''
+    end)
+    if ok_url and type(result_url) == 'string' then
+      icon_url = result_url
+    end
+    if icon_url ~= '' then
+      local aid = nil
+      local ok_id, platform_id = pcall(function()
+        if player.get_platform_id then
+          return player:get_platform_id()
+        end
+        return 0
+      end)
+      if ok_id and platform_id and platform_id ~= 0 then
+        aid = string.format('player_avatar_%s', tostring(platform_id))
+      end
+      return 'url', icon_url, aid
+    end
+
+    local ok_icon, platform_icon = pcall(function()
+      if player.get_platform_icon then
+        return player:get_platform_icon()
+      end
+      return nil
+    end)
+    if ok_icon and platform_icon ~= nil and platform_icon ~= '' then
+      return 'icon', platform_icon
+    end
+
+    return 'icon', DEFAULT_PLAYER_AVATAR
+  end
+
+  local function refresh_player_slot_avatar(slot, player, occupied)
+    if not slot or not is_ui_alive(slot.avatar) then
+      return
+    end
+    if occupied ~= true then
+      slot.avatar_key = nil
+      set_visible_if_alive(slot.avatar, false)
+      return
+    end
+
+    local payload_kind, payload_value, payload_aid = get_player_avatar_payload(player)
+    if payload_value == nil or payload_value == '' then
+      slot.avatar_key = nil
+      set_visible_if_alive(slot.avatar, false)
+      return
+    end
+
+    set_visible_if_alive(slot.avatar, true)
+    local payload_key = string.format('%s:%s', tostring(payload_kind), tostring(payload_value))
+    if slot.avatar_key == payload_key then
+      return
+    end
+    slot.avatar_key = payload_key
+
+    if payload_kind == 'url' then
+      set_image_url_if_alive(slot.avatar, payload_value, payload_aid)
+    else
+      set_image_if_alive(slot.avatar, payload_value)
+    end
+  end
+
+  local function refresh_footer(ui, profile)
+    local player = env.get_player and env.get_player() or nil
+    local mode_label = get_view_mode_label(profile.selected_view_mode)
+    local save_label = STATE.outgame_profile_save_enabled == true and '云存档' or '内存态'
+    set_text_if_alive(ui.player_name, string.format('%s · %s · %s', get_player_display_name(), mode_label, save_label))
+    for index, slot in ipairs(ui.player_slots or {}) do
+      set_visible_if_alive(slot.root, true)
+      if index == 1 then
+        set_image_color_if_alive(slot.bg, theme.palette.warning)
+        set_image_color_if_alive(slot.inner, { 255, 233, 192, 255 })
+        set_text_if_alive(slot.label, '主机')
+        refresh_player_slot_avatar(slot, player, true)
+      else
+        set_image_color_if_alive(slot.bg, theme.palette.panel)
+        set_image_color_if_alive(slot.inner, theme.palette.panel_deep)
+        set_text_if_alive(slot.label, '')
+        refresh_player_slot_avatar(slot, player, false)
+      end
+    end
+  end
+
   local function get_page_progress_state(profile, page_def)
     local unlocked_count = 0
     local cleared_count = 0
@@ -744,254 +1003,31 @@ function M.create(env)
     return ui
       and is_ui_alive(ui.root)
       and is_ui_alive(ui.hall_root)
-      and ui.stage_slots
-      and is_ui_alive(ui.page_container)
+      and is_ui_alive(ui.stage_slot_container)
       and is_ui_alive(ui.start_button)
   end
 
-  local function clear_page_buttons(ui)
-    for _, root in ipairs(STATE.outgame_page_button_roots or {}) do
-      if is_ui_alive(root) and root.remove then
-        root:remove()
-      end
-    end
-    STATE.outgame_page_button_roots = {}
-    for _, button_ref in ipairs(ui.page_buttons or {}) do
-      if is_ui_alive(button_ref.root) and button_ref.root.remove then
-        button_ref.root:remove()
-      end
-    end
-    ui.page_button_canvas = nil
-    ui.page_button_top_spacer = nil
-    ui.page_button_bottom_spacer = nil
-    ui.page_button_count = 0
-    ui.page_button_layout = nil
-    ui.page_buttons = {}
-  end
-
-  local function create_difficulty_button(parent_ui)
-    if not is_ui_alive(parent_ui) then
-      return nil
-    end
-
-    local ok, prefab = pcall(y3.ui_prefab.create, env.get_player(), '难度按钮', parent_ui)
-    if not ok or not prefab then
-      return nil
-    end
-
-    local root = prefab:get_child()
-    local button = prefab:get_child('button_2')
-    if not is_ui_alive(root) or not is_ui_alive(button) then
-      if prefab.remove then
-        prefab:remove()
-      end
-      return nil
-    end
-
-    local locked = prefab:get_child('button_2.locked')
-    set_intercepts_if_alive(root, false)
-    set_intercepts_if_alive(locked, false)
-    return {
-      prefab = prefab,
-      root = root,
-      button = button,
-      locked = locked,
-    }
-  end
-
-  local function layout_difficulty_button(button_ref, center_x, center_y, z_order)
-    if not button_ref then
-      return
-    end
-
-    if not is_ui_alive(button_ref.root) then
-      return
-    end
-
-    button_ref.root:set_anchor(0.5, 0.5)
-    button_ref.root:set_pos(center_x, center_y)
-    if button_ref.root.set_ui_size then
-      button_ref.root:set_ui_size(DIFFICULTY_BUTTON_SLOT_WIDTH, DIFFICULTY_BUTTON_SLOT_HEIGHT)
-    end
-    set_intercepts_if_alive(button_ref.root, false)
-    if z_order and button_ref.root.set_z_order then
-      button_ref.root:set_z_order(z_order)
-    end
-    if is_ui_alive(button_ref.locked) and z_order and button_ref.locked.set_z_order then
-      button_ref.locked:set_z_order(z_order + 1)
-    end
-  end
-
-  local function get_top_aligned_vertical_pos(container_height, item_height, gap, item_index, top_padding)
-    local start_y = container_height - math.max(0, top_padding or 0) - (item_height * 0.5)
-    return math.floor(start_y - ((item_index - 1) * (item_height + gap)) + 0.5)
-  end
-
-  local function layout_page_buttons(ui)
-    local container = ui and ui.page_container or nil
-    local layout = ui and ui.page_button_layout or nil
-    if not is_ui_alive(container) or not layout then
-      return
-    end
-
-    local container_width = math.floor((container:get_width() or 428) + 0.5)
-    local container_height = math.floor((container:get_height() or 688) + 0.5)
-    local item_height = math.max(0, math.floor((layout.height or 100) + 0.5))
-    local gap = math.max(0, math.floor((layout.gap or 0) + 0.5))
-    local center_x = math.floor((container_width * 0.5) + 0.5)
-
-    for index, button_ref in ipairs(ui.page_buttons or {}) do
-      layout_difficulty_button(
-        button_ref,
-        center_x,
-        get_top_aligned_vertical_pos(container_height, item_height, gap, index, layout.top_padding),
-        10
-      )
-    end
-  end
-
-  local function clear_stage_slot_overlay(slot)
-    if not slot or not is_ui_alive(slot.root) then
-      return
-    end
-
-    local overlay_root = slot.root.get_child and slot.root:get_child('难度按钮') or nil
-    if is_ui_alive(overlay_root) and overlay_root.remove then
-      overlay_root:remove()
-    end
-
-    slot.prefab = nil
-    slot.button_root = nil
-    slot.button = nil
-    slot.locked = nil
-    slot.bound = false
-
-    set_visible_if_alive(slot.bg, true)
-    set_visible_if_alive(slot.label, true)
-  end
-
-  local function ensure_page_buttons(ui, desired_count)
-    local container = ui.page_container
-    if not is_ui_alive(container) then
-      return
-    end
-    desired_count = math.max(0, tonumber(desired_count) or 0)
-    if desired_count <= 0 then
-      clear_page_buttons(ui)
-      return
-    end
-    if desired_count == (ui.page_button_count or 0)
-      and desired_count == #ui.page_buttons then
-      layout_page_buttons(ui)
-      return
-    end
-
-    clear_page_buttons(ui)
-    STATE.outgame_page_button_roots = {}
-
-    ui.page_button_count = desired_count
-
-    ui.page_button_layout = {
-      width = DIFFICULTY_BUTTON_SLOT_WIDTH,
-      height = DIFFICULTY_BUTTON_SLOT_HEIGHT,
-      gap = DIFFICULTY_BUTTON_GAP,
-      top_padding = DIFFICULTY_BUTTON_TOP_PADDING,
-    }
-
-    for index = 1, desired_count do
-      local button_ref = create_difficulty_button(container)
-      if button_ref then
-        local entry = {
-          prefab = button_ref.prefab,
-          root = button_ref.root,
-          button = button_ref.button,
-          locked = button_ref.locked,
-          stage_def = nil,
-        }
-        layout_difficulty_button(entry, 0, 0, 10)
-        button_ref.button:set_button_enable(true)
-        button_ref.button:add_fast_event('左键-按下', function()
-          local stage_def = entry.stage_def
-          if not stage_def then
-            return
-          end
-          if play_ui_click then
-            play_ui_click()
-          end
-          if set_selected_stage(stage_def.stage_id) then
-            api.refresh_ui()
-          end
-        end)
-        ui.page_buttons[#ui.page_buttons + 1] = entry
-        STATE.outgame_page_button_roots[#STATE.outgame_page_button_roots + 1] = button_ref.root
-      else
-        local root = container:create_child('图片')
-        root:set_image(999)
-        root:set_ui_size(DIFFICULTY_BUTTON_SLOT_WIDTH, DIFFICULTY_BUTTON_SLOT_HEIGHT)
-        layout_difficulty_button({ root = root }, 0, 0, 10)
-        root:set_intercepts_operations(true)
-
-        local label = root:create_child('文本')
-        label:set_ui_size(DIFFICULTY_BUTTON_WIDTH, DIFFICULTY_BUTTON_HEIGHT)
-        label:set_anchor(0.5, 0.5)
-        label:set_pos(DIFFICULTY_BUTTON_SLOT_WIDTH * 0.5, DIFFICULTY_BUTTON_SLOT_HEIGHT * 0.5)
-        label:set_text(string.format('N%d', index))
-        label:set_font_size(24)
-        label:set_text_alignment('中', '中')
-        label:set_intercepts_operations(false)
-        label:set_z_order(11)
-
-        local entry = {
-          root = root,
-          label = label,
-          stage_def = nil,
-        }
-        root:add_fast_event('左键-按下', function()
-          local stage_def = entry.stage_def
-          if not stage_def then
-            return
-          end
-          if play_ui_click then
-            play_ui_click()
-          end
-          if set_selected_stage(stage_def.stage_id) then
-            api.refresh_ui()
-          end
-        end)
-        ui.page_buttons[#ui.page_buttons + 1] = entry
-        STATE.outgame_page_button_roots[#STATE.outgame_page_button_roots + 1] = root
-      end
-    end
-
-    layout_page_buttons(ui)
-  end
-
   local function bind_stage_slot(slot)
-    local click_target = slot.bg or slot.root
-    if not is_ui_alive(click_target) or slot.bound == true then
+    if not slot or not is_ui_alive(slot.root) or slot.bound == true then
       return
     end
     slot.bound = true
-    click_target:add_fast_event('左键-按下', function()
-      if not slot.chapter_id then
-        return
-      end
-      local profile = load_profile()
-      local target_stage_id = get_chapter_target_stage_id(profile, slot.chapter_id, profile.selected_stage_id)
-      if not target_stage_id then
+    slot.root:add_fast_event('左键-按下', function()
+      local stage_def = slot.stage_def
+      if not stage_def then
         return
       end
       if play_ui_click then
         play_ui_click()
       end
-      if set_selected_stage(target_stage_id) then
+      if set_selected_stage(stage_def.stage_id) then
         api.refresh_ui()
       end
     end)
   end
 
   local function bind_mode_slot(slot)
-    local click_target = slot and (slot.bg or slot.root) or nil
+    local click_target = slot and (slot.button or slot.root) or nil
     if not is_ui_alive(click_target) or slot.bound == true then
       return
     end
@@ -1016,63 +1052,7 @@ function M.create(env)
       and is_ui_alive(ui.save_entry.button) then
       return ui.save_entry
     end
-
-    local root = ui.hall_root:create_child('图片')
-    root:set_image(999)
-    root:set_ui_size(312, 118)
-    root:set_image_color(12, 18, 28, 228)
-    root:set_z_order(25)
-    root:set_intercepts_operations(true)
-
-    local line = root:create_child('图片')
-    line:set_image(999)
-    line:set_ui_size(280, 2)
-    line:set_pos(156, 78)
-    line:set_image_color(88, 130, 198, 240)
-    line:set_z_order(26)
-
-    local title = root:create_child('文本')
-    title:set_ui_size(136, 24)
-    title:set_pos(82, 92)
-    title:set_text('存档状态')
-    title:set_font_size(20)
-    title:set_text_color(244, 247, 255, 255)
-    title:set_text_alignment('左', '中')
-    title:set_intercepts_operations(false)
-    title:set_z_order(27)
-
-    local status = root:create_child('文本')
-    status:set_ui_size(280, 46)
-    status:set_pos(156, 52)
-    status:set_font_size(15)
-    status:set_text_color(204, 216, 232, 255)
-    status:set_text_alignment('左', '上')
-    status:set_intercepts_operations(false)
-    status:set_z_order(27)
-
-    local button_bg = root:create_child('图片')
-    button_bg:set_image(999)
-    button_bg:set_ui_size(120, 34)
-    button_bg:set_pos(246, 20)
-    button_bg:set_image_color(60, 98, 150, 235)
-    button_bg:set_z_order(26)
-
-    local button = root:create_child('按钮')
-    button:set_ui_size(120, 34)
-    button:set_pos(246, 20)
-    button:set_font_size(16)
-    button:set_text_color(245, 248, 255, 255)
-    button:set_z_order(27)
-
-    ui.save_entry = {
-      root = root,
-      title = title,
-      status = status,
-      button_bg = button_bg,
-      button = button,
-    }
-    ui.save_entry_bound = false
-    return ui.save_entry
+    return nil
   end
 
   local function refresh_save_entry_ui(ui, profile)
@@ -1081,8 +1061,6 @@ function M.create(env)
       return
     end
 
-    local window_width, window_height = get_window_metrics()
-    save_entry.root:set_pos(window_width - 208, window_height - 124)
     set_visible_if_alive(save_entry.root, STATE.session_phase == 'outgame')
     set_text_if_alive(save_entry.status, build_save_status_brief(profile))
     set_text_if_alive(save_entry.button, '打开存档')
@@ -1142,14 +1120,26 @@ function M.create(env)
     backdrop:set_ui_size(window_width, window_height)
   end
 
-  local function ensure_ui()
-    if is_outgame_ui_alive(STATE.outgame_ui) then
-      ensure_page_buttons(STATE.outgame_ui, MAX_CHAPTER_DIFFICULTY_COUNT)
-      for _, slot in ipairs(STATE.outgame_ui.stage_slots or {}) do
-        clear_stage_slot_overlay(slot)
+  function get_player_display_name()
+    local player = env.get_player and env.get_player() or nil
+    if not player then
+      return '玩家'
+    end
+    local ok, name = pcall(function()
+      if player.get_name then
+        return player:get_name()
       end
+      return nil
+    end)
+    if ok and type(name) == 'string' and name ~= '' then
+      return name
+    end
+    return '玩家'
+  end
+
+  ensure_ui = function()
+    if is_outgame_ui_alive(STATE.outgame_ui) then
       sync_outgame_backdrop(STATE.outgame_ui)
-      ensure_save_entry_ui(STATE.outgame_ui)
       refresh_save_entry_ui(STATE.outgame_ui, STATE.outgame_profile)
       bind_ui_events(STATE.outgame_ui)
       return STATE.outgame_ui
@@ -1160,98 +1150,169 @@ function M.create(env)
     local backdrop = resolve_ui('outgame.大厅.layout.底板')
     local title = resolve_ui('outgame.大厅.layout.right.mode_name')
     local tip_root = resolve_ui('outgame.大厅.layout.right.mode_name.修仙模式tips')
-    local tip = resolve_ui('outgame.大厅.layout.right.mode_name.修仙模式tips.layout.label')
+    local tip = resolve_ui('outgame.大厅.layout.right.mode_name.修仙模式tips.layout_2.label_3')
     local page_container = resolve_ui('outgame.大厅.layout.right.难度列表')
     local mode_panel = resolve_ui('outgame.大厅.layout.left_2')
-    local mode_list = resolve_ui('outgame.大厅.layout.left_2.list')
     local stage_slot_container = resolve_ui('outgame.大厅.layout.right_2.list')
     local start_button = resolve_ui('outgame.大厅.layout.start')
 
-    if not root or not hall_root or not title or not page_container or not stage_slot_container or not start_button then
+    if not (is_ui_alive(root) and is_ui_alive(hall_root)) then
       if not STATE.outgame_ui_bind_warned then
         STATE.outgame_ui_bind_warned = true
-        message('未找到 outgame 画板中的大厅节点，请先确认 outgame.json 已加载。')
+        message('未找到 outgame 静态画板，已等待界面编辑器面板加载。')
       end
       return nil
     end
 
-    for _, old_root in ipairs(STATE.outgame_page_button_roots or {}) do
-      if is_ui_alive(old_root) and old_root.remove then
-        old_root:remove()
+    if is_ui_alive(root)
+      and is_ui_alive(hall_root)
+      and is_ui_alive(mode_panel)
+      and is_ui_alive(stage_slot_container)
+      and is_ui_alive(start_button) then
+      local function build_static_mode_slot(base_path, view_mode, display_label)
+        local slot_root = resolve_ui(base_path)
+        local bg = resolve_ui(base_path .. '.模式')
+        local label = resolve_ui(base_path .. '.模式.mode')
+        local selected = resolve_ui(base_path .. '.模式.selected')
+        if not is_ui_alive(slot_root) then
+          return nil
+        end
+        return {
+          root = slot_root,
+          bg = bg or slot_root,
+          button = bg or slot_root,
+          label = label,
+          selected = selected,
+          view_mode = view_mode,
+          display_label = display_label,
+          bound = false,
+        }
       end
-    end
-    STATE.outgame_page_button_roots = {}
 
-    local mode_slots = {}
-    for _, slot_def in ipairs({
-      { node_name = '主线模式', view_mode = VIEW_MODE_MAINLINE, label = '主线模式' },
-      { node_name = '修仙模式', view_mode = VIEW_MODE_CULTIVATION, label = '修仙模式' },
-    }) do
-      local slot_root = mode_list and mode_list:get_child(slot_def.node_name) or nil
-      local slot_bg = slot_root and slot_root:get_child('模式') or nil
-      local slot_label = slot_root and slot_root:get_child('模式.mode') or nil
-      local slot_selected = slot_root and slot_root:get_child('模式.selected') or nil
-      set_intercepts_if_alive(slot_label, false)
-      set_intercepts_if_alive(slot_selected, false)
-      mode_slots[#mode_slots + 1] = {
-        root = slot_root,
-        bg = slot_bg,
-        label = slot_label,
-        selected = slot_selected,
-        view_mode = slot_def.view_mode,
-        display_label = slot_def.label,
-        bound = false,
+      local function build_static_stage_slot(base_path)
+        local slot_root = resolve_ui(base_path)
+        local bg = resolve_ui(base_path .. '.模式')
+        local label = resolve_ui(base_path .. '.模式.mode')
+        local selected = resolve_ui(base_path .. '.模式.selected')
+        if not is_ui_alive(slot_root) then
+          return nil
+        end
+        return {
+          root = slot_root,
+          bg = bg or slot_root,
+          label = label,
+          selected = selected,
+          bound = false,
+          stage_def = nil,
+        }
+      end
+
+      local mode_slots = {}
+      local mainline_slot = build_static_mode_slot('outgame.大厅.layout.left_2.list.主线模式', VIEW_MODE_MAINLINE, '正常模式')
+      local cultivation_slot = build_static_mode_slot('outgame.大厅.layout.left_2.list.修仙模式', VIEW_MODE_CULTIVATION, '打鱼模式')
+      if mainline_slot then
+        mode_slots[#mode_slots + 1] = mainline_slot
+      end
+      if cultivation_slot then
+        mode_slots[#mode_slots + 1] = cultivation_slot
+      end
+
+      local stage_slots = {}
+      for index = 1, STAGE_PAGE_SIZE do
+        local slot_name = string.format('mode%d', index)
+        local slot = build_static_stage_slot('outgame.大厅.layout.right_2.list.' .. slot_name)
+        if slot then
+          stage_slots[#stage_slots + 1] = slot
+        end
+      end
+
+      local daily_rows = {}
+      for index = 1, 5 do
+        local base_path = string.format('outgame.大厅.layout.left.task_%d', index)
+        local row_root = resolve_ui(base_path)
+        if is_ui_alive(row_root) then
+          daily_rows[#daily_rows + 1] = {
+            root = row_root,
+            bg = resolve_ui(base_path .. '.bg'),
+            title = resolve_ui(base_path .. '.title'),
+            reward = resolve_ui(base_path .. '.reward'),
+            progress = resolve_ui(base_path .. '.progress'),
+            status_bg = resolve_ui(base_path .. '.status_bg'),
+            status = resolve_ui(base_path .. '.status'),
+          }
+        end
+      end
+
+      local player_slots = {}
+      for index = 1, 4 do
+        local base_path = string.format('outgame.大厅.layout.footer.slot_%d', index)
+        local slot_root = resolve_ui(base_path)
+        if is_ui_alive(slot_root) then
+          player_slots[#player_slots + 1] = {
+            root = slot_root,
+            bg = resolve_ui(base_path .. '.frame') or slot_root,
+            inner = resolve_ui(base_path .. '.inner'),
+            avatar = resolve_ui(base_path .. '.avatar'),
+            label = resolve_ui(base_path .. '.label'),
+            avatar_key = nil,
+          }
+        end
+      end
+
+      STATE.outgame_ui = {
+        root = root,
+        hall_root = hall_root,
+        backdrop = backdrop,
+        title = title,
+        header_tip = resolve_ui('outgame.大厅.layout.header_tip'),
+        tip_root = tip_root,
+        tip = tip,
+        mode_panel = mode_panel,
+        mode_slots = mode_slots,
+        left_panel = resolve_ui('outgame.大厅.layout.left'),
+        left_title = resolve_ui('outgame.大厅.layout.left.task_title'),
+        left_rule = resolve_ui('outgame.大厅.layout.left.task_line'),
+        daily_rows = daily_rows,
+        reward_card = resolve_ui('outgame.大厅.layout.left.reward_group.reward_card_bg'),
+        reward_title = resolve_ui('outgame.大厅.layout.left.reward_group.reward_title'),
+        reward_code = resolve_ui('outgame.大厅.layout.left.reward_group.reward_code'),
+        reward_hint = resolve_ui('outgame.大厅.layout.left.reward_group.reward_hint'),
+        page_container = page_container,
+        stage_slots = stage_slots,
+        stage_slot_container = stage_slot_container,
+        start_button_bg = resolve_ui('outgame.大厅.layout.start_bg') or start_button,
+        start_button = start_button,
+        start_bound = false,
+        save_entry = {
+          root = resolve_ui('outgame.大厅.layout.save_anchor.save_root'),
+          line = resolve_ui('outgame.大厅.layout.save_anchor.line'),
+          title = resolve_ui('outgame.大厅.layout.save_anchor.title'),
+          status = resolve_ui('outgame.大厅.layout.save_anchor.status'),
+          button_bg = resolve_ui('outgame.大厅.layout.save_anchor.button_bg'),
+          button = resolve_ui('outgame.大厅.layout.save_anchor.button'),
+        },
+        save_entry_bound = false,
+        right_panel = resolve_ui('outgame.大厅.layout.right'),
+        difficulty_title = title,
+        difficulty_hint = resolve_ui('outgame.大厅.layout.right.difficulty_hint'),
+        cultivation_note = tip,
+        detail_title = resolve_ui('outgame.大厅.layout.detail_title'),
+        detail_status = resolve_ui('outgame.大厅.layout.detail_status'),
+        detail_hint = resolve_ui('outgame.大厅.layout.detail_hint'),
+        quit_tip = resolve_ui('outgame.大厅.layout.quit_tip'),
+        player_name = resolve_ui('outgame.大厅.layout.footer.player_name'),
+        player_slots = player_slots,
+        save_anchor = resolve_ui('outgame.大厅.layout.save_anchor'),
       }
+
+      bind_ui_events(STATE.outgame_ui)
+      return STATE.outgame_ui
     end
-
-    local stage_slots = {}
-    for index = 1, STAGE_PAGE_SIZE do
-      local slot_root = stage_slot_container:get_child(string.format('mode%d', index))
-      local slot_bg = slot_root and slot_root:get_child('模式') or nil
-      local slot_label = slot_root and slot_root:get_child('模式.mode') or nil
-      local slot_selected = slot_root and slot_root:get_child('模式.selected') or nil
-      set_intercepts_if_alive(slot_label, false)
-      set_intercepts_if_alive(slot_selected, false)
-      stage_slots[index] = {
-        root = slot_root,
-        bg = slot_bg,
-        label = slot_label,
-        selected = slot_selected,
-        chapter_id = nil,
-        stage_id = nil,
-        bound = false,
-      }
-      clear_stage_slot_overlay(stage_slots[index])
+    if not STATE.outgame_ui_bind_warned then
+      STATE.outgame_ui_bind_warned = true
+      message('outgame 静态画板节点不完整，请检查界面编辑器中的节点结构。')
     end
-
-    STATE.outgame_ui = {
-      root = root,
-      hall_root = hall_root,
-      backdrop = backdrop,
-      title = title,
-      tip_root = tip_root,
-      tip = tip,
-      mode_panel = mode_panel,
-      mode_slots = mode_slots,
-      page_container = page_container,
-      page_button_canvas = nil,
-      page_button_count = 0,
-      page_buttons = {},
-      page_button_top_spacer = nil,
-      page_button_bottom_spacer = nil,
-      page_button_layout = nil,
-      stage_slots = stage_slots,
-      start_button = start_button,
-      start_bound = false,
-      save_entry = nil,
-      save_entry_bound = false,
-    }
-
-    sync_outgame_backdrop(STATE.outgame_ui)
-    ensure_save_entry_ui(STATE.outgame_ui)
-    ensure_page_buttons(STATE.outgame_ui, MAX_CHAPTER_DIFFICULTY_COUNT)
-    bind_ui_events(STATE.outgame_ui)
-    return STATE.outgame_ui
+    return nil
   end
 
   local function refresh_mode_selectors(ui, profile, selected_stage_id, selected_mode_id)
@@ -1262,95 +1323,50 @@ function M.create(env)
       set_visible_if_alive(slot.root, true)
       set_text_if_alive(slot.label, slot.display_label)
       set_visible_if_alive(slot.selected, selected)
-      set_image_color_if_alive(slot.bg, { 255, 255, 255, selected and 255 or 210 })
-      set_text_color_if_alive(slot.label, selected and { 253, 151, 0, 255 } or { 208, 216, 228, 255 })
+      set_image_color_if_alive(slot.bg, selected and { 255, 255, 255, 255 } or { 220, 228, 236, 235 })
     end
     return selected_view_mode
   end
 
-  local function refresh_page_buttons(ui, profile, selected_stage_id)
+  local function refresh_stage_slots(ui, profile, selected_stage_id)
     local selected_chapter_id = get_selected_chapter_id(selected_stage_id)
     local chapter_stages = get_chapter_stage_list(selected_chapter_id)
-    ensure_page_buttons(ui, #chapter_stages)
-    for index, button_ref in ipairs(ui.page_buttons or {}) do
+    for index, slot in ipairs(ui.stage_slots or {}) do
       local stage_def = chapter_stages[index]
       local progress = stage_def and get_stage_progress(profile, stage_def.stage_id) or nil
       local unlocked = progress and progress.standard_unlocked == true or false
       local cleared = progress and progress.standard_cleared == true or false
       local selected = stage_def and selected_stage_id == stage_def.stage_id or false
-
-      button_ref.stage_def = stage_def
-      set_visible_if_alive(button_ref.root, stage_def ~= nil)
+      slot.stage_def = stage_def
+      set_visible_if_alive(slot.root, stage_def ~= nil)
       if stage_def then
-        set_text_if_alive(button_ref.button or button_ref.label, get_difficulty_display_text(stage_def, index))
-        set_visible_if_alive(button_ref.locked, not unlocked)
-
-        if selected then
-          set_image_color_if_alive(button_ref.button or button_ref.root, COLOR.selected_bg)
-          set_text_color_if_alive(button_ref.button or button_ref.label, COLOR.selected_text)
-        elseif not unlocked then
-          set_image_color_if_alive(button_ref.button or button_ref.root, COLOR.locked_bg)
-          set_text_color_if_alive(button_ref.button or button_ref.label, COLOR.locked_text)
-        elseif cleared then
-          set_image_color_if_alive(button_ref.button or button_ref.root, COLOR.cleared_bg)
-          set_text_color_if_alive(button_ref.button or button_ref.label, COLOR.cleared_text)
-        else
-          set_image_color_if_alive(button_ref.button or button_ref.root, COLOR.available_bg)
-          set_text_color_if_alive(button_ref.button or button_ref.label, COLOR.available_text)
-        end
-      else
-        set_visible_if_alive(button_ref.locked, false)
-      end
-    end
-  end
-
-  local function refresh_stage_slots(ui, profile, selected_stage_id)
-    local selected_chapter_id = get_selected_chapter_id(selected_stage_id)
-    for index, slot in ipairs(ui.stage_slots or {}) do
-      local chapter_id = CHAPTER_LIST[index]
-      slot.chapter_id = chapter_id
-      slot.stage_id = chapter_id and get_chapter_target_stage_id(
-        profile,
-        chapter_id,
-        selected_chapter_id == chapter_id and selected_stage_id or nil
-      ) or nil
-      set_visible_if_alive(slot.root, chapter_id ~= nil)
-
-      if chapter_id then
-        local chapter_name = get_chapter_display_text(chapter_id)
-        local chapter_stages = get_chapter_stage_list(chapter_id)
-        local unlocked_count, cleared_count = get_chapter_progress_state(profile, chapter_id)
-        local unlocked = unlocked_count > 0
-        local selected = selected_chapter_id == chapter_id
-        local cleared = cleared_count >= #chapter_stages and cleared_count > 0
-
-        set_text_if_alive(slot.label, chapter_name)
+        set_text_if_alive(slot.label, get_difficulty_display_text(stage_def, index))
         set_visible_if_alive(slot.selected, selected)
-
         if selected then
-          set_image_color_if_alive(slot.bg, COLOR.selected_bg)
-          set_text_color_if_alive(slot.label, COLOR.selected_text)
+          set_image_color_if_alive(slot.bg, { 255, 255, 255, 255 })
+          set_text_color_if_alive(slot.label, theme.palette.text)
         elseif not unlocked then
-          set_image_color_if_alive(slot.bg, COLOR.locked_bg)
-          set_text_color_if_alive(slot.label, COLOR.locked_text)
+          set_image_color_if_alive(slot.bg, { 132, 132, 132, 228 })
+          set_text_color_if_alive(slot.label, theme.palette.text_muted)
         elseif cleared then
-          set_image_color_if_alive(slot.bg, COLOR.cleared_bg)
-          set_text_color_if_alive(slot.label, COLOR.cleared_text)
+          set_image_color_if_alive(slot.bg, { 226, 198, 122, 255 })
+          set_text_color_if_alive(slot.label, { 38, 26, 0, 255 })
         else
-          set_image_color_if_alive(slot.bg, COLOR.available_bg)
-          set_text_color_if_alive(slot.label, COLOR.available_text)
+          set_image_color_if_alive(slot.bg, { 214, 224, 236, 255 })
+          set_text_color_if_alive(slot.label, { 255, 255, 255, 255 })
         end
       end
     end
-
     return selected_chapter_id
   end
 
-  local function refresh_ui()
+  refresh_ui = function()
     local ui = ensure_ui()
     if not is_outgame_ui_alive(ui) then
+      schedule_ui_retry()
       return
     end
+    clear_ui_retry_timer()
 
     local profile = load_profile()
     local selected_stage_id = STATE.selected_stage_id or profile.selected_stage_id
@@ -1373,22 +1389,45 @@ function M.create(env)
     end
     sync_selected_state(selected_stage_id, SINGLE_MODE_ID)
 
-    set_text_if_alive(ui.title, get_view_mode_label(selected_view_mode))
-    set_visible_if_alive(ui.tip_root, selected_view_mode == VIEW_MODE_CULTIVATION)
+    local is_cultivation_mode = selected_view_mode == VIEW_MODE_CULTIVATION
+
+    set_text_if_alive(ui.title, is_cultivation_mode and '打鱼模式' or '正常模式')
+    set_text_if_alive(ui.header_tip, build_header_tip_text(profile, selected_stage_id, selected_mode_id))
+    set_text_if_alive(ui.quit_tip, '按 ESC 键可退出游戏')
+    set_visible_if_alive(ui.tip_root, is_cultivation_mode)
+    if is_cultivation_mode then
+      set_text_if_alive(ui.tip, '当前模式为挂机模式')
+    end
 
     refresh_mode_selectors(ui, profile, selected_stage_id, selected_mode_id)
     refresh_stage_slots(ui, profile, selected_stage_id)
-    refresh_page_buttons(ui, profile, selected_stage_id)
+    set_text_if_alive(ui.difficulty_title, is_cultivation_mode and '打鱼模式' or '正常模式')
+    set_visible_if_alive(ui.stage_slot_container, not is_cultivation_mode)
+    for _, slot in ipairs(ui.stage_slots or {}) do
+      set_visible_if_alive(slot.root, not is_cultivation_mode and slot.stage_def ~= nil)
+    end
+    set_visible_if_alive(ui.cultivation_note, is_cultivation_mode)
+    set_text_if_alive(ui.difficulty_hint, is_cultivation_mode and '' or '选择难度后即可开始游戏')
 
-    local start_enabled = is_mode_unlocked(profile, selected_stage_id, selected_mode_id)
-    ui.start_button:set_text(start_enabled and '开始' or '未解锁')
+    set_visible_if_alive(ui.detail_title, not is_cultivation_mode)
+    set_visible_if_alive(ui.detail_status, not is_cultivation_mode)
+    set_visible_if_alive(ui.detail_hint, true)
+    set_text_if_alive(ui.detail_title, is_cultivation_mode and '' or get_stage_display_text(selected_stage_def, selected_stage_id))
+    set_text_if_alive(ui.detail_status, is_cultivation_mode and '' or get_stage_status_text(profile, selected_stage_def))
+    set_text_if_alive(ui.detail_hint, build_start_hint(profile, selected_stage_id, selected_mode_id))
+    refresh_daily_rows(ui, profile, selected_stage_id)
+    refresh_reward_card(ui, profile, selected_stage_id)
+    refresh_footer(ui, profile)
+
+    local start_enabled = not is_cultivation_mode and is_mode_unlocked(profile, selected_stage_id, selected_mode_id)
+    ui.start_button:set_text(start_enabled and '开始游戏' or '未解锁')
     ui.start_button:set_button_enable(start_enabled)
 
     if start_enabled then
-      set_image_color_if_alive(ui.start_button, COLOR.start_ready_bg)
+      set_image_color_if_alive(ui.start_button_bg, COLOR.start_ready_bg)
       set_text_color_if_alive(ui.start_button, COLOR.selected_text)
     else
-      set_image_color_if_alive(ui.start_button, COLOR.start_locked_bg)
+      set_image_color_if_alive(ui.start_button_bg, COLOR.start_locked_bg)
       set_text_color_if_alive(ui.start_button, COLOR.locked_text)
     end
   end
@@ -1400,15 +1439,6 @@ function M.create(env)
   end
 
   function api.open_save_panel()
-    if battle_pass_panel and battle_pass_panel.open_panel then
-      if battle_pass_panel.set_ui_visible then
-        battle_pass_panel.set_ui_visible(true)
-      end
-      if battle_pass_panel.open_panel('pass') then
-        return true
-      end
-    end
-
     local profile = load_profile()
     message(build_save_status_detail(profile))
     return false
@@ -1419,30 +1449,25 @@ function M.create(env)
       ensure_ui()
     end
     refresh_ui()
-    if battle_pass_panel and battle_pass_panel.refresh_ui then
-      battle_pass_panel.refresh_ui()
-    end
   end
 
   function api.set_ui_visible(visible)
     local ui = ensure_ui()
+    set_non_outgame_ui_visible(visible ~= true)
     if not is_outgame_ui_alive(ui) then
+      if visible == true then
+        schedule_ui_retry()
+      end
       return
     end
     set_visible_if_alive(ui.root, visible == true)
     set_visible_if_alive(ui.hall_root, visible == true)
-    if battle_pass_panel and battle_pass_panel.set_ui_visible then
-      local battle_pass_visible = STATE.session_phase == 'battle'
-        or (visible == true and STATE.session_phase == 'outgame')
-      battle_pass_panel.set_ui_visible(battle_pass_visible)
-    end
   end
 
   function api.enter_outgame(result)
     local profile = api.load_profile()
-    local battle_pass_summary = nil
     if result then
-      battle_pass_summary = api.apply_battle_result(result)
+      api.apply_battle_result(result)
       profile = load_profile()
     end
 
@@ -1450,19 +1475,15 @@ function M.create(env)
 
     STATE.session_phase = 'outgame'
     STATE.game_finished = true
+    ui_retry_remaining = 12
     if ensure_music_loop then
       ensure_music_loop()
     end
     env.set_battle_hud_visible(false)
+    set_non_outgame_ui_visible(false)
     ensure_ui()
     refresh_ui()
     api.set_ui_visible(true)
-    if battle_pass_panel and battle_pass_panel.enter_outgame then
-      battle_pass_panel.enter_outgame()
-    end
-    if battle_pass_summary and battle_pass_summary.added_exp and battle_pass_summary.added_exp > 0 then
-      message(BattlePass.build_gain_message(battle_pass_summary))
-    end
   end
 
   function api.apply_battle_result(result)
@@ -1495,10 +1516,9 @@ function M.create(env)
       end
     end
 
-    local battle_pass_summary = BattlePass.apply_battle_result(profile, result)
     rebuild_hero_attr_bonus_stats(profile)
     mark_profile_dirty()
-    return battle_pass_summary
+    return nil
   end
 
   function api.start_selected_stage()
@@ -1516,9 +1536,7 @@ function M.create(env)
       and env.stage_runtime.start_selected_stage
       and env.stage_runtime.start_selected_stage(stage_id, mode_id)
     if ok then
-      if battle_pass_panel and battle_pass_panel.leave_outgame then
-        battle_pass_panel.leave_outgame()
-      end
+      set_non_outgame_ui_visible(true)
       api.set_ui_visible(false)
       return true
     end
@@ -1549,10 +1567,6 @@ function M.create(env)
 
   function api.mark_profile_dirty()
     return mark_profile_dirty()
-  end
-
-  function api.set_battle_pass_panel(panel)
-    battle_pass_panel = panel
   end
 
   api.rebuild_hero_attr_bonus_stats = rebuild_hero_attr_bonus_stats

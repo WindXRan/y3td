@@ -47,16 +47,9 @@ function M.create(env)
 
       STATE.hero_progress.level = engine_level
       sync_hero_progress_from_engine()
-      STATE.skill_points = STATE.skill_points + 1
-      message(string.format('英雄升级至 %d，获得 1 点技能点。按 G 打开强化选择。', STATE.hero_progress.level))
+      STATE.skill_points = 0
+      message(string.format('英雄升级至 %d。', STATE.hero_progress.level))
       try_queue_mark_node_for_level(STATE.hero_progress.level)
-    end)
-
-    y3.game:event('键盘-按下', 'G', function()
-      if not is_battle_active() then
-        return
-      end
-      show_upgrade_choices()
     end)
     y3.game:event('键盘-按下', 'F', function()
       if not is_battle_active() then

@@ -51,9 +51,15 @@ end
 
 function M.get_overlay_parent(y3, player)
   return resolve_first_ui(y3, player, {
+    'GameHUD.main',
+    'GameHUD',
+    'CommonTip.bg',
+    'CommonTip',
     'top',
     'panel_1',
+    'panel',
     'bottom_bg',
+    'SceneUI',
   })
 end
 

@@ -291,7 +291,7 @@ function M.create(env)
         return string.format('获得 %s 次宝物', tostring(value))
       end
       if line.key == 'skill_point' then
-        return string.format('技能点 %s', format_signed_reward_value(raw_number, false))
+        return '已移除的攻击强化奖励'
       end
       if line.key == 'hero_card' then
         return string.format('英雄卡 %s', format_signed_reward_value(raw_number, false))
@@ -419,7 +419,7 @@ function M.create(env)
             queue_treasure_round('mainline_task', get_task_notice_label(task))
           end
         elseif line.key == 'skill_point' then
-          STATE.skill_points = (STATE.skill_points or 0) + (tonumber(line.value) or 0)
+          STATE.skill_points = 0
         elseif line.key == 'hero_card' then
           runtime.hero_card_count = (runtime.hero_card_count or 0) + (tonumber(line.value) or 0)
           if message then

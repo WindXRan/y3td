@@ -12,7 +12,6 @@ local RuntimeLoopsSystem = require 'runtime.loops'
 local BattleEventPromptsFactory = require 'runtime.battle_event_prompts'
 local RuntimeUIHelpers = require 'runtime.runtime_ui_helpers'
 local OutgameSystem = require 'ui.outgame'
-local BattlePass = require 'runtime.battle_pass'
 local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
 local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
@@ -144,15 +143,7 @@ end
 
 local ATTACK_SKILL_DEFS = AttackSkillObjects.defs_by_id
 local ATTACK_SKILL_BLUEPRINTS = AttackSkillObjects.blueprints
-local ATTACK_SKILL_SLOT_COUNT = math.max(
-  4,
-  tonumber(
-    ATTACK_SKILL_BLUEPRINTS
-      and ATTACK_SKILL_BLUEPRINTS.system
-      and ATTACK_SKILL_BLUEPRINTS.system.slot_rule
-      and ATTACK_SKILL_BLUEPRINTS.system.slot_rule.total_attack_skills
-  ) or 4
-)
+local ATTACK_SKILL_SLOT_COUNT = 1
 
 local function resolve_damage_meta(damage)
   if type(damage) == 'table' then
@@ -1090,14 +1081,13 @@ local function show_runtime_status()
   end
 
   message(string.format(
-    '状态：%s，%s，英雄 %s，敌人数 %d，金币 %d，木材 %d，技能点 %d，挑战次数 %s，进行中挑战 %d，待领奖励 %d。',
+    '状态：%s，%s，英雄 %s，敌人数 %d，金币 %d，木材 %d，挑战次数 %s，进行中挑战 %d，待领奖励 %d。',
     wave_text,
     boss_text,
     progression_system.get_hero_progress_text(),
     STATE.total_enemy_alive,
     STATE.resources.gold,
     STATE.resources.wood,
-    STATE.skill_points,
     challenge_charge_text,
     challenge_count,
     reward_system.get_reward_queue_count()
@@ -1496,7 +1486,8 @@ attack_upgrade_system = AttackUpgradeSystem.create({
 
 local function get_pending_round_choice_kind()
   if STATE.awaiting_upgrade and STATE.current_upgrade_choices then
-    return 'upgrade'
+    STATE.awaiting_upgrade = false
+    STATE.current_upgrade_choices = nil
   end
   if STATE.gear_state and STATE.gear_state.awaiting_choice and STATE.gear_state.current_choices then
     return 'gear'
@@ -1583,7 +1574,6 @@ local function show_pending_round_choice(kind)
   local current_kind = kind or get_pending_round_choice_kind()
   STATE.choice_panel_hidden = false
   if current_kind == 'upgrade' then
-    attack_upgrade_system.show_upgrade_choices()
     return
   end
   if current_kind == 'bond' then
@@ -1614,11 +1604,11 @@ ensure_round_choice_available = function(allowed_kind)
 end
 
 local function show_upgrade_choices()
-  STATE.choice_panel_hidden = false
-  if not ensure_round_choice_available('upgrade') then
-    return
-  end
-  return attack_upgrade_system.show_upgrade_choices()
+  STATE.skill_points = 0
+  STATE.awaiting_upgrade = false
+  STATE.current_upgrade_choices = nil
+  STATE.current_upgrade_round = nil
+  return false
 end
 
 local function apply_upgrade(index)
@@ -1889,166 +1879,26 @@ local function try_treasure_entry()
   message('当前没有待领取的宝物三选一。')
 end
 
-runtime_hud_system = require('ui.runtime_hud_panel1_top').create({
-  STATE = STATE,
-  CONFIG = CONFIG,
-  y3 = y3,
-  hero_attr_system = hero_attr_system,
-  round_number = round_number,
-  attack_skill_slot_count = ATTACK_SKILL_SLOT_COUNT,
-  get_resource_rules = get_resource_rules,
-  get_bond_runtime_bonus = get_bond_runtime_bonus,
-  get_treasure_passive_income = reward_system.get_treasure_passive_income,
-  get_treasure_reward_ratio = reward_system.get_treasure_reward_ratio,
-  get_player = get_player,
-  get_boss_name = get_boss_name,
-  get_hero_level = progression_system.get_hero_level,
-  get_hero_progress_text = progression_system.get_hero_progress_text,
-  get_active_challenge_count = function()
-    return battlefield_system.get_active_challenge_count()
-  end,
-  get_reward_queue_count = reward_system.get_reward_queue_count,
-  get_battle_event_feed_entries = function(max_visible)
-    return BattleEventFeedSystem.get_visible_entries(
-      STATE.battle_event_feed,
-      STATE.runtime_elapsed or 0,
-      max_visible
-    )
-  end,
-  stage_runtime = {
-    get_current_stage_text = function()
-      if STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) then
-        return STATE.current_stage_def.display_label or STATE.current_stage_def.display_name
-      end
-      return '第1关'
-    end,
-    start_selected_stage = function(stage_id, mode_id)
-      return session_state_system.start_selected_stage(stage_id, mode_id)
-    end,
-  },
-  battle_objective_runtime = {
-    get_summary = function()
-      return mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary() or nil
-    end,
-    get_tracker_state = function()
-      return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or nil
-    end,
-    start_current_task_challenge = function()
-      return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
-    end,
-    toggle_auto_track = function()
-      return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or nil
-    end,
-  },
-  mainline_runtime = {
-    get_summary = function()
-      return mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary() or nil
-    end,
-    get_tracker_state = function()
-      return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or nil
-    end,
-    start_current_task_challenge = function()
-      return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
-    end,
-    toggle_auto_track = function()
-      return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or nil
-    end,
-  },
-  get_current_stage_text = function()
-    if STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) then
-      return STATE.current_stage_def.display_label or STATE.current_stage_def.display_name
-    end
-    return '第1关'
-  end,
-  get_mainline_task_summary = function()
-    return mainline_task_system and mainline_task_system.get_current_task_summary and mainline_task_system.get_current_task_summary() or nil
-  end,
-  get_mainline_task_tracker_state = function()
-    return mainline_task_system and mainline_task_system.get_tracker_state and mainline_task_system.get_tracker_state() or nil
-  end,
-  start_current_task_challenge = function()
-    return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
-  end,
-  toggle_mainline_task_auto_track = function()
-    return mainline_task_system and mainline_task_system.toggle_auto_track and mainline_task_system.toggle_auto_track() or nil
-  end,
-  apply_round_choice = apply_round_choice,
-  show_upgrade_choices = show_upgrade_choices,
-  try_bond_draw = try_bond_draw,
-  show_bond_progress = function()
-    return BondSystem.show_bond_progress(create_bond_env())
-  end,
-  build_latest_bond_tip_payload = function()
-    return BondSystem.build_latest_owned_tip_payload(STATE)
-  end,
-  build_bond_slot_tip_payload = function(slot)
-    return BondSystem.build_slot_tip_payload(STATE, slot)
-  end,
-  build_growth_weapon_tip_payload = function()
-    return GearUpgrades.build_tip_payload(STATE, 'weapon', CONFIG.gear_upgrade_config, y3.item)
-  end,
-  get_growth_weapon_item_key = function()
-    local slot_cfg = CONFIG.gear_upgrade_config
-      and CONFIG.gear_upgrade_config.slots
-      and CONFIG.gear_upgrade_config.slots.weapon
-      or nil
-    return slot_cfg and slot_cfg.item_key or nil
-  end,
-  get_runtime_overview_model = function()
-    return get_runtime_overview_model and get_runtime_overview_model() or nil
-  end,
-  try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
-  build_attack_skill_slot_text = function(slot)
-    return attack_skills_system.build_attack_skill_slot_text(slot)
-  end,
-  try_start_challenge = try_start_challenge,
-  try_treasure_entry = try_treasure_entry,
-  has_pending_treasure_choice = has_pending_treasure_choice,
-})
+runtime_hud_system = nil
+choice_panel_system = nil
 
-choice_panel_system = (function()
-  local choice_panel_model_system = require('runtime.choice_panel_model').create({
-    STATE = STATE,
-    message = message,
-    BondSystem = BondSystem,
-    ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS,
-    TREASURE_DEFS = reward_system.TREASURE_DEFS,
-    get_pending_round_choice_kind = get_pending_round_choice_kind,
-    get_evolution_runtime = reward_system.get_evolution_runtime,
-    get_evolution_quality_label = reward_system.get_evolution_quality_label,
-    get_mark_runtime = reward_system.get_evolution_runtime,
-    get_mark_quality_label = reward_system.get_evolution_quality_label,
-    get_treasure_runtime = reward_system.get_treasure_runtime,
-    get_treasure_quality_label = reward_system.get_treasure_quality_label,
-    get_treasure_active_count = reward_system.get_treasure_active_count,
-    pick_treasure_choices = reward_system.pick_treasure_choices,
-    create_bond_env = function()
-      return create_bond_env()
-    end,
-    refresh_upgrade_choices = function()
-      return attack_upgrade_system.refresh_upgrade_choices()
-    end,
-  })
-
-  return require('ui.choice_panel').create({
+  local runtime_ui_helpers = RuntimeUIHelpers.create({
     STATE = STATE,
     y3 = y3,
-    round_number = round_number,
     get_player = get_player,
-    get_current_choice_panel_model = choice_panel_model_system.get_current_choice_panel_model,
-    apply_round_choice = apply_round_choice,
-    hide_current_choice_panel = choice_panel_model_system.hide_current_choice_panel,
-    refresh_current_choice_panel = choice_panel_model_system.refresh_current_choice_panel,
-  })
-end)()
-
-local runtime_ui_helpers = RuntimeUIHelpers.create({
-  STATE = STATE,
-  y3 = y3,
-  get_player = get_player,
-  build_growth_weapon_tip_payload = function()
-    return GearUpgrades.build_tip_payload(STATE, 'weapon', CONFIG.gear_upgrade_config, y3.item)
-  end,
+    refresh_bond_choice = function()
+      STATE.choice_panel_hidden = false
+      return BondSystem.refresh_choice(create_bond_env())
+    end,
+    apply_bond_choice = function(index)
+      return apply_bond_choice(index)
+    end,
+    defer_choice_panel = function()
+      STATE.choice_panel_hidden = true
+    end,
+    build_growth_weapon_tip_payload = function()
+      return GearUpgrades.build_tip_payload(STATE, 'weapon', CONFIG.gear_upgrade_config, y3.item)
+    end,
   get_growth_weapon_item_key = function()
     local slot_cfg = CONFIG.gear_upgrade_config
       and CONFIG.gear_upgrade_config.slots
@@ -2123,15 +1973,6 @@ session_state_system = SessionStateSystem.create({
     return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
   end,
   unlock_attack_skill = unlock_attack_skill,
-  collect_battle_pass_attack_skill_ids = function()
-    local profile = STATE.outgame_profile
-      or (outgame_system and outgame_system.get_profile and outgame_system.get_profile())
-      or nil
-    if not BattlePass.collect_owned_attack_skill_ids then
-      return {}
-    end
-    return BattlePass.collect_owned_attack_skill_ids(profile)
-  end,
   show_attack_skill_loadout = show_attack_skill_loadout,
   setup_basic_attack_ability = setup_basic_attack_ability,
   ensure_runtime_hud = runtime_ui_helpers.ensure_runtime_hud,
@@ -2196,25 +2037,6 @@ outgame_system = OutgameSystem.create({
     return set_battle_hud_visible(visible)
   end,
 })
-
-outgame_system.set_battle_pass_panel(require 'ui.battle_pass'.create({
-  STATE = STATE,
-  y3 = y3,
-  message = message,
-  get_player = get_player,
-  get_profile = function()
-    return outgame_system and outgame_system.get_profile and outgame_system.get_profile() or nil
-  end,
-  mark_profile_dirty = function()
-    return outgame_system and outgame_system.mark_profile_dirty and outgame_system.mark_profile_dirty() or nil
-  end,
-  rebuild_hero_attr_bonus_stats = function(profile)
-    return outgame_system and outgame_system.rebuild_hero_attr_bonus_stats and outgame_system.rebuild_hero_attr_bonus_stats(profile) or nil
-  end,
-  play_ui_click = function()
-    return audio_system and audio_system.play_ui_click and audio_system.play_ui_click() or nil
-  end,
-}))
 
 input_events_system = InputEventsSystem.create({
   STATE = STATE,

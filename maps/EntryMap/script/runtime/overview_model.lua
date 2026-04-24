@@ -117,10 +117,9 @@ function M.create(env)
     end
 
     lines[#lines + 1] = string.format(
-      '资源：金币 %d  木材 %d  技能点 %d',
+      '资源：金币 %d  木材 %d',
       STATE.resources and STATE.resources.gold or 0,
-      STATE.resources and STATE.resources.wood or 0,
-      STATE.skill_points or 0
+      STATE.resources and STATE.resources.wood or 0
     )
     lines[#lines + 1] = string.format(
       '挑战：%d/%d  进行中 %d  待领奖励 %d  敌人数 %d',
@@ -135,11 +134,7 @@ function M.create(env)
   end
 
   local function build_attack_skill_overview_lines()
-    local lines = {}
-    for slot = 1, 4, 1 do
-      lines[#lines + 1] = build_attack_skill_slot_text(slot)
-    end
-    return lines
+    return { build_attack_skill_slot_text(1) }
   end
 
   local function build_bond_overview_lines()
@@ -173,9 +168,7 @@ function M.create(env)
   local function build_pending_overview_lines()
     local lines = {}
     local pending_kind = env.get_pending_round_choice_kind()
-    if pending_kind == 'upgrade' then
-      lines[#lines + 1] = string.format('当前待选：技能强化，剩余技能点 %d', STATE.skill_points or 0)
-    elseif pending_kind == 'gear' then
+    if pending_kind == 'gear' then
       local runtime = STATE.gear_state
       local level = runtime
         and runtime.pending_affix_choice

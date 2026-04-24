@@ -28,7 +28,6 @@ function M.create(env)
   local sync_gear_items_to_hero = env.sync_gear_items_to_hero
   local sync_gear_runtime_effects = env.sync_gear_runtime_effects
   local unlock_attack_skill = env.unlock_attack_skill
-  local collect_battle_pass_attack_skill_ids = env.collect_battle_pass_attack_skill_ids
   local show_attack_skill_loadout = env.show_attack_skill_loadout
   local setup_basic_attack_ability = env.setup_basic_attack_ability
   local ensure_runtime_hud = env.ensure_runtime_hud
@@ -62,59 +61,7 @@ function M.create(env)
   end
 
   local function grant_test_attack_skills_on_stage_start()
-    if CONFIG.debug_auto_unlock_attack_skills_on_stage_start ~= true then
-      return 0
-    end
-    if not unlock_attack_skill then
-      return 0
-    end
-
-    local unlocked = 0
-    for _, blueprint in ipairs(ATTACK_SKILL_BLUEPRINTS.list or {}) do
-      local _, _, is_new = unlock_attack_skill(blueprint.id)
-      if is_new then
-        unlocked = unlocked + 1
-      end
-    end
-
-    if unlocked > 0 then
-      message(string.format('测试开局：已自动装配 %d 个攻击技能。', unlocked))
-      if show_attack_skill_loadout then
-        show_attack_skill_loadout()
-      end
-    end
-    return unlocked
-  end
-
-  local function grant_battle_pass_attack_skills_on_stage_start()
-    if not collect_battle_pass_attack_skill_ids or not unlock_attack_skill then
-      return 0
-    end
-
-    local ok, owned_skill_ids_or_err = pcall(collect_battle_pass_attack_skill_ids)
-    if not ok then
-      print(string.format(
-        '[session_state] battle pass attack skill collect failed, continue stage start: %s',
-        tostring(owned_skill_ids_or_err)
-      ))
-      return 0
-    end
-
-    local owned_skill_ids = type(owned_skill_ids_or_err) == 'table' and owned_skill_ids_or_err or {}
-    local unlocked = 0
-    for _, skill_id in ipairs(owned_skill_ids) do
-      local unlock_ok, unlock_skill_or_err, _, is_new = pcall(unlock_attack_skill, skill_id)
-      if not unlock_ok then
-        print(string.format(
-          '[session_state] battle pass attack skill unlock failed for %s, continue stage start: %s',
-          tostring(skill_id),
-          tostring(unlock_skill_or_err)
-        ))
-      elseif is_new then
-        unlocked = unlocked + 1
-      end
-    end
-    return unlocked
+    return 0
   end
 
   local function is_battle_active()
@@ -339,7 +286,6 @@ function M.create(env)
     end
     initialize_hero_progression()
     setup_basic_attack_ability()
-    grant_battle_pass_attack_skills_on_stage_start()
     grant_test_attack_skills_on_stage_start()
     try_initialize_battle_ui()
     try_enter_battle_audio()

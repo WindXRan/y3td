@@ -148,10 +148,10 @@ function M.create(env)
 
   local function show_debug_hotkey_help()
     debug_message('Ctrl+F1：显示调试快捷键说明')
-    debug_message('Ctrl+F2：补 500 金币 / 300 木材 / 5 技能点')
+    debug_message('Ctrl+F2：补 500 金币 / 300 木材')
     debug_message('Ctrl+F3：英雄直接升 3 级')
-    debug_message('Ctrl+F4：解锁全部攻击技能并补 3 技能点')
-    debug_message('Ctrl+F5：直接打开 G 三选一（无技能点时自动补 1）')
+    debug_message('Ctrl+F4：攻击技能调试入口已停用')
+    debug_message('Ctrl+F5：攻击强化调试入口已停用')
     debug_message('Ctrl+F6：直接触发 F 抽卡（木材不足时自动补足）')
     debug_message('Ctrl+F7：补满挑战次数')
     debug_message('Ctrl+F8：立刻刷出当前波 Boss')
@@ -352,7 +352,6 @@ function M.create(env)
     local hero_level = env.get_hero_level()
     local gold = STATE.resources and STATE.resources.gold or 0
     local wood = STATE.resources and STATE.resources.wood or 0
-    local skill_points = STATE.skill_points or 0
     local enemy_alive = STATE.total_enemy_alive or 0
     local challenge_count = env.get_active_challenge_count()
 
@@ -361,7 +360,7 @@ function M.create(env)
       get_gm_panel_boss_text(),
       string.format('英雄：Lv.%d    敌人数：%d', hero_level, enemy_alive),
       string.format('金币：%d    木材：%d', gold, wood),
-      string.format('技能点：%d    挑战次数：%s', skill_points, build_challenge_charge_text()),
+      string.format('挑战次数：%s', build_challenge_charge_text()),
       string.format('进行中挑战：%d', challenge_count),
     }, '\n')
   end
@@ -392,7 +391,6 @@ function M.create(env)
     local hero_level = env.get_hero_level()
     local gold = STATE.resources and STATE.resources.gold or 0
     local wood = STATE.resources and STATE.resources.wood or 0
-    local skill_points = STATE.skill_points or 0
     local enemy_alive = STATE.total_enemy_alive or 0
     local challenge_count = env.get_active_challenge_count()
 
@@ -401,7 +399,7 @@ function M.create(env)
       get_gm_panel_boss_text(),
       string.format('英雄：Lv.%d    敌人数：%d', format_int(hero_level), format_int(enemy_alive)),
       string.format('金币：%d    木材：%d', format_int(gold), format_int(wood)),
-      string.format('技能点：%d    挑战次数：%s', format_int(skill_points), build_challenge_charge_text()),
+      string.format('挑战次数：%s', build_challenge_charge_text()),
       string.format('进行中挑战：%d', format_int(challenge_count)),
     }, '\n')
   end

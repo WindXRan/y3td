@@ -1178,7 +1178,8 @@ function M.create(env)
       return
     end
     if STATE.awaiting_upgrade then
-      message('请先完成当前 G 三选一。')
+      STATE.awaiting_upgrade = false
+      STATE.current_upgrade_choices = nil
       return
     end
 

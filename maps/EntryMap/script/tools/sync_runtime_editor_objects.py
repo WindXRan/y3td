@@ -232,11 +232,11 @@ PROJECTILE_VISUAL_KV_KEYS = (
 
 ATTACK_SKILL_TAXONOMY = {
     "basic_attack": {
-        "category": "本命飞剑",
+        "category": "弓箭普攻",
         "cast_family": "basic_projectile",
-        "presentation_family": "eca_xianxia_sword",
-        "eca_reference": "御剑普攻/飞剑命中",
-        "tactical_tags": ["single", "projectile", "basic_attack", "flying_sword"],
+        "presentation_family": "eca_projectile_hit",
+        "eca_reference": "弓箭普攻/箭矢命中",
+        "tactical_tags": ["single", "projectile", "basic_attack", "archery", "arrow"],
     },
     "sword_wave": {
         "category": "直线贯穿",

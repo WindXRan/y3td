@@ -166,8 +166,8 @@ function M.create(env)
         progress.level = progress.level + 1
         progress.exp = 0
         sync_hero_progression()
-        STATE.skill_points = STATE.skill_points + 1
-        message(string.format('英雄升级至 %d，获得 1 点技能点。按 G 打开强化选择。', progress.level))
+        STATE.skill_points = 0
+        message(string.format('英雄升级至 %d。', progress.level))
       end
     end
 

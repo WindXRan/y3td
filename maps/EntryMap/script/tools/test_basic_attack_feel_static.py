@@ -14,7 +14,7 @@ def test_basic_attack_feel_config_and_runtime_hooks() -> None:
     skills_csv = ATTACK_SKILLS_CSV.read_text(encoding="utf-8")
     vfx_csv = ATTACK_VFX_CSV.read_text(encoding="utf-8")
 
-    assert "basic_attack,普攻,1,御使 1 口本命飞剑破空诛敌，造成 125% 攻击的金行飞剑伤害。,物理,weapon,metal,金行飞剑,1.25,1.05,820" in skills_csv
+    assert "basic_attack,普攻,1,射出 1 支破空箭矢直取敌人，造成 125% 攻击的金行箭矢伤害。,物理,weapon,metal,金行箭矢,1.25,1.05,820" in skills_csv
     assert "basic_attack,134267104,3760,2.9,28,101175,0.90,0.14,101175,1.08,0.28,101175,1.08,0.30,101175,0.86,0.20,101175,0.92,0.22," in vfx_csv
 
     assert "local effective_base_interval = math.max(0.15, (skill.base_cooldown or 1.7) * (1 - math.max(0, skill.cooldown_reduction or 0)))" in attack_content

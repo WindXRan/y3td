@@ -458,13 +458,15 @@ function M.create(env)
   end
   
   local function show_attack_skill_loadout()
-    message('攻击技能栏：')
-    for slot = 1, 4, 1 do
-      message(build_attack_skill_slot_text(slot))
-    end
+    message('普攻栏：')
+    message(build_attack_skill_slot_text(1))
   end
   
   local function unlock_attack_skill(skill_id)
+    if skill_id ~= 'basic_attack' then
+      return nil, nil, false
+    end
+
     local existing = get_attack_skill(skill_id)
     if existing then
       return existing, existing.slot, false
@@ -2304,16 +2306,6 @@ function M.create(env)
     end
   
     update_basic_attack(dt)
-  
-    for slot = 1, 4, 1 do
-      local skill = STATE.attack_skill_state.slots[slot]
-      if skill and skill.id ~= 'basic_attack' then
-        skill.cooldown_remaining = math.max(0, (skill.cooldown_remaining or 0) - dt)
-        if skill.cooldown_remaining <= 0 then
-          try_cast_attack_skill(skill)
-        end
-      end
-    end
   end
 
   return {

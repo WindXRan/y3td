@@ -42,18 +42,30 @@ function M.create(env)
 
   local function try_refresh_battle_ui()
     local ok, err = pcall(function()
-      ensure_runtime_hud()
-      ensure_choice_panel()
-      set_battle_hud_visible(true)
-      refresh_runtime_hud()
-      refresh_choice_panel()
+      if ensure_runtime_hud then
+        ensure_runtime_hud()
+      end
+      if ensure_choice_panel then
+        ensure_choice_panel()
+      end
+      if set_battle_hud_visible then
+        set_battle_hud_visible(true)
+      end
+      if refresh_runtime_hud then
+        refresh_runtime_hud()
+      end
+      if refresh_choice_panel then
+        refresh_choice_panel()
+      end
       if refresh_swallow_panel then
         refresh_swallow_panel()
       end
       if refresh_inventory_panel then
         refresh_inventory_panel()
       end
-      refresh_runtime_overview()
+      if refresh_runtime_overview then
+        refresh_runtime_overview()
+      end
     end)
     if ok then
       STATE.runtime_ui_fault_logged = false
@@ -93,7 +105,9 @@ function M.create(env)
         return
       end
 
-      set_battle_hud_visible(false)
+      if set_battle_hud_visible then
+        set_battle_hud_visible(false)
+      end
       if outgame_system then
         outgame_system.refresh_ui()
       end

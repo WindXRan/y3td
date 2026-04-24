@@ -6,9 +6,7 @@ local lane_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_growth
 local skill_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_skills.csv')
 local evolution_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_evolutions.csv')
 local card_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_cards.csv')
-local ACTIVE_SKILL_IDS = {
-  flying_swords = true,
-}
+local ACTIVE_SKILL_IDS = {}
 
 local evolution_by_skill = {}
 for _, row in ipairs(evolution_rows) do
@@ -117,11 +115,17 @@ end
 local active_skill_count = #list
 local free_attack_skill_slots = math.max(0, math.min(tonumber(meta_map.free_attack_skill_slots) or 0, active_skill_count))
 local total_attack_skills = 1 + free_attack_skill_slots
+local runtime_note = meta_map.note or ''
+if active_skill_count <= 0 then
+  runtime_note = runtime_note .. ' 当前没有启用的可解锁攻击技能。'
+else
+  runtime_note = string.format('%s 当前运行时仅启用 %d 个代表技能。', runtime_note, active_skill_count)
+end
 
 return {
   version = meta_map.version,
   status = meta_map.status,
-  note = string.format('%s 当前运行时仅启用 %d 个代表技能。', meta_map.note or '', active_skill_count),
+  note = runtime_note,
   system = {
     slot_rule = {
       fixed_base_slot = meta_map.fixed_base_slot,

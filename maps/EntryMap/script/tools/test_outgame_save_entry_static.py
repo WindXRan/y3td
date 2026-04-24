@@ -32,11 +32,8 @@ def main() -> None:
     assert_contains(content, "set_text_if_alive(save_entry.button, '打开存档')", 'outgame 存档卡片按钮应显示为打开存档')
     assert_contains(content, 'function api.open_save_panel()', 'outgame 应抽出可复用的存档面板打开接口，供局内入口复用')
     assert_contains(content, 'if api.open_save_panel() then', 'outgame 存档卡片按钮应复用统一的打开接口')
-    assert_contains(content, "if battle_pass_panel and battle_pass_panel.open_panel then", 'outgame 存档卡片按钮应优先走存档面板打开逻辑')
-    assert_contains(content, "if battle_pass_panel.set_ui_visible then", 'outgame 存档卡片按钮打开前应先显式显示面板')
-    assert_contains(content, "if battle_pass_panel.open_panel('pass') then", 'outgame 存档卡片按钮应直接打开存档/通行证面板')
-    assert_contains(content, "STATE.session_phase == 'battle'", 'outgame 应在局内阶段继续保持存档入口可见')
-    assert_contains(content, "(visible == true and STATE.session_phase == 'outgame')", 'outgame 应保留局外阶段的原始存档入口显示逻辑')
+    assert_contains(content, 'local profile = load_profile()', 'outgame 存档入口应直接读取当前局外档')
+    assert_contains(content, 'message(build_save_status_detail(profile))', 'outgame 存档入口当前应直接展示存档详情文本')
     assert_contains(content, '当前会话使用内存态默认档', 'outgame 应保留内存态原因说明文案')
 
     assert_not_contains(
