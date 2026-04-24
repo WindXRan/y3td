@@ -7,6 +7,7 @@ function M.create(env)
   local STATE = env.STATE
   local CONFIG = env.CONFIG or {}
   local y3 = env.y3
+  local ATTACK_SKILL_SLOT_COUNT = math.max(1, tonumber(env.attack_skill_slot_count) or 5)
   local round_number = env.round_number
   local message = env.message
   local ATTACK_SKILL_DEFS = env.ATTACK_SKILL_DEFS
@@ -41,6 +42,25 @@ function M.create(env)
     pcall(function()
       target:set_animation_speed(VISUAL_ANIMATION_SPEED)
     end)
+  end
+
+  local function get_ui_preferences()
+    return STATE.ui_preferences or {}
+  end
+
+  local function is_damage_text_hidden()
+    return get_ui_preferences().hide_damage_text == true
+  end
+
+  local function is_hit_effect_hidden()
+    return get_ui_preferences().hide_hit_effects == true
+  end
+
+  local function resolve_runtime_text_type(text_type)
+    if is_damage_text_hidden() then
+      return nil
+    end
+    return text_type
   end
 
   local function get_hero_attr(name, fallback_name)
@@ -360,7 +380,7 @@ function M.create(env)
     if not STATE.attack_skill_state then
       return nil
     end
-    for slot = 1, 4, 1 do
+    for slot = 1, ATTACK_SKILL_SLOT_COUNT, 1 do
       if not STATE.attack_skill_state.slots[slot] then
         return slot
       end
@@ -374,7 +394,7 @@ function M.create(env)
     end
   
     local count = 0
-    for slot = 1, 4, 1 do
+    for slot = 1, ATTACK_SKILL_SLOT_COUNT, 1 do
       if STATE.attack_skill_state.slots[slot] then
         count = count + 1
       end
@@ -459,11 +479,13 @@ function M.create(env)
   
   local function show_attack_skill_loadout()
     message('普攻栏：')
-    message(build_attack_skill_slot_text(1))
+    for slot = 1, ATTACK_SKILL_SLOT_COUNT, 1 do
+      message(build_attack_skill_slot_text(slot))
+    end
   end
   
   local function unlock_attack_skill(skill_id)
-    if skill_id ~= 'basic_attack' then
+    if not skill_id or not ATTACK_SKILL_DEFS[skill_id] then
       return nil, nil, false
     end
 
@@ -660,7 +682,7 @@ function M.create(env)
   end
   
   local function play_particle_on_unit(unit, effect_key, scale, time, socket)
-    if not effect_key or not unit or not unit:is_exist() then
+    if is_hit_effect_hidden() or not effect_key or not unit or not unit:is_exist() then
       return nil
     end
   
@@ -680,7 +702,7 @@ function M.create(env)
   end
   
   local function play_particle_on_point(point, effect_key, scale, time, height)
-    if not effect_key or not point then
+    if is_hit_effect_hidden() or not effect_key or not point then
       return nil
     end
   
@@ -1144,8 +1166,8 @@ function M.create(env)
       return
     end
 
-    local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false
-    if options and options.force_hit_effect == true then
+    local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false and not is_hit_effect_hidden()
+    if options and options.force_hit_effect == true and not is_hit_effect_hidden() then
       hit_effect_enabled = true
     end
     local damage_meta = skill or ATTACK_SKILL_DEFS.basic_attack or {}
@@ -1174,7 +1196,7 @@ function M.create(env)
         and STATE.hero_common_attack:is_exist()
         and STATE.hero_common_attack
         or nil,
-      text_type = options and options.text_type or 'physics',
+      text_type = resolve_runtime_text_type(options and options.text_type or 'physics'),
       text_track = options and options.text_track or 934269508,
       particle = hit_effect_enabled and options and options.particle or nil,
       socket = hit_effect_enabled and options and options.socket or '',

@@ -6,6 +6,7 @@ local M = {}
 function M.create(env)
   local STATE = env.STATE
   local y3 = env.y3
+  local ATTACK_SKILL_SLOT_COUNT = math.max(1, tonumber(env.attack_skill_slot_count) or 5)
   local hero_attr_system = env.hero_attr_system
   local ATTACK_SKILL_VFX = env.ATTACK_SKILL_VFX
   local has_bond_route_tag = env.has_bond_route_tag
@@ -34,6 +35,10 @@ function M.create(env)
     pcall(function()
       target:set_animation_speed(VISUAL_ANIMATION_SPEED)
     end)
+  end
+
+  local function is_hit_effect_hidden()
+    return STATE.ui_preferences and STATE.ui_preferences.hide_hit_effects == true or false
   end
 
   local function get_runtime()
@@ -188,7 +193,7 @@ function M.create(env)
       return 0
     end
     local count = 0
-    for slot = 1, 4, 1 do
+    for slot = 1, ATTACK_SKILL_SLOT_COUNT, 1 do
       local skill = STATE.attack_skill_state.slots[slot]
       if skill and skill.id ~= 'basic_attack' then
         count = count + 1
@@ -198,7 +203,7 @@ function M.create(env)
   end
 
   local function play_particle_on_unit(unit, effect_key, scale, time, socket)
-    if not effect_key or not unit or not unit:is_exist() then
+    if is_hit_effect_hidden() or not effect_key or not unit or not unit:is_exist() then
       return nil
     end
 
@@ -218,7 +223,7 @@ function M.create(env)
   end
 
   local function play_particle_on_point(point, effect_key, scale, time, height)
-    if not effect_key or not point then
+    if is_hit_effect_hidden() or not effect_key or not point then
       return nil
     end
 

@@ -13,6 +13,7 @@ function M.create(env)
   local STATE = env.STATE
   local CONFIG = env.CONFIG or {}
   local y3 = env.y3
+  local ATTACK_SKILL_SLOT_COUNT = math.max(1, tonumber(env.attack_skill_slot_count) or 5)
   local get_player = env.get_player
   local hero_attr_system = env.hero_attr_system
   local message = env.message or function() end
@@ -474,10 +475,10 @@ function M.create(env)
     local entries = {}
     local attack_slots = STATE.attack_skill_state and STATE.attack_skill_state.slots or nil
 
-    for slot = 1, 4 do
+    for slot = 1, math.min(ATTACK_SKILL_SLOT_COUNT, max_slots or ATTACK_SKILL_SLOT_COUNT) do
       local skill = attack_slots and attack_slots[slot] or nil
       if skill then
-        entries[#entries + 1] = build_attack_skill_display_entry(skill, #entries + 1)
+        entries[#entries + 1] = build_attack_skill_display_entry(skill, slot)
       end
     end
 
@@ -489,6 +490,15 @@ function M.create(env)
     end
 
     return entries
+  end
+
+  local function get_attack_skill_slot_display_entry(slot)
+    if slot < 1 or slot > ATTACK_SKILL_SLOT_COUNT then
+      return nil
+    end
+    local attack_slots = STATE.attack_skill_state and STATE.attack_skill_state.slots or nil
+    local skill = attack_slots and attack_slots[slot] or nil
+    return build_attack_skill_display_entry(skill, slot)
   end
 
   local function get_pending_choice_notice()
@@ -837,6 +847,9 @@ function M.create(env)
   local function refresh_button_texts()
     local prefs = ensure_preferences()
 
+    set_text_if_alive(resolve_ui('top.top.left_buttons.btn_exit'), '退出')
+    set_text_if_alive(resolve_ui('top.top.left_buttons.btn_setting'), '设置')
+    set_text_if_alive(resolve_ui('top.top.left_buttons.btn_save'), '存档')
     set_text_if_alive(resolve_ui('top.top.left_buttons.btn_pause'), prefs.soft_paused and '继续' or '暂停')
     set_text_if_alive(resolve_ui('top.top.left_buttons.btn_powerup'), '强化')
     set_text_if_alive(resolve_ui('top.top.left_buttons.btn_hotkey'), '键位')
@@ -886,6 +899,15 @@ function M.create(env)
   local function show_skill_entry_tip(slot_index, max_slots)
     local entries = get_display_skill_entries(max_slots or 4)
     local entry = entries[slot_index]
+    if not entry then
+      hide_tip_panel()
+      return
+    end
+    show_tip_panel(entry.tip_text or '当前没有技能说明。', 0, entry.tip_title or entry.name or '技能')
+  end
+
+  local function show_attack_skill_slot_tip(slot_index)
+    local entry = get_attack_skill_slot_display_entry(slot_index)
     if not entry then
       hide_tip_panel()
       return
@@ -1104,6 +1126,14 @@ function M.create(env)
       end
       refresh_hud()
     end)
+    bind_click_once('top_save', resolve_ui('top.top.left_buttons.btn_save'), function()
+      if open_save_panel and open_save_panel() ~= false then
+        return
+      end
+      if show_runtime_status then
+        show_runtime_status()
+      end
+    end)
     bind_click_once('top_hotkey', resolve_ui('top.top.left_buttons.btn_hotkey'), function()
       show_tip_panel(build_hotkey_help_text(), 10, '快捷键')
     end)
@@ -1162,11 +1192,6 @@ function M.create(env)
       end
       refresh_hud()
     end)
-    bind_hover_once('growth_weapon_slot_hover', resolve_ui('BattleBottomHUD.layout.center_hub.growth_weapon_slot'), function()
-      show_skill_entry_tip(1, 5)
-    end, function()
-      hide_tip_panel()
-    end)
     bind_click_once('battle_loadout_slot_1', resolve_ui('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_1'), function()
       if try_upgrade_growth_weapon then
         try_upgrade_growth_weapon('loadout_slot_click')
@@ -1185,11 +1210,11 @@ function M.create(env)
         end)
     end
 
-    for slot = 1, 4 do
+    for slot = 1, ATTACK_SKILL_SLOT_COUNT do
       bind_hover_once('battle_skill_hover_' .. tostring(slot),
         resolve_ui(string.format('BattleBottomHUD.layout.center_hub.skill_bar.skill_slot_%d', slot)),
         function()
-          show_skill_entry_tip(slot + 1, 5)
+          show_attack_skill_slot_tip(slot)
         end,
         function()
           hide_tip_panel()
@@ -1400,29 +1425,10 @@ function M.create(env)
       tostring(math.max(0, tonumber(STATE.total_enemy_alive) or 0)))
   end
 
-  local function refresh_growth_weapon_slot()
-    local prefix = 'BattleBottomHUD.layout.center_hub.growth_weapon_slot'
-    local entry = get_display_skill_entries(5)[1]
-    local icon_ui = resolve_ui(prefix .. '.icon')
-
-    set_visible_if_alive(icon_ui, entry ~= nil and entry.icon ~= nil)
-    set_image_if_alive(icon_ui, entry and entry.icon or nil)
-    if entry then
-      set_text_if_alive(resolve_ui(prefix .. '.key'), entry.key or '普')
-      set_text_if_alive(resolve_ui(prefix .. '.label'), entry.name or '技能1')
-      set_text_if_alive(resolve_ui(prefix .. '.cooldown'), entry.cooldown_text or '就绪')
-    else
-      set_text_if_alive(resolve_ui(prefix .. '.key'), '1')
-      set_text_if_alive(resolve_ui(prefix .. '.label'), '未解锁')
-      set_text_if_alive(resolve_ui(prefix .. '.cooldown'), '')
-    end
-  end
-
   local function refresh_skill_bar()
-    local entries = get_display_skill_entries(5)
-    for slot = 1, 4 do
+    for slot = 1, ATTACK_SKILL_SLOT_COUNT do
       local prefix = string.format('BattleBottomHUD.layout.center_hub.skill_bar.skill_slot_%d', slot)
-      local entry = entries[slot + 1]
+      local entry = get_attack_skill_slot_display_entry(slot)
       local icon_ui = resolve_ui(prefix .. '.icon')
       set_visible_if_alive(icon_ui, entry ~= nil and entry.icon ~= nil)
       set_image_if_alive(icon_ui, entry and entry.icon or nil)
@@ -1431,8 +1437,8 @@ function M.create(env)
         set_text_if_alive(resolve_ui(prefix .. '.label'), entry.name or ('技能' .. tostring(slot)))
         set_text_if_alive(resolve_ui(prefix .. '.cooldown'), entry.cooldown_text or '就绪')
       else
-        set_text_if_alive(resolve_ui(prefix .. '.key'), tostring(slot + 1))
-        set_text_if_alive(resolve_ui(prefix .. '.label'), '未解锁')
+        set_text_if_alive(resolve_ui(prefix .. '.key'), slot == 1 and '普' or tostring(slot))
+        set_text_if_alive(resolve_ui(prefix .. '.label'), slot == 1 and '普攻' or '未解锁')
         set_text_if_alive(resolve_ui(prefix .. '.cooldown'), '')
       end
     end
@@ -1474,7 +1480,6 @@ function M.create(env)
     refresh_left_station()
     refresh_hero_panel()
     refresh_challenge_row()
-    refresh_growth_weapon_slot()
     refresh_skill_bar()
     refresh_action_area()
     refresh_bond_slots()

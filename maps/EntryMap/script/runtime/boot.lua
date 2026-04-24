@@ -144,7 +144,7 @@ end
 
 local ATTACK_SKILL_DEFS = AttackSkillObjects.defs_by_id
 local ATTACK_SKILL_BLUEPRINTS = AttackSkillObjects.blueprints
-local ATTACK_SKILL_SLOT_COUNT = 1
+local ATTACK_SKILL_SLOT_COUNT = 5
 
 local function resolve_damage_meta(damage)
   if type(damage) == 'table' then
@@ -789,6 +789,25 @@ local function get_enemies_in_range(center, radius, except_unit, max_count)
   return result
 end
 
+local function get_ui_preferences()
+  return STATE.ui_preferences or {}
+end
+
+local function is_damage_text_hidden()
+  return get_ui_preferences().hide_damage_text == true
+end
+
+local function is_hit_effect_hidden()
+  return get_ui_preferences().hide_hit_effects == true
+end
+
+local function resolve_runtime_text_type(text_type)
+  if is_damage_text_hidden() then
+    return nil
+  end
+  return text_type
+end
+
 local function resolve_damage_text_type(damage_form, visual)
   if visual and visual.text_type then
     return visual.text_type
@@ -906,7 +925,7 @@ local function deal_skill_damage(target, amount, damage, visual)
     return
   end
 
-  local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false
+  local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false and not is_hit_effect_hidden()
   local damage_meta = resolve_damage_meta(damage)
   local final_damage = math.floor((amount or 0) * hero_attr_system.get_damage_multiplier(
     STATE.hero,
@@ -924,7 +943,7 @@ local function deal_skill_damage(target, amount, damage, visual)
     target = target,
     damage = final_damage,
     type = damage_meta.damage_type or '法术',
-    text_type = resolve_damage_text_type(damage_meta.damage_form, visual),
+    text_type = resolve_runtime_text_type(resolve_damage_text_type(damage_meta.damage_form, visual)),
     text_track = visual and visual.text_track or 934269508,
     particle = hit_effect_enabled and visual and visual.particle or nil,
     socket = hit_effect_enabled and visual and visual.socket or '',
@@ -1115,7 +1134,7 @@ local function trigger_td_skills_on_hit(data)
   local basic_attack_vfx = AttackSkillObjects.vfx_by_id.basic_attack or {}
   local basic_chain_particle = basic_attack_vfx.chain_particle
     or basic_attack_vfx.impact_particle
-  if CONFIG.damage_hit_effect_enabled == false then
+  if CONFIG.damage_hit_effect_enabled == false or is_hit_effect_hidden() then
     basic_chain_particle = nil
   end
 
@@ -1354,6 +1373,7 @@ attack_skills_system = AttackSkillsSystem.create({
   STATE = STATE,
   CONFIG = CONFIG,
   y3 = y3,
+  attack_skill_slot_count = ATTACK_SKILL_SLOT_COUNT,
   round_number = round_number,
   message = message,
   hero_attr_system = hero_attr_system,
@@ -1399,6 +1419,7 @@ auto_active_effects_system = AutoActiveEffectsSystem.create({
   STATE = STATE,
   CONFIG = CONFIG,
   y3 = y3,
+  attack_skill_slot_count = ATTACK_SKILL_SLOT_COUNT,
   hero_attr_system = hero_attr_system,
   str_to_modifier_key = function(name)
     return y3.game.str_to_modifier_key(name)
@@ -1626,15 +1647,14 @@ local function apply_bond_choice(index)
 end
 
 local function apply_round_choice(index)
-  if STATE.awaiting_upgrade then
+  local kind = get_pending_round_choice_kind()
+
+  if kind == 'upgrade' then
     apply_upgrade(index)
     return true
   end
-  if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice then
-    apply_bond_choice(index)
-    return true
-  end
-  if STATE.gear_state and STATE.gear_state.awaiting_choice then
+
+  if kind == 'gear' then
     if GearUpgrades.apply_affix_choice({
       STATE = STATE,
       CONFIG = CONFIG,
@@ -1644,21 +1664,68 @@ local function apply_round_choice(index)
         sync_gear_runtime_effects(STATE, STATE.hero, CONFIG.gear_upgrade_config)
       end
       STATE.choice_panel_hidden = false
+      try_open_queued_treasure_round()
       return true
     end
     return false
   end
-  local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
-  if evolution_runtime and evolution_runtime.awaiting_choice then
+
+  if kind == 'bond' then
+    apply_bond_choice(index)
+    return true
+  end
+
+  if kind == 'evolution' or kind == 'mark' then
     reward_system.apply_evolution_choice(index)
     STATE.choice_panel_hidden = false
     return true
   end
-  if STATE.treasure_runtime and (STATE.treasure_runtime.awaiting_choice or STATE.treasure_runtime.awaiting_replace) then
+
+  if kind == 'treasure' then
     reward_system.apply_treasure_choice(index)
     STATE.choice_panel_hidden = false
     return true
   end
+
+  return false
+end
+
+local function refresh_current_choice()
+  STATE.choice_panel_hidden = false
+  local kind = get_pending_round_choice_kind()
+
+  if kind == 'upgrade' then
+    return attack_upgrade_system and attack_upgrade_system.refresh_upgrade_choices
+      and attack_upgrade_system.refresh_upgrade_choices()
+      or false
+  end
+
+  if kind == 'gear' then
+    return GearUpgrades.refresh_affix_choices({
+      STATE = STATE,
+      CONFIG = CONFIG,
+      message = message,
+    })
+  end
+
+  if kind == 'bond' then
+    return BondSystem.refresh_choice(create_bond_env())
+  end
+
+  if kind == 'evolution' or kind == 'mark' then
+    message('当前真身进化不支持刷新。')
+    return false
+  end
+
+  if kind == 'treasure' and STATE.treasure_runtime and STATE.treasure_runtime.awaiting_replace then
+    message('当前已选中新的宝物，请先指定要替换的宝物位。')
+    return false
+  end
+
+  if kind == 'treasure' and STATE.treasure_runtime and STATE.treasure_runtime.awaiting_choice then
+    return reward_system.refresh_treasure_choices()
+  end
+
   return false
 end
 
@@ -1882,6 +1949,7 @@ runtime_hud_system = RuntimeHudSystem.create({
   STATE = STATE,
   CONFIG = CONFIG,
   y3 = y3,
+  attack_skill_slot_count = ATTACK_SKILL_SLOT_COUNT,
   get_player = get_player,
   hero_attr_system = hero_attr_system,
   message = message,
@@ -1911,23 +1979,16 @@ runtime_hud_system = RuntimeHudSystem.create({
 })
 choice_panel_system = nil
 
-  local runtime_ui_helpers = RuntimeUIHelpers.create({
-    STATE = STATE,
-    y3 = y3,
-    get_player = get_player,
-    refresh_bond_choice = function()
-      STATE.choice_panel_hidden = false
-      return BondSystem.refresh_choice(create_bond_env())
-    end,
-    apply_bond_choice = function(index)
-      return apply_bond_choice(index)
-    end,
-    defer_choice_panel = function()
-      STATE.choice_panel_hidden = true
-    end,
-    build_growth_weapon_tip_payload = function()
-      return GearUpgrades.build_tip_payload(STATE, 'weapon', CONFIG.gear_upgrade_config, y3.item)
-    end,
+local runtime_ui_helpers = RuntimeUIHelpers.create({
+  STATE = STATE,
+  y3 = y3,
+  get_player = get_player,
+  get_pending_round_choice_kind = get_pending_round_choice_kind,
+  refresh_current_choice = refresh_current_choice,
+  apply_round_choice = apply_round_choice,
+  defer_choice_panel = function()
+    STATE.choice_panel_hidden = true
+  end,
   get_growth_weapon_item_key = function()
     local slot_cfg = CONFIG.gear_upgrade_config
       and CONFIG.gear_upgrade_config.slots
@@ -1935,12 +1996,20 @@ choice_panel_system = nil
       or nil
     return slot_cfg and slot_cfg.item_key or nil
   end,
-  try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
+  build_treasure_slot_text = function(slot)
+    return reward_system.build_treasure_slot_text(slot)
+  end,
+  get_treasure_quality_label = function(quality)
+    return reward_system.get_treasure_quality_label(quality)
+  end,
+  get_treasure_def = function(treasure_id)
+    return reward_system.get_treasure_def(treasure_id)
+  end,
+  get_evolution_quality_label = function(quality)
+    return reward_system.get_evolution_quality_label(quality)
+  end,
   get_runtime_hud_system = function()
     return runtime_hud_system
-  end,
-  get_choice_panel_system = function()
-    return choice_panel_system
   end,
   get_runtime_overview_model = function()
     return get_runtime_overview_model and get_runtime_overview_model() or nil

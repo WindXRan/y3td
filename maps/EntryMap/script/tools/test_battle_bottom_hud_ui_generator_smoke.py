@@ -31,7 +31,6 @@ def test_bottom_hud_contains_expected_runtime_nodes():
     combat_parent = combat_module
     combat_names = {child["name"] for child in combat_parent["children"]}
     assert "challenge_row" in combat_names
-    assert "growth_weapon_slot" in combat_names
     assert "skill_bar" in combat_names
     assert "exp_bar" in combat_names
     assert "status_text" in combat_names
@@ -39,7 +38,7 @@ def test_bottom_hud_contains_expected_runtime_nodes():
 
     skill_bar = next(child for child in combat_parent["children"] if child["name"] == "skill_bar")
     slot_names = {child["name"] for child in skill_bar["children"]}
-    assert {"skill_slot_1", "skill_slot_2", "skill_slot_3", "skill_slot_4"}.issubset(slot_names)
+    assert {"skill_slot_1", "skill_slot_2", "skill_slot_3", "skill_slot_4", "skill_slot_5"}.issubset(slot_names)
 
     right_station = next(child for child in layout["children"] if child["name"] == "right_station")
     right_names = {child["name"] for child in right_station["children"]}

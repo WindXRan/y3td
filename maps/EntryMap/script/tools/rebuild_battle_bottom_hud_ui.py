@@ -660,13 +660,13 @@ def build_bottom_hud():
         build_reference_challenge_badge("realm_progress", 335, "奇遇幻境", "157/700", ICON_ATTACK_SPEED, [58, 102, 164, 255]),
     ]
 
-    skill_bar = panel("skill_bar", 244, 106, 312, 72, [21, 26, 36, 92])
+    skill_bar = panel("skill_bar", 200, 106, 388, 72, [21, 26, 36, 92])
     skill_bar["children"] = [
-        image("bar_bg", 156, 36, 304, 64, BG_BLACK, [255, 255, 255, 90], True),
         build_reference_skill_slot("skill_slot_1", 42, "1", SKILL_ICON_1),
         build_reference_skill_slot("skill_slot_2", 118, "2", SKILL_ICON_2),
         build_reference_skill_slot("skill_slot_3", 194, "3", SKILL_ICON_3),
         build_reference_skill_slot("skill_slot_4", 270, "4", SKILL_ICON_4),
+        build_reference_skill_slot("skill_slot_5", 346, "5", SKILL_ICON_1),
     ]
 
     exp_bar = panel("exp_bar", 222, 44, 300, 24, [18, 22, 31, 92])
@@ -689,7 +689,6 @@ def build_bottom_hud():
     combat_module["children"].extend(
         [
             challenge_row,
-            build_reference_growth_weapon_slot(),
             skill_bar,
             text("hero_level", 40, 44, 74, 16, "等级：17", 12, [255, 214, 117, 255], 0),
             exp_bar,
