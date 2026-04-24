@@ -1,6 +1,8 @@
 ﻿local CONFIG = require 'entry_config'
 local BondSystem = require 'runtime.bonds'
 local AttackSkillObjects = require 'entry_objects.attack_skills'
+local BondNodeObjects = require 'data.object_tables.bond_nodes'
+local EvolutionObjects = require 'data.object_tables.marks'
 local ProgressionSystem = require 'runtime.progression'
 local BattlefieldSystem = require 'runtime.battlefield'
 local DebugToolsSystem = require 'runtime.debug_tools'
@@ -145,6 +147,128 @@ end
 local ATTACK_SKILL_DEFS = AttackSkillObjects.defs_by_id
 local ATTACK_SKILL_BLUEPRINTS = AttackSkillObjects.blueprints
 local ATTACK_SKILL_SLOT_COUNT = 5
+local BOND_ROUTE_META_BY_TAG = {}
+
+for _, node_def in ipairs(BondNodeObjects.list or {}) do
+  for _, tag in ipairs(node_def.route_tags or {}) do
+    if tag and tag ~= '' and not BOND_ROUTE_META_BY_TAG[tag] then
+      BOND_ROUTE_META_BY_TAG[tag] = {
+        icon = node_def.icon,
+        title = node_def.display_name,
+        tip_text = node_def.desc and (node_def.desc.advanced or node_def.desc.single) or nil,
+      }
+    end
+  end
+end
+
+local function safe_get_unit_icon(unit_key)
+  if not unit_key or not y3 or not y3.unit or not y3.unit.get_icon_by_key then
+    return nil
+  end
+  local ok, icon = pcall(y3.unit.get_icon_by_key, unit_key)
+  if ok then
+    return icon
+  end
+  return nil
+end
+
+local function safe_get_buff_icon(buff_key)
+  if not buff_key or not y3 or not y3.buff or not y3.buff.get_icon_by_key then
+    return nil
+  end
+  local ok, icon = pcall(y3.buff.get_icon_by_key, buff_key)
+  if ok then
+    return icon
+  end
+  return nil
+end
+
+local function safe_get_buff_name(buff_key)
+  if not buff_key or not y3 or not y3.buff or not y3.buff.get_name_by_key then
+    return nil
+  end
+  local ok, name = pcall(y3.buff.get_name_by_key, buff_key)
+  if ok then
+    return name
+  end
+  return nil
+end
+
+local function build_bottom_status_effect_entry(effect_def, snapshot)
+  if not effect_def or not snapshot or snapshot.active ~= true then
+    return nil
+  end
+
+  local icon
+  local title
+  local lines = {}
+
+  if effect_def.source_type == 'bond' then
+    local meta = BOND_ROUTE_META_BY_TAG[effect_def.source_id] or {}
+    icon = meta.icon
+    title = meta.title
+    if meta.tip_text and meta.tip_text ~= '' then
+      lines[#lines + 1] = tostring(meta.tip_text)
+    end
+  elseif effect_def.source_type == 'mark' then
+    local mark_def = EvolutionObjects.by_id and EvolutionObjects.by_id[effect_def.source_id] or nil
+    icon = mark_def and safe_get_unit_icon(mark_def.hero_unit_id) or nil
+    title = mark_def and mark_def.name or nil
+    if mark_def and mark_def.summary and mark_def.summary ~= '' then
+      lines[#lines + 1] = tostring(mark_def.summary)
+    end
+  end
+
+  if not icon then
+    icon = safe_get_buff_icon(effect_def.modifier_key)
+  end
+  if not title or title == '' then
+    title = safe_get_buff_name(effect_def.modifier_key) or effect_def.id or '魔法效果'
+  end
+
+  local cooldown = tonumber(snapshot.cooldown) or 0
+  if cooldown > 0 then
+    lines[#lines + 1] = string.format('冷却中：%.1fs', cooldown)
+  end
+  local counter = tonumber(snapshot.counter) or 0
+  if counter > 0 then
+    lines[#lines + 1] = string.format('层数：%d', math.floor(counter + 0.5))
+  end
+  if #lines == 0 then
+    lines[#lines + 1] = '当前已激活。'
+  end
+
+  return {
+    id = tostring(effect_def.id or title or 'status_effect'),
+    icon = icon,
+    tip_title = tostring(title or '魔法效果'),
+    tip_text = table.concat(lines, '\n'),
+  }
+end
+
+local function get_bottom_status_effect_entries(max_slots)
+  local entries = {}
+  local limit = math.max(0, tonumber(max_slots) or 5)
+  if limit == 0
+    or not auto_active_effects_system
+    or not auto_active_effects_system.get_effect_defs
+    or not auto_active_effects_system.get_effect_runtime_snapshot then
+    return entries
+  end
+
+  for _, effect_def in ipairs(auto_active_effects_system.get_effect_defs() or {}) do
+    if #entries >= limit then
+      break
+    end
+    local snapshot = auto_active_effects_system.get_effect_runtime_snapshot(effect_def.id)
+    local entry = build_bottom_status_effect_entry(effect_def, snapshot)
+    if entry then
+      entries[#entries + 1] = entry
+    end
+  end
+
+  return entries
+end
 
 local function resolve_damage_meta(damage)
   if type(damage) == 'table' then
@@ -1972,6 +2096,9 @@ runtime_hud_system = RuntimeHudSystem.create({
   end,
   get_bond_slot_icon = function(slot)
     return BondSystem.get_slot_icon(STATE, slot)
+  end,
+  get_bottom_status_effect_entries = function(max_slots)
+    return get_bottom_status_effect_entries(max_slots)
   end,
   play_ui_click = function()
     return audio_system and audio_system.play_ui_click and audio_system.play_ui_click() or nil

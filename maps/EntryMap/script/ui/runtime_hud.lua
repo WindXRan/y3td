@@ -37,6 +37,7 @@ function M.create(env)
   local build_runtime_attr_dialog_chunks = env.build_runtime_attr_dialog_chunks
   local build_growth_weapon_tip_payload = env.build_growth_weapon_tip_payload
   local get_bond_slot_icon = env.get_bond_slot_icon
+  local get_bottom_status_effect_entries = env.get_bottom_status_effect_entries
   local play_ui_click = env.play_ui_click
   local ensure_hud
   local refresh_hud
@@ -500,6 +501,31 @@ function M.create(env)
     return entries
   end
 
+  local function get_center_skill_bar_entries(max_slots)
+    local entries = {}
+    local attack_slots = STATE.attack_skill_state and STATE.attack_skill_state.slots or nil
+    local limit = math.max(1, tonumber(max_slots) or ATTACK_SKILL_SLOT_COUNT)
+
+    for slot = 2, ATTACK_SKILL_SLOT_COUNT, 1 do
+      if #entries >= limit then
+        break
+      end
+      local skill = attack_slots and attack_slots[slot] or nil
+      if skill and skill.id ~= 'basic_attack' then
+        entries[#entries + 1] = build_attack_skill_display_entry(skill, slot)
+      end
+    end
+
+    if #entries < limit then
+      local form_entry = build_form_skill_display_entry(#entries + 1)
+      if form_entry then
+        entries[#entries + 1] = form_entry
+      end
+    end
+
+    return entries
+  end
+
   local function get_attack_skill_slot_display_entry(slot)
     if slot < 1 or slot > ATTACK_SKILL_SLOT_COUNT then
       return nil
@@ -924,12 +950,22 @@ function M.create(env)
   end
 
   local function show_attack_skill_slot_tip(slot_index)
-    local entry = get_attack_skill_slot_display_entry(slot_index)
+    local entry = get_center_skill_bar_entries(ATTACK_SKILL_SLOT_COUNT)[slot_index]
     if not entry then
       hide_tip_panel()
       return
     end
     show_tip_panel(entry.tip_text or '当前没有技能说明。', 0, entry.tip_title or entry.name or '技能')
+  end
+
+  local function show_bottom_status_effect_tip(slot_index)
+    local entries = get_bottom_status_effect_entries and get_bottom_status_effect_entries(ATTACK_SKILL_SLOT_COUNT) or {}
+    local entry = entries[slot_index]
+    if not entry then
+      hide_tip_panel()
+      return
+    end
+    show_tip_panel(entry.tip_text or '当前没有效果说明。', 0, entry.tip_title or '魔法效果')
   end
 
   local function refresh_gamehud_main_unit()
@@ -1238,6 +1274,17 @@ function M.create(env)
         end)
     end
 
+    for slot = 1, ATTACK_SKILL_SLOT_COUNT do
+      bind_hover_once('battle_buff_hover_' .. tostring(slot),
+        resolve_center_module_ui(string.format('buff_row.buff_slot_%d', slot)),
+        function()
+          show_bottom_status_effect_tip(slot)
+        end,
+        function()
+          hide_tip_panel()
+        end)
+    end
+
     for slot = 1, 7 do
       bind_click_once('battle_bond_slot_' .. tostring(slot),
         resolve_ui(string.format('BattleBottomHUD.layout.right_station.card_panel.card_slot_%d', slot)),
@@ -1406,18 +1453,19 @@ function M.create(env)
 
   local function refresh_hero_panel()
     local current_hp, max_hp = get_hero_hp_data()
-    local exp_current, exp_max = get_hero_exp_data()
 
     set_image_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_portrait'), get_hero_icon())
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_name'), get_hero_name())
-    set_text_if_alive(resolve_center_module_ui('hero_level'), string.format('等级：%d', get_hero_level()))
     set_progress_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_fill'), current_hp, max_hp)
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_text'),
       string.format('%s/%s', compact_number(current_hp), compact_number(max_hp)))
+  end
 
-    set_progress_if_alive(resolve_center_module_ui('exp_bar.fill'), exp_current, exp_max)
-    set_text_if_alive(resolve_center_module_ui('exp_bar.exp_text'),
-      string.format('%s/%s', compact_number(exp_current), compact_number(exp_max)))
+  local function refresh_center_module_cleanup()
+    set_visible_if_alive(resolve_center_module_ui('challenge_row'), false)
+    set_visible_if_alive(resolve_center_module_ui('hero_level'), false)
+    set_visible_if_alive(resolve_center_module_ui('exp_bar'), false)
+    set_visible_if_alive(resolve_center_module_ui('status_text'), false)
   end
 
   local function refresh_challenge_row()
@@ -1436,20 +1484,37 @@ function M.create(env)
   end
 
   local function refresh_skill_bar()
+    local entries = get_center_skill_bar_entries(ATTACK_SKILL_SLOT_COUNT)
     for slot = 1, ATTACK_SKILL_SLOT_COUNT do
       local prefix = string.format('BattleBottomHUD.layout.center_hub.combat_module.skill_bar.skill_slot_%d', slot)
-      local entry = get_attack_skill_slot_display_entry(slot)
+      local entry = entries[slot]
       local icon_ui = resolve_ui(prefix .. '.icon')
+      set_visible_if_alive(resolve_ui(prefix), true)
+      set_visible_if_alive(resolve_ui(prefix .. '.label_band'), false)
       set_visible_if_alive(icon_ui, entry ~= nil and entry.icon ~= nil)
       set_image_if_alive(icon_ui, entry and entry.icon or nil)
-      if entry then
-        set_text_if_alive(resolve_ui(prefix .. '.key'), entry.key or tostring(slot))
-        set_text_if_alive(resolve_ui(prefix .. '.label'), entry.name or ('技能' .. tostring(slot)))
-        set_text_if_alive(resolve_ui(prefix .. '.cooldown'), entry.cooldown_text or '就绪')
-      else
-        set_text_if_alive(resolve_ui(prefix .. '.key'), slot == 1 and '普' or tostring(slot))
-        set_text_if_alive(resolve_ui(prefix .. '.label'), slot == 1 and '普攻' or '未解锁')
-        set_text_if_alive(resolve_ui(prefix .. '.cooldown'), '')
+      set_text_if_alive(resolve_ui(prefix .. '.key'), '')
+      set_text_if_alive(resolve_ui(prefix .. '.label'), '')
+      set_text_if_alive(resolve_ui(prefix .. '.cooldown'), '')
+    end
+  end
+
+  local function refresh_buff_row()
+    local entries = get_bottom_status_effect_entries and get_bottom_status_effect_entries(ATTACK_SKILL_SLOT_COUNT) or {}
+    for slot = 1, ATTACK_SKILL_SLOT_COUNT do
+      local prefix = string.format('BattleBottomHUD.layout.center_hub.combat_module.buff_row.buff_slot_%d', slot)
+      local entry = entries[slot]
+      local root_ui = resolve_ui(prefix)
+      local frame_ui = resolve_ui(prefix .. '.frame')
+      local icon_ui = resolve_ui(prefix .. '.icon')
+
+      set_visible_if_alive(root_ui, entry ~= nil)
+      set_visible_if_alive(frame_ui, false)
+      set_visible_if_alive(icon_ui, entry ~= nil and entry.icon ~= nil)
+      set_image_if_alive(icon_ui, entry and entry.icon or nil)
+      set_image_color_if_alive(icon_ui, {255, 255, 255, 255})
+      if not entry then
+        set_image_if_alive(icon_ui, nil)
       end
     end
   end
@@ -1463,7 +1528,6 @@ function M.create(env)
   end
 
   local function refresh_action_area()
-    set_text_if_alive(resolve_center_module_ui('status_text'), build_status_text())
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.station_hint'), build_station_hint())
   end
 
@@ -1489,8 +1553,9 @@ function M.create(env)
     refresh_top_panel()
     refresh_left_station()
     refresh_hero_panel()
-    refresh_challenge_row()
+    refresh_center_module_cleanup()
     refresh_skill_bar()
+    refresh_buff_row()
     refresh_action_area()
     refresh_bond_slots()
     refresh_battle_loadout_row()
