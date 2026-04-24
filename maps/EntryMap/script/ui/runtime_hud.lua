@@ -4,6 +4,8 @@ local M = {}
 
 local NOTICE_DURATION = 8
 local BOND_SLOT_COUNT = 8
+local CENTER_SKILL_SLOT_COUNT = 5
+local BOTTOM_STATUS_SLOT_COUNT = 5
 local BATTLE_ATTR_ROW_NAMES = {
   'battle_power_row',
   'hero_attack_row',
@@ -85,6 +87,8 @@ function M.create(env)
       hover_tip_panel_subtitle = nil,
       hover_tip_panel_body = nil,
       hover_tip_visible = false,
+      center_skill_slot_1_key = nil,
+      center_skill_slot_1_cooldown = nil,
       attr_panel = nil,
       attr_panel_title = nil,
       attr_panel_body = nil,
@@ -156,6 +160,12 @@ function M.create(env)
     end
   end
 
+  local function set_text_alignment_if_alive(ui, horizontal, vertical)
+    if horizontal and vertical then
+      call_ui(ui, 'set_text_alignment', horizontal, vertical)
+    end
+  end
+
   local function set_image_if_alive(ui, image)
     if image ~= nil then
       call_ui(ui, 'set_image', image)
@@ -165,6 +175,18 @@ function M.create(env)
   local function set_image_color_if_alive(ui, color)
     if color then
       call_ui(ui, 'set_image_color', color[1], color[2], color[3], color[4] or 255)
+    end
+  end
+
+  local function set_ui_size_if_alive(ui, width, height)
+    if width and height then
+      call_ui(ui, 'set_ui_size', width, height)
+    end
+  end
+
+  local function set_anchor_if_alive(ui, x, y)
+    if x ~= nil and y ~= nil then
+      call_ui(ui, 'set_anchor', x, y)
     end
   end
 
@@ -331,6 +353,15 @@ function M.create(env)
       exp_max = math.max(1, exp_current)
     end
     return exp_current, exp_max
+  end
+
+  local function has_pending_evolution_choice()
+    local runtime = STATE.evolution_runtime or STATE.mark_runtime
+    return runtime
+      and runtime.awaiting_choice == true
+      and runtime.current_choices
+      and #runtime.current_choices > 0
+      or false
   end
 
   local function get_growth_weapon_level()
@@ -748,7 +779,7 @@ function M.create(env)
     return {
       id = tostring(skill.id or ('form_skill_' .. tostring(display_index))),
       name = tostring(skill.name or '真身神通'),
-      icon = get_hero_icon(),
+      icon = skill.ui_icon or skill.icon or get_hero_icon(),
       key = '真',
       cooldown_text = cooldown_remaining > 0 and string.format('%.1fs', cooldown_remaining) or '就绪',
       legacy_cooldown_text = cooldown_remaining > 0 and string.format('%.1f', cooldown_remaining) or '',
@@ -783,7 +814,7 @@ function M.create(env)
   local function get_center_skill_bar_entries(max_slots)
     local entries = {}
     local attack_slots = STATE.attack_skill_state and STATE.attack_skill_state.slots or nil
-    local limit = math.max(1, tonumber(max_slots) or ATTACK_SKILL_SLOT_COUNT)
+    local limit = math.max(1, tonumber(max_slots) or CENTER_SKILL_SLOT_COUNT)
 
     for slot = 2, ATTACK_SKILL_SLOT_COUNT, 1 do
       if #entries >= limit then
@@ -905,111 +936,62 @@ function M.create(env)
 
   local function ensure_overlay_widgets()
     local runtime = get_runtime()
-    local player = get_player_safe()
-    local hud = player and UIRoot.get_overlay_parent(y3, player) or nil
-    if not hud then
-      return
-    end
+    runtime.attr_panel = resolve_ui('BattleBottomHUD.layout.attr_panel')
+    runtime.attr_panel_title = resolve_ui('BattleBottomHUD.layout.attr_panel.title')
+    runtime.attr_panel_body = resolve_ui('BattleBottomHUD.layout.attr_panel.body')
+    runtime.attr_panel_hint = resolve_ui('BattleBottomHUD.layout.attr_panel.hint')
+    set_visible_if_alive(runtime.attr_panel, false)
+    call_ui(runtime.attr_panel, 'set_intercepts_operations', true)
+    set_text_alignment_if_alive(runtime.attr_panel_title, '左', '中')
+    set_text_alignment_if_alive(runtime.attr_panel_body, '左', '中')
+    set_text_alignment_if_alive(runtime.attr_panel_hint, '右', '中')
 
-    if not is_ui_alive(runtime.attr_panel) then
-      local panel = hud:create_child('图片')
-      panel:set_image(999)
-      panel:set_ui_size(860, 500)
-      panel:set_anchor(0.5, 0.5)
-      set_percent_pos_if_alive(panel, 50, 56)
-      panel:set_image_color(8, 14, 22, 232)
-      panel:set_z_order(9400)
-      panel:set_intercepts_operations(true)
-
-      local title = panel:create_child('文本')
-      title:set_ui_size(780, 34)
-      title:set_pos(430, 455)
-      title:set_font_size(24)
-      title:set_text_color(240, 245, 255, 255)
-      title:set_text_alignment('左', '中')
-
-      local body = panel:create_child('文本')
-      body:set_ui_size(790, 370)
-      body:set_pos(430, 245)
-      body:set_font_size(16)
-      body:set_text_color(218, 228, 241, 255)
-      body:set_text_alignment('左', '中')
-
-      local hint = panel:create_child('文本')
-      hint:set_ui_size(790, 24)
-      hint:set_pos(430, 34)
-      hint:set_font_size(14)
-      hint:set_text('再次按 TAB / T 可关闭')
-      hint:set_text_color(136, 160, 188, 255)
-      hint:set_text_alignment('右', '中')
-
-      panel:add_fast_event('左键-点击', function()
+    if runtime.bound_events.static_attr_panel_close ~= runtime.attr_panel and is_ui_alive(runtime.attr_panel) then
+      runtime.bound_events.static_attr_panel_close = runtime.attr_panel
+      runtime.attr_panel:add_fast_event('左键-点击', function()
         local active_runtime = get_runtime()
         active_runtime.attr_panel_visible = false
         set_visible_if_alive(active_runtime.attr_panel, false)
       end)
-
-      runtime.attr_panel = panel
-      runtime.attr_panel_title = title
-      runtime.attr_panel_body = body
-      runtime.attr_panel_hint = hint
-      set_visible_if_alive(panel, false)
     end
 
-    if not is_ui_alive(runtime.tip_panel) then
-      local panel = hud:create_child('图片')
-      panel:set_image(999)
-      panel:set_ui_size(760, 220)
-      panel:set_anchor(0.5, 0.5)
-      set_percent_pos_if_alive(panel, 50, 70)
-      panel:set_image_color(11, 20, 31, 228)
-      panel:set_z_order(9390)
-      panel:set_intercepts_operations(true)
+    runtime.tip_panel = resolve_ui('BattleBottomHUD.layout.tip_panel')
+    runtime.tip_panel_title = resolve_ui('BattleBottomHUD.layout.tip_panel.title')
+    runtime.tip_panel_body = resolve_ui('BattleBottomHUD.layout.tip_panel.body')
+    runtime.tip_panel_hint = resolve_ui('BattleBottomHUD.layout.tip_panel.hint')
+    set_visible_if_alive(runtime.tip_panel, false)
+    call_ui(runtime.tip_panel, 'set_intercepts_operations', true)
+    set_text_alignment_if_alive(runtime.tip_panel_title, '左', '中')
+    set_text_alignment_if_alive(runtime.tip_panel_body, '左', '中')
+    set_text_alignment_if_alive(runtime.tip_panel_hint, '右', '中')
 
-      local title = panel:create_child('文本')
-      title:set_ui_size(680, 30)
-      title:set_pos(380, 184)
-      title:set_font_size(22)
-      title:set_text_color(245, 248, 255, 255)
-      title:set_text_alignment('左', '中')
-
-      local body = panel:create_child('文本')
-      body:set_ui_size(690, 132)
-      body:set_pos(380, 98)
-      body:set_font_size(16)
-      body:set_text_color(216, 226, 239, 255)
-      body:set_text_alignment('左', '中')
-
-      local hint = panel:create_child('文本')
-      hint:set_ui_size(680, 22)
-      hint:set_pos(380, 24)
-      hint:set_font_size(14)
-      hint:set_text('点击任意位置关闭')
-      hint:set_text_color(140, 164, 194, 255)
-      hint:set_text_alignment('右', '中')
-
-      panel:add_fast_event('左键-点击', function()
+    if runtime.bound_events.static_tip_panel_close ~= runtime.tip_panel and is_ui_alive(runtime.tip_panel) then
+      runtime.bound_events.static_tip_panel_close = runtime.tip_panel
+      runtime.tip_panel:add_fast_event('左键-点击', function()
         local active_runtime = get_runtime()
         active_runtime.tip_expires_at = 0
         set_visible_if_alive(active_runtime.tip_panel, false)
       end)
-
-      runtime.tip_panel = panel
-      runtime.tip_panel_title = title
-      runtime.tip_panel_body = body
-      runtime.tip_panel_hint = hint
-      set_visible_if_alive(panel, false)
     end
 
-    runtime.hover_tip_panel = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel')
-    runtime.hover_tip_panel_icon_bg = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.icon_bg')
-    runtime.hover_tip_panel_icon = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.icon')
-    runtime.hover_tip_panel_title = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.title')
-    runtime.hover_tip_panel_subtitle = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.subtitle')
-    runtime.hover_tip_panel_body = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.body')
-    set_visible_if_alive(runtime.hover_tip_panel, runtime.hover_tip_visible == true)
+    runtime.hover_tip_panel = resolve_ui('BattleBottomHUD.layout.hover_tip_panel')
+    runtime.hover_tip_panel_icon_bg = resolve_ui('BattleBottomHUD.layout.hover_tip_panel.icon_bg')
+    runtime.hover_tip_panel_icon = resolve_ui('BattleBottomHUD.layout.hover_tip_panel.icon')
+    runtime.hover_tip_panel_title = resolve_ui('BattleBottomHUD.layout.hover_tip_panel.title')
+    runtime.hover_tip_panel_subtitle = resolve_ui('BattleBottomHUD.layout.hover_tip_panel.subtitle')
+    runtime.hover_tip_panel_body = resolve_ui('BattleBottomHUD.layout.hover_tip_panel.body')
+    set_visible_if_alive(runtime.hover_tip_panel, false)
+    call_ui(runtime.hover_tip_panel, 'set_intercepts_operations', false)
+    set_text_alignment_if_alive(runtime.hover_tip_panel_title, '左', '中')
+    set_text_alignment_if_alive(runtime.hover_tip_panel_subtitle, '左', '中')
+    set_text_alignment_if_alive(runtime.hover_tip_panel_body, '左', '中')
 
     if not is_ui_alive(runtime.big_cursor) then
+      local player = get_player_safe()
+      local hud = player and UIRoot.get_overlay_parent(y3, player) or nil
+      if not hud then
+        return
+      end
       local text = hud:create_child('文本')
       text:set_ui_size(60, 60)
       text:set_text('◎')
@@ -1040,13 +1022,7 @@ function M.create(env)
   end
 
   local function refresh_hover_tip_panel_position()
-    local runtime = get_runtime()
-    runtime.hover_tip_panel = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel')
-    runtime.hover_tip_panel_icon_bg = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.icon_bg')
-    runtime.hover_tip_panel_icon = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.icon')
-    runtime.hover_tip_panel_title = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.title')
-    runtime.hover_tip_panel_subtitle = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.subtitle')
-    runtime.hover_tip_panel_body = resolve_ui('BattleBottomHUD.layout.right_station.hover_tip_panel.body')
+    return
   end
 
   local function hide_hover_tip_panel()
@@ -1064,6 +1040,9 @@ function M.create(env)
     ensure_hud()
     local runtime = get_runtime()
     refresh_hover_tip_panel_position()
+    if not is_ui_alive(runtime.hover_tip_panel) then
+      return
+    end
     runtime.hover_tip_visible = true
     set_text_if_alive(runtime.hover_tip_panel_title, payload.title or '说明')
     set_text_if_alive(runtime.hover_tip_panel_subtitle, payload.subtitle or '')
@@ -1083,6 +1062,34 @@ function M.create(env)
 
   local function resolve_center_module_ui(suffix)
     return resolve_ui('BattleBottomHUD.layout.center_hub.combat_module.' .. suffix)
+  end
+
+  local function ensure_center_skill_slot_one_widgets()
+    local runtime = get_runtime()
+    local root = resolve_center_module_ui('growth_weapon_slot')
+    if not is_ui_alive(root) then
+      return
+    end
+
+    if not is_ui_alive(runtime.center_skill_slot_1_key) then
+      local key = root:create_child('文本')
+      key:set_ui_size(18, 14)
+      key:set_pos(13, 60)
+      key:set_font_size(10)
+      key:set_text_alignment('左', '中')
+      key:set_text_color(255, 223, 143, 255)
+      runtime.center_skill_slot_1_key = key
+    end
+
+    if not is_ui_alive(runtime.center_skill_slot_1_cooldown) then
+      local cooldown = root:create_child('文本')
+      cooldown:set_ui_size(18, 14)
+      cooldown:set_pos(58, 60)
+      cooldown:set_font_size(10)
+      cooldown:set_text_alignment('右', '中')
+      cooldown:set_text_color(220, 235, 255, 255)
+      runtime.center_skill_slot_1_cooldown = cooldown
+    end
   end
 
   local function bind_click_once(key, ui, callback)
@@ -1248,6 +1255,11 @@ function M.create(env)
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.reward_button.hotkey'), 'I')
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.kill_reward_button.hotkey'), 'H')
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.fish_button.hotkey'), 'P')
+
+    set_text_alignment_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.draw_button.hotkey'), '右', '中')
+    set_text_alignment_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.reward_button.hotkey'), '右', '中')
+    set_text_alignment_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.kill_reward_button.hotkey'), '右', '中')
+    set_text_alignment_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.fish_button.hotkey'), '右', '中')
   end
 
   local function show_growth_weapon_tip_panel()
@@ -1285,7 +1297,7 @@ function M.create(env)
   end
 
   local function show_attack_skill_slot_tip(slot_index)
-    local entry = get_center_skill_bar_entries(ATTACK_SKILL_SLOT_COUNT)[slot_index]
+    local entry = get_center_skill_bar_entries(CENTER_SKILL_SLOT_COUNT)[slot_index]
     if not entry then
       hide_tip_panel()
       return
@@ -1429,6 +1441,8 @@ function M.create(env)
   local function refresh_battle_loadout_row()
     local growth_payload = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), '物品栏')
+    set_text_alignment_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), '中', '中')
+    set_text_alignment_if_alive(resolve_center_module_ui('growth_weapon_slot.weapon_level'), '中', '中')
 
     for slot = 1, 6 do
       local prefix = string.format('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_%d', slot)
@@ -1534,6 +1548,7 @@ function M.create(env)
   ensure_hud = function()
     ensure_preferences()
     ensure_overlay_widgets()
+    ensure_center_skill_slot_one_widgets()
 
     bind_click_once('top_pause', resolve_ui('top.top.left_buttons.btn_pause'), function()
       toggle_pause()
@@ -1661,9 +1676,18 @@ function M.create(env)
         end)
     end
 
-    for slot = 1, ATTACK_SKILL_SLOT_COUNT do
+    bind_hover_once('battle_skill_hover_1',
+      resolve_center_module_ui('growth_weapon_slot'),
+      function()
+        show_attack_skill_slot_tip(1)
+      end,
+      function()
+        hide_tip_panel()
+      end)
+
+    for slot = 2, CENTER_SKILL_SLOT_COUNT do
       bind_hover_once('battle_skill_hover_' .. tostring(slot),
-        resolve_center_module_ui(string.format('skill_bar.skill_slot_%d', slot)),
+        resolve_center_module_ui(string.format('skill_bar.skill_slot_%d', slot - 1)),
         function()
           show_attack_skill_slot_tip(slot)
         end,
@@ -1672,7 +1696,7 @@ function M.create(env)
         end)
     end
 
-    for slot = 1, ATTACK_SKILL_SLOT_COUNT do
+    for slot = 1, BOTTOM_STATUS_SLOT_COUNT do
       bind_hover_once('battle_buff_hover_' .. tostring(slot),
         resolve_center_module_ui(string.format('buff_row.buff_slot_%d', slot)),
         function()
@@ -1708,6 +1732,12 @@ function M.create(env)
     end)
     bind_click_once('gamehud_attr_list', resolve_ui('GameHUD.main.attr_list'), function()
       toggle_attr_panel()
+    end)
+    bind_click_once('battle_exp_bar_evolve', resolve_center_module_ui('exp_bar'), function()
+      if try_evolution_entry then
+        try_evolution_entry()
+      end
+      refresh_hud()
     end)
 
     for slot = 1, 8 do
@@ -1860,25 +1890,27 @@ function M.create(env)
   local function refresh_hero_panel()
     local current_hp, max_hp = get_hero_hp_data()
     local exp_current, exp_max = get_hero_exp_data()
-    local hero_model_ui = resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_model')
+    local hero_portrait_ui = resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_portrait')
 
-    set_visible_if_alive(hero_model_ui, STATE.hero ~= nil and STATE.hero.is_exist and STATE.hero:is_exist())
-    set_ui_model_unit_if_alive(hero_model_ui, STATE.hero, true, true, true)
-    tune_ui_model_if_alive(hero_model_ui, {
-      focus = {0, 0, 88},
-      fov = 32,
-      camera_pos = {156, -108, 88},
-      camera_rot = {0, 0, 0},
-      background = {0, 0, 0, 0},
-    })
+    set_visible_if_alive(hero_portrait_ui, true)
+    set_image_if_alive(hero_portrait_ui, get_hero_icon())
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_name'), get_hero_name())
+    set_text_alignment_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_name'), '中', '中')
     set_progress_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_fill'), current_hp, max_hp)
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_text'),
       string.format('%s/%s', compact_number(current_hp), compact_number(max_hp)))
+    set_text_alignment_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_text'), '中', '中')
 
     set_visible_if_alive(resolve_center_module_ui('exp_bar'), true)
-    set_progress_if_alive(resolve_center_module_ui('exp_bar.fill'), exp_current, exp_max)
-    set_text_if_alive(resolve_center_module_ui('exp_bar.exp_text'),
+    local exp_ratio = math.max(0, math.min(1, exp_current / math.max(1, exp_max)))
+    local can_evolve = has_pending_evolution_choice()
+    set_text_if_alive(resolve_center_module_ui('exp_bar.level_label'), string.format('等级：%d', get_hero_level()))
+    set_ui_size_if_alive(resolve_center_module_ui('exp_bar.fill'), math.max(1, math.floor(242 * exp_ratio + 0.5)), 12)
+    set_image_color_if_alive(resolve_center_module_ui('exp_bar.fill'), can_evolve and { 255, 177, 37, 255 } or { 210, 38, 178, 255 })
+    set_image_color_if_alive(resolve_center_module_ui('exp_bar.fill_glow'), can_evolve and { 255, 191, 58, 150 } or { 255, 86, 220, 72 })
+    set_image_color_if_alive(resolve_center_module_ui('exp_bar.evolve_glow'), can_evolve and { 255, 173, 45, 210 } or { 255, 173, 45, 0 })
+    set_text_color_if_alive(resolve_center_module_ui('exp_bar.evolve_text'), can_evolve and { 255, 226, 58, 255 } or { 255, 226, 58, 0 })
+    set_text_if_alive(resolve_center_module_ui('exp_bar.exp_text'), can_evolve and '' or
       string.format('%s/%s', compact_number(exp_current), compact_number(exp_max)))
   end
 
@@ -1903,14 +1935,40 @@ function M.create(env)
   end
 
   local function refresh_skill_bar()
-    local entries = get_center_skill_bar_entries(ATTACK_SKILL_SLOT_COUNT)
-    for slot = 1, ATTACK_SKILL_SLOT_COUNT do
-      local prefix = string.format('skill_bar.skill_slot_%d', slot)
+    local entries = get_center_skill_bar_entries(CENTER_SKILL_SLOT_COUNT)
+    for slot = 1, CENTER_SKILL_SLOT_COUNT do
       local entry = entries[slot]
-      local icon_ui = resolve_center_module_ui(prefix .. '.icon')
-      set_visible_if_alive(resolve_center_module_ui(prefix), true)
+      local root_ui
+      local icon_ui
+      local key_ui
+      local cooldown_ui
+      local label_ui
+
+      if slot == 1 then
+        local runtime = get_runtime()
+        root_ui = resolve_center_module_ui('growth_weapon_slot')
+        icon_ui = resolve_center_module_ui('growth_weapon_slot.icon')
+        key_ui = runtime.center_skill_slot_1_key
+        cooldown_ui = runtime.center_skill_slot_1_cooldown
+        label_ui = resolve_center_module_ui('growth_weapon_slot.weapon_level')
+      else
+        local prefix = string.format('skill_bar.skill_slot_%d', slot - 1)
+        root_ui = resolve_center_module_ui(prefix)
+        icon_ui = resolve_center_module_ui(prefix .. '.icon')
+        key_ui = resolve_center_module_ui(prefix .. '.key')
+        cooldown_ui = resolve_center_module_ui(prefix .. '.cooldown')
+        label_ui = resolve_center_module_ui(prefix .. '.label')
+      end
+
+      set_visible_if_alive(root_ui, true)
       set_visible_if_alive(icon_ui, entry ~= nil and entry.icon ~= nil)
       set_image_if_alive(icon_ui, entry and entry.icon or nil)
+      set_text_if_alive(key_ui, entry and (entry.key or tostring(slot)) or tostring(slot))
+      set_text_if_alive(cooldown_ui, entry and (entry.legacy_cooldown_text or '') or '')
+      set_text_if_alive(label_ui, entry and (entry.badge_text or '') or '')
+      set_text_alignment_if_alive(label_ui, '中', '中')
+      set_text_alignment_if_alive(key_ui, '左', '中')
+      set_text_alignment_if_alive(cooldown_ui, '右', '中')
       if not entry or not entry.icon then
         set_image_if_alive(icon_ui, nil)
       end
@@ -1918,8 +1976,8 @@ function M.create(env)
   end
 
   local function refresh_buff_row()
-    local entries = get_bottom_status_effect_entries and get_bottom_status_effect_entries(ATTACK_SKILL_SLOT_COUNT) or {}
-    for slot = 1, ATTACK_SKILL_SLOT_COUNT do
+    local entries = get_bottom_status_effect_entries and get_bottom_status_effect_entries(BOTTOM_STATUS_SLOT_COUNT) or {}
+    for slot = 1, BOTTOM_STATUS_SLOT_COUNT do
       local prefix = string.format('buff_row.buff_slot_%d', slot)
       local entry = entries[slot]
       local root_ui = resolve_center_module_ui(prefix)
@@ -1945,8 +2003,10 @@ function M.create(env)
 
   local function refresh_action_area()
     set_visible_if_alive(resolve_center_module_ui('status_text'), true)
-    set_text_if_alive(resolve_center_module_ui('status_text'), build_status_text())
+    set_text_if_alive(resolve_center_module_ui('status_text'), '状态：')
+    set_text_alignment_if_alive(resolve_center_module_ui('status_text'), '左', '中')
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.station_hint'), build_station_hint())
+    set_text_alignment_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.station_hint'), '中', '中')
   end
 
   local function refresh_bond_slots()
