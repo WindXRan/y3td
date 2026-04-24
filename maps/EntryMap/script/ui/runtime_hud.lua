@@ -1398,6 +1398,9 @@ function M.create(env)
 
       set_visible_if_alive(icon_ui, icon ~= nil)
       set_image_if_alive(icon_ui, icon)
+      if not icon then
+        set_image_if_alive(icon_ui, nil)
+      end
     end
   end
 
@@ -1812,19 +1815,23 @@ function M.create(env)
 
   local function refresh_hero_panel()
     local current_hp, max_hp = get_hero_hp_data()
+    local exp_current, exp_max = get_hero_exp_data()
 
     set_image_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_portrait'), get_hero_icon())
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_name'), get_hero_name())
     set_progress_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_fill'), current_hp, max_hp)
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_text'),
       string.format('%s/%s', compact_number(current_hp), compact_number(max_hp)))
+
+    set_visible_if_alive(resolve_center_module_ui('exp_bar'), true)
+    set_progress_if_alive(resolve_center_module_ui('exp_bar.fill'), exp_current, exp_max)
+    set_text_if_alive(resolve_center_module_ui('exp_bar.exp_text'),
+      string.format('%s/%s', compact_number(exp_current), compact_number(exp_max)))
   end
 
   local function refresh_center_module_cleanup()
     set_visible_if_alive(resolve_center_module_ui('challenge_row'), false)
     set_visible_if_alive(resolve_center_module_ui('hero_level'), false)
-    set_visible_if_alive(resolve_center_module_ui('exp_bar'), false)
-    set_visible_if_alive(resolve_center_module_ui('status_text'), false)
   end
 
   local function refresh_challenge_row()
@@ -1845,34 +1852,31 @@ function M.create(env)
   local function refresh_skill_bar()
     local entries = get_center_skill_bar_entries(ATTACK_SKILL_SLOT_COUNT)
     for slot = 1, ATTACK_SKILL_SLOT_COUNT do
-      local prefix = string.format('BattleBottomHUD.layout.center_hub.combat_module.skill_bar.skill_slot_%d', slot)
+      local prefix = string.format('skill_bar.skill_slot_%d', slot)
       local entry = entries[slot]
-      local icon_ui = resolve_ui(prefix .. '.icon')
-      set_visible_if_alive(resolve_ui(prefix), true)
-      set_visible_if_alive(resolve_ui(prefix .. '.label_band'), false)
+      local icon_ui = resolve_center_module_ui(prefix .. '.icon')
+      set_visible_if_alive(resolve_center_module_ui(prefix), true)
       set_visible_if_alive(icon_ui, entry ~= nil and entry.icon ~= nil)
       set_image_if_alive(icon_ui, entry and entry.icon or nil)
-      set_text_if_alive(resolve_ui(prefix .. '.key'), '')
-      set_text_if_alive(resolve_ui(prefix .. '.label'), '')
-      set_text_if_alive(resolve_ui(prefix .. '.cooldown'), '')
+      if not entry or not entry.icon then
+        set_image_if_alive(icon_ui, nil)
+      end
     end
   end
 
   local function refresh_buff_row()
     local entries = get_bottom_status_effect_entries and get_bottom_status_effect_entries(ATTACK_SKILL_SLOT_COUNT) or {}
     for slot = 1, ATTACK_SKILL_SLOT_COUNT do
-      local prefix = string.format('BattleBottomHUD.layout.center_hub.combat_module.buff_row.buff_slot_%d', slot)
+      local prefix = string.format('buff_row.buff_slot_%d', slot)
       local entry = entries[slot]
-      local root_ui = resolve_ui(prefix)
-      local frame_ui = resolve_ui(prefix .. '.frame')
-      local icon_ui = resolve_ui(prefix .. '.icon')
+      local root_ui = resolve_center_module_ui(prefix)
+      local icon_ui = resolve_center_module_ui(prefix .. '.icon')
 
       set_visible_if_alive(root_ui, entry ~= nil)
-      set_visible_if_alive(frame_ui, false)
       set_visible_if_alive(icon_ui, entry ~= nil and entry.icon ~= nil)
       set_image_if_alive(icon_ui, entry and entry.icon or nil)
       set_image_color_if_alive(icon_ui, {255, 255, 255, 255})
-      if not entry then
+      if not entry or not entry.icon then
         set_image_if_alive(icon_ui, nil)
       end
     end
@@ -1887,6 +1891,8 @@ function M.create(env)
   end
 
   local function refresh_action_area()
+    set_visible_if_alive(resolve_center_module_ui('status_text'), true)
+    set_text_if_alive(resolve_center_module_ui('status_text'), build_status_text())
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.station_hint'), build_station_hint())
   end
 
@@ -1901,6 +1907,7 @@ function M.create(env)
         set_image_if_alive(icon_ui, icon)
       else
         set_visible_if_alive(icon_ui, false)
+        set_image_if_alive(icon_ui, nil)
       end
     end
   end

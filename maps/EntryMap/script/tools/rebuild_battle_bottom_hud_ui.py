@@ -490,21 +490,24 @@ def build_reference_growth_weapon_slot():
     return root
 
 
-def build_reference_grid_slot(name, x, y, icon_id=None, highlight=False):
+def build_reference_grid_slot(name, x, y, icon_id=None, highlight=False, show_icon=True):
     frame_id = PROP_FRAME_ALT if highlight else PROP_FRAME
     root = layout(name, x, y, 62, 62)
     children = [image("frame", 31, 31, 60, 60, frame_id, [255, 255, 255, 255], False)]
-    if icon_id is not None:
-        children.append(image("icon", 31, 31, 44, 44, icon_id, [255, 255, 255, 255], False))
+    icon_node = image("icon", 31, 31, 44, 44, icon_id if show_icon else None, [255, 255, 255, 255], False)
+    icon_node["visible"] = show_icon and icon_id is not None
+    children.append(icon_node)
     root["children"] = children
     return root
 
 
 def build_reference_consumable_slot(name, x, y, hotkey, amount_text, icon_id):
     root = layout(name, x, y, 72, 60)
+    icon_node = image("icon", 26, 30, 34, 34, icon_id, [255, 255, 255, 255], False)
+    icon_node["visible"] = icon_id is not None
     root["children"] = [
         image("frame", 26, 30, 50, 50, PROP_FRAME_ALT, [255, 255, 255, 255], False),
-        image("icon", 26, 30, 34, 34, icon_id, [255, 255, 255, 255], False),
+        icon_node,
         text("hotkey", 56, 42, 18, 12, hotkey, 11, [255, 224, 135, 255], 2),
         text("count", 56, 16, 18, 12, amount_text, 11, [240, 245, 250, 255], 2),
     ]
@@ -562,9 +565,9 @@ def build_reference_hover_tip_panel():
 
 def build_reference_buff_slot(name, x, icon_id):
     root = layout(name, x, 18, 34, 34)
-    root["children"] = [
-        image("icon", 17, 17, 28, 28, icon_id, [255, 255, 255, 255], False),
-    ]
+    icon_node = image("icon", 17, 17, 28, 28, icon_id, [255, 255, 255, 255], False)
+    icon_node["visible"] = icon_id is not None
+    root["children"] = [icon_node]
     return root
 
 
@@ -673,18 +676,28 @@ def build_bottom_hud():
         build_reference_skill_slot("skill_slot_5", 346, "5", SKILL_ICON_1),
     ]
 
-    buff_row = panel("buff_row", 200, 44, 388, 40, [12, 15, 22, 54])
+    exp_bar = panel("exp_bar", 220, 84, 304, 24, [18, 22, 31, 92])
+    exp_bar["children"] = [
+        image("bar_bg", 152, 12, 304, 24, SHOP_CONTENT_BG, [255, 255, 255, 222], True),
+        image("bar_inner", 152, 12, 290, 18, BG_BLACK, [255, 255, 255, 118], True),
+        panel("fill", 122, 12, 232, 12, [64, 181, 111, 255]),
+        text("exp_text", 152, 12, 270, 14, "54/100", 11, [255, 255, 255, 255]),
+    ]
+
+    buff_row = panel("buff_row", 232, 24, 300, 40, [12, 15, 22, 54])
     buff_row["children"] = [
-        build_reference_buff_slot("buff_slot_1", 42, ICON_ITEM_1),
-        build_reference_buff_slot("buff_slot_2", 118, ICON_ITEM_2),
-        build_reference_buff_slot("buff_slot_3", 194, ICON_ITEM_3),
-        build_reference_buff_slot("buff_slot_4", 270, SKILL_ICON_1),
-        build_reference_buff_slot("buff_slot_5", 346, SKILL_ICON_3),
+        build_reference_buff_slot("buff_slot_1", 34, None),
+        build_reference_buff_slot("buff_slot_2", 92, None),
+        build_reference_buff_slot("buff_slot_3", 150, None),
+        build_reference_buff_slot("buff_slot_4", 208, None),
+        build_reference_buff_slot("buff_slot_5", 266, None),
     ]
 
     combat_module["children"].extend(
         [
             skill_bar,
+            exp_bar,
+            text("status_text", 52, 24, 88, 16, "状态：", 12, [245, 247, 250, 255], 0),
             buff_row,
         ]
     )
@@ -722,13 +735,15 @@ def build_bottom_hud():
         ],
         start=1,
     ):
-        loadout_row["children"].append(build_reference_grid_slot(f"loadout_slot_{index}", x, y, icon_id, highlight))
+        loadout_row["children"].append(
+            build_reference_grid_slot(f"loadout_slot_{index}", x, y, icon_id, highlight, False)
+        )
 
     consumable_panel = panel("consumable_panel", 232, 122, 84, 190, [24, 28, 38, 58])
     consumable_panel["children"] = [
-        build_reference_consumable_slot("slot_1", 42, 148, "D", "3", ICON_ITEM_1),
-        build_reference_consumable_slot("slot_2", 42, 92, "F2", "1", ICON_ITEM_2),
-        build_reference_consumable_slot("slot_3", 42, 36, "G", "1", ICON_ITEM_3),
+        build_reference_consumable_slot("slot_1", 42, 148, "D", "3", None),
+        build_reference_consumable_slot("slot_2", 42, 92, "F2", "1", None),
+        build_reference_consumable_slot("slot_3", 42, 36, "G", "1", None),
     ]
 
     card_panel = panel("card_panel", 412, 134, 278, 214, [20, 24, 32, 58])
@@ -739,14 +754,14 @@ def build_bottom_hud():
         build_reference_action_button("reward_button", 97, 156, "已吞", "I", "blue"),
         build_reference_action_button("kill_reward_button", 159, 156, "进化", "H", "yellow"),
         build_reference_action_button("fish_button", 221, 156, "存档", "P", "yellow"),
-        build_reference_grid_slot("card_slot_1", 35, 102, CARD_SKILL_1, True),
-        build_reference_grid_slot("card_slot_2", 97, 102, CARD_SKILL_2, True),
-        build_reference_grid_slot("card_slot_3", 159, 102, CARD_SKILL_3, True),
-        build_reference_grid_slot("card_slot_4", 221, 102, CARD_SKILL_4, True),
-        build_reference_grid_slot("card_slot_5", 35, 38, CARD_SKILL_1, False),
-        build_reference_grid_slot("card_slot_6", 97, 38, CARD_SKILL_2, False),
-        build_reference_grid_slot("card_slot_7", 159, 38, CARD_SKILL_3, False),
-        build_reference_grid_slot("card_slot_8", 221, 38, None, False),
+        build_reference_grid_slot("card_slot_1", 35, 102, CARD_SKILL_1, True, False),
+        build_reference_grid_slot("card_slot_2", 97, 102, CARD_SKILL_2, True, False),
+        build_reference_grid_slot("card_slot_3", 159, 102, CARD_SKILL_3, True, False),
+        build_reference_grid_slot("card_slot_4", 221, 102, CARD_SKILL_4, True, False),
+        build_reference_grid_slot("card_slot_5", 35, 38, CARD_SKILL_1, False, False),
+        build_reference_grid_slot("card_slot_6", 97, 38, CARD_SKILL_2, False, False),
+        build_reference_grid_slot("card_slot_7", 159, 38, CARD_SKILL_3, False, False),
+        build_reference_grid_slot("card_slot_8", 221, 38, None, False, False),
     ]
 
     right_station["children"].extend(

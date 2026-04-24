@@ -6,21 +6,21 @@
         {
             "name": "layout",
             "type": 7,
-            "uid": "d17b5311-1dc0-4ea3-9f26-9393fa2bcb24",
+            "uid": "7f02784e-9c99-42ab-a023-38a4cb1fb172",
             "prefab_sub_key": null,
             "scene_ui_name": null,
             "children": [
                 {
                     "name": "bottom_shell",
                     "type": 7,
-                    "uid": "b2922c13-f88c-4938-9147-97a59c43fbb5",
+                    "uid": "c30eaac3-67b9-45a2-969f-11e9cce474d7",
                     "prefab_sub_key": null,
                     "scene_ui_name": null,
                     "children": [
                         {
                             "name": "shell_bg",
                             "type": 4,
-                            "uid": "4791e999-0111-4a0a-a059-de9f6cb3470b",
+                            "uid": "61ad167d-595f-4418-9a0b-a98ec00e3887",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [],
@@ -87,7 +87,7 @@
                         {
                             "name": "top_line",
                             "type": 4,
-                            "uid": "8934d380-83ef-4bd3-9725-379e888d3993",
+                            "uid": "e5eb2034-3323-4c31-845e-c83047574c03",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [],
@@ -196,14 +196,14 @@
                 {
                     "name": "left_station",
                     "type": 7,
-                    "uid": "22b5b70a-ac27-43cd-a43b-3381a50bc28b",
+                    "uid": "1b8b4de2-d8d2-4bad-910e-aba83a3de67d",
                     "prefab_sub_key": null,
                     "scene_ui_name": null,
                     "children": [
                         {
                             "name": "station_bg",
                             "type": 4,
-                            "uid": "c2bcff2a-3ccb-4408-963f-2458120fe833",
+                            "uid": "6090230d-cfa8-4010-b402-e42977417595",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [],
@@ -270,7 +270,7 @@
                         {
                             "name": "station_title_line",
                             "type": 4,
-                            "uid": "12e568be-7495-4b15-b52c-c6bf7b535e71",
+                            "uid": "890ee3b5-5b99-42fd-be31-a3a3993ce4e8",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [],
@@ -337,7 +337,7 @@
                         {
                             "name": "map_frame",
                             "type": 4,
-                            "uid": "33ea16c9-c068-4dfd-990b-46fbe8565dab",
+                            "uid": "9c5c0ad1-249c-45be-acc9-34363b5d02dd",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [],
@@ -404,7 +404,7 @@
                         {
                             "name": "map_badge_bg",
                             "type": 4,
-                            "uid": "42bb95bb-c56c-46c3-b3f9-6e59df2e8212",
+                            "uid": "45bfc9fc-8bd2-4b6d-8811-83afd65c30e8",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [],
@@ -471,7 +471,7 @@
                         {
                             "name": "map_badge",
                             "type": 3,
-                            "uid": "07b968dc-b12c-4cc6-ac0c-130630e6209f",
+                            "uid": "920f06d1-bb1e-446c-acba-8e69357b7c90",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [],
@@ -665,21 +665,21 @@
                         {
                             "name": "mini_map",
                             "type": 4,
-                            "uid": "9007c05a-39a1-48e5-8c41-e128af0b06bc",
+                            "uid": "d46c3471-e934-4330-a9e6-c608ccd2c2b3",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [
                                 {
                                     "name": "mini_map_o",
                                     "type": 7,
-                                    "uid": "8e5c47fc-7389-46b6-aad6-1ce7bee9baf8",
+                                    "uid": "8eb52e41-7438-4a2d-93a9-3e7f66db4577",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "mini_map_1",
                                             "type": 16,
-                                            "uid": "facd7136-b5c3-4cde-a785-09b5cd05fbd0",
+                                            "uid": "a7887b23-5ebb-4513-bca8-ba6cec4ef022",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -835,7 +835,7 @@
                         {
                             "name": "map_grid_v",
                             "type": 4,
-                            "uid": "8e0690dd-c0ef-47b4-baf6-d97d293ee862",
+                            "uid": "723ec07b-1e2d-4435-8161-59a2f12d1147",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [],
@@ -902,7 +902,7 @@
                         {
                             "name": "map_grid_h",
                             "type": 4,
-                            "uid": "cb1a21a9-cb15-4901-b20d-f9cfdd1a61b4",
+                            "uid": "a60408c3-d927-4c0b-98d8-3db9dc671a05",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [],
@@ -969,7 +969,7 @@
                         {
                             "name": "map_corner_mark",
                             "type": 4,
-                            "uid": "ca51ff55-c360-4eba-9de9-f707731be4ed",
+                            "uid": "1bcd1bf6-d737-4819-ac35-66d22c968cbd",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [],
@@ -1036,14 +1036,14 @@
                         {
                             "name": "toggle_frame",
                             "type": 7,
-                            "uid": "d5494315-ce7a-480a-827e-b4f475b45b65",
+                            "uid": "2633e08c-b285-43e0-9af0-8d1db263211d",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [
                                 {
                                     "name": "frame_bg",
                                     "type": 4,
-                                    "uid": "c7480745-9d52-4ae9-9a17-8b24582b6196",
+                                    "uid": "f8a8ebd2-4764-4adb-8f73-bc0dc1e7ca60",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -1110,14 +1110,14 @@
                                 {
                                     "name": "toggle_damage",
                                     "type": 7,
-                                    "uid": "885293ef-eac8-4659-8db5-623e07954ebc",
+                                    "uid": "67c9f0a5-d9a5-4ace-af49-9487ceb6412f",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "button",
                                             "type": 1,
-                                            "uid": "e6ab9d85-8834-4bdb-bdd6-136dc83c80cc",
+                                            "uid": "78884d4f-743c-477b-b25b-887c058e6a9f",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -1268,14 +1268,14 @@
                                 {
                                     "name": "toggle_sfx",
                                     "type": 7,
-                                    "uid": "7cc7f68d-0b72-44a6-9b34-d12fe65b3973",
+                                    "uid": "34beb494-0102-465d-bbad-861413aabdbf",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "button",
                                             "type": 1,
-                                            "uid": "6ea7be8e-c8d5-42f8-b42c-9f16120dcbdb",
+                                            "uid": "131c01fa-28f2-481a-9ca3-b516ab82919d",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -1426,14 +1426,14 @@
                                 {
                                     "name": "toggle_cursor",
                                     "type": 7,
-                                    "uid": "a64e054e-1ec0-4ce9-bf8f-11682d2cc11c",
+                                    "uid": "8fe5fbad-49c5-499c-9426-326d4245215f",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "button",
                                             "type": 1,
-                                            "uid": "620cea97-3934-4c4d-9f5c-b6ddce590418",
+                                            "uid": "15407608-4c46-4963-92ff-b911f59cc949",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -1626,14 +1626,14 @@
                         {
                             "name": "player_attr_list",
                             "type": 7,
-                            "uid": "22295511-0347-4df9-8df8-a501b9a1863f",
+                            "uid": "a552458f-74aa-4de4-a800-805881dc604f",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [
                                 {
                                     "name": "section_line",
                                     "type": 4,
-                                    "uid": "42f25025-a37f-480e-ba80-490e059d90b0",
+                                    "uid": "3f5edd60-5ee3-43e8-accf-f635fa826f59",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -1700,7 +1700,7 @@
                                 {
                                     "name": "brand_name",
                                     "type": 3,
-                                    "uid": "4d4acc95-fd30-41a6-b9f2-4b908015e731",
+                                    "uid": "9c2cc4a5-3c4a-464f-854a-23bf59ead1a9",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -1894,7 +1894,7 @@
                                 {
                                     "name": "brand_site",
                                     "type": 3,
-                                    "uid": "98e5c43d-b6ba-4e80-9c25-49793dfbe30d",
+                                    "uid": "823c650f-c0ad-4ee6-a466-4620922b7d6e",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -2088,14 +2088,14 @@
                                 {
                                     "name": "battle_power_row",
                                     "type": 7,
-                                    "uid": "9b0d65ea-961e-442e-9ebc-08d77e3f1e6d",
+                                    "uid": "18e7dc22-c122-445e-abe3-f1a24c68e520",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "strip",
                                             "type": 4,
-                                            "uid": "f62dc7f6-f026-4157-959f-71df2c1a8574",
+                                            "uid": "06f9ef4f-f721-4f83-ab76-a02eb3383a71",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -2162,7 +2162,7 @@
                                         {
                                             "name": "icon_frame",
                                             "type": 4,
-                                            "uid": "3450ce2f-5426-4751-ada6-a2851ae046b2",
+                                            "uid": "67660ed8-5d54-44ed-84d1-66eb792e0759",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -2229,7 +2229,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "28edd523-6232-4901-b70f-677503afe6f0",
+                                            "uid": "381f9f52-ec43-4b23-89d9-4ff1e054dd7b",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -2296,7 +2296,7 @@
                                         {
                                             "name": "label",
                                             "type": 3,
-                                            "uid": "05c80e4c-96c8-4bf1-b57d-3d7718268fd4",
+                                            "uid": "3d4bd1a9-3262-4932-861a-d7efd729f9a8",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -2490,7 +2490,7 @@
                                         {
                                             "name": "value",
                                             "type": 3,
-                                            "uid": "f3b2fcb7-7c18-4b78-9862-639c6c207e55",
+                                            "uid": "97fbdc6f-76ba-470c-a919-f203baeae785",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -2684,7 +2684,7 @@
                                         {
                                             "name": "delta",
                                             "type": 3,
-                                            "uid": "3becf5a3-f184-4d6b-90b2-4f99d42dcf50",
+                                            "uid": "8fe0746f-1075-4b80-85d2-d0be221dfb14",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -2920,14 +2920,14 @@
                                 {
                                     "name": "hero_attack_row",
                                     "type": 7,
-                                    "uid": "8df93502-171e-47cc-a321-8ed800d370e7",
+                                    "uid": "bc04d49b-5ec2-4b23-887a-cac9d821c932",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "strip",
                                             "type": 4,
-                                            "uid": "23196bf0-bddc-4528-ad2a-4d5350ccf575",
+                                            "uid": "2cabdbb3-98cc-428e-9b53-03bd3a0fe1cd",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -2994,7 +2994,7 @@
                                         {
                                             "name": "icon_frame",
                                             "type": 4,
-                                            "uid": "267b76d0-970e-46ba-b9b1-bf687e9664dd",
+                                            "uid": "b8f4c9ae-7563-422d-a4de-748e542f377d",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -3061,7 +3061,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "767bf46c-b4d2-420f-a363-6927b3e4658c",
+                                            "uid": "9ede563f-e169-4668-bc1f-52daef97aaaf",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -3128,7 +3128,7 @@
                                         {
                                             "name": "label",
                                             "type": 3,
-                                            "uid": "f3013e5b-30e5-435c-99b2-a9c27974390e",
+                                            "uid": "222eea5a-133a-439c-9e36-bcb0368a840b",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -3322,7 +3322,7 @@
                                         {
                                             "name": "value",
                                             "type": 3,
-                                            "uid": "52d279e8-679a-480d-aa6c-6f007ed138fc",
+                                            "uid": "97da93bf-1cdf-4c4a-a13a-6a2cddfaa5fc",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -3516,7 +3516,7 @@
                                         {
                                             "name": "delta",
                                             "type": 3,
-                                            "uid": "08a1023e-cbef-4fac-b653-216ee1867959",
+                                            "uid": "9206e231-b6c8-400c-ad31-bcdb0fba23e8",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -3752,14 +3752,14 @@
                                 {
                                     "name": "hero_defense_row",
                                     "type": 7,
-                                    "uid": "ed3c67ef-490e-4521-800e-212a38bfc637",
+                                    "uid": "1a10a857-10c7-45f3-85fa-b06c5dbe04fc",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "strip",
                                             "type": 4,
-                                            "uid": "545d18c7-e379-4751-aa0f-65d0aeffe5cd",
+                                            "uid": "aeb0352a-d781-4ca6-a9f6-e34ab285dfff",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -3826,7 +3826,7 @@
                                         {
                                             "name": "icon_frame",
                                             "type": 4,
-                                            "uid": "075fefc3-1a7b-442e-9a70-5bd5978793c8",
+                                            "uid": "e76bf74c-5862-4c92-9cc8-ab23d70f9475",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -3893,7 +3893,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "e2cc6ae9-f0b1-4fd0-bee9-2f149ee41605",
+                                            "uid": "503581df-c68f-487a-82c5-08b6b753b7cd",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -3960,7 +3960,7 @@
                                         {
                                             "name": "label",
                                             "type": 3,
-                                            "uid": "a5af61cb-e259-49d8-b039-c27f8517613c",
+                                            "uid": "16a6a528-b04c-414e-8c59-cb2fb7af5cd3",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -4154,7 +4154,7 @@
                                         {
                                             "name": "value",
                                             "type": 3,
-                                            "uid": "13712ace-a406-4bdd-939d-8f14d9bfe34c",
+                                            "uid": "58c3ac70-b625-43b8-bbf7-dd34012cd8d4",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -4348,7 +4348,7 @@
                                         {
                                             "name": "delta",
                                             "type": 3,
-                                            "uid": "4e66a1f1-de63-4b52-83a4-eb8ba4bb575e",
+                                            "uid": "9a0480a2-ba80-4bd6-adbb-cee8902aec60",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -4584,14 +4584,14 @@
                                 {
                                     "name": "hero_power_row",
                                     "type": 7,
-                                    "uid": "f8b4b139-e62e-425d-891c-8880c76196a7",
+                                    "uid": "322b5027-8f14-4253-b73e-d95ffaef9510",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "strip",
                                             "type": 4,
-                                            "uid": "081c411e-07fb-4b4f-9700-ec6b09f25a5d",
+                                            "uid": "697d4b32-4354-4f06-a037-9376ff89e277",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -4658,7 +4658,7 @@
                                         {
                                             "name": "icon_frame",
                                             "type": 4,
-                                            "uid": "3f7d199d-a6ce-41a0-890c-2b1934357f13",
+                                            "uid": "5ad33171-72d1-40b2-8f54-c75c23a2bafc",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -4725,7 +4725,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "7b370758-a1fe-4d20-a85c-e3b4ece289f6",
+                                            "uid": "a48824f4-7200-42a1-bc0c-8a839204683e",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -4792,7 +4792,7 @@
                                         {
                                             "name": "label",
                                             "type": 3,
-                                            "uid": "c86c711a-13d9-4f21-b6cc-1e6a7afa15a3",
+                                            "uid": "d1a2bc74-69ef-418a-8336-181ddd50c98d",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -4986,7 +4986,7 @@
                                         {
                                             "name": "value",
                                             "type": 3,
-                                            "uid": "45e8d00c-074e-480e-8e89-3222fba9455c",
+                                            "uid": "847e4f58-702c-4695-bb26-e6cd891ac94b",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -5180,7 +5180,7 @@
                                         {
                                             "name": "delta",
                                             "type": 3,
-                                            "uid": "71c34184-8897-4883-a4be-4cf8329fc852",
+                                            "uid": "ac6e2aea-be41-4ecd-a6e7-40815044af6b",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -5416,14 +5416,14 @@
                                 {
                                     "name": "hero_intelligence_row",
                                     "type": 7,
-                                    "uid": "8efaaf98-ce74-434a-8034-3e7037c0c5a5",
+                                    "uid": "066fcd68-ba6e-4e75-9b53-23ccd0eeb15b",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "strip",
                                             "type": 4,
-                                            "uid": "7e56a97d-371f-4564-a2d9-4f27e04308ec",
+                                            "uid": "afd54611-2c05-4621-b063-c11000968706",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -5490,7 +5490,7 @@
                                         {
                                             "name": "icon_frame",
                                             "type": 4,
-                                            "uid": "f6bada10-a279-47cc-a96f-18900a92d9b0",
+                                            "uid": "e6bc15c3-46f4-487e-8ceb-465323af40f1",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -5557,7 +5557,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "396487da-1544-4428-baa5-a80a284b6953",
+                                            "uid": "4c1dad4f-ddcc-4435-8221-c1fed5ad1687",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -5624,7 +5624,7 @@
                                         {
                                             "name": "label",
                                             "type": 3,
-                                            "uid": "c3009d0d-3180-47ad-8dab-f3ee1b3da727",
+                                            "uid": "0e4e334f-9110-48e1-9ddf-e41b83080628",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -5818,7 +5818,7 @@
                                         {
                                             "name": "value",
                                             "type": 3,
-                                            "uid": "e169c896-2533-4c60-86c2-07b05c2332a5",
+                                            "uid": "79e9950c-66af-4e49-bab8-df6f2461c56f",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -6012,7 +6012,7 @@
                                         {
                                             "name": "delta",
                                             "type": 3,
-                                            "uid": "3e081db7-ba1e-4978-8a87-1465a26d2fb7",
+                                            "uid": "be8e4e67-e83d-4e2b-8d59-965ebf7f3e51",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -6248,14 +6248,14 @@
                                 {
                                     "name": "hero_agility_row",
                                     "type": 7,
-                                    "uid": "03967f20-06b3-41af-bfcf-0e1e89e42dc6",
+                                    "uid": "c7b99f47-7857-458e-b004-d78fdb964580",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "strip",
                                             "type": 4,
-                                            "uid": "2a4ed33e-c3d3-4e9e-954a-f8f440adbf12",
+                                            "uid": "159e93fb-a5a3-44c3-9eb4-84ccb29a3942",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -6322,7 +6322,7 @@
                                         {
                                             "name": "icon_frame",
                                             "type": 4,
-                                            "uid": "dfda646c-3cae-4e7c-a740-68e06b005118",
+                                            "uid": "b9478b5f-b576-436e-a033-db8c9a844761",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -6389,7 +6389,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "89e17ebc-bd58-4bbe-8926-51f2cc36a8a3",
+                                            "uid": "a9e16866-630c-4455-a8dc-4fa3e3c572d4",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -6456,7 +6456,7 @@
                                         {
                                             "name": "label",
                                             "type": 3,
-                                            "uid": "c2b02b94-7206-4957-ab2c-5ca10d871262",
+                                            "uid": "029316f7-b32b-41e4-b86f-205e4877bf25",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -6650,7 +6650,7 @@
                                         {
                                             "name": "value",
                                             "type": 3,
-                                            "uid": "9812a5b4-b41d-4ea9-a643-758408cb7f59",
+                                            "uid": "150891f9-8884-415a-8892-34486b1f693b",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -6844,7 +6844,7 @@
                                         {
                                             "name": "delta",
                                             "type": 3,
-                                            "uid": "597657c7-8c64-4c49-9fd2-2388a4fbaf2b",
+                                            "uid": "194c0137-95d2-4e8d-9ed9-d0425ed59e9c",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -7164,21 +7164,21 @@
                 {
                     "name": "center_hub",
                     "type": 7,
-                    "uid": "4034c5c2-b0f2-46c3-a342-81574faa658e",
+                    "uid": "399bcfe6-f70a-4226-b4c1-17dadbf4c4f3",
                     "prefab_sub_key": null,
                     "scene_ui_name": null,
                     "children": [
                         {
                             "name": "hero_panel",
                             "type": 7,
-                            "uid": "3bfd9293-56c7-4e76-ae18-385dee15ef71",
+                            "uid": "e1ed90f8-8e0b-4767-b175-7aea6ff95b46",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [
                                 {
                                     "name": "portrait_frame",
                                     "type": 4,
-                                    "uid": "9100b481-d446-4fc9-8267-4715bef176bd",
+                                    "uid": "af4c3b12-94ff-4c30-a021-7b6ade9bc859",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -7245,7 +7245,7 @@
                                 {
                                     "name": "hero_portrait",
                                     "type": 4,
-                                    "uid": "4b835315-ddbd-483a-986c-66cb7fa52df8",
+                                    "uid": "8b7ff5b2-1320-4c89-91ee-b9fab26bdba8",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -7312,7 +7312,7 @@
                                 {
                                     "name": "hero_name",
                                     "type": 3,
-                                    "uid": "7e9b17c8-121c-48d7-acc0-cc6e0654ff0b",
+                                    "uid": "0554ed7e-c555-4344-a9ba-979ce3ad7f5a",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -7506,7 +7506,7 @@
                                 {
                                     "name": "hero_name_line",
                                     "type": 4,
-                                    "uid": "805a6722-3efa-4e4c-8964-75a90044e91a",
+                                    "uid": "7225b71b-51f6-4d4d-a0c9-eebead93d6ae",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -7573,7 +7573,7 @@
                                 {
                                     "name": "hero_hp_bg",
                                     "type": 4,
-                                    "uid": "83ac4f0c-b493-449d-a1ef-4cce9aff0f3a",
+                                    "uid": "52761541-7d51-4ff8-9ba8-efd0ca659359",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -7640,7 +7640,7 @@
                                 {
                                     "name": "hero_hp_fill",
                                     "type": 7,
-                                    "uid": "7a2e8e53-ce77-48d5-a858-854be382b34f",
+                                    "uid": "8364c02e-d58d-4ce6-844b-795b2d7f6a53",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -7688,7 +7688,7 @@
                                 {
                                     "name": "hero_hp_text",
                                     "type": 3,
-                                    "uid": "edc1f554-c024-4e0c-bdcc-819bac999798",
+                                    "uid": "33216f25-1a57-42a4-bfef-b6540afa75b6",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -7924,14 +7924,14 @@
                         {
                             "name": "combat_module",
                             "type": 7,
-                            "uid": "fc9e576a-d946-4243-ae3c-13bfacefde8d",
+                            "uid": "44b1cac3-7985-4e91-b43e-e559a491840b",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [
                                 {
                                     "name": "module_line",
                                     "type": 4,
-                                    "uid": "4b281421-43d4-4d0d-a4f9-2ffc6dd25c5f",
+                                    "uid": "96aae45d-6afb-416e-ae3f-2522e6069bb4",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -7998,21 +7998,21 @@
                                 {
                                     "name": "skill_bar",
                                     "type": 7,
-                                    "uid": "03034286-2037-4d3c-9a59-7f381a9304a4",
+                                    "uid": "9cff249c-aed4-47b2-8a85-209e6f329c1d",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "skill_slot_1",
                                             "type": 7,
-                                            "uid": "8a8eae9e-13ce-40bb-a273-07f50f623649",
+                                            "uid": "2d41a54d-4fa4-4b08-89a7-67ea5372c7bc",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [
                                                 {
                                                     "name": "frame",
                                                     "type": 4,
-                                                    "uid": "c139566f-ab85-496c-af57-eca8a414c323",
+                                                    "uid": "4b0a812d-31b9-464f-a9d5-059957b9c125",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -8079,7 +8079,7 @@
                                                 {
                                                     "name": "icon",
                                                     "type": 4,
-                                                    "uid": "40ee1e6f-037c-491e-91f9-b203b924c698",
+                                                    "uid": "7164db2e-2f53-4e17-b5c9-04c02afa83b7",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -8188,14 +8188,14 @@
                                         {
                                             "name": "skill_slot_2",
                                             "type": 7,
-                                            "uid": "ffeb6189-fba5-4d52-899f-c82c5cc06018",
+                                            "uid": "f14decab-6093-4ae4-aec0-e61ce2ae8201",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [
                                                 {
                                                     "name": "frame",
                                                     "type": 4,
-                                                    "uid": "92c39d50-9d51-4366-adc7-da74333b0073",
+                                                    "uid": "9d33a87e-b11e-47a0-8f1e-935b09830d55",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -8262,7 +8262,7 @@
                                                 {
                                                     "name": "icon",
                                                     "type": 4,
-                                                    "uid": "38d9e5ed-20bc-40ef-9f6f-a204ddb02994",
+                                                    "uid": "0303fc63-1770-4350-917b-b06a6c4ab0ef",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -8371,14 +8371,14 @@
                                         {
                                             "name": "skill_slot_3",
                                             "type": 7,
-                                            "uid": "ebaa7dac-3730-42c8-b809-b46982c5fe5b",
+                                            "uid": "a73f133d-f94a-4b79-a996-d9648b7b8bb2",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [
                                                 {
                                                     "name": "frame",
                                                     "type": 4,
-                                                    "uid": "927bc64d-14e9-4cb8-94dc-eb66ff92cb8b",
+                                                    "uid": "fefc55ba-0769-46ed-8a9e-3a78556a6467",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -8445,7 +8445,7 @@
                                                 {
                                                     "name": "icon",
                                                     "type": 4,
-                                                    "uid": "df369f0f-eb2e-4f45-ae31-6466c94ccaa3",
+                                                    "uid": "42f30589-e7f7-40d9-9341-cfbe9e4bed37",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -8554,14 +8554,14 @@
                                         {
                                             "name": "skill_slot_4",
                                             "type": 7,
-                                            "uid": "ef653933-cbaf-4254-8106-e851d0ff7ffd",
+                                            "uid": "4d267560-7a19-407a-8612-bbac6987cb06",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [
                                                 {
                                                     "name": "frame",
                                                     "type": 4,
-                                                    "uid": "35dfa611-d496-4604-a4c7-3ea369f54fb5",
+                                                    "uid": "f5ac3bf0-ef53-4678-a3a8-f11cbb7ff0ac",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -8628,7 +8628,7 @@
                                                 {
                                                     "name": "icon",
                                                     "type": 4,
-                                                    "uid": "dc6022c7-80d2-4e06-a02e-a3527bcf25e7",
+                                                    "uid": "968b6d8f-0fed-46e1-8c12-d2298fe4e899",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -8737,14 +8737,14 @@
                                         {
                                             "name": "skill_slot_5",
                                             "type": 7,
-                                            "uid": "95c173c7-2263-48ad-a809-b4f67f8ee9c8",
+                                            "uid": "047584ab-00b9-44d1-8249-bc717a49d496",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [
                                                 {
                                                     "name": "frame",
                                                     "type": 4,
-                                                    "uid": "6d071f34-2062-40f3-9985-97b90d1d7654",
+                                                    "uid": "a7b0a5e9-8818-44cd-8a56-16c12850be03",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -8811,7 +8811,7 @@
                                                 {
                                                     "name": "icon",
                                                     "type": 4,
-                                                    "uid": "5542b3ed-6bde-4fbc-9c72-f7983cfa8b51",
+                                                    "uid": "c8f5bc3e-15dc-44be-8dc7-26dc754d84b0",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -8960,23 +8960,642 @@
                                     "swallow_touches": false
                                 },
                                 {
+                                    "name": "exp_bar",
+                                    "type": 7,
+                                    "uid": "359b9945-e65a-4b45-a9cc-0e1802d2e2b9",
+                                    "prefab_sub_key": null,
+                                    "scene_ui_name": null,
+                                    "children": [
+                                        {
+                                            "name": "bar_bg",
+                                            "type": 4,
+                                            "uid": "9bd33b7d-6bde-4eac-bdec-a4c650e1e1c4",
+                                            "prefab_sub_key": null,
+                                            "scene_ui_name": null,
+                                            "children": [],
+                                            "event_list": [],
+                                            "pos_data": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    152,
+                                                    12,
+                                                    50.0,
+                                                    50.0,
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "size": [
+                                                304,
+                                                24
+                                            ],
+                                            "visible": true,
+                                            "adapter_option": [
+                                                false,
+                                                false,
+                                                false,
+                                                false,
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                            ],
+                                            "image": 134251378,
+                                            "color": [
+                                                255,
+                                                255,
+                                                255,
+                                                222
+                                            ],
+                                            "cap_insets": [
+                                                18,
+                                                18,
+                                                18,
+                                                18
+                                            ],
+                                            "is_scale9_enable": true,
+                                            "open_adapter": false,
+                                            "opacity": 1.0,
+                                            "rotation": 0,
+                                            "scale": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "swallow_touches": false,
+                                            "anchor": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    0.5,
+                                                    0.5
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "name": "bar_inner",
+                                            "type": 4,
+                                            "uid": "0b2ed8db-a7c2-46e6-b9fa-90772bfe7316",
+                                            "prefab_sub_key": null,
+                                            "scene_ui_name": null,
+                                            "children": [],
+                                            "event_list": [],
+                                            "pos_data": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    152,
+                                                    12,
+                                                    50.0,
+                                                    50.0,
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "size": [
+                                                290,
+                                                18
+                                            ],
+                                            "visible": true,
+                                            "adapter_option": [
+                                                false,
+                                                false,
+                                                false,
+                                                false,
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                            ],
+                                            "image": 134275447,
+                                            "color": [
+                                                255,
+                                                255,
+                                                255,
+                                                118
+                                            ],
+                                            "cap_insets": [
+                                                18,
+                                                18,
+                                                18,
+                                                18
+                                            ],
+                                            "is_scale9_enable": true,
+                                            "open_adapter": false,
+                                            "opacity": 1.0,
+                                            "rotation": 0,
+                                            "scale": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "swallow_touches": false,
+                                            "anchor": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    0.5,
+                                                    0.5
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "name": "fill",
+                                            "type": 7,
+                                            "uid": "796df02a-4a16-4f33-a098-9b8ed68c9acc",
+                                            "prefab_sub_key": null,
+                                            "scene_ui_name": null,
+                                            "children": [],
+                                            "event_list": [],
+                                            "pos_data": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    122,
+                                                    12,
+                                                    40.1316,
+                                                    50.0,
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "size": [
+                                                232,
+                                                12
+                                            ],
+                                            "visible": true,
+                                            "adapter_option": [
+                                                false,
+                                                false,
+                                                false,
+                                                false,
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                            ],
+                                            "clip_enabled": false,
+                                            "clipping_type": 1,
+                                            "color": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    64,
+                                                    181,
+                                                    111,
+                                                    255
+                                                ]
+                                            },
+                                            "open_adapter": false,
+                                            "swallow_touches": false
+                                        },
+                                        {
+                                            "name": "exp_text",
+                                            "type": 3,
+                                            "uid": "76f1d63b-0ca3-4b24-b737-b1a81864122d",
+                                            "prefab_sub_key": null,
+                                            "scene_ui_name": null,
+                                            "children": [],
+                                            "event_list": [],
+                                            "pos_data": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    152,
+                                                    12,
+                                                    50.0,
+                                                    50.0,
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "size": [
+                                                270,
+                                                14
+                                            ],
+                                            "visible": true,
+                                            "adapter_option": [
+                                                false,
+                                                false,
+                                                false,
+                                                false,
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                            ],
+                                            "alignment": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    1,
+                                                    8
+                                                ]
+                                            },
+                                            "bold": false,
+                                            "border": false,
+                                            "font": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    "MSYH",
+                                                    11
+                                                ]
+                                            },
+                                            "font_color": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    255,
+                                                    255,
+                                                    255,
+                                                    255
+                                                ]
+                                            },
+                                            "font_min_size": 10,
+                                            "gradient": false,
+                                            "gradient_bl_color": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    255,
+                                                    255,
+                                                    255,
+                                                    255
+                                                ]
+                                            },
+                                            "gradient_br_color": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    255,
+                                                    255,
+                                                    255,
+                                                    255
+                                                ]
+                                            },
+                                            "gradient_tl_color": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    255,
+                                                    255,
+                                                    255,
+                                                    255
+                                                ]
+                                            },
+                                            "gradient_tr_color": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    255,
+                                                    255,
+                                                    255,
+                                                    255
+                                                ]
+                                            },
+                                            "italics": false,
+                                            "label_effect": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    false,
+                                                    false,
+                                                    false,
+                                                    false,
+                                                    false,
+                                                    false
+                                                ]
+                                            },
+                                            "line_space": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    0,
+                                                    0
+                                                ]
+                                            },
+                                            "open_adapter": false,
+                                            "opacity": 1.0,
+                                            "over_pattern": true,
+                                            "review_word": false,
+                                            "rotation": 0,
+                                            "scale": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "shadow": false,
+                                            "strike_through": false,
+                                            "strike_through_color": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    255
+                                                ]
+                                            },
+                                            "strike_through_size": 0,
+                                            "swallow_touches": false,
+                                            "text": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    "54/100",
+                                                    false
+                                                ]
+                                            },
+                                            "text_bind": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    null,
+                                                    null
+                                                ]
+                                            },
+                                            "text_border_color": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    255
+                                                ]
+                                            },
+                                            "text_border_width": 0,
+                                            "text_format": "",
+                                            "text_italic_radius": 0.5,
+                                            "text_shadow_color": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    123,
+                                                    123,
+                                                    123,
+                                                    255
+                                                ]
+                                            },
+                                            "text_shadow_offset": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    0,
+                                                    0
+                                                ]
+                                            },
+                                            "typewriter_effect": 0,
+                                            "typewriter_space": 0,
+                                            "under_line": false,
+                                            "anchor": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    0.5,
+                                                    0.5
+                                                ]
+                                            }
+                                        }
+                                    ],
+                                    "event_list": [],
+                                    "pos_data": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            220,
+                                            84,
+                                            55.0,
+                                            39.2523,
+                                            1,
+                                            1
+                                        ]
+                                    },
+                                    "size": [
+                                        304,
+                                        24
+                                    ],
+                                    "visible": true,
+                                    "adapter_option": [
+                                        false,
+                                        false,
+                                        false,
+                                        false,
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "clip_enabled": false,
+                                    "clipping_type": 1,
+                                    "color": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            18,
+                                            22,
+                                            31,
+                                            92
+                                        ]
+                                    },
+                                    "open_adapter": false,
+                                    "swallow_touches": false
+                                },
+                                {
+                                    "name": "status_text",
+                                    "type": 3,
+                                    "uid": "a68fb1e3-97c7-4552-9f24-54f2c2092d2f",
+                                    "prefab_sub_key": null,
+                                    "scene_ui_name": null,
+                                    "children": [],
+                                    "event_list": [],
+                                    "pos_data": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            52,
+                                            24,
+                                            13.0,
+                                            11.215,
+                                            1,
+                                            1
+                                        ]
+                                    },
+                                    "size": [
+                                        88,
+                                        16
+                                    ],
+                                    "visible": true,
+                                    "adapter_option": [
+                                        false,
+                                        false,
+                                        false,
+                                        false,
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "alignment": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            0,
+                                            8
+                                        ]
+                                    },
+                                    "bold": false,
+                                    "border": false,
+                                    "font": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            "MSYH",
+                                            12
+                                        ]
+                                    },
+                                    "font_color": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            245,
+                                            247,
+                                            250,
+                                            255
+                                        ]
+                                    },
+                                    "font_min_size": 10,
+                                    "gradient": false,
+                                    "gradient_bl_color": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            255,
+                                            255,
+                                            255,
+                                            255
+                                        ]
+                                    },
+                                    "gradient_br_color": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            255,
+                                            255,
+                                            255,
+                                            255
+                                        ]
+                                    },
+                                    "gradient_tl_color": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            255,
+                                            255,
+                                            255,
+                                            255
+                                        ]
+                                    },
+                                    "gradient_tr_color": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            255,
+                                            255,
+                                            255,
+                                            255
+                                        ]
+                                    },
+                                    "italics": false,
+                                    "label_effect": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            false,
+                                            false,
+                                            false,
+                                            false,
+                                            false,
+                                            false
+                                        ]
+                                    },
+                                    "line_space": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            0,
+                                            0
+                                        ]
+                                    },
+                                    "open_adapter": false,
+                                    "opacity": 1.0,
+                                    "over_pattern": true,
+                                    "review_word": false,
+                                    "rotation": 0,
+                                    "scale": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            1,
+                                            1
+                                        ]
+                                    },
+                                    "shadow": false,
+                                    "strike_through": false,
+                                    "strike_through_color": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            0,
+                                            0,
+                                            0,
+                                            255
+                                        ]
+                                    },
+                                    "strike_through_size": 0,
+                                    "swallow_touches": false,
+                                    "text": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            "状态：",
+                                            false
+                                        ]
+                                    },
+                                    "text_bind": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            null,
+                                            null
+                                        ]
+                                    },
+                                    "text_border_color": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            0,
+                                            0,
+                                            0,
+                                            255
+                                        ]
+                                    },
+                                    "text_border_width": 0,
+                                    "text_format": "",
+                                    "text_italic_radius": 0.5,
+                                    "text_shadow_color": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            123,
+                                            123,
+                                            123,
+                                            255
+                                        ]
+                                    },
+                                    "text_shadow_offset": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            0,
+                                            0
+                                        ]
+                                    },
+                                    "typewriter_effect": 0,
+                                    "typewriter_space": 0,
+                                    "under_line": false,
+                                    "anchor": {
+                                        "__tuple__": true,
+                                        "items": [
+                                            0.5,
+                                            0.5
+                                        ]
+                                    }
+                                },
+                                {
                                     "name": "buff_row",
                                     "type": 7,
-                                    "uid": "56f66dc5-1add-4fb9-a2c5-21f8d4676208",
+                                    "uid": "4fb74cc6-8039-4da2-a0d2-e09043dcb719",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "buff_slot_1",
                                             "type": 7,
-                                            "uid": "bf3ae864-fc35-4ed4-9224-50807a2df929",
+                                            "uid": "0943c424-c572-434d-b816-29993910d515",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [
                                                 {
                                                     "name": "icon",
                                                     "type": 4,
-                                                    "uid": "6135058b-4034-4bef-a889-b75ab67ad4ad",
+                                                    "uid": "dedc53f3-2ab2-4b95-979b-6d3aa021d148",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -8996,7 +9615,7 @@
                                                         28,
                                                         28
                                                     ],
-                                                    "visible": true,
+                                                    "visible": false,
                                                     "adapter_option": [
                                                         false,
                                                         false,
@@ -9007,7 +9626,7 @@
                                                         0,
                                                         0
                                                     ],
-                                                    "image": 300540000,
+                                                    "image": null,
                                                     "color": [
                                                         255,
                                                         255,
@@ -9045,9 +9664,9 @@
                                             "pos_data": {
                                                 "__tuple__": true,
                                                 "items": [
-                                                    42,
+                                                    34,
                                                     18,
-                                                    10.8247,
+                                                    11.3333,
                                                     45.0,
                                                     1,
                                                     1
@@ -9085,14 +9704,14 @@
                                         {
                                             "name": "buff_slot_2",
                                             "type": 7,
-                                            "uid": "11552656-05ae-44e9-a588-dc4af985e82d",
+                                            "uid": "5ac494df-91e3-4478-a44c-c310ab01be1a",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [
                                                 {
                                                     "name": "icon",
                                                     "type": 4,
-                                                    "uid": "9ef84d07-83e9-4ef3-96e9-bd4749597036",
+                                                    "uid": "8a945a7d-cf22-46db-babc-6063085b39e7",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -9112,7 +9731,7 @@
                                                         28,
                                                         28
                                                     ],
-                                                    "visible": true,
+                                                    "visible": false,
                                                     "adapter_option": [
                                                         false,
                                                         false,
@@ -9123,7 +9742,7 @@
                                                         0,
                                                         0
                                                     ],
-                                                    "image": 134275326,
+                                                    "image": null,
                                                     "color": [
                                                         255,
                                                         255,
@@ -9161,9 +9780,9 @@
                                             "pos_data": {
                                                 "__tuple__": true,
                                                 "items": [
-                                                    118,
+                                                    92,
                                                     18,
-                                                    30.4124,
+                                                    30.6667,
                                                     45.0,
                                                     1,
                                                     1
@@ -9201,14 +9820,14 @@
                                         {
                                             "name": "buff_slot_3",
                                             "type": 7,
-                                            "uid": "0bade857-eaee-478e-954e-80d1e8912ea7",
+                                            "uid": "9427947e-0589-4651-bd63-cab982c1d031",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [
                                                 {
                                                     "name": "icon",
                                                     "type": 4,
-                                                    "uid": "11a8f551-3e28-4624-b6a9-9f2f0ab4b5bc",
+                                                    "uid": "8dc370ed-f532-4b5f-8130-fe28a70bb482",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -9228,7 +9847,7 @@
                                                         28,
                                                         28
                                                     ],
-                                                    "visible": true,
+                                                    "visible": false,
                                                     "adapter_option": [
                                                         false,
                                                         false,
@@ -9239,7 +9858,7 @@
                                                         0,
                                                         0
                                                     ],
-                                                    "image": 134269594,
+                                                    "image": null,
                                                     "color": [
                                                         255,
                                                         255,
@@ -9277,7 +9896,7 @@
                                             "pos_data": {
                                                 "__tuple__": true,
                                                 "items": [
-                                                    194,
+                                                    150,
                                                     18,
                                                     50.0,
                                                     45.0,
@@ -9317,14 +9936,14 @@
                                         {
                                             "name": "buff_slot_4",
                                             "type": 7,
-                                            "uid": "24aa580f-3103-47b4-974b-985b0010a8af",
+                                            "uid": "12eaf92b-a7f9-47ff-b489-9bb27274e1c3",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [
                                                 {
                                                     "name": "icon",
                                                     "type": 4,
-                                                    "uid": "0c4bfb10-9c4d-4aa6-ba87-da3481b9866d",
+                                                    "uid": "b890d10c-dbc2-41cf-8709-2100e8016b04",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -9344,7 +9963,7 @@
                                                         28,
                                                         28
                                                     ],
-                                                    "visible": true,
+                                                    "visible": false,
                                                     "adapter_option": [
                                                         false,
                                                         false,
@@ -9355,7 +9974,7 @@
                                                         0,
                                                         0
                                                     ],
-                                                    "image": 134230757,
+                                                    "image": null,
                                                     "color": [
                                                         255,
                                                         255,
@@ -9393,9 +10012,9 @@
                                             "pos_data": {
                                                 "__tuple__": true,
                                                 "items": [
-                                                    270,
+                                                    208,
                                                     18,
-                                                    69.5876,
+                                                    69.3333,
                                                     45.0,
                                                     1,
                                                     1
@@ -9433,14 +10052,14 @@
                                         {
                                             "name": "buff_slot_5",
                                             "type": 7,
-                                            "uid": "5fcb33a3-dfff-4103-a492-03be5ceeff2b",
+                                            "uid": "2de8bedc-26d4-4567-9b1c-f57b9628313d",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [
                                                 {
                                                     "name": "icon",
                                                     "type": 4,
-                                                    "uid": "4767f9ae-3d41-410c-8814-968690f87272",
+                                                    "uid": "298eafe6-c0cc-47d7-aee6-bee33fdeba24",
                                                     "prefab_sub_key": null,
                                                     "scene_ui_name": null,
                                                     "children": [],
@@ -9460,7 +10079,7 @@
                                                         28,
                                                         28
                                                     ],
-                                                    "visible": true,
+                                                    "visible": false,
                                                     "adapter_option": [
                                                         false,
                                                         false,
@@ -9471,7 +10090,7 @@
                                                         0,
                                                         0
                                                     ],
-                                                    "image": 134262182,
+                                                    "image": null,
                                                     "color": [
                                                         255,
                                                         255,
@@ -9509,9 +10128,9 @@
                                             "pos_data": {
                                                 "__tuple__": true,
                                                 "items": [
-                                                    346,
+                                                    266,
                                                     18,
-                                                    89.1753,
+                                                    88.6667,
                                                     45.0,
                                                     1,
                                                     1
@@ -9551,16 +10170,16 @@
                                     "pos_data": {
                                         "__tuple__": true,
                                         "items": [
-                                            200,
-                                            44,
-                                            50.0,
-                                            20.5607,
+                                            232,
+                                            24,
+                                            58.0,
+                                            11.215,
                                             1,
                                             1
                                         ]
                                     },
                                     "size": [
-                                        388,
+                                        300,
                                         40
                                     ],
                                     "visible": true,
@@ -9675,21 +10294,21 @@
                 {
                     "name": "right_station",
                     "type": 7,
-                    "uid": "a6b38913-3848-49a7-a05d-2d2c94c5a384",
+                    "uid": "82cc9f03-017b-41ed-bfeb-9ad4b0a71372",
                     "prefab_sub_key": null,
                     "scene_ui_name": null,
                     "children": [
                         {
                             "name": "loadout_row",
                             "type": 7,
-                            "uid": "cbed7404-ee71-475d-b668-eedd96a80181",
+                            "uid": "46ff76a8-ec6f-47ee-bdf0-29a17d1fbe90",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [
                                 {
                                     "name": "loadout_title",
                                     "type": 3,
-                                    "uid": "2560d4d1-a929-4962-b888-8b69bbb04126",
+                                    "uid": "43832769-857d-45ab-9d95-47a5de1ae6bd",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -9883,14 +10502,14 @@
                                 {
                                     "name": "loadout_slot_1",
                                     "type": 7,
-                                    "uid": "2ad1e2f0-8b21-4517-94cf-2384089fe566",
+                                    "uid": "31d087e7-1561-45d5-8817-7e55b73da19c",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "47b9d69c-255e-41c2-8cfe-9e6c18e993a3",
+                                            "uid": "45d2f6a2-c0ad-431e-a14a-48f8430e7d6f",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -9957,7 +10576,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "0e4b152f-dd5e-44e5-b952-436e9c22167e",
+                                            "uid": "ff9d425b-502f-47cc-8a11-9b9280616249",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -9977,7 +10596,7 @@
                                                 44,
                                                 44
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -9988,7 +10607,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 134275326,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -10066,14 +10685,14 @@
                                 {
                                     "name": "loadout_slot_2",
                                     "type": 7,
-                                    "uid": "2cb79c82-20ef-4199-aa16-d2fefd272529",
+                                    "uid": "dde4d4db-f805-48bf-8772-ebad1a6bfee3",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "79cfd3d9-6ef9-49d0-9d26-c781a2fb9b6d",
+                                            "uid": "13262bcb-5856-4664-98fb-a32560cbface",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -10140,7 +10759,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "7e02166c-4d67-414a-a0e3-e51105984198",
+                                            "uid": "ed068222-55d0-4af8-b693-319d2984f9dc",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -10160,7 +10779,7 @@
                                                 44,
                                                 44
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -10171,7 +10790,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 134222930,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -10249,14 +10868,14 @@
                                 {
                                     "name": "loadout_slot_3",
                                     "type": 7,
-                                    "uid": "17992ee7-d125-43b3-97e5-7ff03730bd88",
+                                    "uid": "5debc1e9-e8fc-4373-bba7-ad60d241444c",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "ecd2ff53-5ce9-4e57-ac14-6ecaf0fa0dc3",
+                                            "uid": "c8d7a24f-850f-4b9c-a2b0-fa8f8e54f25d",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -10323,7 +10942,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "ba049cbc-11b2-48d5-bf79-9dbb68801662",
+                                            "uid": "5113f7ff-5083-47ba-beba-7304f7c4fc93",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -10343,7 +10962,7 @@
                                                 44,
                                                 44
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -10354,7 +10973,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 134269594,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -10432,14 +11051,14 @@
                                 {
                                     "name": "loadout_slot_4",
                                     "type": 7,
-                                    "uid": "d65ed84a-9e1a-43e2-acf9-4b7dba0bebfc",
+                                    "uid": "1becc304-94e3-4d5d-b7c2-70415cdb1de1",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "1be11530-5865-4d74-a467-df699fba7e5e",
+                                            "uid": "5c509488-aa06-46ce-b7aa-ac34dc1cf6bc",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -10506,7 +11125,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "de67cd1e-9ae0-4503-aa2e-5a83358f1693",
+                                            "uid": "7acd9e03-078a-474c-bea7-ea510f7d7325",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -10526,7 +11145,7 @@
                                                 44,
                                                 44
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -10537,7 +11156,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 300540000,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -10615,14 +11234,14 @@
                                 {
                                     "name": "loadout_slot_5",
                                     "type": 7,
-                                    "uid": "5d780801-32fb-49d4-9796-a2bd0d02e640",
+                                    "uid": "8a90b37e-60a5-4b10-94b1-dd980223ea82",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "8fee994e-53f9-46c7-895c-c777402b9bd7",
+                                            "uid": "96964c50-0d03-4e46-a4fb-796da6b576d8",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -10654,6 +11273,73 @@
                                                 0
                                             ],
                                             "image": 134226696,
+                                            "color": [
+                                                255,
+                                                255,
+                                                255,
+                                                255
+                                            ],
+                                            "cap_insets": [
+                                                18,
+                                                18,
+                                                18,
+                                                18
+                                            ],
+                                            "is_scale9_enable": false,
+                                            "open_adapter": false,
+                                            "opacity": 1.0,
+                                            "rotation": 0,
+                                            "scale": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "swallow_touches": false,
+                                            "anchor": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    0.5,
+                                                    0.5
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "name": "icon",
+                                            "type": 4,
+                                            "uid": "fa1e08d9-ca32-4358-8715-9f78361dec0f",
+                                            "prefab_sub_key": null,
+                                            "scene_ui_name": null,
+                                            "children": [],
+                                            "event_list": [],
+                                            "pos_data": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    31,
+                                                    31,
+                                                    50.0,
+                                                    50.0,
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "size": [
+                                                44,
+                                                44
+                                            ],
+                                            "visible": false,
+                                            "adapter_option": [
+                                                false,
+                                                false,
+                                                false,
+                                                false,
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                            ],
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -10731,14 +11417,14 @@
                                 {
                                     "name": "loadout_slot_6",
                                     "type": 7,
-                                    "uid": "5af4ee4b-e505-4f88-924e-86037e07e17b",
+                                    "uid": "1266e9a5-c72c-44fe-8565-aece51c30923",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "175258da-0956-41f8-8f25-8e6676a3abff",
+                                            "uid": "511b000f-379a-442b-98a0-668ec6792179",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -10770,6 +11456,73 @@
                                                 0
                                             ],
                                             "image": 134226696,
+                                            "color": [
+                                                255,
+                                                255,
+                                                255,
+                                                255
+                                            ],
+                                            "cap_insets": [
+                                                18,
+                                                18,
+                                                18,
+                                                18
+                                            ],
+                                            "is_scale9_enable": false,
+                                            "open_adapter": false,
+                                            "opacity": 1.0,
+                                            "rotation": 0,
+                                            "scale": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "swallow_touches": false,
+                                            "anchor": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    0.5,
+                                                    0.5
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "name": "icon",
+                                            "type": 4,
+                                            "uid": "0ca86940-3dfb-44ef-95c2-80ae859b6695",
+                                            "prefab_sub_key": null,
+                                            "scene_ui_name": null,
+                                            "children": [],
+                                            "event_list": [],
+                                            "pos_data": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    31,
+                                                    31,
+                                                    50.0,
+                                                    50.0,
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "size": [
+                                                44,
+                                                44
+                                            ],
+                                            "visible": false,
+                                            "adapter_option": [
+                                                false,
+                                                false,
+                                                false,
+                                                false,
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                            ],
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -10889,21 +11642,21 @@
                         {
                             "name": "consumable_panel",
                             "type": 7,
-                            "uid": "75a6aa1e-22b1-4e05-8204-1b50724e822a",
+                            "uid": "f9eb329b-4730-44d6-98fb-95b86137813c",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [
                                 {
                                     "name": "slot_1",
                                     "type": 7,
-                                    "uid": "a9f7a317-c283-40d7-8437-96baac2daf59",
+                                    "uid": "6a6ec484-c78b-448e-88e7-140826079e6d",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "e6298cdc-202c-4b3f-b4c4-21621ec67c3f",
+                                            "uid": "aac2b0e2-0866-46f9-882f-122bf0b3e4d2",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -10970,7 +11723,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "053cac0c-e8a5-4816-b09b-b8ffe218e71d",
+                                            "uid": "b3efc33e-3c92-4283-ac31-752b11212fe0",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -10990,7 +11743,7 @@
                                                 34,
                                                 34
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -11001,7 +11754,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 300540000,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -11037,7 +11790,7 @@
                                         {
                                             "name": "hotkey",
                                             "type": 3,
-                                            "uid": "0445f3eb-d18e-4789-9fc1-e8263cc31e20",
+                                            "uid": "ddd08a39-c0c2-4a86-b449-64d26d1a409b",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -11231,7 +11984,7 @@
                                         {
                                             "name": "count",
                                             "type": 3,
-                                            "uid": "4cd6375f-2a1a-41f5-86e6-976b26903c1b",
+                                            "uid": "6c1df470-1776-44f4-bdac-4ad7f9ec1ca4",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -11467,14 +12220,14 @@
                                 {
                                     "name": "slot_2",
                                     "type": 7,
-                                    "uid": "82ffc8ff-e13d-41d6-bc3e-493d42209ec9",
+                                    "uid": "1f704964-5cac-404d-b450-cf10c9bee9e0",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "11f7ca2f-2cd6-4180-9d90-2271e543b89c",
+                                            "uid": "9b84dd42-75e5-411c-a333-2bcee46c2631",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -11541,7 +12294,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "775c68c6-4b05-4106-8403-e344c5fb2267",
+                                            "uid": "0de51859-ef16-4aae-951f-2ad8c808ef02",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -11561,7 +12314,7 @@
                                                 34,
                                                 34
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -11572,7 +12325,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 134275326,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -11608,7 +12361,7 @@
                                         {
                                             "name": "hotkey",
                                             "type": 3,
-                                            "uid": "111c5a64-aad6-4752-84e3-5563ca76f289",
+                                            "uid": "9eb68470-08fb-44c1-a81c-dac23f25a8c6",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -11802,7 +12555,7 @@
                                         {
                                             "name": "count",
                                             "type": 3,
-                                            "uid": "0376e02d-9c3e-402d-a3e4-53385e1744b2",
+                                            "uid": "37e8018b-cd79-4c67-b959-8e2a616b15de",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -12038,14 +12791,14 @@
                                 {
                                     "name": "slot_3",
                                     "type": 7,
-                                    "uid": "4a9040fb-5c38-4d53-a503-fe7c7d7b6a0c",
+                                    "uid": "a97a2f33-79c0-4a73-9e16-60ba807d9bbc",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "121d5fba-6893-481b-ae92-7dbb44d9a0f1",
+                                            "uid": "5c696e27-4d3c-4221-b137-1f6df687d093",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -12112,7 +12865,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "fd7b244a-052d-480b-bcde-91f12e135613",
+                                            "uid": "cc2ed2c0-3e16-4b15-99c0-889d39a96d85",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -12132,7 +12885,7 @@
                                                 34,
                                                 34
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -12143,7 +12896,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 134269594,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -12179,7 +12932,7 @@
                                         {
                                             "name": "hotkey",
                                             "type": 3,
-                                            "uid": "a1a931d5-1e83-4089-8975-5936164305dc",
+                                            "uid": "1429b7c3-948d-485a-b678-79f4c7ba97f5",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -12373,7 +13126,7 @@
                                         {
                                             "name": "count",
                                             "type": 3,
-                                            "uid": "040e7e10-8551-4304-a1bc-3cd6172d6481",
+                                            "uid": "71125a47-5d14-4d87-8706-63e7638f6bb6",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -12651,14 +13404,14 @@
                         {
                             "name": "card_panel",
                             "type": 7,
-                            "uid": "7d05bcba-eb70-4077-999b-80efdb897193",
+                            "uid": "245eda19-b9b4-4089-b5c4-9c55f309b5d0",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [
                                 {
                                     "name": "station_hint_bg",
                                     "type": 4,
-                                    "uid": "b215a17b-96a0-4fec-8666-6638d8a92884",
+                                    "uid": "0fd43b3f-e163-4752-b1cc-2a87f4f4a760",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -12725,7 +13478,7 @@
                                 {
                                     "name": "station_hint",
                                     "type": 3,
-                                    "uid": "48af877f-4c06-4b10-a3c8-d8b09cea9aba",
+                                    "uid": "aa77403e-d70d-4cd1-9132-5e24a3a24de8",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -12919,14 +13672,14 @@
                                 {
                                     "name": "draw_button",
                                     "type": 7,
-                                    "uid": "ad0b6894-442a-4e84-84a1-9067ae5b4e71",
+                                    "uid": "3847cbdd-806c-4b75-a204-56c1da774a81",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "button",
                                             "type": 1,
-                                            "uid": "ce3cb548-27bb-459d-9bd6-de4eb746474d",
+                                            "uid": "34ddbb1f-b707-426f-8115-47944f3df856",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -13035,7 +13788,7 @@
                                         {
                                             "name": "hotkey",
                                             "type": 3,
-                                            "uid": "b1b80db5-b3d2-4c43-a58f-f7e0abd3fb62",
+                                            "uid": "637bb07b-4fc0-4e12-8f71-c07a8d6a0cca",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -13271,14 +14024,14 @@
                                 {
                                     "name": "reward_button",
                                     "type": 7,
-                                    "uid": "ec41fb41-6ad1-498e-bc89-ead6105a286a",
+                                    "uid": "45962521-672e-4384-9c2f-07d101479c1a",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "button",
                                             "type": 1,
-                                            "uid": "c1643885-ee57-4de7-9398-546def6acaa4",
+                                            "uid": "0020fab1-ca8b-4007-b6d6-49f52ea70ce0",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -13387,7 +14140,7 @@
                                         {
                                             "name": "hotkey",
                                             "type": 3,
-                                            "uid": "3df07e13-9830-4fd1-87d0-0e7f35f8d338",
+                                            "uid": "083ac604-d7ca-4716-97dc-840201541175",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -13623,14 +14376,14 @@
                                 {
                                     "name": "kill_reward_button",
                                     "type": 7,
-                                    "uid": "6a858d5d-658e-4986-a6c4-0e69c754d8d9",
+                                    "uid": "8d99d366-513a-49b1-b479-cee6cc00d612",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "button",
                                             "type": 1,
-                                            "uid": "94fabd8e-37fb-469c-9bbe-6526af75fc5b",
+                                            "uid": "ea62f28b-f49e-4d2e-80aa-9808995abedb",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -13739,7 +14492,7 @@
                                         {
                                             "name": "hotkey",
                                             "type": 3,
-                                            "uid": "47c6504a-2b10-4d44-a9c2-c1736b004fb0",
+                                            "uid": "e387e14d-92c5-49cb-a370-0a658494a85d",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -13975,14 +14728,14 @@
                                 {
                                     "name": "fish_button",
                                     "type": 7,
-                                    "uid": "ebc67e36-2934-4a62-bb12-9e3e11001f62",
+                                    "uid": "1f0be156-cda1-42a1-a025-5f5a56436a34",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "button",
                                             "type": 1,
-                                            "uid": "7827dde9-8bae-442c-b160-c9013e232d30",
+                                            "uid": "07478efa-d6e3-46cd-a5a2-ee5907aea921",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -14091,7 +14844,7 @@
                                         {
                                             "name": "hotkey",
                                             "type": 3,
-                                            "uid": "b785bbaf-30f8-4665-aead-82a092e9eb13",
+                                            "uid": "df385d77-71f4-4084-9a15-4350406901ed",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -14327,14 +15080,14 @@
                                 {
                                     "name": "card_slot_1",
                                     "type": 7,
-                                    "uid": "0539273c-bf3e-4e7e-ac33-329171ae9a6b",
+                                    "uid": "1a8adf0e-543a-46cc-8aaa-2dcf3686407b",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "83a8efe5-3b24-4a31-8cdc-e655af0338e3",
+                                            "uid": "d7d5a825-bf11-4810-bb63-dcfd78e23b85",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -14401,7 +15154,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "15281399-e84d-4c4c-b34d-ceffa8f835df",
+                                            "uid": "cb7ecc5a-25e3-4c33-8b4d-17c552522e2c",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -14421,7 +15174,7 @@
                                                 44,
                                                 44
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -14432,7 +15185,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 134242811,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -14510,14 +15263,14 @@
                                 {
                                     "name": "card_slot_2",
                                     "type": 7,
-                                    "uid": "6f941307-7afc-4d55-a458-278135e9fef9",
+                                    "uid": "b98ce07f-9ed2-47d6-97f2-157de8354e47",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "a876029c-3a45-478e-adab-a746e941b34d",
+                                            "uid": "048d834b-b473-41b8-8e91-78d918799cb6",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -14584,7 +15337,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "dde540bc-affa-4b3e-b0f1-83693e4c6964",
+                                            "uid": "11485cd2-3df5-445c-b934-198d13e49c65",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -14604,7 +15357,7 @@
                                                 44,
                                                 44
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -14615,7 +15368,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 134231611,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -14693,14 +15446,14 @@
                                 {
                                     "name": "card_slot_3",
                                     "type": 7,
-                                    "uid": "cee71405-a63b-4f6e-b887-6ab050c7714e",
+                                    "uid": "719de04d-9c0e-4c61-ae9e-f051bfbdf8a1",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "2a9e3662-9960-47d4-9e6f-bbe3c9ecdeba",
+                                            "uid": "ffa38652-8810-4a26-ab9f-c6324d1c66ee",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -14767,7 +15520,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "929ab8bd-ff35-407c-b03d-53b4e3c89b2d",
+                                            "uid": "689b8b98-4d73-4f1c-9c7b-88e646639241",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -14787,7 +15540,7 @@
                                                 44,
                                                 44
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -14798,7 +15551,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 134269795,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -14876,14 +15629,14 @@
                                 {
                                     "name": "card_slot_4",
                                     "type": 7,
-                                    "uid": "0ef48995-ed55-40e4-80f7-38bd9639a2f0",
+                                    "uid": "0ed1dbf6-a163-4aeb-b9fd-b403afade0d2",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "bb37e479-0992-44a5-bcbc-68569015e679",
+                                            "uid": "75a9a27b-ecd2-442e-b10c-1f80aa68ded1",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -14950,7 +15703,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "f99094b7-dafd-463e-ab7f-e256941abd5d",
+                                            "uid": "d8e07a83-ad80-4d30-bf75-dd7fa1a2a5fc",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -14970,7 +15723,7 @@
                                                 44,
                                                 44
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -14981,7 +15734,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 134220765,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -15059,14 +15812,14 @@
                                 {
                                     "name": "card_slot_5",
                                     "type": 7,
-                                    "uid": "779f9252-0355-49f1-aad8-1862de227d24",
+                                    "uid": "509cdfca-30fa-473e-95c9-5eee74ae0590",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "8b5a458e-e379-4ec6-b42f-a09a168805f5",
+                                            "uid": "6d6d83cd-c17f-492d-a162-9f85fd862d8e",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -15133,7 +15886,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "27ed5eff-4f4b-4e5d-ab14-53c9e43f8794",
+                                            "uid": "e5c2978f-425d-489a-b07c-26a24ab47530",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -15153,7 +15906,7 @@
                                                 44,
                                                 44
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -15164,7 +15917,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 134242811,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -15242,14 +15995,14 @@
                                 {
                                     "name": "card_slot_6",
                                     "type": 7,
-                                    "uid": "f9053826-bd79-41bc-806b-47894a2db6f6",
+                                    "uid": "9e9e137b-6d6c-4945-b598-a8e835f71995",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "c3b5fef2-ac58-4033-9d69-507417725eec",
+                                            "uid": "2dfe225a-ab4f-4238-847b-567510e56872",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -15316,7 +16069,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "facd453b-07dc-4710-8ec1-dd067235c0c6",
+                                            "uid": "fd2301df-b317-4da8-8cda-a463a6302622",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -15336,7 +16089,7 @@
                                                 44,
                                                 44
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -15347,7 +16100,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 134231611,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -15425,14 +16178,14 @@
                                 {
                                     "name": "card_slot_7",
                                     "type": 7,
-                                    "uid": "7f42f342-d595-4164-a262-91514d5bd274",
+                                    "uid": "332a5201-e05a-49ff-9c17-9d63f618cdd2",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "840f29c9-ba83-4f34-970b-3b3317cc7371",
+                                            "uid": "db8bf612-b522-4d04-aed5-b91485ba2b26",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -15499,7 +16252,7 @@
                                         {
                                             "name": "icon",
                                             "type": 4,
-                                            "uid": "33337df9-69af-44dc-a538-1a38a69024a4",
+                                            "uid": "c78753c5-2398-46e9-9a95-90f29ac34449",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -15519,7 +16272,7 @@
                                                 44,
                                                 44
                                             ],
-                                            "visible": true,
+                                            "visible": false,
                                             "adapter_option": [
                                                 false,
                                                 false,
@@ -15530,7 +16283,7 @@
                                                 0,
                                                 0
                                             ],
-                                            "image": 134269795,
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -15608,14 +16361,14 @@
                                 {
                                     "name": "card_slot_8",
                                     "type": 7,
-                                    "uid": "a6ea98ae-2261-41b8-b29a-e561d2c38199",
+                                    "uid": "9edcac74-f3fe-4e9e-8f05-fb2d7a85ec0f",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [
                                         {
                                             "name": "frame",
                                             "type": 4,
-                                            "uid": "f314c58b-7d0c-4df7-8b03-d2ad1e8beda5",
+                                            "uid": "b02c3472-bbbd-4a63-842a-53209d793028",
                                             "prefab_sub_key": null,
                                             "scene_ui_name": null,
                                             "children": [],
@@ -15647,6 +16400,73 @@
                                                 0
                                             ],
                                             "image": 134226696,
+                                            "color": [
+                                                255,
+                                                255,
+                                                255,
+                                                255
+                                            ],
+                                            "cap_insets": [
+                                                18,
+                                                18,
+                                                18,
+                                                18
+                                            ],
+                                            "is_scale9_enable": false,
+                                            "open_adapter": false,
+                                            "opacity": 1.0,
+                                            "rotation": 0,
+                                            "scale": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "swallow_touches": false,
+                                            "anchor": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    0.5,
+                                                    0.5
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "name": "icon",
+                                            "type": 4,
+                                            "uid": "69c226bc-f8b9-440c-8a05-177011e9195b",
+                                            "prefab_sub_key": null,
+                                            "scene_ui_name": null,
+                                            "children": [],
+                                            "event_list": [],
+                                            "pos_data": {
+                                                "__tuple__": true,
+                                                "items": [
+                                                    31,
+                                                    31,
+                                                    50.0,
+                                                    50.0,
+                                                    1,
+                                                    1
+                                                ]
+                                            },
+                                            "size": [
+                                                44,
+                                                44
+                                            ],
+                                            "visible": false,
+                                            "adapter_option": [
+                                                false,
+                                                false,
+                                                false,
+                                                false,
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                            ],
+                                            "image": null,
                                             "color": [
                                                 255,
                                                 255,
@@ -15766,14 +16586,14 @@
                         {
                             "name": "hover_tip_panel",
                             "type": 7,
-                            "uid": "561fa57e-4085-4160-a8c5-e8c58e6aec8b",
+                            "uid": "4eab5226-92d3-4efb-af86-1ef9bdabc7fd",
                             "prefab_sub_key": null,
                             "scene_ui_name": null,
                             "children": [
                                 {
                                     "name": "tip_bg",
                                     "type": 4,
-                                    "uid": "3ed00ea0-db5a-4ff4-afba-63facf439775",
+                                    "uid": "e302156f-7b5c-47c9-bd65-8c2ca4cc818e",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -15840,7 +16660,7 @@
                                 {
                                     "name": "tip_inner",
                                     "type": 4,
-                                    "uid": "41f5735b-01e7-47e8-ae5b-3af5e246de65",
+                                    "uid": "bfdd6e99-4d7d-4d72-99dd-3b8a40cc5539",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -15907,7 +16727,7 @@
                                 {
                                     "name": "tip_head_bg",
                                     "type": 4,
-                                    "uid": "69928d06-75ec-49eb-b4b9-9a0f7fbb2d85",
+                                    "uid": "3602458c-b469-4030-a927-00673fe034ac",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -15974,7 +16794,7 @@
                                 {
                                     "name": "icon_bg",
                                     "type": 4,
-                                    "uid": "466eb3bc-c091-4693-8243-fc541b68bd68",
+                                    "uid": "33b40ee3-1221-4154-9fc9-4e926b5c57c0",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -16041,7 +16861,7 @@
                                 {
                                     "name": "icon",
                                     "type": 4,
-                                    "uid": "1ab3524e-7aad-4f9f-bec2-0ce0558ad9ca",
+                                    "uid": "f073d5db-8c70-491d-a146-1c106b549b49",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -16108,7 +16928,7 @@
                                 {
                                     "name": "title",
                                     "type": 3,
-                                    "uid": "8635b0ca-087c-4681-bf43-3d1f227e1487",
+                                    "uid": "299bb963-1a84-4f6b-956d-066474ed0962",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -16302,7 +17122,7 @@
                                 {
                                     "name": "subtitle",
                                     "type": 3,
-                                    "uid": "4da44519-5373-4884-8180-bf4a948f1177",
+                                    "uid": "2e6f9047-0eb7-412c-b7df-01d2ca609984",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -16496,7 +17316,7 @@
                                 {
                                     "name": "divider",
                                     "type": 4,
-                                    "uid": "a7ee76d3-8488-42f4-81e0-7dbafb068734",
+                                    "uid": "645de969-9d75-41cd-9b90-18a974277909",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -16563,7 +17383,7 @@
                                 {
                                     "name": "body",
                                     "type": 3,
-                                    "uid": "482ffcba-66ec-4cc1-9e1e-73e6245bb0d1",
+                                    "uid": "1d3ad595-9e44-43f9-bbda-01350c7fbb3b",
                                     "prefab_sub_key": null,
                                     "scene_ui_name": null,
                                     "children": [],
@@ -16886,7 +17706,7 @@
     "script_name": "",
     "type": 2,
     "ui_anims": [],
-    "uid": "92dbd204-f6df-445b-ac91-db1cdd541026",
+    "uid": "4dbd2d11-dd55-4184-acef-b00290396343",
     "visible": true,
     "zorder": 410
 }
