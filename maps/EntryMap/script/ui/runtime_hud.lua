@@ -4,6 +4,14 @@ local M = {}
 
 local NOTICE_DURATION = 8
 local BOND_SLOT_COUNT = 8
+local BATTLE_ATTR_ROW_NAMES = {
+  'battle_power_row',
+  'hero_attack_row',
+  'hero_defense_row',
+  'hero_power_row',
+  'hero_intelligence_row',
+  'hero_agility_row',
+}
 
 local function is_ui_alive(ui)
   return UIRoot.is_alive(ui)
@@ -704,13 +712,22 @@ function M.create(env)
   end
 
   local function resolve_attr_row(index)
+    local row_name = BATTLE_ATTR_ROW_NAMES[index]
+    if not row_name then
+      return {}
+    end
+    local prefix = 'BattleBottomHUD.layout.left_station.player_attr_list.' .. row_name
     return {
-      root = resolve_ui(string.format('BattleBottomHUD.layout.left_station.player_attr_list.player_attr_bg_%d', index)),
-      label = resolve_ui(string.format('BattleBottomHUD.layout.left_station.player_attr_list.player_attr_bg_%d.label', index)),
-      value = resolve_ui(string.format('BattleBottomHUD.layout.left_station.player_attr_list.player_attr_bg_%d.value', index)),
-      delta = resolve_ui(string.format('BattleBottomHUD.layout.left_station.player_attr_list.player_attr_bg_%d.delta', index)),
-      icon = resolve_ui(string.format('BattleBottomHUD.layout.left_station.player_attr_list.player_attr_bg_%d.icon', index)),
+      root = resolve_ui(prefix),
+      label = resolve_ui(prefix .. '.label'),
+      value = resolve_ui(prefix .. '.value'),
+      delta = resolve_ui(prefix .. '.delta'),
+      icon = resolve_ui(prefix .. '.icon'),
     }
+  end
+
+  local function resolve_center_module_ui(suffix)
+    return resolve_ui('BattleBottomHUD.layout.center_hub.combat_module.' .. suffix)
   end
 
   local function bind_click_once(key, ui, callback)
@@ -854,11 +871,11 @@ function M.create(env)
     set_text_if_alive(resolve_ui('top.top.left_buttons.btn_powerup'), '强化')
     set_text_if_alive(resolve_ui('top.top.left_buttons.btn_hotkey'), '键位')
 
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.left_station.toggle_damage.button'),
+    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.left_station.toggle_frame.toggle_damage.button'),
       prefs.hide_damage_text and '恢复跳字' or '屏蔽跳字')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.left_station.toggle_sfx.button'),
+    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.left_station.toggle_frame.toggle_sfx.button'),
       prefs.hide_hit_effects and '恢复特效' or '屏蔽特效')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.left_station.toggle_cursor.button'),
+    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.left_station.toggle_frame.toggle_cursor.button'),
       prefs.big_cursor and '关闭大鼠标' or '大鼠标')
 
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.draw_button.button'), '抽卡')
@@ -1138,15 +1155,15 @@ function M.create(env)
       show_tip_panel(build_hotkey_help_text(), 10, '快捷键')
     end)
 
-    bind_click_once('toggle_damage', resolve_ui('BattleBottomHUD.layout.left_station.toggle_damage.button'), function()
+    bind_click_once('toggle_damage', resolve_ui('BattleBottomHUD.layout.left_station.toggle_frame.toggle_damage.button'), function()
       toggle_damage_text()
       refresh_hud()
     end)
-    bind_click_once('toggle_effects', resolve_ui('BattleBottomHUD.layout.left_station.toggle_sfx.button'), function()
+    bind_click_once('toggle_effects', resolve_ui('BattleBottomHUD.layout.left_station.toggle_frame.toggle_sfx.button'), function()
       toggle_hit_effects()
       refresh_hud()
     end)
-    bind_click_once('toggle_cursor', resolve_ui('BattleBottomHUD.layout.left_station.toggle_cursor.button'), function()
+    bind_click_once('toggle_cursor', resolve_ui('BattleBottomHUD.layout.left_station.toggle_frame.toggle_cursor.button'), function()
       toggle_big_cursor()
       refresh_hud()
     end)
@@ -1180,13 +1197,13 @@ function M.create(env)
       end
     end)
 
-    bind_click_once('gold_trial', resolve_ui('BattleBottomHUD.layout.center_hub.challenge_row.gold_trial'), function()
+    bind_click_once('gold_trial', resolve_center_module_ui('challenge_row.gold_trial'), function()
       if try_start_challenge then
         try_start_challenge('gold_trial')
       end
       refresh_hud()
     end)
-    bind_click_once('treasure_trial', resolve_ui('BattleBottomHUD.layout.center_hub.challenge_row.treasure_trial'), function()
+    bind_click_once('treasure_trial', resolve_center_module_ui('challenge_row.treasure_trial'), function()
       if try_start_challenge then
         try_start_challenge('treasure_trial')
       end
@@ -1212,7 +1229,7 @@ function M.create(env)
 
     for slot = 1, ATTACK_SKILL_SLOT_COUNT do
       bind_hover_once('battle_skill_hover_' .. tostring(slot),
-        resolve_ui(string.format('BattleBottomHUD.layout.center_hub.skill_bar.skill_slot_%d', slot)),
+        resolve_center_module_ui(string.format('skill_bar.skill_slot_%d', slot)),
         function()
           show_attack_skill_slot_tip(slot)
         end,
@@ -1366,13 +1383,15 @@ function M.create(env)
   end
 
   local function refresh_attr_rows()
+    local attack_value = compact_number(get_attr('攻击结算值', '攻击'))
+    local armor_value = compact_number(get_attr('护甲结算值', '护甲'))
     local rows = {
-      { label = '攻击', value = compact_number(get_attr('攻击结算值', '攻击')), delta = format_signed_percent_pair(get_attr('攻击增幅'), get_attr('最终攻击')) },
-      { label = '护甲', value = compact_number(get_attr('护甲结算值', '护甲')), delta = format_signed_percent_pair(get_attr('护甲增幅'), get_attr('最终护甲')) },
+      { label = '战力', value = attack_value, delta = '暴击 ' .. format_percent(get_attr('物理暴击')) },
+      { label = '攻击', value = attack_value, delta = format_signed_percent_pair(get_attr('攻击增幅'), get_attr('最终攻击')) },
+      { label = '护甲', value = armor_value, delta = format_signed_percent_pair(get_attr('护甲增幅'), get_attr('最终护甲')) },
       { label = '力量', value = compact_number(get_attr('最终力量', '力量')), delta = format_signed_percent_pair(get_attr('力量增幅'), get_attr('最终力量增幅')) },
       { label = '智力', value = compact_number(get_attr('最终智力', '智力')), delta = format_signed_percent_pair(get_attr('智力增幅'), get_attr('最终智力增幅')) },
-      { label = '敏捷', value = compact_number(get_attr('最终敏捷', '敏捷')), delta = format_signed_percent_pair(get_attr('敏捷增幅'), get_attr('最终敏捷增幅')) },
-      { label = '暴击', value = format_percent(get_attr('物理暴击')), delta = '爆伤 ' .. format_percent(get_attr('物理暴伤')) },
+      { label = '敏捷', value = compact_number(get_attr('最终敏捷', '敏捷')), delta = '爆伤 ' .. format_percent(get_attr('物理暴伤')) },
     }
 
     for index, row_data in ipairs(rows) do
@@ -1391,43 +1410,34 @@ function M.create(env)
 
     set_image_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_portrait'), get_hero_icon())
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_name'), get_hero_name())
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_level'), string.format('等级：%d', get_hero_level()))
+    set_text_if_alive(resolve_center_module_ui('hero_level'), string.format('等级：%d', get_hero_level()))
     set_progress_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_fill'), current_hp, max_hp)
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_text'),
       string.format('%s/%s', compact_number(current_hp), compact_number(max_hp)))
 
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_attack_row.label'), '攻击')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_attack_row.value'), compact_number(get_attr('攻击结算值', '攻击')))
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_defense_row.label'), '护甲')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_defense_row.value'), compact_number(get_attr('护甲结算值', '护甲')))
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_power_row.label'), '力量')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_power_row.value'), compact_number(get_attr('最终力量', '力量')))
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_agility_row.label'), '敏捷')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.hero_panel.hero_agility_row.value'), compact_number(get_attr('最终敏捷', '敏捷')))
-
-    set_progress_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.exp_bar.fill'), exp_current, exp_max)
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.exp_bar.exp_text'),
+    set_progress_if_alive(resolve_center_module_ui('exp_bar.fill'), exp_current, exp_max)
+    set_text_if_alive(resolve_center_module_ui('exp_bar.exp_text'),
       string.format('%s/%s', compact_number(exp_current), compact_number(exp_max)))
   end
 
   local function refresh_challenge_row()
     local gold_charge = STATE.challenge_charge_map and STATE.challenge_charge_map.gold_trial or STATE.challenge_charges or 0
     local treasure_charge = STATE.challenge_charge_map and STATE.challenge_charge_map.treasure_trial or STATE.challenge_charges or 0
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.challenge_row.gold_trial.title'), '金币挑战')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.challenge_row.gold_trial.count'), tostring(math.max(0, tonumber(gold_charge) or 0)))
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.challenge_row.treasure_trial.title'), '宝物挑战')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.challenge_row.treasure_trial.count'), tostring(math.max(0, tonumber(treasure_charge) or 0)))
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.challenge_row.climb_layer.title'), '当前波次')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.challenge_row.climb_layer.count'),
+    set_text_if_alive(resolve_center_module_ui('challenge_row.gold_trial.title'), '金币挑战')
+    set_text_if_alive(resolve_center_module_ui('challenge_row.gold_trial.count'), tostring(math.max(0, tonumber(gold_charge) or 0)))
+    set_text_if_alive(resolve_center_module_ui('challenge_row.treasure_trial.title'), '宝物挑战')
+    set_text_if_alive(resolve_center_module_ui('challenge_row.treasure_trial.count'), tostring(math.max(0, tonumber(treasure_charge) or 0)))
+    set_text_if_alive(resolve_center_module_ui('challenge_row.climb_layer.title'), '当前波次')
+    set_text_if_alive(resolve_center_module_ui('challenge_row.climb_layer.count'),
       tostring(math.max(0, tonumber(STATE.current_wave_index) or 0)))
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.challenge_row.realm_progress.title'), '存活敌人')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.challenge_row.realm_progress.count'),
+    set_text_if_alive(resolve_center_module_ui('challenge_row.realm_progress.title'), '存活敌人')
+    set_text_if_alive(resolve_center_module_ui('challenge_row.realm_progress.count'),
       tostring(math.max(0, tonumber(STATE.total_enemy_alive) or 0)))
   end
 
   local function refresh_skill_bar()
     for slot = 1, ATTACK_SKILL_SLOT_COUNT do
-      local prefix = string.format('BattleBottomHUD.layout.center_hub.skill_bar.skill_slot_%d', slot)
+      local prefix = string.format('BattleBottomHUD.layout.center_hub.combat_module.skill_bar.skill_slot_%d', slot)
       local entry = get_attack_skill_slot_display_entry(slot)
       local icon_ui = resolve_ui(prefix .. '.icon')
       set_visible_if_alive(icon_ui, entry ~= nil and entry.icon ~= nil)
@@ -1445,15 +1455,15 @@ function M.create(env)
   end
 
   local function refresh_left_station()
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.left_station.player_name'), get_player_name())
+    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.left_station.player_attr_list.brand_name'), get_player_name())
+    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.left_station.player_attr_list.brand_site'), '实时属性总览')
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.left_station.map_badge'),
       STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) or '当前章节')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.left_station.station_note'), '本地功能')
     refresh_attr_rows()
   end
 
   local function refresh_action_area()
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.status_text'), build_status_text())
+    set_text_if_alive(resolve_center_module_ui('status_text'), build_status_text())
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.station_hint'), build_station_hint())
   end
 
