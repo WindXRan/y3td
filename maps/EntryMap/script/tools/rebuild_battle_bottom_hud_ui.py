@@ -496,21 +496,21 @@ def build_reference_growth_weapon_slot():
 
 def build_reference_grid_slot(name, x, y, icon_id=None, highlight=False):
     frame_id = PROP_FRAME_ALT if highlight else PROP_FRAME
-    root = layout(name, x, y, 58, 58)
-    children = [image("frame", 29, 29, 56, 56, frame_id, [255, 255, 255, 255], False)]
+    root = layout(name, x, y, 62, 62)
+    children = [image("frame", 31, 31, 60, 60, frame_id, [255, 255, 255, 255], False)]
     if icon_id is not None:
-        children.append(image("icon", 29, 29, 38, 38, icon_id, [255, 255, 255, 255], False))
+        children.append(image("icon", 31, 31, 44, 44, icon_id, [255, 255, 255, 255], False))
     root["children"] = children
     return root
 
 
 def build_reference_consumable_slot(name, x, y, hotkey, amount_text, icon_id):
-    root = layout(name, x, y, 64, 54)
+    root = layout(name, x, y, 72, 60)
     root["children"] = [
-        image("frame", 21, 27, 40, 40, PROP_FRAME_ALT, [255, 255, 255, 255], False),
-        image("icon", 21, 27, 28, 28, icon_id, [255, 255, 255, 255], False),
-        text("hotkey", 50, 38, 18, 12, hotkey, 10, [255, 224, 135, 255], 2),
-        text("count", 50, 14, 18, 12, amount_text, 10, [240, 245, 250, 255], 2),
+        image("frame", 26, 30, 50, 50, PROP_FRAME_ALT, [255, 255, 255, 255], False),
+        image("icon", 26, 30, 34, 34, icon_id, [255, 255, 255, 255], False),
+        text("hotkey", 56, 42, 18, 12, hotkey, 11, [255, 224, 135, 255], 2),
+        text("count", 56, 16, 18, 12, amount_text, 11, [240, 245, 250, 255], 2),
     ]
     return root
 
@@ -527,22 +527,22 @@ def build_reference_action_button(name, x, y, label, hotkey, palette="yellow"):
         press_picture = BUTTON_ACTION_GOLD_DWN
         disabled_picture = BUTTON_ACTION_GOLD
 
-    root = layout(name, x, y, 56, 40)
+    root = layout(name, x, y, 60, 52)
     root["children"] = [
         button(
             "button",
-            28,
-            20,
-            56,
-            40,
+            30,
+            26,
+            60,
+            52,
             label,
             normal_picture=normal_picture,
             suspend_picture=suspend_picture,
             press_picture=press_picture,
             disabled_picture=disabled_picture,
-            font_size=12,
+            font_size=15,
         ),
-        text("hotkey", 46, 30, 12, 10, hotkey, 9, [255, 238, 173, 255], 2),
+        text("hotkey", 49, 38, 14, 10, hotkey, 10, [255, 238, 173, 255], 2),
     ]
     return root
 
@@ -704,17 +704,12 @@ def build_bottom_hud():
         ]
     )
 
-    right_station = panel("right_station", 1462, 148, 544, 268, [18, 22, 30, 100])
-    right_station["children"] = [
-        image("station_top_line", 272, 228, 504, 1, SHOP_LINE, [255, 255, 255, 120], True),
-        image("loadout_divider", 184, 126, 1, 196, SHOP_LINE, [255, 255, 255, 92], True),
-        image("consumable_divider", 272, 126, 1, 196, SHOP_LINE, [255, 255, 255, 92], True),
-    ]
+    right_station = panel("right_station", 1462, 148, 560, 268, [18, 22, 30, 78])
+    right_station["children"] = []
 
-    loadout_row = panel("loadout_row", 98, 134, 156, 214, [17, 22, 31, 92])
+    loadout_row = panel("loadout_row", 98, 134, 176, 214, [17, 22, 31, 58])
     loadout_row["children"] = [
-        image("title_line", 78, 184, 118, 1, SHOP_LINE, [255, 255, 255, 86], True),
-        text("loadout_title", 40, 194, 64, 16, "物品栏", 12, [244, 249, 255, 255], 0),
+        text("loadout_title", 46, 194, 76, 16, "物品栏", 12, [244, 249, 255, 255], 0),
     ]
     loadout_icons = [
         ICON_ITEM_2,
@@ -726,40 +721,40 @@ def build_bottom_hud():
     ]
     for index, (x, y, icon_id, highlight) in enumerate(
         [
-            (48, 146, loadout_icons[0], True),
-            (108, 146, loadout_icons[1], False),
-            (48, 90, loadout_icons[2], False),
-            (108, 90, loadout_icons[3], False),
-            (48, 34, loadout_icons[4], False),
-            (108, 34, loadout_icons[5], False),
+            (46, 148, loadout_icons[0], True),
+            (118, 148, loadout_icons[1], False),
+            (46, 92, loadout_icons[2], False),
+            (118, 92, loadout_icons[3], False),
+            (46, 36, loadout_icons[4], False),
+            (118, 36, loadout_icons[5], False),
         ],
         start=1,
     ):
         loadout_row["children"].append(build_reference_grid_slot(f"loadout_slot_{index}", x, y, icon_id, highlight))
 
-    consumable_panel = panel("consumable_panel", 226, 122, 72, 190, [24, 28, 38, 92])
+    consumable_panel = panel("consumable_panel", 232, 122, 84, 190, [24, 28, 38, 58])
     consumable_panel["children"] = [
-        build_reference_consumable_slot("slot_1", 32, 144, "D", "3", ICON_ITEM_1),
-        build_reference_consumable_slot("slot_2", 32, 90, "F2", "1", ICON_ITEM_2),
-        build_reference_consumable_slot("slot_3", 32, 36, "G", "1", ICON_ITEM_3),
+        build_reference_consumable_slot("slot_1", 42, 148, "D", "3", ICON_ITEM_1),
+        build_reference_consumable_slot("slot_2", 42, 92, "F2", "1", ICON_ITEM_2),
+        build_reference_consumable_slot("slot_3", 42, 36, "G", "1", ICON_ITEM_3),
     ]
 
-    card_panel = panel("card_panel", 401, 134, 248, 214, [20, 24, 32, 92])
+    card_panel = panel("card_panel", 412, 134, 278, 214, [20, 24, 32, 58])
     card_panel["children"] = [
-        image("section_line", 124, 184, 224, 1, SHOP_LINE, [255, 255, 255, 102], True),
-        text("station_hint", 124, 194, 224, 14, "按F抽卡，相同羁绊自动吞噬", 10, [232, 236, 242, 255], 0),
-        build_reference_action_button("draw_button", 34, 162, "抽卡", "F", "yellow"),
-        build_reference_action_button("reward_button", 94, 162, "已吞", "R", "blue"),
-        build_reference_action_button("kill_reward_button", 154, 162, "杀敌", "E", "yellow"),
-        build_reference_action_button("fish_button", 214, 162, "钓鱼", "", "yellow"),
-        build_reference_grid_slot("card_slot_1", 34, 108, CARD_SKILL_1, True),
-        build_reference_grid_slot("card_slot_2", 94, 108, CARD_SKILL_2, True),
-        build_reference_grid_slot("card_slot_3", 154, 108, CARD_SKILL_3, True),
-        build_reference_grid_slot("card_slot_4", 214, 108, CARD_SKILL_4, True),
-        build_reference_grid_slot("card_slot_5", 34, 46, CARD_SKILL_1, False),
-        build_reference_grid_slot("card_slot_6", 94, 46, CARD_SKILL_2, False),
-        build_reference_grid_slot("card_slot_7", 154, 46, CARD_SKILL_3, False),
-        build_reference_grid_slot("card_slot_8", 214, 46, None, False),
+        image("station_hint_bg", 139, 194, 246, 22, BG_BLACK, [255, 255, 255, 78], True),
+        text("station_hint", 139, 194, 236, 14, "F 抽卡   I 已吞   H 进化   P 存档", 10, [232, 236, 242, 255], 0),
+        build_reference_action_button("draw_button", 35, 156, "抽卡", "F", "yellow"),
+        build_reference_action_button("reward_button", 97, 156, "已吞", "I", "blue"),
+        build_reference_action_button("kill_reward_button", 159, 156, "进化", "H", "yellow"),
+        build_reference_action_button("fish_button", 221, 156, "存档", "P", "yellow"),
+        build_reference_grid_slot("card_slot_1", 35, 102, CARD_SKILL_1, True),
+        build_reference_grid_slot("card_slot_2", 97, 102, CARD_SKILL_2, True),
+        build_reference_grid_slot("card_slot_3", 159, 102, CARD_SKILL_3, True),
+        build_reference_grid_slot("card_slot_4", 221, 102, CARD_SKILL_4, True),
+        build_reference_grid_slot("card_slot_5", 35, 38, CARD_SKILL_1, False),
+        build_reference_grid_slot("card_slot_6", 97, 38, CARD_SKILL_2, False),
+        build_reference_grid_slot("card_slot_7", 159, 38, CARD_SKILL_3, False),
+        build_reference_grid_slot("card_slot_8", 221, 38, None, False),
     ]
 
     right_station["children"].extend(

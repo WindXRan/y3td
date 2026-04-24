@@ -21,7 +21,7 @@
       --blue: #4c8bff;
       --pink: #d73cff;
       --slot-bg: linear-gradient(180deg, rgba(10, 13, 21, 0.96), rgba(6, 8, 14, 0.98));
-      --shared-slot-size: 72px;
+      --shared-slot-size: 82px;
       --shell-shadow: 0 22px 48px rgba(0, 0, 0, 0.42);
       --inner-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
       --blue-ribbon: linear-gradient(135deg, #2d72f0 0%, #6ebeff 100%);
@@ -601,24 +601,25 @@
     .buff-icon.purple::after { background: radial-gradient(circle at 35% 35%, #efddff, #8b42ff 72%); }
 
     .item-zone {
-      width: 172px;
-      padding: 36px 10px 10px;
+      width: 196px;
+      padding: 38px 12px 12px;
     }
 
     .ribbon {
       position: absolute;
-      top: 0;
-      left: 18px;
-      height: 26px;
-      padding: 0 20px;
+      top: 10px;
+      left: 14px;
+      height: 22px;
+      padding: 0 14px;
       display: inline-flex;
       align-items: center;
-      background: var(--blue-ribbon);
+      border-radius: 4px;
+      background: rgba(18, 34, 70, 0.92);
+      border: 1px solid rgba(94, 130, 205, 0.32);
       color: #f5fbff;
       font-size: 12px;
       font-weight: 800;
       letter-spacing: 0.04em;
-      clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%);
     }
 
     .item-grid {
@@ -626,22 +627,22 @@
       grid-template-columns: repeat(2, var(--shared-slot-size));
       grid-auto-rows: var(--shared-slot-size);
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .item-slot {
       position: relative;
       height: var(--shared-slot-size);
-      border: 1px solid rgba(150, 162, 210, 0.18);
+      border: 1px solid rgba(150, 162, 210, 0.22);
       background: var(--slot-bg);
-      box-shadow: inset 0 0 0 6px rgba(4, 7, 13, 0.38);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.03);
     }
 
     .item-slot::after {
       content: "";
       position: absolute;
-      inset: 10px;
-      border-radius: 10px;
+      inset: 8px;
+      border-radius: 8px;
       background: radial-gradient(circle at 35% 35%, #fff4bc, #d02d79 72%);
     }
 
@@ -651,25 +652,25 @@
     .item-slot.empty::after { opacity: 0.08; }
 
     .quick-zone {
-      width: 64px;
-      padding: 76px 6px 14px;
+      width: 76px;
+      padding: 58px 8px 14px;
       display: grid;
-      gap: 10px;
+      gap: 12px;
       align-content: start;
     }
 
     .quick-slot {
       position: relative;
-      height: 48px;
-      border: 1px solid rgba(150, 162, 210, 0.18);
+      height: 58px;
+      border: 1px solid rgba(150, 162, 210, 0.22);
       background: var(--slot-bg);
-      box-shadow: inset 0 0 0 5px rgba(4, 7, 13, 0.38);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.03);
     }
 
     .quick-slot::after {
       content: "";
       position: absolute;
-      inset: 9px;
+      inset: 10px;
       border-radius: 50%;
       background: radial-gradient(circle at 35% 35%, #ffe4b5, #d54f18 72%);
     }
@@ -687,30 +688,32 @@
     }
 
     .quick-key {
-      top: 4px;
-      right: 6px;
+      top: 6px;
+      right: 7px;
       color: #ffe07a;
-      font-size: 11px;
+      font-size: 12px;
     }
 
     .quick-count {
       right: 8px;
-      bottom: 5px;
+      bottom: 6px;
       color: #eef3ff;
-      font-size: 10px;
+      font-size: 11px;
     }
 
     .right-zone {
-      width: 334px;
-      padding: 8px 10px 10px;
+      width: 382px;
+      padding: 10px 12px 12px;
     }
 
     .guide-line {
-      height: 22px;
+      height: 26px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(132, 145, 196, 0.18);
+      background: rgba(22, 24, 36, 0.84);
       color: #f5f6ff;
       font-size: 12px;
       letter-spacing: 0.02em;
@@ -727,34 +730,25 @@
       display: grid;
       grid-template-columns: repeat(4, var(--shared-slot-size));
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .action-row {
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .action-btn,
     .bond-slot {
       position: relative;
       height: var(--shared-slot-size);
-      border: 1px solid rgba(96, 152, 255, 0.34);
+      border: 1px solid rgba(118, 134, 182, 0.24);
       background: linear-gradient(180deg, rgba(19, 22, 36, 0.98), rgba(9, 11, 18, 0.98));
-      box-shadow:
-        inset 0 0 0 6px rgba(4, 7, 13, 0.34),
-        inset 0 0 18px rgba(45, 120, 255, 0.08);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.03);
       overflow: hidden;
     }
 
     .action-btn::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 10px;
-      height: 22px;
-      background: var(--orange-ribbon);
-      clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%);
+      display: none;
     }
 
     .action-btn.blue::before {
@@ -763,46 +757,61 @@
 
     .action-key {
       position: absolute;
-      top: 2px;
-      right: 10px;
+      top: 7px;
+      right: 7px;
       z-index: 1;
+      min-width: 24px;
+      height: 24px;
+      padding: 0 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: rgba(255, 149, 47, 0.22);
+      border: 1px solid rgba(255, 179, 88, 0.34);
       color: #ffe680;
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 800;
     }
 
     .action-name {
       position: absolute;
-      left: 6px;
-      right: 6px;
-      top: 26px;
-      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      top: 18px;
+      bottom: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
       color: #ffcf58;
-      font-size: 14px;
+      font-size: 18px;
       font-weight: 800;
-      line-height: 1.08;
+      line-height: 1;
       text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
     }
 
     .bond-grid {
-      grid-template-rows: repeat(2, 76px);
+      grid-template-rows: repeat(2, var(--shared-slot-size));
     }
 
     .bond-slot::after {
       content: "";
       position: absolute;
-      inset: 10px;
-      border-radius: 14px;
+      inset: 8px;
+      border-radius: 10px;
       background: radial-gradient(circle at 35% 35%, #dff8ff, #3b7dff 72%);
     }
 
     .bond-slot.orange::after { background: radial-gradient(circle at 35% 35%, #ffe4a2, #ff7a28 72%); }
     .bond-slot.purple::after { background: radial-gradient(circle at 35% 35%, #f0dcff, #8f42ff 72%); }
     .bond-slot.empty::after { opacity: 0.06; }
+
+    .item-zone::after,
+    .quick-zone::after,
+    .right-zone::after {
+      display: none;
+    }
 
     @media (max-width: 1720px) {
       .hud-shell {
@@ -1000,7 +1009,7 @@
         </section>
 
         <section class="zone right-zone">
-          <div class="guide-line">按<b>F</b>抽卡，<b>相同羁绊</b>的卡牌，自动吞噬入体</div>
+          <div class="guide-line"><b>F</b> 抽卡 ｜ <b>I</b> 已吞 ｜ <b>H</b> 进化 ｜ <b>P</b> 存档</div>
 
           <div class="action-row">
             <div class="action-btn">
@@ -1008,16 +1017,16 @@
               <div class="action-name">抽卡</div>
             </div>
             <div class="action-btn blue">
-              <div class="action-key">R</div>
-              <div class="action-name">查看<br>已吞卡牌</div>
+              <div class="action-key">I</div>
+              <div class="action-name">已吞</div>
             </div>
             <div class="action-btn">
-              <div class="action-key">E</div>
-              <div class="action-name">杀敌抽奖</div>
+              <div class="action-key">H</div>
+              <div class="action-name">进化</div>
             </div>
             <div class="action-btn">
-              <div class="action-key"></div>
-              <div class="action-name">摆烂钓鱼</div>
+              <div class="action-key">P</div>
+              <div class="action-name">存档</div>
             </div>
           </div>
 
