@@ -78,7 +78,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1487425554, 
     "trigger_name": "关闭签到界面", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {}, 
         {}, 

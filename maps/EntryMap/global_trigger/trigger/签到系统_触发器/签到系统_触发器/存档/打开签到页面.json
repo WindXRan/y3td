@@ -137,7 +137,7 @@
     "p_trigger_id": null, 
     "trigger_id": 749228049, 
     "trigger_name": "打开签到页面", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "INTEGER": {

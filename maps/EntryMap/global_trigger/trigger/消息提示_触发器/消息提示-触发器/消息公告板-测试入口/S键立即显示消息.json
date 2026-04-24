@@ -456,7 +456,7 @@
     "p_trigger_id": null, 
     "trigger_id": 85516304, 
     "trigger_name": "S键立即显示消息", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "INTEGER": {

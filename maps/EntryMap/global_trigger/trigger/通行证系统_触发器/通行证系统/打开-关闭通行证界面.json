@@ -197,7 +197,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1476100114, 
     "trigger_name": "打开-关闭通行证界面", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {}, 
         {}, 

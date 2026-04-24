@@ -496,7 +496,7 @@
     "p_trigger_id": null, 
     "trigger_id": 998359042, 
     "trigger_name": "talk_sys_send_talk", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "STRING": {

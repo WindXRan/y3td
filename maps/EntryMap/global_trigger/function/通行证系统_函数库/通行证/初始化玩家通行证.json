@@ -975,7 +975,7 @@
     "p_trigger_id": null, 
     "trigger_id": 36806657, 
     "trigger_name": "初始化玩家通行证", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "ABILITY_NAME": {

@@ -759,7 +759,7 @@
     "p_trigger_id": null, 
     "trigger_id": 737849359, 
     "trigger_name": "A键添加消息", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "INTEGER": {

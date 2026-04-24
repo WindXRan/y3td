@@ -69,7 +69,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1503723552, 
     "trigger_name": "F重新初始化", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {}, 
         {}, 

@@ -1965,7 +1965,7 @@
     }, 
     "trigger_id": 613568516, 
     "trigger_name": "【消息列表】初始化界面", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "INTEGER": {

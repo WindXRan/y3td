@@ -61,7 +61,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1626849294, 
     "trigger_name": "游戏初始化", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {}, 
         {}, 

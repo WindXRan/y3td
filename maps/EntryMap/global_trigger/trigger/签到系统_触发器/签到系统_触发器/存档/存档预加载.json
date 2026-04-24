@@ -606,7 +606,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1072291860, 
     "trigger_name": "存档预加载", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "INTEGER": {

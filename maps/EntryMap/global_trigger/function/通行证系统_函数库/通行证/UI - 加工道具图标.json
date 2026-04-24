@@ -1088,7 +1088,7 @@
             "p_trigger_id": 1076994052, 
             "trigger_id": 775004166, 
             "trigger_name": "道具图标鼠标移入", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 
@@ -1204,7 +1204,7 @@
             "p_trigger_id": 1076994052, 
             "trigger_id": 892444679, 
             "trigger_name": "道具图标鼠标移出", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 

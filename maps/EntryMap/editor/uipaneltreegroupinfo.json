@@ -6,78 +6,36 @@
    {
     "__tuple__": true, 
     "items": [
-     "bfa58868-0dd0-4bcb-9ec5-39a28a69b624", 
-     "top"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "d5e1196c-e380-4cf3-964c-8ad3da08591d", 
-     "MainlineTaskPanel"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "e9f1b912-8be1-45a8-9acb-6674fd7df3d8", 
-     "\u81ea\u8d70\u68cb\u56fe\u9274_UI"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "bea2ea16-5932-4d1c-815e-22c49d611e65", 
-     "ShopItemDetailPanel"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "970943c1-8d78-405e-ac37-896598c03a2d", 
-     "bottom_bg"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "7029d6cb-b7c1-4fc6-936d-f2b5c6f67bef", 
-     "\u80cc\u5305\u7cfb\u7edf"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "deb2fb53-0b46-41db-b2ea-5054d38e3ff5", 
+     "38ddddb2-6785-4804-9b5c-dfb479bd62b3", 
      "outgame"
     ]
    }, 
    {
     "__tuple__": true, 
     "items": [
-     "panel_1", 
-     "talk_sys_panel"
+     "7286beeb-c99d-48b3-bd3a-104d56f3699f", 
+     "top"
     ]
    }, 
    {
     "__tuple__": true, 
     "items": [
-     "63db06b4-4d2d-4541-a257-47f46c53711d", 
-     "\u6d88\u606f\u63d0\u793a"
+     "bb0f0d4c-15c1-4f41-942c-f12d6560a06f", 
+     "BondChoice3"
     ]
    }, 
    {
     "__tuple__": true, 
     "items": [
-     "9b35ec72-a685-43a1-a4e8-3ff3ca031490", 
-     "\u5b58\u6863\u7cfb\u7edf"
+     "43f05a64-da68-4f0c-867b-4b6761d4e7ab", 
+     "BondChoice4"
     ]
    }, 
    {
     "__tuple__": true, 
     "items": [
-     "1ae3c58f-32b7-41b6-a259-bcfe2a6f455f", 
-     "\u7b7e\u5230\u7cfb\u7edf"
+     "c9214407-a628-4db3-b18a-f3f1280d07e6", 
+     "BattleBottomHUD"
     ]
    }
   ]

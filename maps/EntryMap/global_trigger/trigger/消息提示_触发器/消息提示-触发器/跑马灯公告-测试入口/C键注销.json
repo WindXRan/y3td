@@ -48,7 +48,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1823793186, 
     "trigger_name": "C键注销", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {}, 
         {}, 

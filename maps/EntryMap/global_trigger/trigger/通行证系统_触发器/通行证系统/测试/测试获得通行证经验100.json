@@ -56,7 +56,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1624018967, 
     "trigger_name": "测试获得通行证经验100", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {}, 
         {}, 

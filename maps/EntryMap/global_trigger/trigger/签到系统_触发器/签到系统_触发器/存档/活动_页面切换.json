@@ -724,7 +724,7 @@
     "p_trigger_id": null, 
     "trigger_id": 949379088, 
     "trigger_name": "活动_页面切换", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "INTEGER": {
