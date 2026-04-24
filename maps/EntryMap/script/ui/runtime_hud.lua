@@ -1162,14 +1162,8 @@ function M.create(env)
       end
       refresh_hud()
     end)
-    bind_click_once('growth_weapon_slot', resolve_ui('BattleBottomHUD.layout.center_hub.growth_weapon_slot'), function()
-      if try_upgrade_growth_weapon then
-        try_upgrade_growth_weapon('hud_click')
-      end
-      refresh_hud()
-    end)
     bind_hover_once('growth_weapon_slot_hover', resolve_ui('BattleBottomHUD.layout.center_hub.growth_weapon_slot'), function()
-      show_growth_weapon_tip_panel()
+      show_skill_entry_tip(1, 5)
     end, function()
       hide_tip_panel()
     end)
@@ -1195,7 +1189,7 @@ function M.create(env)
       bind_hover_once('battle_skill_hover_' .. tostring(slot),
         resolve_ui(string.format('BattleBottomHUD.layout.center_hub.skill_bar.skill_slot_%d', slot)),
         function()
-          show_skill_entry_tip(slot, 4)
+          show_skill_entry_tip(slot + 1, 5)
         end,
         function()
           hide_tip_panel()
@@ -1407,21 +1401,28 @@ function M.create(env)
   end
 
   local function refresh_growth_weapon_slot()
-    local payload = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil
-    local weapon_level = get_growth_weapon_level()
-    set_image_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.growth_weapon_slot.icon'),
-      payload and payload.icon_res or nil)
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.growth_weapon_slot.title'),
-      payload and payload.title_text or '成长武器')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.center_hub.growth_weapon_slot.weapon_level'),
-      weapon_level > 0 and ('Lv.' .. tostring(weapon_level)) or '点击升级')
+    local prefix = 'BattleBottomHUD.layout.center_hub.growth_weapon_slot'
+    local entry = get_display_skill_entries(5)[1]
+    local icon_ui = resolve_ui(prefix .. '.icon')
+
+    set_visible_if_alive(icon_ui, entry ~= nil and entry.icon ~= nil)
+    set_image_if_alive(icon_ui, entry and entry.icon or nil)
+    if entry then
+      set_text_if_alive(resolve_ui(prefix .. '.key'), entry.key or '普')
+      set_text_if_alive(resolve_ui(prefix .. '.label'), entry.name or '技能1')
+      set_text_if_alive(resolve_ui(prefix .. '.cooldown'), entry.cooldown_text or '就绪')
+    else
+      set_text_if_alive(resolve_ui(prefix .. '.key'), '1')
+      set_text_if_alive(resolve_ui(prefix .. '.label'), '未解锁')
+      set_text_if_alive(resolve_ui(prefix .. '.cooldown'), '')
+    end
   end
 
   local function refresh_skill_bar()
-    local entries = get_display_skill_entries(4)
+    local entries = get_display_skill_entries(5)
     for slot = 1, 4 do
       local prefix = string.format('BattleBottomHUD.layout.center_hub.skill_bar.skill_slot_%d', slot)
-      local entry = entries[slot]
+      local entry = entries[slot + 1]
       local icon_ui = resolve_ui(prefix .. '.icon')
       set_visible_if_alive(icon_ui, entry ~= nil and entry.icon ~= nil)
       set_image_if_alive(icon_ui, entry and entry.icon or nil)
@@ -1430,7 +1431,7 @@ function M.create(env)
         set_text_if_alive(resolve_ui(prefix .. '.label'), entry.name or ('技能' .. tostring(slot)))
         set_text_if_alive(resolve_ui(prefix .. '.cooldown'), entry.cooldown_text or '就绪')
       else
-        set_text_if_alive(resolve_ui(prefix .. '.key'), tostring(slot))
+        set_text_if_alive(resolve_ui(prefix .. '.key'), tostring(slot + 1))
         set_text_if_alive(resolve_ui(prefix .. '.label'), '未解锁')
         set_text_if_alive(resolve_ui(prefix .. '.cooldown'), '')
       end

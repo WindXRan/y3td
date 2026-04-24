@@ -482,11 +482,14 @@ def build_reference_skill_slot(name, x, key_text, icon_id):
 
 
 def build_reference_growth_weapon_slot():
-    root = panel("growth_weapon_slot", 40, 106, 72, 72, [26, 20, 14, 96])
+    root = layout("growth_weapon_slot", 40, 106, 72, 72)
     root["children"] = [
-        image("frame", 36, 36, 58, 58, PROP_FRAME_ALT, [255, 255, 255, 255], False),
-        image("icon", 36, 36, 44, 44, ICON_ITEM_2, [255, 255, 255, 255], False),
-        text("weapon_level", 36, 10, 48, 12, "Lv.5", 9, [255, 240, 186, 255]),
+        image("frame", 36, 36, 72, 72, SKILL_EMPTY, [255, 255, 255, 255], False),
+        image("icon", 36, 38, 50, 50, SKILL_ICON_1, [255, 255, 255, 255], False),
+        image("label_band", 36, 9, 58, 10, SHOP_CONTENT_BG_ALT, [255, 255, 255, 235], True),
+        text("key", 13, 60, 18, 12, "普", 10, [255, 223, 143, 255], 0),
+        text("cooldown", 58, 60, 18, 12, "0", 10, [220, 235, 255, 255], 2),
+        text("label", 36, 9, 42, 10, "", 9, [185, 196, 212, 255]),
     ]
     return root
 
