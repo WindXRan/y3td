@@ -2070,38 +2070,313 @@
 
         <section class="page page-universal" data-page="universal">
           <div class="page-shell universal-layout">
-            <section class="panel-card">
+            <section class="panel-card universal-main">
               <div class="top-tabs">
-                <button class="top-tab inactive">通关存档</button>
-                <button class="top-tab">地图等级</button>
-                <button class="top-tab">社区福利</button>
-                <button class="top-tab">成就</button>
-                <button class="top-tab">群抽奖</button>
-                <button class="top-tab">测试大厅</button>
-                <button class="top-tab">捕鱼模式</button>
+                <button class="top-tab active" data-universal-tab="pass">通关存档</button>
+                <button class="top-tab" data-universal-tab="map">地图等级</button>
+                <button class="top-tab" data-universal-tab="community">社区福利</button>
+                <button class="top-tab" data-universal-tab="achievement">成就</button>
+                <button class="top-tab" data-universal-tab="lottery">群抽奖</button>
+                <button class="top-tab" data-universal-tab="test">测试大厅</button>
+                <button class="top-tab" data-universal-tab="fish">捕鱼模式</button>
               </div>
 
-              <div class="badge-grid">
-                <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 1</div></div>
-                <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 2</div></div>
-                <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 3</div></div>
-                <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 4</div></div>
-                <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 5</div></div>
-                <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 6</div></div>
-                <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 7</div></div>
-                <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 8</div></div>
-                <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 9</div></div>
-                <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 10</div></div>
+              <div class="universal-stage">
+                <div class="universal-panel is-active" data-universal-panel="pass">
+                  <div class="badge-grid">
+                    <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 1</div></div>
+                    <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 2</div></div>
+                    <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 3</div></div>
+                    <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 4</div></div>
+                    <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 5</div></div>
+                    <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 6</div></div>
+                    <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 7</div></div>
+                    <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 8</div></div>
+                    <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 9</div></div>
+                    <div class="difficulty-badge"><div class="difficulty-icon"></div><div class="difficulty-stars">★★★★★</div><div class="difficulty-name">难度 10</div></div>
+                  </div>
+                </div>
+
+                <div class="universal-panel" data-universal-panel="map">
+                  <div class="level-grid">
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图2级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图3级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图4级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图5级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图6级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图7级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图8级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图9级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图10级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图11级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图12级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图13级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图14级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图15级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图16级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图17级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图18级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图19级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图20级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图21级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图22级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图23级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图24级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图25级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图26级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图27级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图28级</div></div>
+                    <div class="level-card"><div class="level-scroll"></div><div class="caption">地图29级</div></div>
+                  </div>
+                </div>
+
+                <div class="universal-panel" data-universal-panel="community">
+                  <div class="feature-grid">
+                    <div class="feature-card"><div class="feature-icon red" data-glyph="心"></div><div class="caption">收藏</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="★"></div><div class="caption">五星好评</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="赞"></div><div class="caption">集赞</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="贴"></div><div class="caption">精华帖</div></div>
+                    <div class="feature-card"><div class="feature-icon blue" data-glyph="水"></div><div class="caption">灌水大王</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="骷"></div><div class="caption">BUG反馈</div></div>
+                    <div class="feature-card"><div class="feature-icon blue" data-glyph="群"></div><div class="caption">加群秘籍</div></div>
+                    <div class="feature-card"><div class="feature-icon green" data-glyph="号"></div><div class="caption">公众号</div></div>
+                    <div class="feature-card"><div class="feature-icon blue" data-glyph="粉"></div><div class="caption">粉丝团</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="会"></div><div class="caption">公会1级</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="Ⅱ"></div><div class="caption">公会2级</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="Ⅲ"></div><div class="caption">公会3级</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="Ⅳ"></div><div class="caption">公会4级</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="Ⅴ"></div><div class="caption">公会5级</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="福"></div><div class="caption">萌新福利</div></div>
+                    <div class="feature-card"><div class="feature-icon purple" data-glyph="K"></div><div class="caption">KK官号</div></div>
+                  </div>
+                </div>
+
+                <div class="universal-panel" data-universal-panel="achievement">
+                  <div class="feature-grid">
+                    <div class="feature-card"><div class="feature-icon purple" data-glyph="①"></div><div class="caption">生涯首胜</div></div>
+                    <div class="feature-card"><div class="feature-icon purple" data-glyph="阵"></div><div class="caption">单通</div></div>
+                    <div class="feature-card"><div class="feature-icon green" data-glyph="孵"></div><div class="caption">孵坐达人</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="摸"></div><div class="caption">摸鱼大师</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="爬"></div><div class="caption">爬塔达人</div></div>
+                    <div class="feature-card"><div class="feature-icon blue" data-glyph="塔"></div><div class="caption">爬塔高手</div></div>
+                    <div class="feature-card"><div class="feature-icon green" data-glyph="吞"></div><div class="caption">吞噬达人</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="离"></div><div class="caption">吞噬离人</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="射"></div><div class="caption">神射手</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="枪"></div><div class="caption">枪械师</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="炮"></div><div class="caption">炮娘</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="元"></div><div class="caption">元素师</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="传"></div><div class="caption">传奇</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="战"></div><div class="caption">战地车</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="亡"></div><div class="caption">亡命徒</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="邪"></div><div class="caption">邪修</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="狂"></div><div class="caption">狂飙</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="龙"></div><div class="caption">龙族</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="雷"></div><div class="caption">雷神</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="舔"></div><div class="caption">舔狗</div></div>
+                    <div class="feature-card dim"><div class="feature-icon purple" data-glyph="王"></div><div class="caption">破坏王</div></div>
+                  </div>
+                </div>
+
+                <div class="universal-panel" data-universal-panel="lottery">
+                  <div class="feature-grid">
+                    <div class="feature-card"><div class="feature-icon blue" data-glyph="戒"></div><div class="caption">幸运戒</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="杯"></div><div class="caption">圣杯</div></div>
+                    <div class="feature-card"><div class="feature-icon blue" data-glyph="币"></div><div class="caption">干饭了</div></div>
+                    <div class="feature-card"><div class="feature-icon blue" data-glyph="星"></div><div class="caption">心想事成</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="帽"></div><div class="caption">安全帽</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="马"></div><div class="caption">马上有钱</div></div>
+                    <div class="feature-card"><div class="feature-icon red" data-glyph="符"></div><div class="caption">好运连连</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="针"></div><div class="caption">指南针</div></div>
+                    <div class="feature-card"><div class="feature-icon purple" data-glyph="炮"></div><div class="caption">军火库</div></div>
+                    <div class="feature-card"><div class="feature-icon blue" data-glyph="开"></div><div class="caption">开炮</div></div>
+                    <div class="feature-card"><div class="feature-icon purple" data-glyph="力"></div><div class="caption">有点强</div></div>
+                    <div class="feature-card"><div class="feature-icon red" data-glyph="火"></div><div class="caption">大火</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="麦"></div><div class="caption">大麦</div></div>
+                    <div class="feature-card"><div class="feature-icon purple" data-glyph="赞"></div><div class="caption">你真棒</div></div>
+                    <div class="feature-card"><div class="feature-icon purple" data-glyph="油"></div><div class="caption">为你加油</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="拳"></div><div class="caption">拳霸</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="船"></div><div class="caption">杰克船长</div></div>
+                    <div class="feature-card"><div class="feature-icon red" data-glyph="枪"></div><div class="caption">MTT枪</div></div>
+                    <div class="feature-card"><div class="feature-icon red" data-glyph="冲"></div><div class="caption">一飞冲天</div></div>
+                  </div>
+                  <div class="lottery-footer">
+                    <div class="lottery-action">
+                      <span>口令:</span>
+                      <div class="lottery-input"></div>
+                      <div class="secondary-btn">抽奖</div>
+                    </div>
+                    <div class="lottery-count">中奖保底次数 <span class="value-green">0/3</span></div>
+                    <div class="small-note">加群获取口令输入后进行抽奖，达到保底次数必定抽到奖品。</div>
+                  </div>
+                </div>
+
+                <div class="universal-panel" data-universal-panel="test">
+                  <div class="feature-grid">
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="箱"></div><div class="caption">内测宝箱</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="预"></div><div class="caption">预约宝箱</div></div>
+                    <div class="feature-card"><div class="feature-icon purple" data-glyph="等"></div><div class="caption">等级宝箱</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="测"></div><div class="caption">内测N3</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="测"></div><div class="caption">内测N4</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="测"></div><div class="caption">内测N5</div></div>
+                    <div class="feature-card"><div class="feature-icon gold" data-glyph="证"></div><div class="caption">荣誉证书</div></div>
+                    <div class="feature-card"><div class="feature-icon red" data-glyph="杯"></div><div class="caption">冠军奖杯</div></div>
+                  </div>
+                </div>
+
+                <div class="universal-panel" data-universal-panel="fish">
+                  <div class="fish-feature-row">
+                    <div class="fish-card selected">
+                      <div class="fish-tile-icon gold" data-glyph="鱼"></div>
+                      <div class="fish-count">x107</div>
+                      <div class="caption">小丑鱼</div>
+                    </div>
+                    <div class="fish-card">
+                      <div class="fish-tile-icon green" data-glyph="珊"></div>
+                      <div class="fish-count">x73</div>
+                      <div class="caption">珊瑚鱼</div>
+                    </div>
+                    <div class="fish-card">
+                      <div class="fish-tile-icon blue" data-glyph="乌"></div>
+                      <div class="fish-count">x35</div>
+                      <div class="caption">乌贼</div>
+                    </div>
+                    <div class="fish-card">
+                      <div class="fish-tile-icon purple" data-glyph="鲨"></div>
+                      <div class="fish-count">x12</div>
+                      <div class="caption">大鲨鱼</div>
+                    </div>
+                    <div class="fish-card">
+                      <div class="fish-tile-icon gold" data-glyph="魔"></div>
+                      <div class="fish-count">x1</div>
+                      <div class="caption">魔鬼鱼</div>
+                    </div>
+                  </div>
+
+                  <div class="tool-grid">
+                    <div class="tool-card"><div class="tool-icon" data-glyph="壳"></div><div class="caption">贝壳</div></div>
+                    <div class="tool-card"><div class="tool-icon" data-glyph="宝"></div><div class="caption">海绵宝宝</div></div>
+                    <div class="tool-card"><div class="tool-icon" data-glyph="派"></div><div class="caption">派大星</div></div>
+                    <div class="tool-card"><div class="tool-icon" data-glyph="痞"></div><div class="caption">痞老板</div></div>
+                    <div class="tool-card"><div class="tool-icon" data-glyph="镜"></div><div class="caption">潜水镜</div></div>
+                    <div class="tool-card"><div class="tool-icon" data-glyph="珊"></div><div class="caption">珊瑚</div></div>
+                    <div class="tool-card"><div class="tool-icon" data-glyph="威"></div><div class="caption">威廉</div></div>
+                    <div class="tool-card"><div class="tool-icon" data-glyph="蜗"></div><div class="caption">小蜗</div></div>
+                    <div class="tool-card"><div class="tool-icon" data-glyph="蟹"></div><div class="caption">蟹老板</div></div>
+                    <div class="tool-card"><div class="tool-icon" data-glyph="珠"></div><div class="caption">珍珠</div></div>
+                  </div>
+
+                  <div class="rarity-bar n" data-label="N级"></div>
+                  <div class="fish-grid">
+                    <div class="fish-mini"><div class="fish-mini-icon green" data-glyph="射"></div><div class="caption">射水鱼</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon green" data-glyph="眼"></div><div class="caption">大眼鱼</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon green" data-glyph="彩"></div><div class="caption">幻彩鱼</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon green" data-glyph="星"></div><div class="caption">海星</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon green" data-glyph="马"></div><div class="caption">海马</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon green" data-glyph="螺"></div><div class="caption">海螺</div></div>
+                  </div>
+
+                  <div class="rarity-bar r" data-label="R级"></div>
+                  <div class="fish-grid">
+                    <div class="fish-mini"><div class="fish-mini-icon blue" data-glyph="绿"></div><div class="caption">绿怪鱼</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon blue" data-glyph="蟹"></div><div class="caption">螃蟹</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon blue" data-glyph="蜻"></div><div class="caption">蜻蜓鱼</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon blue" data-glyph="沙"></div><div class="caption">沙丁鱼</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon blue" data-glyph="龟"></div><div class="caption">小海龟</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon blue" data-glyph="火"></div><div class="caption">火山鱼</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon blue" data-glyph="龙"></div><div class="caption">龙虾</div></div>
+                  </div>
+
+                  <div class="rarity-bar sr" data-label="SR级"></div>
+                  <div class="fish-grid">
+                    <div class="fish-mini"><div class="fish-mini-icon purple" data-glyph="皇"></div><div class="caption">皇带鱼</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon purple" data-glyph="电"></div><div class="caption">电鳗</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon purple" data-glyph="鲸"></div><div class="caption">幼年鲸</div></div>
+                    <div class="fish-mini"><div class="fish-mini-icon purple" data-glyph="鲨"></div><div class="caption">深海鲨</div></div>
+                  </div>
+                </div>
               </div>
             </section>
 
-            <aside class="panel-card">
-              <div class="side-title">难度 1</div>
-              <div class="side-divider"></div>
-              <div class="reward-lines">
-                <div>通关 1 次：<span class="value-yellow">+1 夺宝券</span></div>
-                <div>通关 2 次：<span class="value-yellow">+1 夺宝券</span></div>
-                <div>通关 3 次：<span class="value-yellow">+1 夺宝券</span></div>
+            <aside class="panel-card universal-side">
+              <div class="universal-detail is-active" data-universal-detail="pass">
+                <div class="side-title">难度 1</div>
+                <div class="side-divider"></div>
+                <div class="reward-lines">
+                  <div>通关 1 次：<span class="value-yellow">+1 夺宝券</span></div>
+                  <div>通关 2 次：<span class="value-yellow">+1 夺宝券</span></div>
+                  <div>通关 3 次：<span class="value-yellow">+1 夺宝券</span></div>
+                </div>
+              </div>
+
+              <div class="universal-detail" data-universal-detail="map">
+                <div class="side-title">地图 2 级</div>
+                <div class="side-divider"></div>
+                <div class="detail-label">达成奖励</div>
+                <div class="reward-lines">
+                  <div>地图等级达到 2 级</div>
+                  <div class="value-green">+1 夺宝券</div>
+                  <div class="value-green">+1 天赋点</div>
+                </div>
+              </div>
+
+              <div class="universal-detail" data-universal-detail="community">
+                <div class="side-title">收藏</div>
+                <div class="side-divider"></div>
+                <div class="detail-label">达成要求</div>
+                <div class="compact-copy">收藏本地图<br>0 / 1 (未达成)</div>
+                <div class="detail-label" style="margin-top:10px;">达成奖励</div>
+                <div class="reward-lines">
+                  <div>100 开局金币</div>
+                </div>
+              </div>
+
+              <div class="universal-detail" data-universal-detail="achievement">
+                <div class="side-title">生涯首胜</div>
+                <div class="side-divider"></div>
+                <div class="detail-label">达成要求</div>
+                <div class="compact-copy">生涯第一次通关<br>0 / 1 (未达成)</div>
+                <div class="detail-label" style="margin-top:10px;">达成奖励</div>
+                <div class="reward-lines">
+                  <div>+50 开局金币</div>
+                </div>
+              </div>
+
+              <div class="universal-detail" data-universal-detail="lottery">
+                <div class="side-title">幸运戒</div>
+                <div class="side-divider"></div>
+                <div class="detail-label">达成要求</div>
+                <div class="compact-copy">群抽奖<br>加入Q群：1102282480，获取抽奖口令<br>0 / 1 (未达成)</div>
+                <div class="detail-label" style="margin-top:10px;">达成奖励</div>
+                <div class="reward-lines">
+                  <div>+3 力量</div>
+                  <div>+3 敏捷</div>
+                  <div>+3 智力</div>
+                </div>
+              </div>
+
+              <div class="universal-detail" data-universal-detail="test">
+                <div class="side-title">内测宝箱</div>
+                <div class="side-divider"></div>
+                <div class="detail-label">达成要求</div>
+                <div class="compact-copy">参与游戏内测，游戏正式上架后自动达成<br>0 / 1 (未达成)</div>
+                <div class="detail-label" style="margin-top:10px;">达成奖励</div>
+                <div class="reward-lines">
+                  <div>+5 攻击力</div>
+                  <div>+50 城防生命值</div>
+                </div>
+              </div>
+
+              <div class="universal-detail" data-universal-detail="fish">
+                <div class="side-title">小丑鱼</div>
+                <div class="side-divider"></div>
+                <div class="detail-label">获得属性</div>
+                <div class="compact-copy">捕获时获得 1 积分</div>
+                <div class="detail-label" style="margin-top:10px;">获得方式</div>
+                <div class="compact-copy">钓鱼模式下捕获【小丑鱼】</div>
+                <div class="score-box-inline">
+                  <div class="muted">钓鱼积分</div>
+                  <div class="value-green" style="font-size:28px; margin-top:6px;">641</div>
+                </div>
               </div>
             </aside>
           </div>
@@ -2157,57 +2432,69 @@
                 <button class="back-btn" data-page="chest">返回</button>
                 <button class="mode-tab">夺宝奇兵</button>
                 <button class="mode-tab off">时光迷城</button>
+                <button class="mode-tab off">时光迷城</button>
               </div>
 
               <div class="pool-board">
                 <section class="rarity-section">
-                  <div class="rarity-title green">N 级</div>
-                  <div class="rarity-line" style="color:#67d65b;"></div>
-                  <div class="item-grid n">
-                    <div class="item n" data-label="石"></div>
-                    <div class="item n" data-label="羽"></div>
-                    <div class="item n" data-label="刃"></div>
-                    <div class="item n selected" data-label="东"><div class="item-count">x1</div></div>
-                    <div class="item n" data-label="叶"><div class="item-count">x1</div></div>
-                    <div class="item n" data-label="灯"></div>
-                    <div class="item n" data-label="木"></div>
-                    <div class="item n" data-label="岩"></div>
-                    <div class="item n" data-label="纹"><div class="item-count">x2</div></div>
-                    <div class="item n" data-label="流"></div>
-                    <div class="item n" data-label="羽"></div>
-                    <div class="item n" data-label="尘"><div class="item-count">x2</div></div>
+                  <div class="rarity-banner green">N级</div>
+                  <div class="pool-item-grid">
+                    <div class="pool-item neutral selected"><div class="pool-glyph" data-glyph="东"></div><div class="pool-item-name">东</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="南"></div><div class="pool-item-name">南</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="西"></div><div class="pool-item-name">西</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="北"></div><div class="pool-count">x1</div><div class="pool-item-name">北</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="中"></div><div class="pool-count">x1</div><div class="pool-item-name">中</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="发"></div><div class="pool-item-name">发</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="框"></div><div class="pool-item-name">空位</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="糖"></div><div class="pool-count">x1</div><div class="pool-item-name">糖果</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="爆"></div><div class="pool-item-name">爆米花</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="肉"></div><div class="pool-item-name">火腿</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="饭"></div><div class="pool-count">x2</div><div class="pool-item-name">鸡腿饭</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="矛"></div><div class="pool-count">x2</div><div class="pool-item-name">长矛</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="卷"></div><div class="pool-count">x2</div><div class="pool-item-name">卷轴</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="球"></div><div class="pool-item-name">紫球</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="酒"></div><div class="pool-item-name">符酒</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="信"></div><div class="pool-count">x2</div><div class="pool-item-name">信封</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="娃"></div><div class="pool-count">x1</div><div class="pool-item-name">娃娃</div></div>
+                    <div class="pool-item neutral"><div class="pool-glyph" data-glyph="饼"></div><div class="pool-count">x1</div><div class="pool-item-name">甜点</div></div>
                   </div>
                 </section>
 
                 <section class="rarity-section">
-                  <div class="rarity-title blue">R 级</div>
-                  <div class="rarity-line" style="color:#56c6ff;"></div>
-                  <div class="item-grid r">
-                    <div class="item r" data-label="潮"></div>
-                    <div class="item r" data-label="影"></div>
-                    <div class="item r" data-label="辉"></div>
-                    <div class="item r" data-label="镜"></div>
-                    <div class="item r" data-label="岚"></div>
-                    <div class="item r" data-label="川"></div>
-                    <div class="item r" data-label="风"></div>
-                    <div class="item r selected" data-label="霜"></div>
-                    <div class="item r" data-label="浪"></div>
-                    <div class="item r" data-label="炎"></div>
+                  <div class="rarity-banner blue">R级</div>
+                  <div class="pool-item-grid">
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="♠"></div><div class="pool-item-name">黑桃A</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="♥"></div><div class="pool-item-name">红心A</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="♦"></div><div class="pool-item-name">方片A</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="♣"></div><div class="pool-item-name">梅花A</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="枪"></div><div class="pool-item-name">手枪</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="盾"></div><div class="pool-item-name">护符</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="拳"></div><div class="pool-item-name">拳套</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="饭"></div><div class="pool-item-name">炒饭</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="菇"></div><div class="pool-item-name">蘑菇</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="铃"></div><div class="pool-item-name">铃铛</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="喇"></div><div class="pool-item-name">喇叭</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="蟹"></div><div class="pool-item-name">螃蟹</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="石"></div><div class="pool-item-name">金砖</div></div>
+                    <div class="pool-item blue"><div class="pool-glyph" data-glyph="刺"></div><div class="pool-item-name">狼牙锤</div></div>
                   </div>
                 </section>
 
                 <section class="rarity-section">
-                  <div class="rarity-title purple">SR 级</div>
-                  <div class="rarity-line" style="color:#c07bff;"></div>
-                  <div class="item-grid sr">
-                    <div class="item sr" data-label="圣"></div>
-                    <div class="item sr" data-label="极"></div>
-                    <div class="item sr" data-label="命"></div>
-                    <div class="item sr" data-label="星"></div>
-                    <div class="item sr" data-label="苍"></div>
-                    <div class="item sr" data-label="月"></div>
-                    <div class="item sr" data-label="玄"></div>
-                    <div class="item sr" data-label="灵"></div>
+                  <div class="rarity-banner purple">SR级</div>
+                  <div class="pool-item-grid">
+                    <div class="pool-item purple"><div class="pool-glyph" data-glyph="月"></div><div class="pool-item-name">月牙</div></div>
+                    <div class="pool-item purple"><div class="pool-glyph" data-glyph="海"></div><div class="pool-item-name">海宝</div></div>
+                    <div class="pool-item purple"><div class="pool-glyph" data-glyph="枝"></div><div class="pool-item-name">金枝</div></div>
+                    <div class="pool-item purple"><div class="pool-glyph" data-glyph="帽"></div><div class="pool-item-name">草帽</div></div>
+                    <div class="pool-item purple"><div class="pool-glyph" data-glyph="鳞"></div><div class="pool-item-name">龙鳞</div></div>
+                    <div class="pool-item purple"><div class="pool-glyph" data-glyph="拳"></div><div class="pool-item-name">拳甲</div></div>
+                    <div class="pool-item purple"><div class="pool-glyph" data-glyph="环"></div><div class="pool-item-name">金环</div></div>
+                    <div class="pool-item purple"><div class="pool-glyph" data-glyph="火"></div><div class="pool-item-name">异火</div></div>
+                    <div class="pool-item purple"><div class="pool-glyph" data-glyph="灯"></div><div class="pool-item-name">魂灯</div></div>
+                    <div class="pool-item purple"><div class="pool-glyph" data-glyph="印"></div><div class="pool-item-name">玉印</div></div>
+                    <div class="pool-item purple"><div class="pool-glyph" data-glyph="铠"></div><div class="pool-item-name">古铠</div></div>
+                    <div class="pool-item purple"><div class="pool-glyph" data-glyph="灵"></div><div class="pool-item-name">灵果</div></div>
                   </div>
                 </section>
               </div>
@@ -2247,6 +2534,9 @@
     const pages = Array.from(document.querySelectorAll(".page"));
     const menuButtons = Array.from(document.querySelectorAll(".menu-btn[data-page]"));
     const backButton = document.querySelector(".back-btn");
+    const universalTabButtons = Array.from(document.querySelectorAll("[data-universal-tab]"));
+    const universalPanels = Array.from(document.querySelectorAll("[data-universal-panel]"));
+    const universalDetails = Array.from(document.querySelectorAll("[data-universal-detail]"));
 
     function fitWindow(pageKey) {
       const size = PAGE_SIZES[pageKey];
@@ -2266,6 +2556,24 @@
     function setActiveMenu(menuKey) {
       Array.from(document.querySelectorAll(".menu-btn")).forEach((button) => {
         button.classList.toggle("is-active", button.dataset.menu === menuKey);
+      });
+    }
+
+    function showUniversalTab(tabKey) {
+      if (!tabKey) {
+        return;
+      }
+
+      universalTabButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.universalTab === tabKey);
+      });
+
+      universalPanels.forEach((panel) => {
+        panel.classList.toggle("is-active", panel.dataset.universalPanel === tabKey);
+      });
+
+      universalDetails.forEach((detail) => {
+        detail.classList.toggle("is-active", detail.dataset.universalDetail === tabKey);
       });
     }
 
@@ -2292,9 +2600,17 @@
       });
     });
 
-    backButton.addEventListener("click", () => {
-      showPage(backButton.dataset.page);
+    universalTabButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        showUniversalTab(button.dataset.universalTab);
+      });
     });
+
+    if (backButton) {
+      backButton.addEventListener("click", () => {
+        showPage(backButton.dataset.page);
+      });
+    }
 
     window.addEventListener("resize", () => {
       const active = document.querySelector(".page.is-active");
@@ -2302,6 +2618,7 @@
     });
 
     const initial = location.hash.replace("#", "");
+    showUniversalTab("pass");
     showPage(PAGE_SIZES[initial] ? initial : "profile");
   </script>
 </body>
