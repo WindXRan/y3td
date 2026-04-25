@@ -2405,8 +2405,8 @@
               </div>
               <div class="draw-bottom-note">每 10 抽夺宝额外获得 1 星币</div>
               <div class="entry-row">
-                <div class="pool-entry">奖池</div>
-                <div class="prob-entry">概率公示</div>
+                <button class="pool-entry" data-open-page="pool">奖池</button>
+                <button class="prob-entry" data-open-page="pool">概率公示</button>
               </div>
             </section>
 
@@ -2431,7 +2431,6 @@
               <div class="pool-header">
                 <button class="back-btn" data-page="chest">返回</button>
                 <button class="mode-tab">夺宝奇兵</button>
-                <button class="mode-tab off">时光迷城</button>
                 <button class="mode-tab off">时光迷城</button>
               </div>
 
@@ -2534,6 +2533,7 @@
     const pages = Array.from(document.querySelectorAll(".page"));
     const menuButtons = Array.from(document.querySelectorAll(".menu-btn[data-page]"));
     const backButton = document.querySelector(".back-btn");
+    const pageJumpButtons = Array.from(document.querySelectorAll("[data-open-page]"));
     const universalTabButtons = Array.from(document.querySelectorAll("[data-universal-tab]"));
     const universalPanels = Array.from(document.querySelectorAll("[data-universal-panel]"));
     const universalDetails = Array.from(document.querySelectorAll("[data-universal-detail]"));
@@ -2597,6 +2597,12 @@
     menuButtons.forEach((button) => {
       button.addEventListener("click", () => {
         showPage(button.dataset.page);
+      });
+    });
+
+    pageJumpButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        showPage(button.dataset.openPage);
       });
     });
 

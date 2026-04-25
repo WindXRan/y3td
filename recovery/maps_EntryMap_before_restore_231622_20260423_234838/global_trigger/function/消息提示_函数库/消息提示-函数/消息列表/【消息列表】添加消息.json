@@ -1,0 +1,160 @@
+{
+    "action": [
+        {
+            "action_type": "INSERT_TABLE_VALUE", 
+            "args_list": [
+                {
+                    "arg_type": 100011, 
+                    "args_list": [
+                        [
+                            "TABLE", 
+                            "消息列表_压栈消息表_文字"
+                        ]
+                    ], 
+                    "sub_type": "VARIABLE"
+                }, 
+                {
+                    "arg_type": 100003, 
+                    "args_list": [
+                        {
+                            "__tuple__": true, 
+                            "items": [
+                                "STRING", 
+                                "消息文字", 
+                                "local"
+                            ]
+                        }
+                    ], 
+                    "sub_type": 2
+                }
+            ], 
+            "bp": false, 
+            "element_id": 1048539145000001, 
+            "enable": true, 
+            "op_arg": [
+                null
+            ], 
+            "op_arg_enable": [
+                false
+            ]
+        }, 
+        {
+            "action_type": "INSERT_TABLE_VALUE", 
+            "args_list": [
+                {
+                    "arg_type": 100011, 
+                    "args_list": [
+                        [
+                            "TABLE", 
+                            "消息列表_压栈消息表_图标"
+                        ]
+                    ], 
+                    "sub_type": "VARIABLE"
+                }, 
+                {
+                    "arg_type": 100115, 
+                    "args_list": [
+                        {
+                            "__tuple__": true, 
+                            "items": [
+                                "TEXTURE", 
+                                "图标", 
+                                "local"
+                            ]
+                        }
+                    ], 
+                    "sub_type": 2
+                }
+            ], 
+            "bp": false, 
+            "element_id": 1048539145000002, 
+            "enable": true, 
+            "op_arg": [
+                null
+            ], 
+            "op_arg_enable": [
+                false
+            ]
+        }, 
+        {
+            "action_type": "SET_VARIABLE", 
+            "args_list": [
+                {
+                    "arg_type": 100030, 
+                    "args_list": [
+                        [
+                            "BOOLEAN", 
+                            "消息列表_有新消息"
+                        ]
+                    ], 
+                    "sub_type": 1
+                }, 
+                {
+                    "arg_type": 100001, 
+                    "args_list": [
+                        true
+                    ], 
+                    "sub_type": 1
+                }
+            ], 
+            "bp": false, 
+            "element_id": 1048539145000003, 
+            "enable": true
+        }
+    ], 
+    "call_enabled": true, 
+    "condition": [], 
+    "enabled": true, 
+    "event": [], 
+    "func_category": "t_function", 
+    "func_comment": "", 
+    "func_des": "添加消息：{消息文字}，图标：{图标}", 
+    "func_id": "5bf2a45e8d0711eea4d830d042e9144c", 
+    "func_name": "【消息列表】添加消息", 
+    "func_param_list": [
+        {
+            "__tuple__": true, 
+            "items": [
+                "消息文字", 
+                true
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "图标", 
+                true
+            ]
+        }
+    ], 
+    "group_id": "v8a6uTpUEfGsXTm7oEs-XD", 
+    "is_func": true, 
+    "is_official_func": false, 
+    "p_trigger_id": null, 
+    "trigger_id": 1048539145, 
+    "trigger_name": "【消息列表】添加消息", 
+    "valid": true, 
+    "var_data": [
+        {
+            "STRING": {
+                "消息文字": ""
+            }, 
+            "TABLE": {
+                "临时表": null
+            }, 
+            "TEXTURE": {
+                "图标": 0
+            }
+        }, 
+        {
+            "临时表": 0, 
+            "图标": 0, 
+            "消息文字": 0
+        }, 
+        [
+            "临时表", 
+            "图标", 
+            "消息文字"
+        ]
+    ]
+}

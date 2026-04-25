@@ -283,6 +283,13 @@ local function get_runtime(state)
   return state and state.bond_runtime or nil
 end
 
+local function is_damage_text_hidden(state)
+  return state
+    and state.ui_preferences
+    and state.ui_preferences.hide_damage_text == true
+    or false
+end
+
 local function get_node_def(node_id)
   return node_id and NODE_BY_ID[node_id] or nil
 end
@@ -1085,6 +1092,22 @@ local function build_line_progress_text(state, node_def)
   return string.format('%d/%d', unlocked_count, required_count)
 end
 
+local function build_root_progress_text(state, node_def)
+  local root_def = get_set_root_def(node_def) or node_def
+  if not root_def then
+    return ''
+  end
+
+  local root_meta = ROOT_SET_DOC_META[root_def.id]
+  if root_meta then
+    local required_count = tonumber(root_meta.required_count) or 0
+    local unlocked_count = math.min(required_count, count_unlocked_root_set_nodes(state, root_def.id))
+    return string.format('%d/%d', unlocked_count, required_count)
+  end
+
+  return build_line_progress_text(state, root_def)
+end
+
 local function trim_choice_prefix(text)
   local trimmed = trim_inline_text(text)
   trimmed = trimmed:gsub('^当前：', '')
@@ -1525,6 +1548,7 @@ end
 local function build_choice_entry(state, node_def, index)
   local set_root_def = get_set_root_def(node_def) or node_def
   local display_set_root_def = get_display_set_root_def(node_def) or set_root_def
+  local line_root_def = get_line_root_def(node_def)
   local card_name_text = get_choice_card_name_text(node_def)
   local current_text = build_choice_current_text(node_def)
   local advanced_text = get_choice_advanced_text(node_def)
@@ -1534,6 +1558,8 @@ local function build_choice_entry(state, node_def, index)
   local subtitle_text = card_name_text ~= '' and card_name_text or get_node_theme_name(node_def)
   local progress_text = build_line_progress_text(state, node_def)
   local themed_set_name = display_set_root_def and get_node_theme_name(display_set_root_def) or get_node_theme_name(node_def)
+  local bond_root_name = set_root_def and get_node_theme_name(set_root_def) or themed_set_name
+  local bond_root_progress_text = build_root_progress_text(state, node_def)
 
   return {
     index = index,
@@ -1556,6 +1582,8 @@ local function build_choice_entry(state, node_def, index)
       progress_text
     ),
     subtitle_text = subtitle_text,
+    bond_root_name = bond_root_name,
+    bond_root_progress_text = bond_root_progress_text,
     progress_text = '',
     current_text = current_text,
     advanced_text = advanced_text,
@@ -1589,6 +1617,8 @@ local function build_group_choice_entry(group_def, index)
     icon = group_def.icon,
     title_text = title_text,
     subtitle_text = '道统分脉',
+    bond_root_name = themed_name,
+    bond_root_progress_text = '未开悟',
     progress_text = '未开悟',
     current_text = current_text,
     advanced_text = '',
@@ -2221,7 +2251,7 @@ function M.try_trigger_hunter_first_hit(env, target)
     target = target,
     damage = env.round_number((hero_attr_system and hero_attr_system.get_attr(state.hero, '攻击结算值') or state.hero:get_attr('攻击') or state.hero:get_attr('物理攻击')) * ratio),
     type = env.basic_attack_damage_type,
-    text_type = 'physics',
+    text_type = is_damage_text_hidden(state) and nil or 'physics',
     common_attack = false,
     no_miss = true,
   })

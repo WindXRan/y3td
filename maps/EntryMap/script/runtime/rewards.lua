@@ -90,6 +90,12 @@ local function build_choice_key_text(choice_count)
   return table.concat(parts, ' / ')
 end
 
+local function get_treasure_refresh_cost(paid_count)
+  local refresh_costs = { 40, 80, 100 }
+  local index = math.min((tonumber(paid_count) or 0) + 1, #refresh_costs)
+  return refresh_costs[index] or refresh_costs[#refresh_costs]
+end
+
 local function clone_reward(reward)
   if not reward then
     return nil
@@ -230,6 +236,10 @@ function M.create(env)
 
   function api.get_treasure_quality_label(quality)
     return TREASURE_QUALITY_LABELS[quality] or '普通'
+  end
+
+  function api.get_treasure_def(treasure_id)
+    return treasure_id and TREASURE_DEFS[treasure_id] or nil
   end
 
   function api.get_evolution_quality_label(quality)
@@ -1207,6 +1217,9 @@ function M.create(env)
     if STATE.awaiting_upgrade then
       return false
     end
+    if STATE.gear_state and STATE.gear_state.awaiting_choice then
+      return false
+    end
     if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice then
       return false
     end
@@ -1359,6 +1372,58 @@ function M.create(env)
     api.show_treasure_loadout()
   end
 
+  function api.refresh_treasure_choices()
+    local runtime = api.get_treasure_runtime()
+
+    if runtime.awaiting_replace and runtime.pending_replace_choice then
+      message('当前已选中新的宝物，请先指定要替换的宝物位。')
+      return false
+    end
+
+    if not runtime.awaiting_choice or not runtime.current_choices then
+      return false
+    end
+
+    local choices = api.pick_treasure_choices(3)
+    if #choices == 0 then
+      message('当前没有可刷新的宝物候选。')
+      return false
+    end
+
+    local round = runtime.current_round or {
+      round_id = runtime.next_round_id,
+      free_refresh_left = 0,
+      refresh_paid_count = 0,
+      candidate_treasure_ids = {},
+    }
+
+    if (round.free_refresh_left or 0) > 0 then
+      round.free_refresh_left = round.free_refresh_left - 1
+      message(string.format('已免费刷新宝物三选一，剩余免费次数 %d。', round.free_refresh_left))
+    else
+      local cost = get_treasure_refresh_cost(round.refresh_paid_count or 0)
+      local wood = STATE.resources and STATE.resources.wood or 0
+      if wood < cost then
+        message(string.format('木材不足，刷新宝物三选一需要 %d 木材。', cost))
+        return false
+      end
+      STATE.resources.wood = wood - cost
+      round.refresh_paid_count = (round.refresh_paid_count or 0) + 1
+      message(string.format('已消耗 %d 木材刷新宝物三选一。', cost))
+    end
+
+    runtime.current_choices = choices
+    runtime.current_round = round
+    runtime.awaiting_choice = true
+    round.state = 'pending'
+    round.selected_treasure_id = nil
+    round.candidate_treasure_ids = {}
+    for _, def in ipairs(choices) do
+      round.candidate_treasure_ids[#round.candidate_treasure_ids + 1] = def.id
+    end
+    return true
+  end
+
   function api.apply_treasure_choice(index)
     local runtime = api.get_treasure_runtime()
 
@@ -1451,9 +1516,8 @@ function M.create(env)
     STATE.choice_panel_hidden = false
     local title = runtime.current_round and runtime.current_round.ui_title or '真身进化'
     message(string.format(
-      '%s：按 %s 选择。',
-      title,
-      build_choice_key_text(#runtime.current_choices)
+      '%s：请点击面板完成选择。',
+      title
     ))
     for index, def in ipairs(runtime.current_choices) do
       message(build_evolution_choice_text(index, def))

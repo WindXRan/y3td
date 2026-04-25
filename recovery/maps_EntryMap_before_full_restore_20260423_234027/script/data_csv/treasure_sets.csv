@@ -1,0 +1,5 @@
+order_index,set_id,set_name,piece_count,bonus_desc,notes
+1,set_kill,杀敌,3,每秒木材 +0.3,
+2,set_crit_damage,暴伤,2,物理暴击 +5%，魔法暴击 +5%,
+3,set_stat_boost,属性提升,3,每秒全属性 +0.6,
+4,set_pressure,攻坚压制,2,对血量 30%~70% 之间的敌人造成的伤害提高 15%。,集齐[攻坚]、[压制]后生效

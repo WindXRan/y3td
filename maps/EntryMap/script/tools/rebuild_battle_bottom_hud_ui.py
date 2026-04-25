@@ -489,19 +489,6 @@ def build_reference_skill_slot(name, x, key_text, icon_id):
     return root
 
 
-def build_reference_growth_weapon_slot():
-    root = layout("growth_weapon_slot", 40, 106, 72, 72)
-    root["children"] = [
-        image("frame", 36, 36, 72, 72, SKILL_EMPTY, [255, 255, 255, 255], False),
-        image("icon", 36, 38, 50, 50, SKILL_ICON_1, [255, 255, 255, 255], False),
-        image("label_band", 36, 9, 58, 10, SHOP_CONTENT_BG_ALT, [255, 255, 255, 235], True),
-        text("key", 13, 60, 18, 12, "普", 10, [255, 223, 143, 255], 0),
-        text("cooldown", 58, 60, 18, 12, "0", 10, [220, 235, 255, 255], 2),
-        text("label", 36, 9, 42, 10, "", 9, [185, 196, 212, 255]),
-    ]
-    return root
-
-
 def build_reference_grid_slot(name, x, y, icon_id=None, highlight=False, show_icon=True):
     frame_id = PROP_FRAME_ALT if highlight else PROP_FRAME
     root = layout(name, x, y, 62, 62)
@@ -689,12 +676,16 @@ def build_bottom_hud():
         build_reference_skill_slot("skill_slot_5", 346, "5", SKILL_ICON_1),
     ]
 
-    exp_bar = panel("exp_bar", 220, 84, 304, 24, [18, 22, 31, 92])
+    exp_bar = panel("exp_bar", 200, 84, 388, 30, [18, 22, 31, 0])
     exp_bar["children"] = [
-        image("bar_bg", 152, 12, 304, 24, SHOP_CONTENT_BG, [255, 255, 255, 222], True),
-        image("bar_inner", 152, 12, 290, 18, BG_BLACK, [255, 255, 255, 118], True),
-        panel("fill", 122, 12, 232, 12, [64, 181, 111, 255]),
-        text("exp_text", 152, 12, 270, 14, "54/100", 11, [255, 255, 255, 255]),
+        text("level_label", 38, 15, 76, 20, "等级：22", 16, [255, 222, 72, 255], 0),
+        image("bar_bg", 238, 15, 388, 24, SHOP_BG, [12, 14, 20, 236], True),
+        image("bar_inner", 238, 15, 374, 16, BG_BLACK, [30, 33, 44, 240], True),
+        panel("fill", 7, 15, 1, 12, [210, 38, 178, 255]),
+        image("fill_glow", 238, 16, 374, 18, SHOP_LINE, [255, 86, 220, 72], True),
+        text("exp_text", 238, 15, 360, 17, "177/200", 13, [255, 255, 255, 255]),
+        image("evolve_glow", 238, 15, 388, 30, SHOP_LINE, [255, 173, 45, 0], True),
+        text("evolve_text", 238, 15, 360, 24, "点击进化", 20, [255, 219, 55, 0]),
     ]
 
     buff_row = panel("buff_row", 232, 24, 300, 40, [12, 15, 22, 54])

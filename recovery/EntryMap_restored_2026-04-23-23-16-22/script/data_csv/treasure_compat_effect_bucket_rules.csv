@@ -1,0 +1,13 @@
+order_index,match_effect_type,match_effect_key,output_bucket,requires_canonical_attr
+1,passive_income,*,passive_income,true
+2,ratio_bonus,gold,reward_ratio,false
+3,ratio_bonus,wood,reward_ratio,false
+4,ratio_bonus,exp,reward_ratio,false
+5,resource_gain,*,runtime,false
+6,refresh_count,*,runtime,false
+7,mechanic_toggle,*,runtime,false
+8,trigger_growth,*,runtime,false
+9,temporary_buff,*,runtime,false
+10,conditional_damage,*,runtime,false
+11,probability,*,runtime,false
+12,ratio_bonus,*,runtime,false

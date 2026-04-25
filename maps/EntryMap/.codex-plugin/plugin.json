@@ -1,0 +1,18 @@
+{
+  "name": "y3maker-entrymap",
+  "version": "0.1.0",
+  "description": "Local Y3Maker rules, skills, and MCP wiring for EntryMap.",
+  "skills": "./.y3maker/skills",
+  "mcpServers": "./.y3maker/mcp_settings.json",
+  "interface": {
+    "displayName": "Y3Maker",
+    "shortDescription": "Y3Maker integration for this project",
+    "longDescription": "Loads the project's Y3Maker skills and MCP server definitions into Codex.",
+    "developerName": "Local Project",
+    "category": "Game Development",
+    "capabilities": [
+      "Write",
+      "Interactive"
+    ]
+  }
+}

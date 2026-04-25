@@ -1,0 +1,445 @@
+{
+  "name": "ArchivePageProfile",
+  "uid": "b4e26034-ae76-4240-bce4-33c831141b02",
+  "type": 2,
+  "children": [
+    {
+      "name": "root",
+      "uid": "ddcc19e6-ab16-4874-bb36-b666b1aa6d42",
+      "type": 7,
+      "children": [
+        {
+          "name": "content",
+          "uid": "af956822-61db-49f3-ad92-c30251fb9f4b",
+          "type": 7,
+          "children": [
+            {
+              "name": "page_profile",
+              "uid": "ff2e3a9f-fda4-4da5-8cec-0f81b8796c23",
+              "type": 7,
+              "children": [
+                {
+                  "name": "info_card",
+                  "uid": "bb4cd57e-e2bd-47c4-afc2-388e9354e3de",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "frame",
+                      "uid": "6329b933-5897-4a5e-9ee3-43f58273cbb8",
+                      "type": 7
+                    },
+                    {
+                      "name": "inner",
+                      "uid": "c452f18b-c691-475e-ae56-533704c42d77",
+                      "type": 7
+                    },
+                    {
+                      "name": "title_bg",
+                      "uid": "03f51aa3-0468-4473-a885-22ad7b1867b5",
+                      "type": 7
+                    },
+                    {
+                      "name": "title",
+                      "uid": "741cbca1-0b5a-4a11-bb20-75949fa010e7",
+                      "type": 3
+                    },
+                    {
+                      "name": "avatar",
+                      "uid": "6467119a-43e6-4089-93b4-77d009a3f00b",
+                      "type": 7
+                    },
+                    {
+                      "name": "player_name_label",
+                      "uid": "2f87e5c0-d36b-4875-bc3f-360b922de231",
+                      "type": 3
+                    },
+                    {
+                      "name": "player_name_value",
+                      "uid": "14a2590c-e56e-473a-aad4-106c3df452f0",
+                      "type": 3
+                    },
+                    {
+                      "name": "map_level_label",
+                      "uid": "70cdd5c3-1561-45f0-a6bd-96d7db857d08",
+                      "type": 3
+                    },
+                    {
+                      "name": "map_level_value",
+                      "uid": "d8c5be2f-037a-4acd-84d4-0ec06d0e2b02",
+                      "type": 3
+                    },
+                    {
+                      "name": "pass_row",
+                      "uid": "ec2c7575-482c-45f4-b0cd-1553cb6a313d",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "a05759eb-8da5-4b1a-a975-93a284a79975",
+                          "type": 3
+                        },
+                        {
+                          "name": "pass_value",
+                          "uid": "f0db3522-3edc-4c29-b50c-4c9b376a1321",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "sign_row",
+                      "uid": "851fac71-cb50-4cfd-9376-a86e38766774",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "7707faa5-186c-4339-a6dc-d946cd40a467",
+                          "type": 3
+                        },
+                        {
+                          "name": "sign_value",
+                          "uid": "596f7c30-0bda-419b-bd5b-01b9323efafc",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "save_state_row",
+                      "uid": "fc2577b1-ffdf-4849-bfba-8d4dae4721ce",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "c7b2c887-0c1c-45a3-adb2-304c56ccbe27",
+                          "type": 3
+                        },
+                        {
+                          "name": "save_state_value",
+                          "uid": "c7ed385c-3eaa-4f34-a7ab-a64550232983",
+                          "type": 3
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "count_card",
+                  "uid": "43616815-5f4a-43d5-9c8e-3e77d936547f",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "frame",
+                      "uid": "ba473782-defd-4922-824c-f9e1f1d6279e",
+                      "type": 7
+                    },
+                    {
+                      "name": "inner",
+                      "uid": "4f1d0ec6-4357-4ecc-af59-3c64b5b99469",
+                      "type": 7
+                    },
+                    {
+                      "name": "title_bg",
+                      "uid": "1f310e71-e647-46c0-85c7-e5f318bf5e05",
+                      "type": 7
+                    },
+                    {
+                      "name": "title",
+                      "uid": "e23e3542-ba69-4539-a5c1-baa860eec078",
+                      "type": 3
+                    },
+                    {
+                      "name": "count_row_1",
+                      "uid": "5d090a45-8a83-4420-bfee-1dfb76718400",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "987b2bb0-7985-4df5-86ac-1dc0a8d48082",
+                          "type": 3
+                        },
+                        {
+                          "name": "count_value_1",
+                          "uid": "4c6f02c2-654b-4662-9d1c-396330d6f694",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "count_row_2",
+                      "uid": "e65b7eca-bbc4-417c-9de9-70339ed8c753",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "011fb7a4-1afb-498d-92d5-27491b310c2b",
+                          "type": 3
+                        },
+                        {
+                          "name": "count_value_2",
+                          "uid": "a4583706-adb6-4139-820f-2122bbfa70e3",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "count_row_3",
+                      "uid": "baeae53f-0e2a-44a8-903e-af20b1f3c301",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "6f6c1942-e34e-4c97-b24a-0c062b33b2ba",
+                          "type": 3
+                        },
+                        {
+                          "name": "count_value_3",
+                          "uid": "74087c40-9f83-4e7c-befe-343f09cfd59c",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "count_row_4",
+                      "uid": "8e8324e8-eb91-4e6e-a03f-3b65fc22fd03",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "b47b5b1d-8891-4e9c-8b35-47e395d18e8b",
+                          "type": 3
+                        },
+                        {
+                          "name": "count_value_4",
+                          "uid": "55d6f5aa-8d0f-4755-a312-5b4fafb08c7e",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "count_row_5",
+                      "uid": "93f84cb5-550a-4b1e-b3a8-c8343f9ad071",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "7cd8ee92-0403-4c78-925b-19868fd77aa5",
+                          "type": 3
+                        },
+                        {
+                          "name": "count_value_5",
+                          "uid": "13302c4a-7c77-41f6-b50a-c86671e11010",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "count_row_6",
+                      "uid": "075c6de3-446b-4b8f-943a-d8646a1f8614",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "22d51c4a-a5fe-4284-ab04-6c25972555c8",
+                          "type": 3
+                        },
+                        {
+                          "name": "count_value_6",
+                          "uid": "fcd9c4de-d9fc-435c-ade8-cf5ff440f792",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "count_row_7",
+                      "uid": "29d3e4e7-1d93-4663-9622-24d7f6cb4395",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "c5b00357-8641-451d-bbdc-201884fbb265",
+                          "type": 3
+                        },
+                        {
+                          "name": "count_value_7",
+                          "uid": "e8dc38d4-b20f-4ac1-975e-dd2dd014e1fd",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "count_row_8",
+                      "uid": "feb2e03c-d348-4e58-b590-0c4aa6327435",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "2ade8996-3082-48ac-b13c-1b85af933cbe",
+                          "type": 3
+                        },
+                        {
+                          "name": "count_value_8",
+                          "uid": "8088c610-fd33-499e-810f-1e74dd1ee6f4",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "count_row_9",
+                      "uid": "bbad9c54-6b9b-4088-8738-d1307216ca38",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "9bec6ef9-dbc2-4935-b9fd-fb7ad60ecedc",
+                          "type": 3
+                        },
+                        {
+                          "name": "count_value_9",
+                          "uid": "46eb07a6-3e29-4b71-860e-edde53d0ab93",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "count_row_10",
+                      "uid": "eb9319b9-3c5d-4f03-9e98-021b6eaa5936",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "1e96b806-29ae-4ce9-8008-5c7e9580e644",
+                          "type": 3
+                        },
+                        {
+                          "name": "count_value_10",
+                          "uid": "ecd9ef2e-456b-45db-8baa-376aacf832c1",
+                          "type": 3
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "limit_card",
+                  "uid": "1f6f3a59-075d-46e8-9d9e-d363962ea89c",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "frame",
+                      "uid": "dc03afb9-8a13-41b0-8690-9f1c1598b868",
+                      "type": 7
+                    },
+                    {
+                      "name": "inner",
+                      "uid": "56838f93-6827-4146-81fd-0a03207599f9",
+                      "type": 7
+                    },
+                    {
+                      "name": "title_bg",
+                      "uid": "21a9ff0d-480c-4515-be4b-f3c62e21fa24",
+                      "type": 7
+                    },
+                    {
+                      "name": "title",
+                      "uid": "c682b299-5e12-47b6-b813-a928205bc727",
+                      "type": 3
+                    },
+                    {
+                      "name": "ticket_row",
+                      "uid": "9da4a3b9-8a5d-4c83-bd65-3f2871d71455",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "aa047aed-e21d-4896-a50a-478bad9e7431",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "9efd90d1-0d4f-4eef-a334-be705b006f57",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "howl_row",
+                      "uid": "f08d0c9a-8c70-4663-bf99-c44c496d2153",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "f570cd4b-2f1a-4d63-baac-5ef91d4ce6fd",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "46e0d61f-8cb6-418d-9fab-a03353104357",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "gear_row",
+                      "uid": "3e57861e-19b7-479b-98b6-68bef7ac3618",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "f4632c8b-b1a1-469a-82a2-066f4d658eff",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "89f084f2-ea0d-45f6-b9d7-0a6644bff323",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "burning_row",
+                      "uid": "f71abe3d-b7c2-4874-bb2f-bc78324410a5",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "3e398fca-7919-4bc4-a16f-98626020302e",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "338ae66a-02dd-4e0f-85f3-e4f8ffc509c3",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "heirloom_row",
+                      "uid": "31af26a5-0eb9-4f34-bca5-050902c34503",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "d79f30b9-aca3-4866-8c3e-2eddbc762b75",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "ec354a64-98d8-492c-be34-8d7da15d8ff7",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "limit_note",
+                      "uid": "6f86c2bc-0940-4dab-bca7-80fd888ceff6",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

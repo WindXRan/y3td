@@ -64,12 +64,39 @@ local function assert_choice_card_name(node_id, expected_name)
   ))
 end
 
-assert_choice_title('bond_growth_agility', '敏捷 (0/4)')
-assert_choice_title('bond_growth_barbarian_warcry', '野蛮人 (0/4)')
-assert_choice_title('bond_growth_war_god_power', '战神 (0/3)')
+local function assert_same_root_progress(root_node_id, branch_node_id)
+  local root_choice = build_choice_entry(state, assert(bond_nodes.by_id[root_node_id]), 1)
+  local branch_choice = build_choice_entry(state, assert(bond_nodes.by_id[branch_node_id]), 1)
+
+  assert(root_choice.bond_root_name == branch_choice.bond_root_name, string.format(
+    'expected %s and %s to share bond_root_name, got %s and %s',
+    tostring(root_node_id),
+    tostring(branch_node_id),
+    tostring(root_choice.bond_root_name),
+    tostring(branch_choice.bond_root_name)
+  ))
+  assert(root_choice.bond_root_progress_text == branch_choice.bond_root_progress_text, string.format(
+    'expected %s and %s to share bond_root_progress_text, got %s and %s',
+    tostring(root_node_id),
+    tostring(branch_node_id),
+    tostring(root_choice.bond_root_progress_text),
+    tostring(branch_choice.bond_root_progress_text)
+  ))
+  assert(branch_choice.title_text ~= string.format(
+    '%s (%s)',
+    tostring(branch_choice.bond_root_name),
+    tostring(branch_choice.bond_root_progress_text)
+  ), 'expected branch title_text to keep branch progress instead of root progress')
+end
+
+assert_choice_title('bond_growth_agility', '敏捷 (0/3)')
+assert_choice_title('bond_growth_barbarian_warcry', '搬山 (0/4)')
+assert_choice_title('bond_growth_war_god_power', '显圣真君 (0/3)')
 assert_choice_card_name('bond_critical_core', '暴击强化')
 assert_choice_card_name('bond_magic_core', '法术威力')
 assert_choice_card_name('bond_archery_core', '箭矢弹射')
 assert_choice_card_name('bond_growth_core', '智力提升')
+assert_same_root_progress('bond_archery_core', 'bond_archery_shooting')
+assert_same_root_progress('bond_growth_core', 'bond_growth_barbarian_warcry')
 
 print('bonds chain choice progress smoke ok')

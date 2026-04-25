@@ -8,24 +8,36 @@ function M.create(env)
   local get_player = env.get_player
   local get_runtime_hud_system = env.get_runtime_hud_system
   local get_runtime_overview_model = env.get_runtime_overview_model
-  local refresh_bond_choice = env.refresh_bond_choice
-  local apply_bond_choice = env.apply_bond_choice
+  local get_pending_round_choice_kind = env.get_pending_round_choice_kind
+  local refresh_current_choice = env.refresh_current_choice
+  local apply_round_choice = env.apply_round_choice
   local defer_choice_panel = env.defer_choice_panel
+  local get_growth_weapon_item_key = env.get_growth_weapon_item_key
+  local build_treasure_slot_text = env.build_treasure_slot_text
+  local get_treasure_quality_label = env.get_treasure_quality_label
+  local get_treasure_def = env.get_treasure_def
+  local get_evolution_quality_label = env.get_evolution_quality_label
   local is_ui_alive
   local set_visible_if_alive
   local set_text_if_alive
+  local set_button_text_if_alive
   local set_font_size_if_alive
   local set_image_if_alive
   local set_button_enable_if_alive
+  local set_intercepts_if_alive
   local set_z_order_if_alive
   local choice_panel_cache = {
+    BondChoice2 = nil,
     BondChoice3 = nil,
     BondChoice4 = nil,
   }
   local choice_panel_bound = {}
   local LEGACY_GAME_HUD_Z = 9500
-  local LEGACY_GAME_HUD_SETTING_PANEL_Z = 9510
-  local LEGACY_GAME_HUD_BUTTON_Z = 9520
+  local LEGACY_GAME_HUD_SETTING_PANEL_Z = 9560
+  local LEGACY_GAME_HUD_BUTTON_Z = 9570
+  local CHOICE_PANEL_Z = 9540
+  local EMPTY_IMAGE_ID = 999
+  local REFRESH_COSTS = { 40, 80, 100 }
 
   local function install_panel_systems()
     STATE.message_prompt_system = nil
@@ -49,6 +61,22 @@ function M.create(env)
     end
   end
 
+  set_button_text_if_alive = function(ui, text)
+    local final_text = tostring(text or '')
+    if not is_ui_alive(ui) then
+      return
+    end
+    if ui.set_text then
+      ui:set_text(final_text)
+    end
+    if ui.set_btn_status_string then
+      ui:set_btn_status_string('常态', final_text)
+      ui:set_btn_status_string('悬浮', final_text)
+      ui:set_btn_status_string('按下', final_text)
+      ui:set_btn_status_string('禁用', final_text)
+    end
+  end
+
   set_font_size_if_alive = function(ui, size)
     if is_ui_alive(ui) and ui.set_font_size and size then
       ui:set_font_size(size)
@@ -64,6 +92,12 @@ function M.create(env)
   set_button_enable_if_alive = function(ui, enabled)
     if is_ui_alive(ui) and ui.set_button_enable then
       ui:set_button_enable(enabled == true)
+    end
+  end
+
+  set_intercepts_if_alive = function(ui, intercepts)
+    if is_ui_alive(ui) and ui.set_intercepts_operations then
+      ui:set_intercepts_operations(intercepts == true)
     end
   end
 
@@ -99,64 +133,414 @@ function M.create(env)
   end
 
   local function hide_all_choice_panels()
+    set_visible_if_alive(resolve_panel('BondChoice2'), false)
     set_visible_if_alive(resolve_panel('BondChoice3'), false)
     set_visible_if_alive(resolve_panel('BondChoice4'), false)
   end
 
-  local function get_bond_choice_runtime()
-    local runtime = STATE and STATE.bond_runtime or nil
-    if not runtime or runtime.awaiting_choice ~= true or not runtime.current_choices or STATE.choice_panel_hidden == true then
-      return nil
-    end
-    return runtime
-  end
-
   local function choose_panel_name(choice_count)
+    if tonumber(choice_count) and choice_count <= 2 then
+      return 'BondChoice2'
+    end
     if tonumber(choice_count) and choice_count >= 4 then
       return 'BondChoice4'
     end
     return 'BondChoice3'
   end
 
-  local function get_card_width(panel_name, index)
+  local function get_choice_panel_root_path(panel_name)
+    if panel_name == 'BondChoice2' then
+      return 'bond_choice_2'
+    end
     if panel_name == 'BondChoice4' then
-      if index == 4 then
-        return 370
-      end
-      return 418
+      return 'bond_choice_4'
     end
-    return 504
+    return 'bond_choice_3'
   end
 
-  local function get_choice_title(choice)
-    return tostring(choice and (choice.pretty_display_name or choice.display_name or choice.title_text) or '')
-  end
-
-  local function get_choice_bond_text(choice)
-    local progress = choice and choice.title_text or ''
-    if progress ~= '' then
-      return '羁绊： ' .. tostring(progress)
+  local function get_choice_panel_card_suffix(panel_name)
+    if panel_name == 'BondChoice2' then
+      return '2'
     end
-    return ''
+    if panel_name == 'BondChoice4' then
+      return '4'
+    end
+    return '3'
   end
 
-  local function split_choice_values(choice)
+  local function trim_text(text)
+    if text == nil then
+      return ''
+    end
+    return tostring(text):gsub('^%s+', ''):gsub('%s+$', '')
+  end
+
+  local function get_quality_label(quality, kind)
+    if kind == 'treasure' and get_treasure_quality_label then
+      return get_treasure_quality_label(quality)
+    end
+    if kind == 'evolution' and get_evolution_quality_label then
+      return get_evolution_quality_label(quality)
+    end
+    if quality == 'legendary' then
+      return '传说'
+    end
+    if quality == 'epic' then
+      return '史诗'
+    end
+    if quality == 'rare' or quality == 'excellent' then
+      return '稀有'
+    end
+    return '普通'
+  end
+
+  local function get_refresh_cost(paid_count)
+    local index = math.min((tonumber(paid_count) or 0) + 1, #REFRESH_COSTS)
+    return REFRESH_COSTS[index] or REFRESH_COSTS[#REFRESH_COSTS]
+  end
+
+  local function get_item_icon_by_key(item_key)
+    if item_key and y3 and y3.item and y3.item.get_icon_id_by_key then
+      return y3.item.get_icon_id_by_key(item_key)
+    end
+    return EMPTY_IMAGE_ID
+  end
+
+  local function get_unit_icon_by_key(unit_key)
+    if unit_key and y3 and y3.unit and y3.unit.get_icon_by_key then
+      return y3.unit.get_icon_by_key(unit_key)
+    end
+    return EMPTY_IMAGE_ID
+  end
+
+  local function get_growth_weapon_name()
+    local item_key = get_growth_weapon_item_key and get_growth_weapon_item_key() or nil
+    if item_key and y3 and y3.item and y3.item.get_name_by_key then
+      return y3.item.get_name_by_key(item_key)
+    end
+    return '成长武器'
+  end
+
+  local function get_growth_weapon_icon()
+    return get_item_icon_by_key(get_growth_weapon_item_key and get_growth_weapon_item_key() or nil)
+  end
+
+  local function split_choice_values(text, max_lines)
     local lines = {}
-    local current_text = tostring(choice and choice.current_text or '')
+    local current_text = tostring(text or '')
+    current_text = current_text:gsub('\r\n', '\n'):gsub('\r', '\n')
+    if string.find(current_text, '\n', 1, true) == nil then
+      current_text = current_text:gsub('。%s*', '。\n')
+      current_text = current_text:gsub('；%s*', '\n')
+      current_text = current_text:gsub(';%s*', '\n')
+      current_text = current_text:gsub('，', '\n')
+      current_text = current_text:gsub(',%s*', '\n')
+    end
+    current_text = current_text:gsub('\n+', '\n')
     for line in string.gmatch(current_text, '[^\n]+') do
-      local trimmed = tostring(line):gsub('^%s+', ''):gsub('%s+$', '')
+      local trimmed = trim_text(line)
       if trimmed ~= '' then
         lines[#lines + 1] = trimmed
       end
-      if #lines >= 3 then
+      if #lines >= (max_lines or 2) then
         break
       end
     end
     return lines
   end
 
+  local function build_card_model(title_text, subtitle_text, body_text, icon, quality, enabled)
+    local lines = type(body_text) == 'table' and body_text or split_choice_values(body_text, 2)
+    return {
+      title_text = trim_text(title_text),
+      subtitle_text = trim_text(subtitle_text),
+      body_lines = lines,
+      icon = icon or EMPTY_IMAGE_ID,
+      quality = quality or 'common',
+      enabled = enabled ~= false,
+    }
+  end
+
+  local function build_upgrade_card_model(choice)
+    local quality_label = get_quality_label(choice and choice.quality or nil)
+    local subtitle = trim_text(choice and choice.tag or '')
+    if subtitle == '' or subtitle:find('羁绊', 1, true) then
+      subtitle = '技能强化'
+    end
+    subtitle = string.format('[%s] %s', quality_label, subtitle)
+    local title = trim_text(choice and choice.name or '')
+    if title == '' then
+      title = trim_text(choice and choice.display_name or '')
+    end
+    return build_card_model(
+      title,
+      subtitle,
+      choice and (choice.desc or choice.summary) or '',
+      choice and (choice.ui_icon or choice.icon) or EMPTY_IMAGE_ID,
+      choice and choice.quality or 'common'
+    )
+  end
+
+  local function build_bond_card_model(choice)
+    local lines = split_choice_values(choice and choice.current_text or '', 2)
+    if #lines < 2 then
+      local desc_lines = split_choice_values(choice and choice.desc_text or '', 2)
+      for _, line in ipairs(desc_lines) do
+        if #lines >= 2 then
+          break
+        end
+        lines[#lines + 1] = line
+      end
+    end
+
+    local bond_name = trim_text(choice and choice.bond_root_name or '')
+    local bond_progress = trim_text(choice and choice.bond_root_progress_text or '')
+    local subtitle = ''
+    if bond_name ~= '' then
+      if bond_progress ~= '' then
+        subtitle = string.format('羁绊： %s (%s)', bond_name, bond_progress)
+      else
+        subtitle = '羁绊： ' .. bond_name
+      end
+    else
+      subtitle = trim_text(choice and choice.title_text or '')
+      if subtitle ~= '' then
+        subtitle = '羁绊： ' .. subtitle
+      end
+    end
+
+    local title = trim_text(choice and (choice.pretty_display_name or choice.display_name or choice.title_text) or '')
+    if title == '' then
+      title = '未命名仙缘'
+    end
+
+    return build_card_model(
+      title,
+      subtitle,
+      lines,
+      choice and (choice.ui_icon or choice.icon) or EMPTY_IMAGE_ID,
+      choice and choice.quality or 'common'
+    )
+  end
+
+  local function build_gear_card_model(choice)
+    local runtime = STATE and STATE.gear_state or nil
+    local pending = runtime and runtime.pending_affix_choice or nil
+    local level = pending and tonumber(pending.level) or 0
+    local subtitle = level > 0
+      and string.format('[%s] %s Lv.%d', get_quality_label(choice and choice.quality or nil), get_growth_weapon_name(), level)
+      or string.format('[%s] %s词缀', get_quality_label(choice and choice.quality or nil), get_growth_weapon_name())
+
+    return build_card_model(
+      choice and (choice.display_name or choice.id) or '',
+      subtitle,
+      choice and choice.summary or '',
+      get_growth_weapon_icon(),
+      choice and choice.quality or 'common'
+    )
+  end
+
+  local function build_evolution_card_model(def)
+    local runtime = STATE and (STATE.evolution_runtime or STATE.mark_runtime) or nil
+    local round = runtime and runtime.current_round or nil
+    return build_card_model(
+      def and def.name or '未命名真身',
+      string.format('[%s] %s', get_quality_label(def and def.quality or nil, 'evolution'), round and round.ui_title or '真身进化'),
+      def and def.summary or '',
+      get_unit_icon_by_key(def and def.hero_unit_id or nil),
+      def and def.quality or 'common'
+    )
+  end
+
+  local function count_active_treasures()
+    local runtime = STATE and STATE.treasure_runtime or nil
+    if not runtime or not runtime.active_slots then
+      return 0
+    end
+
+    local count = 0
+    for slot = 1, 3, 1 do
+      if runtime.active_slots[slot] then
+        count = count + 1
+      end
+    end
+    return count
+  end
+
+  local function build_treasure_card_model(def)
+    local quality_label = get_quality_label(def and def.quality or nil, 'treasure')
+    local replace_suffix = count_active_treasures() >= 3 and '·需替换' or ''
+    return build_card_model(
+      def and def.name or '未命名宝物',
+      string.format('[%s] 宝物%s', quality_label, replace_suffix),
+      def and def.summary or '',
+      get_item_icon_by_key(def and def.editor_item_key or nil),
+      def and def.quality or 'common'
+    )
+  end
+
+  local function build_treasure_replace_card_model(slot)
+    local runtime = STATE and STATE.treasure_runtime or nil
+    local treasure_id = runtime and runtime.active_slots and runtime.active_slots[slot] or nil
+    local current_def = get_treasure_def and get_treasure_def(treasure_id) or nil
+    local selected_def = runtime and runtime.pending_replace_choice or nil
+    local lines = split_choice_values(current_def and current_def.summary or '', 2)
+
+    if #lines == 0 and build_treasure_slot_text then
+      lines = split_choice_values(build_treasure_slot_text(slot), 2)
+    end
+    if #lines < 2 and selected_def and selected_def.name and selected_def.name ~= '' then
+      lines[#lines + 1] = '换入：' .. tostring(selected_def.name)
+    end
+
+    local quality_label = get_quality_label(current_def and current_def.quality or nil, 'treasure')
+    local subtitle = quality_label ~= ''
+      and string.format('[%s] 替换位 %d', quality_label, slot)
+      or string.format('替换位 %d', slot)
+
+    return build_card_model(
+      current_def and current_def.name or string.format('宝物位 %d', slot),
+      subtitle,
+      lines,
+      get_item_icon_by_key(current_def and current_def.editor_item_key or nil),
+      current_def and current_def.quality or 'common',
+      treasure_id ~= nil
+    )
+  end
+
+  local function build_choice_panel_model()
+    if STATE.choice_panel_hidden == true then
+      return nil
+    end
+
+    local kind = get_pending_round_choice_kind and get_pending_round_choice_kind() or nil
+    if kind == 'upgrade' then
+      if not STATE.awaiting_upgrade or not STATE.current_upgrade_choices or #STATE.current_upgrade_choices == 0 then
+        return nil
+      end
+
+      local choices = {}
+      for _, choice in ipairs(STATE.current_upgrade_choices) do
+        choices[#choices + 1] = build_upgrade_card_model(choice)
+      end
+      return {
+        kind = kind,
+        panel_name = choose_panel_name(#choices),
+        choices = choices,
+        current_round = STATE.current_upgrade_round,
+        can_refresh = true,
+      }
+    end
+
+    if kind == 'gear' then
+      local runtime = STATE and STATE.gear_state or nil
+      if not runtime or runtime.awaiting_choice ~= true or not runtime.current_choices or #runtime.current_choices == 0 then
+        return nil
+      end
+
+      local choices = {}
+      for _, choice in ipairs(runtime.current_choices) do
+        choices[#choices + 1] = build_gear_card_model(choice)
+      end
+
+      local current_round = runtime.current_round or runtime.pending_affix_choice or {}
+      local free_refresh_left = tonumber(current_round.free_refresh_left or 0) or 0
+      return {
+        kind = kind,
+        panel_name = choose_panel_name(#choices),
+        choices = choices,
+        current_round = current_round,
+        can_refresh = free_refresh_left > 0,
+        disabled_refresh_text = '刷新已用尽',
+      }
+    end
+
+    if kind == 'bond' then
+      local runtime = STATE and STATE.bond_runtime or nil
+      if not runtime or runtime.awaiting_choice ~= true or not runtime.current_choices or #runtime.current_choices == 0 then
+        return nil
+      end
+
+      local choices = {}
+      for _, choice in ipairs(runtime.current_choices) do
+        choices[#choices + 1] = build_bond_card_model(choice)
+      end
+      return {
+        kind = kind,
+        panel_name = choose_panel_name(#choices),
+        choices = choices,
+        current_round = runtime.current_round or runtime.current_offer_round,
+        can_refresh = true,
+      }
+    end
+
+    if kind == 'evolution' or kind == 'mark' then
+      local runtime = STATE and (STATE.evolution_runtime or STATE.mark_runtime) or nil
+      if not runtime or runtime.awaiting_choice ~= true or not runtime.current_choices or #runtime.current_choices == 0 then
+        return nil
+      end
+
+      local choices = {}
+      for _, choice in ipairs(runtime.current_choices) do
+        choices[#choices + 1] = build_evolution_card_model(choice)
+      end
+      return {
+        kind = 'evolution',
+        panel_name = choose_panel_name(#choices),
+        choices = choices,
+        current_round = runtime.current_round,
+        can_refresh = false,
+        disabled_refresh_text = '当前不可刷新',
+      }
+    end
+
+    if kind == 'treasure' then
+      local runtime = STATE and STATE.treasure_runtime or nil
+      if not runtime then
+        return nil
+      end
+
+      if runtime.awaiting_replace and runtime.pending_replace_choice then
+        local choices = {}
+        for slot = 1, 3, 1 do
+          choices[#choices + 1] = build_treasure_replace_card_model(slot)
+        end
+        return {
+          kind = 'treasure_replace',
+          panel_name = choose_panel_name(#choices),
+          choices = choices,
+          current_round = runtime.current_round,
+          can_refresh = false,
+          disabled_refresh_text = '已进入替换',
+        }
+      end
+
+      if not runtime.awaiting_choice or not runtime.current_choices or #runtime.current_choices == 0 then
+        return nil
+      end
+
+      local choices = {}
+      for _, choice in ipairs(runtime.current_choices) do
+        choices[#choices + 1] = build_treasure_card_model(choice)
+      end
+      return {
+        kind = kind,
+        panel_name = choose_panel_name(#choices),
+        choices = choices,
+        current_round = runtime.current_round,
+        can_refresh = true,
+      }
+    end
+
+    return nil
+  end
+
   local function update_card(panel_name, index, choice)
-    local card_path = string.format('bond_choice_%s.card_%d', panel_name == 'BondChoice4' and '4' or '3', index)
+    local card_path = string.format(
+      'bond_choice_%s.cards_row.card_%d',
+      get_choice_panel_card_suffix(panel_name),
+      index
+    )
     local card = resolve_panel_node(panel_name, card_path)
     if not card then
       return
@@ -167,17 +551,21 @@ function M.create(env)
       return
     end
 
-    set_text_if_alive(resolve_panel_node(panel_name, card_path .. string.format('.title_%d', index)), get_choice_title(choice))
-    set_text_if_alive(resolve_panel_node(panel_name, card_path .. string.format('.bond_%d', index)), get_choice_bond_text(choice))
-    set_image_if_alive(resolve_panel_node(panel_name, card_path .. string.format('.icon_%d', index)), choice.ui_icon or choice.icon)
+    set_text_if_alive(resolve_panel_node(panel_name, card_path .. string.format('.title_%d', index)), choice.title_text)
+    set_text_if_alive(resolve_panel_node(panel_name, card_path .. string.format('.bond_%d', index)), choice.subtitle_text)
+    set_image_if_alive(resolve_panel_node(panel_name, card_path .. string.format('.icon_%d', index)), choice.icon or EMPTY_IMAGE_ID)
 
-    local values = split_choice_values(choice)
+    local values = choice.body_lines or {}
     set_text_if_alive(resolve_panel_node(panel_name, card_path .. string.format('.value_1_%d', index)), values[1] or '')
     set_text_if_alive(resolve_panel_node(panel_name, card_path .. string.format('.value_2_%d', index)), values[2] or '')
     set_visible_if_alive(resolve_panel_node(panel_name, card_path .. string.format('.value_2_%d', index)), values[2] ~= nil)
 
     local title = resolve_panel_node(panel_name, card_path .. string.format('.title_%d', index))
-    if choice.quality == 'epic' and index == 4 and panel_name == 'BondChoice4' then
+    if choice.quality == 'legendary' then
+      if is_ui_alive(title) and title.set_text_color then
+        title:set_text_color(255, 184, 64, 255)
+      end
+    elseif choice.quality == 'epic' then
       if is_ui_alive(title) and title.set_text_color then
         title:set_text_color(208, 62, 255, 255)
       end
@@ -186,44 +574,61 @@ function M.create(env)
     end
 
     local pick_btn = resolve_panel_node(panel_name, card_path .. string.format('.pick_btn_%d', index))
-    set_button_enable_if_alive(pick_btn, true)
+    set_intercepts_if_alive(pick_btn, true)
+    set_button_enable_if_alive(pick_btn, choice.enabled ~= false)
   end
 
   local function bind_panel_events(panel_name, choice_count)
-    if choice_panel_bound[panel_name] == true then
-      return
-    end
-    choice_panel_bound[panel_name] = true
+    choice_panel_bound[panel_name] = choice_panel_bound[panel_name] or {}
+    local bound = choice_panel_bound[panel_name]
+    local root_path = get_choice_panel_root_path(panel_name)
 
     for index = 1, choice_count do
-      local card_path = string.format('bond_choice_%s.card_%d.pick_btn_%d', panel_name == 'BondChoice4' and '4' or '3', index, index)
-      local btn = resolve_panel_node(panel_name, card_path)
-      if is_ui_alive(btn) and btn.add_fast_event then
-        btn:add_fast_event('左键-点击', function()
-          if apply_bond_choice then
-            apply_bond_choice(index)
-          end
-        end)
+      local event_key = 'pick_btn_' .. tostring(index)
+      if bound[event_key] ~= true then
+        local card_path = string.format('%s.cards_row.card_%d.pick_btn_%d', root_path, index, index)
+        local btn = resolve_panel_node(panel_name, card_path)
+        if is_ui_alive(btn) and btn.add_fast_event then
+          set_intercepts_if_alive(btn, true)
+          btn:add_fast_event('左键-点击', function()
+            if apply_round_choice then
+              apply_round_choice(index)
+            end
+          end)
+          bound[event_key] = true
+        end
       end
     end
 
-    local refresh_btn = resolve_panel_node(panel_name, 'refresh_btn')
-    if is_ui_alive(refresh_btn) and refresh_btn.add_fast_event then
-      refresh_btn:add_fast_event('左键-点击', function()
-        if refresh_bond_choice then
-          refresh_bond_choice()
-        end
-      end)
+    if bound.refresh_btn ~= true then
+      local refresh_btn = resolve_panel_node(panel_name, root_path .. '.refresh_btn')
+      if is_ui_alive(refresh_btn) and refresh_btn.add_fast_event then
+        set_intercepts_if_alive(refresh_btn, true)
+        refresh_btn:add_fast_event('左键-点击', function()
+          if refresh_current_choice then
+            refresh_current_choice()
+          end
+        end)
+        bound.refresh_btn = true
+      end
     end
 
-    local later_btn = resolve_panel_node(panel_name, 'later_btn')
-    if is_ui_alive(later_btn) and later_btn.add_fast_event then
-      later_btn:add_fast_event('左键-点击', function()
-        if defer_choice_panel then
-          defer_choice_panel()
-        end
-      end)
+    if bound.later_btn ~= true then
+      local later_btn = resolve_panel_node(panel_name, root_path .. '.later_btn')
+      if is_ui_alive(later_btn) and later_btn.add_fast_event then
+        set_intercepts_if_alive(later_btn, true)
+        later_btn:add_fast_event('左键-点击', function()
+          if defer_choice_panel then
+            defer_choice_panel()
+          end
+        end)
+        bound.later_btn = true
+      end
     end
+  end
+
+  local function sync_choice_panel_layers(panel_name)
+    set_z_order_if_alive(resolve_panel(panel_name), CHOICE_PANEL_Z)
   end
 
   local function sync_runtime_hud_layers(visible)
@@ -302,55 +707,56 @@ function M.create(env)
   end
 
   local function ensure_choice_panel()
-    local runtime = get_bond_choice_runtime()
-    if not runtime then
+    local model = build_choice_panel_model()
+    if not model then
       hide_all_choice_panels()
       return nil
     end
 
-    local panel_name = choose_panel_name(#runtime.current_choices)
+    local panel_name = model.panel_name or choose_panel_name(#model.choices)
     local panel = resolve_panel(panel_name)
     if not panel then
       return nil
     end
 
+    bind_panel_events('BondChoice2', 2)
     bind_panel_events('BondChoice3', 3)
     bind_panel_events('BondChoice4', 4)
+    sync_choice_panel_layers('BondChoice2')
+    sync_choice_panel_layers('BondChoice3')
+    sync_choice_panel_layers('BondChoice4')
+    set_visible_if_alive(resolve_panel('BondChoice2'), panel_name == 'BondChoice2')
     set_visible_if_alive(resolve_panel('BondChoice3'), panel_name == 'BondChoice3')
     set_visible_if_alive(resolve_panel('BondChoice4'), panel_name == 'BondChoice4')
-    return panel
+    return panel, model
   end
 
   local function refresh_choice_panel()
-    local runtime = get_bond_choice_runtime()
-    if not runtime then
-      hide_all_choice_panels()
+    local panel, model = ensure_choice_panel()
+    if not panel or not model then
       return nil
     end
 
-    local panel_name = choose_panel_name(#runtime.current_choices)
-    local panel = ensure_choice_panel()
-    if not panel then
-      return nil
+    local panel_name = model.panel_name or choose_panel_name(#model.choices)
+    for index = 1, 4 do
+      update_card(panel_name, index, model.choices[index])
     end
 
-    for index = 1, math.max(4, #runtime.current_choices) do
-      update_card(panel_name, index, runtime.current_choices[index])
-    end
-
-    local refresh_btn = resolve_panel_node(panel_name, 'refresh_btn')
-    local current_round = runtime.current_round or runtime.current_offer_round or {}
+    local refresh_btn = resolve_panel_node(panel_name, (get_choice_panel_root_path(panel_name)) .. '.refresh_btn')
+    local current_round = model.current_round or {}
     local free_refresh_left = tonumber(current_round.free_refresh_left or 0) or 0
-    if free_refresh_left > 0 then
-      set_text_if_alive(refresh_btn, string.format('免费刷新： %d', free_refresh_left))
+    if model.can_refresh ~= true then
+      set_button_text_if_alive(refresh_btn, model.disabled_refresh_text or '当前不可刷新')
     else
-      local paid_count = tonumber(current_round.refresh_paid_count or 0) or 0
-      local refresh_costs = { 40, 80, 100 }
-      local refresh_cost = refresh_costs[math.min(paid_count + 1, #refresh_costs)] or refresh_costs[#refresh_costs]
-      set_text_if_alive(refresh_btn, string.format('刷新： %d木材', refresh_cost))
+      if free_refresh_left > 0 then
+        set_button_text_if_alive(refresh_btn, string.format('免费刷新候选（剩余%d次）', free_refresh_left))
+      else
+        local paid_count = tonumber(current_round.refresh_paid_count or 0) or 0
+        set_button_text_if_alive(refresh_btn, string.format('刷新候选（%d木材）', get_refresh_cost(paid_count)))
+      end
     end
-
-    set_font_size_if_alive(refresh_btn, panel_name == 'BondChoice4' and 16 or 16)
+    set_button_enable_if_alive(refresh_btn, model.can_refresh == true)
+    set_font_size_if_alive(refresh_btn, 15)
     return panel
   end
 

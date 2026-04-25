@@ -28,6 +28,7 @@ def test_bottom_hud_ui_exists():
 def test_bottom_hud_contains_expected_runtime_nodes():
     ui = json.loads(UI_PATH.read_text(encoding="utf-8"))
     layout = ui["children"][0]
+    assert "growth_weapon_slot" not in UI_PATH.read_text(encoding="utf-8")
     center_hub = find_child(layout, "center_hub")
     center_names = {child["name"] for child in center_hub["children"]}
     assert "hero_panel" in center_names
@@ -35,6 +36,7 @@ def test_bottom_hud_contains_expected_runtime_nodes():
     combat_parent = combat_module
     combat_names = {child["name"] for child in combat_parent["children"]}
     assert "skill_bar" in combat_names
+    assert "growth_weapon_slot" not in combat_names
     assert "buff_row" in combat_names
     assert "exp_bar" in combat_names
     assert "status_text" in combat_names
@@ -124,6 +126,7 @@ def test_bottom_hud_contains_expected_runtime_nodes():
 def test_bottom_hud_tree_and_registration_exists():
     tree = json.loads(TREE_PATH.read_text(encoding="utf-8"))
     assert tree["name"] == "BattleBottomHUD"
+    assert "growth_weapon_slot" not in TREE_PATH.read_text(encoding="utf-8")
 
     panel_tree_info = json.loads(PANEL_TREE_INFO_PATH.read_text(encoding="utf-8"))
     custom = next(item for item in panel_tree_info if item["name"] == "code_ui_custom_panel_tree")

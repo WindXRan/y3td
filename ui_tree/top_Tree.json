@@ -9,11 +9,6 @@
       "type": 7,
       "children": [
         {
-          "name": "top_bg",
-          "uid": "83635965-5cf0-4ca7-ae5f-be0af8973ed1",
-          "type": 4
-        },
-        {
           "name": "left_strip",
           "uid": "eac5ecfa-7c60-4456-bf75-5775055c5c54",
           "type": 4

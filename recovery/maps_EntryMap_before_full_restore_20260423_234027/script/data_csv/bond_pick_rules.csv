@@ -1,0 +1,3 @@
+key,value,notes
+choice_count,3,单次 F 候选数量
+include_group_choices,1,是否把分组选项并入候选池

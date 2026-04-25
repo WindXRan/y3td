@@ -1,0 +1,18 @@
+key,value
+version,2026-04-23
+status,basic_attack_only
+note,攻击技能系统已停用。第二批攻击技能蓝图仅作存档保留，当前运行时只保留普攻。
+fixed_base_slot,普攻
+free_attack_skill_slots,0
+total_attack_skills,1
+slot_notation,1 个固定基础位
+target_duration_minutes,30
+level_cap,none
+xp_curve,front_fast_back_slow
+first_legend_window,
+card_notation,已停用
+rarity_plan_common,0
+rarity_plan_excellent,0
+rarity_plan_rare,0
+rarity_plan_legendary,0
+atomicity,攻击技能成长牌已停用。

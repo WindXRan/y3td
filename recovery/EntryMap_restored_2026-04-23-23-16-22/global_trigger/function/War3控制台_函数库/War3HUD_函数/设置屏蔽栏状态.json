@@ -1,0 +1,91 @@
+{
+    "action": [
+        {
+            "action_type": "SET_UI_COMP_VISIBLE", 
+            "args_list": [
+                {
+                    "arg_type": 100025, 
+                    "args_list": [
+                        [
+                            "PLAYER", 
+                            "玩家", 
+                            "local"
+                        ]
+                    ], 
+                    "sub_type": "VARIABLE"
+                }, 
+                {
+                    "arg_type": 100001, 
+                    "args_list": [
+                        [
+                            "BOOLEAN", 
+                            "状态", 
+                            "local"
+                        ]
+                    ], 
+                    "sub_type": "VARIABLE"
+                }, 
+                {
+                    "arg_type": 100070, 
+                    "args_list": [
+                        "ed8d5f2a-608c-4b06-9953-f87b5adc9b02"
+                    ], 
+                    "sub_type": 1
+                }
+            ], 
+            "bp": false, 
+            "element_id": 994898016000001, 
+            "enable": true
+        }
+    ], 
+    "call_enabled": true, 
+    "condition": [], 
+    "enabled": true, 
+    "event": [], 
+    "func_category": "t_function", 
+    "func_comment": "", 
+    "func_des": "设置{玩家}屏蔽栏状态{状态}", 
+    "func_id": "a1ba43bacf2411ef9dd7355227cbcda3", 
+    "func_name": "设置屏蔽栏状态", 
+    "func_param_list": [
+        {
+            "__tuple__": true, 
+            "items": [
+                "状态", 
+                true
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "玩家", 
+                true
+            ]
+        }
+    ], 
+    "group_id": "tbcIszh1EfGVQHWyv+tFV4", 
+    "is_func": true, 
+    "is_official_func": false, 
+    "p_trigger_id": null, 
+    "trigger_id": 994898016, 
+    "trigger_name": "设置屏蔽栏状态", 
+    "valid": false, 
+    "var_data": [
+        {
+            "BOOLEAN": {
+                "状态": false
+            }, 
+            "PLAYER": {
+                "玩家": 0
+            }
+        }, 
+        {
+            "状态": 0, 
+            "玩家": 0
+        }, 
+        [
+            "状态", 
+            "玩家"
+        ]
+    ]
+}

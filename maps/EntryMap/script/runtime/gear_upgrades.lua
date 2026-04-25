@@ -21,6 +21,7 @@ local DIRECT_ATTR_KEYS = {
 local MAX_LEVEL = 100
 local AFFIX_NODE_INTERVAL = 10
 local CHOICE_COUNT = 3
+local FREE_REFRESH_COUNT = 3
 local QUALITY_ORDER = { 'common', 'rare', 'epic' }
 local QUALITY_LABELS = {
   common = '普通',
@@ -335,6 +336,14 @@ local function queue_affix_choice(runtime, slot, level)
     weapon_id = item.weapon_id,
   }
   runtime.current_choices = make_affix_choices(slot, item, level, runtime.config)
+  runtime.current_round = {
+    round_id = runtime.next_round_id or 1,
+    slot = slot,
+    level = level,
+    free_refresh_left = FREE_REFRESH_COUNT,
+    refresh_paid_count = 0,
+  }
+  runtime.next_round_id = (runtime.next_round_id or 1) + 1
 end
 
 local function compute_item_bonus(item, config)
@@ -386,13 +395,17 @@ function M.ensure_runtime(state, config)
     awaiting_choice = false,
     current_choices = nil,
     pending_affix_choice = nil,
+    current_round = nil,
     applied_attr_bonuses = {},
+    next_round_id = 1,
   }
 
   local runtime = state.gear_state
   runtime.config = get_config(config)
   runtime.items = runtime.items or {}
+  runtime.current_round = runtime.current_round or nil
   runtime.applied_attr_bonuses = runtime.applied_attr_bonuses or {}
+  runtime.next_round_id = runtime.next_round_id or 1
   for _, slot in ipairs(SLOT_ORDER) do
     ensure_item(runtime, slot)
   end
@@ -491,7 +504,45 @@ function M.apply_affix_choice(env, choice_index)
   runtime.awaiting_choice = false
   runtime.current_choices = nil
   runtime.pending_affix_choice = nil
+  runtime.current_round = nil
   message(string.format('成长武器获得 [%s] 词条：%s。', quality_label, tostring(display_name)))
+  return true
+end
+
+function M.refresh_affix_choices(env)
+  local state = assert(env and env.STATE, 'STATE is required')
+  local config = env and env.CONFIG and env.CONFIG.gear_upgrade_config or nil
+  local message = env and env.message or function() end
+  local runtime = M.ensure_runtime(state, config)
+  local pending = runtime.pending_affix_choice
+
+  if runtime.awaiting_choice ~= true or not pending then
+    return false
+  end
+
+  local round = runtime.current_round or {
+    round_id = runtime.next_round_id or 1,
+    slot = pending.slot,
+    level = pending.level,
+    free_refresh_left = FREE_REFRESH_COUNT,
+    refresh_paid_count = 0,
+  }
+  if (round.free_refresh_left or 0) <= 0 then
+    message('当前成长武器词缀轮次的免费刷新次数已用尽。')
+    return false
+  end
+
+  local item = ensure_item(runtime, pending.slot)
+  local choices = make_affix_choices(pending.slot, item, pending.level, runtime.config)
+  if #choices == 0 then
+    message('当前没有可刷新的成长武器词缀候选。')
+    return false
+  end
+
+  round.free_refresh_left = round.free_refresh_left - 1
+  runtime.current_choices = choices
+  runtime.current_round = round
+  message(string.format('已免费刷新成长武器词缀，剩余免费次数 %d。', round.free_refresh_left))
   return true
 end
 

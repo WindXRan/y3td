@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>UI Preview: BattleBottomHUD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background:
+                radial-gradient(circle at 50% -10%, rgba(73, 120, 182, 0.18), transparent 30%),
+                linear-gradient(180deg, #050b11 0%, #08101a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+        }
+        .canvas {
+            width: 1920px;
+            height: 1080px;
+            transform: scale(0.62);
+            transform-origin: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(169, 204, 247, 0.12);
+            background:
+                radial-gradient(circle at 50% 92%, rgba(78, 144, 226, 0.16), transparent 24%),
+                radial-gradient(circle at 18% 90%, rgba(255, 191, 88, 0.10), transparent 18%),
+                radial-gradient(circle at 82% 88%, rgba(91, 186, 170, 0.08), transparent 18%),
+                radial-gradient(circle at 12% 20%, rgba(255, 214, 126, 0.08), transparent 18%),
+                radial-gradient(circle at 86% 14%, rgba(90, 154, 255, 0.12), transparent 20%),
+                linear-gradient(180deg, rgba(73, 103, 45, 0.35) 0%, rgba(48, 72, 31, 0.10) 18%, rgba(7, 11, 16, 0) 32%),
+                linear-gradient(180deg, #0f1720 0%, #0b1116 100%);
+        }
+        [data-type] { position: absolute; }
+        [data-type="layout"] { position: absolute; }
+        [data-type="image"] {
+            overflow: hidden;
+            pointer-events: none;
+        }
+        [data-type="label"] {
+            display: flex;
+            padding: 0 2px;
+            white-space: pre-wrap;
+            overflow: hidden;
+            line-height: 1.15;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+            letter-spacing: 0.2px;
+        }
+        [data-type="button"] {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.12),
+                0 8px 18px rgba(0, 0, 0, 0.28);
+            color: #eef4fb;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+        }
+        [data-type="button"][data-preset="blue"] {
+            background: linear-gradient(180deg, rgba(64, 123, 190, 0.96) 0%, rgba(27, 69, 118, 0.98) 100%);
+        }
+        [data-type="button"][data-preset="gold"] {
+            background: linear-gradient(180deg, rgba(178, 132, 44, 0.98) 0%, rgba(111, 76, 19, 0.98) 100%);
+        }
+        [data-type="button"]::after {
+            content: "";
+            position: absolute;
+            inset: 1px;
+            border-radius: 7px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            pointer-events: none;
+        }
+        .evolve-ready {
+            cursor: pointer;
+            border-radius: 16px;
+            transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+            animation: evolvePulse 1.35s ease-in-out infinite;
+        }
+        .evolve-ready:hover {
+            transform: translateY(-1px) scale(1.015);
+            filter: brightness(1.08);
+            box-shadow: 0 0 0 1px rgba(255, 217, 102, 0.35), 0 0 18px rgba(255, 177, 37, 0.28);
+        }
+        .evolve-ready:active {
+            transform: scale(0.992);
+            filter: brightness(0.98);
+        }
+        .evolve-ready.is-resolving {
+            animation: none;
+            transform: scale(0.995);
+            filter: brightness(0.96);
+            box-shadow: 0 0 0 0 rgba(255, 177, 37, 0);
+        }
+        .challenge-card {
+            cursor: pointer;
+            transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+        }
+        .challenge-card:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.08);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 0 16px rgba(255, 201, 93, 0.20);
+        }
+        .challenge-card:active {
+            transform: scale(0.988);
+        }
+        .challenge-card [data-name="title"] {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+        }
+        .challenge-card [data-name="auto"] {
+            text-shadow:
+                0 0 6px rgba(92, 255, 94, 0.35),
+                0 1px 1px rgba(0, 0, 0, 0.85);
+            font-weight: 700;
+        }
+        .challenge-card [data-name="count"] {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            font-weight: 700;
+        }
+        .exp-normal {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.22s ease;
+        }
+        .exp-normal.is-visible {
+            opacity: 1;
+        }
+        @keyframes evolvePulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 177, 37, 0.00), 0 0 14px rgba(255, 177, 37, 0.18);
+            }
+            50% {
+                box-shadow: 0 0 0 2px rgba(255, 217, 102, 0.32), 0 0 26px rgba(255, 177, 37, 0.42);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 177, 37, 0.00), 0 0 14px rgba(255, 177, 37, 0.18);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="canvas">
+    <div data-type="layout" data-name="layout"
+         data-x="0" data-y="0" data-w="1920" data-h="1080" data-adapter="all"
+         style="left:0; top:0; width:1920px; height:1080px;">
+
+        <div data-type="layout" data-name="bottom_shell"
+             data-x="140" data-y="794" data-w="1640" data-h="286"
+             style="left:140px; top:794px; width:1640px; height:286px;">
+            <div data-type="image" data-name="shell_bg"
+                 data-x="0" data-y="0" data-w="1640" data-h="286" data-image="131998"
+                 data-color="#091119e8" data-scale9="true" data-cap-insets="20,20,20,20"
+                 style="left:0; top:0; width:1640px; height:286px;"></div>
+            <div data-type="image" data-name="shell_glow"
+                 data-x="18" data-y="14" data-w="1604" data-h="254" data-image="100062"
+                 data-color="#5a7fa728" data-scale9="true" data-cap-insets="18,18,18,18"
+                 style="left:18px; top:14px; width:1604px; height:254px;"></div>
+            <div data-type="image" data-name="shell_inner"
+                 data-x="13" data-y="13" data-w="1614" data-h="260" data-image="100062"
+                 data-color="#152231c4" data-scale9="true" data-cap-insets="18,18,18,18"
+                 style="left:13px; top:13px; width:1614px; height:260px;"></div>
+            <div data-type="image" data-name="shell_edge"
+                 data-x="5" data-y="5" data-w="1630" data-h="272" data-image="100062"
+                 data-color="#a3c6ef12" data-scale9="true" data-cap-insets="18,18,18,18"
+                 style="left:5px; top:5px; width:1630px; height:272px;"></div>
+            <div data-type="image" data-name="top_line"
+                 data-x="40" data-y="12" data-w="1560" data-h="2" data-image="999" data-color="#87a6c85a"
+                 style="left:40px; top:12px; width:1560px; height:2px;"></div>
+        </div>
+
+        <div data-type="layout" data-name="left_station"
+             data-x="120" data-y="812" data-w="438" data-h="268"
+             style="left:120px; top:812px; width:438px; height:268px;">
+            <div data-type="image" data-name="station_bg"
+                 data-x="0" data-y="0" data-w="438" data-h="268" data-image="131998"
+                 data-color="#0a141de6" data-scale9="true" data-cap-insets="20,20,20,20"
+                 style="left:0; top:0; width:438px; height:268px;"></div>
+            <div data-type="image" data-name="station_title_line"
+                 data-x="16" data-y="20" data-w="406" data-h="1" data-image="999" data-color="#86a6c438"
+                 style="left:16px; top:20px; width:406px; height:1px;"></div>
+            <div data-type="image" data-name="map_frame"
+                 data-x="12" data-y="26" data-w="200" data-h="214" data-image="131998"
+                 data-color="#121a26ef" data-scale9="true" data-cap-insets="20,20,20,20"
+                 style="left:12px; top:26px; width:200px; height:214px;"></div>
+            <div data-type="layout" data-name="mini_map"
+                 data-x="19" data-y="56" data-w="186" data-h="160"
+                 style="left:19px; top:56px; width:186px; height:160px;">
+                <div data-type="layout" data-name="mini_map_o"
+                     data-x="3" data-y="3" data-w="180" data-h="154"
+                     style="left:3px; top:3px; width:180px; height:154px;">
+                    <div data-type="image" data-name="mini_map_1"
+                         data-x="2" data-y="2" data-w="176" data-h="150" data-image="999" data-color="#203040"
+                         style="left:2px; top:2px; width:176px; height:150px;"></div>
+                </div>
+            </div>
+            <div data-type="image" data-name="map_grid_v"
+                 data-x="112" data-y="60" data-w="1" data-h="152" data-image="999" data-color="#ffffff4c"
+                 style="left:112px; top:60px; width:1px; height:152px;"></div>
+            <div data-type="image" data-name="map_grid_h"
+                 data-x="35" data-y="136" data-w="154" data-h="1" data-image="999" data-color="#ffffff4c"
+                 style="left:35px; top:136px; width:154px; height:1px;"></div>
+            <div data-type="image" data-name="map_corner_mark"
+                 data-x="175" data-y="184" data-w="24" data-h="24" data-image="134227227"
+                 style="left:175px; top:184px; width:24px; height:24px;"></div>
+
+            <div data-type="layout" data-name="toggle_frame"
+                 data-x="12" data-y="214" data-w="414" data-h="1"
+                 style="left:12px; top:214px; width:414px; height:1px; opacity:0;">
+            </div>
+
+            <div data-type="layout" data-name="player_attr_list"
+                 data-x="220" data-y="26" data-w="206" data-h="214"
+                 style="left:220px; top:26px; width:206px; height:214px;">
+                <div data-type="image" data-name="panel_bg"
+                     data-x="0" data-y="0" data-w="206" data-h="214" data-image="131998"
+                     data-color="#101822d2" data-scale9="true" data-cap-insets="20,20,20,20"
+                     style="left:0; top:0; width:206px; height:214px;"></div>
+                <div data-type="image" data-name="section_line"
+                     data-x="12" data-y="14" data-w="182" data-h="1" data-image="999" data-color="#86a6c42a"
+                     style="left:12px; top:14px; width:182px; height:1px;"></div>
+
+                <div data-type="layout" data-name="battle_power_row" data-x="12" data-y="24" data-w="182" data-h="24" style="left:12px; top:24px; width:182px; height:24px;">
+                    <div data-type="image" data-name="strip" data-x="0" data-y="0" data-w="182" data-h="24" data-image="100062" data-color="#243343" data-scale9="true" style="left:0; top:0; width:182px; height:24px;"></div>
+                    <div data-type="image" data-name="icon_frame" data-x="6" data-y="0" data-w="24" data-h="24" data-image="100061" data-color="#445b73" style="left:6px; top:0; width:24px; height:24px;"></div>
+                    <div data-type="image" data-name="icon" data-x="9" data-y="3" data-w="18" data-h="18" data-image="134264555" style="left:9px; top:3px; width:18px; height:18px;"></div>
+                    <div data-type="label" data-name="label" data-x="38" data-y="4" data-w="58" data-h="16" data-text="战力" data-font-size="11" data-color="#f3f7fc" data-align="left,middle" style="left:38px; top:4px; width:58px; height:16px;">战力</div>
+                    <div data-type="label" data-name="value" data-x="98" data-y="4" data-w="56" data-h="16" data-text="135250" data-font-size="11" data-color="#ffdc7d" data-align="left,middle" style="left:98px; top:4px; width:56px; height:16px;">135250</div>
+                    <div data-type="label" data-name="delta" data-x="142" data-y="4" data-w="34" data-h="16" data-text="" data-font-size="10" data-color="#4fd676" data-align="right,middle" style="left:142px; top:4px; width:34px; height:16px;"></div>
+                </div>
+
+                <div data-type="layout" data-name="hero_attack_row" data-x="12" data-y="50" data-w="182" data-h="24" style="left:12px; top:50px; width:182px; height:24px;">
+                    <div data-type="image" data-name="strip" data-x="0" data-y="0" data-w="182" data-h="24" data-image="100062" data-color="#243343" data-scale9="true" style="left:0; top:0; width:182px; height:24px;"></div>
+                    <div data-type="image" data-name="icon_frame" data-x="6" data-y="0" data-w="24" data-h="24" data-image="100061" data-color="#445b73" style="left:6px; top:0; width:24px; height:24px;"></div>
+                    <div data-type="image" data-name="icon" data-x="9" data-y="3" data-w="18" data-h="18" data-image="134230937" style="left:9px; top:3px; width:18px; height:18px;"></div>
+                    <div data-type="label" data-name="label" data-x="38" data-y="4" data-w="58" data-h="16" data-text="攻击" data-font-size="11" data-color="#f3f7fc" data-align="left,middle" style="left:38px; top:4px; width:58px; height:16px;">攻击</div>
+                    <div data-type="label" data-name="value" data-x="98" data-y="4" data-w="56" data-h="16" data-text="1263" data-font-size="11" data-color="#ffdc7d" data-align="left,middle" style="left:98px; top:4px; width:56px; height:16px;">1263</div>
+                    <div data-type="label" data-name="delta" data-x="142" data-y="4" data-w="34" data-h="16" data-text="53%" data-font-size="10" data-color="#4fd676" data-align="right,middle" style="left:142px; top:4px; width:34px; height:16px;">53%</div>
+                </div>
+
+                <div data-type="layout" data-name="hero_defense_row" data-x="12" data-y="76" data-w="182" data-h="24" style="left:12px; top:76px; width:182px; height:24px;">
+                    <div data-type="image" data-name="strip" data-x="0" data-y="0" data-w="182" data-h="24" data-image="100062" data-color="#243343" data-scale9="true" style="left:0; top:0; width:182px; height:24px;"></div>
+                    <div data-type="image" data-name="icon_frame" data-x="6" data-y="0" data-w="24" data-h="24" data-image="100061" data-color="#445b73" style="left:6px; top:0; width:24px; height:24px;"></div>
+                    <div data-type="image" data-name="icon" data-x="9" data-y="3" data-w="18" data-h="18" data-image="134268904" style="left:9px; top:3px; width:18px; height:18px;"></div>
+                    <div data-type="label" data-name="label" data-x="38" data-y="4" data-w="58" data-h="16" data-text="护甲" data-font-size="11" data-color="#f3f7fc" data-align="left,middle" style="left:38px; top:4px; width:58px; height:16px;">护甲</div>
+                    <div data-type="label" data-name="value" data-x="98" data-y="4" data-w="56" data-h="16" data-text="54" data-font-size="11" data-color="#ffdc7d" data-align="left,middle" style="left:98px; top:4px; width:56px; height:16px;">54</div>
+                    <div data-type="label" data-name="delta" data-x="142" data-y="4" data-w="34" data-h="16" data-text="0%" data-font-size="10" data-color="#4fd676" data-align="right,middle" style="left:142px; top:4px; width:34px; height:16px;">0%</div>
+                </div>
+
+                <div data-type="layout" data-name="hero_power_row" data-x="12" data-y="102" data-w="182" data-h="24" style="left:12px; top:102px; width:182px; height:24px;">
+                    <div data-type="image" data-name="strip" data-x="0" data-y="0" data-w="182" data-h="24" data-image="100062" data-color="#243343" data-scale9="true" style="left:0; top:0; width:182px; height:24px;"></div>
+                    <div data-type="image" data-name="icon_frame" data-x="6" data-y="0" data-w="24" data-h="24" data-image="100061" data-color="#445b73" style="left:6px; top:0; width:24px; height:24px;"></div>
+                    <div data-type="image" data-name="icon" data-x="9" data-y="3" data-w="18" data-h="18" data-image="134264735" style="left:9px; top:3px; width:18px; height:18px;"></div>
+                    <div data-type="label" data-name="label" data-x="38" data-y="4" data-w="58" data-h="16" data-text="力量" data-font-size="11" data-color="#f3f7fc" data-align="left,middle" style="left:38px; top:4px; width:58px; height:16px;">力量</div>
+                    <div data-type="label" data-name="value" data-x="98" data-y="4" data-w="56" data-h="16" data-text="156" data-font-size="11" data-color="#ffdc7d" data-align="left,middle" style="left:98px; top:4px; width:56px; height:16px;">156</div>
+                    <div data-type="label" data-name="delta" data-x="142" data-y="4" data-w="34" data-h="16" data-text="0%" data-font-size="10" data-color="#4fd676" data-align="right,middle" style="left:142px; top:4px; width:34px; height:16px;">0%</div>
+                </div>
+
+                <div data-type="layout" data-name="hero_intelligence_row" data-x="12" data-y="128" data-w="182" data-h="24" style="left:12px; top:128px; width:182px; height:24px;">
+                    <div data-type="image" data-name="strip" data-x="0" data-y="0" data-w="182" data-h="24" data-image="100062" data-color="#243343" data-scale9="true" style="left:0; top:0; width:182px; height:24px;"></div>
+                    <div data-type="image" data-name="icon_frame" data-x="6" data-y="0" data-w="24" data-h="24" data-image="100061" data-color="#445b73" style="left:6px; top:0; width:24px; height:24px;"></div>
+                    <div data-type="image" data-name="icon" data-x="9" data-y="3" data-w="18" data-h="18" data-image="134271479" style="left:9px; top:3px; width:18px; height:18px;"></div>
+                    <div data-type="label" data-name="label" data-x="38" data-y="4" data-w="58" data-h="16" data-text="智力" data-font-size="11" data-color="#f3f7fc" data-align="left,middle" style="left:38px; top:4px; width:58px; height:16px;">智力</div>
+                    <div data-type="label" data-name="value" data-x="98" data-y="4" data-w="56" data-h="16" data-text="136" data-font-size="11" data-color="#ffdc7d" data-align="left,middle" style="left:98px; top:4px; width:56px; height:16px;">136</div>
+                    <div data-type="label" data-name="delta" data-x="142" data-y="4" data-w="34" data-h="16" data-text="0%" data-font-size="10" data-color="#4fd676" data-align="right,middle" style="left:142px; top:4px; width:34px; height:16px;">0%</div>
+                </div>
+
+                <div data-type="layout" data-name="hero_agility_row" data-x="12" data-y="154" data-w="182" data-h="24" style="left:12px; top:154px; width:182px; height:24px;">
+                    <div data-type="image" data-name="strip" data-x="0" data-y="0" data-w="182" data-h="24" data-image="100062" data-color="#243343" data-scale9="true" style="left:0; top:0; width:182px; height:24px;"></div>
+                    <div data-type="image" data-name="icon_frame" data-x="6" data-y="0" data-w="24" data-h="24" data-image="100061" data-color="#445b73" style="left:6px; top:0; width:24px; height:24px;"></div>
+                    <div data-type="image" data-name="icon" data-x="9" data-y="3" data-w="18" data-h="18" data-image="134272066" style="left:9px; top:3px; width:18px; height:18px;"></div>
+                    <div data-type="label" data-name="label" data-x="38" data-y="4" data-w="58" data-h="16" data-text="敏捷" data-font-size="11" data-color="#f3f7fc" data-align="left,middle" style="left:38px; top:4px; width:58px; height:16px;">敏捷</div>
+                    <div data-type="label" data-name="value" data-x="98" data-y="4" data-w="56" data-h="16" data-text="154" data-font-size="11" data-color="#ffdc7d" data-align="left,middle" style="left:98px; top:4px; width:56px; height:16px;">154</div>
+                    <div data-type="label" data-name="delta" data-x="142" data-y="4" data-w="34" data-h="16" data-text="0%" data-font-size="10" data-color="#4fd676" data-align="right,middle" style="left:142px; top:4px; width:34px; height:16px;">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div data-type="layout" data-name="center_hub"
+             data-x="582" data-y="812" data-w="612" data-h="268"
+             style="left:582px; top:812px; width:612px; height:268px;">
+            <div data-type="image" data-name="module_bg"
+                 data-x="0" data-y="0" data-w="612" data-h="268" data-image="131998"
+                 data-color="#0a141de6" data-scale9="true" data-cap-insets="20,20,20,20"
+                 style="left:0; top:0; width:612px; height:268px;"></div>
+            <div data-type="image" data-name="module_line"
+                 data-x="16" data-y="20" data-w="580" data-h="1" data-image="999" data-color="#86a6c438"
+                 style="left:16px; top:20px; width:580px; height:1px;"></div>
+
+            <div data-type="layout" data-name="hero_panel"
+                 data-x="8" data-y="26" data-w="184" data-h="214"
+                 style="left:8px; top:26px; width:184px; height:214px;">
+                <div data-type="image" data-name="panel_bg" data-x="0" data-y="0" data-w="184" data-h="214" data-image="131998" data-color="#111923dd" data-scale9="true" style="left:0; top:0; width:184px; height:214px;"></div>
+                <div data-type="image" data-name="portrait_frame" data-x="32" data-y="20" data-w="120" data-h="148" data-image="134274626" style="left:32px; top:20px; width:120px; height:148px;"></div>
+                <div data-type="image" data-name="hero_model" data-x="41" data-y="28" data-w="102" data-h="112" data-image="999" data-color="#203040" style="left:41px; top:28px; width:102px; height:112px;"></div>
+                <div data-type="label" data-name="hero_name" data-x="22" data-y="170" data-w="140" data-h="22" data-text="守关英雄" data-font-size="17" data-color="#f6f8fb" data-align="center,middle" style="left:22px; top:170px; width:140px; height:22px;">守关英雄</div>
+                <div data-type="image" data-name="hero_name_line" data-x="28" data-y="166" data-w="128" data-h="1" data-image="999" data-color="#ffffff6a" style="left:28px; top:166px; width:128px; height:1px;"></div>
+                <div data-type="image" data-name="hero_hp_bg" data-x="19" data-y="194" data-w="146" data-h="18" data-image="100062" data-color="#1f2b36" data-scale9="true" style="left:19px; top:194px; width:146px; height:18px;"></div>
+                <div data-type="layout" data-name="hero_hp_fill" data-x="26" data-y="197" data-w="118" data-h="12" data-bg-color="#23a65a" style="left:26px; top:197px; width:118px; height:12px;"></div>
+                <div data-type="label" data-name="hero_hp_text" data-x="27" data-y="196" data-w="130" data-h="14" data-text="3680/3680" data-font-size="10" data-color="#ffffff" data-align="center,middle" style="left:27px; top:196px; width:130px; height:14px;">3680/3680</div>
+            </div>
+
+            <div data-type="layout" data-name="combat_module"
+                 data-x="208" data-y="26" data-w="400" data-h="214"
+                 style="left:208px; top:26px; width:400px; height:214px;">
+                <div data-type="image" data-name="combat_module_bg" data-x="0" data-y="0" data-w="400" data-h="214" data-image="131998" data-color="#121a24a8" data-scale9="true" style="left:0; top:0; width:400px; height:214px;"></div>
+
+                <div data-type="layout" data-name="skill_bar"
+                     data-x="6" data-y="18" data-w="388" data-h="72"
+                     style="left:6px; top:18px; width:388px; height:72px;">
+                    <div data-type="layout" data-name="skill_slot_1" data-x="0" data-y="0" data-w="72" data-h="72" style="left:0; top:0; width:72px; height:72px;">
+                        <div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="72" data-h="72" data-image="134243288" style="left:0; top:0; width:72px; height:72px;"></div>
+                        <div data-type="image" data-name="icon" data-x="9" data-y="9" data-w="54" data-h="54" data-image="134230757" style="left:9px; top:9px; width:54px; height:54px;"></div>
+                        <div data-type="image" data-name="label_band" data-x="7" data-y="2" data-w="58" data-h="10" data-image="100062" data-color="#5e6979c8" data-scale9="true" style="left:7px; top:2px; width:58px; height:10px;"></div>
+                        <div data-type="label" data-name="cooldown" data-x="46" data-y="54" data-w="18" data-h="12" data-text="" data-font-size="10" data-color="#dceaff" data-align="right,middle" style="left:46px; top:54px; width:18px; height:12px;"></div>
+                        <div data-type="label" data-name="label" data-x="14" data-y="2" data-w="44" data-h="12" data-text="" data-font-size="9" data-color="#b9c4d4" data-align="center,middle" style="left:14px; top:2px; width:44px; height:12px;"></div>
+                    </div>
+                    <div data-type="layout" data-name="skill_slot_2" data-x="79" data-y="0" data-w="72" data-h="72" style="left:79px; top:0; width:72px; height:72px;">
+                        <div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="72" data-h="72" data-image="134243288" style="left:0; top:0; width:72px; height:72px;"></div>
+                        <div data-type="image" data-name="icon" data-x="9" data-y="9" data-w="54" data-h="54" data-image="134225891" style="left:9px; top:9px; width:54px; height:54px;"></div>
+                        <div data-type="image" data-name="label_band" data-x="7" data-y="2" data-w="58" data-h="10" data-image="100062" data-color="#5e6979c8" data-scale9="true" style="left:7px; top:2px; width:58px; height:10px;"></div>
+                        <div data-type="label" data-name="cooldown" data-x="46" data-y="54" data-w="18" data-h="12" data-text="" data-font-size="10" data-color="#dceaff" data-align="right,middle" style="left:46px; top:54px; width:18px; height:12px;"></div>
+                        <div data-type="label" data-name="label" data-x="14" data-y="2" data-w="44" data-h="12" data-text="" data-font-size="9" data-color="#b9c4d4" data-align="center,middle" style="left:14px; top:2px; width:44px; height:12px;"></div>
+                    </div>
+                    <div data-type="layout" data-name="skill_slot_3" data-x="158" data-y="0" data-w="72" data-h="72" style="left:158px; top:0; width:72px; height:72px;">
+                        <div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="72" data-h="72" data-image="134243288" style="left:0; top:0; width:72px; height:72px;"></div>
+                        <div data-type="image" data-name="icon" data-x="9" data-y="9" data-w="54" data-h="54" data-image="134262182" style="left:9px; top:9px; width:54px; height:54px;"></div>
+                        <div data-type="image" data-name="label_band" data-x="7" data-y="2" data-w="58" data-h="10" data-image="100062" data-color="#5e6979c8" data-scale9="true" style="left:7px; top:2px; width:58px; height:10px;"></div>
+                        <div data-type="label" data-name="cooldown" data-x="46" data-y="54" data-w="18" data-h="12" data-text="" data-font-size="10" data-color="#dceaff" data-align="right,middle" style="left:46px; top:54px; width:18px; height:12px;"></div>
+                        <div data-type="label" data-name="label" data-x="14" data-y="2" data-w="44" data-h="12" data-text="" data-font-size="9" data-color="#b9c4d4" data-align="center,middle" style="left:14px; top:2px; width:44px; height:12px;"></div>
+                    </div>
+                    <div data-type="layout" data-name="skill_slot_4" data-x="237" data-y="0" data-w="72" data-h="72" style="left:237px; top:0; width:72px; height:72px;">
+                        <div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="72" data-h="72" data-image="134243288" style="left:0; top:0; width:72px; height:72px;"></div>
+                        <div data-type="image" data-name="icon" data-x="9" data-y="9" data-w="54" data-h="54" data-image="134227030" style="left:9px; top:9px; width:54px; height:54px;"></div>
+                        <div data-type="image" data-name="label_band" data-x="7" data-y="2" data-w="58" data-h="10" data-image="100062" data-color="#5e6979c8" data-scale9="true" style="left:7px; top:2px; width:58px; height:10px;"></div>
+                        <div data-type="label" data-name="cooldown" data-x="46" data-y="54" data-w="18" data-h="12" data-text="" data-font-size="10" data-color="#dceaff" data-align="right,middle" style="left:46px; top:54px; width:18px; height:12px;"></div>
+                        <div data-type="label" data-name="label" data-x="14" data-y="2" data-w="44" data-h="12" data-text="" data-font-size="9" data-color="#b9c4d4" data-align="center,middle" style="left:14px; top:2px; width:44px; height:12px;"></div>
+                    </div>
+                    <div data-type="layout" data-name="skill_slot_5" data-x="316" data-y="0" data-w="72" data-h="72" style="left:316px; top:0; width:72px; height:72px;">
+                        <div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="72" data-h="72" data-image="134243288" style="left:0; top:0; width:72px; height:72px;"></div>
+                        <div data-type="image" data-name="icon" data-x="9" data-y="9" data-w="54" data-h="54" data-image="134230757" style="left:9px; top:9px; width:54px; height:54px;"></div>
+                        <div data-type="image" data-name="label_band" data-x="7" data-y="2" data-w="58" data-h="10" data-image="100062" data-color="#5e6979c8" data-scale9="true" style="left:7px; top:2px; width:58px; height:10px;"></div>
+                        <div data-type="label" data-name="cooldown" data-x="46" data-y="54" data-w="18" data-h="12" data-text="" data-font-size="10" data-color="#dceaff" data-align="right,middle" style="left:46px; top:54px; width:18px; height:12px;"></div>
+                        <div data-type="label" data-name="label" data-x="14" data-y="2" data-w="44" data-h="12" data-text="" data-font-size="9" data-color="#b9c4d4" data-align="center,middle" style="left:14px; top:2px; width:44px; height:12px;"></div>
+                    </div>
+                </div>
+
+                <div data-type="layout" data-name="exp_bar"
+                     data-x="6" data-y="108" data-w="388" data-h="30"
+                     style="left:6px; top:108px; width:388px; height:30px;">
+                    <div data-type="label" data-name="level_label" data-x="0" data-y="5" data-w="76" data-h="20" data-text="等级：22" data-font-size="16" data-color="#ffde48" data-align="left,middle" style="left:0; top:5px; width:76px; height:20px;">等级：22</div>
+                    <div data-type="image" data-name="bar_bg" data-x="82" data-y="3" data-w="306" data-h="24" data-image="131998" data-color="#0c1014ec" data-scale9="true" style="left:82px; top:3px; width:306px; height:24px;"></div>
+                    <div data-type="image" data-name="bar_inner" data-x="89" data-y="7" data-w="292" data-h="16" data-image="100062" data-color="#1e212cf0" data-scale9="true" style="left:89px; top:7px; width:292px; height:16px;"></div>
+                    <div data-type="layout" data-name="fill" data-x="96" data-y="9" data-w="1" data-h="12" data-bg-color="#d226b2" style="left:96px; top:9px; width:1px; height:12px;"></div>
+                    <div data-type="image" data-name="fill_glow" data-x="89" data-y="6" data-w="292" data-h="18" data-image="100062" data-color="#ff56dc48" data-scale9="true" style="left:89px; top:6px; width:292px; height:18px;"></div>
+                    <div data-type="label" data-name="exp_text" data-x="104" data-y="7" data-w="262" data-h="17" data-text="177/200" data-font-size="13" data-color="#ffffff" data-align="center,middle" style="left:104px; top:7px; width:262px; height:17px;">177/200</div>
+                    <div data-type="layout" data-name="exp_normal_overlay" data-x="82" data-y="0" data-w="306" data-h="30" style="left:82px; top:0; width:306px; height:30px;">
+                        <div data-type="image" data-name="normal_flash" data-x="0" data-y="0" data-w="306" data-h="30" data-image="100062" data-color="#ffe3a800" data-scale9="true" style="left:0; top:0; width:306px; height:30px;"></div>
+                    </div>
+                    <div data-type="layout" data-name="evolve_cta" data-x="82" data-y="-2" data-w="306" data-h="34" style="left:82px; top:-2px; width:306px; height:34px;">
+                        <div data-type="image" data-name="evolve_glow" data-x="0" data-y="0" data-w="306" data-h="34" data-image="100062" data-color="#ffb125cc" data-scale9="true" style="left:0; top:0; width:306px; height:34px;"></div>
+                        <div data-type="image" data-name="evolve_inner" data-x="3" data-y="3" data-w="300" data-h="28" data-image="100062" data-color="#5d2500d8" data-scale9="true" style="left:3px; top:3px; width:300px; height:28px;"></div>
+                        <div data-type="image" data-name="evolve_sheen" data-x="9" data-y="5" data-w="288" data-h="10" data-image="100062" data-color="#fff0b24a" data-scale9="true" style="left:9px; top:5px; width:288px; height:10px;"></div>
+                        <div data-type="label" data-name="evolve_text" data-x="22" data-y="5" data-w="262" data-h="24" data-text="点击进化" data-font-size="20" data-color="#fff2a6" data-align="center,middle" style="left:22px; top:5px; width:262px; height:24px;">点击进化</div>
+                    </div>
+                </div>
+
+                <div data-type="label" data-name="status_text"
+                     data-x="6" data-y="148" data-w="88" data-h="16" data-text="状态：" data-font-size="12"
+                     data-color="#f5f7fa" data-align="left,middle"
+                     style="left:6px; top:148px; width:88px; height:16px;">状态：</div>
+
+                <div data-type="layout" data-name="buff_row"
+                     data-x="94" data-y="144" data-w="300" data-h="28"
+                     style="left:94px; top:144px; width:300px; height:28px;">
+                    <div data-type="layout" data-name="buff_slot_1" data-x="0" data-y="2" data-w="24" data-h="24" style="left:0; top:2px; width:24px; height:24px;"><div data-type="image" data-name="icon" data-x="2" data-y="2" data-w="20" data-h="20" data-image="999" style="left:2px; top:2px; width:20px; height:20px;"></div></div>
+                    <div data-type="layout" data-name="buff_slot_2" data-x="34" data-y="2" data-w="24" data-h="24" style="left:34px; top:2px; width:24px; height:24px;"><div data-type="image" data-name="icon" data-x="2" data-y="2" data-w="20" data-h="20" data-image="999" style="left:2px; top:2px; width:20px; height:20px;"></div></div>
+                    <div data-type="layout" data-name="buff_slot_3" data-x="68" data-y="2" data-w="24" data-h="24" style="left:68px; top:2px; width:24px; height:24px;"><div data-type="image" data-name="icon" data-x="2" data-y="2" data-w="20" data-h="20" data-image="999" style="left:2px; top:2px; width:20px; height:20px;"></div></div>
+                    <div data-type="layout" data-name="buff_slot_4" data-x="102" data-y="2" data-w="24" data-h="24" style="left:102px; top:2px; width:24px; height:24px;"><div data-type="image" data-name="icon" data-x="2" data-y="2" data-w="20" data-h="20" data-image="999" style="left:2px; top:2px; width:20px; height:20px;"></div></div>
+                    <div data-type="layout" data-name="buff_slot_5" data-x="136" data-y="2" data-w="24" data-h="24" style="left:136px; top:2px; width:24px; height:24px;"><div data-type="image" data-name="icon" data-x="2" data-y="2" data-w="20" data-h="20" data-image="999" style="left:2px; top:2px; width:20px; height:20px;"></div></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div data-type="layout" data-name="challenge_strip"
+             data-x="118" data-y="714" data-w="408" data-h="96"
+             style="left:118px; top:714px; width:408px; height:96px;">
+            <div data-type="layout" data-name="challenge_1" data-x="0" data-y="0" data-w="96" data-h="96" style="left:0; top:0; width:96px; height:96px;">
+                <div data-type="image" data-name="bg" data-x="10" data-y="4" data-w="76" data-h="76" data-image="131998" data-color="#171411f2" data-scale9="true" style="left:10px; top:4px; width:76px; height:76px;"></div>
+                <div data-type="image" data-name="icon_frame" data-x="12" data-y="6" data-w="72" data-h="72" data-image="100061" data-color="#f2e0a6" style="left:12px; top:6px; width:72px; height:72px;"></div>
+                <div data-type="image" data-name="icon" data-x="19" data-y="13" data-w="58" data-h="58" data-image="134264555" style="left:19px; top:13px; width:58px; height:58px;"></div>
+                <div data-type="label" data-name="auto" data-x="16" data-y="12" data-w="38" data-h="16" data-text="自动" data-font-size="14" data-color="#63ff4e" data-align="left,middle" style="left:16px; top:12px; width:38px; height:16px;">自动</div>
+                <div data-type="label" data-name="count" data-x="32" data-y="35" data-w="32" data-h="22" data-text="18" data-font-size="20" data-color="#ffffff" data-align="center,middle" style="left:32px; top:35px; width:32px; height:22px;">18</div>
+                <div data-type="label" data-name="title" data-x="6" data-y="78" data-w="84" data-h="14" data-text="金币挑战" data-font-size="14" data-color="#e1c440" data-align="center,middle" style="left:6px; top:78px; width:84px; height:14px;">金币挑战</div>
+            </div>
+            <div data-type="layout" data-name="challenge_2" data-x="104" data-y="0" data-w="96" data-h="96" style="left:104px; top:0; width:96px; height:96px;">
+                <div data-type="image" data-name="bg" data-x="10" data-y="4" data-w="76" data-h="76" data-image="131998" data-color="#171411f2" data-scale9="true" style="left:10px; top:4px; width:76px; height:76px;"></div>
+                <div data-type="image" data-name="icon_frame" data-x="12" data-y="6" data-w="72" data-h="72" data-image="100061" data-color="#f0ddc0" style="left:12px; top:6px; width:72px; height:72px;"></div>
+                <div data-type="image" data-name="icon" data-x="19" data-y="13" data-w="58" data-h="58" data-image="134264735" style="left:19px; top:13px; width:58px; height:58px;"></div>
+                <div data-type="label" data-name="auto" data-x="16" data-y="12" data-w="38" data-h="16" data-text="自动" data-font-size="14" data-color="#63ff4e" data-align="left,middle" style="left:16px; top:12px; width:38px; height:16px;">自动</div>
+                <div data-type="label" data-name="count" data-x="32" data-y="35" data-w="32" data-h="22" data-text="12" data-font-size="20" data-color="#ffffff" data-align="center,middle" style="left:32px; top:35px; width:32px; height:22px;">12</div>
+                <div data-type="label" data-name="title" data-x="6" data-y="78" data-w="84" data-h="14" data-text="木材挑战" data-font-size="14" data-color="#d2b37d" data-align="center,middle" style="left:6px; top:78px; width:84px; height:14px;">木材挑战</div>
+            </div>
+            <div data-type="layout" data-name="challenge_3" data-x="208" data-y="0" data-w="96" data-h="96" style="left:208px; top:0; width:96px; height:96px;">
+                <div data-type="image" data-name="bg" data-x="10" data-y="4" data-w="76" data-h="76" data-image="131998" data-color="#171411f2" data-scale9="true" style="left:10px; top:4px; width:76px; height:76px;"></div>
+                <div data-type="image" data-name="icon_frame" data-x="12" data-y="6" data-w="72" data-h="72" data-image="100061" data-color="#d5d7e0" style="left:12px; top:6px; width:72px; height:72px;"></div>
+                <div data-type="image" data-name="icon" data-x="19" data-y="13" data-w="58" data-h="58" data-image="134271479" style="left:19px; top:13px; width:58px; height:58px;"></div>
+                <div data-type="label" data-name="auto" data-x="16" data-y="12" data-w="38" data-h="16" data-text="自动" data-font-size="14" data-color="#63ff4e" data-align="left,middle" style="left:16px; top:12px; width:38px; height:16px;">自动</div>
+                <div data-type="label" data-name="count" data-x="30" data-y="35" data-w="36" data-h="22" data-text="40" data-font-size="20" data-color="#ffffff" data-align="center,middle" style="left:30px; top:35px; width:36px; height:22px;">40</div>
+                <div data-type="label" data-name="title" data-x="6" data-y="78" data-w="84" data-h="14" data-text="经验挑战" data-font-size="14" data-color="#d8dae6" data-align="center,middle" style="left:6px; top:78px; width:84px; height:14px;">经验挑战</div>
+            </div>
+            <div data-type="layout" data-name="challenge_4" data-x="312" data-y="0" data-w="96" data-h="96" style="left:312px; top:0; width:96px; height:96px;">
+                <div data-type="image" data-name="bg" data-x="10" data-y="4" data-w="76" data-h="76" data-image="131998" data-color="#171411f2" data-scale9="true" style="left:10px; top:4px; width:76px; height:76px;"></div>
+                <div data-type="image" data-name="icon_frame" data-x="12" data-y="6" data-w="72" data-h="72" data-image="100061" data-color="#ffb04a" style="left:12px; top:6px; width:72px; height:72px;"></div>
+                <div data-type="image" data-name="icon" data-x="19" data-y="13" data-w="58" data-h="58" data-image="134272066" style="left:19px; top:13px; width:58px; height:58px;"></div>
+                <div data-type="label" data-name="auto" data-x="16" data-y="12" data-w="38" data-h="16" data-text="自动" data-font-size="14" data-color="#63ff4e" data-align="left,middle" style="left:16px; top:12px; width:38px; height:16px;">自动</div>
+                <div data-type="label" data-name="count" data-x="30" data-y="35" data-w="36" data-h="22" data-text="30" data-font-size="20" data-color="#ffffff" data-align="center,middle" style="left:30px; top:35px; width:36px; height:22px;">30</div>
+                <div data-type="label" data-name="title" data-x="6" data-y="78" data-w="84" data-h="14" data-text="宝物挑战" data-font-size="14" data-color="#54d2ff" data-align="center,middle" style="left:6px; top:78px; width:84px; height:14px;">宝物挑战</div>
+            </div>
+        </div>
+
+        <div data-type="layout" data-name="right_station"
+             data-x="1210" data-y="812" data-w="544" data-h="268"
+             style="left:1210px; top:812px; width:544px; height:268px;">
+            <div data-type="image" data-name="station_bg" data-x="0" data-y="0" data-w="544" data-h="268" data-image="131998" data-color="#0a141de6" data-scale9="true" style="left:0; top:0; width:544px; height:268px;"></div>
+            <div data-type="image" data-name="station_top_line" data-x="16" data-y="20" data-w="512" data-h="1" data-image="999" data-color="#86a6c438" style="left:16px; top:20px; width:512px; height:1px;"></div>
+
+            <div data-type="layout" data-name="loadout_row" data-x="12" data-y="26" data-w="156" data-h="214" style="left:12px; top:26px; width:156px; height:214px;">
+                <div data-type="image" data-name="panel_bg" data-x="0" data-y="0" data-w="156" data-h="214" data-image="131998" data-color="#111923dd" data-scale9="true" style="left:0; top:0; width:156px; height:214px;"></div>
+                <div data-type="label" data-name="loadout_title" data-x="0" data-y="10" data-w="156" data-h="16" data-text="物品栏" data-font-size="12" data-color="#f4f9ff" data-align="center,middle" style="left:0; top:10px; width:156px; height:16px;">物品栏</div>
+                <div data-type="layout" data-name="loadout_slot_1" data-x="18" data-y="36" data-w="58" data-h="58" style="left:18px; top:36px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134257674" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+                <div data-type="layout" data-name="loadout_slot_2" data-x="80" data-y="36" data-w="58" data-h="58" style="left:80px; top:36px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134226696" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+                <div data-type="layout" data-name="loadout_slot_3" data-x="18" data-y="98" data-w="58" data-h="58" style="left:18px; top:98px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134226696" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+                <div data-type="layout" data-name="loadout_slot_4" data-x="80" data-y="98" data-w="58" data-h="58" style="left:80px; top:98px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134226696" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+                <div data-type="layout" data-name="loadout_slot_5" data-x="18" data-y="160" data-w="58" data-h="58" style="left:18px; top:160px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134226696" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+                <div data-type="layout" data-name="loadout_slot_6" data-x="80" data-y="160" data-w="58" data-h="58" style="left:80px; top:160px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134226696" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+            </div>
+
+            <div data-type="layout" data-name="consumable_panel" data-x="180" data-y="26" data-w="72" data-h="214" style="left:180px; top:26px; width:72px; height:214px;">
+                <div data-type="image" data-name="panel_bg" data-x="0" data-y="0" data-w="72" data-h="214" data-image="131998" data-color="#111923dd" data-scale9="true" style="left:0; top:0; width:72px; height:214px;"></div>
+                <div data-type="layout" data-name="slot_1" data-x="7" data-y="14" data-w="58" data-h="58" style="left:7px; top:14px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134257674" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div><div data-type="label" data-name="hotkey" data-x="38" data-y="38" data-w="16" data-h="12" data-text="D" data-font-size="11" data-color="#ffe087" data-align="right,middle" style="left:38px; top:38px; width:16px; height:12px;">D</div><div data-type="label" data-name="count" data-x="38" data-y="8" data-w="16" data-h="12" data-text="3" data-font-size="11" data-color="#f0f5fa" data-align="right,middle" style="left:38px; top:8px; width:16px; height:12px;">3</div></div>
+                <div data-type="layout" data-name="slot_2" data-x="7" data-y="78" data-w="58" data-h="58" style="left:7px; top:78px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134257674" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div><div data-type="label" data-name="hotkey" data-x="32" data-y="38" data-w="22" data-h="12" data-text="F2" data-font-size="11" data-color="#ffe087" data-align="right,middle" style="left:32px; top:38px; width:22px; height:12px;">F2</div><div data-type="label" data-name="count" data-x="38" data-y="8" data-w="16" data-h="12" data-text="1" data-font-size="11" data-color="#f0f5fa" data-align="right,middle" style="left:38px; top:8px; width:16px; height:12px;">1</div></div>
+                <div data-type="layout" data-name="slot_3" data-x="7" data-y="142" data-w="58" data-h="58" style="left:7px; top:142px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134257674" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div><div data-type="label" data-name="hotkey" data-x="38" data-y="38" data-w="16" data-h="12" data-text="G" data-font-size="11" data-color="#ffe087" data-align="right,middle" style="left:38px; top:38px; width:16px; height:12px;">G</div><div data-type="label" data-name="count" data-x="38" data-y="8" data-w="16" data-h="12" data-text="1" data-font-size="11" data-color="#f0f5fa" data-align="right,middle" style="left:38px; top:8px; width:16px; height:12px;">1</div></div>
+            </div>
+
+            <div data-type="layout" data-name="card_panel" data-x="264" data-y="26" data-w="268" data-h="214" style="left:264px; top:26px; width:268px; height:214px;">
+                <div data-type="image" data-name="panel_bg" data-x="0" data-y="0" data-w="268" data-h="214" data-image="131998" data-color="#111923dd" data-scale9="true" style="left:0; top:0; width:268px; height:214px;"></div>
+                <div data-type="label" data-name="station_hint" data-x="6" data-y="8" data-w="256" data-h="14" data-text="按F抽卡，相同羁绊的卡牌，自动吞噬入体" data-font-size="10" data-color="#f0f4f8" data-align="center,middle" style="left:6px; top:8px; width:256px; height:14px;">按F抽卡，相同羁绊的卡牌，自动吞噬入体</div>
+
+                <div data-type="layout" data-name="draw_button" data-x="10" data-y="34" data-w="58" data-h="34" style="left:10px; top:34px; width:58px; height:34px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="58" data-h="34" data-preset="gold" data-text="抽卡" data-font-size="14" style="left:0; top:0; width:58px; height:34px;">F抽卡</div></div>
+                <div data-type="layout" data-name="reward_button" data-x="72" data-y="34" data-w="58" data-h="34" style="left:72px; top:34px; width:58px; height:34px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="58" data-h="34" data-preset="blue" data-text="已吞卡牌" data-font-size="12" style="left:0; top:0; width:58px; height:34px;">已吞卡牌</div></div>
+                <div data-type="layout" data-name="kill_reward_button" data-x="134" data-y="34" data-w="58" data-h="34" style="left:134px; top:34px; width:58px; height:34px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="58" data-h="34" data-preset="gold" data-text="杀敌抽奖" data-font-size="12" style="left:0; top:0; width:58px; height:34px;">杀敌抽奖</div></div>
+                <div data-type="layout" data-name="fish_button" data-x="196" data-y="34" data-w="58" data-h="34" style="left:196px; top:34px; width:58px; height:34px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="58" data-h="34" data-preset="gold" data-text="摆烂钓鱼" data-font-size="12" style="left:0; top:0; width:58px; height:34px;">摆烂钓鱼</div></div>
+
+                <div data-type="layout" data-name="card_slot_1" data-x="12" data-y="88" data-w="58" data-h="58" style="left:12px; top:88px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134257674" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+                <div data-type="layout" data-name="card_slot_2" data-x="74" data-y="88" data-w="58" data-h="58" style="left:74px; top:88px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134257674" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+                <div data-type="layout" data-name="card_slot_3" data-x="136" data-y="88" data-w="58" data-h="58" style="left:136px; top:88px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134257674" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+                <div data-type="layout" data-name="card_slot_4" data-x="198" data-y="88" data-w="58" data-h="58" style="left:198px; top:88px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134257674" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+                <div data-type="layout" data-name="card_slot_5" data-x="12" data-y="150" data-w="58" data-h="58" style="left:12px; top:150px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134226696" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+                <div data-type="layout" data-name="card_slot_6" data-x="74" data-y="150" data-w="58" data-h="58" style="left:74px; top:150px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134226696" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+                <div data-type="layout" data-name="card_slot_7" data-x="136" data-y="150" data-w="58" data-h="58" style="left:136px; top:150px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134226696" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+                <div data-type="layout" data-name="card_slot_8" data-x="198" data-y="150" data-w="58" data-h="58" style="left:198px; top:150px; width:58px; height:58px;"><div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="58" data-h="58" data-image="134226696" style="left:0; top:0; width:58px; height:58px;"></div><div data-type="image" data-name="icon" data-x="7" data-y="7" data-w="44" data-h="44" data-image="999" style="left:7px; top:7px; width:44px; height:44px;"></div></div>
+            </div>
+
+            <div data-type="layout" data-name="hover_tip_panel" data-x="-356" data-y="-200" data-w="340" data-h="180" style="left:-356px; top:-200px; width:340px; height:180px;">
+                <div data-type="image" data-name="bg" data-x="0" data-y="0" data-w="340" data-h="180" data-image="131998" data-color="#0b121aed" data-scale9="true" style="left:0; top:0; width:340px; height:180px;"></div>
+                <div data-type="image" data-name="inner" data-x="8" data-y="8" data-w="324" data-h="164" data-image="100062" data-color="#13202dde" data-scale9="true" style="left:8px; top:8px; width:324px; height:164px;"></div>
+                <div data-type="image" data-name="header" data-x="12" data-y="12" data-w="316" data-h="1" data-image="999" data-color="#6da8e87a" style="left:12px; top:12px; width:316px; height:1px;"></div>
+                <div data-type="image" data-name="icon_bg" data-x="18" data-y="24" data-w="46" data-h="46" data-image="100061" data-color="#324b62" style="left:18px; top:24px; width:46px; height:46px;"></div>
+                <div data-type="image" data-name="icon" data-x="25" data-y="31" data-w="32" data-h="32" data-image="999" style="left:25px; top:31px; width:32px; height:32px;"></div>
+                <div data-type="label" data-name="title" data-x="78" data-y="24" data-w="232" data-h="22" data-text="提示标题" data-font-size="17" data-color="#d7e9ff" data-align="left,middle" style="left:78px; top:24px; width:232px; height:22px;">提示标题</div>
+                <div data-type="label" data-name="subtitle" data-x="78" data-y="48" data-w="232" data-h="18" data-text="副标题" data-font-size="13" data-color="#ffd560" data-align="left,middle" style="left:78px; top:48px; width:232px; height:18px;">副标题</div>
+                <div data-type="image" data-name="divider" data-x="18" data-y="82" data-w="304" data-h="1" data-image="999" data-color="#ffffff22" style="left:18px; top:82px; width:304px; height:1px;"></div>
+                <div data-type="label" data-name="body" data-x="18" data-y="94" data-w="304" data-h="64" data-text="说明正文" data-font-size="14" data-color="#dee8f4" data-align="left,top" style="left:18px; top:94px; width:304px; height:64px;">说明正文</div>
+            </div>
+        </div>
+
+        <div data-type="layout" data-name="tip_panel" data-x="40" data-y="560" data-w="420" data-h="180" style="left:40px; top:560px; width:420px; height:180px;">
+            <div data-type="image" data-name="bg" data-x="0" data-y="0" data-w="420" data-h="180" data-image="131998" data-color="#0b121aed" data-scale9="true" style="left:0; top:0; width:420px; height:180px;"></div>
+            <div data-type="image" data-name="inner" data-x="8" data-y="8" data-w="404" data-h="164" data-image="100062" data-color="#13202dde" data-scale9="true" style="left:8px; top:8px; width:404px; height:164px;"></div>
+            <div data-type="image" data-name="header" data-x="12" data-y="12" data-w="396" data-h="1" data-image="999" data-color="#6da8e87a" style="left:12px; top:12px; width:396px; height:1px;"></div>
+            <div data-type="label" data-name="title" data-x="18" data-y="22" data-w="220" data-h="22" data-text="系统提示" data-font-size="17" data-color="#d7e9ff" data-align="left,middle" style="left:18px; top:22px; width:220px; height:22px;">系统提示</div>
+            <div data-type="label" data-name="hint" data-x="290" data-y="24" data-w="108" data-h="18" data-text="点击关闭" data-font-size="12" data-color="#8ea3bc" data-align="right,middle" style="left:290px; top:24px; width:108px; height:18px;">点击关闭</div>
+            <div data-type="image" data-name="divider" data-x="18" data-y="58" data-w="384" data-h="1" data-image="999" data-color="#ffffff22" style="left:18px; top:58px; width:384px; height:1px;"></div>
+            <div data-type="label" data-name="body" data-x="18" data-y="72" data-w="384" data-h="84" data-text="提示内容" data-font-size="14" data-color="#dee8f4" data-align="left,top" style="left:18px; top:72px; width:384px; height:84px;">提示内容</div>
+        </div>
+
+        <div data-type="layout" data-name="attr_panel" data-x="1460" data-y="560" data-w="420" data-h="220" style="left:1460px; top:560px; width:420px; height:220px;">
+            <div data-type="image" data-name="bg" data-x="0" data-y="0" data-w="420" data-h="220" data-image="131998" data-color="#0b121aed" data-scale9="true" style="left:0; top:0; width:420px; height:220px;"></div>
+            <div data-type="image" data-name="inner" data-x="8" data-y="8" data-w="404" data-h="204" data-image="100062" data-color="#13202dde" data-scale9="true" style="left:8px; top:8px; width:404px; height:204px;"></div>
+            <div data-type="image" data-name="header" data-x="12" data-y="12" data-w="396" data-h="1" data-image="999" data-color="#6da8e87a" style="left:12px; top:12px; width:396px; height:1px;"></div>
+            <div data-type="label" data-name="title" data-x="18" data-y="22" data-w="240" data-h="22" data-text="属性总览" data-font-size="17" data-color="#d7e9ff" data-align="left,middle" style="left:18px; top:22px; width:240px; height:22px;">属性总览</div>
+            <div data-type="label" data-name="hint" data-x="292" data-y="24" data-w="110" data-h="18" data-text="点击关闭" data-font-size="12" data-color="#8ea3bc" data-align="right,middle" style="left:292px; top:24px; width:110px; height:18px;">点击关闭</div>
+            <div data-type="image" data-name="divider" data-x="18" data-y="58" data-w="384" data-h="1" data-image="999" data-color="#ffffff22" style="left:18px; top:58px; width:384px; height:1px;"></div>
+            <div data-type="label" data-name="body" data-x="18" data-y="72" data-w="384" data-h="130" data-text="属性内容" data-font-size="14" data-color="#dee8f4" data-align="left,top" style="left:18px; top:72px; width:384px; height:130px;">属性内容</div>
+        </div>
+    </div>
+</div>
+<script>
+(() => {
+    const parseColor = (value) => {
+        if (!value) return "";
+        const hex = value.trim().replace("#", "");
+        if (hex.length === 6) {
+            const r = parseInt(hex.slice(0, 2), 16);
+            const g = parseInt(hex.slice(2, 4), 16);
+            const b = parseInt(hex.slice(4, 6), 16);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+        if (hex.length === 8) {
+            const r = parseInt(hex.slice(0, 2), 16);
+            const g = parseInt(hex.slice(2, 4), 16);
+            const b = parseInt(hex.slice(4, 6), 16);
+            const a = parseInt(hex.slice(6, 8), 16) / 255;
+            return `rgba(${r}, ${g}, ${b}, ${a.toFixed(3)})`;
+        }
+        return value;
+    };
+
+        const alignMap = {
+            left: "flex-start",
+            center: "center",
+            right: "flex-end",
+            top: "flex-start",
+            middle: "center",
+        bottom: "flex-end",
+    };
+
+        document.querySelectorAll("[data-type]").forEach((node) => {
+            const type = node.dataset.type;
+            const color = parseColor(node.dataset.color);
+            const bgColor = parseColor(node.dataset.bgColor);
+            const fontSize = node.dataset.fontSize;
+        const align = (node.dataset.align || "").split(",");
+
+        if (bgColor) {
+            node.style.background = bgColor;
+        }
+
+        if (type === "image") {
+            if (color) {
+                node.style.background = color;
+            } else if (node.dataset.image && node.dataset.image !== "999") {
+                node.style.background = "linear-gradient(180deg, rgba(210,225,244,0.18) 0%, rgba(98,122,150,0.18) 100%)";
+            }
+            if (node.dataset.scale9 === "true") {
+                node.style.borderRadius = "10px";
+            }
+            if (node.dataset.image && node.dataset.image !== "999") {
+                node.style.boxShadow = "inset 0 0 0 1px rgba(255,255,255,0.08)";
+            }
+        }
+
+        if (type === "label") {
+            node.style.color = color || "#e6eef8";
+            if (fontSize) node.style.fontSize = `${fontSize}px`;
+            node.style.justifyContent = alignMap[align[0]] || "flex-start";
+            node.style.alignItems = alignMap[align[1]] || "center";
+            if ((align[1] || "").toLowerCase() === "top") {
+                node.style.paddingTop = "2px";
+            }
+        }
+
+            if (type === "button") {
+                if (fontSize) node.style.fontSize = `${fontSize}px`;
+            }
+        });
+
+        document.querySelectorAll('[data-name^="challenge_"]').forEach((node) => {
+            if (node.dataset.name !== "challenge_row") {
+                node.classList.add("challenge-card");
+            }
+        });
+
+        const evolveCta = document.querySelector('[data-name="evolve_cta"]');
+        const evolveText = document.querySelector('[data-name="evolve_text"]');
+        const expNormalOverlay = document.querySelector('[data-name="exp_normal_overlay"]');
+        if (evolveCta) {
+            evolveCta.classList.add("evolve-ready");
+            if (expNormalOverlay) {
+                expNormalOverlay.classList.add("exp-normal");
+            }
+            evolveCta.addEventListener("click", () => {
+                evolveCta.classList.add("is-resolving");
+                setTimeout(() => {
+                    evolveCta.style.opacity = "0";
+                    evolveCta.style.pointerEvents = "none";
+                    if (expNormalOverlay) {
+                        expNormalOverlay.classList.add("is-visible");
+                    }
+                }, 180);
+                setTimeout(() => {
+                    if (expNormalOverlay) {
+                        expNormalOverlay.classList.remove("is-visible");
+                    }
+                    evolveCta.style.opacity = "1";
+                    evolveCta.style.pointerEvents = "auto";
+                    evolveCta.classList.remove("is-resolving");
+                }, 1250);
+            });
+        }
+})();
+</script>
+</body>
+</html>

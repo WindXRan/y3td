@@ -1,0 +1,10 @@
+root_id,phase,runtime_key,value
+bond_economy_core,base,kill_gold_ratio,0.10
+bond_economy_core,set,wood_per_sec_bonus,0.5
+bond_economy_core,set,gold_per_sec_bonus,15
+bond_magic_core,base,skill_damage_bonus,0.05
+bond_growth_core,base,intelligence_per_second,0.5
+bond_growth_core,set,wood_per_sec_bonus,0.3
+bond_growth_core,set,agility_on_kill,0.1
+bond_growth_core,set,strength_on_kill,0.1
+bond_growth_core,set,intelligence_on_kill,0.1

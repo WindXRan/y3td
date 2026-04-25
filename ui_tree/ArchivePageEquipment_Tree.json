@@ -1,0 +1,686 @@
+{
+  "name": "ArchivePageEquipment",
+  "uid": "c54957ab-d16d-40f0-b930-ea46514d72f6",
+  "type": 2,
+  "children": [
+    {
+      "name": "root",
+      "uid": "5cffd6d5-1ec1-42de-b877-dfad7153f9d7",
+      "type": 7,
+      "children": [
+        {
+          "name": "content",
+          "uid": "e87f5f91-d907-411e-ab30-71cf4e10d9df",
+          "type": 7,
+          "children": [
+            {
+              "name": "page_equipment",
+              "uid": "605cbb1f-8498-4955-9591-647235101b70",
+              "type": 7,
+              "children": [
+                {
+                  "name": "equip_main",
+                  "uid": "1d4c671d-3be1-4753-8270-4a5ef1cae9d7",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "frame",
+                      "uid": "be5bcf6c-a81b-44bb-a281-42d694b9596d",
+                      "type": 7
+                    },
+                    {
+                      "name": "inner",
+                      "uid": "830c997d-439a-4de4-b36c-e08109f78888",
+                      "type": 7
+                    },
+                    {
+                      "name": "title_bg",
+                      "uid": "2b94725d-f522-4b08-805c-ddb27b6d7b6b",
+                      "type": 7
+                    },
+                    {
+                      "name": "title",
+                      "uid": "de816a4b-fa71-4a70-8ae4-f9bb30847504",
+                      "type": 3
+                    },
+                    {
+                      "name": "stage",
+                      "uid": "33d4c6c8-015f-4ce4-916b-309e701f32f0",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "slot_head",
+                          "uid": "45445482-6b8d-4fbb-8f80-8ad13d5ecb03",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "inner",
+                              "uid": "5a650794-704b-4701-95d6-b3e138fe5035",
+                              "type": 7
+                            }
+                          ]
+                        },
+                        {
+                          "name": "slot_left",
+                          "uid": "3fac74d3-398a-494c-bc4f-88a43e2bbbb8",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "inner",
+                              "uid": "3078f0fa-93e7-4f79-b353-cbfaaa7f7c8a",
+                              "type": 7
+                            }
+                          ]
+                        },
+                        {
+                          "name": "slot_right",
+                          "uid": "61f0c97b-f009-4189-adf8-a53a19f7b3dc",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "inner",
+                              "uid": "47efd7a7-f67a-4a13-8eb8-ec3756974eb6",
+                              "type": 7
+                            }
+                          ]
+                        },
+                        {
+                          "name": "slot_low_left",
+                          "uid": "40267e89-ef4c-4b5a-983d-6cc104dc3d67",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "inner",
+                              "uid": "a947721b-531b-414d-bcf6-d4ca21a355be",
+                              "type": 7
+                            }
+                          ]
+                        },
+                        {
+                          "name": "slot_low_right",
+                          "uid": "8a2ab90c-cc7d-4f0a-b920-aad0a6b0294c",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "inner",
+                              "uid": "02645a9b-913b-472e-9346-d0a85ed05c55",
+                              "type": 7
+                            }
+                          ]
+                        },
+                        {
+                          "name": "slot_bottom",
+                          "uid": "572f6746-b166-4601-8be2-738067a6a3ef",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "inner",
+                              "uid": "c9789725-62ef-412d-bf60-2c087f4d3317",
+                              "type": 7
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "score_row",
+                      "uid": "ef8338ba-cf4f-40eb-a7f5-2928439ebaca",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "f53e22af-116f-4d14-a85a-1a2bca4cc009",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "a9c66f7d-81d0-4440-b6c3-94bc446462f8",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "fragment_row",
+                      "uid": "cfde42cf-c072-453b-a2e4-563e8378596b",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "659a1fa6-3bf2-4d23-910d-92c5d1b048ca",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "0f80834c-05da-4bb1-bbe1-feb6ffcf6304",
+                          "type": 3
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "equip_bag",
+                  "uid": "4019f504-68d8-4e44-bf88-5de9c9c8592b",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "frame",
+                      "uid": "ab222acb-f5b4-4df9-af28-51f0bd05d015",
+                      "type": 7
+                    },
+                    {
+                      "name": "inner",
+                      "uid": "a7c5da64-8abb-49f1-946d-29040aae1578",
+                      "type": 7
+                    },
+                    {
+                      "name": "title_bg",
+                      "uid": "784960ce-f82a-47a2-bea9-6bde80cfa6c7",
+                      "type": 7
+                    },
+                    {
+                      "name": "title",
+                      "uid": "af0054fa-ecaf-499f-ab0a-b99d6a6353be",
+                      "type": 3
+                    },
+                    {
+                      "name": "bag_slot_1",
+                      "uid": "f4bfe645-10cb-4b72-89d8-df5254ee1b54",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "87e76281-2986-4db7-b8b3-c30745221213",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_2",
+                      "uid": "adb5efae-98bb-4e3c-bb9f-64806e960372",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "3696f765-70aa-4e94-90dc-5d988c6b170c",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_3",
+                      "uid": "fd99ed19-e3df-455d-a77e-86a63bc1c1ed",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "bd1c2570-e919-4da3-b757-c11f77b9c38f",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_4",
+                      "uid": "8f9c1e2f-b3b9-481e-b4fe-374a6eadc8ac",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "3edcba1c-0aff-4452-a470-a37a67c86dcd",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_5",
+                      "uid": "47510c0c-d814-4fd0-956b-568fedc8f06e",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "e82499c8-f955-466e-859f-45335653cc10",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_6",
+                      "uid": "7f37d547-ddbb-4b8f-b8ae-856f5b779d92",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "12baeac1-e1fb-408c-ac1b-8a69812a370b",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_7",
+                      "uid": "55c51e3b-f68d-4e2a-9c61-0626f133104b",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "a2140248-93c3-4649-a3bb-8b78945ff788",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_8",
+                      "uid": "373ad0d7-ea90-4a50-9c46-00392e79edca",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "d2ed69dd-d9f4-45a7-8b15-8824cfa7f550",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_9",
+                      "uid": "43ee8308-13b9-4937-bc31-b5d4cba5e7af",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "2b0ca972-2cc6-4ba4-abc0-82e3c3cef7a2",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_10",
+                      "uid": "9e3fcf41-559e-40d3-995e-ee838c979dec",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "b25d1d53-6e67-4c1a-b352-ce7e68799480",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_11",
+                      "uid": "c9b13f0f-1b3d-410e-9df7-5735d99f5a9a",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "1760ef3d-3d5a-4d86-b7d1-3e7a29c3fbf7",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_12",
+                      "uid": "4257a5eb-8f31-401d-8d9a-1a66582eca32",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "b91d3c89-aed9-4ef6-a777-34d988fedaf3",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_13",
+                      "uid": "6ca91e50-2de3-4c87-8f50-9091c4ad5306",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "616a3a90-559e-4c37-bab9-0c997f2a62d5",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_14",
+                      "uid": "831f36f2-0323-4cd6-a555-b0b97751ec40",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "19ceb467-2367-4dbb-9b3e-a0c649d2f09e",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_15",
+                      "uid": "842c7b43-5826-47ec-9405-5532ac5a41f2",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "b3ab61f4-510b-4aa9-84af-1ce9424f8901",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_16",
+                      "uid": "7cd1aa7e-8df8-4a56-a487-32dc731c780c",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "a239b850-2ae4-4d55-a94e-001153374c23",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_17",
+                      "uid": "0a2d9592-5ec5-4853-8063-7ddc10a2ec7a",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "65323cb9-0e74-4798-8302-194a924b3f19",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_18",
+                      "uid": "a63e01c3-6754-4ce4-ade7-845c57bbe995",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "008f1ffa-f532-4364-9379-bd82ceb773f8",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_19",
+                      "uid": "1f3094a0-09e5-4188-a841-04dae41601aa",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "e8431317-4fc9-46a2-b108-3cd39c3f4816",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_20",
+                      "uid": "2c3f0c50-22cb-469b-ba35-68d4fa34ad27",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "49db4029-97c5-4d9c-b724-2dc7b5ea9ee5",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_21",
+                      "uid": "5f9b484d-52f0-4dd3-b991-e1dcbd47f428",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "6ab958aa-fe65-4f02-837d-4d7e88bb65e0",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_22",
+                      "uid": "d5259d2a-983e-4baf-9d55-515b194e8ed8",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "6a5bafa7-f269-4838-8b90-d0acc23ff333",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_23",
+                      "uid": "b2dd3d30-4bc9-4f64-b471-846bf23d2440",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "3a1c49be-2e7e-423e-889e-199a264e23d1",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_24",
+                      "uid": "b1fde8a0-7890-4dad-832f-f3068d828ebb",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "c5fb6533-2cbb-4c99-9ccf-f60c697f0f57",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bag_slot_25",
+                      "uid": "deb72879-e1dc-40b3-89ac-77d5ec847be6",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "299fc8ca-9cfe-46cd-b02b-3beecd38c4ef",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "split_button",
+                      "uid": "dd585fbe-4f20-4c9f-abff-e39ac885e90b",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "bg",
+                          "uid": "9cfe0647-130c-47c4-b9a9-d894693144fd",
+                          "type": 7
+                        },
+                        {
+                          "name": "label",
+                          "uid": "0139576b-47f4-437c-8119-ab49309b4ae0",
+                          "type": 3
+                        },
+                        {
+                          "name": "active",
+                          "uid": "e4a8aed2-7df1-4f33-b0e6-445aee137bfa",
+                          "type": 7
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "equip_detail",
+                  "uid": "ab3769e3-b4cb-4e1f-bf95-15c0382b958a",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "frame",
+                      "uid": "2e9c4bf2-0de1-4431-a389-9c59b5382f94",
+                      "type": 7
+                    },
+                    {
+                      "name": "inner",
+                      "uid": "1ffa1d11-2242-4b4a-bd70-cabd232e58c5",
+                      "type": 7
+                    },
+                    {
+                      "name": "title_bg",
+                      "uid": "cc2e50bf-808b-49cb-9522-c57d11336b32",
+                      "type": 7
+                    },
+                    {
+                      "name": "title",
+                      "uid": "eb0e980e-7f04-4ddd-afbf-c311c181e4a6",
+                      "type": 3
+                    },
+                    {
+                      "name": "detail_icon",
+                      "uid": "ab2b3510-dcab-460c-a6fa-6b6552f71acc",
+                      "type": 7
+                    },
+                    {
+                      "name": "detail_name",
+                      "uid": "fd014aaa-48b1-49c0-aa10-bedf2cdaf1d3",
+                      "type": 3
+                    },
+                    {
+                      "name": "detail_score_row",
+                      "uid": "87f25886-16cc-4dcf-82d4-0d883880b95d",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "83e949d6-41df-40f3-b211-0fcbde97bdc0",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "5ef3d62b-04e3-4b6f-bc68-30468c94f494",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "detail_level_row",
+                      "uid": "0067cdb1-bd18-4797-8b2c-24da462c62c0",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "9ef7590e-1d31-4a56-9179-b943a2eaf245",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "546f9c88-48c4-4186-845b-012faab05a09",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "detail_quality_row",
+                      "uid": "24c66164-1363-4e42-9286-e259275b6ce6",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "0ae52ab3-a362-46b7-875f-18f9695e3c73",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "c2f54b4b-8f08-4a7e-9854-008e67e5019d",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "detail_type_row",
+                      "uid": "e3d63078-48df-4ad6-aefb-165bbc285513",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "87b670c8-86c8-4b44-8109-f079b65c24d5",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "282d1dad-d0dc-472b-aa82-d1fb4630eb31",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "detail_basic",
+                      "uid": "98bac9b0-c4dc-44bf-ac5e-ca517c8eeb0b",
+                      "type": 3
+                    },
+                    {
+                      "name": "detail_basic_value",
+                      "uid": "5a8fabbc-4315-413e-b8de-e692b35140c5",
+                      "type": 3
+                    },
+                    {
+                      "name": "detail_enhance",
+                      "uid": "d123d18f-9a68-4e13-a167-4c995cb0b038",
+                      "type": 3
+                    },
+                    {
+                      "name": "detail_enhance_value",
+                      "uid": "c31bf42e-fae7-4df8-b565-8ca421565521",
+                      "type": 3
+                    },
+                    {
+                      "name": "wear_button",
+                      "uid": "cc1ce54e-5d4d-450e-8e9d-d95829a70439",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "bg",
+                          "uid": "f0bf888b-2b60-4bf5-acf2-2550d654c715",
+                          "type": 7
+                        },
+                        {
+                          "name": "label",
+                          "uid": "57b2f615-e2c6-424e-9e4c-b99d4e75f3d0",
+                          "type": 3
+                        },
+                        {
+                          "name": "active",
+                          "uid": "0f37e268-698e-451a-9d17-bcab0250797f",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "upgrade_button",
+                      "uid": "2f75ccaa-8da3-4ad7-834a-0c7ae7fe70fa",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "bg",
+                          "uid": "6b6c5707-807b-4115-a4b6-390921ed9e2b",
+                          "type": 7
+                        },
+                        {
+                          "name": "label",
+                          "uid": "a05b954e-02ba-43a1-ad97-967cff55c101",
+                          "type": 3
+                        },
+                        {
+                          "name": "active",
+                          "uid": "43fd30f0-dc53-475d-aa57-92126c4d385b",
+                          "type": 7
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

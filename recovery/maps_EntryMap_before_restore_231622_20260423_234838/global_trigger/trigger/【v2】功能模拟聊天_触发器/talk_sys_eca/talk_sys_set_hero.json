@@ -1,0 +1,37 @@
+{
+    "action": [
+        [
+            1652818310, 
+            "在这里设置你的动态单位以正常使用物品兑换码功能", 
+            1128001543, 
+            "action_type"
+        ], 
+        [
+            1400385540, 
+            "例如：g_talk_sys_hero[玩家ID] = 某个英雄", 
+            1128001543, 
+            "action_type"
+        ]
+    ], 
+    "call_enabled": true, 
+    "condition": [], 
+    "enabled": false, 
+    "event": [
+        {
+            "args_list": [], 
+            "element_id": 1128001543000001, 
+            "enable": true, 
+            "event_type": "INIT_FINISHED"
+        }
+    ], 
+    "group_id": "lTo1-TpUEfGw3zm7oEs-XG", 
+    "p_trigger_id": null, 
+    "trigger_id": 1128001543, 
+    "trigger_name": "talk_sys_set_hero", 
+    "valid": true, 
+    "var_data": [
+        {}, 
+        {}, 
+        []
+    ]
+}

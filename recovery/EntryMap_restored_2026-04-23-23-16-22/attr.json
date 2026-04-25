@@ -1,0 +1,187 @@
+{
+    "b": [], 
+    "c": [
+        {
+            "__tuple__": true, 
+            "items": [
+                "74jGeWQ7Ee+yupNvux9K2K", 
+                {
+                    "default": 0.0, 
+                    "desc": "War3_\u653b\u51fb\u529b", 
+                    "desc_bit": 1, 
+                    "key": "74jGeWQ7Ee+yupNvux9K2K", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "FWhbDmUVEe+nv4W9-PWzrb", 
+                {
+                    "default": 0.0, 
+                    "desc": "War3_\u62a4\u7532", 
+                    "desc_bit": 1, 
+                    "key": "FWhbDmUVEe+nv4W9-PWzrb", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "yxI3TGUVEe+nLYW9-PWzrb", 
+                {
+                    "default": 0.0, 
+                    "desc": "War3_\u529b\u91cf", 
+                    "desc_bit": 1, 
+                    "key": "yxI3TGUVEe+nLYW9-PWzrb", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "pDTF-WUXEe+-c4W9-PWzrV", 
+                {
+                    "default": 0.0, 
+                    "desc": "War3_\u654f\u6377", 
+                    "desc_bit": 1, 
+                    "key": "pDTF-WUXEe+-c4W9-PWzrV", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "qSxWUGUXEe+GAIW9-PWzrT", 
+                {
+                    "default": 0.0, 
+                    "desc": "War3_\u667a\u529b", 
+                    "desc_bit": 1, 
+                    "key": "qSxWUGUXEe+GAIW9-PWzrT", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "kESX8BZgEe6c+jDQQuUV9l", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u79fb\u901f\u9a6c\u7532", 
+                    "desc_bit": 1, 
+                    "key": "kESX8BZgEe6c+jDQQuUV9l", 
+                    "maximun": 1000.0, 
+                    "minimun": -1000.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "SrH48EZqEe+pFzDQQukOhV", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u79fb\u901f\u9a6c\u7532", 
+                    "desc_bit": 1, 
+                    "key": "SrH48EZqEe+pFzDQQukOhV", 
+                    "maximun": 1000.0, 
+                    "minimun": -1000.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "bk+jnkZsEe+VkzDQQukOhb", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u79fb\u901f\u9a6c\u7532", 
+                    "desc_bit": 1, 
+                    "key": "bk+jnkZsEe+VkzDQQukOhb", 
+                    "maximun": 1000.0, 
+                    "minimun": -1000.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "custom_1", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u97e7\u6027", 
+                    "desc_bit": 1, 
+                    "key": "custom_1", 
+                    "maximun": 100.0, 
+                    "minimun": -10000000.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }
+    ], 
+    "p": [
+        {
+            "__tuple__": true, 
+            "items": [
+                "strength", 
+                {
+                    "d": "\u529b\u91cf", 
+                    "k": "strength", 
+                    "m": []
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "agility", 
+                {
+                    "d": "\u654f\u6377", 
+                    "k": "agility", 
+                    "m": []
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "intelligence", 
+                {
+                    "d": "\u667a\u529b", 
+                    "k": "intelligence", 
+                    "m": []
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "main", 
+                {
+                    "d": "\u4e3b\u5c5e\u6027", 
+                    "k": "main", 
+                    "m": []
+                }
+            ]
+        }
+    ], 
+    "ps": 1
+}

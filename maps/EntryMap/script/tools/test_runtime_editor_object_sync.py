@@ -377,6 +377,13 @@ def main():
         assert "缩放 0 / 时长 0" not in description, f"projectile {projectile_id} description should skip zero stage payloads"
 
     basic_attack_projectile = load_json(PROJECTILE_DIR / "134267104.json")["kv"]
+    basic_attack_projectile_data = load_json(PROJECTILE_DIR / "134267104.json")
+    assert basic_attack_projectile_data["effect_foes"][0] == 104656, (
+        "basic attack projectile should keep the unified arrow flight effect"
+    )
+    assert basic_attack_projectile_data["effect_friend"][0] == 104656, (
+        "basic attack projectile should mirror the unified arrow flight effect for friendly visuals"
+    )
     assert kv_value(basic_attack_projectile["entry_projectile_speed"]) == 3760.0, (
         "basic attack projectile should expose flight speed"
     )

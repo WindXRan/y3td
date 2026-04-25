@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Top HUD Preview</title>
+  <style>
+    :root {
+      --bg: #08111a;
+      --bg-2: #0e1824;
+      --panel: rgba(9, 16, 25, 0.9);
+      --panel-soft: rgba(14, 24, 36, 0.72);
+      --line: rgba(160, 198, 240, 0.22);
+      --line-strong: rgba(174, 213, 255, 0.42);
+      --text: #edf4ff;
+      --muted: #9fb3c9;
+      --gold: #f3cb67;
+      --wood: #88db9a;
+      --pop: #86bbff;
+      --danger: #ff8475;
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(73, 120, 182, 0.18), transparent 30%),
+        linear-gradient(180deg, #050b11 0%, #08101a 100%);
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+    }
+
+    .stage {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      border: 1px solid rgba(169, 204, 247, 0.12);
+      background:
+        radial-gradient(circle at 12% 20%, rgba(255, 214, 126, 0.08), transparent 18%),
+        radial-gradient(circle at 86% 14%, rgba(90, 154, 255, 0.12), transparent 20%),
+        linear-gradient(180deg, rgba(73, 103, 45, 0.55) 0%, rgba(48, 72, 31, 0.15) 18%, rgba(7, 11, 16, 0) 32%),
+        linear-gradient(180deg, #1b2c16 0%, #223316 18%, #172510 35%, #11190f 54%, #0b1116 100%);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+    }
+
+    .battle-haze {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(4, 10, 16, 0.04), rgba(4, 10, 16, 0.38)),
+        repeating-linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.012) 0,
+          rgba(255, 255, 255, 0.012) 1px,
+          transparent 1px,
+          transparent 120px
+        );
+      pointer-events: none;
+    }
+
+    .top-shell {
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 132px;
+      padding: 0 26px;
+      background:
+        linear-gradient(180deg, rgba(4, 8, 12, 0.9) 0%, rgba(6, 12, 18, 0.8) 52%, rgba(6, 12, 18, 0.18) 100%);
+      border-bottom: 1px solid rgba(166, 205, 247, 0.08);
+    }
+
+    .top-shell::before {
+      content: "";
+      position: absolute;
+      left: 280px;
+      right: 280px;
+      top: 0;
+      height: 64px;
+      border-bottom-left-radius: 28px;
+      border-bottom-right-radius: 28px;
+      background:
+        linear-gradient(180deg, rgba(38, 60, 89, 0.38), rgba(18, 28, 42, 0.08));
+      box-shadow: inset 0 -1px 0 rgba(175, 214, 255, 0.12);
+      pointer-events: none;
+    }
+
+    .top-line {
+      position: absolute;
+      left: 188px;
+      right: 188px;
+      top: 89px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(116, 170, 232, 0.62), transparent);
+    }
+
+    .top-content {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 520px 1fr 720px;
+      align-items: start;
+      gap: 20px;
+      padding-top: 12px;
+    }
+
+    .left-cluster {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 35% 30%, rgba(255, 229, 159, 0.42), rgba(255, 193, 77, 0.08) 38%, rgba(10, 16, 24, 0.7) 70%),
+        linear-gradient(180deg, rgba(31, 44, 62, 0.96), rgba(13, 20, 31, 0.98));
+      border: 1px solid rgba(241, 211, 140, 0.2);
+      box-shadow: var(--shadow);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #ffe4a4;
+    }
+
+    .action-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 22px;
+      background: rgba(7, 13, 20, 0.68);
+      border: 1px solid rgba(158, 197, 239, 0.12);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow);
+    }
+
+    .action-btn {
+      min-width: 86px;
+      height: 38px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      border-radius: 13px;
+      border: 1px solid rgba(173, 212, 255, 0.14);
+      background:
+        linear-gradient(180deg, rgba(84, 100, 121, 0.26), rgba(39, 51, 67, 0.7));
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .action-btn .icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 11px;
+      font-weight: 800;
+      color: #dcebff;
+    }
+
+    .action-btn.accent {
+      background:
+        linear-gradient(180deg, rgba(89, 115, 148, 0.34), rgba(39, 56, 76, 0.76));
+      border-color: rgba(137, 183, 243, 0.22);
+    }
+
+    .center-cluster {
+      display: flex;
+      justify-content: center;
+      position: relative;
+      padding-top: 4px;
+    }
+
+    .center-panel {
+      width: 468px;
+      min-height: 80px;
+      position: relative;
+      padding: 14px 18px 12px;
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(10, 18, 27, 0.94), rgba(8, 13, 20, 0.88));
+      border: 1px solid rgba(176, 212, 255, 0.14);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .center-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(255, 225, 152, 0.18), transparent 30%),
+        linear-gradient(90deg, transparent, rgba(122, 172, 242, 0.08), transparent);
+      pointer-events: none;
+    }
+
+    .center-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+    }
+
+    .mode-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 233, 173, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .mode-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, rgba(255, 219, 130, 0.24), rgba(255, 195, 72, 0.08));
+      color: #ffd57d;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .mode-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.05;
+      gap: 3px;
+    }
+
+    .mode-text strong {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .mode-text span {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .phase-badge {
+      padding: 8px 12px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(39, 60, 87, 0.8), rgba(18, 31, 48, 0.9));
+      border: 1px solid rgba(164, 204, 255, 0.16);
+      color: #dfeeff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .center-main {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sub-chip {
+      padding: 8px 12px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(160, 195, 233, 0.08);
+    }
+
+    .sub-chip .caption {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: #8398b3;
+      text-transform: uppercase;
+    }
+
+    .sub-chip .value {
+      margin-top: 4px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .timer-core {
+      min-width: 132px;
+      padding: 12px 14px 10px;
+      border-radius: 20px;
+      background:
+        linear-gradient(180deg, rgba(23, 35, 50, 0.95), rgba(11, 19, 28, 0.95));
+      border: 1px solid rgba(255, 224, 148, 0.16);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 0 28px rgba(255, 210, 108, 0.08);
+      text-align: center;
+    }
+
+    .timer-core .time {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffe09b;
+      letter-spacing: 0.03em;
+      line-height: 1;
+    }
+
+    .timer-core .tag {
+      margin-top: 5px;
+      font-size: 11px;
+      color: #b89b5d;
+      letter-spacing: 0.2em;
+    }
+
+    .notice-strip {
+      margin: 12px auto 0;
+      width: 396px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: rgba(4, 9, 15, 0.62);
+      border: 1px solid rgba(123, 169, 224, 0.08);
+      color: #d9e8fa;
+      font-size: 11px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .notice-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #73aef4;
+      box-shadow: 0 0 12px rgba(115, 174, 244, 0.8);
+      flex: 0 0 auto;
+    }
+
+    .right-cluster {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      gap: 14px;
+    }
+
+    .resource-group {
+      display: flex;
+      gap: 12px;
+      padding-top: 10px;
+    }
+
+    .resource-card {
+      width: 150px;
+      padding: 7px 12px 9px;
+      border-radius: 16px;
+      background:
+        linear-gradient(180deg, rgba(56, 70, 88, 0.84), rgba(37, 49, 63, 0.92));
+      border: 1px solid rgba(176, 212, 255, 0.12);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .resource-card::before {
+      content: "";
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: 0;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 65%, transparent);
+    }
+
+    .resource-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: color-mix(in srgb, var(--accent) 72%, #ffffff);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .resource-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      font-weight: 800;
+      color: #07111b;
+      background: var(--accent);
+      box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 36%, transparent);
+    }
+
+    .resource-main {
+      margin-top: 4px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .resource-main strong {
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+
+    .resource-main span {
+      font-size: 14px;
+      font-weight: 700;
+      color: #8df0a7;
+    }
+
+    .commander-card {
+      width: 388px;
+      margin-top: 44px;
+      padding: 9px 10px 12px;
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(7, 12, 18, 0.94), rgba(10, 15, 22, 0.9));
+      border: 1px solid rgba(165, 204, 245, 0.12);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .commander-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 22px;
+      background: linear-gradient(90deg, rgba(43, 73, 112, 0.84), rgba(22, 35, 52, 0.24));
+      border-bottom: 1px solid rgba(169, 207, 248, 0.12);
+    }
+
+    .commander-title {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #eef5ff;
+    }
+
+    .commander-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .commander-columns {
+      display: grid;
+      grid-template-columns: 24px 108px 40px 40px 40px 40px 64px;
+      align-items: center;
+      gap: 6px;
+      padding: 0 8px 4px;
+      color: #8ea3bc;
+      font-size: 11px;
+      letter-spacing: 0.02em;
+    }
+
+    .commander-columns span:first-child {
+      opacity: 0;
+    }
+
+    .commander-columns span:nth-child(2) {
+      text-align: left;
+    }
+
+    .commander-columns span:not(:first-child):not(:nth-child(2)) {
+      text-align: center;
+    }
+
+    .commander-body {
+      display: grid;
+      grid-template-columns: 24px 108px 40px 40px 40px 40px 64px;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(165, 204, 245, 0.04);
+    }
+
+    .avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background:
+        linear-gradient(180deg, rgba(133, 108, 66, 0.9), rgba(74, 52, 26, 0.9));
+      border: 1px solid rgba(255, 220, 146, 0.18);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .commander-info {
+      min-width: 0;
+    }
+
+    .commander-name {
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .commander-state {
+      font-size: 12px;
+      font-weight: 700;
+      color: #8ce4a6;
+      text-align: center;
+    }
+
+    .commander-state.warn {
+      color: #f0cc7f;
+    }
+
+    .commander-state.danger {
+      color: #ff9688;
+    }
+
+    .meta-pill {
+      min-width: 34px;
+      height: 22px;
+      padding: 0 6px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(165, 204, 245, 0.04);
+      font-size: 12px;
+      font-weight: 700;
+      color: #dceaff;
+    }
+
+    .meta-pill.power {
+      color: var(--danger);
+      min-width: 46px;
+    }
+
+    .footer-hint {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 146px;
+      width: 720px;
+      text-align: center;
+      color: rgba(202, 222, 247, 0.34);
+      font-size: 14px;
+      letter-spacing: 0.08em;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="battle-haze"></div>
+
+    <section class="top-shell">
+      <div class="top-line"></div>
+
+      <div class="top-content">
+        <div class="left-cluster">
+          <div class="brand-mark">Y3</div>
+          <div class="action-row">
+            <div class="action-btn">
+              <span class="icon">X</span>
+              <span>退出</span>
+            </div>
+            <div class="action-btn">
+              <span class="icon">II</span>
+              <span>暂停</span>
+            </div>
+            <div class="action-btn accent">
+              <span class="icon">S</span>
+              <span>设置</span>
+            </div>
+            <div class="action-btn">
+              <span class="icon">+</span>
+              <span>强化</span>
+            </div>
+            <div class="action-btn">
+              <span class="icon">K</span>
+              <span>键位</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="center-cluster">
+          <div class="center-panel">
+            <div class="center-top">
+              <div class="mode-chip">
+                <div class="mode-icon">N</div>
+                <div class="mode-text">
+                  <strong>正常模式 N1</strong>
+                  <span>Battlefront Standard</span>
+                </div>
+              </div>
+              <div class="phase-badge">首领将在 240 秒后登场</div>
+            </div>
+
+            <div class="center-main">
+              <div class="sub-chip">
+                <div class="caption">Wave</div>
+                <div class="value">第 1 / 15 波</div>
+              </div>
+              <div class="timer-core">
+                <div class="time">00:09</div>
+                <div class="tag">BATTLE CLOCK</div>
+              </div>
+              <div class="sub-chip">
+                <div class="caption">Threat</div>
+                <div class="value">饥饿地精已就位</div>
+              </div>
+            </div>
+
+            <div class="notice-strip">
+              <span class="notice-dot"></span>
+              <span>战况播报：第 1 波来袭，保持火力覆盖中线。</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="right-cluster">
+          <div class="resource-group">
+            <article class="resource-card" style="--accent: var(--gold);">
+              <div class="resource-head">
+                <div class="resource-icon">G</div>
+                <span>金币</span>
+              </div>
+              <div class="resource-main">
+                <strong>35</strong>
+                <span>+0</span>
+              </div>
+            </article>
+
+            <article class="resource-card" style="--accent: var(--wood);">
+              <div class="resource-head">
+                <div class="resource-icon">W</div>
+                <span>木材</span>
+              </div>
+              <div class="resource-main">
+                <strong>158</strong>
+                <span>+1.0</span>
+              </div>
+            </article>
+
+            <article class="resource-card" style="--accent: var(--pop);">
+              <div class="resource-head">
+                <div class="resource-icon">P</div>
+                <span>人口</span>
+              </div>
+              <div class="resource-main">
+                <strong>5</strong>
+                <span>+0</span>
+              </div>
+            </article>
+          </div>
+
+          <aside class="commander-card">
+            <div class="commander-title">玩家状态</div>
+            <div class="commander-list">
+              <div class="commander-columns">
+                <span>.</span>
+                <span>玩家</span>
+                <span>状态</span>
+                <span>等级</span>
+                <span>爬塔</span>
+                <span>吞噬</span>
+                <span>战力</span>
+              </div>
+
+              <div class="commander-body">
+                <div class="avatar"></div>
+                <div class="commander-info">
+                  <div class="commander-name">为你钟情</div>
+                </div>
+                <div class="commander-state">在线</div>
+                <div class="meta-pill">80</div>
+                <div class="meta-pill">31</div>
+                <div class="meta-pill">123</div>
+                <div class="meta-pill">31</div>
+                <div class="meta-pill power">3332万</div>
+              </div>
+
+              <div class="commander-body">
+                <div class="avatar"></div>
+                <div class="commander-info">
+                  <div class="commander-name">为你钟情公子</div>
+                </div>
+                <div class="commander-state">在线</div>
+                <div class="meta-pill">1</div>
+                <div class="meta-pill">1</div>
+                <div class="meta-pill">0</div>
+                <div class="meta-pill">0</div>
+                <div class="meta-pill power">1.59万</div>
+              </div>
+
+              <div class="commander-body">
+                <div class="avatar"></div>
+                <div class="commander-info">
+                  <div class="commander-name">CrimsonFox</div>
+                </div>
+                <div class="commander-state warn">离线</div>
+                <div class="meta-pill">52</div>
+                <div class="meta-pill">14</div>
+                <div class="meta-pill">67</div>
+                <div class="meta-pill">9</div>
+                <div class="meta-pill power">802万</div>
+              </div>
+
+              <div class="commander-body">
+                <div class="avatar"></div>
+                <div class="commander-info">
+                  <div class="commander-name">NightBloom</div>
+                </div>
+                <div class="commander-state danger">承压</div>
+                <div class="meta-pill">44</div>
+                <div class="meta-pill">8</div>
+                <div class="meta-pill">39</div>
+                <div class="meta-pill">6</div>
+                <div class="meta-pill power">231万</div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-hint">HTML 视觉稿：强调贴顶、中央聚焦、资源压缩成卡、右侧玩家信息独立成档案卡。</div>
+  </div>
+</body>
+</html>

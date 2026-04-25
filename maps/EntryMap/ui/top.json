@@ -16,48 +16,6 @@
             ], 
             "children": [
                 {
-                    "cap_insets": {
-                        "__tuple__": true, 
-                        "items": [
-                            378.0, 
-                            5.0, 
-                            378.0, 
-                            5.0
-                        ]
-                    }, 
-                    "children": [], 
-                    "color": [
-                        5, 
-                        12, 
-                        19, 
-                        221
-                    ], 
-                    "event_list": [], 
-                    "image": 134092, 
-                    "is_scale9_enable": true, 
-                    "name": "top_bg", 
-                    "open_adapter": true, 
-                    "pos_data": {
-                        "__tuple__": true, 
-                        "items": [
-                            960.0, 
-                            118.0, 
-                            50.0, 
-                            50.0, 
-                            1, 
-                            1
-                        ]
-                    }, 
-                    "prefab_sub_key": null, 
-                    "scene_ui_name": null, 
-                    "size": [
-                        1920.0, 
-                        236.0
-                    ], 
-                    "type": 4, 
-                    "uid": "83635965-5cf0-4ca7-ae5f-be0af8973ed1"
-                }, 
-                {
                     "adapter_option": [
                         false, 
                         false, 
@@ -3101,7 +3059,7 @@
                                             "anim_type": 0, 
                                             "comp": "54182739-d294-4dbd-9d3e-6800c3becd7d", 
                                             "ease_type": 0, 
-                                            "name": "Show_26", 
+                                            "name": "Show_8", 
                                             "open_timeline": true, 
                                             "type": 2
                                         }
@@ -3274,7 +3232,7 @@
                                             "anim_type": 0, 
                                             "comp": "a06c0e95-daa5-4976-9d46-d3e9ebd1db0f", 
                                             "ease_type": 0, 
-                                            "name": "BackToHall_26", 
+                                            "name": "BackToHall_8", 
                                             "open_timeline": true, 
                                             "type": 5
                                         }

@@ -192,11 +192,24 @@ function M.create(env)
 
     local err_text = tostring(err)
     if STATE.runtime_ui_fault_logged ~= true or STATE.runtime_ui_fault_message ~= err_text then
-      print(string.format('[session_state] battle ui init failed, continue stage start: %s', err_text))
+      print(string.format('[session_state] battle ui init failed, abort stage start: %s', err_text))
     end
     STATE.runtime_ui_fault_logged = true
     STATE.runtime_ui_fault_message = err_text
     return false
+  end
+
+  local function rollback_stage_start(text)
+    if battlefield_system and battlefield_system.cleanup_battle_units then
+      battlefield_system.cleanup_battle_units()
+    end
+    reset_battle_state()
+    STATE.session_phase = 'outgame'
+    STATE.current_stage_def = nil
+    STATE.current_mode_def = nil
+    STATE.last_battle_result = nil
+    STATE.game_finished = true
+    return show_stage_start_error(text)
   end
 
   local function try_enter_battle_audio()
@@ -287,7 +300,9 @@ function M.create(env)
     initialize_hero_progression()
     setup_basic_attack_ability()
     grant_test_attack_skills_on_stage_start()
-    try_initialize_battle_ui()
+    if not try_initialize_battle_ui() then
+      return rollback_stage_start('战斗界面初始化失败，请稍后重试。')
+    end
     try_enter_battle_audio()
 
     if stage_def.content_source_stage_id and stage_def.content_source_stage_id ~= stage_def.stage_id then

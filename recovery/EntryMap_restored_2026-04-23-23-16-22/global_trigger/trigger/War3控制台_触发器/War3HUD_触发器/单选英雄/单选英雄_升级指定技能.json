@@ -1,0 +1,137 @@
+{
+    "action": [
+        {
+            "action_type": "SET_VARIABLE", 
+            "args_list": [
+                {
+                    "arg_type": 100030, 
+                    "args_list": [
+                        [
+                            "PLAYER", 
+                            "玩家", 
+                            "local"
+                        ]
+                    ], 
+                    "sub_type": 1
+                }, 
+                {
+                    "arg_type": 100025, 
+                    "args_list": [], 
+                    "sub_type": "TRIGGER_PLAYER"
+                }
+            ], 
+            "bp": false, 
+            "comment_enable": false, 
+            "element_id": 792490071000002, 
+            "enable": true
+        }, 
+        {
+            "action_type": "LEARN_ABILITY", 
+            "args_list": [
+                {
+                    "arg_type": 100014, 
+                    "args_list": [
+                        {
+                            "arg_type": 100006, 
+                            "args_list": [
+                                {
+                                    "arg_type": 100026, 
+                                    "args_list": [
+                                        {
+                                            "arg_type": 100025, 
+                                            "args_list": [
+                                                [
+                                                    "PLAYER", 
+                                                    "玩家", 
+                                                    "local"
+                                                ]
+                                            ], 
+                                            "sub_type": "VARIABLE"
+                                        }
+                                    ], 
+                                    "call_rt_index": 0, 
+                                    "op_arg": [], 
+                                    "op_arg_enable": [], 
+                                    "sub_type": "ec4eb6a8719f11efbdf8b1fc4e4f74aa"
+                                }
+                            ], 
+                            "sub_type": "GET_FIRST_UNIT_IN_GROUP"
+                        }, 
+                        {
+                            "arg_type": 100182, 
+                            "args_list": [
+                                2
+                            ], 
+                            "sub_type": 1
+                        }, 
+                        {
+                            "arg_type": 100002, 
+                            "args_list": [
+                                {
+                                    "arg_type": 100003, 
+                                    "args_list": [], 
+                                    "sub_type": "GET_STR_FROM_EVENT"
+                                }
+                            ], 
+                            "sub_type": "STR_TO_INT"
+                        }
+                    ], 
+                    "sub_type": "UNIT_ABILITY"
+                }
+            ], 
+            "bp": false, 
+            "comment_enable": false, 
+            "element_id": 792490071000003, 
+            "enable": true
+        }
+    ], 
+    "call_enabled": true, 
+    "condition": [], 
+    "enabled": true, 
+    "event": [
+        {
+            "args_list": [
+                {
+                    "arg_type": 100067, 
+                    "args_list": [
+                        {
+                            "arg_type": 100003, 
+                            "args_list": [
+                                "单选英雄_升级指定技能"
+                            ], 
+                            "sub_type": 1
+                        }
+                    ], 
+                    "sub_type": "STR_TO_UI_EVENT"
+                }
+            ], 
+            "comment_enable": false, 
+            "element_id": 792490071000001, 
+            "enable": true, 
+            "event_type": "TRIGGER_COMPONENT_EVENT"
+        }
+    ], 
+    "group_id": "tajxujh1EfG-13Wyv+tFVy", 
+    "p_trigger_id": null, 
+    "trigger_id": 792490071, 
+    "trigger_name": "单选英雄_升级指定技能", 
+    "valid": true, 
+    "var_data": [
+        {
+            "ABILITY": {}, 
+            "INTEGER": {}, 
+            "NEW_TIMER": {}, 
+            "PLAYER": {
+                "玩家": 0
+            }, 
+            "UI_COMP": {}, 
+            "UNIT_ENTITY": {}
+        }, 
+        {
+            "玩家": 0
+        }, 
+        [
+            "玩家"
+        ]
+    ]
+}

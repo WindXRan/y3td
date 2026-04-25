@@ -1,0 +1,3028 @@
+{
+  "name": "ArchivePageUniversal",
+  "uid": "2a818e2e-0fbd-43fb-8784-a76091948e99",
+  "type": 2,
+  "children": [
+    {
+      "name": "root",
+      "uid": "196eab80-ff30-483a-9402-4c789ede2769",
+      "type": 7,
+      "children": [
+        {
+          "name": "root_bg",
+          "uid": "a0a8916a-4301-444a-97a6-670364b68588",
+          "type": 4
+        },
+        {
+          "name": "content",
+          "uid": "9e13471a-9e57-4cd7-ae44-5a54245d190e",
+          "type": 7,
+          "children": [
+            {
+              "name": "content_bg",
+              "uid": "fc467595-04f2-4480-a0a0-7fcdd8a2b295",
+              "type": 4
+            },
+            {
+              "name": "page_universal",
+              "uid": "52ad5cf9-1835-48b1-9857-e96b3ea72924",
+              "type": 7,
+              "children": [
+                {
+                  "name": "page_universal_bg",
+                  "uid": "9dda1b64-5cb6-4aff-98e1-cd62d115e0d4",
+                  "type": 4
+                },
+                {
+                  "name": "main_card",
+                  "uid": "ccd7acd9-140d-4484-b375-d77abdc479d0",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "main_card_bg",
+                      "uid": "6a515556-1393-4471-aeb0-129981adf244",
+                      "type": 4
+                    },
+                    {
+                      "name": "body_pass",
+                      "uid": "18394e58-f50c-4287-98a5-3a7b8ddc7308",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "body_pass_bg",
+                          "uid": "0ad53230-00ba-49a4-b66d-d73d0fe4291c",
+                          "type": 4
+                        },
+                        {
+                          "name": "pass_badge_1",
+                          "uid": "e896cb85-14df-499a-be03-b25f826458e7",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_1_bg",
+                              "uid": "6fc9076d-8c82-46b2-a1a4-12c597e74135",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "03953886-e196-428f-8141-63cc3ae18d45",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "706dd7d0-43db-4126-ade7-7ccefb54261c",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_2",
+                          "uid": "d073eace-d2f3-4406-ae8d-7073217fec70",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_2_bg",
+                              "uid": "7a0997c6-a76b-4400-bfc2-8be2d4c80720",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "09b7f989-9475-4e95-bd32-1ff7a232a2c9",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "73fc18c0-3987-4b15-b0b1-b7a2211fafc5",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_3",
+                          "uid": "f4cc7209-c33b-4c64-a463-bde35dc2c3c1",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_3_bg",
+                              "uid": "caeece93-2bc9-4f14-9b95-a9120ac1fa51",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "0d584817-7814-4c67-9f30-c40de2492810",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "82e6bf8f-f2bb-41bf-bfba-35ab895c1bc6",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_4",
+                          "uid": "860c4155-52d3-44ff-a223-188882277f97",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_4_bg",
+                              "uid": "372b0f55-2e20-45ee-bff7-4879b33501c2",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "01460f0b-345b-4afa-8fdd-142bd6307f78",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "682d06f9-884c-49f7-9ded-788ab285ec8e",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_5",
+                          "uid": "1b3fc0b8-4854-42a4-bdae-b2106854531b",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_5_bg",
+                              "uid": "16278580-042a-4edb-9d41-928069e7b4ff",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "3bad18cd-472a-46a8-bf04-093110c60459",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "5ea2928d-b7b2-435b-8493-27dfe6f121eb",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_6",
+                          "uid": "e45832ac-ea26-48dd-8eb0-3e5dad384223",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_6_bg",
+                              "uid": "ccf60030-b4fa-4049-b543-eaa23f7807d4",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "5b2cf3c6-bf09-4924-b73b-6033e4dbd082",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "2e95e6b9-9560-4829-aeb9-cf5a31725399",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_7",
+                          "uid": "0c762196-3b65-4f5a-af57-1b256399454a",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_7_bg",
+                              "uid": "a95544a3-19ca-46ad-8f39-fa5acb706468",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "c1a21cce-6ce4-4f9d-9d6a-58343bf4d945",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "8384b54a-6ef9-45e7-8121-64fff81386a9",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_8",
+                          "uid": "c30f66a2-81fe-4b44-bd56-ba824a204d29",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_8_bg",
+                              "uid": "50ac842a-0202-4f9c-9a49-b1047f4867a1",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "4de70e65-1f3e-4b4b-ac29-9eacb7571fac",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "40126c16-8518-4989-ba3d-19c407886e5d",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_9",
+                          "uid": "fa4a331d-cce2-4e02-833b-b6ee99559f14",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_9_bg",
+                              "uid": "d2740778-8a55-4167-b4ae-f9ff58159bd7",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "eda9fb21-2b98-4262-b2fa-4595510c632f",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "951184e7-09ee-4502-8089-a2ce4de042bf",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_10",
+                          "uid": "95d1200b-bd95-4ef3-a035-43bc8c535b90",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_10_bg",
+                              "uid": "951db8f5-13da-414f-b8bc-dcb03ef81636",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "12d8582d-b336-4aa6-8286-5f005b20c91b",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "8a623960-8e6a-4379-be8c-0f3379a2ca4b",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_11",
+                          "uid": "18167862-4f87-490d-a425-539526b0a308",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_11_bg",
+                              "uid": "4808b624-0406-41e4-ac27-1e208057a21c",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "c3197866-ff36-42ea-8145-2dc83768df5d",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "7066fc7b-bb33-4a92-b9a8-635e6d725cc5",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_12",
+                          "uid": "7964de91-a013-4d57-bbd5-7ba3c4fac1a1",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_12_bg",
+                              "uid": "986b076b-e2a1-4a38-856c-245f79ba85eb",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "41cf2a61-cb4f-4469-a517-419794fb5d80",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "647f17b8-7b6d-4641-9b6a-4f54474e2787",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_13",
+                          "uid": "2f2e2051-5673-497b-af63-c0a7a6e37df0",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_13_bg",
+                              "uid": "86fd231f-e150-453e-9d82-f44b02917c54",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "68773009-a075-426b-90e9-11e4c37a8644",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "fe0b5409-f4df-4876-9d93-2b5326020782",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_14",
+                          "uid": "607dcee3-9eb5-4d70-9521-0da4735fb0ad",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_14_bg",
+                              "uid": "85cfc8dd-a354-4541-a189-b8a2ecbb09fa",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "6f4de127-7008-4cfa-879f-264b104be56f",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "a935a20d-d60b-41cc-bad9-003666dae622",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "pass_badge_15",
+                          "uid": "3c68e101-49bc-4f60-b261-3bfef3a7dc11",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "pass_badge_15_bg",
+                              "uid": "2dcf75fa-d363-4f30-8419-cab971231bad",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "3d1f9f56-2f9d-4a07-a99b-2f6d7fa47293",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "420e013b-3399-4f56-a599-65545aad6b21",
+                              "type": 3
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "body_map",
+                      "uid": "ab8d32f2-4249-4fc4-b3ce-27443cb10e0a",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "body_map_bg",
+                          "uid": "8d30d9d3-7118-4c3b-9191-512f8c5184f8",
+                          "type": 4
+                        },
+                        {
+                          "name": "map_badge_1",
+                          "uid": "1f0a195a-2baa-410b-9860-6715505fea04",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_1_bg",
+                              "uid": "f9126e3f-e150-4c40-9617-5af9c171410f",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "93b16402-f749-4edd-bd8c-8863db887127",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "27359263-c559-4e65-8359-6add9f31d990",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_2",
+                          "uid": "525bbc8c-18c2-4991-8991-5dc8cd8700e4",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_2_bg",
+                              "uid": "f8c60d37-ce67-4350-9346-8db70f79e9b5",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "59308c60-79bd-4abe-851a-500b57aca099",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "9abfac1b-8bb1-414d-9f68-bd06222d96b7",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_3",
+                          "uid": "d9389795-5437-4905-a673-c95bcfaa6818",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_3_bg",
+                              "uid": "2bc639cb-1a3d-4a0a-adea-e478a38c0025",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "4b6369db-acba-4bf8-82d0-256782e00a2c",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "4dc5630a-6275-4a15-9ade-ffc28beff2d7",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_4",
+                          "uid": "e841381a-f8bc-4e9d-890e-da2e17f7cfec",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_4_bg",
+                              "uid": "c9cc4e21-dd5d-4bee-9784-360190ba7b6e",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "dc51935e-1bdf-4fec-8bc0-92a72f88c67a",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "d8db6ff3-3e7d-4495-8e55-2778cd7a1985",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_5",
+                          "uid": "37c387f4-457e-452c-9f2e-dca9a9f569be",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_5_bg",
+                              "uid": "0f840754-9742-4af0-9971-6932ad05318d",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "1d96fa5b-66db-45b2-9923-9f74df0cd2b9",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "fe4e8863-6fa8-4098-9ebb-01923b0213ba",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_6",
+                          "uid": "90869936-33d8-40cd-a6a3-f998e78d14ee",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_6_bg",
+                              "uid": "16b03cc2-5438-41be-9ea7-784d1e8ab3ae",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "08ec7389-54f3-47e9-98c0-f613b590f512",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "215f93ac-fe1e-43c6-b426-c8b70ebaece1",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_7",
+                          "uid": "2d78de20-b8d1-4964-a4f2-2e66055c34fd",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_7_bg",
+                              "uid": "e1ca2986-2b0a-4e53-b8ca-10cfc42b177f",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "e5f9f8a7-8307-4aee-825b-4c2b33f90c9e",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "8eaa2a44-613d-409e-b53c-00da31dfc84a",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_8",
+                          "uid": "09898039-9b74-4622-a79e-d61d1716226d",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_8_bg",
+                              "uid": "13768b0a-c5b1-41a3-a622-dfac1e929ac7",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "341b0e58-c25c-4e6b-a4f3-47361dcdc2de",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "013a53bd-0077-4bae-8162-142594b8c091",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_9",
+                          "uid": "9bb0f714-3ca7-4f83-a819-28d5e2c7848d",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_9_bg",
+                              "uid": "3f433ccf-b4e0-4a8a-9278-5d253c085273",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "2d943f78-97e7-418a-b4fd-18c549719bc2",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "a3a65482-f9c9-4839-9fd5-ddef59623a19",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_10",
+                          "uid": "22efe597-a62d-4b53-b335-8788b108cd82",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_10_bg",
+                              "uid": "3389c6b5-8e1a-433e-a908-d6bb1d92320b",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "16e06166-8818-41aa-b6b1-1cf4d242a93a",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "47a88c84-16b9-4d43-a7f8-7ef8f7daf25a",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_11",
+                          "uid": "4d5bea03-bce4-4489-bf69-e503a4e66fa0",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_11_bg",
+                              "uid": "1ca5f4a6-9914-4b68-9816-d516ef11a118",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "aa5d01ac-9a62-49f5-861a-ec4c05241f4b",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "0859e4e5-3934-49db-a1d6-f7425e0d1347",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_12",
+                          "uid": "ae00c189-1a46-4f81-bc45-8254ec1f6743",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_12_bg",
+                              "uid": "31df2ddb-0444-49aa-8425-e8bdcbeeae67",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "3d7e0b7b-2a5f-4e8f-ba24-e2ae7ba0cf08",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "07465057-0372-40d4-b37d-763cc8296154",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_13",
+                          "uid": "b44cbb4d-d71b-4ccd-b44e-9a9ba26d4428",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_13_bg",
+                              "uid": "e32fd039-bc55-4036-acb2-3d2ebaec1409",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "1f2174c8-5286-4d00-922e-cef7b31b977f",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "d22f4ca2-a036-4fe4-8ef0-c320074c4b36",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_14",
+                          "uid": "8b73a2e1-ec0f-4d6c-9bc8-8526c191ebb0",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_14_bg",
+                              "uid": "963f90c8-08bc-4794-9daa-ef6d802b3e79",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "be45e533-c617-436d-a123-af5fc315404c",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "69df5a84-a6ab-4bf7-8604-d0fc484ee2d8",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_15",
+                          "uid": "30b80a82-1b9c-4798-97a1-4d245e2377e5",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_15_bg",
+                              "uid": "db1ee54e-1d7a-47a1-af54-b2ebc2876ad5",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "9942e524-3c73-4737-8760-6be6473f753d",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "6a497c5d-c3ce-4f10-9d86-641c7781230d",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_16",
+                          "uid": "78aa0694-4b2c-4dd9-bb09-d917830d04f1",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_16_bg",
+                              "uid": "326818c7-3783-4cec-924a-2d836fee7b45",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "a72cc37c-653d-44c5-aca3-63e1de9e7fdc",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "d366e8e1-0a17-4cfb-9db8-c614d277e74a",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_17",
+                          "uid": "2fdec48f-928e-4f4d-ae59-987249b89d05",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_17_bg",
+                              "uid": "8b3a1357-f0e1-473a-980c-f66bd09a1878",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "c38b70c9-fa85-4c41-88c0-a5e9a11376dc",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "d8fb1df1-dfea-4787-af6e-3cf683a064ad",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_18",
+                          "uid": "ea989ae2-6e75-4f7a-81f2-d95889d24c89",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_18_bg",
+                              "uid": "d07412f7-1b5e-45f9-a4ea-0dfe274299f9",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "bc4dfd9f-c8f9-4c39-b9c6-eb3a157c56de",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "1a7916e4-c04a-43c8-a4e5-32f42c27f007",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_19",
+                          "uid": "1d81e922-9039-457c-a7db-1df2cdc8005b",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_19_bg",
+                              "uid": "d1f6d330-5d0e-4403-a2d5-2e2c6f802813",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "7fc301f8-ef97-4597-adef-ed21d4d870a6",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "e26a91a0-deec-448a-a6a0-f3b52bf3ad85",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_20",
+                          "uid": "34635aba-9125-4e09-8fc5-3a7f417eb4ac",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_20_bg",
+                              "uid": "91053831-315a-43e3-a804-b7ec34af515c",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "ac869de0-5d37-4d12-838c-2dfc0c16ee26",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "c1985176-1080-494a-b093-4b88f6fbeef7",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_21",
+                          "uid": "c1a29fef-20aa-414a-b522-6bee324d6b3b",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_21_bg",
+                              "uid": "b9e69e05-9545-4dba-81df-b8165ec57b49",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "da822a2c-fc1c-4dcd-82b0-9268ed5296b8",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "5f9f6d58-3eaf-476c-a1b9-77fbbfd58c38",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_22",
+                          "uid": "f120d8d5-2f10-46e9-8234-c28f02ca572f",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_22_bg",
+                              "uid": "5c2d26fc-8ae2-4242-9659-0f7b895b719c",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "fe9e9f09-ff64-4e27-bdb0-d5de4687ddf9",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "1814aa5b-cb21-4a45-8b4d-3ade2913370d",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_23",
+                          "uid": "97e74510-19d8-4cc9-8c7a-a2da1e1cf5ca",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_23_bg",
+                              "uid": "9925205c-a261-4ab0-93d2-3224e33d6187",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "d1c4ad3b-916b-478a-b47b-c3d9d6e1d4d1",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "43f26c60-8d7a-42d6-b9f6-58f847e43861",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "map_badge_24",
+                          "uid": "5d08e0b4-879e-4b49-b722-fb4838f822f3",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "map_badge_24_bg",
+                              "uid": "41c13832-0393-4ffd-817a-6d5cec1d68c6",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "7bbf4b09-a2a2-4e0a-963d-1c887acefa9a",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "46eb3b35-048f-473b-9a97-89aa4b54b284",
+                              "type": 3
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "body_community",
+                      "uid": "ca8b6b07-0d64-497e-9b9f-588d9bff7ea0",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "body_community_bg",
+                          "uid": "b2c93c0d-df60-483e-a392-0210e3fb4fe0",
+                          "type": 4
+                        },
+                        {
+                          "name": "community_badge_1",
+                          "uid": "ac6e1be6-1046-4506-ba8a-56916d942aec",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_1_bg",
+                              "uid": "608b75a3-9682-4b85-b1e6-9b65e40ac50d",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "cb00d5a0-d80f-4b2e-9b22-4acc11afecc1",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "e8f82d0a-03b4-4898-bbb3-2625ba5ea84d",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_2",
+                          "uid": "46d2417f-86fb-41a9-a679-2115a22603ea",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_2_bg",
+                              "uid": "8203d382-fa1d-4301-8bb3-5e6971fe4f97",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "c109397d-ed71-489f-99fc-9665140a1134",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "c67a51a1-9416-4c69-a597-11b71088feca",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_3",
+                          "uid": "631ddccf-079f-4505-a761-da785ad9cde3",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_3_bg",
+                              "uid": "e93772f2-7436-4d41-a19a-7f1d59f448d1",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "8f34e629-c9fa-469e-bf54-c9521c7a62cf",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "f702ac51-7528-4d15-bf97-c73eeff2fe78",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_4",
+                          "uid": "ee1d5b9e-c85f-4752-b0b3-d07ad4a19974",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_4_bg",
+                              "uid": "ff1d4b39-0b3c-4677-bfd4-9a92344f7c54",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "2f8d6dfa-d900-4f42-a489-b3d8adfb1c1e",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "29bb07a2-932a-496b-9e1a-b6b226e8c622",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_5",
+                          "uid": "bb3ca6cf-179d-400b-bac0-8140af80f567",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_5_bg",
+                              "uid": "971606ce-8ebc-4323-8aa4-e2bbd8b471d2",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "8c6fe0b2-1d1c-40b4-ba7b-27b5374e5a79",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "f1634082-e242-4eda-827e-d05a154ba2fd",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_6",
+                          "uid": "c06aaca5-e8e9-45b3-ac98-9654342a91ca",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_6_bg",
+                              "uid": "57344aff-0538-4dd8-95d1-08eea1d5753c",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "a65555f9-c471-46cb-9dd4-35965c3af747",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "b4d0fe32-7a0e-4366-91e2-e5786e0c240f",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_7",
+                          "uid": "daf58e99-4e25-4988-a36a-8217bab9829c",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_7_bg",
+                              "uid": "13a57fb4-76a8-42ee-b709-8515af53e001",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "ef3692c9-bb37-45f3-a562-67bab21d74f6",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "077247a4-8a0e-4c66-9488-50a1364f65e0",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_8",
+                          "uid": "569c1102-c55a-4913-a99e-6421392fc309",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_8_bg",
+                              "uid": "e7f9bae2-766d-4ea6-ab7c-f24fcaba4725",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "643a4855-3d46-4db0-a543-561e9f43f9b6",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "f908b1cb-c34c-4fa3-869f-94e2aa91cd3b",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_9",
+                          "uid": "50828d11-525d-4653-9db6-ec678592a690",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_9_bg",
+                              "uid": "584f1fc3-f82c-4ae4-9149-12d1dd7bcb10",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "f27956b4-e3a8-4789-bcd1-967a010e8ee2",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "857228e8-5539-4a21-a857-6c00afd48c33",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_10",
+                          "uid": "90ab8d2e-a8ff-4b88-8129-d248e8328fe4",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_10_bg",
+                              "uid": "0ec5800a-e328-4ef9-a554-574f9851faff",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "14ea5c0b-5468-41e7-8dbe-234c9e1162c9",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "3cc7138d-0035-40b5-b181-2c89f5dae224",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_11",
+                          "uid": "9507ad78-90c6-4158-b080-0a05eb1da663",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_11_bg",
+                              "uid": "51458920-d64a-4f67-9b82-8b6ef35b20b2",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "5b2ea5f1-6bac-4b5a-b9bd-e7e1d05fd99d",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "90f6f372-8d4a-48c5-8970-425c5622fa8b",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_12",
+                          "uid": "4fe425c3-e1e0-4cff-98f6-2bf93f0e1d7d",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_12_bg",
+                              "uid": "be666482-ad8d-4652-9b52-27e0c7224fb0",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "073b5b01-ebbd-4a79-bdeb-4e42583a5471",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "6ebf8b11-bc96-4e86-8c7b-b8ce6ede1551",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_13",
+                          "uid": "20785858-6a30-491c-b6d7-e4550d4e4202",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_13_bg",
+                              "uid": "c3376aa9-6594-43ae-bdc5-cba3fa32ed34",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "8a4b6af1-f4b4-4705-9018-cc7336cf93d6",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "f950e697-a10a-4458-b97a-2fc6e107acb0",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_14",
+                          "uid": "3778cc11-1029-49f9-8cee-30a76265537b",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_14_bg",
+                              "uid": "f4a9434e-17c2-4d9e-98e3-bc8cb1ece9c2",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "35946d85-a767-4077-bfb7-c0be3a5682aa",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "2302dbe3-a290-44e2-8f18-cf1daf1e8a04",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_15",
+                          "uid": "c96f261d-84bb-4db0-adfa-9547d04b7cbb",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_15_bg",
+                              "uid": "d56fb6df-a815-4635-93ef-6d591e047241",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "fef0853b-b573-4f25-be75-7295d74b5093",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "d055581c-6c9e-4485-8c4a-cd64807d3968",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "community_badge_16",
+                          "uid": "8b751cd6-a53b-481c-9cc7-9fc28bacf8c8",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "community_badge_16_bg",
+                              "uid": "0492af40-8021-490a-a0e0-3ad21397ede6",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "dba05571-7201-4584-a2d0-ac4961245895",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "204bcc44-a02d-4d71-8e26-1e2949ea7dad",
+                              "type": 3
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "body_achievement",
+                      "uid": "30278d27-2365-4add-867f-2778140c9f0c",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "body_achievement_bg",
+                          "uid": "9eabdfff-de0d-49d9-b531-abfa6955bb8c",
+                          "type": 4
+                        },
+                        {
+                          "name": "achievement_badge_1",
+                          "uid": "3c0188ed-288b-4647-a564-ea2c96f0a844",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_1_bg",
+                              "uid": "4c2f0ec5-02bd-4e9e-8b22-9d331103f9f0",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "993c16bf-a51f-4571-affe-e3c43b23bc12",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "64ea658c-4e1b-4f40-9d37-6f9694254a94",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_2",
+                          "uid": "3cd57a2f-9970-4d68-8a18-71f693b68cc5",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_2_bg",
+                              "uid": "718a1385-38ea-41c4-b56e-cc304b4e639e",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "83248231-31d1-4928-adee-ce17e1910b37",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "94f5ebcc-cb71-4ccf-9763-cf2ddb78e1a8",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_3",
+                          "uid": "d81f09e8-879a-48ae-9f0d-ffeb8ecef8b3",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_3_bg",
+                              "uid": "9d7872a1-66c9-4017-9ad0-079281f15b32",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "8aabcd22-c35a-4f80-a6b4-32a0a464a138",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "8054b98d-d2d9-4f3b-adf3-6addfb4810ed",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_4",
+                          "uid": "35ac29b5-fe87-447a-a038-e043b6ba7886",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_4_bg",
+                              "uid": "f2fd9ec4-f801-4e40-95ba-11dc3dc16b95",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "204a83c5-913d-4fca-83b8-dc44b00214bf",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "11902203-9260-42bd-b0bb-fd5d0e5f68e9",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_5",
+                          "uid": "bf4a5f37-ea09-4ded-bb3c-a352889aa95e",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_5_bg",
+                              "uid": "d34e5d65-0989-4111-88c8-cbc9ebdf96fd",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "4a13cbc0-e27c-4ac1-be49-220e3065d48b",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "fb01d005-d566-4749-86f1-22a598f5e693",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_6",
+                          "uid": "94919ad9-d4c9-42c0-94f7-e71ffff73986",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_6_bg",
+                              "uid": "ebbad5be-c1b5-40a7-8672-dd48b3fdf2b6",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "6ba8279d-1747-4977-9d0b-a02cf58ddb70",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "a6b602e5-9409-48d4-8a8a-623f068ff36b",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_7",
+                          "uid": "71e90927-29da-4a35-b0b6-b58b0e1a1f58",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_7_bg",
+                              "uid": "04705690-7bb4-493e-9853-3f96e7d9a245",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "ebc100af-973f-4806-a1c7-9f0509bd0766",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "8d9efe4c-4fd9-40ee-9f39-e73769e75aed",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_8",
+                          "uid": "e7c75171-cd15-4fa9-ab3c-9bf1219c4fce",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_8_bg",
+                              "uid": "0e81dfeb-630f-4d51-a985-9e4597201192",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "ad4cf931-80a3-4875-af02-7147d16897cc",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "bebd1d7e-023f-4761-b1d8-9ac687bd803c",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_9",
+                          "uid": "b7aaad0d-2666-43b2-9a7c-a669c7e65503",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_9_bg",
+                              "uid": "b1f31347-aea3-47ec-b3f4-82f3132537c9",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "5bcafff4-5727-48aa-9b60-2f42fe6e316a",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "db1e0714-679c-44a1-8156-d629d884b74a",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_10",
+                          "uid": "461a03ff-54aa-4b2c-8b28-60ba8b2d6bc5",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_10_bg",
+                              "uid": "f0b20a15-fb7b-4071-8b5b-0ef3e1654eb7",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "92aa6032-57a1-46c1-85df-80871c570981",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "54b9d52c-034e-4d04-9b2f-8c247d392b12",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_11",
+                          "uid": "0c9ddc77-aab8-4486-956e-ca37899cff0d",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_11_bg",
+                              "uid": "a1377cfc-1804-46f5-987a-92fc43e3f30f",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "30f64151-6e5e-40ef-ad47-0c57d5045730",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "d4e2573e-02e7-47f2-9062-16c27764adf8",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_12",
+                          "uid": "39dd2214-0017-499f-8c42-c2f52052d7b4",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_12_bg",
+                              "uid": "3b63f049-21da-4c4f-a887-7407418eea9a",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "f7ba381f-ed11-4e72-9af6-2495920d577d",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "a58d55a2-fa42-4247-b40d-df8ca5b742c3",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_13",
+                          "uid": "a1158540-76f0-4db9-8618-18142df13aa2",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_13_bg",
+                              "uid": "8c24608e-2f3f-4996-a9cb-dfb069bdf3a3",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "489a92d9-10ea-4987-97f2-5f2011683ad8",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "164d9d32-9eca-4dad-88ac-91176be24816",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_14",
+                          "uid": "c0f4dccc-b3af-45b1-a864-2c3f74968024",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_14_bg",
+                              "uid": "e91f2894-73bc-4399-a36e-8ab9c5b8fdc9",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "38eb2d40-0e3e-4720-b6e6-124596a4d346",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "237bb93c-1467-4275-aefa-da8da4a6e4ec",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_15",
+                          "uid": "e18e1478-13ac-43d6-92e8-d959b38c9927",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_15_bg",
+                              "uid": "8dc5479d-32bb-4ebb-a27e-e4470d5a03b2",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "ff0a5ee1-22b1-4116-9693-5e6b2219e776",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "91991af1-0b56-4abf-b9ec-fa09520c1bbe",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "achievement_badge_16",
+                          "uid": "e5daad50-4a77-4351-bc24-e8a91afa7be8",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "achievement_badge_16_bg",
+                              "uid": "1149e04e-623c-4b93-bf0d-ae91abc0b066",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "5f7a47ad-a0b1-4a46-a20c-e19253caa5ab",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "de44b76a-273f-49be-8544-826bab0ca947",
+                              "type": 3
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "body_lottery",
+                      "uid": "87134108-70a3-4888-9a7c-77dc564f3f4c",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "body_lottery_bg",
+                          "uid": "d5f72982-d795-4410-86eb-1dc7b9146299",
+                          "type": 4
+                        },
+                        {
+                          "name": "lottery_badge_1",
+                          "uid": "ff5f4c82-f595-4841-994d-90f9b100dbdf",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_1_bg",
+                              "uid": "c0d08b61-d14b-428c-a3c8-548a92ae69e2",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "8554455b-6916-4477-b58f-3094066f4959",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "5ad25e38-d10a-4a4f-a885-e521d3d22443",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_2",
+                          "uid": "8539cdfb-eba3-4abe-95a0-895e1ed943cf",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_2_bg",
+                              "uid": "cab9af1b-fb4a-4709-bf01-6ff522c710bd",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "3ecc1d75-1bb3-4ee4-8763-eb8625aca512",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "5810e130-301b-4d09-9a45-3040a4bca939",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_3",
+                          "uid": "e9d758b5-22ee-474f-9bf1-57d181d4177a",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_3_bg",
+                              "uid": "b23a1177-64c9-4e52-b796-e749e3f47971",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "d23deea3-db11-418f-8118-52b3dd38abc2",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "25fc65a8-8385-407b-8ba0-ae6ebb42a19f",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_4",
+                          "uid": "449be929-de24-4cff-bb70-5d0c45e1e97c",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_4_bg",
+                              "uid": "e398872c-ce0b-4f76-984b-09bafc25bca3",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "4e3463e5-561c-4bc7-8116-5061a9002e54",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "c899c2f3-5ca2-49e4-8c8e-f4606aa8de18",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_5",
+                          "uid": "c4ad0901-02d7-49a9-8ca9-fc6c6c1fec99",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_5_bg",
+                              "uid": "2fe31536-752e-422b-a1d7-1d8a512cb671",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "17199914-19ec-4991-a22d-92504c6f22b2",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "4c149493-f1cc-4d47-8504-381efdd1bd82",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_6",
+                          "uid": "e6975198-f295-4ae2-9d0b-26651ce742a7",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_6_bg",
+                              "uid": "9f8232d8-acf0-46f3-b2b3-468deb85d00f",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "160a2e8e-8f36-46f9-b903-2ba3e158953e",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "c9257be8-b395-4706-9108-2493e131062d",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_7",
+                          "uid": "cc34326a-b3a6-4350-846f-d8802a107688",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_7_bg",
+                              "uid": "a8c3f987-dc5c-433e-ae91-470a76c9c94c",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "0b24006d-7547-4da3-aa57-f4d491da0bbe",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "82d5e1a5-7e3f-4ea8-b2c7-12342b674973",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_8",
+                          "uid": "bdf1b0e1-8afe-4899-9a11-3f1fc83730a1",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_8_bg",
+                              "uid": "b3005587-40dd-44a7-850d-9ddc0ca6b136",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "4e397d5d-6112-4e69-b07b-9fc1685642d7",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "d4f4a840-ed75-4469-9557-a779e4bc656b",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_9",
+                          "uid": "01d0f18d-6a07-476c-a2cd-f14e0462fdc3",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_9_bg",
+                              "uid": "1a58c9e3-86eb-44b9-bc78-3f4cf4368eac",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "d2249bd0-78da-47d1-b49d-61e4a38b28b5",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "8565ec5d-d165-4758-8364-095978dcf9a0",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_10",
+                          "uid": "f6199e1a-5b00-4572-b166-3e08e8435dae",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_10_bg",
+                              "uid": "7dbadc10-b392-41cc-8884-0e345f175d08",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "01e41890-9815-42b2-9a75-d380c8b6e1e3",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "524138b3-ef79-4087-ba11-deb04318a05f",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_11",
+                          "uid": "b85fa400-8289-491c-a624-ade41fdb9c9e",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_11_bg",
+                              "uid": "1d708279-9cc1-4ce2-86c1-57cfc459d182",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "099895b6-5b61-4cce-8195-4e1bcf1b2bfb",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "0ed41e2d-40af-4eba-a8d7-413e5d58065b",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_12",
+                          "uid": "a3240ef7-b172-4fe4-b943-1d0b3af9d2a4",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_12_bg",
+                              "uid": "9b8abeb0-7d27-47b1-a9c6-cc3b6c55ed13",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "79aa248c-7286-4d41-aa34-06b9d28772c7",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "b21ac4de-2887-4dd4-98ed-a5392c55532b",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_13",
+                          "uid": "f6f275cf-58e6-4bea-92b6-d4ae9f64b471",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_13_bg",
+                              "uid": "7edb7f61-7fbf-4a4c-9dba-6a8313990fe7",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "33f94b0c-ade6-47aa-8bd8-08e33fe94ed9",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "9ff653a3-ea5f-4773-84a4-715bef4aeb6f",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_14",
+                          "uid": "760e765a-9637-45b2-b203-f967d8c4ab83",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_14_bg",
+                              "uid": "01c8957c-37c0-4c7c-9d4c-dbc39c4e7fda",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "764999d6-0174-491d-9f00-18701aceaaf8",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "5570401d-6cff-482d-9107-f7b6593428d4",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_15",
+                          "uid": "5c8dc214-4982-4700-aca0-7aab68c3fa15",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_15_bg",
+                              "uid": "4e178087-5fd9-4dd1-bb6c-13de93f6e791",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "392b7e5d-4c91-4dac-89ad-33b706852e35",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "1ac77c75-3686-439b-8f3d-ab4a95fdf782",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "lottery_badge_16",
+                          "uid": "4bf3da0d-c452-4bf0-b872-eae440754248",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "lottery_badge_16_bg",
+                              "uid": "f018b90b-324f-4303-9d8f-5c91bd006766",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "c4ab02e1-088e-4c3e-acb6-c1ddd51bdebf",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "8529ab59-24c3-4202-bdfb-0953320f9167",
+                              "type": 3
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "body_test",
+                      "uid": "b49131c8-7c6c-4f30-8427-eccec15052bc",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "body_test_bg",
+                          "uid": "5398737e-5445-4dbf-9013-945c3af99fc5",
+                          "type": 4
+                        },
+                        {
+                          "name": "test_badge_1",
+                          "uid": "da8f69d4-4da3-49b2-991e-5bfa39a41fff",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "test_badge_1_bg",
+                              "uid": "19d0c4ae-f042-4e23-a942-0ae6aa3201b2",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "863f694a-8c78-4eca-94fb-fada0412d5f5",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "367426c2-682c-4ecb-bbcd-7062fa4f95fe",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "test_badge_2",
+                          "uid": "428d2d58-ea31-49dc-bdb0-8080a7861ade",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "test_badge_2_bg",
+                              "uid": "b93a0991-ac81-4bc4-bad8-4c19f67a8662",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "4b8c44c7-4a4f-4dcd-a2d0-fe7fcfdc597f",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "3a4632b0-2003-48a0-a9db-6563c76ea60b",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "test_badge_3",
+                          "uid": "2ed36ca6-663e-4ab3-9dd7-f1edd557bf75",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "test_badge_3_bg",
+                              "uid": "6f88cf8c-7a29-4e88-abb0-2b6a2cfeac12",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "4d262cfa-ee9e-445e-8e5d-013a6b5f9518",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "45edea55-90d5-4b38-a564-98301487449a",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "test_badge_4",
+                          "uid": "cfeeb69c-db4d-4bbd-8714-d17cf286ea20",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "test_badge_4_bg",
+                              "uid": "a9dfedb0-669b-4423-8c94-b1ad77c62761",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "27340261-0635-40e4-8fc8-f8ba7f563ebe",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "1ccf3312-cab2-46cc-8728-a1b8b11515b8",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "test_badge_5",
+                          "uid": "7e1e8d73-45ae-43ee-bd87-6b5f7509ab95",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "test_badge_5_bg",
+                              "uid": "4cf38776-5520-408f-9f3e-3871550f4237",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "221929aa-a2e8-49bd-b4ee-d7538ed7c26b",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "916bcfa7-5745-4753-9e6c-8d2f9157d3e7",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "test_badge_6",
+                          "uid": "0069a585-c87e-407f-a50c-4f7f4c0aad7d",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "test_badge_6_bg",
+                              "uid": "786a06a6-72b3-4c71-a083-1ae1219b6501",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "a0c3ed0f-5702-44c6-a8b3-e47f9bf3ac45",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "0ed92e62-daa0-41c2-981a-66e3304237dc",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "test_badge_7",
+                          "uid": "a3765437-238b-460c-a66f-f47a2e1b56d2",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "test_badge_7_bg",
+                              "uid": "f0208307-e275-4294-8014-de0978089763",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "c0e8012e-e54a-470c-91cc-1cf7db646eef",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "807509a5-ed13-49e5-845b-fff8009f6dcb",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "test_badge_8",
+                          "uid": "587742d2-9ac4-4599-a770-67346e9893c4",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "test_badge_8_bg",
+                              "uid": "b9dbc377-4465-4670-8b1e-e876c53dc2f2",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "9d73d79b-8bee-428d-b10b-6e86107c33dc",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "bcd89f34-a8c2-409b-8de2-731487b79f53",
+                              "type": 3
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "body_fish",
+                      "uid": "1365a936-73fe-4e7a-8f3c-d6d8cfe4169d",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "body_fish_bg",
+                          "uid": "9ec23e68-e9a5-4ff1-bd23-577b401f2c93",
+                          "type": 4
+                        },
+                        {
+                          "name": "fish_feature_1",
+                          "uid": "effb6d4a-0f24-438f-8281-86550faf4f0d",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_feature_1_bg",
+                              "uid": "0bc8440a-ec65-4a2c-8083-2c69f0fccf7d",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "67501d5d-038e-4d40-9a02-132eac8bdf93",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "82f1c4be-1e12-4088-afb3-b793e08fdb52",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_feature_2",
+                          "uid": "38554873-9437-47de-bb39-0fc5f531b8a2",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_feature_2_bg",
+                              "uid": "fbdc92de-0bc2-42a3-8323-21b95d79ab19",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "07d2ac80-b708-49b7-93c7-dadeb7d41823",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "921eb585-dfec-4ec2-bd41-f1e2fb21660c",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_feature_3",
+                          "uid": "237047de-3c01-419c-815e-83136e569c2f",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_feature_3_bg",
+                              "uid": "3dfb63f2-753a-4424-82e1-5df2cb174530",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "d9855684-2baf-45cd-ae53-a6fcd003efa9",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "f12da7ff-5147-40c9-a48c-19d814da1373",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_rarity_1",
+                          "uid": "818a5ccb-2fe2-4851-b00d-3281a0397c85",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_rarity_1_bg",
+                              "uid": "e6acdf4d-366b-44d9-ba1b-f2d041be9bcd",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "a41da68e-a6aa-4bd3-8156-cb5f8adabeeb",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "918b6f9c-7500-4a64-aca9-fad08db8094b",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_rarity_2",
+                          "uid": "5ffcfd8f-ca90-409b-b16d-aa16dd1904e1",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_rarity_2_bg",
+                              "uid": "d5786d9c-1766-4f43-a501-b52757656f06",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "55678303-2596-49d4-930e-fa638d4d31a0",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "6b7f052e-caa6-480a-93b5-b7d0c9f334ec",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_rarity_3",
+                          "uid": "042e78ad-dcb8-48f5-ae36-b8028144a6ee",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_rarity_3_bg",
+                              "uid": "d60deb9c-e668-4342-8d5f-794195881414",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "38ed3dc8-b16c-4542-8ec4-c9bd960e27f7",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "0f52e996-6bee-48f5-822c-4c80edfaaace",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_7",
+                          "uid": "32422c46-051d-4bb4-b8fc-25b333dfd671",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_7_bg",
+                              "uid": "b8ebff8d-1d2a-4337-b83c-8b684822f49b",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "468528b5-2219-4c8c-b0aa-6b439dab32f7",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "dfa85c2a-bfc8-4043-8ec2-4a972b891043",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_8",
+                          "uid": "173a4a41-6244-4c86-a5ad-9c6c39a5ab3a",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_8_bg",
+                              "uid": "b067d103-db91-4f80-903b-1e0d7358ff54",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "6d222369-b0f3-48f6-b954-4e2019fb97b2",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "c146e5fb-a45e-452a-9986-883d678c5ad8",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_9",
+                          "uid": "a4c7e256-5ceb-40da-b95d-175fe36791a5",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_9_bg",
+                              "uid": "6b21d7d1-be8b-45df-a0a9-914c6480a387",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "cd19463c-91cb-457b-9afe-83f923349749",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "055c0cb1-ffae-4a66-ae05-e39c293eb96f",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_10",
+                          "uid": "9b52b6bb-23fb-46d3-be09-6f0a2449ec95",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_10_bg",
+                              "uid": "e48c9fa1-be6b-41ac-9fda-58a562acc8df",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "ef233e06-2a82-457c-9bfb-ea8ddbec0de4",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "020adc78-6577-41e1-a73b-a389e9223c3c",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_11",
+                          "uid": "d2f24e59-73e8-4979-a02d-3d6142b4ba3b",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_11_bg",
+                              "uid": "5cd59775-1f57-44aa-a9b3-5a2fbc19d791",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "2a825584-e853-44da-94ce-cb7a7c8116f3",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "630b98ce-6fb8-4a68-ae23-c9bca6230267",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_12",
+                          "uid": "ba16281a-f430-4a76-9518-4f7c3502e556",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_12_bg",
+                              "uid": "e77e9128-5700-4199-a081-fee6e6aaa513",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "b977454a-9c7c-44af-89bc-87e9f1083ae7",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "b3a8746b-bf70-4dcf-a7c5-4e7def5c1ab5",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_13",
+                          "uid": "6845b5c5-66b4-4805-9f1c-e0e48611f196",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_13_bg",
+                              "uid": "0c77a096-52f3-42fb-bc3d-bbc790dc2ffb",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "3e34d341-7fe8-427d-8b89-13679c11575c",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "9040cc4c-9618-4e1d-b3fa-077aa82d7a61",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_14",
+                          "uid": "3cabe356-f1cd-47b3-a5eb-0efd4a7eaa8d",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_14_bg",
+                              "uid": "75a0188b-654c-4622-8308-0a5bab2b830b",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "0cfb7f0a-85f1-4c29-9e48-7b5f6bc5d55c",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "99033a96-883f-40b3-8caa-427bf480438e",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_15",
+                          "uid": "984e7a2b-3d85-42ee-bd56-6808519f60a5",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_15_bg",
+                              "uid": "ea2b9664-3d90-4cab-a384-4435987a6576",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "8d655b94-fe56-4990-9a4c-ec16161bdd08",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "c9ae0295-3179-44df-81b4-b3545eb7c623",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_16",
+                          "uid": "66be70fa-37cf-4f37-af62-78567d46a27f",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_16_bg",
+                              "uid": "95360c7b-db02-4816-be16-6b83740ed6b3",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "254ac8f6-cda2-4345-bd9f-4080434d2ccb",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "3a6092e9-07d9-40e4-9a10-0217599a9d11",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_17",
+                          "uid": "7ea50d09-fb04-4ba3-9e4d-9484809bbba5",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_17_bg",
+                              "uid": "c54ae5f4-b87b-448e-b621-40e78c46de10",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "7c8c3707-2a4f-412d-9002-e3dbec4c7055",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "20e64fd4-738c-404f-a0d5-3f1c504de5d5",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_18",
+                          "uid": "b0dcc620-9961-4c1e-994d-b16b00fb7e36",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_18_bg",
+                              "uid": "6830e927-f9a7-466e-b639-2c1cf30c93a6",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "c8761ae6-b0a6-4a58-a788-5265ffa0c32c",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "d61de3fb-0727-4a64-bbb1-0cb262d1e50a",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_19",
+                          "uid": "69ebabcd-4af0-4392-85a3-dfbb85ce28a6",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_19_bg",
+                              "uid": "37f8ea64-3822-49aa-8c5b-3b55bee9b498",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "e6138188-89c5-44d4-afce-8c176fdad649",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "6c3ca844-79c3-4ef1-bd2a-ecabf4ef63d8",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_20",
+                          "uid": "3357dee2-7dd7-4a55-8251-54e8ccad1179",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_20_bg",
+                              "uid": "3a62b430-5972-48e9-b08a-ca5d7e887847",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "d36ab330-9ac0-4925-af45-3521867c6f00",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "e2817f77-f09a-45b8-84b3-7007c8900c9f",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_21",
+                          "uid": "838cf097-54ff-44f0-9efd-a573f8324b25",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_21_bg",
+                              "uid": "183e45fa-41fb-4402-8850-fb847702c322",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "df007481-d613-4c5b-8d54-6be609a89d21",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "945ecd25-e9c9-422d-bc53-0b3d2cdcce73",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_22",
+                          "uid": "caf07f40-18be-4bd6-a5ca-a2df1bec57b4",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_22_bg",
+                              "uid": "4513862d-aef1-4c18-a5fe-da914675b333",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "f4ed243f-66e2-4369-b4b3-6e8141669bcc",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "8a730405-2a07-4ecb-a0bd-f8a1e7dd9404",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_23",
+                          "uid": "a14bd0dd-01d0-4b36-ba12-b0078461896a",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_23_bg",
+                              "uid": "a8d61230-e44a-4ccc-bbae-865c7fbd7a1f",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "72a4fcfb-60dc-4434-9747-e7c2367dba9f",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "9d403dd2-7ae1-4549-a5e3-e64da293aedb",
+                              "type": 3
+                            }
+                          ]
+                        },
+                        {
+                          "name": "fish_badge_24",
+                          "uid": "c08e4ad2-56f2-4bef-b98e-abb13542dca7",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "fish_badge_24_bg",
+                              "uid": "8e64f73b-7541-4aa0-b47a-56958a35dd49",
+                              "type": 4
+                            },
+                            {
+                              "name": "glyph",
+                              "uid": "1e0c86e0-9599-4f09-a5f3-4c36ae68ec81",
+                              "type": 3
+                            },
+                            {
+                              "name": "name",
+                              "uid": "fb1ff844-390b-4423-806e-7afefd3d5757",
+                              "type": 3
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "tab_pass",
+                      "uid": "533e9fe7-6bea-4f3c-a8fd-f0eccc2cd007",
+                      "type": 1
+                    },
+                    {
+                      "name": "tab_map",
+                      "uid": "6115c8a0-f768-49aa-9241-353f13b983b9",
+                      "type": 1
+                    },
+                    {
+                      "name": "tab_community",
+                      "uid": "5942ecaf-c6fa-47fe-96f5-5f9d2fc23151",
+                      "type": 1
+                    },
+                    {
+                      "name": "tab_achievement",
+                      "uid": "ea7d4abe-8214-4e8d-b97d-d64f447a6b50",
+                      "type": 1
+                    },
+                    {
+                      "name": "tab_lottery",
+                      "uid": "d417d8e2-ac73-4fd6-ae8e-712314d4b853",
+                      "type": 1
+                    },
+                    {
+                      "name": "tab_test",
+                      "uid": "f18fc111-90d9-4fe6-81de-dc1f2771e893",
+                      "type": 1
+                    },
+                    {
+                      "name": "tab_fish",
+                      "uid": "db4a528c-a644-4a54-bb1f-4d574912d27e",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "detail_card",
+                  "uid": "eb083118-43ff-49d8-be7b-936f76302d74",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "detail_card_bg",
+                      "uid": "536e1572-a92b-4440-afd3-72710c69beef",
+                      "type": 4
+                    },
+                    {
+                      "name": "detail_pass",
+                      "uid": "7b3b062f-f749-4210-abd2-c144d7b2c42f",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "detail_pass_bg",
+                          "uid": "18406c90-fecb-4826-8cce-46817ef290ab",
+                          "type": 4
+                        },
+                        {
+                          "name": "line_1",
+                          "uid": "4c0c4585-76bd-4f59-a65b-c75dae9563e4",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_2",
+                          "uid": "4e85a08b-0a8a-4e9f-9e97-73a5bd7650f5",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_3",
+                          "uid": "d8e88ad8-8416-4870-883a-fa2b2b2e4909",
+                          "type": 3
+                        },
+                        {
+                          "name": "title",
+                          "uid": "c8ab05c2-8a19-4181-8897-058918ea0bf3",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "detail_map",
+                      "uid": "1a5454ed-76ba-43aa-a724-98b99dcc89a8",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "detail_map_bg",
+                          "uid": "d143f03a-d07b-4693-ae3c-d515cd97b3ef",
+                          "type": 4
+                        },
+                        {
+                          "name": "line_1",
+                          "uid": "2c63958d-3f64-4664-858b-7df7495ab462",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_2",
+                          "uid": "70bc5102-cfc1-4554-b88b-cceefe53c107",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_3",
+                          "uid": "d89b9fa6-e9ae-4128-8074-50bb5f9e1dd4",
+                          "type": 3
+                        },
+                        {
+                          "name": "title",
+                          "uid": "d610c596-390c-43c7-af79-900a55d1591f",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "detail_community",
+                      "uid": "0ca364af-4441-4f62-ab2b-ebda0fe51f5f",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "detail_community_bg",
+                          "uid": "07f8fa7f-4c50-4361-9405-777f46396727",
+                          "type": 4
+                        },
+                        {
+                          "name": "line_1",
+                          "uid": "e44c86ee-4145-48d2-9581-f1bb3da81269",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_2",
+                          "uid": "15d2bb0d-0fa6-4ebd-88ee-ca09f3d7f67b",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_3",
+                          "uid": "d0712598-1853-4dc5-a7de-f071878d0324",
+                          "type": 3
+                        },
+                        {
+                          "name": "title",
+                          "uid": "f8c28d36-ed64-4f18-bd86-4697795e842a",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "detail_achievement",
+                      "uid": "c71cb297-4329-445a-adbb-1d32b1f2e730",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "detail_achievement_bg",
+                          "uid": "8b72d73d-fce1-431c-8c1e-c19108d1aece",
+                          "type": 4
+                        },
+                        {
+                          "name": "line_1",
+                          "uid": "ff45651c-b0aa-4c5a-867d-42276ff76de7",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_2",
+                          "uid": "83551878-b472-4ae3-945b-285c66c13b66",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_3",
+                          "uid": "505261a6-5173-4911-a13b-d7b3b4c3f997",
+                          "type": 3
+                        },
+                        {
+                          "name": "title",
+                          "uid": "d69b0444-8152-4bef-acdd-c357ac980f30",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "detail_lottery",
+                      "uid": "0ccb76ab-8666-4d31-b43e-6da906a533ff",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "detail_lottery_bg",
+                          "uid": "90f8bc84-bf02-46b6-afe6-60eb1161c776",
+                          "type": 4
+                        },
+                        {
+                          "name": "line_1",
+                          "uid": "6a4615ad-23d4-435e-be94-d2d55241d7d9",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_2",
+                          "uid": "82622d31-721c-497a-981b-d7cdd8711b22",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_3",
+                          "uid": "ec15b67f-411d-44ef-a4af-92733c47cbb9",
+                          "type": 3
+                        },
+                        {
+                          "name": "title",
+                          "uid": "353fd024-c0e3-4281-8e7e-4bac1e20e80f",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "detail_test",
+                      "uid": "a1365227-854a-47f4-bb62-79c115860b80",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "detail_test_bg",
+                          "uid": "ab4d4bc6-3ae6-4590-9bd7-86f519cc0a61",
+                          "type": 4
+                        },
+                        {
+                          "name": "line_1",
+                          "uid": "47c414a7-5fad-4494-84e5-f2f1f83421b3",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_2",
+                          "uid": "e1bc1c62-b109-4aac-a06a-511869530475",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_3",
+                          "uid": "23fb6ca0-7984-42af-add5-5d78285f8e54",
+                          "type": 3
+                        },
+                        {
+                          "name": "title",
+                          "uid": "8b1171c8-2072-4cf7-8c9c-1d35cb749544",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "detail_fish",
+                      "uid": "b9a5d8b2-d058-4882-9e56-bae94648cb23",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "detail_fish_bg",
+                          "uid": "88371d85-d111-4e57-a3b0-aa5fbf7c1c02",
+                          "type": 4
+                        },
+                        {
+                          "name": "line_1",
+                          "uid": "08dd2b3b-54cd-4ccc-826a-2eccdaed346c",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_2",
+                          "uid": "53ced7cf-d626-4167-83e2-28c397da73e3",
+                          "type": 3
+                        },
+                        {
+                          "name": "line_3",
+                          "uid": "13b3d421-5e70-4217-b4e1-8547e5820961",
+                          "type": 3
+                        },
+                        {
+                          "name": "title",
+                          "uid": "a89e2d8a-ff78-4b0d-ae26-78bfbd27ff72",
+                          "type": 3
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

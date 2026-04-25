@@ -15,7 +15,7 @@
                             "anim_type": 0, 
                             "comp": "54182739-d294-4dbd-9d3e-6800c3becd7d", 
                             "ease_type": 0, 
-                            "name": "Show_25", 
+                            "name": "Show_7", 
                             "open_timeline": true, 
                             "type": 2
                         }
@@ -90,7 +90,7 @@
                             "anim_type": 0, 
                             "comp": "a06c0e95-daa5-4976-9d46-d3e9ebd1db0f", 
                             "ease_type": 0, 
-                            "name": "BackToHall_25", 
+                            "name": "BackToHall_7", 
                             "open_timeline": true, 
                             "type": 5
                         }

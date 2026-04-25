@@ -1,0 +1,15 @@
+source_key,output_runtime_key
+gold,立即金币
+wood,立即木材
+exp,立即经验
+skill_refresh_free,技能免费刷新次数
+hero_refresh_free,英雄免费刷新次数
+treasure_refresh_free,宝物免费刷新次数
+rune_store_mode,神符存储模式
+random_attr_point,随机属性点
+randomize_base_stats,重置基础三维
+wood_ratio,木材翻倍
+wood_clear,木材清零
+kill_count,杀敌数
+damage_ratio,条件伤害加成
+todo_effect,待补充效果

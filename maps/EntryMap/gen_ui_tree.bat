@@ -1,12 +1,12 @@
 @echo off
 REM Y3 UI Tree 生成脚本
 REM 使用方式: gen_ui_tree.bat <map_root_path>
-REM 示例: gen_ui_tree.bat .
+REM 示例: gen_ui_tree.bat e:\projects\y3_map\master
 
 if "%1"=="" (
     echo 错误: 请提供地图根目录路径
     echo 用法: gen_ui_tree.bat <map_root_path>
-    echo 示例: gen_ui_tree.bat .
+    echo 示例: gen_ui_tree.bat e:\projects\y3_map\master
     pause
     exit /b 1
 )

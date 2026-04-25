@@ -1,4 +1,5 @@
 local M = {}
+local CustomHealthBars = require 'runtime.custom_health_bars'
 
 function M.create(env)
   local STATE = env.STATE
@@ -27,6 +28,14 @@ function M.create(env)
 
   local function resolve_visual_animation_speed(base_speed)
     return math.max(0.05, (tonumber(base_speed) or 1.0) * VISUAL_ANIMATION_SPEED)
+  end
+
+  local function is_damage_text_hidden()
+    return STATE.ui_preferences and STATE.ui_preferences.hide_damage_text == true or false
+  end
+
+  local function is_hit_effect_hidden()
+    return STATE.ui_preferences and STATE.ui_preferences.hide_hit_effects == true or false
   end
 
   local function get_challenge_recover_sec(challenge_id)
@@ -244,7 +253,7 @@ function M.create(env)
   end
 
   local function create_point_particle(effect_key, point, angle, scale, time, height, color, anim_speed)
-    if not effect_key or not point then
+    if is_hit_effect_hidden() or not effect_key or not point then
       return nil
     end
 
@@ -761,6 +770,8 @@ function M.create(env)
       info.owner.alive_count = (info.owner.alive_count or 0) + 1
     end
 
+    CustomHealthBars.apply_enemy(env, info)
+
     function info.remove_runtime(grant_death_rewards)
       if not info.alive then
         return false
@@ -772,6 +783,9 @@ function M.create(env)
       end
       if STATE.enemy_info_map and unit then
         STATE.enemy_info_map[unit] = nil
+      end
+      if STATE.basic_attack_pending_damage and unit then
+        STATE.basic_attack_pending_damage[unit] = nil
       end
       if STATE.total_enemy_alive > 0 then
         STATE.total_enemy_alive = STATE.total_enemy_alive - 1
@@ -1280,6 +1294,8 @@ function M.create(env)
       spawn_boss(runner)
     end
 
+    CustomHealthBars.refresh_all(env)
+
     if STATE.enemy_info_map then
       for _, info in pairs(STATE.enemy_info_map) do
         apply_main_enemy_lane_slow(info)
@@ -1472,6 +1488,8 @@ function M.create(env)
       hero_attr_system.log_snapshot(hero, 'create_hero_after_set_hp', string.format('spawn_hp=%s current_hp=%s', tostring(spawn_hp), tostring(hero:get_hp())))
     end
 
+    CustomHealthBars.apply_hero(env, hero)
+
     hero:event('单位-死亡', function()
       if hero_attr_system and hero_attr_system.log_snapshot then
         hero_attr_system.log_snapshot(
@@ -1601,7 +1619,7 @@ function M.create(env)
       target = unit,
       damage = 99999999,
       type = '真实伤害',
-      text_type = 'magic',
+      text_type = is_damage_text_hidden() and nil or 'magic',
       text_track = 934269508,
       common_attack = false,
       no_miss = true,

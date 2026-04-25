@@ -1,0 +1,244 @@
+{
+  "name": "ArchivePageChest",
+  "uid": "dbcfeeb8-72d2-4ef6-81b5-a41bf9887a83",
+  "type": 2,
+  "children": [
+    {
+      "name": "root",
+      "uid": "f911c21d-8913-46a7-a93a-82427d388e3e",
+      "type": 7,
+      "children": [
+        {
+          "name": "root_bg",
+          "uid": "969c508c-98e8-4a93-aaaa-df144f26720a",
+          "type": 4
+        },
+        {
+          "name": "content",
+          "uid": "a367f503-b694-446e-a3f0-49426924e55e",
+          "type": 7,
+          "children": [
+            {
+              "name": "content_bg",
+              "uid": "e5aadb98-96e2-414d-b55e-af2c40f9744f",
+              "type": 4
+            },
+            {
+              "name": "page_chest",
+              "uid": "664bfa94-dfb5-4570-bd89-d07aca4aaf19",
+              "type": 7,
+              "children": [
+                {
+                  "name": "page_chest_bg",
+                  "uid": "b2fb7878-bbc8-4ea0-a93e-ddd481610e48",
+                  "type": 4
+                },
+                {
+                  "name": "chest_card",
+                  "uid": "24e546ed-76b3-4971-b715-e3f0d7e58fb1",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "chest_card_bg",
+                      "uid": "d9be5722-d3fa-4802-a364-175340cd10e7",
+                      "type": 4
+                    },
+                    {
+                      "name": "stage",
+                      "uid": "f345933c-e475-44d9-a798-3348227c17f4",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "stage_bg",
+                          "uid": "afa19e1f-2c71-443c-bcf9-539040ff4c8b",
+                          "type": 4
+                        },
+                        {
+                          "name": "box_glyph",
+                          "uid": "b37a2f1f-232f-4db8-b852-3c6a88c78d1b",
+                          "type": 3
+                        },
+                        {
+                          "name": "hint",
+                          "uid": "4f02a0bb-e9e1-4c40-a0c8-22ea2c20e108",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "result_popup",
+                      "uid": "c1aa10f9-e859-4bb4-9fcc-d31655b69c97",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "result_popup_bg",
+                          "uid": "767ddec0-1bc2-4f2a-b8d7-73cee1716363",
+                          "type": 4
+                        },
+                        {
+                          "name": "result_grid",
+                          "uid": "2720efe2-32f6-4242-947b-e43fac0cd55d",
+                          "type": 7,
+                          "children": [
+                            {
+                              "name": "result_grid_bg",
+                              "uid": "00bb9b0f-9828-4e42-a22a-8ce6b3bc6907",
+                              "type": 4
+                            }
+                          ]
+                        },
+                        {
+                          "name": "result_title",
+                          "uid": "9dde2aaf-e0c1-492c-a80d-aca451ad6119",
+                          "type": 3
+                        },
+                        {
+                          "name": "draw_again",
+                          "uid": "065a311b-5a5a-4ef0-9dbf-988b351c9d70",
+                          "type": 1
+                        },
+                        {
+                          "name": "result_close",
+                          "uid": "064acdf6-5dec-4a9a-810f-bba1b0c7d91d",
+                          "type": 1
+                        }
+                      ]
+                    },
+                    {
+                      "name": "pool_title",
+                      "uid": "77a5fb6c-7551-49bb-8808-3090e2f68b7c",
+                      "type": 3
+                    },
+                    {
+                      "name": "draw_one",
+                      "uid": "58e6e553-17ac-401a-8115-7e414133dfea",
+                      "type": 1
+                    },
+                    {
+                      "name": "draw_ten",
+                      "uid": "13629322-35e0-4b33-81e8-d899846fa102",
+                      "type": 1
+                    },
+                    {
+                      "name": "pool_entry",
+                      "uid": "c7eab9d1-15cd-48af-9cf6-4998aa18d1e8",
+                      "type": 1
+                    },
+                    {
+                      "name": "prob_entry",
+                      "uid": "d452dcce-3d60-41a0-97a5-1a630ffca794",
+                      "type": 1
+                    },
+                    {
+                      "name": "mode_tab_1",
+                      "uid": "79560256-94d6-47a3-afb6-aeb99247658c",
+                      "type": 1
+                    },
+                    {
+                      "name": "mode_tab_2",
+                      "uid": "49addfa8-2543-4218-9464-81d06778bb5f",
+                      "type": 1
+                    },
+                    {
+                      "name": "mode_tab_3",
+                      "uid": "d4b56795-3f57-4cbb-aac1-e5b3978733da",
+                      "type": 1
+                    },
+                    {
+                      "name": "mode_tab_4",
+                      "uid": "8f911187-fd98-460e-a65d-f75b761e0b49",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "reward_card",
+                  "uid": "7e83941b-7788-4b77-9c14-fa7993f8f14d",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "reward_card_bg",
+                      "uid": "4a394698-fdd5-4d48-8588-6fa82f77e4c4",
+                      "type": 4
+                    },
+                    {
+                      "name": "ticket_row",
+                      "uid": "9054155d-a2ef-4add-b052-06fb49d4a0d8",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "ticket_row_bg",
+                          "uid": "aaf18f57-75f3-499b-b0a6-1536af36b9a8",
+                          "type": 4
+                        },
+                        {
+                          "name": "key",
+                          "uid": "574523e4-15b4-4312-9f77-3fa4968eb32f",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "74ba9a2f-9524-4c9c-a8aa-645af93202eb",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "score_row",
+                      "uid": "421b4559-8d30-4e22-9ef6-87b150a90b74",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "score_row_bg",
+                          "uid": "a5876b01-53a4-4669-94cc-73be900cc309",
+                          "type": 4
+                        },
+                        {
+                          "name": "key",
+                          "uid": "7d84b3a3-4755-4773-ae4b-842285933575",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "c34468fc-99b3-4a79-88c3-8259f8d8db2f",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "count_row",
+                      "uid": "e40891ac-3a15-41d5-bb3d-e74c95edbd8e",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "count_row_bg",
+                          "uid": "2ea348f5-a10a-487b-9b4c-2a815f8b62ad",
+                          "type": 4
+                        },
+                        {
+                          "name": "key",
+                          "uid": "c302959f-4d1d-44b2-b15c-168922d96f1c",
+                          "type": 3
+                        },
+                        {
+                          "name": "value",
+                          "uid": "b1763c1a-0e0b-491a-be01-5a50f1ea7a45",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "title",
+                      "uid": "6941df23-1a4f-4dbb-9a9c-5710ac4e1d60",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

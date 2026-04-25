@@ -3,6 +3,14 @@ local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
 
 local M = {}
 
+local function clone_table(source)
+  local result = {}
+  for key, value in pairs(source or {}) do
+    result[key] = value
+  end
+  return result
+end
+
 function M.create(env)
   local STATE = env.STATE
   local y3 = env.y3

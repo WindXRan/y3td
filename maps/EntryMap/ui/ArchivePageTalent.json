@@ -1,0 +1,2882 @@
+{
+    "adapt_mode": 2, 
+    "anim_data": {}, 
+    "auto_create": true, 
+    "children": [
+        {
+            "adapter_option": [
+                true, 
+                true, 
+                true, 
+                true, 
+                0.0, 
+                0.0, 
+                0.0, 
+                0.0
+            ], 
+            "children": [
+                {
+                    "children": [
+                        {
+                            "children": [
+                                {
+                                    "children": [
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    44, 
+                                                    48, 
+                                                    58, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "frame", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    300.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                292.0, 
+                                                592.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "7ef4516b-5c50-483e-8d92-6c6810fbeb61"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    18, 
+                                                    20, 
+                                                    27, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "inner", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    300.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                282.0, 
+                                                582.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "df078856-335c-4e14-a67d-6918f5c9767d"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    61, 
+                                                    88, 
+                                                    140, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "title_bg", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    571.9998, 
+                                                    50.0, 
+                                                    95.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                220.0, 
+                                                34.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "bb5a66c4-82b8-4652-8725-63f1e88095d0"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "font": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "MSYH", 
+                                                    20
+                                                ]
+                                            }, 
+                                            "name": "title", 
+                                            "over_pattern": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    571.9998, 
+                                                    50.0, 
+                                                    95.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    220.0, 
+                                                    28.0
+                                                ]
+                                            }, 
+                                            "text": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "\u8f93\u51fa\u7cfb", 
+                                                    false
+                                                ]
+                                            }, 
+                                            "type": 3, 
+                                            "uid": "eedadffd-5867-4f49-9729-df90af5afea3"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u6218\u6597\u5929\u624d", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "1eaaab0b-2abe-4c0e-be5e-325a406ae589"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    84, 
+                                                    92, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_1", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    86.0001, 
+                                                    511.9998, 
+                                                    28.6667, 
+                                                    85.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "a1022491-1f22-4e8d-9d63-bb5fcaffedfb"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u4f20\u5947\u8001\u5175", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "469d57ff-97df-4a35-b970-e624ad463f71"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    84, 
+                                                    92, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_2", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    186.0, 
+                                                    511.9998, 
+                                                    62.0, 
+                                                    85.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "e6c933c1-cbd2-43af-b7f1-558f00a724ee"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u654f\u9510", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "e0fbef44-4922-49eb-8262-0d592fbd0f5c"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    84, 
+                                                    92, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_3", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    86.0001, 
+                                                    421.9998, 
+                                                    28.6667, 
+                                                    70.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "25d15752-c029-46b1-8271-f339b9aa4fa5"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u806a\u6167", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "cbbb40d0-d9b3-4084-8c4b-d763f348bbee"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    84, 
+                                                    92, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_4", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    186.0, 
+                                                    421.9998, 
+                                                    62.0, 
+                                                    70.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "9462e971-e6da-4721-b73c-5dc5dc8a0d65"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u7834\u7532", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "de637fef-cb91-4948-842b-d7a7b1e17130"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    84, 
+                                                    92, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_5", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    86.0001, 
+                                                    331.9998, 
+                                                    28.6667, 
+                                                    55.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "29d469fe-fdc2-4b7c-802f-37c7f104e262"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u5f3a\u51fb", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "8c140f8a-3a75-4b87-bc2d-f917113ab4ef"
+                                                }, 
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            10
+                                                        ]
+                                                    }, 
+                                                    "font_color": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            114, 
+                                                            234, 
+                                                            77, 
+                                                            255
+                                                        ]
+                                                    }, 
+                                                    "name": "level", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            54.0, 
+                                                            50.0, 
+                                                            75.0, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            58.0, 
+                                                            14.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "1/1", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "a6d19dad-eeac-4bae-a7bb-1d8c248b752f"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    84, 
+                                                    92, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_6", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    186.0, 
+                                                    331.9998, 
+                                                    62.0, 
+                                                    55.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "64d4650b-be31-4a17-8626-70a554917138"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u8fc5\u731b", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "36bf463a-1415-4d14-875b-53f75c1d8f0c"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    84, 
+                                                    92, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_7", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    86.0001, 
+                                                    241.9998, 
+                                                    28.6667, 
+                                                    40.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "39c5dcb2-d2b8-4be0-864d-bae911b258d8"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u7cbe\u9510", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "0c533876-31b6-4120-8368-84a5fc2bdc43"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    84, 
+                                                    92, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_8", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    186.0, 
+                                                    241.9998, 
+                                                    62.0, 
+                                                    40.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "6ce2ad1e-3491-4efe-b4aa-998976f6b6bd"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "alignment": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            0, 
+                                                            8
+                                                        ]
+                                                    }, 
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            14
+                                                        ]
+                                                    }, 
+                                                    "font_color": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            232, 
+                                                            230, 
+                                                            224, 
+                                                            255
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            60.0001, 
+                                                            15.0, 
+                                                            25.8621, 
+                                                            50.0, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            110.0, 
+                                                            19.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u7cfb\u5217\u70b9\u6570", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "6d69cbd4-c075-4ce7-89f2-7fb550d5934b"
+                                                }, 
+                                                {
+                                                    "alignment": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            2, 
+                                                            8
+                                                        ]
+                                                    }, 
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            14
+                                                        ]
+                                                    }, 
+                                                    "font_color": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            114, 
+                                                            234, 
+                                                            77, 
+                                                            255
+                                                        ]
+                                                    }, 
+                                                    "name": "value", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            183.9999, 
+                                                            15.0, 
+                                                            79.3103, 
+                                                            50.0, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            88.0, 
+                                                            19.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "1", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "481b3290-14d6-4553-9f30-7b8c42129339"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    34, 
+                                                    37, 
+                                                    46, 
+                                                    214
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "foot", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    72.0, 
+                                                    50.0, 
+                                                    12.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                232.0, 
+                                                30.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "dbc99f9d-87f2-4a98-913d-86bedf28ed39"
+                                        }
+                                    ], 
+                                    "color": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            20, 
+                                            28, 
+                                            244
+                                        ]
+                                    }, 
+                                    "event_list": [], 
+                                    "name": "output_column", 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            156.0002, 
+                                            324.0, 
+                                            15.7576, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        300.0, 
+                                        600.0
+                                    ], 
+                                    "type": 7, 
+                                    "uid": "f9020afa-c4b4-43c7-805e-da7acaa940af"
+                                }, 
+                                {
+                                    "children": [
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    44, 
+                                                    48, 
+                                                    58, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "frame", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    300.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                292.0, 
+                                                592.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "eab4ea83-07f2-4616-bc12-6257d966c38b"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    18, 
+                                                    20, 
+                                                    27, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "inner", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    300.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                282.0, 
+                                                582.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "067223d2-a1ac-44d1-ab6d-1898b5f16c06"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    61, 
+                                                    88, 
+                                                    140, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "title_bg", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    571.9998, 
+                                                    50.0, 
+                                                    95.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                220.0, 
+                                                34.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "75676f04-c4ed-4dd8-8eb1-f57cad003c4f"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "font": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "MSYH", 
+                                                    20
+                                                ]
+                                            }, 
+                                            "name": "title", 
+                                            "over_pattern": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    571.9998, 
+                                                    50.0, 
+                                                    95.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    220.0, 
+                                                    28.0
+                                                ]
+                                            }, 
+                                            "text": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "\u751f\u5b58\u7cfb", 
+                                                    false
+                                                ]
+                                            }, 
+                                            "type": 3, 
+                                            "uid": "1fc5e0a8-7bd4-41a0-88b4-67308c7837e3"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u6218\u6597\u5929\u624d", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "b016ad06-46ad-4a5b-ab2f-450aef35708c"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    96, 
+                                                    76, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_1", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    86.0001, 
+                                                    511.9998, 
+                                                    28.6667, 
+                                                    85.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "26545f79-1fdb-4077-9277-c3b39160ec00"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u4f20\u5947\u8001\u5175", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "4fc55b0d-e6d3-4a02-8916-174745ae76c4"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    96, 
+                                                    76, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_2", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    186.0, 
+                                                    511.9998, 
+                                                    62.0, 
+                                                    85.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "93a5bb0d-8706-4e7c-9c34-82c1c2fd816a"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u654f\u9510", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "9622b5a3-9406-4893-96cc-62106fc30931"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    96, 
+                                                    76, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_3", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    86.0001, 
+                                                    421.9998, 
+                                                    28.6667, 
+                                                    70.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "32524720-2eef-4f16-b547-95ca335865cc"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u806a\u6167", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "5ff5ee13-a2b6-42ae-b6ec-21d250328c03"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    96, 
+                                                    76, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_4", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    186.0, 
+                                                    421.9998, 
+                                                    62.0, 
+                                                    70.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "ad23d7d4-91c7-4629-adad-ad242f9363ee"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u7834\u7532", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "34096995-ef4b-4268-8308-391b571d335b"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    96, 
+                                                    76, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_5", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    86.0001, 
+                                                    331.9998, 
+                                                    28.6667, 
+                                                    55.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "bb5c0dd1-e40b-422a-8433-a7d2998ad64f"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u5f3a\u51fb", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "55299cbe-9e29-4e47-9918-c2488e798ca9"
+                                                }, 
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            10
+                                                        ]
+                                                    }, 
+                                                    "font_color": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            114, 
+                                                            234, 
+                                                            77, 
+                                                            255
+                                                        ]
+                                                    }, 
+                                                    "name": "level", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            54.0, 
+                                                            50.0, 
+                                                            75.0, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            58.0, 
+                                                            14.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "1/1", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "443c9653-9c4f-4932-b907-e2663b1cba46"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    96, 
+                                                    76, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_6", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    186.0, 
+                                                    331.9998, 
+                                                    62.0, 
+                                                    55.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "d23d0ea5-892b-45cb-a235-e382ff9124f8"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u8fc5\u731b", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "977bf578-8a08-43bc-a426-c9281a5b9d09"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    96, 
+                                                    76, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_7", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    86.0001, 
+                                                    241.9998, 
+                                                    28.6667, 
+                                                    40.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "6f3eae19-2f4e-43c9-a1fb-7115b76dad3a"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            11
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            36.0, 
+                                                            8.0, 
+                                                            50.0, 
+                                                            11.1111, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            64.0, 
+                                                            15.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u7cbe\u9510", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "89104c0d-e142-4780-8498-d4bc0a564a9d"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    96, 
+                                                    76, 
+                                                    168, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "node_8", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    186.0, 
+                                                    241.9998, 
+                                                    62.0, 
+                                                    40.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                72.0, 
+                                                72.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "b23322de-3836-4c45-88e6-38b3d9ec37d8"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "alignment": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            0, 
+                                                            8
+                                                        ]
+                                                    }, 
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            14
+                                                        ]
+                                                    }, 
+                                                    "font_color": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            232, 
+                                                            230, 
+                                                            224, 
+                                                            255
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            60.0001, 
+                                                            15.0, 
+                                                            25.8621, 
+                                                            50.0, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            110.0, 
+                                                            19.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u7cfb\u5217\u70b9\u6570", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "602ad7ad-0b6b-43cf-8058-64b0d8968d33"
+                                                }, 
+                                                {
+                                                    "alignment": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            2, 
+                                                            8
+                                                        ]
+                                                    }, 
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            14
+                                                        ]
+                                                    }, 
+                                                    "font_color": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            114, 
+                                                            234, 
+                                                            77, 
+                                                            255
+                                                        ]
+                                                    }, 
+                                                    "name": "value", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            183.9999, 
+                                                            15.0, 
+                                                            79.3103, 
+                                                            50.0, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            88.0, 
+                                                            19.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "1", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "043050ae-df6d-42b4-9a8f-f1b344a648d9"
+                                                }
+                                            ], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    34, 
+                                                    37, 
+                                                    46, 
+                                                    214
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "foot", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    72.0, 
+                                                    50.0, 
+                                                    12.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                232.0, 
+                                                30.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "76a25f38-602e-4985-ae6b-df414a84bde9"
+                                        }
+                                    ], 
+                                    "color": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            20, 
+                                            28, 
+                                            244
+                                        ]
+                                    }, 
+                                    "event_list": [], 
+                                    "name": "survival_column", 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            495.0, 
+                                            324.0, 
+                                            50.0, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        300.0, 
+                                        600.0
+                                    ], 
+                                    "type": 7, 
+                                    "uid": "256c3d0a-cbb2-455a-8862-dbc81eb04e47"
+                                }, 
+                                {
+                                    "children": [
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    44, 
+                                                    48, 
+                                                    58, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "frame", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    300.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                292.0, 
+                                                592.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "3c065376-25d8-4b90-99f6-37237ae20c78"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    18, 
+                                                    20, 
+                                                    27, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "inner", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    300.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                282.0, 
+                                                582.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "426d2859-55f4-4fe1-a134-4a4465fdae6a"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    61, 
+                                                    88, 
+                                                    140, 
+                                                    244
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "title_bg", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    571.9998, 
+                                                    50.0, 
+                                                    95.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                220.0, 
+                                                34.0
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "e2d51a8a-7d5e-49b4-a1b9-754629d58a69"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "font": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "MSYH", 
+                                                    20
+                                                ]
+                                            }, 
+                                            "name": "title", 
+                                            "over_pattern": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    571.9998, 
+                                                    50.0, 
+                                                    95.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    220.0, 
+                                                    28.0
+                                                ]
+                                            }, 
+                                            "text": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "\u8be6\u60c5", 
+                                                    false
+                                                ]
+                                            }, 
+                                            "type": 3, 
+                                            "uid": "de93f4f2-d108-4315-9164-1e8891e58cf2"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "font": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "MSYH", 
+                                                    20
+                                                ]
+                                            }, 
+                                            "name": "talent_points", 
+                                            "over_pattern": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    510.0, 
+                                                    50.0, 
+                                                    85.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    220.0, 
+                                                    28.0
+                                                ]
+                                            }, 
+                                            "text": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "\u5929\u8d4b\u70b9\uff1a1", 
+                                                    false
+                                                ]
+                                            }, 
+                                            "type": 3, 
+                                            "uid": "f5c07ee3-543e-40ee-a09d-9e0297f8a71f"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "font": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "MSYH", 
+                                                    22
+                                                ]
+                                            }, 
+                                            "font_color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    246, 
+                                                    198, 
+                                                    88, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "name": "talent_name", 
+                                            "over_pattern": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    469.9998, 
+                                                    50.0, 
+                                                    78.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    220.0, 
+                                                    30.0
+                                                ]
+                                            }, 
+                                            "text": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "\u5f3a\u51fb", 
+                                                    false
+                                                ]
+                                            }, 
+                                            "type": 3, 
+                                            "uid": "05d4aad8-d2e6-4349-818a-ecb7d330a87d"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "font": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "MSYH", 
+                                                    16
+                                                ]
+                                            }, 
+                                            "font_color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    214, 
+                                                    224, 
+                                                    255, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "name": "talent_rank", 
+                                            "over_pattern": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    438.0, 
+                                                    50.0, 
+                                                    73.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    220.0, 
+                                                    22.0
+                                                ]
+                                            }, 
+                                            "text": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "0 / 6", 
+                                                    false
+                                                ]
+                                            }, 
+                                            "type": 3, 
+                                            "uid": "222e52b6-c34f-4101-af57-dc1d74beaf2f"
+                                        }, 
+                                        {
+                                            "alignment": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    0, 
+                                                    8
+                                                ]
+                                            }, 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "font": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "MSYH", 
+                                                    13
+                                                ]
+                                            }, 
+                                            "font_color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    168, 
+                                                    172, 
+                                                    184, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "name": "detail_tag_1", 
+                                            "over_pattern": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    372.0, 
+                                                    50.0, 
+                                                    62.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    220.0, 
+                                                    18.0
+                                                ]
+                                            }, 
+                                            "text": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "[\u8be6\u60c5\u6548\u679c]", 
+                                                    false
+                                                ]
+                                            }, 
+                                            "type": 3, 
+                                            "uid": "bbc82ec3-2433-47a8-a529-3f3deb8d447e"
+                                        }, 
+                                        {
+                                            "alignment": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    0, 
+                                                    8
+                                                ]
+                                            }, 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "font": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "MSYH", 
+                                                    13
+                                                ]
+                                            }, 
+                                            "font_color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    236, 
+                                                    236, 
+                                                    232, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "name": "detail_value_1", 
+                                            "over_pattern": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    343.9998, 
+                                                    50.0, 
+                                                    57.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    220.0, 
+                                                    18.0
+                                                ]
+                                            }, 
+                                            "text": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "\u6bcf\u7ea7\u522b\u53ef\u83b7\u5f97 +10 \u653b\u51fb\u529b", 
+                                                    false
+                                                ]
+                                            }, 
+                                            "type": 3, 
+                                            "uid": "e37b1faa-a8ce-4135-8822-4f733abe535a"
+                                        }, 
+                                        {
+                                            "alignment": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    0, 
+                                                    8
+                                                ]
+                                            }, 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "font": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "MSYH", 
+                                                    13
+                                                ]
+                                            }, 
+                                            "font_color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    168, 
+                                                    172, 
+                                                    184, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "name": "detail_tag_2", 
+                                            "over_pattern": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    295.9998, 
+                                                    50.0, 
+                                                    49.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    220.0, 
+                                                    18.0
+                                                ]
+                                            }, 
+                                            "text": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "[\u83b7\u5f97\u65b9\u5f0f]", 
+                                                    false
+                                                ]
+                                            }, 
+                                            "type": 3, 
+                                            "uid": "34bbef0f-cbed-455c-9976-0f1f7e6fc941"
+                                        }, 
+                                        {
+                                            "alignment": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    0, 
+                                                    8
+                                                ]
+                                            }, 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "font": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "MSYH", 
+                                                    13
+                                                ]
+                                            }, 
+                                            "font_color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    236, 
+                                                    236, 
+                                                    232, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "name": "detail_value_2", 
+                                            "over_pattern": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    268.0002, 
+                                                    50.0, 
+                                                    44.6667, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    220.0, 
+                                                    18.0
+                                                ]
+                                            }, 
+                                            "text": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "\u4efb\u610f\u7cfb\u5217\u5929\u8d4b\u70b9\u8fbe\u5230 1 \u70b9\u89e3\u9501", 
+                                                    false
+                                                ]
+                                            }, 
+                                            "type": 3, 
+                                            "uid": "1d3963f5-8e53-4c24-b3c9-a117bc1ffdfb"
+                                        }, 
+                                        {
+                                            "alignment": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    0, 
+                                                    8
+                                                ]
+                                            }, 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "font": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "MSYH", 
+                                                    13
+                                                ]
+                                            }, 
+                                            "font_color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    168, 
+                                                    172, 
+                                                    184, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "name": "detail_tag_3", 
+                                            "over_pattern": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    216.0, 
+                                                    50.0, 
+                                                    36.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    220.0, 
+                                                    18.0
+                                                ]
+                                            }, 
+                                            "text": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "[\u5151\u6362\u6d88\u8017]", 
+                                                    false
+                                                ]
+                                            }, 
+                                            "type": 3, 
+                                            "uid": "b0d886ba-8417-4827-8bcb-78b5841d3128"
+                                        }, 
+                                        {
+                                            "alignment": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    0, 
+                                                    8
+                                                ]
+                                            }, 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "font": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "MSYH", 
+                                                    13
+                                                ]
+                                            }, 
+                                            "font_color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    236, 
+                                                    236, 
+                                                    232, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "name": "detail_value_3", 
+                                            "over_pattern": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    187.9998, 
+                                                    50.0, 
+                                                    31.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    220.0, 
+                                                    18.0
+                                                ]
+                                            }, 
+                                            "text": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    "1 \u70b9\u5929\u8d4b\u70b9", 
+                                                    false
+                                                ]
+                                            }, 
+                                            "type": 3, 
+                                            "uid": "6bfc58c5-8de3-48c8-96a3-8c74378a1b3b"
+                                        }, 
+                                        {
+                                            "children": [
+                                                {
+                                                    "children": [], 
+                                                    "color": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            183, 
+                                                            137, 
+                                                            48, 
+                                                            244
+                                                        ]
+                                                    }, 
+                                                    "event_list": [], 
+                                                    "name": "bg", 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            63.0, 
+                                                            17.0, 
+                                                            50.0, 
+                                                            50.0, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": [
+                                                        126.0, 
+                                                        34.0
+                                                    ], 
+                                                    "swallow_touches": true, 
+                                                    "type": 7, 
+                                                    "uid": "bca22b5b-fdeb-436d-8ed9-44ca7997e7ed"
+                                                }, 
+                                                {
+                                                    "children": [], 
+                                                    "event_list": [], 
+                                                    "font": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "MSYH", 
+                                                            16
+                                                        ]
+                                                    }, 
+                                                    "font_color": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            255, 
+                                                            247, 
+                                                            232, 
+                                                            255
+                                                        ]
+                                                    }, 
+                                                    "name": "label", 
+                                                    "over_pattern": true, 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            63.0, 
+                                                            17.0, 
+                                                            50.0, 
+                                                            50.0, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            114.0, 
+                                                            22.0
+                                                        ]
+                                                    }, 
+                                                    "text": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            "\u91cd\u7f6e\u5929\u8d4b", 
+                                                            false
+                                                        ]
+                                                    }, 
+                                                    "type": 3, 
+                                                    "uid": "61360aa2-b046-4424-b12a-cd6d30da752c"
+                                                }, 
+                                                {
+                                                    "children": [], 
+                                                    "color": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            112, 
+                                                            148, 
+                                                            214, 
+                                                            88
+                                                        ]
+                                                    }, 
+                                                    "event_list": [], 
+                                                    "name": "active", 
+                                                    "pos_data": {
+                                                        "__tuple__": true, 
+                                                        "items": [
+                                                            63.0, 
+                                                            17.0, 
+                                                            50.0, 
+                                                            50.0, 
+                                                            1, 
+                                                            1
+                                                        ]
+                                                    }, 
+                                                    "prefab_sub_key": null, 
+                                                    "scene_ui_name": null, 
+                                                    "size": [
+                                                        132.0, 
+                                                        40.0
+                                                    ], 
+                                                    "type": 7, 
+                                                    "uid": "71c7a4ed-35cd-4e32-a953-4322d1a1ce4c", 
+                                                    "visible": false
+                                                }
+                                            ], 
+                                            "event_list": [], 
+                                            "name": "reset_button", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    150.0, 
+                                                    73.9998, 
+                                                    50.0, 
+                                                    12.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                126.0, 
+                                                34.0
+                                            ], 
+                                            "swallow_touches": true, 
+                                            "type": 7, 
+                                            "uid": "d7e336eb-7709-45e4-94b7-947794c20b62"
+                                        }
+                                    ], 
+                                    "color": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            18, 
+                                            20, 
+                                            28, 
+                                            244
+                                        ]
+                                    }, 
+                                    "event_list": [], 
+                                    "name": "detail_card", 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            833.9998, 
+                                            324.0, 
+                                            84.2424, 
+                                            50.0, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        300.0, 
+                                        600.0
+                                    ], 
+                                    "type": 7, 
+                                    "uid": "9a907be5-ab2e-4eec-9fa5-e4f8826a9bd9"
+                                }
+                            ], 
+                            "event_list": [], 
+                            "name": "page_talent", 
+                            "pos_data": {
+                                "__tuple__": true, 
+                                "items": [
+                                    495.0, 
+                                    324.0002, 
+                                    49.0099, 
+                                    42.6316, 
+                                    1, 
+                                    1
+                                ]
+                            }, 
+                            "prefab_sub_key": null, 
+                            "scene_ui_name": null, 
+                            "size": [
+                                990.0, 
+                                648.0
+                            ], 
+                            "type": 7, 
+                            "uid": "e08c68b5-c097-4fa2-ade4-960f745a6aa0"
+                        }
+                    ], 
+                    "event_list": [], 
+                    "name": "content", 
+                    "pos_data": {
+                        "__tuple__": true, 
+                        "items": [
+                            1046.0006, 
+                            521.9996, 
+                            54.4792, 
+                            48.3333, 
+                            1, 
+                            1
+                        ]
+                    }, 
+                    "prefab_sub_key": null, 
+                    "scene_ui_name": null, 
+                    "size": [
+                        1010.0, 
+                        760.0
+                    ], 
+                    "type": 7, 
+                    "uid": "9632a77a-4e03-47d7-92bd-977e0f946d3d"
+                }
+            ], 
+            "event_list": [], 
+            "name": "root", 
+            "open_adapter": true, 
+            "pos_data": {
+                "__tuple__": true, 
+                "items": [
+                    960.0, 
+                    540.0, 
+                    50.0, 
+                    50.0, 
+                    1, 
+                    1
+                ]
+            }, 
+            "prefab_sub_key": null, 
+            "scene_ui_name": null, 
+            "size": [
+                1920.0, 
+                1080.0
+            ], 
+            "type": 7, 
+            "uid": "8410bfb0-10ba-4a84-ae15-e04b0294483d", 
+            "visible": false
+        }
+    ], 
+    "name": "ArchivePageTalent", 
+    "opacity": 1.0, 
+    "script_name": "", 
+    "type": 2, 
+    "ui_anims": [], 
+    "uid": "4d653ea0-efac-4a25-9331-7b3eb00eb871", 
+    "visible": true, 
+    "zorder": 431
+}

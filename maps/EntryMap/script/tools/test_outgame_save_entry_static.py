@@ -33,7 +33,18 @@ def main() -> None:
     assert_contains(content, 'function api.open_save_panel()', 'outgame 应抽出可复用的存档面板打开接口，供局内入口复用')
     assert_contains(content, 'if api.open_save_panel() then', 'outgame 存档卡片按钮应复用统一的打开接口')
     assert_contains(content, 'local profile = load_profile()', 'outgame 存档入口应直接读取当前局外档')
-    assert_contains(content, 'message(build_save_status_detail(profile))', 'outgame 存档入口当前应直接展示存档详情文本')
+    assert_contains(content, 'local ensure_archive_panel_ui', 'outgame 应缓存 ArchivePanel 静态画板节点')
+    assert_contains(content, 'refresh_archive_panel_ui = function(profile)', 'outgame 应刷新存档面板展示数据')
+    assert_contains(content, 'local function set_archive_panel_visible(visible)', 'outgame 应支持统一控制存档面板显隐')
+    assert_contains(content, "ArchivePageProfile", 'outgame 应绑定拆分后的存档分页面板')
+    assert_contains(content, "ArchivePageUniversal", 'outgame 应绑定拆分后的通用存档分页面板')
+    assert_contains(content, "ArchivePageChest", 'outgame 应绑定拆分后的夺宝宝箱分页面板')
+    assert_contains(content, "ArchivePagePool", 'outgame 应绑定拆分后的奖池分页面板')
+    assert_contains(content, "set_archive_panel_page('pool')", 'outgame 奖池入口应切到奖池页')
+    assert_contains(content, "set_archive_panel_page('chest')", 'outgame 奖池页返回应回到宝箱页')
+    assert_contains(content, 'set_archive_panel_visible(true)', 'outgame 打开存档时应显示实际面板')
+    assert_contains(content, 'if STATE.archive_panel_hidden_non_outgame ~= true then', '打开存档时应统一隐藏下层 UI')
+    assert_contains(content, "set_non_outgame_ui_visible(STATE.session_phase ~= 'outgame')", '关闭存档时应按当前阶段恢复下层 UI')
     assert_contains(content, '当前会话使用内存态默认档', 'outgame 应保留内存态原因说明文案')
 
     assert_not_contains(
@@ -51,7 +62,6 @@ def main() -> None:
         "message(string.format('局外存档已手动上传到槽位 %d。', SAVE_SLOT))",
         'outgame 存档卡片按钮不应再承担手动上传行为'
     )
-
     print('[OK] outgame save entry static passed')
 
 

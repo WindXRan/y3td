@@ -1,0 +1,16 @@
+{
+    "MOBA单位预设第一期_函数库.folder": 7, 
+    "MOBA单位预设第三期_函数库.folder": 9, 
+    "MOBA单位预设第二期_函数库.folder": 8, 
+    "MOBA单位预设第四期_函数库.folder": 10, 
+    "War3控制台_函数库.folder": 1, 
+    "ui.folder": 0, 
+    "【v2】功能模拟聊天_函数库.folder": 5, 
+    "消息提示_函数库.folder": 6, 
+    "物品说明_函数库.folder": 2, 
+    "物品说明_函数库_Import.folder": 4, 
+    "签到系统_函数库.folder": 13, 
+    "简易英雄职业_函数库.folder": 11, 
+    "自走棋图鉴_函数库.folder": 3, 
+    "通行证系统_函数库.folder": 12
+}

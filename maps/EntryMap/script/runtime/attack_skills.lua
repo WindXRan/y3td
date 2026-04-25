@@ -1120,6 +1120,34 @@ function M.create(env)
       end
     end, opts and opts.ability or nil)
   end
+
+  local function get_pending_basic_attack_damage(unit)
+    if not unit or not STATE.basic_attack_pending_damage then
+      return 0
+    end
+    return tonumber(STATE.basic_attack_pending_damage[unit]) or 0
+  end
+
+  local function is_basic_attack_target_reserved_to_die(unit)
+    if not is_active_enemy(unit) then
+      return true
+    end
+    local pending_damage = get_pending_basic_attack_damage(unit)
+    if pending_damage <= 0 then
+      return false
+    end
+    return (tonumber(unit:get_hp()) or 0) <= pending_damage
+  end
+
+  local function is_valid_skill_target(skill, unit)
+    if not is_active_enemy(unit) then
+      return false
+    end
+    if skill and skill.id == 'basic_attack' and is_basic_attack_target_reserved_to_die(unit) then
+      return false
+    end
+    return true
+  end
   
   local function pick_skill_target(skill)
     if not STATE.hero or not STATE.hero:is_exist() then
@@ -1139,7 +1167,7 @@ function M.create(env)
       :pick()
   
     for _, unit in ipairs(picked) do
-      if is_active_enemy(unit) then
+      if is_valid_skill_target(skill, unit) then
         return unit
       end
     end
@@ -1147,7 +1175,58 @@ function M.create(env)
     return nil
   end
 
-  local function get_basic_attack_bonus_multiplier(skill, target)
+  local get_basic_attack_bonus_multiplier
+
+  local function compute_basic_attack_final_damage(skill, target, amount)
+    if not STATE.hero or not STATE.hero:is_exist() or not target or not is_active_enemy(target) then
+      return 0
+    end
+
+    local damage_meta = skill or ATTACK_SKILL_DEFS.basic_attack or {}
+    local damage_form = damage_meta.damage_form or damage_meta.damage_type
+    local element = damage_meta.element
+    if ATTACK_SKILL_DEFS.basic_attack then
+      damage_form = damage_form or ATTACK_SKILL_DEFS.basic_attack.damage_form or ATTACK_SKILL_DEFS.basic_attack.damage_type
+      element = element or ATTACK_SKILL_DEFS.basic_attack.element
+    end
+
+    local hero_damage_multiplier = 1
+    if hero_attr_system and hero_attr_system.get_damage_multiplier then
+      hero_damage_multiplier = hero_attr_system.get_damage_multiplier(
+        STATE.hero,
+        damage_form or 'weapon',
+        'normal_attack',
+        element
+      ) or 1
+    end
+
+    return round_number((amount or 0) * hero_damage_multiplier * get_basic_attack_bonus_multiplier(skill, target))
+  end
+
+  local function reserve_basic_attack_damage(unit, amount)
+    amount = math.max(0, tonumber(amount) or 0)
+    if amount <= 0 or not unit or not is_active_enemy(unit) then
+      return false
+    end
+    STATE.basic_attack_pending_damage = STATE.basic_attack_pending_damage or {}
+    STATE.basic_attack_pending_damage[unit] = get_pending_basic_attack_damage(unit) + amount
+    return true
+  end
+
+  local function release_basic_attack_damage(unit, amount)
+    if not unit or not STATE.basic_attack_pending_damage then
+      return
+    end
+    amount = math.max(0, tonumber(amount) or 0)
+    local remain = get_pending_basic_attack_damage(unit) - amount
+    if remain > 0 then
+      STATE.basic_attack_pending_damage[unit] = remain
+    else
+      STATE.basic_attack_pending_damage[unit] = nil
+    end
+  end
+
+  get_basic_attack_bonus_multiplier = function(skill, target)
     local multiplier = 1
     if target and is_active_enemy(target) then
       multiplier = multiplier * get_damage_bonus_multiplier(target, {
@@ -1170,26 +1249,13 @@ function M.create(env)
     if options and options.force_hit_effect == true and not is_hit_effect_hidden() then
       hit_effect_enabled = true
     end
-    local damage_meta = skill or ATTACK_SKILL_DEFS.basic_attack or {}
-    local damage_form = damage_meta.damage_form or damage_meta.damage_type
-    local element = damage_meta.element
-    if ATTACK_SKILL_DEFS.basic_attack then
-      damage_form = damage_form or ATTACK_SKILL_DEFS.basic_attack.damage_form or ATTACK_SKILL_DEFS.basic_attack.damage_type
-      element = element or ATTACK_SKILL_DEFS.basic_attack.element
-    end
-
-    local hero_damage_multiplier = 1
-    if hero_attr_system and hero_attr_system.get_damage_multiplier then
-      hero_damage_multiplier = hero_attr_system.get_damage_multiplier(
-        STATE.hero,
-        damage_form or 'weapon',
-        'normal_attack',
-        element
-      ) or 1
+    local final_damage = compute_basic_attack_final_damage(skill, target, amount)
+    if final_damage <= 0 then
+      return
     end
     STATE.hero:damage({
       target = target,
-      damage = round_number((amount or 0) * hero_damage_multiplier * get_basic_attack_bonus_multiplier(skill, target)),
+      damage = final_damage,
       type = skill.damage_type,
       ability = hit_effect_enabled
         and STATE.hero_common_attack
@@ -2028,7 +2094,10 @@ function M.create(env)
       STATE.hero:set_facing(hero_point:get_angle_with(target:get_point()), 0.08)
     end
 
+    local reserved_damage = compute_basic_attack_final_damage(skill, target, damage)
+    reserve_basic_attack_damage(target, reserved_damage)
     launch_projectile_to_target(vfx, target, function(impact_point, did_hit)
+      release_basic_attack_damage(target, reserved_damage)
       if STATE.game_finished or not STATE.hero or not STATE.hero:is_exist() then
         return
       end

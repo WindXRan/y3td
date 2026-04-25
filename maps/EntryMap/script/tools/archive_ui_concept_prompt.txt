@@ -1,0 +1,13 @@
+﻿Use case: ui-mockup
+Asset type: high fidelity game UI concept art for a Y3 tower defense archive panel, 16:9 screenshot mockup
+Primary request: Create a polished final visual design for a game archive interface. The UI should guide a later implementation inside a game engine, so all major areas must be clear and structured.
+Scene/backdrop: dark fantasy game menu overlay, no characters, no world scene, only UI.
+Subject: archive panel with left vertical navigation tabs, central collection grid, right detail card, and alternate sections for universal archive, prize pool, and talent atlas.
+Style/medium: high fidelity 2D game UI mockup, fantasy RPG, dark metal frame, warm gold accents, clean readable layout, premium mobile/PC game interface.
+Composition/framing: 1920x1080 full screen. Centered large modal window around 1280x820. Left sidebar about 150px wide with stacked tabs. Main content uses a large scrollable grid area with square item cells, 7-8 columns, icon thumbnails, rarity colored frames. Right side has a detail panel with large selected item icon, title, ownership/status text, attribute lines, and a gold/red action button. Include subtle scrollbar track on grid. Add a talent page preview style: node cards arranged in three categorized columns with icon nodes and connector lines, matching same frame style.
+Lighting/mood: refined dark UI, subtle blue-black background, soft inner glows, gold highlights, readable contrast.
+Color palette: charcoal black, deep navy, muted steel gray, antique gold, small accents of green, blue, purple for rarity.
+Materials/textures: beveled metal frames, parchment-dark cards, glassy icon slots, subtle grid texture, non-photorealistic UI.
+Text (verbatim): Use short Chinese labels where readable: "存档", "我的信息", "通用存档", "夺宝宝箱", "天赋页", "图鉴", "物品详情", "兑换". Text does not need to be perfectly crisp, but layout should be clear.
+Constraints: Make it look like a finished game UI reference, not a wireframe. Avoid abstract placeholder boxes. Ensure the list grid fits inside the container and visually supports scrolling. Do not include copyrighted logos or real game brand marks.
+Avoid: cluttered layout, huge empty spaces, overlapping tabs/content, white backgrounds, browser chrome, code, screenshots of existing apps.

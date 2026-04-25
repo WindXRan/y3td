@@ -5,7 +5,7 @@
     "description": 941502614, 
     "effect_destroy_way_is_immediately": false, 
     "effect_foes": [
-        101175, 
+        104656, 
         {
             "__tuple__": true, 
             "items": [
@@ -71,7 +71,7 @@
         }
     ], 
     "effect_friend": [
-        101175, 
+        104656, 
         {
             "__tuple__": true, 
             "items": [
