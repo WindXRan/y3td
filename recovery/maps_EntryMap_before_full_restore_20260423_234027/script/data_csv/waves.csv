@@ -1,6 +1,0 @@
-id,index,name,main_unit_id,boss_unit_id,spawn_area_id,boss_spawn_area_id,boss_spawn_sec,batch_min,batch_max,max_alive,post_boss_interval_sec,main_spawn_hp,main_kill_reward_exp,main_kill_reward_gold,main_kill_reward_wood,boss_kill_reward_exp,boss_kill_reward_gold,boss_kill_reward_wood,boss_special,theme,boss_timeline_profile_id,boss_low_hp_profile_id
-wave_1,1,第1波：饥饿地精,134280097,134219749,main_spawn_wave_1,boss_spawn_wave_1,240,3,4,10,2.7,1,8,4,0,80,55,10,无,教学近战,boss_timeline_wave_1,boss_low_hp_wave_1
-wave_2,2,第2波：腐甲步兵,134280098,134279196,main_spawn_wave_2,boss_spawn_wave_2,240,4,5,14,2.3,,10,5,0,100,75,14,无,耐久压场,boss_timeline_wave_2,boss_low_hp_wave_2
-wave_3,3,第3波：投矛猎手,134280099,134259608,main_spawn_wave_3,boss_spawn_wave_3,240,4,5,17,2.0,,12,6,1,130,95,20,无,远程干扰,boss_timeline_wave_3,boss_low_hp_wave_3
-wave_4,4,第4波：裂爪兽群,134280100,134228855,main_spawn_wave_4,boss_spawn_wave_4,240,5,6,20,1.75,,14,7,1,160,125,28,无,高速穿线,boss_timeline_wave_4,boss_low_hp_wave_4
-wave_5,5,第5波：深渊祭仆,134280101,134222661,main_spawn_wave_5,boss_spawn_wave_5,240,4,5,23,1.55,,16,8,2,210,165,40,胜利结算,终盘高压,boss_timeline_wave_5,boss_low_hp_wave_5

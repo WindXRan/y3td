@@ -1,7 +1,0 @@
-{
-    "talk_sys_get_reward.json": 1, 
-    "talk_sys_say.json": 0, 
-    "talk_sys_set_hero.json": 2, 
-    "talk_sys_其它类型例子.json": 3, 
-    "talk_sys_其它类型例子_2.json": 4
-}

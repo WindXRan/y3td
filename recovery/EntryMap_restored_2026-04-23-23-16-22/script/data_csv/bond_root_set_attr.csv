@@ -1,9 +1,0 @@
-root_id,phase,attr_name,value
-bond_body_core,base,生命,100
-bond_body_core,base,力量,50
-bond_archery_core,base,攻击,50
-bond_archery_core,base,弹射伤害,5
-bond_critical_core,base,物理暴击,3
-bond_critical_core,base,魔法暴击,3
-bond_critical_core,set,物理暴击,4
-bond_critical_core,set,魔法暴击,4

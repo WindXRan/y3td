@@ -1,3 +1,0 @@
-{
-    "talk_sys_func.folder": 0
-}

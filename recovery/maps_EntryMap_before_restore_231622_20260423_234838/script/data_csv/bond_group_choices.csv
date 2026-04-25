@@ -1,7 +1,0 @@
-group_id,choice_id,display_name,quality,order_index,notes
-body,__group_body,体术,rare,1,
-economy,__group_economy,经济,rare,2,
-magic,__group_magic,法术,rare,3,
-archery,__group_archery,箭术,rare,4,
-critical,__group_critical,暴击,rare,5,
-growth,__group_growth,成长,rare,6,
