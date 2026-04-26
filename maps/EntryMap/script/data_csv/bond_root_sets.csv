@@ -1,7 +1,32 @@
 root_id,required_count,completion_mode,base_text,effect_text
-bond_body_core,3,consume_all,金刚体魄：生命值 + 100，力量 + 50,斗气场域：每秒对周围1200范围内的敌人造成60%力量的自适应伤害。
-bond_economy_core,3,consume_all,天府福缘：杀敌金币 + 10%,天府流财：每秒木材+0.5，每秒金币+15。
-bond_magic_core,3,consume_all,玄门法意：技能伤害 + 5%,玄门雷爆：魔爆术：每隔18秒，触发1次魔爆术，对300范围内的敌人造成200%智力的自适应伤害。
-bond_archery_core,3,consume_all,天弓初悟：攻击力 + 50，弹射伤害 + 5%,穿云箭：每攻击15次，射出1支穿云箭，对直线敌人造成300%敏捷的自适应伤害。
-bond_critical_core,2,consume_all,诛心初悟：物理暴击 + 3%，魔法暴击 + 3%,诛心真诀：物理暴击+4%，魔法暴击+4%。
-bond_growth_core,4,consume_all,仙途初悟：每秒智力 + 0.5,仙途灵蕴：每秒木材+0.3，杀敌力量+0.1，杀敌敏捷+0.1，杀敌智力+0.1。
+bond_element_core,4,consume_all,元素师·特效>（未激活）,元素伤害命中后有概率触发余波，印记可引爆一次额外元素伤害。
+bond_necro_core,4,consume_all,死灵法师·特效>（未激活）,亡灵与召唤物数量、持续时间提升，击杀后短时增幅。
+bond_paladin_core,4,consume_all,圣骑士·特效>（未激活）,护盾、减伤、生命恢复、护甲同步提高。
+bond_assassin_core,4,consume_all,刺客·特效>（未激活）,对低血目标伤害提高，脱战后首击更强。
+bond_warlock_core,4,consume_all,术士·特效>（未激活）,代价换强度，生命/资源损耗转为高收益增幅。
+bond_summoner_core,4,consume_all,召唤师·特效>（未激活）,召唤物数量、协战频率、继承比例提升。
+bond_warrior_core,4,consume_all,战士·特效>（未激活）,攻击、生命、护甲同步提高。
+bond_guardian_core,4,consume_all,守护者·特效>（未激活）,减伤、护盾强度、承伤能力提高。
+bond_berserker_core,4,consume_all,狂战士·特效>（未激活）,低血时攻击、攻速、回复联动增强，带少量风险换爆发。
+bond_hunter_core,4,consume_all,猎手·特效>（未激活）,对被标记目标伤害提高，追击和收割更稳定。
+bond_machinist_core,4,consume_all,机械师·特效>（未激活）,自动火力、持续输出、装填效率提高。
+bond_alchemist_core,4,consume_all,炼金师·特效>（未激活）,资源获取、恢复、增益持续时间提高。
+bond_witchdoctor_core,4,consume_all,巫医·特效>（未激活）,持续伤害、减疗、减速和削弱效果增强。
+bond_shadowwalker_core,4,consume_all,暗影行者·特效>（未激活）,脱战、位移、首击增伤联动。
+bond_inquisitor_core,4,consume_all,审判官·特效>（未激活）,对高血和残血目标都更容易打出终结收益。
+bond_priest_core,4,consume_all,祭司·特效>（未激活）,恢复、护持、持续作战能力提高。
+bond_curseblade_core,4,consume_all,咒刃·特效>（未激活）,近战与法伤联动，攻击附带额外咒术效果。
+bond_dragonborn_core,4,consume_all,龙裔·特效>（未激活）,生命、攻击、爆发同步提高，带觉醒感的终局成长。
+bond_astrologer_core,4,consume_all,星术师·特效>（未激活）,重掷、命运修正、随机收益更稳定。
+bond_illusionist_core,4,consume_all,幻术师·特效>（未激活）,复制、错位、虚实转换，收益被复制一次。
+bond_inferno_core,4,consume_all,炼狱行者·特效>（未激活）,灼烧、持续压制、爆发收尾增强。
+bond_frost_core,4,consume_all,冰霜使·特效>（未激活）,减速、冻结、迟滞增强。
+bond_thunder_core,4,consume_all,雷鸣使·特效>（未激活）,连锁、麻痹、短爆发提高。
+bond_windspeaker_core,4,consume_all,风语者·特效>（未激活）,机动、攻速、闪避提高。
+bond_runesmith_core,4,consume_all,符文师·特效>（未激活）,标记叠层、触发收益提高。
+bond_oracle_core,4,consume_all,先知·特效>（未激活）,刷新、替换、锁定结果更稳定。
+bond_shadowmage_core,4,consume_all,影法师·特效>（未激活）,削弱、吸取、暗爆发提高。
+bond_boneknight_core,4,consume_all,骸骨骑士·特效>（未激活）,护甲、生命、复苏能力提高。
+bond_forge_core,4,consume_all,炎铸匠·特效>（未激活）,强化、灌注、装备收益提高。
+bond_executor_core,4,consume_all,天罚者·特效>（未激活）,终结、斩杀、清场能力提高。
+

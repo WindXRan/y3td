@@ -2,25 +2,16 @@ local CsvLoader = require 'data.csv_loader'
 local helpers = require 'entry_objects.helpers'
 
 local stage_rows = CsvLoader.read_rows('data_csv/stages.csv')
-local stage_mode_link_rows = CsvLoader.read_rows('data_csv/stage_mode_links.csv')
-local mode_groups = CsvLoader.group_by(stage_mode_link_rows, 'stage_id')
 
-local function build_mode_ids(stage_id)
-  local rows = {}
-  for _, row in ipairs(mode_groups[stage_id] or {}) do
-    rows[#rows + 1] = {
-      order_index = tonumber(row.order_index) or 0,
-      mode_id = row.mode_id,
-    }
-  end
-
-  table.sort(rows, function(a, b)
-    return a.order_index < b.order_index
-  end)
-
+local function split_mode_ids(raw)
   local mode_ids = {}
-  for _, row in ipairs(rows) do
-    mode_ids[#mode_ids + 1] = row.mode_id
+  for mode_id in tostring(raw or ''):gmatch('[^|]+') do
+    if mode_id ~= '' then
+      mode_ids[#mode_ids + 1] = mode_id
+    end
+  end
+  if #mode_ids == 0 then
+    mode_ids[1] = 'standard'
   end
   return mode_ids
 end
@@ -33,7 +24,7 @@ for _, row in ipairs(stage_rows) do
     display_name = row.display_name,
     order_index = tonumber(row.order_index) or 0,
     content_source_stage_id = row.content_source_stage_id,
-    mode_ids = build_mode_ids(row.stage_id),
+    mode_ids = split_mode_ids(row.mode_ids),
     preview_note = row.preview_note ~= '' and row.preview_note or nil,
   }
 end

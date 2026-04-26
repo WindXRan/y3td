@@ -2,11 +2,6 @@ local CsvLoader = require 'data.csv_loader'
 local helpers = require 'entry_objects.helpers'
 
 local wave_rows = CsvLoader.read_rows('data_csv/waves.csv')
-local segment_rows = CsvLoader.read_rows('data_csv/wave_spawn_segments.csv')
-local attr_rows = CsvLoader.read_rows('data_csv/wave_main_attr_overrides.csv')
-
-local segment_groups = CsvLoader.group_by(segment_rows, 'wave_id')
-local attr_groups = CsvLoader.group_by(attr_rows, 'wave_id')
 
 local DEBUG_TIME_SCALE = ((y3 and y3.game and y3.game.is_debug_mode and y3.game.is_debug_mode()) and 0.2) or 1.0
 
@@ -28,33 +23,22 @@ local function to_optional_number(raw)
   return tonumber(raw) or raw
 end
 
-local function build_segments(wave_id)
-  local rows = {}
-  for _, row in ipairs(segment_groups[wave_id] or {}) do
-    rows[#rows + 1] = {
-      segment_index = tonumber(row.segment_index) or 0,
-      start_sec = tonumber(row.start_sec) or 0,
-      interval_sec = tonumber(row.interval_sec) or 0,
-    }
-  end
-
-  table.sort(rows, function(a, b)
-    return a.segment_index < b.segment_index
-  end)
-
+local function build_segments(row)
   local result = {}
-  for _, row in ipairs(rows) do
-    result[#result + 1] = segment(row.start_sec, row.interval_sec)
+  for index = 1, 3 do
+    local start_sec = row['segment' .. index .. '_start_sec']
+    local interval_sec = row['segment' .. index .. '_interval_sec']
+    if start_sec ~= nil and start_sec ~= '' and interval_sec ~= nil and interval_sec ~= '' then
+      result[#result + 1] = segment(tonumber(start_sec) or 0, tonumber(interval_sec) or 0)
+    end
   end
   return result
 end
 
-local function build_attr_overrides(wave_id)
+local function build_attr_overrides(row)
   local result = {}
-  for _, row in ipairs(attr_groups[wave_id] or {}) do
-    if row.attr_name ~= '' then
-      result[row.attr_name] = tonumber(row.value) or 0
-    end
+  if row.main_attr_override_name ~= nil and row.main_attr_override_name ~= '' then
+    result[row.main_attr_override_name] = tonumber(row.main_attr_override_value) or 0
   end
   return next(result) and result or nil
 end
@@ -81,9 +65,9 @@ for _, row in ipairs(wave_rows) do
     batch_min = tonumber(row.batch_min) or 0,
     batch_max = tonumber(row.batch_max) or 0,
     max_alive = tonumber(row.max_alive) or 0,
-    spawn_segments = build_segments(row.id),
+    spawn_segments = build_segments(row),
     post_boss_interval_sec = scale(tonumber(row.post_boss_interval_sec) or 0),
-    main_attr_overrides = build_attr_overrides(row.id),
+    main_attr_overrides = build_attr_overrides(row),
     main_spawn_hp = to_optional_number(row.main_spawn_hp),
     main_kill_reward = build_reward(row, 'main_kill_reward'),
     boss_kill_reward = build_reward(row, 'boss_kill_reward'),

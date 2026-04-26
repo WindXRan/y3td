@@ -108,6 +108,5 @@ return {
   bar_slot_count = 6,
   test_loadout_ids = {
     201390081,
-    201390082,
   },
 }

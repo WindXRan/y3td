@@ -2,16 +2,16 @@ treasure_id,order_index,effect_type,effect_key,op,value,scope,condition,notes
 ITEM_001,1,ratio_bonus,杀敌加成,add,0.20,permanent,,杀敌加成
 ITEM_002,1,ratio_bonus,杀敌金币,add,0.20,permanent,,杀敌金币加成
 ITEM_003,1,ratio_bonus,杀敌经验,add,0.20,permanent,,杀敌经验加成
-ITEM_004,1,temporary_buff,物理暴击,add,0.50,30s,,神符持续 30 秒
-ITEM_004,2,temporary_buff,魔法暴击,add,0.50,30s,,神符持续 30 秒
-ITEM_005,1,temporary_buff,攻击速度,add,200,30s,,神符持续 30 秒
+ITEM_004,1,temporary_buff,物理暴击,add,0.50,30s,,战术徽章持续 30 秒
+ITEM_004,2,temporary_buff,魔法暴击,add,0.50,30s,,战术徽章持续 30 秒
+ITEM_005,1,temporary_buff,攻击速度,add,200,30s,,战术徽章持续 30 秒
 ITEM_006,1,resource_gain,gold,add,20000,instant,,立即获得金币
 ITEM_007,1,resource_gain,gold,add,5000,instant,,立即获得金币
 ITEM_007,2,refresh_count,treasure_refresh_free,add,1,instant,,宝物免费刷新次数
-ITEM_008,1,mechanic_toggle,rune_store_mode,set,1,permanent,,神符改为入包
-ITEM_009,1,trigger_growth,力量增幅,add,0.05,per_trigger,on_rune_trigger,每次触发神符效果生效
-ITEM_009,2,trigger_growth,敏捷增幅,add,0.05,per_trigger,on_rune_trigger,每次触发神符效果生效
-ITEM_009,3,trigger_growth,智力增幅,add,0.05,per_trigger,on_rune_trigger,每次触发神符效果生效
+ITEM_008,1,mechanic_toggle,rune_store_mode,set,1,permanent,,战术徽章改为入包
+ITEM_009,1,trigger_growth,力量增幅,add,0.05,per_trigger,on_rune_trigger,每次触发战术徽章效果生效
+ITEM_009,2,trigger_growth,敏捷增幅,add,0.05,per_trigger,on_rune_trigger,每次触发战术徽章效果生效
+ITEM_009,3,trigger_growth,智力增幅,add,0.05,per_trigger,on_rune_trigger,每次触发战术徽章效果生效
 ITEM_010,1,refresh_count,skill_refresh_free,add,1,instant,,技能免费刷新次数
 ITEM_010,2,refresh_count,hero_refresh_free,add,1,instant,,英雄免费刷新次数
 ITEM_010,3,refresh_count,treasure_refresh_free,add,1,instant,,宝物免费刷新次数

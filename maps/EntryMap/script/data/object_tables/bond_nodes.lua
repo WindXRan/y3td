@@ -42,6 +42,7 @@ end
 local function node(def)
   def.quality = def.quality or 'rare'
   def.editor_skill_id = def.editor_skill_id or nil
+  def.editor_modifier_id = def.editor_modifier_id or nil
   def.icon = def.icon or nil
   def.attr = def.attr or {}
   def.runtime = def.runtime or {}
@@ -70,6 +71,7 @@ for _, row in ipairs(node_rows) do
     quality = row.quality ~= '' and row.quality or 'rare',
     icon = row.icon ~= '' and (tonumber(row.icon) or row.icon) or nil,
     editor_skill_id = row.editor_skill_id ~= '' and (tonumber(row.editor_skill_id) or row.editor_skill_id) or nil,
+    editor_modifier_id = row.editor_modifier_id ~= '' and (tonumber(row.editor_modifier_id) or row.editor_modifier_id) or nil,
     unlock_rewards = build_unlock_rewards(effect_bucket),
     attr = clone_number_map(effect_bucket.attr),
     runtime = clone_number_map(effect_bucket.runtime),

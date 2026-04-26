@@ -2,8 +2,6 @@ local CsvLoader = require 'data.csv_loader'
 local helpers = require 'entry_objects.helpers'
 
 local challenge_rows = CsvLoader.read_rows('data_csv/challenges.csv')
-local batch_rows = CsvLoader.read_rows('data_csv/challenge_batches.csv')
-local batch_groups = CsvLoader.group_by(batch_rows, 'challenge_id')
 
 local DEBUG_TIME_SCALE = ((y3 and y3.game and y3.game.is_debug_mode and y3.game.is_debug_mode()) and 0.2) or 1.0
 
@@ -35,27 +33,14 @@ local function build_reward(row, prefix)
   }
 end
 
-local function build_batches(challenge_id)
-  local result = {}
-  local rows = {}
-
-  for _, row in ipairs(batch_groups[challenge_id] or {}) do
-    rows[#rows + 1] = {
-      batch_index = tonumber(row.batch_index) or 0,
-      time_sec = tonumber(row.time_sec) or 0,
-      count = tonumber(row.count) or 0,
-    }
+local function build_batches(row)
+  local count = tonumber(row.batch_count) or 0
+  if count <= 0 then
+    return {}
   end
-
-  table.sort(rows, function(a, b)
-    return a.batch_index < b.batch_index
-  end)
-
-  for _, row in ipairs(rows) do
-    result[#result + 1] = challenge_batch(row.time_sec, row.count)
-  end
-
-  return result
+  return {
+    challenge_batch(tonumber(row.batch_time_sec) or 0, count),
+  }
 end
 
 local list = {}
@@ -73,7 +58,7 @@ for _, row in ipairs(challenge_rows) do
     unit_id = to_optional_number(row.unit_id),
     boss_unit_id = to_optional_number(row.boss_unit_id),
     guard_unit_id = to_optional_number(row.guard_unit_id),
-    batches = build_batches(row.id),
+    batches = build_batches(row),
     order_index = tonumber(row.order_index) or 0,
   }
 end
