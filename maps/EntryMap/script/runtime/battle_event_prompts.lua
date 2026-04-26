@@ -64,13 +64,13 @@ function M.create(env)
       '按 1 / 2 选择',
       '按 1 / 2 / 3 选择',
       '获得一次',
-      '真身抉择',
+      '专精抉择',
       '奖励已发放。',
       '已获得临时宝物',
       '已选择强化',
       '技能更新：',
-      '已开启仙缘道统：',
-      '已参悟仙缘：',
+      '已开启战术卡流派：',
+      '已解锁战术卡：',
       ' 已完成。',
     }) then
       return {
@@ -136,6 +136,13 @@ function M.create(env)
 
   local function route(text, style)
     local prompt_system = get_message_prompt_system and get_message_prompt_system() or nil
+    local content = tostring(text or '')
+    if string.find(content, '金币不足', 1, true) then
+      local runtime_hud_system = get_runtime_hud_system and get_runtime_hud_system() or nil
+      if runtime_hud_system and runtime_hud_system.show_insufficient_gold_tip then
+        runtime_hud_system.show_insufficient_gold_tip()
+      end
+    end
     if not prompt_system then
       return
     end

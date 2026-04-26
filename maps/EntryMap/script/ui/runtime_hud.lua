@@ -1,4 +1,5 @@
 local UIRoot = require 'ui.ui_root'
+local Tips = require 'ui.tips'
 local EvolutionObjects = require 'entry_objects.evolutions'
 local HeroRoster = require 'data.object_tables.hero_roster'
 local HeroFormSkills = require 'data.object_tables.hero_form_skills'
@@ -34,6 +35,13 @@ local EXP_BAR_WIDTH = 388
 local EXP_BAR_INNER_WIDTH = 374
 local EXP_BAR_FILL_HEIGHT = 12
 local EXP_BAR_FILL_LEFT = (EXP_BAR_WIDTH - EXP_BAR_INNER_WIDTH) / 2
+local ATTR_DIAMOND_ICON = 106380
+local FLOATING_TIP_DEFAULT_X = 1510
+local FLOATING_TIP_DEFAULT_Y = 220
+local HOVER_TIP_FIXED_X = 1288
+local HOVER_TIP_FIXED_Y = 396
+local CENTER_BANNER_TIP_X = 960
+local CENTER_BANNER_TIP_Y = 858
 local EVOLUTION_QUALITY_LABELS = {
   common = '普通',
   rare = '稀有',
@@ -63,6 +71,9 @@ function M.create(env)
   local try_start_challenge = env.try_start_challenge
   local open_save_panel = env.open_save_panel
   local try_upgrade_growth_weapon = env.try_upgrade_growth_weapon
+  local use_attr_diamond = env.use_attr_diamond
+  local get_attr_choice_runtime = env.get_attr_choice_runtime
+  local apply_attr_choice = env.apply_attr_choice
   local show_runtime_status = env.show_runtime_status
   local build_runtime_attr_dialog_chunks = env.build_runtime_attr_dialog_chunks
   local build_growth_weapon_tip_payload = env.build_growth_weapon_tip_payload
@@ -119,6 +130,10 @@ function M.create(env)
       attr_panel_title = nil,
       attr_panel_body = nil,
       attr_panel_hint = nil,
+      attr_choice_panel = nil,
+      attr_choice_title = nil,
+      attr_choice_hint = nil,
+      attr_choice_cards = {},
       big_cursor = nil,
       hero_model_ui = nil,
     }
@@ -614,49 +629,51 @@ function M.create(env)
     end
 
     local model = payload.tip_model or {}
-    local title = tostring(model.item_name_text or payload.title_text or '羁绊')
-    local subtitle_parts = {}
-    if model.quality_text and model.quality_text ~= '' then
-      subtitle_parts[#subtitle_parts + 1] = tostring(model.quality_text)
-    end
+    local title = tostring(model.item_name_text or payload.title_text or '流派卡牌')
     local bond_name = tostring(model.set_name_text or '')
     local progress_text = tostring(model.progress_text or '')
-    if bond_name ~= '' or progress_text ~= '' then
-      subtitle_parts[#subtitle_parts + 1] = '羁绊：' .. bond_name .. progress_text
-    end
 
     local lines = {}
     if model.bonus_lines and #model.bonus_lines > 0 then
-      lines[#lines + 1] = '[羁绊效果]'
+      lines[#lines + 1] = '[技能效果]'
       append_non_empty_lines(lines, model.bonus_lines)
     end
 
-    if model.effect_body_text and model.effect_body_text ~= '' then
-      if #lines > 0 then
-        lines[#lines + 1] = ''
-      end
-      lines[#lines + 1] = '[吞噬条件]'
-      append_multiline_text(lines, model.effect_body_text)
+    if #lines > 0 then
+      lines[#lines + 1] = ''
+    end
+    lines[#lines + 1] = '[吞噬条件]'
+    local required_count = tonumber(string.match(progress_text, '/%s*(%d+)')) or tonumber(string.match(progress_text, '/([0-9]+)')) or 0
+    if bond_name ~= '' and required_count > 0 then
+      lines[#lines + 1] = string.format('集齐%d个 %s 卡牌自动吞噬', required_count, bond_name)
+    elseif bond_name ~= '' then
+      lines[#lines + 1] = string.format('集齐同羁绊的 %s 卡牌自动吞噬', bond_name)
+    else
+      lines[#lines + 1] = '集齐相同羁绊的卡牌自动吞噬'
     end
 
+    local final_effect_lines = {}
     if model.set_body_lines and #model.set_body_lines > 0 then
-      if #lines > 0 then
-        lines[#lines + 1] = ''
+      for _, line in ipairs(model.set_body_lines) do
+        final_effect_lines[#final_effect_lines + 1] = tostring(line)
       end
-      local set_title = tostring(model.set_title_text or ''):gsub('：+$', '')
-      lines[#lines + 1] = '[' .. (set_title ~= '' and set_title or '激活效果') .. ']'
-      append_non_empty_lines(lines, model.set_body_lines)
+    elseif model.effect_body_text and model.effect_body_text ~= '' then
+      for line in tostring(model.effect_body_text):gmatch('[^\n]+') do
+        final_effect_lines[#final_effect_lines + 1] = line
+      end
     end
-
-    if #lines == 0 then
-      lines[#lines + 1] = '当前没有羁绊说明。'
+    if #final_effect_lines > 0 then
+      lines[#lines + 1] = ''
+      lines[#lines + 1] = string.format('【%s】激活效果：', bond_name ~= '' and bond_name or '羁绊')
+      append_non_empty_lines(lines, final_effect_lines)
     end
 
     return {
       title = title,
-      subtitle = table.concat(subtitle_parts, '  '),
+      subtitle = bond_name ~= '' and ('羁绊：' .. bond_name .. progress_text) or '',
       body = table.concat(lines, '\n'),
       icon = model.icon_res or payload.icon_res,
+      kind = 'bond',
     }
   end
 
@@ -666,7 +683,7 @@ function M.create(env)
       string.format('本次消耗 %d 个木材', bond_draw_cost),
       string.format('当前拥有 %s 木材', compact_number(STATE.resources and STATE.resources.wood or 0)),
       '',
-      '抽取羁绊卡牌，相同羁绊会自动吞噬入体。',
+      '抽取流派卡牌，相同流派会自动收录进卡册。',
     }
     return {
       title = '抽卡 - [快捷键：F]',
@@ -679,12 +696,12 @@ function M.create(env)
   local function build_reward_button_hover_tip_payload()
     local lines = {
       '[左键点击]',
-      '打开已吞卡牌列表与羁绊图鉴。',
+      '打开卡册列表与流派图鉴。',
       '',
-      '羁绊三选一与羁绊 tips 相互独立，可以同时存在。',
+      '流派三选一与流派 tips 相互独立，可以同时存在。',
     }
     return {
-      title = '已吞卡牌 - [快捷键：I]',
+      title = '卡册 - [快捷键：I]',
       subtitle = '',
       body = table.concat(lines, '\n'),
       icon = nil,
@@ -720,15 +737,18 @@ function M.create(env)
 
   local function build_consumable_hover_tip_payload(slot_index)
     if slot_index == 1 then
+      local attr_runtime = get_attr_choice_runtime and get_attr_choice_runtime() or nil
+      local count = attr_runtime and tonumber(attr_runtime.diamond_count or 0) or 0
       return {
-        title = '属性宝石',
+        title = '属性钻石',
         subtitle = '类型：消耗品',
         body = table.concat({
           '[点击使用]',
-          '可选择一条随机属性强化。',
-          '英雄每升 5 级，或完成宝石挑战时，可获得 1 颗。',
+          '打开属性三选一面板。',
+          string.format('当前持有：%d', count),
+          '英雄每升 5 级获得 1 颗。',
         }, '\n'),
-        icon = 300540000,
+        icon = ATTR_DIAMOND_ICON,
       }
     end
     if slot_index == 2 then
@@ -808,7 +828,7 @@ function M.create(env)
     local lines = {}
 
     if entry and entry.title and entry.title ~= '' then
-      lines[#lines + 1] = '真身：' .. tostring(entry.title)
+      lines[#lines + 1] = '专精：' .. tostring(entry.title)
     end
     if skill.subtitle and skill.subtitle ~= '' then
       lines[#lines + 1] = tostring(skill.subtitle)
@@ -825,15 +845,15 @@ function M.create(env)
 
     return {
       id = tostring(skill.id or ('form_skill_' .. tostring(display_index))),
-      name = tostring(skill.name or '真身神通'),
+      name = tostring(skill.name or '猎手专精'),
       icon = skill.ui_icon or skill.icon or get_hero_icon(),
-      key = '真',
+      key = '专',
       cooldown_text = cooldown_remaining > 0 and string.format('%.1fs', cooldown_remaining) or '就绪',
       legacy_cooldown_text = cooldown_remaining > 0 and string.format('%.1f', cooldown_remaining) or '',
       badge_text = entry and entry.rarity or '',
       stack_text = trigger_value > 1 and string.format('%d/%d', math.min(counter, trigger_value), trigger_value) or '',
-      tip_title = tostring(skill.name or '真身神通'),
-      tip_text = #lines > 0 and table.concat(lines, '\n') or '当前没有神通说明。',
+      tip_title = tostring(skill.name or '猎手专精'),
+      tip_text = #lines > 0 and table.concat(lines, '\n') or '当前没有专精说明。',
     }
   end
 
@@ -868,7 +888,7 @@ function M.create(env)
 
     local skill, entry = get_evolution_hero_skill(def)
     local display_name = entry and entry.name or def.name or ('进化' .. tostring(display_index))
-    local display_role = entry and entry.title or skill and skill.subtitle or '英雄真身'
+    local display_role = entry and entry.title or skill and skill.subtitle or '英雄专精'
     local summary = skill and skill.summary or entry and entry.summary or def.summary or ''
     local lines = {
       string.format('[%s] %s', get_evolution_quality_label(def.quality), display_role),
@@ -1000,7 +1020,7 @@ function M.create(env)
       end
     end
 
-    return '操作提示', 'F 抽卡，I 查看已吞卡牌，H 查看进化，P 打开存档。'
+    return '操作提示', 'F 抽卡，I 查看卡册，H 查看进化，P 打开存档。'
   end
 
   local function build_status_text()
@@ -1016,15 +1036,15 @@ function M.create(env)
   end
 
   local function build_station_hint()
-    return '按F抽卡，相同羁绊的卡牌，自动吞噬入体'
+    return '按F抽卡，相同流派的卡牌，自动收录进卡册'
   end
 
   local function build_hotkey_help_text()
     return table.concat({
       'G / 强化：攻击技能三选一',
-      'F / 抽卡：羁绊三选一',
-      'I / 已吞：查看已吞羁绊',
-      'H / 进化：查看真身 / 杀敌奖励',
+      'F / 抽卡：流派三选一',
+      'I / 卡册：查看已收录流派',
+      'H / 进化：查看专精 / 杀敌奖励',
       'V / 宝物：查看宝物入口',
       'Q / W / E / R：试炼入口',
       'TAB / T：属性面板',
@@ -1121,6 +1141,54 @@ function M.create(env)
       'BattleBottomHUD.layout.hover_tip_panel.body',
       'BattleBottomHUD.layout.right_station.hover_tip_panel.body',
     })
+    local hover_tip_panel_bg = resolve_first_ui({
+      'BattleBottomHUD.layout.hover_tip_panel.tip_bg',
+      'BattleBottomHUD.layout.right_station.hover_tip_panel.tip_bg',
+    })
+    local hover_tip_panel_inner = resolve_first_ui({
+      'BattleBottomHUD.layout.hover_tip_panel.tip_inner',
+      'BattleBottomHUD.layout.right_station.hover_tip_panel.tip_inner',
+    })
+    local hover_tip_panel_head = resolve_first_ui({
+      'BattleBottomHUD.layout.hover_tip_panel.tip_head_bg',
+      'BattleBottomHUD.layout.right_station.hover_tip_panel.tip_head_bg',
+    })
+    local hover_tip_panel_divider = resolve_first_ui({
+      'BattleBottomHUD.layout.hover_tip_panel.divider',
+      'BattleBottomHUD.layout.right_station.hover_tip_panel.divider',
+    })
+    local hover_tip_panel_section_divider = resolve_first_ui({
+      'BattleBottomHUD.layout.hover_tip_panel.section_divider',
+      'BattleBottomHUD.layout.right_station.hover_tip_panel.section_divider',
+    })
+    set_ui_size_if_alive(runtime.hover_tip_panel, 396, 294)
+    set_pos_if_alive(runtime.hover_tip_panel, 246, 352)
+    set_ui_size_if_alive(hover_tip_panel_bg, 396, 294)
+    set_pos_if_alive(hover_tip_panel_bg, 198, 147)
+    set_image_color_if_alive(hover_tip_panel_bg, { 7, 12, 20, 246 })
+    set_ui_size_if_alive(hover_tip_panel_inner, 382, 280)
+    set_pos_if_alive(hover_tip_panel_inner, 198, 147)
+    set_image_color_if_alive(hover_tip_panel_inner, { 18, 24, 36, 238 })
+    set_ui_size_if_alive(hover_tip_panel_head, 382, 76)
+    set_pos_if_alive(hover_tip_panel_head, 198, 250)
+    set_image_color_if_alive(hover_tip_panel_head, { 31, 22, 50, 228 })
+    set_ui_size_if_alive(runtime.hover_tip_panel_icon_bg, 56, 56)
+    set_pos_if_alive(runtime.hover_tip_panel_icon_bg, 40, 250)
+    set_image_color_if_alive(runtime.hover_tip_panel_icon_bg, { 78, 220, 80, 238 })
+    set_ui_size_if_alive(runtime.hover_tip_panel_icon, 48, 48)
+    set_pos_if_alive(runtime.hover_tip_panel_icon, 40, 250)
+    set_ui_size_if_alive(runtime.hover_tip_panel_title, 292, 28)
+    set_pos_if_alive(runtime.hover_tip_panel_title, 218, 264)
+    set_ui_size_if_alive(runtime.hover_tip_panel_subtitle, 292, 22)
+    set_pos_if_alive(runtime.hover_tip_panel_subtitle, 218, 232)
+    set_ui_size_if_alive(hover_tip_panel_divider, 352, 1)
+    set_pos_if_alive(hover_tip_panel_divider, 198, 212)
+    set_image_color_if_alive(hover_tip_panel_divider, { 67, 95, 130, 160 })
+    set_ui_size_if_alive(hover_tip_panel_section_divider, 352, 1)
+    set_pos_if_alive(hover_tip_panel_section_divider, 198, 136)
+    set_image_color_if_alive(hover_tip_panel_section_divider, { 38, 57, 84, 126 })
+    set_ui_size_if_alive(runtime.hover_tip_panel_body, 352, 166)
+    set_pos_if_alive(runtime.hover_tip_panel_body, 198, 113)
     set_visible_if_alive(runtime.hover_tip_panel, false)
     call_ui(runtime.hover_tip_panel, 'set_intercepts_operations', false)
     set_text_alignment_if_alive(runtime.hover_tip_panel_title, '左', '中')
@@ -1163,7 +1231,12 @@ function M.create(env)
   end
 
   local function refresh_hover_tip_panel_position()
-    return
+    local runtime = get_runtime()
+    if not is_ui_alive(runtime.hover_tip_panel) then
+      return
+    end
+    set_pos_if_alive(runtime.hover_tip_panel, HOVER_TIP_FIXED_X, HOVER_TIP_FIXED_Y)
+    call_ui(runtime.hover_tip_panel, 'set_absolute_pos', HOVER_TIP_FIXED_X, HOVER_TIP_FIXED_Y)
   end
 
   local function hide_hover_tip_panel()
@@ -1188,12 +1261,12 @@ function M.create(env)
     set_text_if_alive(runtime.hover_tip_panel_title, payload.title or '说明')
     set_text_if_alive(runtime.hover_tip_panel_subtitle, payload.subtitle or '')
     set_text_if_alive(runtime.hover_tip_panel_body, payload.body or '')
-    set_font_size_if_alive(runtime.hover_tip_panel_title, 16)
-    set_font_size_if_alive(runtime.hover_tip_panel_subtitle, 13)
-    set_font_size_if_alive(runtime.hover_tip_panel_body, 14)
-    set_text_color_if_alive(runtime.hover_tip_panel_title, { 204, 226, 255, 255 })
+    set_font_size_if_alive(runtime.hover_tip_panel_title, payload.kind == 'bond' and 21 or 16)
+    set_font_size_if_alive(runtime.hover_tip_panel_subtitle, payload.kind == 'bond' and 15 or 13)
+    set_font_size_if_alive(runtime.hover_tip_panel_body, payload.kind == 'bond' and 15 or 14)
+    set_text_color_if_alive(runtime.hover_tip_panel_title, payload.title_color or (payload.kind == 'bond' and { 218, 58, 255, 255 } or { 204, 226, 255, 255 }))
     set_text_color_if_alive(runtime.hover_tip_panel_subtitle, { 255, 213, 96, 255 })
-    set_text_color_if_alive(runtime.hover_tip_panel_body, { 222, 232, 244, 255 })
+    set_text_color_if_alive(runtime.hover_tip_panel_body, payload.body_color or (payload.kind == 'bond' and { 190, 203, 220, 255 } or { 222, 232, 244, 255 }))
     set_visible_if_alive(runtime.hover_tip_panel_subtitle, payload.subtitle ~= nil and payload.subtitle ~= '')
     set_visible_if_alive(runtime.hover_tip_panel_icon_bg, payload.icon ~= nil)
     set_visible_if_alive(runtime.hover_tip_panel_icon, payload.icon ~= nil)
@@ -1288,6 +1361,100 @@ function M.create(env)
     set_visible_if_alive(runtime.tip_panel, runtime.visible ~= false)
   end
 
+  local function get_floating_tip_parent(player)
+    return resolve_first_ui({
+      'BattleBottomHUD',
+      'BattleBottomHUD.layout',
+      'top',
+      'CommonTip',
+    }) or (player and UIRoot.get_overlay_parent(y3, player) or nil)
+  end
+
+  local function get_ui_absolute_bounds(ui, fallback_width, fallback_height)
+    if not is_ui_alive(ui) then
+      return nil
+    end
+    local ok_x, x = pcall(ui.get_absolute_x, ui)
+    local ok_y, y = pcall(ui.get_absolute_y, ui)
+    if not ok_x or not ok_y or x == nil or y == nil then
+      return nil
+    end
+    local width = fallback_width or 64
+    local height = fallback_height or 64
+    if type(ui.get_real_width) == 'function' then
+      local ok_w, value = pcall(ui.get_real_width, ui)
+      width = ok_w and tonumber(value) or width
+    end
+    if type(ui.get_real_height) == 'function' then
+      local ok_h, value = pcall(ui.get_real_height, ui)
+      height = ok_h and tonumber(value) or height
+    end
+    return tonumber(x) or 0, tonumber(y) or 0, width, height
+  end
+
+  local function show_floating_tip(options)
+    ensure_hud()
+    local player = get_player_safe()
+    local parent = get_floating_tip_parent(player)
+    if not parent then
+      return nil
+    end
+    options = options or {}
+    options.player = player
+    options.parent_ui = parent
+    options.x = options.x or FLOATING_TIP_DEFAULT_X
+    options.y = options.y or FLOATING_TIP_DEFAULT_Y
+    return Tips.show_floating_text({
+      y3 = y3,
+      get_player = get_player_safe,
+    }, options)
+  end
+
+  local function show_insufficient_gold_tip(options)
+    ensure_hud()
+    local player = get_player_safe()
+    local parent = get_floating_tip_parent(player)
+    if not parent then
+      return nil
+    end
+    local slot_ui = resolve_ui('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_1')
+    local slot_x, slot_y, _, slot_h = get_ui_absolute_bounds(slot_ui, 64, 64)
+    options = options or {}
+    options.player = player
+    options.parent_ui = parent
+    options.x = options.x or slot_x or FLOATING_TIP_DEFAULT_X
+    options.y = options.y or (slot_y and (slot_y + slot_h * 0.5 + 58)) or FLOATING_TIP_DEFAULT_Y
+    options.rise = options.rise or 46
+    options.duration = options.duration or 0.9
+    options.width = options.width or 142
+    options.height = options.height or 112
+    options.line_gap = options.line_gap or 16
+    options.font_size = options.font_size or 22
+    return Tips.show_insufficient_gold({
+      y3 = y3,
+      get_player = get_player_safe,
+    }, options)
+  end
+
+  local function show_center_tip(text, options)
+    ensure_hud()
+    local player = get_player_safe()
+    local parent = get_floating_tip_parent(player)
+    if not parent then
+      return nil
+    end
+    options = options or {}
+    options.player = player
+    options.parent_ui = parent
+    options.text = text or options.text
+    options.x = options.x or CENTER_BANNER_TIP_X
+    options.y = options.y or CENTER_BANNER_TIP_Y
+    return Tips.show_center_banner({
+      y3 = y3,
+      get_player = get_player_safe,
+    }, options)
+  end
+
   local function refresh_tip_panel_visibility()
     local runtime = get_runtime()
     local should_show = runtime.tip_expires_at and runtime.tip_expires_at > (STATE.runtime_elapsed or 0)
@@ -1377,7 +1544,7 @@ function M.create(env)
     set_visible_if_alive(resolve_ui('BattleBottomHUD.layout.left_station.toggle_frame'), false)
 
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.draw_button.button'), 'F抽卡')
-    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.reward_button.button'), '已吞卡牌')
+    set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.reward_button.button'), '卡册')
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.kill_reward_button.button'), '杀敌抽奖')
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.fish_button.button'), '摆烂钓鱼')
 
@@ -1468,6 +1635,65 @@ function M.create(env)
     show_hover_tip_panel(build_consumable_hover_tip_payload(slot_index))
   end
 
+  local function get_attr_choice_model()
+    local attr_runtime = get_attr_choice_runtime and get_attr_choice_runtime() or nil
+    if not attr_runtime or attr_runtime.awaiting_choice ~= true then
+      return nil
+    end
+    if not attr_runtime.current_choices or #attr_runtime.current_choices == 0 then
+      return nil
+    end
+    return attr_runtime
+  end
+
+  local function ensure_attr_choice_panel()
+    local runtime = get_runtime()
+    if is_ui_alive(runtime.attr_choice_panel) then
+      return runtime.attr_choice_panel
+    end
+    local prefix = 'BattleBottomHUD.layout.right_station.attr_choice_panel'
+    runtime.attr_choice_panel = resolve_ui(prefix)
+    runtime.attr_choice_title = resolve_ui(prefix .. '.title')
+    runtime.attr_choice_hint = nil
+    runtime.attr_choice_cards = {}
+    for index = 1, 3 do
+      local card_prefix = string.format('%s.choice_%d', prefix, index)
+      runtime.attr_choice_cards[index] = {
+        root = resolve_ui(card_prefix),
+        body = resolve_ui(card_prefix .. '.text'),
+        button = resolve_ui(card_prefix .. '.button'),
+      }
+    end
+    return runtime.attr_choice_panel
+  end
+
+  local function refresh_attr_choice_panel()
+    local attr_runtime = get_attr_choice_model()
+    local runtime = get_runtime()
+    local panel = ensure_attr_choice_panel()
+    if not is_ui_alive(panel) then
+      return
+    end
+
+    local visible = runtime.visible ~= false and attr_runtime ~= nil
+    set_visible_if_alive(panel, visible)
+    if not visible then
+      return
+    end
+
+    set_text_if_alive(runtime.attr_choice_title, '选择属性')
+    for index = 1, 3 do
+      local card = runtime.attr_choice_cards[index]
+      local choice = attr_runtime.current_choices and attr_runtime.current_choices[index] or nil
+      if card then
+        set_visible_if_alive(card.root, choice ~= nil)
+        if choice then
+          set_text_if_alive(card.body, choice.body_text or choice.title_text or '')
+        end
+      end
+    end
+  end
+
   local function refresh_battle_loadout_row()
     local growth_payload = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), '物品栏')
@@ -1495,6 +1721,7 @@ function M.create(env)
   ensure_hud = function()
     ensure_preferences()
     ensure_overlay_widgets()
+    set_visible_if_alive(resolve_ui('BattleBottomHUD.layout.layout_bg'), false)
 
     bind_click_once('top_pause', resolve_ui('top.top.left_buttons.btn_pause'), function()
       toggle_pause()
@@ -1541,7 +1768,7 @@ function M.create(env)
       if show_bond_progress then
         show_bond_progress()
       else
-        show_tip_panel('当前没有已吞卡牌面板可展示。', 4, '羁绊进度')
+      show_tip_panel('当前没有卡册面板可展示。', 4, '流派进度')
       end
       refresh_hud()
     end)
@@ -1589,6 +1816,26 @@ function M.create(env)
         end,
         function()
           hide_hover_tip_panel()
+        end)
+    end
+
+    bind_click_once('battle_attr_diamond', resolve_ui('BattleBottomHUD.layout.right_station.consumable_panel.slot_1'), function()
+      if use_attr_diamond then
+        use_attr_diamond()
+      end
+      refresh_hud()
+    end)
+
+    for index = 1, 3 do
+      local choice_index = index
+      bind_click_once(
+        'battle_attr_choice_' .. tostring(choice_index),
+        resolve_ui(string.format('BattleBottomHUD.layout.right_station.attr_choice_panel.choice_%d.button', choice_index)),
+        function()
+          if apply_attr_choice then
+            apply_attr_choice(choice_index)
+          end
+          refresh_hud()
         end)
     end
 
@@ -1862,6 +2109,15 @@ function M.create(env)
     set_text_alignment_if_alive(resolve_center_module_ui('status_text'), '左', '中')
     set_text_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.station_hint'), build_station_hint())
     set_text_alignment_if_alive(resolve_ui('BattleBottomHUD.layout.right_station.card_panel.station_hint'), '中', '中')
+
+    local attr_runtime = get_attr_choice_runtime and get_attr_choice_runtime() or nil
+    local diamond_count = attr_runtime and tonumber(attr_runtime.diamond_count or 0) or 0
+    local prefix = 'BattleBottomHUD.layout.right_station.consumable_panel.slot_1'
+    set_visible_if_alive(resolve_ui(prefix .. '.icon'), true)
+    set_image_if_alive(resolve_ui(prefix .. '.icon'), ATTR_DIAMOND_ICON)
+    set_text_if_alive(resolve_ui(prefix .. '.hotkey'), '1')
+    set_text_if_alive(resolve_ui(prefix .. '.count'), tostring(math.max(0, diamond_count)))
+    set_text_alignment_if_alive(resolve_ui(prefix .. '.count'), '中', '中')
   end
 
   local function refresh_bond_slots()
@@ -1893,6 +2149,7 @@ function M.create(env)
     refresh_action_area()
     refresh_bond_slots()
     refresh_battle_loadout_row()
+    refresh_attr_choice_panel()
 
     set_visible_if_alive(runtime.big_cursor, runtime.visible ~= false and ensure_preferences().big_cursor)
     set_visible_if_alive(runtime.attr_panel, runtime.visible ~= false and runtime.attr_panel_visible)
@@ -1912,6 +2169,7 @@ function M.create(env)
     set_visible_if_alive(runtime.tip_panel, visible == true and runtime.tip_expires_at > (STATE.runtime_elapsed or 0))
     set_visible_if_alive(runtime.hover_tip_panel, visible == true and runtime.hover_tip_visible == true)
     set_visible_if_alive(runtime.big_cursor, visible == true and ensure_preferences().big_cursor)
+    refresh_attr_choice_panel()
   end
 
   return {
@@ -1919,6 +2177,11 @@ function M.create(env)
     refresh_hud = refresh_hud,
     set_visible = set_visible,
     show_tip_panel = show_tip_panel,
+    show_floating_tip = show_floating_tip,
+    show_insufficient_gold_tip = show_insufficient_gold_tip,
+    show_center_tip = show_center_tip,
+    show_hover_tip_panel = show_hover_tip_panel,
+    hide_hover_tip_panel = hide_hover_tip_panel,
     toggle_attr_panel = toggle_attr_panel,
   }
 end

@@ -12,7 +12,7 @@ local node_lv5 = nodes.by_level[5]
 assert(node_lv5 ~= nil, 'level 5 node should exist')
 assert(node_lv5.id == 'evolution_node_lv05', 'level 5 node id should match the new cadence')
 assert(node_lv5.pool_rule_id == 'evolution_pool_global', 'level 5 node should use the global evolution pool')
-assert(node_lv5.ui_title == '5级真身抉择', 'level 5 node title should use the new hero-evolution copy')
+assert(node_lv5.ui_title == '5级专精抉择', 'level 5 node title should use the archer-specialization copy')
 assert(node_lv5.choice_count == 2, 'level 5 node should be a 2-choice evolution pick')
 
 local node_lv40 = nodes.by_level[40]

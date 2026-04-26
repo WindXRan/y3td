@@ -136,6 +136,9 @@ function M.create(env)
     STATE.basic_attack_ability_warned = false
     STATE.runtime_elapsed = 0
     STATE.hero_attr_runtime = nil
+    STATE.attr_choice_runtime = nil
+    STATE.bond_swallow_panel_visible = false
+    STATE.bond_swallow_selected_root_index = nil
     STATE.gear_state = nil
     STATE.choice_panel_hidden = false
     STATE.choice_panel = nil

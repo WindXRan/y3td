@@ -82,14 +82,13 @@ local task_35 = mod.by_id['3-5']
 local task_effects_35 = attreffect.by_source.mainline_task and attreffect.by_source.mainline_task['3-5']
 assert(task_35, 'expected 3-5 task to exist')
 assert(task_effects_35 ~= nil, 'expected 3-5 numeric task rows in attreffect')
-assert(task_effects_35.state['skill_point'] == 1, 'expected canonical skill_point state for 3-5 in attreffect')
 assert(task_35.target_count == 1, 'expected 3-5 target_count to match')
 assert(task_35.is_boss_task == true, 'expected 3-5 to stay marked as a boss task')
 assert(task_35.reward_lines[1].key == 'exp', 'expected 3-5 reward line 1 key')
 assert(task_35.reward_lines[1].value == 1000, 'expected 3-5 reward line 1 value')
-assert(task_35.reward_lines[3].type == 'special', 'expected 3-5 state row to be adapted back into special reward_lines')
-assert(task_35.reward_lines[3].key == 'skill_point', 'expected 3-5 reward line 3 key')
-assert(task_35.reward_lines[3].value == 1, 'expected 3-5 reward line 3 value')
+assert(task_35.reward_lines[2].type == 'resource', 'expected 3-5 reward line 2 type')
+assert(task_35.reward_lines[2].key == 'wood', 'expected 3-5 reward line 2 key')
+assert(task_35.reward_lines[2].value == 100, 'expected 3-5 reward line 2 value')
 
 local task_37 = mod.by_id['3-7']
 assert(task_37, 'expected 3-7 task to exist')
@@ -137,6 +136,6 @@ local task_410 = mod.by_id['4-10']
 assert(task_410, 'expected 4-10 task to exist')
 assert(task_410.reward_lines[1].key == 'wood', 'expected 4-10 wood reward key')
 assert(task_410.reward_lines[2].key == 'treasure_choice', 'expected 4-10 reward line 2 key')
-assert(task_410.reward_lines[3].key == 'skill_point', 'expected 4-10 reward line 3 key')
+assert(#task_410.reward_lines == 2, 'expected 4-10 to keep two reward lines')
 
 print('[OK] mainline task rewards csv loader smoke passed')

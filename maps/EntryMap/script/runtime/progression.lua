@@ -6,6 +6,7 @@ function M.create(env)
   local y3 = env.y3
   local round_number = env.round_number
   local message = env.message
+  local on_hero_level_up = env.on_hero_level_up
 
   local function get_hero_progression_rules()
     return CONFIG.hero_progression or {}
@@ -97,8 +98,66 @@ function M.create(env)
       exp = 0,
       exp_to_next = 0,
       total_exp = 0,
+      applied_growth_level = 1,
     }
     sync_hero_progression()
+  end
+
+  local function get_level_growth_pack(level_count)
+    local rules = get_hero_progression_rules()
+    local count = math.max(0, tonumber(level_count) or 0)
+    if count <= 0 then
+      return nil
+    end
+
+    return {
+      ['攻击'] = (tonumber(rules.hero_level_attack_growth) or 0) * count,
+      ['生命'] = (tonumber(rules.hero_level_hp_growth) or 0) * count,
+      ['力量'] = (tonumber(rules.hero_level_all_attr_growth) or 0) * count,
+      ['敏捷'] = (tonumber(rules.hero_level_all_attr_growth) or 0) * count,
+      ['智力'] = (tonumber(rules.hero_level_all_attr_growth) or 0) * count,
+    }
+  end
+
+  local function apply_hero_level_growth(target_level)
+    local progress = STATE.hero_progress
+    if not progress or not STATE.hero or not STATE.hero:is_exist() then
+      return false
+    end
+
+    local applied_level = math.max(1, tonumber(progress.applied_growth_level) or 1)
+    local new_level = math.max(applied_level, tonumber(target_level) or applied_level)
+    local level_count = new_level - applied_level
+    local growth_pack = get_level_growth_pack(level_count)
+    if not growth_pack then
+      progress.applied_growth_level = new_level
+      return false
+    end
+
+    local hero_attr_system = env.hero_attr_system
+    local hp_growth = tonumber(growth_pack['生命']) or 0
+    if hero_attr_system and hero_attr_system.add_attr then
+      for attr_name, value in pairs(growth_pack) do
+        if value ~= 0 then
+          hero_attr_system.add_attr(STATE.hero, attr_name, value)
+        end
+      end
+      if hero_attr_system.rebuild_derived_attrs then
+        hero_attr_system.rebuild_derived_attrs(STATE.hero)
+      end
+    else
+      for attr_name, value in pairs(growth_pack) do
+        if value ~= 0 and STATE.hero.add_attr then
+          STATE.hero:add_attr(attr_name, value)
+        end
+      end
+    end
+
+    if hp_growth > 0 and STATE.hero.add_hp then
+      STATE.hero:add_hp(hp_growth)
+    end
+    progress.applied_growth_level = new_level
+    return true
   end
 
   local function sync_hero_progress_from_engine()
@@ -109,6 +168,7 @@ function M.create(env)
     STATE.hero_progress.level = math.max(1, math.min(STATE.hero:get_level(), get_engine_exp_cap_level()))
     STATE.hero_progress.exp = math.max(0, round_number(y3.helper.tonumber(STATE.hero:get_exp()) or 0))
     STATE.hero_progress.exp_to_next = get_hero_next_level_exp(STATE.hero_progress.level)
+    apply_hero_level_growth(STATE.hero_progress.level)
   end
 
   local function get_hero_progress_text()
@@ -166,8 +226,12 @@ function M.create(env)
         progress.level = progress.level + 1
         progress.exp = 0
         sync_hero_progression()
+        apply_hero_level_growth(progress.level)
         STATE.skill_points = 0
         message(string.format('英雄升级至 %d。', progress.level))
+        if on_hero_level_up and progress.level % 5 == 0 then
+          on_hero_level_up(progress.level)
+        end
       end
     end
 
@@ -196,6 +260,7 @@ function M.create(env)
     sync_hero_progress_from_engine = sync_hero_progress_from_engine,
     get_hero_progress_text = get_hero_progress_text,
     grant_hero_exp = grant_hero_exp,
+    apply_hero_level_growth = apply_hero_level_growth,
   }
 end
 

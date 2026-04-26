@@ -76,7 +76,7 @@ def test_basic_attack_primary_hit_no_longer_uses_common_attack_visuals() -> None
     assert "particle = primary_hit_particle," in content
     assert "force_hit_effect = true," in content
     assert "local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false" in content
-    assert "if options and options.force_hit_effect == true then" in content
+    assert "if options and options.force_hit_effect == true and not is_hit_effect_hidden() then" in content
     assert "local hero_damage_multiplier = 1" in content
     assert "if hero_attr_system and hero_attr_system.get_damage_multiplier then" in content
     assert "'normal_attack'," in content
@@ -88,7 +88,7 @@ def test_basic_attack_multishot_now_launches_real_projectiles() -> None:
     assert "local multishot_targets = {}" in content
     assert "multishot_targets[#multishot_targets + 1] = unit" in content
     assert "if #multishot_targets > 0 and multishot_ratio > 0 then" in content
-    assert "launch_projectile_to_target(vfx, unit, function(impact_point, did_hit)" in content
+    assert "launch_projectile_to_target(vfx, unit, resolve_multishot_basic_attack, damage_ability)" in content
     assert "deal_basic_attack_damage(skill, unit, damage * multishot_ratio, {" in content
     assert "apply_armor_break_on_hit(unit)" in content
 
@@ -125,8 +125,8 @@ def test_attack_skill_projectile_objects_keep_a_single_visible_projectile_effect
 
 def test_basic_attack_projectile_uses_clean_single_effect_payload() -> None:
     data = json.loads((PROJECTILE_DIR / "134267104.json").read_text(encoding="utf-8"))
-    assert get_primary_projectile_effect(data["effect_foes"]) == 101175
-    assert get_primary_projectile_effect(data["effect_friend"]) == 101175
+    assert get_primary_projectile_effect(data["effect_foes"]) == 104656
+    assert get_primary_projectile_effect(data["effect_friend"]) == 104656
 
 
 def test_attack_skills_trim_redundant_runtime_manifest_kv() -> None:

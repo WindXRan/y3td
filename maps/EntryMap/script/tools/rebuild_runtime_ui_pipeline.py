@@ -23,6 +23,7 @@ PANELS = [
     ("bond_choice_2_preview_y3.html", "BondChoice2.json", "BondChoice2", 520),
     ("bond_choice_3_preview_y3.html", "BondChoice3.json", "BondChoice3", 520),
     ("bond_choice_4_preview_y3.html", "BondChoice4.json", "BondChoice4", 520),
+    ("bond_swallow_panel_preview_y3.html", "BondSwallowPanel.json", "BondSwallowPanel", 9560),
 ]
 
 
@@ -143,7 +144,8 @@ def patch_choice_panel(panel):
         if node.get("type") == 1:
             node["swallow_touches"] = True
         if node.get("name") == "dim_bg":
-            node["swallow_touches"] = True
+            node["swallow_touches"] = False
+            node["visible"] = False
         if node.get("name") in {"bond_choice_2_bg", "bond_choice_3_bg", "bond_choice_4_bg"}:
             node["visible"] = False
     root["visible"] = True
@@ -151,6 +153,8 @@ def patch_choice_panel(panel):
 
 def patch_battle_bottom_hud(panel):
     for node in walk(panel):
+        if node.get("name") == "layout_bg":
+            node["visible"] = False
         if node.get("name") == "hero_name":
             node["alignment"] = {"__tuple__": True, "items": [1, 8]}
         if node.get("name") == "hero_model":

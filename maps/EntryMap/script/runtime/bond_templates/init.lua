@@ -10,6 +10,7 @@ local templates = {
   per_second_growth = require 'runtime.bond_templates.per_second_growth',
   kill_stack = require 'runtime.bond_templates.kill_stack',
   basic_attack_modifier = require 'runtime.bond_templates.basic_attack_modifier',
+  object_modifier = require 'runtime.bond_templates.object_modifier',
 }
 
 local M = {}

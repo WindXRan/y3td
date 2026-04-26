@@ -29,6 +29,11 @@ def test_bottom_hud_contains_expected_runtime_nodes():
     ui = json.loads(UI_PATH.read_text(encoding="utf-8"))
     layout = ui["children"][0]
     assert "growth_weapon_slot" not in UI_PATH.read_text(encoding="utf-8")
+    assert "map_badge" not in UI_PATH.read_text(encoding="utf-8")
+    assert "map_corner_mark" not in UI_PATH.read_text(encoding="utf-8")
+    assert "shell_bevel_top" in UI_PATH.read_text(encoding="utf-8")
+    assert "card_title_plate" in UI_PATH.read_text(encoding="utf-8")
+    assert "empty_mark" in UI_PATH.read_text(encoding="utf-8")
     center_hub = find_child(layout, "center_hub")
     center_names = {child["name"] for child in center_hub["children"]}
     assert "hero_panel" in center_names
@@ -42,9 +47,20 @@ def test_bottom_hud_contains_expected_runtime_nodes():
     assert "status_text" in combat_names
     assert "challenge_row" not in combat_names
 
+    exp_bar = find_child(combat_parent, "exp_bar")
+    exp_names = {child["name"] for child in exp_bar["children"]}
+    assert "evolve_click_area" in exp_names
+
     skill_bar = find_child(combat_parent, "skill_bar")
     slot_names = {child["name"] for child in skill_bar["children"]}
     assert {"skill_slot_1", "skill_slot_2", "skill_slot_3", "skill_slot_4", "skill_slot_5"}.issubset(slot_names)
+    for index in range(1, 6):
+        skill_slot = find_child(skill_bar, f"skill_slot_{index}")
+        skill_child_names = {child["name"] for child in skill_slot["children"]}
+        assert "key_bg" not in skill_child_names
+        assert "key" not in skill_child_names
+        assert "cooldown" not in skill_child_names
+        assert "label" not in skill_child_names
 
     buff_row = find_child(combat_parent, "buff_row")
     buff_names = {child["name"] for child in buff_row["children"]}
@@ -83,6 +99,7 @@ def test_bottom_hud_contains_expected_runtime_nodes():
         assert find_child(consumable_slot, "icon").get("image") is None
 
     card_panel = find_child(right_station, "card_panel")
+    assert card_panel["size"][0] >= 330
     card_names = {child["name"] for child in card_panel["children"]}
     assert "draw_button" in card_names
     assert "reward_button" in card_names
@@ -96,6 +113,7 @@ def test_bottom_hud_contains_expected_runtime_nodes():
     left_station = find_child(layout, "left_station")
     left_names = {child["name"] for child in left_station["children"]}
     assert "mini_map" in left_names
+    assert "map_title" in left_names
     assert "toggle_frame" in left_names
     assert "player_attr_list" in left_names
     assert "player_name" not in left_names
@@ -109,6 +127,7 @@ def test_bottom_hud_contains_expected_runtime_nodes():
     player_attr_list = find_child(left_station, "player_attr_list")
     attr_names = {child["name"] for child in player_attr_list["children"]}
     assert {"battle_power_row", "hero_attack_row", "hero_defense_row", "hero_power_row", "hero_intelligence_row", "hero_agility_row"}.issubset(attr_names)
+    assert "panel_bg" in attr_names
 
     hero_panel = find_child(center_hub, "hero_panel")
     hero_names = {child["name"] for child in hero_panel["children"]}

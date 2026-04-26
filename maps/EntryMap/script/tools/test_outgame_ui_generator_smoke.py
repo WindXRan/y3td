@@ -48,7 +48,7 @@ def test_outgame_mode_and_difficulty_slot_count_matches_reference():
     mode_names = [child["name"] for child in mode_list]
     difficulty_names = [child["name"] for child in difficulty_list]
     assert "主线模式" in mode_names
-    assert "修仙模式" in mode_names
+    assert "猎场模式" in mode_names
     assert difficulty_names[1:8] == ["mode1", "mode2", "mode3", "mode4", "mode5", "mode6", "mode7"]
 
 

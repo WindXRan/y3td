@@ -154,7 +154,7 @@ state.mainline_task_runtime.active_challenge = nil
 local mixed_reward_summary = api.get_current_task_summary()
 assert(mixed_reward_summary.reward_line_texts[1] == '木材 +100', 'expected resource rewards to render with readable localized text')
 assert(mixed_reward_summary.reward_line_texts[2] == '获得 1 次宝物', 'expected treasure choice rewards to render with readable acquisition text')
-assert(mixed_reward_summary.reward_line_texts[3] == '技能点 +1', 'expected skill point rewards to render with readable localized text')
+assert(#mixed_reward_summary.reward_line_texts == 2, 'expected 4-10 to render two reward lines')
 
 state.mainline_task_runtime.active_task_id = '3-10'
 state.mainline_task_runtime.last_result = 'none'

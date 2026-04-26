@@ -143,6 +143,24 @@ function M.create(env)
 
     if y3.game.is_debug_mode() then
       y3.ltimer.loop(0.25, function()
+        if STATE.archive_panel_visible == true then
+          if STATE.gm_ui and STATE.gm_ui_hidden_by_archive ~= true then
+            STATE.gm_ui_was_visible_before_archive = STATE.gm_ui.visible == true
+          end
+          STATE.gm_ui_hidden_by_archive = true
+          if STATE.gm_ui then
+            STATE.gm_ui.visible = false
+            debug_tools_system.refresh_gm_panel()
+          end
+          return
+        end
+        if STATE.gm_ui_hidden_by_archive == true then
+          if STATE.gm_ui then
+            STATE.gm_ui.visible = STATE.gm_ui_was_visible_before_archive == true
+          end
+          STATE.gm_ui_hidden_by_archive = false
+          STATE.gm_ui_was_visible_before_archive = nil
+        end
         debug_tools_system.ensure_gm_panel()
         debug_tools_system.refresh_gm_panel()
       end)

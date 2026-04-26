@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTGAME_LUA = ROOT / 'script' / 'ui' / 'outgame.lua'
+SESSION_STATE_LUA = ROOT / 'script' / 'runtime' / 'session_state.lua'
 
 
 def assert_contains(text: str, needle: str, message: str) -> None:
@@ -20,6 +21,7 @@ def assert_not_contains(text: str, needle: str, message: str) -> None:
 
 def main() -> None:
     content = OUTGAME_LUA.read_text(encoding='utf-8')
+    session_state = SESSION_STATE_LUA.read_text(encoding='utf-8')
 
     assert_contains(content, "for index = 1, 5 do", 'outgame 应绑定左侧 5 条任务槽位')
     assert_contains(content, "outgame.大厅.layout.left.task_%d", 'outgame 应从静态画板读取任务节点')
@@ -34,6 +36,35 @@ def main() -> None:
     assert_contains(content, 'local function set_non_outgame_ui_visible(visible)', 'outgame 应统一切换非局外 UI 显隐')
     assert_contains(content, "set_non_outgame_ui_visible(false)", '进入局外时应隐藏非局外 UI')
     assert_contains(content, "set_non_outgame_ui_visible(true)", '离开局外时应恢复非局外 UI')
+    for panel_name in ('BondChoice2', 'BondChoice3', 'BondChoice4', 'BondSwallowPanel'):
+        assert_contains(content, f"'{panel_name}'", f'进入局外时应隐藏 {panel_name}')
+
+    assert_contains(session_state, 'STATE.attr_choice_runtime = nil', '重置战斗状态时应清理属性选择运行时')
+    assert_contains(session_state, 'STATE.bond_swallow_panel_visible = false', '重置战斗状态时应关闭羁绊图鉴面板状态')
+    assert_contains(session_state, 'STATE.bond_swallow_selected_root_index = nil', '重置战斗状态时应清理羁绊图鉴选中项')
+
+    for panel_name in ('BondChoice2', 'BondChoice3', 'BondChoice4', 'BondSwallowPanel'):
+        panel_json = ROOT / 'ui' / f'{panel_name}.json'
+        assert_contains(panel_json.read_text(encoding='utf-8'), '"visible": false', f'{panel_name} 根节点默认应隐藏，避免进局外遮挡大厅')
+
+    for panel_name in ('GameHUD', 'top', 'BattleBottomHUD', 'CommonTip', 'SceneUI'):
+        assert_contains(content, f"'{panel_name}'", f'进入局外时应隐藏 {panel_name}')
+        panel_json = ROOT / 'ui' / f'{panel_name}.json'
+        assert_contains(panel_json.read_text(encoding='utf-8'), '"visible": false', f'{panel_name} 根节点默认应隐藏，避免自动创建时遮挡大厅')
+
+    assert_contains(content, 'set_archive_panel_visible(false)', '进入局外时应显式关闭归档面板，避免遮挡开始按钮')
+    for panel_name in (
+        'ArchivePanel',
+        'ArchivePageChest',
+        'ArchivePageEquipment',
+        'ArchivePagePool',
+        'ArchivePageProfile',
+        'ArchivePageTalent',
+        'ArchivePageUniversal',
+        'LoadingPanel',
+    ):
+        panel_json = ROOT / 'ui' / f'{panel_name}.json'
+        assert_contains(panel_json.read_text(encoding='utf-8'), '"visible": false', f'{panel_name} 根节点默认应隐藏，避免遮挡大厅')
 
     assert_not_contains(content, "resolve_ui('outgame.大厅.layout.start_anchor.button_bg')", 'outgame 不应继续绑定不存在的 start_anchor 节点')
     assert_not_contains(content, "resolve_ui(base_path .. '.模式.banner')", 'outgame 不应继续依赖不存在的 banner 节点')

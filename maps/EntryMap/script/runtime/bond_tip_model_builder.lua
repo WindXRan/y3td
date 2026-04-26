@@ -61,7 +61,7 @@ local function is_transition_advanced_text(text)
       or string.find(value, '已凑齐,开启后续分支', 1, true)
       or string.find(value, '已凑齐，解锁后续分支', 1, true)
       or string.find(value, '已凑齐,解锁后续分支', 1, true)
-      or (string.find(value, '已圆满', 1, true) and string.find(value, '后续道统', 1, true)) then
+      or (string.find(value, '已圆满', 1, true) and string.find(value, '后续流派', 1, true)) then
     return true
   end
 
@@ -71,7 +71,7 @@ local function is_transition_advanced_text(text)
   end
 
   if string.find(value, '机缘已现', 1, true)
-      and (string.find(value, '感应池加入', 1, true) or string.find(value, '卡池中加入', 1, true)) then
+      and (string.find(value, '抽卡池加入', 1, true) or string.find(value, '卡池中加入', 1, true)) then
     return true
   end
 
@@ -246,7 +246,7 @@ function M.build(fields)
 
   local set_title_text = choose_first_non_empty(fields.set_title_text)
   if set_title_text == '' and #set_body_lines > 0 then
-    set_title_text = '道统真意：'
+    set_title_text = '流派精要：'
   end
 
   return {
@@ -300,10 +300,10 @@ function M.build_from_choice(choice, overrides)
   local set_body_lines = {}
 
   if explicit_effect_text ~= '' then
-    set_title_text = explicit_effect_title ~= '' and explicit_effect_title or '道统真意：'
+    set_title_text = explicit_effect_title ~= '' and explicit_effect_title or '流派精要：'
     set_body_lines = split_non_empty_lines(explicit_effect_text)
   elseif advanced_text ~= '' and not is_transition_advanced_text(advanced_text) then
-    set_title_text = explicit_effect_title ~= '' and explicit_effect_title or '道统真意：'
+    set_title_text = explicit_effect_title ~= '' and explicit_effect_title or '流派精要：'
     set_body_lines = split_non_empty_lines(advanced_text)
   end
 

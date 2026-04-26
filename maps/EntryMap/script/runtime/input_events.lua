@@ -8,6 +8,7 @@ function M.create(env)
   local get_hero_max_level = env.get_hero_max_level
   local sync_hero_progress_from_engine = env.sync_hero_progress_from_engine
   local try_queue_mark_node_for_level = env.try_queue_mark_node_for_level
+  local grant_attr_diamond = env.grant_attr_diamond
   local show_upgrade_choices = env.show_upgrade_choices
   local try_bond_draw = env.try_bond_draw
   local show_bond_progress = env.show_bond_progress
@@ -26,6 +27,7 @@ function M.create(env)
   local toggle_inventory_panel = env.toggle_inventory_panel
   local open_save_panel = env.open_save_panel
   local try_upgrade_growth_weapon = env.try_upgrade_growth_weapon
+  local use_attr_diamond = env.use_attr_diamond
 
   local function register_runtime_events()
     if STATE.events_registered then
@@ -49,6 +51,9 @@ function M.create(env)
       sync_hero_progress_from_engine()
       STATE.skill_points = 0
       message(string.format('英雄升级至 %d。', STATE.hero_progress.level))
+      if grant_attr_diamond and STATE.hero_progress.level % 5 == 0 then
+        grant_attr_diamond(1, STATE.hero_progress.level)
+      end
       try_queue_mark_node_for_level(STATE.hero_progress.level)
     end)
     y3.game:event('键盘-按下', 'F', function()
@@ -158,6 +163,9 @@ function M.create(env)
       if apply_round_choice(1) then
         return
       end
+      if use_attr_diamond and use_attr_diamond() then
+        return
+      end
       if try_upgrade_growth_weapon then
         try_upgrade_growth_weapon('hotkey')
       end
@@ -174,6 +182,14 @@ function M.create(env)
       end
       apply_round_choice(3)
     end)
+    if y3.const.KeyboardKey['KEY_4'] then
+      y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_4'], function()
+        if not is_battle_active() then
+          return
+        end
+        apply_round_choice(4)
+      end)
+    end
     y3.game:event('键盘-按下', 'SPACE', function()
       if not is_battle_active() then
         return

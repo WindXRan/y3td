@@ -56,7 +56,7 @@ def patch_panel(panel):
             node["color"] = [5, 8, 14, 184]
             node["alpha"] = 100
         if node.get("name") == "dim_bg":
-            node["swallow_touches"] = True
+            node["swallow_touches"] = False
             node["visible"] = False
         if node.get("type") == 1:
             node["swallow_touches"] = True

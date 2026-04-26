@@ -8,19 +8,24 @@ local bond_draw_config = require 'data.object_tables.bond_draw_config'
 assert(type(bond_nodes.list) == 'table', 'bond_nodes.list should be a table')
 assert(type(bond_root_sets.list) == 'table', 'bond_root_sets.list should be a table')
 assert(type(bond_draw_config.group_choice_defs) == 'table', 'bond_draw_config.group_choice_defs should be a table')
+assert(#bond_nodes.root_ids == 30, 'expected 30 formal bond roots')
+assert(#bond_root_sets.list == 30, 'expected 30 formal bond root sets')
+assert(#bond_draw_config.group_choice_order == 30, 'expected 30 formal bond groups')
 
-local vitality_effects = attreffect.by_source.bond_node and attreffect.by_source.bond_node['bond_body_core_vitality']
-assert(vitality_effects ~= nil, 'expected bond vitality effect rows in attreffect')
-assert(vitality_effects.attr['力量'] == 50, 'expected bond vitality strength effect')
-assert(vitality_effects.attr['生命'] == 100, 'expected bond vitality hp effect')
+local vitality_effects = attreffect.by_source.bond_node and attreffect.by_source.bond_node['bond_paladin_core']
+assert(vitality_effects ~= nil, 'expected formal bond vitality effect rows in attreffect')
+assert(vitality_effects.attr['生命'] == 100, 'expected formal bond vitality hp effect')
+assert(vitality_effects.attr['护甲'] == 5, 'expected formal bond vitality armor effect')
 
-local momentum_effects = attreffect.by_source.bond_node and attreffect.by_source.bond_node['bond_body_core_momentum']
-assert(momentum_effects ~= nil, 'expected bond momentum effect rows in attreffect')
+local momentum_effects = attreffect.by_source.bond_node and attreffect.by_source.bond_node['bond_assassin_core']
+assert(momentum_effects ~= nil, 'expected formal bond momentum effect rows in attreffect')
+assert(momentum_effects.attr['攻击'] == 50, 'expected formal momentum attack bonus')
 assert(momentum_effects.runtime['all_damage_bonus'] == 0.04, 'expected momentum runtime bonus')
 
-local strength_effects = attreffect.by_source.bond_node and attreffect.by_source.bond_node['bond_growth_strength']
-assert(strength_effects ~= nil, 'expected bond strength effect rows in attreffect')
-assert(strength_effects.resource['wood'] == 50, 'expected bond unlock wood reward in attreffect')
+local strength_effects = attreffect.by_source.bond_node and attreffect.by_source.bond_node['bond_alchemist_core']
+assert(strength_effects ~= nil, 'expected formal bond resource effect rows in attreffect')
+assert(strength_effects.resource['gold'] == 6000, 'expected formal bond gold reward in attreffect')
+assert(strength_effects.runtime['gold_per_sec_bonus'] == 15, 'expected formal bond gold-per-sec reward in attreffect')
 
 local root_set_ids = {}
 for _, root_set in ipairs(bond_root_sets.list or {}) do

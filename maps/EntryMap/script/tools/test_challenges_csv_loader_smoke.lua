@@ -19,6 +19,7 @@ assert(gold_trial.reward.wood == 0, 'expected gold_trial wood reward to match')
 assert(gold_trial.kill_reward.gold == 12, 'expected gold_trial kill reward gold to match')
 assert(gold_trial.kill_reward.wood == 0, 'expected gold_trial kill reward wood to match')
 assert(type(gold_trial.batches) == 'table' and #gold_trial.batches == 1, 'expected gold_trial to have 1 batch')
+assert(gold_trial.batches[1].time_sec == 0, 'expected gold_trial batch time to match')
 assert(gold_trial.batches[1].count == 4, 'expected gold_trial batch count to match')
 
 local wood_trial = mod.by_id.wood_trial

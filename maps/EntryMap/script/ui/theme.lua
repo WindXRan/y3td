@@ -27,4 +27,58 @@ M.insets = {
   large = { 24, 24, 22, 22 },
 }
 
+M.spacing = {
+  xs = 4,
+  sm = 8,
+  md = 12,
+  lg = 16,
+  xl = 24,
+}
+
+M.typography = {
+  title = { size = 18, color = M.palette.text },
+  subtitle = { size = 14, color = M.palette.text_soft },
+  body = { size = 14, color = M.palette.text_soft },
+  caption = { size = 12, color = M.palette.text_muted },
+  value = { size = 16, color = M.palette.gold },
+  gain = { size = 14, color = M.palette.wood },
+}
+
+M.components = {
+  panel = {
+    bg = M.palette.panel,
+    border = M.palette.accent_soft,
+    title = M.palette.accent_bright,
+  },
+  button = {
+    normal = M.palette.accent,
+    hover = M.palette.accent_bright,
+    pressed = M.palette.accent_soft,
+    disabled = M.palette.surface_soft,
+    text = M.palette.text,
+  },
+  reward_button = {
+    normal = M.palette.warning,
+    hover = M.palette.gold,
+    text = M.palette.text,
+  },
+  slot = {
+    empty = M.palette.panel_deep,
+    filled = M.palette.panel_alt,
+    active = M.palette.gold,
+    disabled = M.palette.surface,
+  },
+  tooltip = {
+    bg = M.palette.panel_deep,
+    title = M.palette.accent_bright,
+    body = M.palette.text_soft,
+    hint = M.palette.gold,
+  },
+  progress = {
+    bg = M.palette.panel_deep,
+    fill = M.palette.accent_bright,
+    ready = M.palette.gold,
+  },
+}
+
 return M

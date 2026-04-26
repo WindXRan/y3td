@@ -1,4 +1,6 @@
 local theme = require 'ui.theme'
+local outgame_defs = require 'ui.outgame_defs'
+local QualityImageTable = require 'data.object_tables.quality_image_table'
 
 local M = {}
 
@@ -17,6 +19,11 @@ function M.create(env)
   local OUTGAME_ATTR_BONUS_BY_STAGE_MODE = CONFIG.outgame_attr_bonus_config
     and CONFIG.outgame_attr_bonus_config.by_stage_mode
     or {}
+  local OUTGAME_DEFS = outgame_defs.create(CONFIG)
+  local TALENT_COLUMNS = OUTGAME_DEFS.talent_columns or {}
+  local TALENT_NODE_SPECS = OUTGAME_DEFS.talent_nodes or {}
+  local TALENT_BY_KEY = OUTGAME_DEFS.talent_by_key or {}
+  local HONOR_LEVEL_SPECS = OUTGAME_DEFS.honor_level_specs or {}
   local STAGE_PAGE_SIZE = 7
   local CHAPTER_LIST = {}
   local STAGES_BY_CHAPTER = {}
@@ -152,6 +159,20 @@ function M.create(env)
     end
   end
 
+  local function set_z_order_if_alive(ui, z_order)
+    if is_ui_alive(ui) and ui.set_z_order then
+      ui:set_z_order(z_order)
+    end
+  end
+
+  local function set_parent_if_alive(ui, parent_ui)
+    if is_ui_alive(ui) and is_ui_alive(parent_ui) and ui.set_ui_comp_parent and parent_ui.handle then
+      ui:set_ui_comp_parent(parent_ui.handle, false, true, true)
+      return true
+    end
+    return false
+  end
+
   local function set_text_color_if_alive(ui, color)
     if is_ui_alive(ui) and ui.set_text_color and color then
       ui:set_text_color(color[1], color[2], color[3], color[4] or 255)
@@ -182,6 +203,10 @@ function M.create(env)
       'top',
       'bottom_bg',
       'BattleBottomHUD',
+      'BondChoice2',
+      'BondChoice3',
+      'BondChoice4',
+      'BondSwallowPanel',
       'panel_1',
       'CommonTip',
       'SceneUI',
@@ -556,6 +581,22 @@ function M.create(env)
         end
       end
     end
+    local archive_rewards = profile and profile.archive_rewards or nil
+    local talents = archive_rewards and archive_rewards.talents or nil
+    if type(talents) == 'table' then
+      for _, spec in ipairs(TALENT_NODE_SPECS) do
+        local level = math.max(0, math.floor(tonumber(talents[spec.key]) or 0))
+        if level > 0 then
+          local per_level = spec.attr_bonus_per_level or {}
+          for attr_name, value in pairs(per_level) do
+            local number = tonumber(value)
+            if attr_name ~= nil and number ~= nil and number ~= 0 then
+              rebuilt[attr_name] = (rebuilt[attr_name] or 0) + number * level
+            end
+          end
+        end
+      end
+    end
     if are_same_bonus_stats(profile.hero_attr_bonus_stats, rebuilt) then
       return false
     end
@@ -607,6 +648,24 @@ function M.create(env)
     end
     if type(profile.archive_rewards.claimed_universal) ~= 'table' then
       profile.archive_rewards.claimed_universal = {}
+      dirty = true
+    end
+    if type(profile.archive_rewards.honor_levels) ~= 'table' then
+      profile.archive_rewards.honor_levels = {}
+      dirty = true
+    end
+    for _, spec in ipairs(HONOR_LEVEL_SPECS) do
+      if spec.key and profile.archive_rewards.honor_levels[spec.key] == nil then
+        profile.archive_rewards.honor_levels[spec.key] = spec.initial_unlocked == true
+        dirty = true
+      end
+    end
+    if math.type(profile.archive_rewards.talent_points) ~= 'integer' then
+      profile.archive_rewards.talent_points = 0
+      dirty = true
+    end
+    if type(profile.archive_rewards.talents) ~= 'table' then
+      profile.archive_rewards.talents = {}
       dirty = true
     end
     for _, task_def in ipairs(DAILY_TASK_DEFS) do
@@ -1194,137 +1253,22 @@ function M.create(env)
     return '玩家'
   end
 
-  local ARCHIVE_PAGE_KEYS = { 'profile', 'equipment', 'talent', 'universal', 'chest', 'pool' }
-  local ARCHIVE_PAGE_PANEL_NAMES = {
-    profile = 'ArchivePageProfile',
-    equipment = 'ArchivePageEquipment',
-    talent = 'ArchivePageTalent',
-    universal = 'ArchivePageUniversal',
-    chest = 'ArchivePageChest',
-    pool = 'ArchivePagePool',
+  local ARCHIVE_PAGE_KEYS = OUTGAME_DEFS.archive_page_keys or { 'profile', 'equipment', 'talent', 'universal', 'chest', 'pool' }
+  local ARCHIVE_PAGE_PANEL_NAMES = OUTGAME_DEFS.archive_page_panel_names or {}
+  local ARCHIVE_MENU_SPECS = OUTGAME_DEFS.archive_menu_specs or {}
+  local ARCHIVE_UNIVERSAL_KEYS = OUTGAME_DEFS.archive_universal_keys or { 'pass', 'map', 'community', 'achievement', 'lottery', 'test', 'fish' }
+  local ARCHIVE_UNIVERSAL_ITEM_SPECS = OUTGAME_DEFS.archive_universal_item_specs or {}
+  local ARCHIVE_UNIVERSAL_TAB_LABELS = OUTGAME_DEFS.archive_universal_tab_labels or {}
+  local ARCHIVE_POOL_ITEM_SPECS = OUTGAME_DEFS.archive_pool_item_specs or {}
+  local ARCHIVE_UNIVERSAL_GLYPHS = {
+    pass = '关',
+    map = '图',
+    community = '社',
+    achievement = '成',
+    lottery = '奖',
+    test = '测',
+    fish = '鱼',
   }
-  local ARCHIVE_MENU_SPECS = {
-    { key = 'profile', page_key = 'profile' },
-    { key = 'universal', page_key = 'universal' },
-    { key = 'chest', page_key = 'chest' },
-    { key = 'club', page_key = nil },
-    { key = 'talent', page_key = 'talent' },
-    { key = 'equipment', page_key = 'equipment' },
-    { key = 'hero', page_key = nil },
-    { key = 'beast', page_key = nil },
-    { key = 'skin', page_key = nil },
-    { key = 'shop', page_key = nil },
-    { key = 'heirloom', page_key = nil },
-  }
-  local ARCHIVE_UNIVERSAL_KEYS = { 'pass', 'map', 'community', 'achievement', 'lottery', 'test', 'fish' }
-  local ARCHIVE_UNIVERSAL_ITEM_SPECS = {
-    pass = {
-      { node = 'pass_badge_1', title = '难度 1 通关奖励', line_1 = '累计通关可领取夺宝券。', line_2 = '当前用于查看通关奖励进度。', line_3 = '点击其它难度可切换详情。' },
-      { node = 'pass_badge_2', title = '难度 2 通关奖励', line_1 = '奖励随难度逐步提高。', line_2 = '通关后写入存档进度。', line_3 = '可作为赛季成长目标。' },
-      { node = 'pass_badge_3', title = '难度 3 通关奖励', line_1 = '展示更高难度通关次数。', line_2 = '用于核对夺宝券来源。', line_3 = '当前为存档预览条目。' },
-      { node = 'pass_badge_4', title = '难度 4 通关奖励', line_1 = '后续可接入实际领取状态。', line_2 = '列表点击会刷新右侧详情。', line_3 = '未达成时显示为预览。' },
-      { node = 'pass_badge_5', title = '难度 5 通关奖励', line_1 = '高难度通关累计目标。', line_2 = '奖励内容可由配置表驱动。', line_3 = '适合展示阶段性奖励。' },
-    },
-    map = {
-      { node = 'map_badge_1', title = '地图等级 1', line_1 = '地图等级提供基础成长奖励。', line_2 = '已接入列表点击详情。', line_3 = '后续可显示当前等级进度。' },
-      { node = 'map_badge_2', title = '地图等级 2', line_1 = '提升地图等级解锁更多收益。', line_2 = '条目以列表形式展示。', line_3 = '点击可查看奖励说明。' },
-      { node = 'map_badge_3', title = '地图等级 3', line_1 = '可放置等级礼包或属性。', line_2 = '未领取状态可继续扩展。', line_3 = '当前作为可点示例。' },
-    },
-    community = {
-      { node = 'community_badge_1', title = '收藏奖励', line_1 = '社区行为奖励入口。', line_2 = '可展示收藏/关注状态。', line_3 = '点击条目查看详情。' },
-      { node = 'community_badge_2', title = '分享奖励', line_1 = '分享活动奖励预览。', line_2 = '后续可接入活动存档。', line_3 = '当前为交互示例。' },
-      { node = 'community_badge_3', title = '社群礼包', line_1 = '社群兑换类奖励。', line_2 = '适合显示礼包码状态。', line_3 = '点击会刷新右侧说明。' },
-    },
-    achievement = {
-      { node = 'achievement_badge_1', title = '生涯首胜', line_1 = '首次通关任意难度。', line_2 = '达成后可领取成就奖励。', line_3 = '点击查看成就条件。' },
-      { node = 'achievement_badge_2', title = '连胜挑战', line_1 = '连续胜利累计目标。', line_2 = '可用于长期目标展示。', line_3 = '当前显示预览数据。' },
-      { node = 'achievement_badge_3', title = '资源大师', line_1 = '累计获得资源类成就。', line_2 = '后续可接入统计字段。', line_3 = '点击后切换详情。' },
-    },
-    lottery = {
-      { node = 'lottery_badge_1', title = '幸运戒', line_1 = '群抽奖奖励池物品。', line_2 = '可通过口令或抽奖获得。', line_3 = '点击查看奖励说明。' },
-      { node = 'lottery_badge_2', title = '强化石', line_1 = '常规抽奖材料。', line_2 = '用于装备或天赋成长。', line_3 = '当前展示为列表条目。' },
-      { node = 'lottery_badge_3', title = '夺宝券', line_1 = '用于进入夺宝奖池。', line_2 = '通关和活动均可产出。', line_3 = '点击后刷新右侧详情。' },
-    },
-    test = {
-      { node = 'test_badge_1', title = '测试礼包 A', line_1 = '测试大厅调试条目。', line_2 = '用于验证点击与详情刷新。', line_3 = '正式版可替换为活动奖励。' },
-      { node = 'test_badge_2', title = '测试礼包 B', line_1 = '保留给调试流程。', line_2 = '不影响正式存档字段。', line_3 = '点击可确认交互可用。' },
-    },
-    fish = {
-      { node = 'fish_feature_1', title = '小丑鱼图鉴', line_1 = '捕鱼模式图鉴条目。', line_2 = '可展示捕获次数与奖励。', line_3 = '点击切换右侧详情。' },
-      { node = 'fish_feature_2', title = '海龟图鉴', line_1 = '稀有鱼类图鉴预览。', line_2 = '适合展示捕获条件。', line_3 = '后续可接入存档计数。' },
-      { node = 'fish_feature_3', title = '宝箱鱼图鉴', line_1 = '特殊收益鱼类。', line_2 = '可展示掉落奖励。', line_3 = '当前为可点击示例。' },
-    },
-  }
-
-  local function append_archive_generated_specs(target, prefix, start_index, end_index, title_prefix, line_1, line_2, line_3)
-    for index = start_index, end_index do
-      target[#target + 1] = {
-        node = string.format('%s_%d', prefix, index),
-        title = string.format('%s %d', title_prefix, index),
-        line_1 = line_1,
-        line_2 = line_2,
-        line_3 = line_3,
-      }
-    end
-  end
-
-  append_archive_generated_specs(ARCHIVE_UNIVERSAL_ITEM_SPECS.pass, 'pass_badge', 6, 10, '难度', '更高难度通关奖励。', '滚动列表中的可点击条目。', '后续可接入实际领取状态。')
-  append_archive_generated_specs(ARCHIVE_UNIVERSAL_ITEM_SPECS.map, 'map_badge', 4, 21, '地图等级', '地图等级阶段奖励。', '可展示等级达成与领取状态。', '当前作为图鉴列表预览。')
-  append_archive_generated_specs(ARCHIVE_UNIVERSAL_ITEM_SPECS.community, 'community_badge', 4, 14, '社区福利', '社区活动奖励条目。', '可接入收藏、关注、分享等状态。', '点击后刷新右侧详情。')
-  append_archive_generated_specs(ARCHIVE_UNIVERSAL_ITEM_SPECS.achievement, 'achievement_badge', 4, 14, '成就', '长期目标成就条目。', '可显示达成进度与奖励。', '点击后查看成就条件。')
-  append_archive_generated_specs(ARCHIVE_UNIVERSAL_ITEM_SPECS.lottery, 'lottery_badge', 4, 14, '群抽奖', '群抽奖奖励条目。', '可展示口令与抽奖产出。', '点击后刷新奖励说明。')
-  append_archive_generated_specs(ARCHIVE_UNIVERSAL_ITEM_SPECS.test, 'test_badge', 3, 8, '测试礼包', '测试大厅奖励条目。', '用于验证滚动网格点击。', '正式版可替换为活动奖励。')
-  append_archive_generated_specs(ARCHIVE_UNIVERSAL_ITEM_SPECS.fish, 'fish_feature', 4, 5, '捕鱼图鉴', '捕鱼模式功能条目。', '可展示捕获次数与收益。', '点击后查看图鉴详情。')
-  append_archive_generated_specs(ARCHIVE_UNIVERSAL_ITEM_SPECS.fish, 'fish_rarity', 1, 3, '鱼类品质', '鱼类品质分类。', '用于划分捕鱼图鉴奖励。', '点击后查看该品质说明。')
-  for row_index, count in ipairs({ 6, 7, 4 }) do
-    for index = 1, count do
-      ARCHIVE_UNIVERSAL_ITEM_SPECS.fish[#ARCHIVE_UNIVERSAL_ITEM_SPECS.fish + 1] = {
-        node = string.format('fish_badge_%d_%d', row_index, index),
-        title = string.format('鱼类图鉴 %d-%d', row_index, index),
-        line_1 = '捕鱼模式图鉴条目。',
-        line_2 = '可接入捕获次数和奖励状态。',
-        line_3 = '滚动列表中的可点击鱼类。',
-      }
-    end
-  end
-
-  local ARCHIVE_POOL_ITEM_SPECS = {
-    { node = 'item_east', title = '东', glyph = '东', icon = 106330, cost = 100, line_1 = '+0.5% 攻击加成', line_2 = '数量可无限拥有，属性生效上限为地图等级。' },
-    { node = 'item_south', title = '南', glyph = '南', icon = 106331, cost = 100, line_1 = '+0.5% 生命加成', line_2 = '适合前期提高容错。' },
-    { node = 'item_west', title = '西', glyph = '西', icon = 106364, cost = 100, line_1 = '+0.5% 攻速加成', line_2 = '适合依赖普攻的阵容。' },
-    { node = 'item_north', title = '北', glyph = '北', icon = 106379, cost = 100, line_1 = '+0.5% 防御加成', line_2 = '提高单位承伤能力。' },
-    { node = 'item_mid', title = '中', glyph = '中', icon = 106380, cost = 120, line_1 = '+0.5% 全属性加成', line_2 = '稀有通用成长物品。' },
-    { node = 'item_fa', title = '发', glyph = '发', icon = 106381, cost = 80, line_1 = '+1 初始金币', line_2 = '经济型奖池物品。' },
-    { node = 'item_sugar', title = '糖', glyph = '糖', icon = 106382, cost = 80, line_1 = '+1% 回复效果', line_2 = '提高续航能力。' },
-    { node = 'item_pop', title = '爆', glyph = '爆', icon = 106383, cost = 120, line_1 = '+1% 暴击伤害', line_2 = '爆发流派奖励。' },
-    { node = 'item_meat', title = '肉', glyph = '肉', icon = 106384, cost = 80, line_1 = '+10 最大生命', line_2 = '稳健型基础奖励。' },
-  }
-
-  local ARCHIVE_POOL_EXTRA_ITEMS = {
-    { 'item_blank', '空位', '□' }, { 'item_food_n', '鸡腿饭', '饭' }, { 'item_spear', '长矛', '矛' }, { 'item_scroll', '卷轴', '卷' },
-    { 'item_ball', '紫球', '球' }, { 'item_wine', '符酒', '酒' }, { 'item_mail', '信封', '信' },
-    { 'item_doll', '娃娃', '娃' }, { 'item_pie', '甜点', '饼' }, { 'item_spade', '黑桃A', '♠' },
-    { 'item_heart', '红心A', '♥' }, { 'item_diamond', '方片A', '♦' }, { 'item_club', '梅花A', '♣' },
-    { 'item_gun', '手枪', '枪' }, { 'item_shield', '护符', '盾' }, { 'item_fist', '拳套', '拳' },
-    { 'item_food', '炒饭', '饭' }, { 'item_mushroom', '蘑菇', '菇' }, { 'item_bell', '铃铛', '铃' },
-    { 'item_horn', '喇叭', '喇' }, { 'item_crab', '螃蟹', '蟹' }, { 'item_brick', '金砖', '砖' },
-    { 'item_mace', '狼牙锤', '刺' }, { 'item_moon', '月牙', '月' }, { 'item_sea', '海宝', '海' },
-    { 'item_branch', '金枝', '枝' }, { 'item_hat', '草帽', '帽' }, { 'item_scale', '龙鳞', '鳞' },
-    { 'item_glove', '拳甲', '拳' }, { 'item_ring', '金环', '环' }, { 'item_fire', '异火', '火' },
-    { 'item_lamp', '魂灯', '灯' }, { 'item_seal', '玉印', '印' }, { 'item_armor', '古铠', '铠' },
-    { 'item_fruit', '灵果', '灵' },
-  }
-  for index, item in ipairs(ARCHIVE_POOL_EXTRA_ITEMS) do
-    ARCHIVE_POOL_ITEM_SPECS[#ARCHIVE_POOL_ITEM_SPECS + 1] = {
-      node = item[1],
-      title = item[2],
-      glyph = item[3],
-      icon = 106384 + index,
-      cost = 100 + (index % 5) * 20,
-      line_1 = '奖池图鉴物品。',
-      line_2 = '当前已接入列表点击与详情预览。',
-    }
-  end
 
   local function get_archive_page_root_path(page_key)
     local panel_name = ARCHIVE_PAGE_PANEL_NAMES[page_key]
@@ -1399,12 +1343,82 @@ function M.create(env)
     return true
   end
 
+  local get_archive_player
+
+  local ARCHIVE_PREFAB_NAMES = {
+    badge = 'ArchiveBadgeItem',
+    pool = 'ArchivePoolItem',
+    talent = 'ArchiveTalentNode',
+  }
+
+  local function create_archive_prefab_instance(parent, prefab_name, static_root, child_index)
+    if not (y3 and y3.ui_prefab and y3.ui_prefab.create and parent) then
+      return nil
+    end
+    local player = get_archive_player()
+    if not player then
+      return nil
+    end
+    local ok, prefab = pcall(y3.ui_prefab.create, player, prefab_name, parent)
+    if not ok or not prefab then
+      return nil
+    end
+    local root = prefab.get_child and prefab:get_child() or nil
+    if root and parent.insert_ui_gridview_comp then
+      pcall(parent.insert_ui_gridview_comp, parent, root, child_index)
+    end
+    return {
+      prefab = prefab,
+      root = root,
+    }
+  end
+
+  local function get_archive_prefab_child(prefab_instance, child_path)
+    if not prefab_instance or not prefab_instance.prefab or not child_path then
+      return nil
+    end
+    local prefab = prefab_instance.prefab
+    if not prefab.get_child then
+      return nil
+    end
+    local ok, child = pcall(prefab.get_child, prefab, child_path)
+    if ok then
+      return child
+    end
+    return nil
+  end
+
+  local function create_archive_grid_view(parent, width, height, z_order)
+    if not is_ui_alive(parent) or not parent.create_child then
+      return nil
+    end
+    local ok, grid = pcall(parent.create_child, parent, 'GridView')
+    if not ok or not is_ui_alive(grid) then
+      return nil
+    end
+    width = tonumber(width) or 760
+    height = tonumber(height) or 500
+    if grid.set_ui_size then
+      grid:set_ui_size(width, height)
+    end
+    if grid.set_pos then
+      grid:set_pos(width / 2, height / 2)
+    end
+    set_z_order_if_alive(grid, z_order or 525)
+    set_intercepts_if_alive(grid, false)
+    if grid.clear_ui_comp_image then
+      grid:clear_ui_comp_image()
+    end
+    set_image_color_if_alive(grid, { 255, 255, 255, 0 })
+    return grid
+  end
+
   local function to_non_negative_integer(value)
     local number = tonumber(value) or 0
     return math.max(0, math.floor(number))
   end
 
-  local function get_archive_player()
+  function get_archive_player()
     return env.get_player and env.get_player() or nil
   end
 
@@ -1435,6 +1449,8 @@ function M.create(env)
     return to_non_negative_integer(value)
   end
 
+  local get_archive_clear_counts
+
   local function get_archive_rewards(profile)
     profile = profile or load_profile()
     if type(profile.archive_rewards) ~= 'table' then
@@ -1456,6 +1472,18 @@ function M.create(env)
     end
     if type(profile.archive_rewards.claimed_universal) ~= 'table' then
       profile.archive_rewards.claimed_universal = {}
+    end
+    if type(profile.archive_rewards.honor_levels) ~= 'table' then
+      profile.archive_rewards.honor_levels = {}
+    end
+    for _, spec in ipairs(HONOR_LEVEL_SPECS) do
+      if spec.key and profile.archive_rewards.honor_levels[spec.key] == nil then
+        profile.archive_rewards.honor_levels[spec.key] = spec.initial_unlocked == true
+      end
+    end
+    profile.archive_rewards.talent_points = to_non_negative_integer(profile.archive_rewards.talent_points)
+    if type(profile.archive_rewards.talents) ~= 'table' then
+      profile.archive_rewards.talents = {}
     end
     return profile.archive_rewards
   end
@@ -1481,6 +1509,44 @@ function M.create(env)
     return to_non_negative_integer(rewards.pool_items and rewards.pool_items[item_key] or 0)
   end
 
+  local function get_archive_pool_item_key(spec)
+    return tostring((spec and (spec.item_key or spec.id or spec.node)) or '')
+  end
+
+  local function get_archive_pool_item_icon(spec)
+    if not spec then
+      return nil
+    end
+    if spec.icon ~= nil and spec.icon ~= '' then
+      return spec.icon
+    end
+    local item_key = spec.item_key or spec.id
+    if item_key and y3 and y3.item and y3.item.get_icon_id_by_key then
+      local ok, icon = pcall(y3.item.get_icon_id_by_key, item_key)
+      if ok and icon ~= nil and icon ~= 0 then
+        return icon
+      end
+    end
+    return nil
+  end
+
+  local function get_archive_universal_item_icon(spec)
+    if not spec then
+      return nil
+    end
+    if spec.icon ~= nil and spec.icon ~= '' then
+      return spec.icon
+    end
+    return nil
+  end
+
+  local function get_archive_universal_frame_image(spec)
+    if not spec then
+      return nil
+    end
+    return QualityImageTable.get_frame_image(spec.quality)
+  end
+
   local function add_archive_pool_item(profile, item_key, count)
     local rewards = get_archive_rewards(profile)
     rewards.pool_items[item_key] = get_archive_pool_item_count(profile, item_key) + math.max(1, to_non_negative_integer(count or 1))
@@ -1498,6 +1564,196 @@ function M.create(env)
     return true, rewards.pool_score
   end
 
+  local function get_archive_talent_points(profile)
+    return to_non_negative_integer(get_archive_rewards(profile).talent_points)
+  end
+
+  local function add_archive_talent_points(profile, amount)
+    amount = to_non_negative_integer(amount)
+    local rewards = get_archive_rewards(profile)
+    if amount > 0 then
+      rewards.talent_points = get_archive_talent_points(profile) + amount
+    end
+    return rewards.talent_points
+  end
+
+  local function spend_archive_talent_points(profile, amount)
+    amount = math.max(0, to_non_negative_integer(amount))
+    local rewards = get_archive_rewards(profile)
+    local current = get_archive_talent_points(profile)
+    if current < amount then
+      return false, current
+    end
+    rewards.talent_points = current - amount
+    return true, rewards.talent_points
+  end
+
+  local function get_archive_talent_level(profile, talent_key)
+    local rewards = get_archive_rewards(profile)
+    return to_non_negative_integer(rewards.talents and rewards.talents[talent_key] or 0)
+  end
+
+  local function is_archive_honor_level_unlocked(profile, spec)
+    if not spec or not spec.key then
+      return false
+    end
+    local rewards = get_archive_rewards(profile)
+    return rewards.honor_levels and rewards.honor_levels[spec.key] == true or false
+  end
+
+  local function get_archive_talent_column_points(profile, column_key)
+    local total = 0
+    for _, spec in ipairs(TALENT_NODE_SPECS) do
+      if spec.column == column_key then
+        total = total + get_archive_talent_level(profile, spec.key)
+      end
+    end
+    return total
+  end
+
+  local function is_archive_talent_unlocked(profile, spec)
+    return spec ~= nil and get_archive_talent_column_points(profile, spec.column) >= (spec.require_points or 0)
+  end
+
+  local function get_archive_talent_status_text(profile, spec)
+    if not spec then
+      return '请选择一个天赋'
+    end
+    local level = get_archive_talent_level(profile, spec.key)
+    if level >= (spec.max_level or 1) then
+      return '已满级'
+    end
+    if not is_archive_talent_unlocked(profile, spec) then
+      local column = TALENT_COLUMNS[spec.column]
+      return string.format('未解锁：%s投入 %d 点', column and column.title or '本系', spec.require_points or 0)
+    end
+    return string.format('升级消耗 %d 天赋点', spec.cost or 1)
+  end
+
+  local function upgrade_archive_talent(profile, talent_key)
+    profile = profile or load_profile()
+    local spec = TALENT_BY_KEY[talent_key]
+    if not spec then
+      return false, '未找到该天赋。'
+    end
+    local level = get_archive_talent_level(profile, talent_key)
+    if level >= (spec.max_level or 1) then
+      return false, string.format('%s 已达到最高等级。', spec.title)
+    end
+    if not is_archive_talent_unlocked(profile, spec) then
+      local column = TALENT_COLUMNS[spec.column]
+      return false, string.format('%s尚未解锁：需要%s投入 %d 点。', spec.title, column and column.title or '本系', spec.require_points or 0)
+    end
+    local ok, remain = spend_archive_talent_points(profile, spec.cost or 1)
+    if not ok then
+      return false, string.format('天赋点不足：当前 %d，需要 %d。', remain or 0, spec.cost or 1)
+    end
+    local rewards = get_archive_rewards(profile)
+    rewards.talents[spec.key] = level + 1
+    rebuild_hero_attr_bonus_stats(profile)
+    mark_profile_dirty()
+    return true, string.format('%s 已升至 %d/%d。', spec.title, level + 1, spec.max_level or 1)
+  end
+
+  local function get_archive_universal_claim_key(tab_key, spec)
+    if not spec or not spec.node then
+      return nil
+    end
+    return tostring(tab_key or 'unknown') .. ':' .. tostring(spec.node)
+  end
+
+  local function get_archive_universal_reward_state(profile, tab_key, spec)
+    if not spec then
+      return nil
+    end
+
+    local node = tostring(spec.node or '')
+    local clear_counts, total_clear_count = get_archive_clear_counts(profile)
+    local current, target, reward_score = 0, 1, 0
+    local condition_text = nil
+
+    if spec.source == 'honor_level' then
+      return nil
+    elseif tab_key == 'pass' then
+      local difficulty = tonumber(node:match('pass_badge_(%d+)')) or 1
+      current = clear_counts[difficulty] or 0
+      reward_score = 40 + difficulty * 10
+      condition_text = string.format('难度 %d 通关 %d/%d', difficulty, current, target)
+    elseif tab_key == 'map' then
+      local level = tonumber(node:match('map_badge_(%d+)')) or 1
+      current = get_archive_player_integer('get_map_level')
+      target = level
+      reward_score = 10 + level * 5
+      condition_text = string.format('地图等级 %d/%d', current, target)
+    elseif tab_key == 'achievement' then
+      local index = tonumber(node:match('achievement_badge_(%d+)')) or 1
+      current = index == 3 and get_archive_pool_draw_count(profile) or total_clear_count
+      target = index == 1 and 1 or (index == 2 and 3 or (index == 3 and 10 or math.max(1, index)))
+      reward_score = index == 1 and 80 or (index == 2 and 120 or (index == 3 and 100 or 60 + index * 10))
+      local label = index == 3 and '累计夺宝' or '累计通关'
+      condition_text = string.format('%s %d/%d', label, current, target)
+    elseif tab_key == 'lottery' then
+      local index = tonumber(node:match('lottery_badge_(%d+)')) or 1
+      current = math.max(get_archive_total_lottery_count(), get_archive_pool_draw_count(profile))
+      target = math.max(1, index)
+      reward_score = 20 + index * 10
+      condition_text = string.format('累计抽奖 %d/%d', current, target)
+    else
+      return nil
+    end
+
+    local rewards = get_archive_rewards(profile)
+    local claim_key = get_archive_universal_claim_key(tab_key, spec)
+    local claimed = rewards.claimed_universal and rewards.claimed_universal[claim_key] == true
+    return {
+      key = claim_key,
+      current = current,
+      target = target,
+      reward_score = reward_score,
+      condition_text = condition_text,
+      can_claim = current >= target and not claimed,
+      claimed = claimed,
+    }
+  end
+
+  local function format_archive_universal_reward_status(profile, tab_key, spec)
+    if spec and spec.source == 'honor_level' then
+      local status = is_archive_honor_level_unlocked(profile, spec) and '已解锁' or '未解锁'
+      local obtain = spec.obtain and spec.obtain ~= '' and spec.obtain or '查看荣誉等级达成条件'
+      return string.format('存档：%s · %s', status, obtain)
+    end
+    local state = get_archive_universal_reward_state(profile, tab_key, spec)
+    if not state then
+      return '状态：预览条目'
+    end
+    if state.claimed then
+      return string.format('状态：已领取 · %s', state.condition_text)
+    end
+    if state.can_claim then
+      return string.format('状态：可领取 · %s · 奖励 %d 积分', state.condition_text, state.reward_score)
+    end
+    return string.format('状态：未达成 · %s · 奖励 %d 积分', state.condition_text, state.reward_score)
+  end
+
+  local function claim_archive_universal_reward(profile, tab_key, spec)
+    profile = profile or load_profile()
+    local state = get_archive_universal_reward_state(profile, tab_key, spec)
+    if not state then
+      return false, '该条目暂无可领取奖励。'
+    end
+    if state.claimed then
+      return false, '该奖励已领取。'
+    end
+    if not state.can_claim then
+      return false, string.format('领取条件未达成：%s。', state.condition_text)
+    end
+    local rewards = get_archive_rewards(profile)
+    rewards.claimed_universal[state.key] = true
+    rewards.pool_score = get_archive_pool_score(profile) + state.reward_score
+    mark_profile_dirty()
+    return true, string.format('已领取 %s，获得 %d 夺宝积分。', spec.title or '通用奖励', state.reward_score)
+  end
+
   local function get_archive_save_state_text(compact)
     if STATE.outgame_profile_save_enabled == true then
       if compact then
@@ -1511,7 +1767,7 @@ function M.create(env)
     return string.format('槽位 %d · 内存态', SAVE_SLOT)
   end
 
-  local function get_archive_clear_counts(profile)
+  function get_archive_clear_counts(profile)
     local counts = {}
     local total = 0
     for _, stage_def in ipairs(STAGE_LIST) do
@@ -1528,10 +1784,15 @@ function M.create(env)
   local function refresh_archive_menu_chip(entry, selected)
     local chip = entry and entry.chip or nil
     local enabled = entry and entry.page_key ~= nil
+    local visible = entry and entry.visible ~= false
     if not chip then
       return
     end
+    set_visible_if_alive(chip.root, visible)
     set_visible_if_alive(chip.active, selected == true)
+    if visible ~= true then
+      return
+    end
     if enabled ~= true then
       set_image_color_if_alive(chip.bg, { 58, 60, 70, 220 })
       set_text_color_if_alive(chip.label, { 134, 139, 150, 255 })
@@ -1561,15 +1822,36 @@ function M.create(env)
   end
 
   local bind_archive_panel_events
+  local configure_archive_grid_views
 
   local function configure_archive_page_shells(ui)
     if not ui then
       return
     end
+    set_z_order_if_alive(ui.root, 500)
+    set_z_order_if_alive(ui.overlay, 500)
+    set_z_order_if_alive(ui.window, 500)
+    set_z_order_if_alive(ui.content, 520)
     for _, page_key in ipairs(ARCHIVE_PAGE_KEYS) do
-      set_intercepts_if_alive(ui.page_roots and ui.page_roots[page_key], false)
-      set_intercepts_if_alive(ui.page_contents and ui.page_contents[page_key], false)
+      local page_root = ui.page_roots and ui.page_roots[page_key] or nil
+      local page_content = ui.page_contents and ui.page_contents[page_key] or nil
+      local page = ui.pages and ui.pages[page_key] or nil
+      set_parent_if_alive(page_content, ui.content)
+      if is_ui_alive(page_content) then
+        if page_content.set_ui_size then
+          page_content:set_ui_size(983.1719, 566.2927)
+        end
+        if page_content.set_pos then
+          page_content:set_pos(491.5859, 283.1464)
+        end
+      end
+      set_z_order_if_alive(page_root, 520)
+      set_z_order_if_alive(page_content, 520)
+      set_z_order_if_alive(page, 520)
+      set_intercepts_if_alive(page_root, false)
+      set_intercepts_if_alive(page_content, false)
     end
+    set_z_order_if_alive(ui.close_button, 540)
   end
 
   ensure_archive_panel_ui = function()
@@ -1594,12 +1876,14 @@ function M.create(env)
     local chest_page_path = get_archive_page_path('chest')
     local universal_page_path = get_archive_page_path('universal')
     local pool_page_path = get_archive_page_path('pool')
+    local talent_page_path = get_archive_page_path('talent')
 
     local ui = {
       root = root,
       overlay = overlay,
       dim = resolve_ui('ArchivePanel.root.overlay.dim'),
       window = window,
+      content = resolve_ui('ArchivePanel.root.overlay.window.content'),
       close_button = close_chip.root,
       close_chip = close_chip,
       save_status_value = resolve_ui('ArchivePanel.root.overlay.window.save_status_card.save_status_value'),
@@ -1633,7 +1917,7 @@ function M.create(env)
         items = {},
         selected_nodes = {},
         detail = {
-          icon = resolve_ui(pool_page_path .. '.detail_card.big_item_icon'),
+          icon = resolve_ui(pool_page_path .. '.detail_card.big_item'),
           glyph = resolve_ui(pool_page_path .. '.detail_card.big_item_glyph'),
           name = resolve_ui(pool_page_path .. '.detail_card.item_name'),
           owned = resolve_ui(pool_page_path .. '.detail_card.item_owned'),
@@ -1642,6 +1926,27 @@ function M.create(env)
           score_text = resolve_ui(pool_page_path .. '.detail_card.score_text'),
           cost_text = resolve_ui(pool_page_path .. '.detail_card.cost_text'),
           exchange_button = resolve_archive_chip(pool_page_path .. '.detail_card.exchange_button'),
+        },
+      },
+      talent = {
+        nodes = {},
+        node_by_key = {},
+        column_values = {
+          output = resolve_ui(talent_page_path .. '.talent_layout.output_column.foot.value'),
+          survival = resolve_ui(talent_page_path .. '.talent_layout.survival_column.foot.value'),
+          resource = resolve_ui(talent_page_path .. '.talent_layout.resource_column.foot.value'),
+        },
+        detail = {
+          points = resolve_ui(talent_page_path .. '.detail_card.talent_points'),
+          name = resolve_ui(talent_page_path .. '.detail_card.talent_name'),
+          rank = resolve_ui(talent_page_path .. '.detail_card.talent_rank'),
+          tag_1 = resolve_ui(talent_page_path .. '.detail_card.detail_tag_1'),
+          value_1 = resolve_ui(talent_page_path .. '.detail_card.detail_value_1'),
+          tag_2 = resolve_ui(talent_page_path .. '.detail_card.detail_tag_2'),
+          value_2 = resolve_ui(talent_page_path .. '.detail_card.detail_value_2'),
+          tag_3 = resolve_ui(talent_page_path .. '.detail_card.detail_tag_3'),
+          value_3 = resolve_ui(talent_page_path .. '.detail_card.detail_value_3'),
+          upgrade_button = resolve_archive_chip(talent_page_path .. '.detail_card.reset_button'),
         },
       },
       bound = false,
@@ -1659,38 +1964,88 @@ function M.create(env)
       ui.menu_entries[#ui.menu_entries + 1] = {
         key = entry.key,
         page_key = entry.page_key,
+        visible = entry.visible,
         chip = resolve_archive_chip('ArchivePanel.root.overlay.window.sidebar.menu_' .. entry.key),
       }
     end
 
     for _, tab_key in ipairs(ARCHIVE_UNIVERSAL_KEYS) do
+      local body = resolve_ui(universal_page_path .. '.main_card.body_' .. tab_key)
+      if body and body.clear_ui_comp_image then
+        body:clear_ui_comp_image()
+      end
+      set_image_color_if_alive(body, { 255, 255, 255, 0 })
       ui.tab_entries[#ui.tab_entries + 1] = {
         key = tab_key,
         chip = resolve_archive_chip(universal_page_path .. '.main_card.tab_' .. tab_key),
       }
-      ui.universal_bodies[tab_key] = resolve_ui(universal_page_path .. '.main_card.body_' .. tab_key)
-      ui.universal_grids[tab_key] = ui.universal_bodies[tab_key]
+      ui.universal_bodies[tab_key] = body
+      ui.universal_grids[tab_key] = body
       ui.universal_details[tab_key] = resolve_ui(universal_page_path .. '.detail_card.detail_' .. tab_key)
     end
 
     for tab_key, specs in pairs(ARCHIVE_UNIVERSAL_ITEM_SPECS) do
       ui.universal_items[tab_key] = {}
-      for _, spec in ipairs(specs) do
+      for index, spec in ipairs(specs) do
+        local static_root = resolve_ui(string.format('%s.main_card.body_%s.%s', universal_page_path, tab_key, spec.node))
+        set_visible_if_alive(static_root, false)
+        local prefab_instance = create_archive_prefab_instance(ui.universal_grids[tab_key], ARCHIVE_PREFAB_NAMES.badge, static_root, index)
+        local root = (prefab_instance and prefab_instance.root) or static_root or nil
         ui.universal_items[tab_key][#ui.universal_items[tab_key] + 1] = {
           spec = spec,
-          root = resolve_ui(string.format('%s.main_card.body_%s.%s', universal_page_path, tab_key, spec.node)),
+          prefab_instance = prefab_instance,
+          root = root,
+          glyph = get_archive_prefab_child(prefab_instance, 'glyph')
+            or (static_root and resolve_ui(string.format('%s.main_card.body_%s.%s.glyph', universal_page_path, tab_key, spec.node)))
+            or get_archive_prefab_child(prefab_instance, 'icon.glyph'),
+          caption = get_archive_prefab_child(prefab_instance, 'caption')
+            or (static_root and resolve_ui(string.format('%s.main_card.body_%s.%s.caption', universal_page_path, tab_key, spec.node)))
+            or get_archive_prefab_child(prefab_instance, 'name'),
+          selected = get_archive_prefab_child(prefab_instance, 'selected')
+            or (static_root and resolve_ui(string.format('%s.main_card.body_%s.%s.selected', universal_page_path, tab_key, spec.node))),
+          icon = get_archive_prefab_child(prefab_instance, 'icon')
+            or get_archive_prefab_child(prefab_instance, 'glyph'),
+          frame = get_archive_prefab_child(prefab_instance, 'frame')
+            or (static_root and resolve_ui(string.format('%s.main_card.body_%s.%s.frame', universal_page_path, tab_key, spec.node))),
         }
       end
     end
 
+    ui.pool.board = create_archive_grid_view(ui.pool.board, 720, 560, 526) or ui.pool.board
     for _, spec in ipairs(ARCHIVE_POOL_ITEM_SPECS) do
+      local static_root = resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node) or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node)
+      set_visible_if_alive(static_root, false)
+      local prefab_instance = create_archive_prefab_instance(ui.pool.board, ARCHIVE_PREFAB_NAMES.pool, static_root)
+      local root = static_root or (prefab_instance and prefab_instance.root) or nil
       ui.pool.items[#ui.pool.items + 1] = {
         spec = spec,
-        root = resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node) or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node),
-        icon = resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node .. '.icon_image') or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node .. '.icon_image'),
-        glyph = resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node .. '.glyph') or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node .. '.glyph'),
+        prefab_instance = prefab_instance,
+        root = (prefab_instance and prefab_instance.root) or root,
+        icon = get_archive_prefab_child(prefab_instance, 'icon_image')
+          or (static_root and (resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node .. '.icon_image') or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node .. '.icon_image')))
+          or get_archive_prefab_child(prefab_instance, 'icon_image'),
+        glyph = get_archive_prefab_child(prefab_instance, 'glyph')
+          or (static_root and (resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node .. '.glyph') or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node .. '.glyph')))
+          or get_archive_prefab_child(prefab_instance, 'glyph'),
+        label = get_archive_prefab_child(prefab_instance, 'name')
+          or (static_root and (resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node .. '.label') or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node .. '.label')))
+          or get_archive_prefab_child(prefab_instance, 'name'),
       }
-      ui.pool.selected_nodes[spec.node] = resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node .. '.selected') or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node .. '.selected')
+      ui.pool.selected_nodes[spec.node] = get_archive_prefab_child(prefab_instance, 'selected')
+        or (static_root and (resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node .. '.selected') or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node .. '.selected')))
+        or get_archive_prefab_child(prefab_instance, 'selected')
+    end
+
+    for _, spec in ipairs(TALENT_NODE_SPECS) do
+      local node_path = string.format('%s.talent_layout.%s.%s', talent_page_path, spec.column_node, spec.node)
+      local entry = {
+        spec = spec,
+        root = resolve_ui(node_path),
+        label = resolve_ui(node_path .. '.label'),
+        level = resolve_ui(node_path .. '.level'),
+      }
+      ui.talent.nodes[#ui.talent.nodes + 1] = entry
+      ui.talent.node_by_key[spec.key] = entry
     end
 
     for index = 1, 10 do
@@ -1734,7 +2089,10 @@ function M.create(env)
     end
     STATE.archive_panel_page = page_key
     for key, page in pairs(ui.pages) do
-      set_visible_if_alive(page, STATE.archive_panel_visible == true and key == page_key)
+      local visible = STATE.archive_panel_visible == true and key == page_key
+      set_visible_if_alive(ui.page_roots and ui.page_roots[key], visible)
+      set_visible_if_alive(ui.page_contents and ui.page_contents[key], visible)
+      set_visible_if_alive(page, visible)
     end
     local main_page_key = get_archive_main_page_key(page_key)
     for _, entry in ipairs(ui.menu_entries or {}) do
@@ -1761,10 +2119,45 @@ function M.create(env)
     return true
   end
 
+  local function refresh_archive_universal_selection(ui, tab_key, selected_node)
+    if not ui or not ui.universal_items then
+      return false
+    end
+    local has_selected = false
+    for entry_tab_key, entries in pairs(ui.universal_items or {}) do
+      for _, entry in ipairs(entries or {}) do
+        local spec = entry.spec or {}
+        local selected = entry_tab_key == tab_key and spec.node == selected_node
+        set_visible_if_alive(entry.selected, selected)
+        has_selected = has_selected or selected
+      end
+    end
+    return has_selected
+  end
+
+  local function find_archive_universal_entry(ui, tab_key, selected_node)
+    local entries = ui and ui.universal_items and ui.universal_items[tab_key] or nil
+    if not entries then
+      return nil
+    end
+    for _, entry in ipairs(entries) do
+      if entry.spec and entry.spec.node == selected_node then
+        return entry
+      end
+    end
+    return nil
+  end
+
   local function refresh_archive_universal_detail(ui, tab_key, spec)
     if not ui or not spec then
       return false
     end
+    STATE.archive_panel_universal_item = {
+      tab_key = tab_key,
+      node = spec.node,
+    }
+    refresh_archive_universal_selection(ui, tab_key, spec.node)
+    local profile = STATE.outgame_profile or load_profile()
     local detail = ui.universal_details and ui.universal_details[tab_key]
     if not is_ui_alive(detail) then
       return false
@@ -1772,7 +2165,52 @@ function M.create(env)
     set_text_if_alive(resolve_ui(string.format('ArchivePageUniversal.root.content.page_universal.detail_card.detail_%s.title', tab_key)), spec.title)
     set_text_if_alive(resolve_ui(string.format('ArchivePageUniversal.root.content.page_universal.detail_card.detail_%s.line_1', tab_key)), spec.line_1)
     set_text_if_alive(resolve_ui(string.format('ArchivePageUniversal.root.content.page_universal.detail_card.detail_%s.line_2', tab_key)), spec.line_2)
-    set_text_if_alive(resolve_ui(string.format('ArchivePageUniversal.root.content.page_universal.detail_card.detail_%s.line_3', tab_key)), spec.line_3)
+    set_text_if_alive(resolve_ui(string.format('ArchivePageUniversal.root.content.page_universal.detail_card.detail_%s.line_3', tab_key)), format_archive_universal_reward_status(profile, tab_key, spec))
+    return true
+  end
+
+  local function refresh_archive_talent_detail(ui, spec)
+    if not ui or not ui.talent or not spec then
+      return false
+    end
+    STATE.archive_panel_talent_key = spec.key
+    local profile = STATE.outgame_profile or load_profile()
+    local level = get_archive_talent_level(profile, spec.key)
+    local detail = ui.talent.detail or {}
+    set_text_if_alive(detail.points, string.format('天赋点：%d', get_archive_talent_points(profile)))
+    set_text_if_alive(detail.name, spec.title)
+    set_text_if_alive(detail.rank, string.format('%d / %d', level, spec.max_level or 1))
+    set_text_if_alive(detail.tag_1, '效果')
+    set_text_if_alive(detail.value_1, spec.effect or '-')
+    set_text_if_alive(detail.tag_2, '解锁')
+    set_text_if_alive(detail.value_2, string.format('本系投入 %d 点', spec.require_points or 0))
+    set_text_if_alive(detail.tag_3, '状态')
+    set_text_if_alive(detail.value_3, get_archive_talent_status_text(profile, spec))
+    if detail.upgrade_button then
+      set_text_if_alive(detail.upgrade_button.label, level >= (spec.max_level or 1) and '已满级' or '升级天赋')
+      set_visible_if_alive(detail.upgrade_button.active, is_archive_talent_unlocked(profile, spec))
+    end
+    return true
+  end
+
+  local function refresh_archive_talent_page(ui, profile)
+    if not ui or not ui.talent then
+      return false
+    end
+    profile = profile or load_profile()
+    for column_key, value_ui in pairs(ui.talent.column_values or {}) do
+      set_text_if_alive(value_ui, tostring(get_archive_talent_column_points(profile, column_key)))
+    end
+    for _, entry in ipairs(ui.talent.nodes or {}) do
+      local spec = entry.spec
+      local level = get_archive_talent_level(profile, spec.key)
+      set_text_if_alive(entry.label, spec.title)
+      set_text_if_alive(entry.level, string.format('%d/%d', level, spec.max_level or 1))
+    end
+    local spec = TALENT_BY_KEY[STATE.archive_panel_talent_key] or TALENT_NODE_SPECS[1]
+    if spec then
+      refresh_archive_talent_detail(ui, spec)
+    end
     return true
   end
 
@@ -1782,22 +2220,27 @@ function M.create(env)
     end
     STATE.archive_panel_pool_item = spec.node
     local profile = STATE.outgame_profile or load_profile()
-    local owned_count = get_archive_pool_item_count(profile, spec.node)
+    local selected_item_key = get_archive_pool_item_key(spec)
+    local owned_count = get_archive_pool_item_count(profile, selected_item_key)
     local pool_score = get_archive_pool_score(profile)
     for _, entry in ipairs(ui.pool.items or {}) do
       local entry_spec = entry.spec or {}
-      set_visible_if_alive(entry.icon, entry_spec.icon ~= nil)
-      set_visible_if_alive(entry.glyph, entry_spec.icon == nil)
-      set_image_if_alive(entry.icon, entry_spec.icon)
+      local entry_icon = get_archive_pool_item_icon(entry_spec)
+      local has_icon = is_ui_alive(entry.icon) and entry_icon ~= nil
+      set_visible_if_alive(entry.icon, has_icon)
+      set_visible_if_alive(entry.glyph, not has_icon)
+      set_image_if_alive(entry.icon, entry_icon)
       set_text_if_alive(entry.glyph, entry_spec.glyph or entry_spec.title)
+      set_text_if_alive(entry.label, entry_spec.title)
     end
     for node_name, selected_node in pairs(ui.pool.selected_nodes or {}) do
       set_visible_if_alive(selected_node, node_name == spec.node)
     end
     local detail = ui.pool.detail or {}
-    set_visible_if_alive(detail.icon, spec.icon ~= nil)
-    set_visible_if_alive(detail.glyph, spec.icon == nil)
-    set_image_if_alive(detail.icon, spec.icon)
+    local detail_icon = get_archive_pool_item_icon(spec)
+    set_visible_if_alive(detail.icon, detail_icon ~= nil)
+    set_visible_if_alive(detail.glyph, detail_icon == nil)
+    set_image_if_alive(detail.icon, detail_icon)
     set_text_if_alive(detail.glyph, spec.glyph or spec.title)
     set_text_if_alive(detail.name, spec.title)
     set_text_if_alive(detail.owned, owned_count > 0 and string.format('已拥有 ×%d', owned_count) or '未拥有')
@@ -1822,7 +2265,8 @@ function M.create(env)
       set_visible_if_alive(ui.root, true)
       set_visible_if_alive(ui.overlay, true)
       STATE.archive_panel_visible = true
-      set_archive_panel_page('profile')
+      STATE.archive_panel_universal_tab = 'map'
+      set_archive_panel_page('universal')
       return true
     end
 
@@ -1832,7 +2276,9 @@ function M.create(env)
     end
     if is_archive_panel_ui_alive(ui) then
       set_visible_if_alive(ui.overlay, false)
-      for _, page in pairs(ui.pages or {}) do
+      for key, page in pairs(ui.pages or {}) do
+        set_visible_if_alive(ui.page_roots and ui.page_roots[key], false)
+        set_visible_if_alive(ui.page_contents and ui.page_contents[key], false)
         set_visible_if_alive(page, false)
       end
     end
@@ -1851,7 +2297,7 @@ function M.create(env)
     if ui.set_ui_gridview_type then
       ui:set_ui_gridview_type(0)
     end
-    ui:set_ui_gridview_count(column_count, row_count)
+    ui:set_ui_gridview_count(row_count, column_count)
     if ui.set_ui_gridview_size then
       ui:set_ui_gridview_size(cell_width, cell_height)
     end
@@ -1873,12 +2319,14 @@ function M.create(env)
     return true
   end
 
-  local function configure_archive_grid_views(ui)
+  configure_archive_grid_views = function(ui)
     if not ui then
       return
     end
+    local map_column_count = 8
+    local map_row_count = math.max(1, math.ceil(#(ARCHIVE_UNIVERSAL_ITEM_SPECS.map or {}) / map_column_count))
     configure_grid_view(ui.universal_grids and ui.universal_grids.pass, 8, 2, 78, 78, 20, 16, true)
-    configure_grid_view(ui.universal_grids and ui.universal_grids.map, 8, 4, 78, 78, 20, 16, true)
+    configure_grid_view(ui.universal_grids and ui.universal_grids.map, map_column_count, map_row_count, 78, 78, 20, 16, true)
     configure_grid_view(ui.universal_grids and ui.universal_grids.community, 8, 3, 78, 78, 20, 16, true)
     configure_grid_view(ui.universal_grids and ui.universal_grids.achievement, 8, 3, 78, 78, 20, 16, true)
     configure_grid_view(ui.universal_grids and ui.universal_grids.lottery, 8, 3, 78, 78, 20, 16, true)
@@ -1949,6 +2397,7 @@ function M.create(env)
     for _, entry in ipairs(ui.tab_entries or {}) do
       local tab_key = entry.key
       local click_target = get_archive_chip_click_target(entry.chip)
+      set_text_if_alive(entry.chip and entry.chip.label, ARCHIVE_UNIVERSAL_TAB_LABELS[tab_key])
       if is_ui_alive(click_target) then
         click_target:add_fast_event('左键-按下', function()
           if play_ui_click then
@@ -1990,6 +2439,31 @@ function M.create(env)
       end
     end
 
+    for _, entry in ipairs(ui.talent.nodes or {}) do
+      if is_ui_alive(entry.root) then
+        set_intercepts_if_alive(entry.root, true)
+        entry.root:add_fast_event('左键-按下', function()
+          if play_ui_click then
+            play_ui_click()
+          end
+          refresh_archive_talent_detail(ui, entry.spec)
+        end)
+      end
+    end
+
+    local talent_upgrade_root = get_archive_chip_click_target(ui.talent.detail and ui.talent.detail.upgrade_button)
+    if is_ui_alive(talent_upgrade_root) then
+      talent_upgrade_root:add_fast_event('左键-按下', function()
+        if play_ui_click then
+          play_ui_click()
+        end
+        local talent_key = STATE.archive_panel_talent_key
+        local ok, msg = upgrade_archive_talent(load_profile(), talent_key)
+        message(msg)
+        refresh_archive_panel_ui(load_profile())
+      end)
+    end
+
     local exchange_button_root = get_archive_chip_click_target(ui.pool.detail and ui.pool.detail.exchange_button)
     if is_ui_alive(exchange_button_root) then
       exchange_button_root:add_fast_event('左键-按下', function()
@@ -2015,7 +2489,7 @@ function M.create(env)
           refresh_archive_pool_detail(ui, selected_spec)
           return
         end
-        local owned_count = add_archive_pool_item(profile, selected_spec.node, 1)
+        local owned_count = add_archive_pool_item(profile, get_archive_pool_item_key(selected_spec), 1)
         mark_profile_dirty()
         refresh_archive_panel_ui(profile)
         refresh_archive_pool_detail(ui, selected_spec)
@@ -2109,11 +2583,34 @@ function M.create(env)
     local local_draw_count = get_archive_pool_draw_count(profile)
     set_text_if_alive(ui.chest.count_value, tostring(math.max(platform_lottery_count, local_draw_count)))
 
-    set_archive_universal_tab(STATE.archive_panel_universal_tab or 'pass')
-    local universal_tab = STATE.archive_panel_universal_tab or 'pass'
+    for tab_key, entries in pairs(ui.universal_items or {}) do
+      for index, entry in ipairs(entries or {}) do
+        local spec = entry.spec or {}
+        local icon = get_archive_universal_item_icon(spec)
+        local frame_image = get_archive_universal_frame_image(spec)
+        local has_icon = is_ui_alive(entry.icon) and icon ~= nil
+        set_visible_if_alive(entry.icon, has_icon)
+        set_visible_if_alive(entry.glyph, not has_icon)
+        set_image_if_alive(entry.icon, icon)
+        set_image_if_alive(entry.frame, frame_image)
+        set_text_if_alive(entry.glyph, spec.glyph or ARCHIVE_UNIVERSAL_GLYPHS[tab_key] or tostring(index))
+        set_text_if_alive(entry.caption, spec.title)
+      end
+    end
+
+    set_archive_universal_tab(STATE.archive_panel_universal_tab or 'map')
+    local universal_tab = STATE.archive_panel_universal_tab or 'map'
     local universal_entries = ui.universal_items and ui.universal_items[universal_tab]
-    if universal_entries and universal_entries[1] then
-      refresh_archive_universal_detail(ui, universal_tab, universal_entries[1].spec)
+    local selected_archive_item = STATE.archive_panel_universal_item
+    local selected_entry = selected_archive_item
+      and selected_archive_item.tab_key == universal_tab
+      and find_archive_universal_entry(ui, universal_tab, selected_archive_item.node)
+      or nil
+    selected_entry = selected_entry or (universal_entries and universal_entries[1] or nil)
+    if selected_entry and selected_entry.spec then
+      refresh_archive_universal_detail(ui, universal_tab, selected_entry.spec)
+    else
+      refresh_archive_universal_selection(ui, universal_tab, nil)
     end
     if ui.pool.items and ui.pool.items[1] then
       local selected_pool_item = STATE.archive_panel_pool_item
@@ -2126,6 +2623,7 @@ function M.create(env)
       end
       refresh_archive_pool_detail(ui, selected_spec)
     end
+    refresh_archive_talent_page(ui, profile)
     if STATE.archive_panel_visible == true then
       set_archive_panel_page(STATE.archive_panel_page or 'profile')
     end
@@ -2144,8 +2642,8 @@ function M.create(env)
     local hall_root = resolve_ui('outgame.大厅')
     local backdrop = resolve_ui('outgame.大厅.layout.底板')
     local title = resolve_ui('outgame.大厅.layout.right.mode_name')
-    local tip_root = resolve_ui('outgame.大厅.layout.right.mode_name.修仙模式tips')
-    local tip = resolve_ui('outgame.大厅.layout.right.mode_name.修仙模式tips.layout_2.label_3')
+    local tip_root = resolve_ui('outgame.大厅.layout.right.mode_name.猎场模式tips')
+    local tip = resolve_ui('outgame.大厅.layout.right.mode_name.猎场模式tips.layout_2.label_3')
     local page_container = resolve_ui('outgame.大厅.layout.right.难度列表')
     local mode_panel = resolve_ui('outgame.大厅.layout.left_2')
     local stage_slot_container = resolve_ui('outgame.大厅.layout.right_2.list')
@@ -2204,7 +2702,7 @@ function M.create(env)
 
       local mode_slots = {}
       local mainline_slot = build_static_mode_slot('outgame.大厅.layout.left_2.list.主线模式', VIEW_MODE_MAINLINE, '正常模式')
-      local cultivation_slot = build_static_mode_slot('outgame.大厅.layout.left_2.list.修仙模式', VIEW_MODE_CULTIVATION, '打鱼模式')
+      local cultivation_slot = build_static_mode_slot('outgame.大厅.layout.left_2.list.猎场模式', VIEW_MODE_CULTIVATION, '猎场模式')
       if mainline_slot then
         mode_slots[#mode_slots + 1] = mainline_slot
       end
@@ -2441,9 +2939,10 @@ function M.create(env)
   function api.open_save_panel()
     local profile = load_profile()
     if STATE.archive_panel_visible == true then
-      set_archive_panel_visible(false)
       return true
     end
+    STATE.archive_panel_universal_tab = 'map'
+    STATE.archive_panel_universal_item = nil
     if not refresh_archive_panel_ui(profile) then
       message(build_save_status_detail(profile))
       return false
@@ -2493,6 +2992,7 @@ function M.create(env)
     env.set_battle_hud_visible(false)
     set_non_outgame_ui_visible(false)
     ensure_ui()
+    set_archive_panel_visible(false)
     refresh_ui()
     api.set_ui_visible(true)
   end
@@ -2515,8 +3015,12 @@ function M.create(env)
     profile.last_result.is_win = result.is_win == true
     profile.last_result.reached_wave_index = math.max(0, result.reached_wave_index or 0)
 
+    local was_standard_cleared = progress.standard_cleared == true
     if result.is_win then
       progress.standard_cleared = true
+      if not was_standard_cleared then
+        add_archive_talent_points(profile, 1)
+      end
 
       local next_stage_id = get_next_stage_id(stage_id)
       if next_stage_id then
@@ -2578,6 +3082,31 @@ function M.create(env)
 
   function api.mark_profile_dirty()
     return mark_profile_dirty()
+  end
+
+  function api.debug_get_archive_talent_points()
+    return get_archive_talent_points(load_profile())
+  end
+
+  function api.debug_get_archive_talent_level(talent_key)
+    return get_archive_talent_level(load_profile(), talent_key)
+  end
+
+  function api.debug_upgrade_archive_talent(talent_key)
+    local ok, msg = upgrade_archive_talent(load_profile(), talent_key)
+    return ok, msg
+  end
+
+  function api.debug_claim_archive_universal_reward(tab_key, node)
+    local specs = ARCHIVE_UNIVERSAL_ITEM_SPECS[tab_key]
+    local selected_spec = nil
+    for _, spec in ipairs(specs or {}) do
+      if spec.node == node then
+        selected_spec = spec
+        break
+      end
+    end
+    return claim_archive_universal_reward(load_profile(), tab_key, selected_spec)
   end
 
   api.rebuild_hero_attr_bonus_stats = rebuild_hero_attr_bonus_stats

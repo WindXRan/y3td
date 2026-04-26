@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTGAME_LUA = ROOT / 'script' / 'ui' / 'outgame.lua'
+OUTGAME_DEFS_LUA = ROOT / 'script' / 'ui' / 'outgame_defs.lua'
 
 
 def assert_contains(text: str, needle: str, message: str) -> None:
@@ -20,6 +21,7 @@ def assert_not_contains(text: str, needle: str, message: str) -> None:
 
 def main() -> None:
     content = OUTGAME_LUA.read_text(encoding='utf-8')
+    defs_content = OUTGAME_DEFS_LUA.read_text(encoding='utf-8')
 
     assert_contains(
         content,
@@ -36,10 +38,18 @@ def main() -> None:
     assert_contains(content, 'local ensure_archive_panel_ui', 'outgame 应缓存 ArchivePanel 静态画板节点')
     assert_contains(content, 'refresh_archive_panel_ui = function(profile)', 'outgame 应刷新存档面板展示数据')
     assert_contains(content, 'local function set_archive_panel_visible(visible)', 'outgame 应支持统一控制存档面板显隐')
-    assert_contains(content, "ArchivePageProfile", 'outgame 应绑定拆分后的存档分页面板')
-    assert_contains(content, "ArchivePageUniversal", 'outgame 应绑定拆分后的通用存档分页面板')
-    assert_contains(content, "ArchivePageChest", 'outgame 应绑定拆分后的夺宝宝箱分页面板')
-    assert_contains(content, "ArchivePagePool", 'outgame 应绑定拆分后的奖池分页面板')
+    assert_contains(defs_content, "ArchivePageProfile", 'outgame 应绑定拆分后的存档分页面板')
+    assert_contains(defs_content, "ArchivePageUniversal", 'outgame 应绑定拆分后的通用存档分页面板')
+    assert_contains(defs_content, "ArchivePageChest", 'outgame 应绑定拆分后的夺宝宝箱分页面板')
+    assert_contains(defs_content, "ArchivePagePool", 'outgame 应绑定拆分后的奖池分页面板')
+    assert_contains(content, "ArchiveBadgeItem", '通用存档奖励格子应优先使用 prefab 实例')
+    assert_contains(defs_content, "require 'data.object_tables.honor_levels'", '通用存档应接入商城道具-荣誉等级表')
+    assert_contains(defs_content, "map = #HonorLevels.list > 0 and '荣誉' or '地图'", '通用存档应把任选页签替换为荣誉等级页签')
+    assert_contains(content, 'profile.archive_rewards.honor_levels', '荣誉等级解锁状态应写入通用存档')
+    assert_contains(content, "spec.source == 'honor_level'", '荣誉等级条目应使用表格来源标记刷新存档详情')
+    assert_contains(content, "ArchivePoolItem", '夺宝奖池物品格子应优先使用 prefab 实例')
+    assert_contains(content, "ArchiveTalentNode", '存档天赋节点应优先使用 prefab 实例')
+    assert_contains(content, 'create_archive_prefab_instance', 'outgame 应通过统一封装创建存档 prefab 并保留静态回退')
     assert_contains(content, "set_archive_panel_page('pool')", 'outgame 奖池入口应切到奖池页')
     assert_contains(content, "set_archive_panel_page('chest')", 'outgame 奖池页返回应回到宝箱页')
     assert_contains(content, 'set_archive_panel_visible(true)', 'outgame 打开存档时应显示实际面板')

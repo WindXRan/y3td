@@ -10,6 +10,6 @@ assert(cfg.temp_unit_labels.hero == '守关弓手', 'hero temp label should stay
 assert(cfg.temp_unit_labels.wave_5_boss == '赵云', 'wave_5_boss temp label should stay intact')
 assert(cfg.temp_unit_labels.treasure_trial_guard == '刘备', 'treasure_trial_guard temp label should stay intact')
 
-assert(cfg.fixed_unit_ids.hero == 201390301, 'hero unit id should stay intact')
+assert(cfg.fixed_unit_ids.hero == 134259567, 'hero unit id should use initial archer')
 
 print('battlefield_unit_config csv loader smoke ok')

@@ -6,10 +6,10 @@ assert(type(attreffect) == 'table', 'attreffect loader should return a table')
 assert(type(attreffect.list) == 'table', 'attreffect.list should be a table')
 assert(type(attreffect.by_source) == 'table', 'attreffect.by_source should be a table')
 
-local bond = attreffect.by_source.bond_node and attreffect.by_source.bond_node['bond_body_core_vitality']
-assert(bond ~= nil, 'expected bond sample source to exist')
-assert(bond.attr['力量'] == 50, 'expected bond sample strength bonus')
-assert(bond.attr['生命'] == 100, 'expected bond sample hp bonus')
+local bond = attreffect.by_source.bond_node and attreffect.by_source.bond_node['bond_element_core']
+assert(bond ~= nil, 'expected formal bond sample source to exist')
+assert(bond.attr['魔法伤害'] == 5, 'expected formal bond sample magic bonus')
+assert(bond.runtime['skill_damage_bonus'] == 0.05, 'expected formal bond sample runtime bonus')
 
 local mark = attreffect.by_source.mark and attreffect.by_source.mark['storm_mark']
 assert(mark ~= nil, 'expected mark sample source to exist')

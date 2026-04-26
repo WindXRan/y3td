@@ -1,5 +1,7 @@
 -- 游戏启动后会自动运行此文件
 
+y3.config.sync.mouse = true
+
 if y3.game.is_debug_mode() then
   y3.config.log.toGame = false
   y3.config.log.level = 'debug'

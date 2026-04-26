@@ -98,7 +98,6 @@ require_files(
         "data_csv/mark_tags.csv",
         "data_csv/stages.csv",
         "data_csv/stage_modes.csv",
-        "data_csv/stage_mode_links.csv",
         "data_csv/hero_attr_config.csv",
         "data_csv/hero_roster.csv",
         "data_csv/hero_form_skills.csv",
@@ -116,7 +115,6 @@ require_files(
     "evolution node csv files present",
     [
         "data_csv/evolution_nodes.csv",
-        "data_csv/evolution_pool_rules.csv",
         "data/object_tables/evolution_nodes.lua",
     ],
 )

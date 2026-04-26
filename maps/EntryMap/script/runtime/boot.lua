@@ -3,6 +3,7 @@ local BondSystem = require 'runtime.bonds'
 local AttackSkillObjects = require 'entry_objects.attack_skills'
 local BondDrawConfig = require 'data.object_tables.bond_draw_config'
 local BondNodeObjects = require 'data.object_tables.bond_nodes'
+local QualityImageTable = require 'data.object_tables.quality_image_table'
 local EvolutionObjects = require 'data.object_tables.marks'
 local ProgressionSystem = require 'runtime.progression'
 local BattlefieldSystem = require 'runtime.battlefield'
@@ -19,10 +20,13 @@ local OutgameSystem = require 'ui.outgame'
 local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
 local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
+local CannonSkill134258724System = require 'runtime.cannon_skill_134258724'
+local BondSetEffectsSystem = require 'runtime.bond_set_effects'
 local EffectDebugSystem = require 'runtime.effect_debug'
 local BattleEventFeedSystem = require 'runtime.battle_event_feed'
 local RewardSystem = require 'runtime.rewards'
 local GearUpgrades = require 'runtime.gear_upgrades'
+local AttrChoices = require 'runtime.attr_choices'
 local AudioSystem = require 'runtime.audio'
 local HeroSelectionRangeSystem = require 'runtime.hero_selection_range'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
@@ -37,6 +41,7 @@ local debug_tools_system
 local debug_actions_system
 local runtime_hud_system
 local choice_panel_system
+local runtime_ui_helpers
 local overview_model_system
 local outgame_system
 local session_state_system
@@ -45,16 +50,23 @@ local runtime_loops_system
 local attack_upgrade_system
 local attack_skills_system
 local auto_active_effects_system
+local cannon_skill_134258724_system
+local bond_set_effects_system
 local effect_debug_system
 local reward_system
+local attr_choice_system
 local audio_system
 local hero_selection_range_system
 local message
 local ensure_round_choice_available
+local get_enemies_in_range
+local deal_skill_damage
 local hero_attr_system = HeroAttrSystem.create()
 
 local function trace_boot(message)
-  print('[entry_runtime] ' .. tostring(message))
+  if log and log.info then
+    log.info('[entry_runtime] ' .. tostring(message))
+  end
 end
 
 local function ensure_helper_signals()
@@ -251,9 +263,9 @@ local function get_bottom_status_effect_entries(max_slots)
   local entries = {}
   local limit = math.max(0, tonumber(max_slots) or 5)
   if limit == 0
-    or not auto_active_effects_system
-    or not auto_active_effects_system.get_effect_defs
-    or not auto_active_effects_system.get_effect_runtime_snapshot then
+      or not auto_active_effects_system
+      or not auto_active_effects_system.get_effect_defs
+      or not auto_active_effects_system.get_effect_runtime_snapshot then
     return entries
   end
 
@@ -307,7 +319,8 @@ local function create_attack_skill_instance(skill_id, slot)
     ui_icon = def.ui_icon or (blueprint and (blueprint.ui_icon or blueprint.icon)) or nil,
     icon = def.icon or def.ui_icon or (blueprint and (blueprint.icon or blueprint.ui_icon)) or nil,
     evolution_name = def.evolution_name or (blueprint and blueprint.evolution and blueprint.evolution.name) or nil,
-    evolution_summary = def.evolution_summary or (blueprint and blueprint.evolution and blueprint.evolution.summary) or nil,
+    evolution_summary = def.evolution_summary or (blueprint and blueprint.evolution and blueprint.evolution.summary) or
+    nil,
     damage_type = def.damage_type,
     damage_form = def.damage_form,
     element = def.element,
@@ -457,6 +470,7 @@ local STATE = {
   runtime_attr_tab_panel = nil,
   runtime_attr_tab_selected = 'summary',
   hero_attr_runtime = nil,
+  attr_choice_runtime = nil,
   hero_form_skill_runtime = nil,
   gm_ui = nil,
   session_phase = 'outgame',
@@ -480,35 +494,95 @@ local function get_enemy_player()
   return y3.player(CONFIG.enemy_player_id)
 end
 
+local function set_ui_root_visible(path, visible)
+  local player = get_player()
+  if not player or not y3 or not y3.ui or not y3.ui.get_ui then
+    return false
+  end
+  local ok, ui = pcall(y3.ui.get_ui, player, path)
+  if not ok or not ui or (ui.is_removed and ui:is_removed()) then
+    return false
+  end
+  if ui.set_visible then
+    ui:set_visible(visible == true)
+    return true
+  end
+  return false
+end
+
+local function enforce_runtime_ui_phase(is_battle)
+  if is_battle == true then
+    local hidden_in_battle = {
+      'outgame',
+      'ArchivePanel',
+      'ArchivePageProfile',
+      'ArchivePageEquipment',
+      'ArchivePageTalent',
+      'ArchivePageUniversal',
+      'ArchivePageChest',
+      'ArchivePagePool',
+      'LoadingPanel',
+      'LogoPanel',
+      'win',
+      'loss',
+      'CommonTip',
+      'SceneUI',
+    }
+    for _, path in ipairs(hidden_in_battle) do
+      set_ui_root_visible(path, false)
+    end
+    return
+  end
+
+  local hidden_outside_battle = {
+    'top',
+    'BattleBottomHUD',
+    'GameHUD',
+    'BondChoice2',
+    'BondChoice3',
+    'BondChoice4',
+    'BondSwallowPanel',
+    'CommonTip',
+    'SceneUI',
+    'LoadingPanel',
+    'LogoPanel',
+    'win',
+    'loss',
+  }
+  for _, path in ipairs(hidden_outside_battle) do
+    set_ui_root_visible(path, false)
+  end
+end
+
 local function infer_battle_event_style(text)
   local content = tostring(text or '')
   if content == '' then
     return 'neutral'
   end
   if string.find(content, '获得', 1, true)
-    or string.find(content, '奖励', 1, true)
-    or string.find(content, '刷新次数', 1, true)
-    or string.find(content, '金币 +', 1, true)
-    or string.find(content, '木材 +', 1, true)
-    or string.find(content, '经验 +', 1, true) then
+      or string.find(content, '奖励', 1, true)
+      or string.find(content, '刷新次数', 1, true)
+      or string.find(content, '金币 +', 1, true)
+      or string.find(content, '木材 +', 1, true)
+      or string.find(content, '经验 +', 1, true) then
     return 'reward'
   end
   if string.find(content, '开始', 1, true)
-    or string.find(content, '进攻', 1, true)
-    or string.find(content, '警告', 1, true)
-    or string.find(content, '失败', 1, true)
-    or string.find(content, '不足', 1, true) then
+      or string.find(content, '进攻', 1, true)
+      or string.find(content, '警告', 1, true)
+      or string.find(content, '失败', 1, true)
+      or string.find(content, '不足', 1, true) then
     return 'warning'
   end
   if string.find(content, '稀有', 1, true)
-    or string.find(content, '史诗', 1, true)
-    or string.find(content, '1星效果触发', 1, true) then
+      or string.find(content, '史诗', 1, true)
+      or string.find(content, '1星效果触发', 1, true) then
     return 'rare'
   end
   if string.find(content, '+1', 1, true)
-    or string.find(content, '恢复', 1, true)
-    or string.find(content, '升级', 1, true)
-    or string.find(content, '解锁', 1, true) then
+      or string.find(content, '恢复', 1, true)
+      or string.find(content, '升级', 1, true)
+      or string.find(content, '解锁', 1, true) then
     return 'positive'
   end
   return 'neutral'
@@ -554,11 +628,17 @@ local function is_choice_panel_blocking_messages()
   if STATE.bond_runtime and STATE.bond_runtime.current_choices and #STATE.bond_runtime.current_choices > 0 then
     return true
   end
+  if STATE.attr_choice_runtime
+      and STATE.attr_choice_runtime.awaiting_choice
+      and STATE.attr_choice_runtime.current_choices
+      and #STATE.attr_choice_runtime.current_choices > 0 then
+    return true
+  end
   local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
   if evolution_runtime
-    and evolution_runtime.awaiting_choice
-    and evolution_runtime.current_choices
-    and #evolution_runtime.current_choices > 0 then
+      and evolution_runtime.awaiting_choice
+      and evolution_runtime.current_choices
+      and #evolution_runtime.current_choices > 0 then
     return true
   end
   if STATE.treasure_runtime then
@@ -573,7 +653,9 @@ local function is_choice_panel_blocking_messages()
 end
 
 message = function(text)
-  print(text)
+  if log and log.info then
+    log.info('[entry_runtime] ' .. tostring(text))
+  end
   if STATE.session_phase == 'battle' then
     BattleEventPrompts.push_battle_event(text)
     return
@@ -606,6 +688,18 @@ progression_system = ProgressionSystem.create({
   CONFIG = CONFIG,
   y3 = y3,
   round_number = round_number,
+  message = message,
+  hero_attr_system = hero_attr_system,
+  on_hero_level_up = function(level)
+    if attr_choice_system and attr_choice_system.grant_diamond then
+      attr_choice_system.grant_diamond(1, level)
+    end
+  end,
+})
+
+attr_choice_system = AttrChoices.create({
+  STATE = STATE,
+  hero_attr_system = hero_attr_system,
   message = message,
 })
 
@@ -724,7 +818,8 @@ mainline_task_system = require('runtime.mainline_tasks').create({
     return reward_system.queue_treasure_round(source_type, source_name)
   end,
   start_mainline_task_challenge = function(task)
-    return battlefield_system and battlefield_system.start_mainline_task_challenge and battlefield_system.start_mainline_task_challenge(task) or nil
+    return battlefield_system and battlefield_system.start_mainline_task_challenge and
+    battlefield_system.start_mainline_task_challenge(task) or nil
   end,
 })
 
@@ -888,11 +983,13 @@ create_bond_env = function()
     get_enemy_runtime_info = get_enemy_runtime_info,
     is_boss_runtime_enemy = is_boss_runtime_enemy,
     is_elite_runtime_enemy = is_elite_runtime_enemy,
+    get_enemies_in_range = get_enemies_in_range,
+    deal_skill_damage = deal_skill_damage,
     basic_attack_damage_type = ATTACK_SKILL_DEFS.basic_attack.damage_type,
   }
 end
 
-local function get_enemies_in_range(center, radius, except_unit, max_count)
+get_enemies_in_range = function(center, radius, except_unit, max_count)
   local result = {}
   local selector = y3.selector.create()
       :is_enemy(get_player())
@@ -1037,6 +1134,7 @@ local function get_damage_bonus_multiplier(target, context)
 end
 
 local function try_trigger_hunter_first_hit(target)
+  BondSystem.notify_basic_attack(create_bond_env(), target)
   BondSystem.try_trigger_hunter_first_hit(create_bond_env(), target)
 end
 
@@ -1045,7 +1143,7 @@ local function build_reward_with_bond_bonus(reward)
 end
 
 
-local function deal_skill_damage(target, amount, damage, visual)
+deal_skill_damage = function(target, amount, damage, visual)
   if not STATE.hero or not STATE.hero:is_exist() or not is_active_enemy(target) then
     return
   end
@@ -1183,7 +1281,8 @@ end
 
 local function show_runtime_status()
   if STATE.session_phase ~= 'battle' then
-    local stage_name = STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) or '未选择'
+    local stage_name = STATE.current_stage_def and
+    (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) or '未选择'
     local mode_name = STATE.current_mode_def and STATE.current_mode_def.display_name or '标准模式'
     message(string.format('当前处于局外选关阶段：%s %s。', stage_name, mode_name))
     return
@@ -1258,7 +1357,7 @@ local function trigger_td_skills_on_hit(data)
   }
   local basic_attack_vfx = AttackSkillObjects.vfx_by_id.basic_attack or {}
   local basic_chain_particle = basic_attack_vfx.chain_particle
-    or basic_attack_vfx.impact_particle
+      or basic_attack_vfx.impact_particle
   if CONFIG.damage_hit_effect_enabled == false or is_hit_effect_hidden() then
     basic_chain_particle = nil
   end
@@ -1377,7 +1476,8 @@ battlefield_system = BattlefieldSystem.create({
     return heal_hero(amount)
   end,
   play_enemy_death_sound = function(unit, info)
-    return audio_system and audio_system.play_enemy_death and audio_system.play_enemy_death(unit, info and info.kind == 'boss') or nil
+    return audio_system and audio_system.play_enemy_death and
+    audio_system.play_enemy_death(unit, info and info.kind == 'boss') or nil
   end,
   on_hero_damage = function(data)
     return trigger_td_skills_on_hit(data)
@@ -1536,7 +1636,8 @@ attack_skills_system = AttackSkillsSystem.create({
     return audio_system and audio_system.play_basic_attack and audio_system.play_basic_attack(source_unit) or nil
   end,
   play_attack_skill_sound = function(skill, source_anchor, stage)
-    return audio_system and audio_system.play_attack_skill and audio_system.play_attack_skill(skill, source_anchor, stage) or nil
+    return audio_system and audio_system.play_attack_skill and
+    audio_system.play_attack_skill(skill, source_anchor, stage) or nil
   end,
 })
 
@@ -1556,9 +1657,9 @@ auto_active_effects_system = AutoActiveEffectsSystem.create({
   end,
   is_debug_effect_mounted = function(effect_id)
     return STATE.effect_debug_runtime
-      and STATE.effect_debug_runtime.mounted_effect_ids
-      and STATE.effect_debug_runtime.mounted_effect_ids[effect_id] == true
-      or false
+        and STATE.effect_debug_runtime.mounted_effect_ids
+        and STATE.effect_debug_runtime.mounted_effect_ids[effect_id] == true
+        or false
   end,
   is_active_enemy = is_active_enemy,
   get_enemies_in_range = get_enemies_in_range,
@@ -1587,6 +1688,12 @@ effect_debug_system = EffectDebugSystem.create({
     return auto_active_effects_system.clear_effect_runtime(effect_id)
   end,
 })
+
+bond_set_effects_system = BondSetEffectsSystem.create({
+  auto_active_effects_system = auto_active_effects_system,
+  effect_debug_system = effect_debug_system,
+})
+bond_set_effects_system.register_global_apis()
 
 STATE.hero_form_skills_system = require('runtime.hero_form_skills').create({
   STATE = STATE,
@@ -1638,6 +1745,12 @@ local function get_pending_round_choice_kind()
   if STATE.gear_state and STATE.gear_state.awaiting_choice and STATE.gear_state.current_choices then
     return 'gear'
   end
+  if attr_choice_system and attr_choice_system.get_pending_choice_kind then
+    local attr_kind = attr_choice_system.get_pending_choice_kind()
+    if attr_kind then
+      return attr_kind
+    end
+  end
   if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice and STATE.bond_runtime.current_choices then
     return 'bond'
   end
@@ -1661,13 +1774,16 @@ local function get_pending_round_choice_label(kind)
     return 'G 技能强化'
   end
   if kind == 'bond' then
-    return 'F 仙缘感应'
+    return 'F 战术抽卡'
   end
   if kind == 'gear' then
     return '成长武器词条'
   end
+  if kind == 'attr' then
+    return '属性四选一'
+  end
   if kind == 'evolution' or kind == 'mark' then
-    return '真身进化'
+    return '猎手专精'
   end
   if kind == 'treasure' then
     return '宝物选择'
@@ -1729,6 +1845,9 @@ local function show_pending_round_choice(kind)
   if current_kind == 'gear' then
     return
   end
+  if current_kind == 'attr' then
+    return runtime_hud_system and runtime_hud_system.refresh_hud and runtime_hud_system.refresh_hud() or nil
+  end
   if current_kind == 'evolution' or current_kind == 'mark' then
     show_mark_choices()
     return
@@ -1781,10 +1900,10 @@ local function apply_round_choice(index)
 
   if kind == 'gear' then
     if GearUpgrades.apply_affix_choice({
-      STATE = STATE,
-      CONFIG = CONFIG,
-      message = message,
-    }, index) then
+          STATE = STATE,
+          CONFIG = CONFIG,
+          message = message,
+        }, index) then
       if STATE.hero and sync_gear_runtime_effects then
         sync_gear_runtime_effects(STATE, STATE.hero, CONFIG.gear_upgrade_config)
       end
@@ -1793,6 +1912,10 @@ local function apply_round_choice(index)
       return true
     end
     return false
+  end
+
+  if kind == 'attr' then
+    return attr_choice_system and attr_choice_system.apply_choice and attr_choice_system.apply_choice(index) or false
   end
 
   if kind == 'bond' then
@@ -1821,8 +1944,8 @@ local function refresh_current_choice()
 
   if kind == 'upgrade' then
     return attack_upgrade_system and attack_upgrade_system.refresh_upgrade_choices
-      and attack_upgrade_system.refresh_upgrade_choices()
-      or false
+        and attack_upgrade_system.refresh_upgrade_choices()
+        or false
   end
 
   if kind == 'gear' then
@@ -1833,12 +1956,17 @@ local function refresh_current_choice()
     })
   end
 
+  if kind == 'attr' then
+    message('属性四选一不支持刷新。')
+    return false
+  end
+
   if kind == 'bond' then
     return BondSystem.refresh_choice(create_bond_env())
   end
 
   if kind == 'evolution' or kind == 'mark' then
-    message('当前真身进化不支持刷新。')
+    message('当前猎手专精不支持刷新。')
     return false
   end
 
@@ -1858,6 +1986,11 @@ local function try_bond_draw()
   STATE.choice_panel_hidden = false
   if not ensure_round_choice_available('bond') then
     return
+  end
+  if not STATE.resources or (STATE.resources.wood or 0) < (BondDrawConfig.draw_cost or 100) then
+    if runtime_hud_system and runtime_hud_system.show_center_tip then
+      runtime_hud_system.show_center_tip('木头不足，无法抽卡！')
+    end
   end
   BondSystem.try_draw(create_bond_env())
 end
@@ -2033,9 +2166,9 @@ end
 local function has_pending_evolution_choice()
   local runtime = reward_system.get_evolution_runtime()
   return runtime
-    and runtime.awaiting_choice == true
-    and runtime.current_choices
-    and #runtime.current_choices > 0
+      and runtime.awaiting_choice == true
+      and runtime.current_choices
+      and #runtime.current_choices > 0
 end
 
 local function try_evolution_entry()
@@ -2070,6 +2203,29 @@ local function try_treasure_entry()
   message('当前没有待领取的宝物三选一。')
 end
 
+local function open_bond_card_album()
+  if runtime_ui_helpers and runtime_ui_helpers.show_bond_swallow_panel then
+    local panel = runtime_ui_helpers.show_bond_swallow_panel()
+    if panel then
+      return true
+    end
+  end
+  BondSystem.show_bond_progress(create_bond_env())
+  return false
+end
+
+local function open_runtime_save_panel()
+  STATE.choice_panel_hidden = true
+  if runtime_ui_helpers and runtime_ui_helpers.destroy_choice_panel then
+    runtime_ui_helpers.destroy_choice_panel()
+  end
+  if runtime_ui_helpers and runtime_ui_helpers.refresh_bond_swallow_panel then
+    STATE.bond_swallow_panel_visible = false
+    runtime_ui_helpers.refresh_bond_swallow_panel()
+  end
+  return outgame_system and outgame_system.open_save_panel and outgame_system.open_save_panel() or false
+end
+
 runtime_hud_system = RuntimeHudSystem.create({
   STATE = STATE,
   CONFIG = CONFIG,
@@ -2081,15 +2237,24 @@ runtime_hud_system = RuntimeHudSystem.create({
   show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
   show_bond_progress = function()
-    return BondSystem.show_bond_progress(create_bond_env())
+    return open_bond_card_album()
   end,
   try_evolution_entry = try_evolution_entry,
   try_treasure_entry = try_treasure_entry,
   try_start_challenge = try_start_challenge,
   open_save_panel = function()
-    return outgame_system and outgame_system.open_save_panel and outgame_system.open_save_panel() or false
+    return open_runtime_save_panel()
   end,
   try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
+  use_attr_diamond = function()
+    return attr_choice_system and attr_choice_system.use_diamond and attr_choice_system.use_diamond() or false
+  end,
+  get_attr_choice_runtime = function()
+    return attr_choice_system and attr_choice_system.ensure_runtime and attr_choice_system.ensure_runtime() or nil
+  end,
+  apply_attr_choice = function(index)
+    return attr_choice_system and attr_choice_system.apply_choice and attr_choice_system.apply_choice(index) or false
+  end,
   show_runtime_status = show_runtime_status,
   build_runtime_attr_dialog_chunks = build_runtime_attr_dialog_chunks,
   build_growth_weapon_tip_payload = function()
@@ -2111,7 +2276,7 @@ runtime_hud_system = RuntimeHudSystem.create({
 })
 choice_panel_system = nil
 
-local runtime_ui_helpers = RuntimeUIHelpers.create({
+runtime_ui_helpers = RuntimeUIHelpers.create({
   STATE = STATE,
   y3 = y3,
   get_player = get_player,
@@ -2123,9 +2288,9 @@ local runtime_ui_helpers = RuntimeUIHelpers.create({
   end,
   get_growth_weapon_item_key = function()
     local slot_cfg = CONFIG.gear_upgrade_config
-      and CONFIG.gear_upgrade_config.slots
-      and CONFIG.gear_upgrade_config.slots.weapon
-      or nil
+        and CONFIG.gear_upgrade_config.slots
+        and CONFIG.gear_upgrade_config.slots.weapon
+        or nil
     return slot_cfg and slot_cfg.item_key or nil
   end,
   build_treasure_slot_text = function(slot)
@@ -2146,11 +2311,141 @@ local runtime_ui_helpers = RuntimeUIHelpers.create({
   get_runtime_overview_model = function()
     return get_runtime_overview_model and get_runtime_overview_model() or nil
   end,
+  build_bond_swallow_panel_model = function(state, selected_root_index)
+    return BondSystem.build_bond_swallow_panel_model(state, selected_root_index)
+  end,
+})
+
+local function resolve_quality_frame_image(quality)
+  if QualityImageTable and QualityImageTable.get_frame_image then
+    local image = QualityImageTable.get_frame_image(quality)
+    if image then
+      return image
+    end
+  end
+
+  local image_table = quality_image_table or QUALITY_IMAGE_TABLE
+  if type(image_table) ~= 'table' then
+    return nil
+  end
+  local key = tostring(quality or 'common')
+  local lower_key = string.lower(key)
+  local normalized_key = ({
+    n = 'N',
+    r = 'R',
+    sr = 'SR',
+    ssr = 'SSR',
+    ur = 'UR',
+    common = 'N',
+    excellent = 'R',
+    rare = 'SR',
+    epic = 'SSR',
+    legendary = 'UR',
+    ['普通'] = 'N',
+    ['优秀'] = 'R',
+    ['稀有'] = 'SR',
+    ['史诗'] = 'SSR',
+    ['传说'] = 'UR',
+  })[lower_key] or ({
+    ['普通'] = 'N',
+    ['优秀'] = 'R',
+    ['稀有'] = 'SR',
+    ['史诗'] = 'SSR',
+    ['传说'] = 'UR',
+  })[key]
+  local cn_key = ({
+    common = '普通',
+    excellent = '优秀',
+    rare = '稀有',
+    epic = '史诗',
+    legendary = '传说',
+  })[lower_key]
+  return image_table[key]
+      or image_table[lower_key]
+      or (normalized_key and image_table[normalized_key] or nil)
+      or (normalized_key and image_table[string.lower(normalized_key)] or nil)
+      or (cn_key and image_table[cn_key] or nil)
+      or (lower_key == 'excellent' and (image_table.rare or image_table.SR or image_table.sr) or nil)
+      or (lower_key == 'legendary' and (image_table.epic or image_table.UR or image_table.ur) or nil)
+      or image_table.common
+      or image_table.N
+      or image_table.n
+      or image_table['普通']
+end
+
+local function set_ui_visible(ui, visible)
+  if ui and (not ui.is_removed or not ui:is_removed()) and ui.set_visible then
+    ui:set_visible(visible == true)
+  end
+end
+
+local function set_ui_image(ui, image)
+  if ui and (not ui.is_removed or not ui:is_removed()) and ui.set_image and image and image ~= 0 then
+    ui:set_image(image)
+  end
+end
+
+local function apply_bond_choice_quality_frames()
+  local bond_runtime = STATE.bond_runtime
+  local choices = bond_runtime and bond_runtime.current_choices or nil
+  if not choices or #choices == 0 or STATE.choice_panel_hidden == true then
+    return
+  end
+  local player = get_player()
+  if not player then
+    return
+  end
+  local panel_name = #choices <= 2 and 'BondChoice2' or (#choices >= 4 and 'BondChoice4' or 'BondChoice3')
+  local panel_index = #choices <= 2 and '2' or (#choices >= 4 and '4' or '3')
+  for index = 1, 4 do
+    local path = string.format(
+      '%s.bond_choice_%s.cards_row.card_%d.icon_frame_%d',
+      panel_name,
+      panel_index,
+      index,
+      index
+    )
+    local ok, frame = pcall(y3.ui.get_ui, player, path)
+    if ok and frame then
+      local choice = choices[index]
+      local image = choice and resolve_quality_frame_image(choice.quality) or nil
+      set_ui_visible(frame, image ~= nil)
+      set_ui_image(frame, image)
+    end
+  end
+end
+
+local raw_refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel
+runtime_ui_helpers.refresh_choice_panel = function(...)
+  local result = raw_refresh_choice_panel(...)
+  apply_bond_choice_quality_frames()
+  return result
+end
+
+cannon_skill_134258724_system = CannonSkill134258724System.create({
+  STATE = STATE,
+  y3 = y3,
+  hero_attr_system = hero_attr_system,
+  get_enemies_in_range = get_enemies_in_range,
+  deal_skill_damage = deal_skill_damage,
 })
 
 runtime_ui_helpers.install_panel_systems()
 
-set_battle_hud_visible = runtime_ui_helpers.set_battle_hud_visible
+local raw_set_battle_hud_visible = runtime_ui_helpers.set_battle_hud_visible
+set_battle_hud_visible = function(visible)
+  if visible == true and STATE.archive_panel_visible == true then
+    local result = raw_set_battle_hud_visible(false)
+    enforce_runtime_ui_phase(false)
+    return result
+  end
+  local result = raw_set_battle_hud_visible(visible)
+  enforce_runtime_ui_phase(visible == true)
+  if runtime_ui_helpers and runtime_ui_helpers.refresh_bond_swallow_panel then
+    runtime_ui_helpers.refresh_bond_swallow_panel()
+  end
+  return result
+end
 
 local function create_hero()
   return battlefield_system.create_hero(ATTACK_SKILL_DEFS.basic_attack.base_range or 250)
@@ -2167,7 +2462,8 @@ hero_selection_range_system = HeroSelectionRangeSystem.create({
     return STATE.session_phase == 'battle' and STATE.game_finished ~= true
   end,
   get_current_basic_attack_range = function()
-    return attack_skills_system and attack_skills_system.get_current_basic_attack_range and attack_skills_system.get_current_basic_attack_range() or 0
+    return attack_skills_system and attack_skills_system.get_current_basic_attack_range and
+    attack_skills_system.get_current_basic_attack_range() or 0
   end,
 })
 
@@ -2215,9 +2511,9 @@ session_state_system = SessionStateSystem.create({
   end,
   disable_local_attack_preview = function()
     return hero_selection_range_system
-      and hero_selection_range_system.disable_local_preview
-      and hero_selection_range_system.disable_local_preview()
-      or false
+        and hero_selection_range_system.disable_local_preview
+        and hero_selection_range_system.disable_local_preview()
+        or false
   end,
   get_outgame_system = function()
     return outgame_system
@@ -2278,10 +2574,14 @@ input_events_system = InputEventsSystem.create({
   get_hero_max_level = progression_system.get_hero_max_level,
   sync_hero_progress_from_engine = progression_system.sync_hero_progress_from_engine,
   try_queue_mark_node_for_level = reward_system.try_queue_evolution_node_for_level,
+  grant_attr_diamond = function(count, level)
+    return attr_choice_system and attr_choice_system.grant_diamond and attr_choice_system.grant_diamond(count, level) or
+    nil
+  end,
   show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
   show_bond_progress = function()
-    return BondSystem.show_bond_progress(create_bond_env())
+    return open_bond_card_album()
   end,
   show_runtime_attr_overview = function()
     show_runtime_attr_dialog()
@@ -2292,7 +2592,8 @@ input_events_system = InputEventsSystem.create({
   show_runtime_attr_dialog = show_runtime_attr_dialog,
   refresh_runtime_overview = runtime_ui_helpers.refresh_runtime_overview,
   start_current_task_challenge = function()
-    return mainline_task_system and mainline_task_system.start_current_task_challenge and mainline_task_system.start_current_task_challenge() or nil
+    return mainline_task_system and mainline_task_system.start_current_task_challenge and
+    mainline_task_system.start_current_task_challenge() or nil
   end,
   try_start_challenge = try_start_challenge,
   try_evolution_entry = try_evolution_entry,
@@ -2302,9 +2603,12 @@ input_events_system = InputEventsSystem.create({
   toggle_talk_input = runtime_ui_helpers.toggle_talk_input,
   toggle_inventory_panel = runtime_ui_helpers.toggle_inventory_panel,
   open_save_panel = function()
-    return outgame_system and outgame_system.open_save_panel and outgame_system.open_save_panel() or false
+    return open_runtime_save_panel()
   end,
   try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
+  use_attr_diamond = function()
+    return attr_choice_system and attr_choice_system.use_diamond and attr_choice_system.use_diamond() or false
+  end,
   show_debug_hotkey_help = show_debug_hotkey_help,
   debug_actions_system = debug_actions_system,
   debug_tools_system = debug_tools_system,
@@ -2363,6 +2667,7 @@ function M.bootstrap()
   ensure_helper_signals()
   reset_session_state()
   register_runtime_events()
+  cannon_skill_134258724_system.register()
   register_dev_commands()
   start_runtime_loops()
   debug_tools_system.ensure_gm_panel()

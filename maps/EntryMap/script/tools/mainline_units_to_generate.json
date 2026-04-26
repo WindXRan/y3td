@@ -1,0 +1,18 @@
+[
+  {"id": 200001, "name": "小鬼", "type": "近战小怪", "model": 207973, "icon": 906983, "hit_effect": 103579},
+  {"id": 200002, "name": "虚空行者", "type": "近战小怪", "model": 211062, "icon": 906962, "hit_effect": 103778},
+  {"id": 200003, "name": "地狱犬", "type": "近战小怪", "model": 211026, "icon": 906192, "hit_effect": 104154},
+  {"id": 200004, "name": "眼魔", "type": "远程小怪", "model": 211117, "icon": 906868, "projectile": 104990, "hit_effect": 104991},
+  {"id": 200005, "name": "魁魔", "type": "近战小怪", "model": 211109, "icon": 907051, "hit_effect": 104317},
+  {"id": 200006, "name": "恶魔守卫", "type": "近战小怪", "model": 211032, "icon": 906656, "hit_effect": 103504},
+  {"id": 200007, "name": "痛苦女王", "type": "远程小怪", "model": 211033, "icon": 906405, "projectile": 104775, "hit_effect": 104749},
+  {"id": 200008, "name": "恶魔术士", "type": "远程小怪", "model": 211036, "icon": 907155, "projectile": 104514, "hit_effect": 104515},
+  {"id": 400001, "name": "地狱火", "type": "近战boss", "model": 211061, "icon": 906522, "hit_effect": 104627},
+  {"id": 400002, "name": "末日守卫", "type": "近战boss", "model": 211052, "icon": 906424, "hit_effect": 104764},
+  {"id": 400003, "name": "魔犬", "type": "近战boss", "model": 211071, "icon": 906203, "hit_effect": 105180},
+  {"id": 400004, "name": "古尔丹", "type": "远程boss", "model": 211022, "icon": 906998, "projectile": 105056, "hit_effect": 105057},
+  {"id": 400005, "name": "辛辛诺斯", "type": "近战boss", "model": 211047, "icon": 906712, "hit_effect": 104562},
+  {"id": 400006, "name": "卡扎克", "type": "近战boss", "model": 211029, "icon": 907305, "hit_effect": 106080},
+  {"id": 400007, "name": "提克迪奥斯", "type": "远程boss", "model": 211034, "icon": 906698, "projectile": 104775, "hit_effect": 104776},
+  {"id": 400008, "name": "玛诺洛斯", "type": "近战boss", "model": 211110, "icon": 906792, "hit_effect": 104336}
+]
