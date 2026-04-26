@@ -2,7 +2,29 @@
  {
   "name": "code_ui_custom_panel_tree", 
   "key": 2147483647, 
-  "group": []
+  "group": [
+   {
+    "__tuple__": true, 
+    "items": [
+     "0708d529-8ac1-474f-9cf9-158614ba5843", 
+     "ArchiveBadgeItem"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "379a355c-903a-401c-a7cb-478d6307a840", 
+     "ArchivePoolItem"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "dfe0b943-747b-4340-bb78-3ee67d599e51", 
+     "ArchiveTalentNode"
+    ]
+   }
+  ]
  }, 
  {
   "name": "code_ui_preset_panel_tree", 

@@ -1056,7 +1056,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1346011138, 
             "trigger_name": "Action", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "UNIT_ENTITY": {

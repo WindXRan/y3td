@@ -1,0 +1,40 @@
+{
+    "describe": 1993321251, 
+    "editor_res": false, 
+    "key": 203561, 
+    "map_name": "x1t3", 
+    "model_id": 504317, 
+    "name": 1287939063, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "code_Realistic", 
+            "code_Chinese style", 
+            "code_Troop types", 
+            "code_Adult", 
+            "code_Male", 
+            "code_Archer", 
+            "P3(\u4e09\u56fd\u7cfb\u5217)"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/203561", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_group": 280, 
+    "res_identify": "all", 
+    "res_type": "code_Role,code_Arms", 
+    "rigidbody_offset": [
+        0.0, 
+        0.9178000000000001, 
+        0.0
+    ], 
+    "rigidbody_type": 3, 
+    "select_effect_scale": 1.0, 
+    "size": 1.0, 
+    "socket_info": {}, 
+    "source": "code_Source_Import", 
+    "uid": "editor_model_203561", 
+    "unit_prefab": 0
+}

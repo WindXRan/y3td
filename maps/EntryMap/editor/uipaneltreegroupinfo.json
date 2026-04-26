@@ -13,34 +13,6 @@
    {
     "__tuple__": true, 
     "items": [
-     "7286beeb-c99d-48b3-bd3a-104d56f3699f", 
-     "top"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "bb0f0d4c-15c1-4f41-942c-f12d6560a06f", 
-     "BondChoice3"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "43f05a64-da68-4f0c-867b-4b6761d4e7ab", 
-     "BondChoice4"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "c9214407-a628-4db3-b18a-f3f1280d07e6", 
-     "BattleBottomHUD"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
      "dd36f541-8e33-4c4e-9c03-6797b5d62514", 
      "ArchivePageChest"
     ]
@@ -85,6 +57,48 @@
     "items": [
      "467420f4-71d6-4ee1-89aa-b850dd021e21", 
      "ArchivePanel"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "525485f2-959b-406e-a1ce-65dae4b7e556", 
+     "top"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "9fe94099-3651-4bcc-95d6-22aec28b5aaf", 
+     "BattleBottomHUD"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "187db796-73e2-4287-9380-fbe9e9b9058d", 
+     "BondChoice2"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "552be7df-c7ef-4e6d-bc31-f7593358a9dc", 
+     "BondChoice3"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "25cc8d77-f329-4560-a9d4-5f351937b494", 
+     "BondChoice4"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "848a42be-ba6c-4e99-9f4d-710a14a8b369", 
+     "BondSwallowPanel"
     ]
    }
   ]

@@ -1,0 +1,49 @@
+{
+    "describe": 771766523, 
+    "editor_res": false, 
+    "key": 211078, 
+    "model_id": 570078, 
+    "name": -628833622, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "\u6e38\u620f\u89d2\u8272", 
+            "\u7537\u6027", 
+            "\u76fe\u724c", 
+            "\u50cf\u7d20", 
+            "\u5361\u901a", 
+            "\u6241\u5e73\u5316", 
+            "\u91d1\u8272", 
+            "\u6b66\u5668", 
+            "\u767d\u8272", 
+            "\u84dd\u8272", 
+            "\u6e38\u620f", 
+            "\u6e38\u620f\u622a\u56fe", 
+            "\u9ab7\u9ac5", 
+            "\u6218\u58eb", 
+            "\u5947\u5e7b", 
+            "\u5947\u5e7b\u98ce\u683c", 
+            "\u89d2\u8272\u626e\u6f14\u6e38\u620f", 
+            "\u89d2\u8272", 
+            "3D\u6e32\u67d3"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/211078", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_identify": "all", 
+    "res_type": "\u7206\u6218\u5144\u5f1f\u4e13\u8f91,\u5355\u4f4d,\u5c0f\u602a", 
+    "rigidbody_offset": [
+        0.0, 
+        0.9794, 
+        0.0
+    ], 
+    "select_effect_scale": 0.14, 
+    "size": 0.14, 
+    "socket_info": {}, 
+    "source": "code_Source_Import", 
+    "uid": "editor_model_211078", 
+    "unit_prefab": 211078
+}

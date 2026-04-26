@@ -1,0 +1,143 @@
+{
+    "describe": 1164152969, 
+    "editor_res": false, 
+    "key": 200812, 
+    "map_name": "x1", 
+    "model_id": 504162, 
+    "name": -1522823764, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "code_Realistic", 
+            "code_Chinese style", 
+            "code_Animal", 
+            "code_Bear", 
+            "code_Blue", 
+            "P3(\u4e09\u56fd\u7cfb\u5217)"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/200812", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_group": 287, 
+    "res_identify": "all", 
+    "res_type": "code_Role,code_Ani", 
+    "rigidbody_offset": [
+        0.0, 
+        1.0, 
+        0.0
+    ], 
+    "select_effect_scale": 1.0, 
+    "size": 1.0, 
+    "socket_info": {
+        "buff": {
+            "__tuple__": true, 
+            "items": [
+                "buff", 
+                "Bip001-Head", 
+                0.5, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "foot1": {
+            "__tuple__": true, 
+            "items": [
+                "foot1", 
+                "Bip001-L-Foot", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "foot2": {
+            "__tuple__": true, 
+            "items": [
+                "foot2", 
+                "Bip001-R-Foot", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hand1": {
+            "__tuple__": true, 
+            "items": [
+                "hand1", 
+                "Bip001-L-Hand", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hand2": {
+            "__tuple__": true, 
+            "items": [
+                "hand2", 
+                "Bip001-R-Hand", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "hit_point": {
+            "__tuple__": true, 
+            "items": [
+                "hit_point", 
+                "Bip001-Pelvis", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "sound": {
+            "__tuple__": true, 
+            "items": [
+                "sound", 
+                "Bip001-Head", 
+                0.2, 
+                0.1, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "ui_hp": {
+            "__tuple__": true, 
+            "items": [
+                "ui_hp", 
+                "Bip001-Head", 
+                0.8, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }
+    }, 
+    "source": "code_Source_Import", 
+    "uid": "editor_model_200812", 
+    "unit_prefab": 0
+}

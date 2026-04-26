@@ -2510,7 +2510,7 @@
             "p_trigger_id": null, 
             "trigger_id": 620908546, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668_2", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "POINT": {
@@ -2877,7 +2877,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1968979971, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668_3", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "BOOLEAN": {

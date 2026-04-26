@@ -1,0 +1,194 @@
+{
+    "describe": 1219428809, 
+    "editor_res": false, 
+    "key": 208221, 
+    "map_name": "dm22_\u89d2\u8272", 
+    "model_id": 515335, 
+    "name": 655822184, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "\u5199\u5b9e", 
+            "\u9b54\u5e7b", 
+            "\u5ba0\u7269", 
+            "\u5f3a\u58ee", 
+            "\u718a", 
+            "\u8910\u8272"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/208221", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_identify": "all", 
+    "res_type": "code_Role,code_Ani", 
+    "rigidbody_offset": [
+        0.0, 
+        1.2558, 
+        0.0
+    ], 
+    "select_effect_scale": 1.0, 
+    "size": 1.0, 
+    "socket_info": {
+        "head": {
+            "__tuple__": true, 
+            "items": [
+                "head", 
+                "Biped-Head", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "y_buff": {
+            "__tuple__": true, 
+            "items": [
+                "y_buff", 
+                "Biped-Head", 
+                0.0, 
+                0.0, 
+                0.5, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "y_chest": {
+            "__tuple__": true, 
+            "items": [
+                "y_chest", 
+                "biped-Spine", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "y_hit_point": {
+            "__tuple__": true, 
+            "items": [
+                "y_hit_point", 
+                "biped-Spine", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "y_left_foot": {
+            "__tuple__": true, 
+            "items": [
+                "y_left_foot", 
+                "Biped-L-Foot", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "y_left_hand": {
+            "__tuple__": true, 
+            "items": [
+                "y_left_hand", 
+                "Biped-L-Hand", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "y_origin": {
+            "__tuple__": true, 
+            "items": [
+                "y_origin", 
+                "biped", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "y_right_foot": {
+            "__tuple__": true, 
+            "items": [
+                "y_right_foot", 
+                "Biped-R-Foot", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "y_right_hand": {
+            "__tuple__": true, 
+            "items": [
+                "y_right_hand", 
+                "Biped-R-Hand", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "y_root": {
+            "__tuple__": true, 
+            "items": [
+                "y_root", 
+                "biped", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "y_sound": {
+            "__tuple__": true, 
+            "items": [
+                "y_sound", 
+                "Biped-Head", 
+                -0.2, 
+                0.0, 
+                0.1, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "y_ui_hp": {
+            "__tuple__": true, 
+            "items": [
+                "y_ui_hp", 
+                "Biped-Head", 
+                0.0, 
+                0.0, 
+                0.8, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }
+    }, 
+    "source": "code_Source_Import", 
+    "uid": "editor_model_208221", 
+    "unit_prefab": 0
+}

@@ -1,15 +1,64 @@
 {
-    "b": [], 
+    "b": [
+        {
+            "__tuple__": true, 
+            "items": [
+                "cd_reduce", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u51b7\u5374\u7f29\u51cf(%)", 
+                    "maximun": 100.0, 
+                    "minimun": -70000000000000
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "attack_speed", 
+                {
+                    "default": 100.0, 
+                    "desc": "\u653b\u51fb\u901f\u5ea6(%)", 
+                    "maximun": 10000.0, 
+                    "minimun": 0.0
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "mp_rec", 
+                {
+                    "default": 1.0, 
+                    "desc": "\u6280\u80fd\u8d44\u6e90\u6062\u590d", 
+                    "maximun": 70000000000000, 
+                    "minimun": -70000000000000
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "critical_chance", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u66b4\u51fb\u7387(%)", 
+                    "maximun": 70000000000000, 
+                    "minimun": -70000000000000
+                }
+            ]
+        }
+    ], 
     "c": [
         {
             "__tuple__": true, 
             "items": [
-                "74jGeWQ7Ee+yupNvux9K2K", 
+                "vPjmOECQEfGNKa+mTm-Qh9", 
                 {
                     "default": 0.0, 
-                    "desc": "War3_\u653b\u51fb\u529b", 
+                    "desc": "\u6bcf\u79d2\u653b\u51fb", 
                     "desc_bit": 1, 
-                    "key": "74jGeWQ7Ee+yupNvux9K2K", 
+                    "key": "vPjmOECQEfGNKa+mTm-Qh9", 
                     "maximun": 70000000000000, 
                     "minimun": 0.0, 
                     "type": "Fixed"
@@ -19,12 +68,12 @@
         {
             "__tuple__": true, 
             "items": [
-                "FWhbDmUVEe+nv4W9-PWzrb", 
+                "pCd1bkCQEfGjvK+mTm-Qh4", 
                 {
                     "default": 0.0, 
-                    "desc": "War3_\u62a4\u7532", 
+                    "desc": "war3_\u62a4\u7532", 
                     "desc_bit": 1, 
-                    "key": "FWhbDmUVEe+nv4W9-PWzrb", 
+                    "key": "pCd1bkCQEfGjvK+mTm-Qh4", 
                     "maximun": 70000000000000, 
                     "minimun": 0.0, 
                     "type": "Fixed"
@@ -34,12 +83,12 @@
         {
             "__tuple__": true, 
             "items": [
-                "yxI3TGUVEe+nLYW9-PWzrb", 
+                "EgTi7UCPEfG4da+mTm-Qh3", 
                 {
                     "default": 0.0, 
-                    "desc": "War3_\u529b\u91cf", 
+                    "desc": "\u7269\u7406\u66b4\u7387(%)", 
                     "desc_bit": 1, 
-                    "key": "yxI3TGUVEe+nLYW9-PWzrb", 
+                    "key": "EgTi7UCPEfG4da+mTm-Qh3", 
                     "maximun": 70000000000000, 
                     "minimun": 0.0, 
                     "type": "Fixed"
@@ -49,12 +98,12 @@
         {
             "__tuple__": true, 
             "items": [
-                "pDTF-WUXEe+-c4W9-PWzrV", 
+                "HIQO3ECPEfGP0a+mTm-Qh4", 
                 {
                     "default": 0.0, 
-                    "desc": "War3_\u654f\u6377", 
+                    "desc": "\u7269\u7406\u66b4\u4f24(%)", 
                     "desc_bit": 1, 
-                    "key": "pDTF-WUXEe+-c4W9-PWzrV", 
+                    "key": "HIQO3ECPEfGP0a+mTm-Qh4", 
                     "maximun": 70000000000000, 
                     "minimun": 0.0, 
                     "type": "Fixed"
@@ -64,12 +113,12 @@
         {
             "__tuple__": true, 
             "items": [
-                "qSxWUGUXEe+GAIW9-PWzrT", 
+                "s7JReUCPEfG-fK+mTm-Qh4", 
                 {
                     "default": 0.0, 
-                    "desc": "War3_\u667a\u529b", 
+                    "desc": "\u6740\u654c\u91d1\u5e01", 
                     "desc_bit": 1, 
-                    "key": "qSxWUGUXEe+GAIW9-PWzrT", 
+                    "key": "s7JReUCPEfG-fK+mTm-Qh4", 
                     "maximun": 70000000000000, 
                     "minimun": 0.0, 
                     "type": "Fixed"
@@ -79,14 +128,14 @@
         {
             "__tuple__": true, 
             "items": [
-                "kESX8BZgEe6c+jDQQuUV9l", 
+                "lvEINECQEfGzu6+mTm-Qh0", 
                 {
                     "default": 0.0, 
-                    "desc": "\u79fb\u901f\u9a6c\u7532", 
+                    "desc": "\u653b\u51fb\u529b", 
                     "desc_bit": 1, 
-                    "key": "kESX8BZgEe6c+jDQQuUV9l", 
-                    "maximun": 1000.0, 
-                    "minimun": -1000.0, 
+                    "key": "lvEINECQEfGzu6+mTm-Qh0", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
                     "type": "Fixed"
                 }
             ]
@@ -94,14 +143,14 @@
         {
             "__tuple__": true, 
             "items": [
-                "SrH48EZqEe+pFzDQQukOhV", 
+                "0ySlikCREfG5ba+mTm-Qhx", 
                 {
                     "default": 0.0, 
-                    "desc": "\u79fb\u901f\u9a6c\u7532", 
+                    "desc": "\u653b\u51fb\u52a0\u6210(%)", 
                     "desc_bit": 1, 
-                    "key": "SrH48EZqEe+pFzDQQukOhV", 
-                    "maximun": 1000.0, 
-                    "minimun": -1000.0, 
+                    "key": "0ySlikCREfG5ba+mTm-Qhx", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
                     "type": "Fixed"
                 }
             ]
@@ -109,14 +158,14 @@
         {
             "__tuple__": true, 
             "items": [
-                "bk+jnkZsEe+VkzDQQukOhb", 
+                "agrpV0CSEfGF9a+mTm-Qh8", 
                 {
                     "default": 0.0, 
-                    "desc": "\u79fb\u901f\u9a6c\u7532", 
+                    "desc": "\u91d1\u5e01", 
                     "desc_bit": 1, 
-                    "key": "bk+jnkZsEe+VkzDQQukOhb", 
-                    "maximun": 1000.0, 
-                    "minimun": -1000.0, 
+                    "key": "agrpV0CSEfGF9a+mTm-Qh8", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
                     "type": "Fixed"
                 }
             ]
@@ -124,14 +173,194 @@
         {
             "__tuple__": true, 
             "items": [
-                "custom_1", 
+                "auiW6UCSEfGQ7a+mTm-Qh9", 
                 {
                     "default": 0.0, 
-                    "desc": "\u97e7\u6027", 
+                    "desc": "\u6728\u5934", 
                     "desc_bit": 1, 
-                    "key": "custom_1", 
-                    "maximun": 100.0, 
-                    "minimun": -10000000.0, 
+                    "key": "auiW6UCSEfGQ7a+mTm-Qh9", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "a03Tl0CSEfG-Gq+mTm-Qhw", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u6740\u654c", 
+                    "desc_bit": 1, 
+                    "key": "a03Tl0CSEfG-Gq+mTm-Qhw", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "d+czJUCkEfGjbJNJUD+NS7", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u5c04\u7bad\u4f24\u5bb3(%)", 
+                    "desc_bit": 1, 
+                    "key": "d+czJUCkEfGjbJNJUD+NS7", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "DPWiRUCqEfGqR5NJUD+NS5", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u7269\u7406\u4f24\u5bb3(%)", 
+                    "desc_bit": 1, 
+                    "key": "DPWiRUCqEfGqR5NJUD+NS5", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "QNqDJkClEfGYcZNJUD+NS7", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u591a\u91cd\u6570\u91cf", 
+                    "desc_bit": 1, 
+                    "key": "QNqDJkClEfGYcZNJUD+NS7", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "ZlSKk0ClEfGUfJNJUD+NS0", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u62a4\u7532\u7a7f\u900f(%)", 
+                    "desc_bit": 1, 
+                    "key": "ZlSKk0ClEfGUfJNJUD+NS0", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "hs6TFUCrEfGnzJNJUD+NSz", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u653b\u51fb\u6210\u957f", 
+                    "desc_bit": 1, 
+                    "key": "hs6TFUCrEfGnzJNJUD+NSz", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "jREzvECrEfGvTpNJUD+NS6", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u751f\u547d\u6210\u957f", 
+                    "desc_bit": 1, 
+                    "key": "jREzvECrEfGvTpNJUD+NS6", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "j-69u0CrEfGbeJNJUD+NS+", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u529b\u91cf\u6210\u957f", 
+                    "desc_bit": 1, 
+                    "key": "j-69u0CrEfGbeJNJUD+NS+", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "kZMysUCrEfGvFZNJUD+NS+", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u654f\u6377\u6210\u957f", 
+                    "desc_bit": 1, 
+                    "key": "kZMysUCrEfGvFZNJUD+NS+", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "kvx8jECrEfGshpNJUD+NSw", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u667a\u529b\u6210\u957f", 
+                    "desc_bit": 1, 
+                    "key": "kvx8jECrEfGshpNJUD+NSw", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "T9BK1kCsEfG-PJNJUD+NS3", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u62a4\u7532\u52a0\u6210(%)", 
+                    "desc_bit": 1, 
+                    "key": "T9BK1kCsEfG-PJNJUD+NS3", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
+                    "type": "Fixed"
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "TNqVZkCsEfGcCpNJUD+NS4", 
+                {
+                    "default": 0.0, 
+                    "desc": "\u751f\u547d\u52a0\u6210(%)", 
+                    "desc_bit": 1, 
+                    "key": "TNqVZkCsEfGcCpNJUD+NS4", 
+                    "maximun": 70000000000000, 
+                    "minimun": 0.0, 
                     "type": "Fixed"
                 }
             ]
@@ -145,7 +374,12 @@
                 {
                     "d": "\u529b\u91cf", 
                     "k": "strength", 
-                    "m": []
+                    "m": [
+                        [
+                            "lvEINECQEfGzu6+mTm-Qh0", 
+                            0.5
+                        ]
+                    ]
                 }
             ]
         }, 
@@ -156,7 +390,12 @@
                 {
                     "d": "\u654f\u6377", 
                     "k": "agility", 
-                    "m": []
+                    "m": [
+                        [
+                            "lvEINECQEfGzu6+mTm-Qh0", 
+                            0.5
+                        ]
+                    ]
                 }
             ]
         }, 
@@ -167,7 +406,12 @@
                 {
                     "d": "\u667a\u529b", 
                     "k": "intelligence", 
-                    "m": []
+                    "m": [
+                        [
+                            "lvEINECQEfGzu6+mTm-Qh0", 
+                            0.5
+                        ]
+                    ]
                 }
             ]
         }, 
@@ -183,5 +427,5 @@
             ]
         }
     ], 
-    "ps": 1
+    "ps": 2
 }

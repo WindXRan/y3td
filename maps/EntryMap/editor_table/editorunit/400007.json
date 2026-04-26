@@ -1,6 +1,6 @@
 {
     "_custom_": true, 
-    "_ref_": 134259655, 
+    "_ref_": 134224714, 
     "affect_techs": {
         "__tuple__": true, 
         "items": []
@@ -11,13 +11,13 @@
     "angle_tolerance": 0, 
     "anim_state_name": "", 
     "armor_type": 20000, 
-    "attack_interval": 1, 
+    "attack_interval": 1.0, 
     "attack_interval_grow": 0, 
     "attack_mag": 0.0, 
     "attack_mag_grow": 0.0, 
     "attack_phy": 50.0, 
     "attack_phy_grow": 0.0, 
-    "attack_range": 2.0, 
+    "attack_range": 5.5, 
     "attack_range_grow": 0, 
     "attack_speed": 65.0, 
     "attack_speed_grow": 0.0, 
@@ -89,7 +89,7 @@
             1
         ]
     }, 
-    "common_atk_type": 0, 
+    "common_atk_type": 1, 
     "content": "strength", 
     "copper coin": 0, 
     "counterattack_range": 0, 
@@ -117,8 +117,8 @@
         "items": []
     }, 
     "dynamic_collision_r": 1.0, 
-    "enable_item_slots": 1, 
-    "enable_strict_facing_mode": 0, 
+    "enable_item_slots": true, 
+    "enable_strict_facing_mode": false, 
     "enemy_mini_map_icon": 100000, 
     "extra_dmg": 0.0, 
     "extra_dmg_grow": 0.0, 
@@ -156,7 +156,7 @@
     "hp_rec_grow": 1, 
     "hp_rec_percent": 0, 
     "hp_rec_percent_grow": 0, 
-    "icon": 107030, 
+    "icon": 906698, 
     "idle_anim": "idle1", 
     "init_stock": 5, 
     "intelligence": 0.0, 
@@ -164,11 +164,11 @@
     "is_apply_role_color": false, 
     "is_mini_map_show": true, 
     "is_open_Xray": false, 
-    "is_open_disk_shadow": 0, 
+    "is_open_disk_shadow": false, 
     "is_open_outline_pass": false, 
     "is_shop": false, 
-    "is_x_offset": 1, 
-    "is_z_offset": 1, 
+    "is_x_offset": true, 
+    "is_z_offset": true, 
     "keep_dead_body_time": 2.0, 
     "keep_target": true, 
     "key": 400007, 
@@ -177,9 +177,9 @@
     "main_attr": "strength", 
     "max_balance_angle": 75, 
     "max_stock": 5, 
-    "mini_map_icon": 107030, 
+    "mini_map_icon": 906698, 
     "mini_map_icon_scale": 1.0, 
-    "model": 200802, 
+    "model": 211034, 
     "model_height": 0.0, 
     "model_opacity": 1, 
     "move_channel": 0, 
@@ -227,14 +227,14 @@
         "shapes": {}
     }, 
     "pkg_slot_size": 0, 
-    "poolable": 0, 
+    "poolable": false, 
     "precondition_list": {
         "__tuple__": true, 
         "items": []
     }, 
     "preview_billboard_health_value": 300.0, 
     "refresh_interval": 1.0, 
-    "rescue_finish_return": 0, 
+    "rescue_finish_return": false, 
     "rescue_seeker_distance": 3, 
     "rescue_seeker_interval": 5, 
     "rescue_seeker_type": 0, 
@@ -245,8 +245,8 @@
     }, 
     "resilience": 0.0, 
     "resilience_grow": 0.0, 
-    "reward_exp": 200, 
-    "reward_official_res_1": 100, 
+    "reward_exp": 5, 
+    "reward_official_res_1": 0.0, 
     "role_color_scale": 1.0, 
     "rotate_speed": 10.0, 
     "sell_list": {
@@ -266,24 +266,23 @@
     "silver coin": 0, 
     "simple_common_atk": {
         "ability_animations": [
-            "attack1", 
-            "attack2"
+            "attack1"
         ], 
-        "ability_bw_point": 0.6, 
-        "ability_cast_point": 0.3, 
+        "ability_bw_point": 0.5, 
+        "ability_cast_point": 0.45, 
         "attack_interval": 1.0, 
-        "attack_range": 2.0, 
+        "attack_range": 5.5, 
         "attack_trajectory": {
-            "destroy_immediately": true, 
+            "destroy_immediately": false, 
             "duration": -1.0, 
-            "effect": 0, 
+            "effect": 104775, 
             "follow_scale": false, 
             "scale": 1.0, 
-            "socket": "origin", 
+            "socket": "hand_right", 
             "target_socket": "hit_point"
         }, 
         "cast_effect_list": [], 
-        "cast_interrupt": true, 
+        "cast_interrupt": false, 
         "cast_sound": 0, 
         "collection_destructible_tags": [], 
         "critical_anim": "attack1", 
@@ -321,7 +320,7 @@
         "filter_item_tags": [], 
         "filter_unit_tags": [], 
         "hit_effect": {
-            "effect": 103504, 
+            "effect": 104776, 
             "follow_scale": false, 
             "scale": 1.0, 
             "socket": "hit_point"
@@ -333,8 +332,8 @@
         "simple_atk_dice_count": 0, 
         "simple_atk_dice_max_value": 0, 
         "target_attribute": 0, 
-        "trajectory_radian": 1.0, 
-        "trajectory_speed": 1000.0
+        "trajectory_radian": 0.0, 
+        "trajectory_speed": 1800.0
     }, 
     "sound_event_list": {
         "__tuple__": true, 
@@ -359,9 +358,9 @@
     "type": 4, 
     "uid": "400007", 
     "use_base_tint_color": false, 
-    "use_fresnel": 0, 
+    "use_fresnel": false, 
     "use_simple_mini_map_icon": false, 
-    "use_virtual_light": 0, 
+    "use_virtual_light": false, 
     "vampire_mag": 0.0, 
     "vampire_mag_grow": 0.0, 
     "vampire_phy": 0.0, 

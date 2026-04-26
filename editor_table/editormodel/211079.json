@@ -1,0 +1,177 @@
+{
+    "describe": -1156184345, 
+    "editor_res": false, 
+    "key": 211079, 
+    "model_id": 570079, 
+    "name": 1446316032, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "\u6e38\u620f\u89d2\u8272", 
+            "3D\u6a21\u578b", 
+            "\u5251", 
+            "\u76d4\u7532", 
+            "\u7537\u6027", 
+            "\u767d\u8272", 
+            "\u7070\u8272", 
+            "\u84dd\u8272", 
+            "\u5929\u4f7f", 
+            "\u5e7b\u60f3\u98ce\u683c", 
+            "3D\u6e32\u67d3", 
+            "\u7fc5\u8180", 
+            "\u5947\u5e7b", 
+            "\u6218\u58eb", 
+            "\u89d2\u8272\u626e\u6f14\u6e38\u620f", 
+            "\u94f6\u8272"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/211079", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_identify": "all", 
+    "res_type": "\u7206\u6218\u5144\u5f1f\u4e13\u8f91,\u5355\u4f4d,\u76ae\u80a4", 
+    "rigidbody_offset": [
+        0.0, 
+        1.4274000000000002, 
+        0.0
+    ], 
+    "select_effect_scale": 1.0, 
+    "size": 1.0, 
+    "socket_info": {
+        "base": {
+            "__tuple__": true, 
+            "items": [
+                "base", 
+                "base", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "chest": {
+            "__tuple__": true, 
+            "items": [
+                "chest", 
+                "biped-Spine", 
+                0.0, 
+                0.0, 
+                0.45, 
+                2.135898088067337e-13, 
+                3.141592, 
+                1.5707966535897933
+            ]
+        }, 
+        "hand_left": {
+            "__tuple__": true, 
+            "items": [
+                "hand_left", 
+                "biped-L-Hand", 
+                0.12, 
+                0.0, 
+                -0.04, 
+                -6.535897930762885e-7, 
+                3.141592653589793, 
+                3.141592653589793
+            ]
+        }, 
+        "hand_right": {
+            "__tuple__": true, 
+            "items": [
+                "hand_right", 
+                "biped-R-Hand", 
+                0.12, 
+                0.0, 
+                -0.04, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "head": {
+            "__tuple__": true, 
+            "items": [
+                "head", 
+                "biped-Head", 
+                0.4, 
+                0.0, 
+                0.15, 
+                -0.0, 
+                0.0, 
+                -1.570796
+            ]
+        }, 
+        "hit_point": {
+            "__tuple__": true, 
+            "items": [
+                "hit_point", 
+                "biped-Spine", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "root": {
+            "__tuple__": true, 
+            "items": [
+                "root", 
+                "Scene\u00a0Root", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "unit_info": {
+            "__tuple__": true, 
+            "items": [
+                "unit_info", 
+                "biped-Head", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "weapon_left": {
+            "__tuple__": true, 
+            "items": [
+                "weapon_left", 
+                "biped-L-Hand", 
+                0.12, 
+                0.0, 
+                -0.04, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "weapon_right": {
+            "__tuple__": true, 
+            "items": [
+                "weapon_right", 
+                "biped-R-Hand", 
+                0.12, 
+                0.0, 
+                -0.04, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }
+    }, 
+    "source": "code_Source_Import", 
+    "uid": "editor_model_211079", 
+    "unit_prefab": 211079
+}

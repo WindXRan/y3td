@@ -1,0 +1,32 @@
+{
+    "describe": 934916225, 
+    "editor_res": false, 
+    "key": 208778, 
+    "map_name": "dm24", 
+    "model_id": 568343, 
+    "name": 1723425892, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "P20(\u91cd\u8fd4\u6218\u6cd5\u7267\u5171\u4eab)"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/208778", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_identify": "all", 
+    "res_type": "code_Role,code_Mount", 
+    "rigidbody_offset": [
+        0.0, 
+        0.7155, 
+        0.0
+    ], 
+    "select_effect_scale": 1.0, 
+    "size": 1.0, 
+    "socket_info": {}, 
+    "source": "", 
+    "uid": "editor_model_208778", 
+    "unit_prefab": 0
+}

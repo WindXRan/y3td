@@ -3,10 +3,7 @@
     "_ref_": 134253920, 
     "attached_ability": {
         "__tuple__": true, 
-        "items": [
-            134256522, 
-            1
-        ]
+        "items": []
     }, 
     "attached_agility": {
         "__tuple__": true, 
@@ -238,15 +235,7 @@
             0
         ]
     }, 
-    "attached_passive_abilities": {
-        "__tuple__": true, 
-        "items": [
-            [
-                134220131, 
-                1
-            ]
-        ]
-    }, 
+    "attached_passive_abilities": [], 
     "attached_pene_mag": {
         "__tuple__": true, 
         "items": [

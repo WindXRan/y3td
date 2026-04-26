@@ -1,0 +1,41 @@
+{
+    "describe": 1322293324, 
+    "editor_res": false, 
+    "key": 206651, 
+    "map_name": "\u6d77\u5916\u4e00\u7c7b\u89d2\u8272", 
+    "model_id": 900002, 
+    "name": 1656151012, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "\u5199\u5b9e", 
+            "\u82f1\u96c4", 
+            "\u9b54\u5e7b", 
+            "\u7537\u6027", 
+            "\u5f3a\u58ee", 
+            "\u8001\u4eba", 
+            "\u6218\u58eb", 
+            "\u8910\u8272", 
+            "P8(\u897f\u65b9\u9b54\u5e7b\u7cfb\u5217)"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/206651", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_group": 2, 
+    "res_identify": "all", 
+    "res_type": "code_Role,code_Hero", 
+    "rigidbody_offset": [
+        0.0, 
+        0.8752, 
+        0.0
+    ], 
+    "select_effect_scale": 1.0, 
+    "size": 1.0, 
+    "socket_info": {}, 
+    "source": "code_Source_Import", 
+    "uid": "editor_model_206651", 
+    "unit_prefab": 0
+}

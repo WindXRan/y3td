@@ -470,7 +470,7 @@
             "p_trigger_id": null, 
             "trigger_id": 925941762, 
             "trigger_name": "AbilityPercastStarts", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 
@@ -1938,7 +1938,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1644036097, 
             "trigger_name": "AbilityPercastEnds", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "ANGLE": {

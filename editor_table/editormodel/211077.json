@@ -1,0 +1,45 @@
+{
+    "describe": 950004322, 
+    "editor_res": false, 
+    "key": 211077, 
+    "model_id": 570077, 
+    "name": -1250920373, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "\u9e70", 
+            "\u7ea2\u8272", 
+            "\u50cf\u7d20", 
+            "\u4e8c\u7ef4", 
+            "\u5361\u901a", 
+            "\u9e1f", 
+            "\u6e32\u67d3", 
+            "\u9ed1\u8272", 
+            "\u6e38\u620f", 
+            "\u9ec4\u8272", 
+            "\u7fc5\u8180", 
+            "\u5947\u5e7b", 
+            "\u706b\u7130", 
+            "\u7fbd\u6bdb", 
+            "3D"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/211077", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_identify": "all", 
+    "res_type": "\u7206\u6218\u5144\u5f1f\u4e13\u8f91,\u5355\u4f4d,\u5c0f\u602a", 
+    "rigidbody_offset": [
+        0.0, 
+        0.2541, 
+        0.0
+    ], 
+    "select_effect_scale": 0.04, 
+    "size": 0.04, 
+    "socket_info": {}, 
+    "source": "code_Source_Import", 
+    "uid": "editor_model_211077", 
+    "unit_prefab": 211077
+}

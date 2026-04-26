@@ -583,7 +583,7 @@
             "p_trigger_id": null, 
             "trigger_id": 925941762, 
             "trigger_name": "AbilityPercastStarts", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "INTEGER": {

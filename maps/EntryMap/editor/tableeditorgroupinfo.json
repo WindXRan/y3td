@@ -1,233 +1,169 @@
 [
  {
-  "__tuple__": true, 
-  "items": [
-   "dc7edfab-7741-4b9b-9292-33491623f24e", 
-   "test config"
+  "name": "challenge", 
+  "key": "+Xmo4EEgEfGKM7H0b8Q2XX", 
+  "group": [
+   {
+    "__tuple__": true, 
+    "items": [
+     "0cec7cf3-a264-4edd-a6ea-830a738f2531", 
+     "challenge"
+    ]
+   }
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "47257deb-7916-42a6-a4c8-ec38c16d5cb8", 
-   "\u5546\u54c1\u8868"
+   "3677e280-02aa-4f25-ba77-b05ea3d023e0", 
+   "attack_skills"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "1fdb747e-ac1b-41c8-a127-ebc9bc2d08ee", 
-   "\u5c5e\u6027\u6761\u76ee\u914d\u7f6e"
+   "7746c1fe-46ba-455b-afd1-79227b6f8c41", 
+   "battlefield_scene_config"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "b4bacdbd-e366-4d98-883d-de2464b4c56d", 
-   "\u5c5e\u6027\u8868"
+   "8b26c717-1027-4082-bd68-4591c48b5c66", 
+   "battlefield_unit_config"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "c12eda15-dde1-4c00-8eb1-b95731373126", 
-   "\u6280\u80fd\u8868"
+   "9cf93e6d-ad9b-4f86-920f-fa0087da9204", 
+   "bond_nodes"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "328598bc-b979-49d5-825f-66a0c256660b", 
-   "\u7269\u54c1\u8868"
+   "446b2570-8ca0-421e-b44a-b305f10a3a9b", 
+   "bond_root_sets"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "308de828-5a3c-40bb-b486-006fc1296c71", 
-   "\u7269\u54c1\u8bf4\u660e_\u5e38\u91cf\u8868"
+   "3271b61f-d6b4-46f5-9d85-2e8ad6fad64f", 
+   "challenges"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "ef996d19-7dee-4708-86de-77d82d31f721", 
-   "\u5175\u79cd\u4fe1\u606f\u8868"
+   "8d0fc564-46a5-4226-b82d-164c9ba66d84", 
+   "evolution_nodes"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "3f5cdce3-6138-4581-98d8-dc80510c3c5a", 
-   "\u5355\u4f4d\u56fe\u9274\u8868"
+   "c6409998-ff84-429a-8d15-09e8b6186902", 
+   "gear_upgrade_affixes"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "4558a549-e97e-4c4c-b71f-e1844573d521", 
-   "\u5361\u724c\u6807\u7b7e\u4fe1\u606f\u8868"
+   "0eed1e8e-da02-4109-a71b-026493dcfd66", 
+   "gear_upgrade_levels"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "b9799266-abe0-418f-aa03-c3ec018ce147", 
-   "\u56fe\u9274\u5175\u79cd\u6309\u94ae"
+   "1c1e04f1-b45e-4675-a466-e6de28b91764", 
+   "gear_upgrade_slots"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "8b7e3db8-b150-4864-8235-b24c4179f62c", 
-   "\u56fe\u9274\u661f\u7ea7\u6309\u94ae"
+   "d9cac002-4768-441f-ad4c-4d98486a9f1d", 
+   "hero_level_progression"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "6d0098e3-5738-400b-8df7-f3a13028a230", 
-   "\u56fe\u9274\u9635\u8425\u6309\u94ae"
+   "063b6287-2e0e-48b8-95e6-b3c8c9ea7300", 
+   "mainline_task_rewards"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "546e85d1-48f0-4c4c-8edc-e4b0be1c845f", 
-   "\u6280\u80fd\u56fe\u9274\u8868"
+   "fa1695e8-eb67-4989-9705-76d442051f43", 
+   "stages"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "bff33270-318c-4045-99a9-da5e0e71731e", 
-   "\u661f\u7ea7\u4fe1\u606f\u8868"
+   "f63d4571-9fea-4881-bd1a-481af9471d22", 
+   "treasures"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "7711b56d-1ea3-4732-83c1-b47bab01136c", 
-   "\u9635\u8425\u4fe1\u606f\u8868"
+   "b3476553-db26-49f5-9738-fdd9023c39bb", 
+   "waves"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "a7548560-49eb-4942-a81b-c7c4a26b684d", 
-   "\u7269\u54c1\u914d\u7f6e\u8868"
+   "9e01d102-a696-4232-acf1-c1842b135dfe", 
+   "config1"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "b09545eb-c667-4443-9c59-736b3ee789f3", 
-   "talk_sys_code"
+   "2a502327-368d-4d65-accb-f69ef60b307b", 
+   "herolist"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "d7af9475-5ffb-4691-a77a-f36e8b610e25", 
-   "talk_sys_code_reward"
+   "e8ae7ac9-57c1-49ba-8eac-4c9ef4683009", 
+   "bonds_init"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "8fa6169d-1b11-4736-9536-7d8fec906e63", 
-   "talk_sys_config"
+   "c8e2e07f-2867-41a0-a214-da1f6a72e8e6", 
+   "bonds_quality_range"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "6c38a6c6-4060-439f-b1ca-e70deaa6de76", 
-   "talk_sys_str_format"
+   "6fff7720-381a-45c6-a0a2-f47dcc393321", 
+   "shangchengdaojv"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "f814cbc9-85c3-4e99-bb54-37722121d759", 
-   "\u6280\u80fd\u5c5e\u6027\u521d\u59cb\u5316"
+   "e84c98de-bd0c-4297-a500-014bf881e385", 
+   "shangchengdaojv_rongyudengji"
   ]
  }, 
  {
   "__tuple__": true, 
   "items": [
-   "1f91ca66-5eb9-4a18-b6ae-d78be0ceb556", 
-   "\u82f1\u96c4\u5c5e\u6027\u521d\u59cb\u5316"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "60d4a27c-90bc-424a-9822-fb0d5d77f98d", 
-   "\u6280\u80fd\u5c5e\u6027\u521d\u59cb\u5316"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "8cdbb988-8f81-4011-8272-bede8314aa4f", 
-   "\u82f1\u96c4\u5c5e\u6027\u521d\u59cb\u5316"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "0b753d80-394a-4fca-9fff-7d62291242ee", 
-   "\u82f1\u96c4\u5e73A\u914d\u7f6e\u8868"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "03ba99ec-a154-4557-9645-5a6248aea8dd", 
-   "\u6280\u80fd\u5c5e\u6027\u521d\u59cb\u5316"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "e7482465-5b7a-4cc1-9d0e-2bd32c77d2bd", 
-   "\u82f1\u96c4\u5c5e\u6027\u521d\u59cb\u5316"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "0b10327f-cea7-43c7-bf5c-feb4d5a04a40", 
-   "\u82f1\u96c4\u5e73A\u914d\u7f6e\u8868"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "4c13cf2c-7656-473a-a024-7a1d3fdc6d5c", 
-   "\u901a\u884c\u8bc1-\u901a\u884c\u8bc1\u4fe1\u606f\u8868\u683c"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "3d1678d1-2bbe-477f-90ee-b8be2d74e56e", 
-   "\u901a\u884c\u8bc1-\u9053\u5177\u4fe1\u606f\u8868\u683c"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   100, 
-   "event_daily_check"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "261469d6-eec1-4372-ac95-83b999c7c051", 
-   "\u968f\u673a\u9053\u5177\u8868"
+   "3c345d3c-44c9-46fa-98f7-f2a07cb71eb2", 
+   "quality_image_table"
   ]
  }
 ]
