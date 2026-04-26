@@ -1,9 +1,11 @@
 local CsvLoader = require 'data.csv_loader'
 local AttrEffect = require 'data.object_tables.attreffect'
+local MonsterMaintask = require 'data.object_tables.monster_maintask'
 local helpers = require 'entry_objects.helpers'
 
 local rows = CsvLoader.read_rows('data_csv/mainline_task_rewards.csv')
 local effect_rows = AttrEffect.by_source.mainline_task or {}
+local csv_by_id = helpers.list_to_map(rows, 'id')
 
 local LEGACY_ATTR_KEY_BY_CANONICAL_ATTR = {
   ['生命'] = 'hp',
@@ -132,18 +134,27 @@ local function build_reward_lines(row)
 end
 
 local list = {}
-for _, row in ipairs(rows) do
+local source_rows = #MonsterMaintask.list > 0 and MonsterMaintask.list or rows
+for _, source_row in ipairs(source_rows) do
+  local monster_row = source_row.source == 'monster_maintask' and source_row or MonsterMaintask.by_id[source_row.id]
+  local row = csv_by_id[source_row.id] or source_row
+  local chapter_id, order_index = tostring(source_row.id or ''):match('^(%d+)%-(%d+)$')
   list[#list + 1] = {
-    id = row.id,
-    chapter_id = tonumber(row.chapter_id) or 0,
-    order_index = tonumber(row.order_index) or 0,
-    title_text = row.title_text,
-    objective_text = row.objective_text,
-    target_count = tonumber(row.target_count) or 0,
+    id = source_row.id,
+    chapter_id = tonumber(row.chapter_id) or tonumber(chapter_id) or 0,
+    order_index = tonumber(row.order_index) or tonumber(order_index) or 0,
+    title_text = row.title_text or ('主线' .. tostring(source_row.id)),
+    objective_text = monster_row and monster_row.objective_text or row.objective_text,
+    target_count = monster_row and monster_row.target_count or tonumber(row.target_count) or 0,
     time_limit = tonumber(row.time_limit) or 60,
-    spawn_unit_id = to_optional_number(row.spawn_unit_id),
+    spawn_unit_id = monster_row and monster_row.spawn_unit_id or to_optional_number(row.spawn_unit_id),
     spawn_area_id = row.spawn_area_id ~= '' and row.spawn_area_id or nil,
-    is_boss_task = row.is_boss_task == 'true',
+    is_boss_task = monster_row and monster_row.is_boss_task or row.is_boss_task == 'true',
+    monster_name = monster_row and monster_row.monster_name or nil,
+    attr_overrides = monster_row and monster_row.attr_overrides or nil,
+    display_attrs = monster_row and monster_row.display_attrs or nil,
+    monster_maintask_reward_text = monster_row and monster_row.reward_text or nil,
+    monster_maintask_reward_value_text = monster_row and monster_row.reward_value_text or nil,
     reward_lines = build_reward_lines(row),
   }
 end

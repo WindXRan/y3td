@@ -3097,105 +3097,126 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
     return nil
   end
 
-  local root_entries = {}
-  local selected_index = math.max(1, math.floor(tonumber(selected_root_index) or 1))
-
-  for index, root_id in ipairs(ROOT_NODE_IDS) do
-    local entry = build_root_overview_entry(state, root_id)
-    if entry then
-      entry.index = index
-      root_entries[#root_entries + 1] = entry
+  if is_modifier_pool_enabled() then
+    local root_entries = {}
+    local source_effects = BondModifierPool.activation_effects or {}
+    for index, effect in ipairs(source_effects) do
+      local bond_name = effect.bond_name or effect.name or ''
+      local cards = get_modifier_cards_by_bond(bond_name)
+      if bond_name ~= '' and #cards > 0 then
+        local owned_count = get_owned_modifier_bond_count(runtime, bond_name)
+        local required_count = get_required_modifier_bond_count(bond_name)
+        local effect_id = effect.id or ('initial_bond_set_' .. tostring(bond_name))
+        local consumed = runtime.modifier_pool_active_effects
+          and runtime.modifier_pool_active_effects[effect_id] == true
+          or false
+        local completed = owned_count >= required_count
+        root_entries[#root_entries + 1] = {
+          index = index,
+          root_id = effect_id,
+          bond_name = bond_name,
+          display_name = bond_name,
+          pretty_display_name = bond_name,
+          title = bond_name,
+          icon = effect.icon or cards[1].icon,
+          quality = effect.quality or cards[1].quality or 'SR',
+          owned_count = owned_count,
+          unlocked_count = owned_count,
+          required_count = required_count,
+          total_count = #cards,
+          progress_text = string.format('%d/%d', owned_count, required_count),
+          consumed = consumed,
+          completed = completed,
+          started = owned_count > 0,
+          effect_text = effect.desc or cards[1].activation_desc or '',
+          summary = cards[1].extra_skill_desc or '',
+        }
+      end
     end
-  end
 
-  if #root_entries == 0 then
-    return nil
-  end
-  if selected_index > #root_entries then
-    selected_index = 1
-  end
+    if #root_entries == 0 then
+      return nil
+    end
 
-  local selected = root_entries[selected_index]
-  local selected_root_id = selected and selected.root_id
-  local subtree_ids = selected_root_id and (ROOT_SUBTREE_NODE_IDS[selected_root_id] or { selected_root_id }) or {}
-  local root_consumed = selected_root_id
-    and runtime.consumed_root_sets
-    and runtime.consumed_root_sets[selected_root_id] == true
-    or false
-  local root_completed = selected_root_id
-    and runtime.completed_root_sets
-    and runtime.completed_root_sets[selected_root_id] == true
-    or false
-  local card_entries = {}
-
-  for index, node_id in ipairs(subtree_ids) do
-    local node_def = NODE_BY_ID[node_id]
-    if node_def then
-      local unlocked = root_consumed or M.is_node_unlocked(state, node_id)
+    local selected_index = math.max(1, math.floor(tonumber(selected_root_index) or 1))
+    if selected_index > #root_entries then
+      selected_index = 1
+    end
+    local selected = root_entries[selected_index]
+    local selected_cards = get_modifier_cards_by_bond(selected and selected.bond_name)
+    local effect_id = selected and selected.root_id or ''
+    local consumed = runtime.modifier_pool_active_effects
+      and runtime.modifier_pool_active_effects[effect_id] == true
+      or false
+    local card_entries = {}
+    for index, card in ipairs(selected_cards) do
+      local unlocked = runtime.modifier_card_ids and runtime.modifier_card_ids[card.id] == true or false
       card_entries[#card_entries + 1] = {
         index = index,
-        node_id = node_id,
-        display_name = node_def.display_name,
-        pretty_display_name = get_node_theme_name(node_def),
-        title = get_node_theme_name(node_def),
-        icon = node_def.icon,
-        quality = node_def.quality or 'rare',
+        modifier_card_id = card.id,
+        display_name = card.name,
+        pretty_display_name = card.name,
+        title = card.name,
+        subtitle_text = card.name,
+        icon = card.icon,
+        ui_icon = card.icon,
+        quality = card.quality or 'SR',
         unlocked = unlocked,
-        consumed = root_consumed,
-        current_text = build_choice_current_text(node_def),
-        advanced_text = get_choice_advanced_text(node_def),
-        next_text = build_choice_next_text(node_def),
-        desc_text = build_choice_desc(node_def),
-        bond_root_name = selected and selected.pretty_display_name or '',
+        consumed = consumed,
+        current_text = card.desc or '',
+        desc_text = card.desc or '',
+        value_text = card.desc or '',
+        advanced_text = card.activation_desc or '',
+        effect_title = card.activation_desc ~= '' and string.format('集齐[%s]激活：', card.bond_name) or '',
+        effect_text = card.activation_desc or '',
+        bond_root_name = card.bond_name,
         bond_root_progress_text = selected and selected.progress_text or '',
+        title_text = string.format('%s (%s)', card.bond_name or '羁绊', selected and selected.progress_text or '0/0'),
       }
     end
-  end
 
-  local consumed_count = 0
-  for _, root_id in ipairs(ROOT_NODE_IDS) do
-    if runtime.consumed_root_sets and runtime.consumed_root_sets[root_id] == true then
-      consumed_count = consumed_count + 1
+    local consumed_count = 0
+    for _, entry in ipairs(root_entries) do
+      if entry.consumed then
+        consumed_count = consumed_count + 1
+      end
     end
+
+    local status = '未收集'
+    if consumed then
+      status = '已吞噬'
+    elseif selected and selected.completed then
+      status = '已集齐'
+    elseif selected and selected.owned_count and selected.owned_count > 0 then
+      status = '收集中'
+    end
+
+    local detail_lines = {}
+    if selected and selected.effect_text and selected.effect_text ~= '' then
+      detail_lines[#detail_lines + 1] = selected.effect_text
+    end
+    if selected and selected.summary and selected.summary ~= '' and selected.summary ~= '无' then
+      detail_lines[#detail_lines + 1] = selected.summary
+    end
+    if #detail_lines == 0 then
+      detail_lines[#detail_lines + 1] = '抽取并集齐同一羁绊的卡牌后，可自动吞噬并激活羁绊效果。'
+    end
+
+    return {
+      selected_root_index = selected_index,
+      total_consumed = consumed_count,
+      root_entries = root_entries,
+      card_entries = card_entries,
+      detail = {
+        title = selected and selected.pretty_display_name or '未选择羁绊',
+        status = status,
+        progress = selected and selected.progress_text or '0/0',
+        body = table.concat(detail_lines, '\n'),
+      },
+    }
   end
 
-  local status = '未开启'
-  if root_consumed then
-    status = '已吞噬'
-  elseif root_completed then
-    status = '已集齐'
-  elseif selected and selected.unlocked_count and selected.unlocked_count > 0 then
-    status = '收集中'
-  elseif selected and selected.started then
-    status = '可开启'
-  end
-
-  local detail_lines = {}
-  if selected and selected.effect_text and selected.effect_text ~= '' then
-    detail_lines[#detail_lines + 1] = selected.effect_text
-  end
-  if selected and selected.available_next_names and selected.available_next_names ~= '' then
-    detail_lines[#detail_lines + 1] = '可选：' .. selected.available_next_names
-  end
-  if selected and selected.summary and selected.summary ~= '' then
-    detail_lines[#detail_lines + 1] = selected.summary
-  end
-  if #detail_lines == 0 then
-    detail_lines[#detail_lines + 1] = '抽取并集齐同一卡组的流派卡后，可自动吞噬并激活卡组效果。'
-  end
-
-  return {
-    selected_root_index = selected_index,
-    total_consumed = consumed_count,
-    root_entries = root_entries,
-    card_entries = card_entries,
-    detail = {
-      title = selected and selected.pretty_display_name or '未选择卡组',
-      status = status,
-      progress = selected and selected.progress_text or '0/0',
-      body = table.concat(detail_lines, '\n'),
-    },
-  }
+  return nil
 end
 
 function M.show_bond_progress(env)

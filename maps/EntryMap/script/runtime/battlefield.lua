@@ -1167,6 +1167,7 @@ function M.create(env)
         local info = spawn_enemy(instance.def.unit_id, instance.def.spawn_area_id, 180.0, {
           kind = 'challenge',
           owner = instance,
+          attr_overrides = instance.def.attr_overrides,
           reward = instance.def.kill_reward,
         })
         if info then
@@ -1249,6 +1250,7 @@ function M.create(env)
       reward = { gold = 0, wood = 0, exp = 0, special = nil },
       kill_reward = { gold = 0, wood = 0, exp = 0, special = nil },
       unit_id = task.spawn_unit_id,
+      attr_overrides = task.attr_overrides,
       boss_unit_id = nil,
       guard_unit_id = nil,
       batches = {

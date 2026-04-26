@@ -2034,6 +2034,17 @@ debug_actions_system = DebugActionsSystem.create({
   force_trigger_effect = function(effect_id)
     return auto_active_effects_system.force_trigger_effect(effect_id)
   end,
+  open_effect_debug_panel_ui = function()
+    if not debug_tools_system then
+      return
+    end
+    local gm_ui = debug_tools_system.ensure_gm_panel and debug_tools_system.ensure_gm_panel() or nil
+    if gm_ui and gm_ui.visible ~= true then
+      debug_tools_system.toggle_gm_panel()
+    else
+      debug_tools_system.refresh_gm_panel()
+    end
+  end,
 })
 
 debug_tools_system = DebugToolsSystem.create({
@@ -2244,6 +2255,13 @@ runtime_hud_system = RuntimeHudSystem.create({
   try_start_challenge = try_start_challenge,
   open_save_panel = function()
     return open_runtime_save_panel()
+  end,
+  toggle_gm_panel = function()
+    if not debug_tools_system then
+      return
+    end
+    debug_tools_system.ensure_gm_panel()
+    debug_tools_system.toggle_gm_panel()
   end,
   try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
   use_attr_diamond = function()

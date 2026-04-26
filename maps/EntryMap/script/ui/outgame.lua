@@ -1,6 +1,7 @@
 local theme = require 'ui.theme'
 local outgame_defs = require 'ui.outgame_defs'
 local QualityImageTable = require 'data.object_tables.quality_image_table'
+local ArchiveShop = require 'ui.outgame_archive_shop'
 
 local M = {}
 
@@ -182,6 +183,24 @@ function M.create(env)
   local function set_text_color_if_alive(ui, color)
     if is_ui_alive(ui) and ui.set_text_color and color then
       ui:set_text_color(color[1], color[2], color[3], color[4] or 255)
+    end
+  end
+
+  local function set_font_size_if_alive(ui, size)
+    if is_ui_alive(ui) and ui.set_font_size and size then
+      ui:set_font_size(size)
+    end
+  end
+
+  local function set_text_alignment_if_alive(ui, horizontal, vertical)
+    if is_ui_alive(ui) and ui.set_text_alignment then
+      ui:set_text_alignment(horizontal, vertical)
+    end
+  end
+
+  local function set_ui_size_if_alive(ui, width, height)
+    if is_ui_alive(ui) and ui.set_ui_size then
+      ui:set_ui_size(width, height)
     end
   end
 
@@ -1259,63 +1278,22 @@ function M.create(env)
     return '玩家'
   end
 
-  local ARCHIVE_PAGE_KEYS = OUTGAME_DEFS.archive_page_keys or { 'profile', 'equipment', 'talent', 'universal', 'chest', 'pool' }
-  local ARCHIVE_PAGE_PANEL_NAMES = OUTGAME_DEFS.archive_page_panel_names or {}
-  local ARCHIVE_MENU_SPECS = OUTGAME_DEFS.archive_menu_specs or {}
-  local ARCHIVE_UNIVERSAL_KEYS = OUTGAME_DEFS.archive_universal_keys or { 'pass', 'map', 'community', 'achievement', 'lottery', 'test', 'fish' }
   local ARCHIVE_UNIVERSAL_ITEM_SPECS = OUTGAME_DEFS.archive_universal_item_specs or {}
-  local ARCHIVE_UNIVERSAL_TAB_LABELS = OUTGAME_DEFS.archive_universal_tab_labels or {}
-  local ARCHIVE_POOL_ITEM_SPECS = OUTGAME_DEFS.archive_pool_item_specs or {}
-  local ARCHIVE_UNIVERSAL_GLYPHS = {
-    pass = '关',
-    map = '图',
-    community = '社',
-    achievement = '成',
-    lottery = '奖',
-    test = '测',
-    fish = '鱼',
+  local ARCHIVE_SHOP_OPTIONS = {
+    state = STATE,
+    player = env.get_player and env.get_player() or nil,
+    specs = OUTGAME_DEFS.archive_shop_item_specs or {},
+    categories = OUTGAME_DEFS.archive_shop_categories or {},
+    default_icon = OUTGAME_DEFS.archive_shop_default_icon or 906565,
+    play_ui_click = play_ui_click,
   }
 
-  local function get_archive_page_root_path(page_key)
-    local panel_name = ARCHIVE_PAGE_PANEL_NAMES[page_key]
-    if not panel_name then
-      return nil
-    end
-    return panel_name .. '.root'
-  end
-
-  local function get_archive_page_path(page_key)
-    local root_path = get_archive_page_root_path(page_key)
-    if not root_path then
-      return nil
-    end
-    return root_path .. '.content.page_' .. page_key
-  end
-
-  local function get_archive_page_content_path(page_key)
-    local root_path = get_archive_page_root_path(page_key)
-    if not root_path then
-      return nil
-    end
-    return root_path .. '.content'
-  end
-
   local function is_archive_panel_ui_alive(ui)
-    if not (
-      ui
+    return ui
       and is_ui_alive(ui.root)
       and is_ui_alive(ui.overlay)
       and is_ui_alive(ui.window)
       and is_ui_alive(ui.close_button)
-    ) then
-      return false
-    end
-    for _, page_key in ipairs(ARCHIVE_PAGE_KEYS) do
-      if not is_ui_alive(ui.pages and ui.pages[page_key]) then
-        return false
-      end
-    end
-    return true
   end
 
   local function resolve_archive_chip(path, bg_name)
@@ -1332,91 +1310,16 @@ function M.create(env)
     }
   end
 
-  local function bind_archive_demo_click(path, text)
-    local root = resolve_ui(path)
-    if not is_ui_alive(root) or not root.add_fast_event then
-      return false
-    end
-    if root.set_intercepts_operations then
-      root:set_intercepts_operations(true)
-    end
-    root:add_fast_event('左键-按下', function()
-      if play_ui_click then
-        play_ui_click()
-      end
-      message(text)
-    end)
-    return true
-  end
-
   local get_archive_player
 
-  local ARCHIVE_PREFAB_NAMES = {
-    badge = 'ArchiveBadgeItem',
-    pool = 'ArchivePoolItem',
-    talent = 'ArchiveTalentNode',
-  }
-
-  local function create_archive_prefab_instance(parent, prefab_name, static_root, child_index)
-    if not (y3 and y3.ui_prefab and y3.ui_prefab.create and parent) then
-      return nil
-    end
-    local player = get_archive_player()
-    if not player then
-      return nil
-    end
-    local ok, prefab = pcall(y3.ui_prefab.create, player, prefab_name, parent)
-    if not ok or not prefab then
-      return nil
-    end
-    local root = prefab.get_child and prefab:get_child() or nil
-    if root and parent.insert_ui_gridview_comp then
-      pcall(parent.insert_ui_gridview_comp, parent, root, child_index)
-    end
-    return {
-      prefab = prefab,
-      root = root,
-    }
+  local function refresh_archive_main_shop_items(ui)
+    ARCHIVE_SHOP_OPTIONS.player = env.get_player and env.get_player() or ARCHIVE_SHOP_OPTIONS.player
+    return ArchiveShop.refresh(ui, ARCHIVE_SHOP_OPTIONS)
   end
 
-  local function get_archive_prefab_child(prefab_instance, child_path)
-    if not prefab_instance or not prefab_instance.prefab or not child_path then
-      return nil
-    end
-    local prefab = prefab_instance.prefab
-    if not prefab.get_child then
-      return nil
-    end
-    local ok, child = pcall(prefab.get_child, prefab, child_path)
-    if ok then
-      return child
-    end
-    return nil
-  end
-
-  local function create_archive_grid_view(parent, width, height, z_order)
-    if not is_ui_alive(parent) or not parent.create_child then
-      return nil
-    end
-    local ok, grid = pcall(parent.create_child, parent, 'GridView')
-    if not ok or not is_ui_alive(grid) then
-      return nil
-    end
-    width = tonumber(width) or 760
-    height = tonumber(height) or 500
-    if grid.set_ui_size then
-      grid:set_ui_size(width, height)
-    end
-    if grid.set_pos then
-      grid:set_pos(width / 2, height / 2)
-    end
-    set_z_order_if_alive(grid, z_order or 525)
-    set_intercepts_if_alive(grid, false)
-    if grid.clear_ui_comp_image then
-      grid:clear_ui_comp_image()
-    end
-    set_image_color_if_alive(grid, { 255, 255, 255, 0 })
-    return grid
+  local function ensure_archive_main_shop_ui(ui)
+    ARCHIVE_SHOP_OPTIONS.player = env.get_player and env.get_player() or ARCHIVE_SHOP_OPTIONS.player
+    return ArchiveShop.ensure(ui, ARCHIVE_SHOP_OPTIONS)
   end
 
   local function to_non_negative_integer(value)
@@ -1724,9 +1627,8 @@ function M.create(env)
 
   local function format_archive_universal_reward_status(profile, tab_key, spec)
     if spec and spec.source == 'honor_level' then
-      local status = is_archive_honor_level_unlocked(profile, spec) and '已解锁' or '未解锁'
       local obtain = spec.obtain and spec.obtain ~= '' and spec.obtain or '查看荣誉等级达成条件'
-      return string.format('存档：%s · %s', status, obtain)
+      return string.format('存档：未拥有 · %s', obtain)
     end
     local state = get_archive_universal_reward_state(profile, tab_key, spec)
     if not state then
@@ -1739,6 +1641,75 @@ function M.create(env)
       return string.format('状态：可领取 · %s · 奖励 %d 积分', state.condition_text, state.reward_score)
     end
     return string.format('状态：未达成 · %s · 奖励 %d 积分', state.condition_text, state.reward_score)
+  end
+
+  local function format_honor_effect_line(line)
+    local attr_name, value_text = tostring(line or ''):match('^%s*(.-)%s+%+(.-)%s*$')
+    if attr_name and attr_name ~= '' and value_text and value_text ~= '' then
+      return string.format('+%s%s', value_text, attr_name)
+    end
+    return tostring(line or '')
+  end
+
+  local function ensure_honor_detail_text(detail, key, x, y, width, height, font_size, color, align_h)
+    if not detail or not is_ui_alive(detail.root) then
+      return nil
+    end
+    detail.honor_dynamic = detail.honor_dynamic or {}
+    local text = detail.honor_dynamic[key]
+    if not is_ui_alive(text) and detail.root.create_child then
+      local ok, created = pcall(detail.root.create_child, detail.root, '文本')
+      if ok and is_ui_alive(created) then
+        text = created
+        detail.honor_dynamic[key] = text
+      end
+    end
+    if not is_ui_alive(text) then
+      return nil
+    end
+    set_visible_if_alive(text, true)
+    set_ui_size_if_alive(text, width, height)
+    if text.set_pos then
+      text:set_pos(x, y)
+    end
+    set_font_size_if_alive(text, font_size)
+    set_text_color_if_alive(text, color)
+    set_text_alignment_if_alive(text, align_h or '左', '中')
+    set_z_order_if_alive(text, 540)
+    return text
+  end
+
+  local function set_honor_detail_dynamic_visible(detail, visible)
+    if not detail or not detail.honor_dynamic then
+      return
+    end
+    for _, text in pairs(detail.honor_dynamic) do
+      set_visible_if_alive(text, visible == true)
+    end
+  end
+
+  local function refresh_archive_honor_detail(detail, profile, spec)
+    local attr_lines = spec.attr_lines or {}
+    local effect_1 = format_honor_effect_line(attr_lines[1] or spec.line_1 or '')
+    local effect_2 = format_honor_effect_line(attr_lines[2] or spec.line_2 or '')
+    local obtain = spec.obtain and spec.obtain ~= '' and spec.obtain or '查看荣誉等级达成条件'
+
+    set_text_if_alive(detail.title, spec.title)
+    set_text_color_if_alive(detail.title, { 255, 232, 44, 255 })
+    set_font_size_if_alive(detail.title, 19)
+    set_text_alignment_if_alive(detail.title, '中', '中')
+
+    set_visible_if_alive(detail.line_1, false)
+    set_visible_if_alive(detail.line_2, false)
+    set_visible_if_alive(detail.line_3, false)
+
+    set_text_if_alive(ensure_honor_detail_text(detail, 'owned', 107, 286, 185, 22, 14, { 162, 166, 178, 255 }, '中'), '未拥有')
+    set_text_if_alive(ensure_honor_detail_text(detail, 'effect_title', 12, 252, 185, 22, 14, { 255, 232, 44, 255 }), '[详情效果]')
+    set_text_if_alive(ensure_honor_detail_text(detail, 'effect_1', 12, 224, 185, 22, 15, { 44, 255, 112, 255 }), effect_1)
+    set_text_if_alive(ensure_honor_detail_text(detail, 'effect_2', 12, 198, 185, 22, 15, { 44, 255, 112, 255 }), effect_2)
+    set_text_if_alive(ensure_honor_detail_text(detail, 'obtain_title', 12, 164, 185, 22, 14, { 255, 232, 44, 255 }), '[获取方式]')
+    set_text_if_alive(ensure_honor_detail_text(detail, 'obtain', 12, 130, 185, 40, 14, { 178, 183, 194, 255 }), obtain)
+    return true
   end
 
   local function claim_archive_universal_reward(profile, tab_key, spec)
@@ -1787,36 +1758,6 @@ function M.create(env)
     return counts, total
   end
 
-  local function refresh_archive_menu_chip(entry, selected)
-    local chip = entry and entry.chip or nil
-    local enabled = entry and entry.page_key ~= nil
-    local visible = entry and entry.visible ~= false
-    if not chip then
-      return
-    end
-    set_visible_if_alive(chip.root, visible)
-    set_visible_if_alive(chip.active, selected == true)
-    if visible ~= true then
-      return
-    end
-    if enabled ~= true then
-      set_image_color_if_alive(chip.bg, { 58, 60, 70, 220 })
-      set_text_color_if_alive(chip.label, { 134, 139, 150, 255 })
-      return
-    end
-    set_image_color_if_alive(chip.bg, selected and { 104, 110, 126, 244 } or { 212, 54, 42, 244 })
-    set_text_color_if_alive(chip.label, selected and { 255, 247, 232, 255 } or { 255, 238, 226, 255 })
-  end
-
-  local function refresh_archive_tab_chip(chip, selected)
-    if not chip then
-      return
-    end
-    set_visible_if_alive(chip.active, selected == true)
-    set_image_color_if_alive(chip.bg, selected and { 183, 137, 48, 244 } or { 64, 68, 80, 230 })
-    set_text_color_if_alive(chip.label, selected and { 255, 247, 232, 255 } or { 218, 222, 232, 255 })
-  end
-
   local function get_archive_chip_click_target(chip)
     if chip and is_ui_alive(chip.bg) then
       return chip.bg
@@ -1828,434 +1769,59 @@ function M.create(env)
   end
 
   local bind_archive_panel_events
-  local configure_archive_grid_views
-
-  local function configure_archive_page_shells(ui)
-    if not ui then
-      return
-    end
-    set_z_order_if_alive(ui.root, 500)
-    set_z_order_if_alive(ui.overlay, 500)
-    set_z_order_if_alive(ui.window, 500)
-    set_z_order_if_alive(ui.content, 520)
-    for _, page_key in ipairs(ARCHIVE_PAGE_KEYS) do
-      local page_root = ui.page_roots and ui.page_roots[page_key] or nil
-      local page_content = ui.page_contents and ui.page_contents[page_key] or nil
-      local page = ui.pages and ui.pages[page_key] or nil
-      set_parent_if_alive(page_content, ui.content)
-      if is_ui_alive(page_content) then
-        if page_content.set_ui_size then
-          page_content:set_ui_size(983.1719, 566.2927)
-        end
-        if page_content.set_pos then
-          page_content:set_pos(491.5859, 283.1464)
-        end
-      end
-      set_z_order_if_alive(page_root, 520)
-      set_z_order_if_alive(page_content, 520)
-      set_z_order_if_alive(page, 520)
-      set_intercepts_if_alive(page_root, false)
-      set_intercepts_if_alive(page_content, false)
-    end
-    set_z_order_if_alive(ui.close_button, 540)
-  end
+  local refresh_archive_enter_panel_visible
 
   ensure_archive_panel_ui = function()
     if is_archive_panel_ui_alive(STATE.archive_panel_ui) then
+      ensure_archive_main_shop_ui(STATE.archive_panel_ui)
       bind_archive_panel_events(STATE.archive_panel_ui)
+      refresh_archive_enter_panel_visible(STATE.archive_panel_ui)
       return STATE.archive_panel_ui
     end
 
-    local root = resolve_ui('ArchivePanel')
-    local overlay = resolve_ui('ArchivePanel.root.overlay')
-    local window = resolve_ui('ArchivePanel.root.overlay.window')
-    local close_chip = resolve_archive_chip('ArchivePanel.root.overlay.window.close_button')
-    if not (is_ui_alive(root) and is_ui_alive(overlay) and is_ui_alive(window) and close_chip) then
-      if not STATE.archive_panel_ui_warned then
-        STATE.archive_panel_ui_warned = true
-        message('未找到 ArchivePanel 主壳静态画板，请重新载入地图后再测试存档界面。')
-      end
-      return nil
-    end
-
-    local profile_page_path = get_archive_page_path('profile')
-    local chest_page_path = get_archive_page_path('chest')
-    local universal_page_path = get_archive_page_path('universal')
-    local pool_page_path = get_archive_page_path('pool')
-    local talent_page_path = get_archive_page_path('talent')
-
-    local ui = {
-      root = root,
-      overlay = overlay,
-      dim = resolve_ui('ArchivePanel.root.overlay.dim'),
-      window = window,
-      content = resolve_ui('ArchivePanel.root.overlay.window.content'),
-      close_button = close_chip.root,
-      close_chip = close_chip,
-      save_status_value = resolve_ui('ArchivePanel.root.overlay.window.save_status_card.save_status_value'),
-      pages = {},
-      page_roots = {},
-      page_contents = {},
-      menu_entries = {},
-      tab_entries = {},
-      universal_bodies = {},
-      universal_grids = {},
-      universal_details = {},
-      universal_items = {},
-      profile = {
-        player_name = resolve_ui(profile_page_path .. '.info_card.player_name_value'),
-        map_level = resolve_ui(profile_page_path .. '.info_card.map_level_value'),
-        pass_value = resolve_ui(profile_page_path .. '.info_card.pass_row.pass_value'),
-        sign_value = resolve_ui(profile_page_path .. '.info_card.sign_row.sign_value'),
-        save_state_value = resolve_ui(profile_page_path .. '.info_card.save_state_row.save_state_value'),
-        count_values = {},
-      },
-      chest = {
-        ticket_value = resolve_ui(chest_page_path .. '.reward_card.ticket_row.value'),
-        score_value = resolve_ui(chest_page_path .. '.reward_card.score_row.value'),
-        count_value = resolve_ui(chest_page_path .. '.reward_card.count_row.value'),
-        pool_entry = resolve_archive_chip(chest_page_path .. '.chest_card.pool_entry', 'button_bg'),
-        prob_entry = resolve_archive_chip(chest_page_path .. '.chest_card.prob_entry', 'button_bg'),
-      },
-      pool = {
-        back_button = resolve_archive_chip(pool_page_path .. '.pool_card.back_button'),
-        board = resolve_ui(pool_page_path .. '.pool_card.pool_board') or resolve_ui(pool_page_path .. '.pool_card'),
-        items = {},
-        selected_nodes = {},
-        detail = {
-          icon = resolve_ui(pool_page_path .. '.detail_card.big_item'),
-          glyph = resolve_ui(pool_page_path .. '.detail_card.big_item_glyph'),
-          name = resolve_ui(pool_page_path .. '.detail_card.item_name'),
-          owned = resolve_ui(pool_page_path .. '.detail_card.item_owned'),
-          attr_line_1 = resolve_ui(pool_page_path .. '.detail_card.attr_line_1'),
-          attr_line_2 = resolve_ui(pool_page_path .. '.detail_card.attr_line_2'),
-          score_text = resolve_ui(pool_page_path .. '.detail_card.score_text'),
-          cost_text = resolve_ui(pool_page_path .. '.detail_card.cost_text'),
-          exchange_button = resolve_archive_chip(pool_page_path .. '.detail_card.exchange_button'),
+    local archive_main_root = resolve_ui('ArchiveMain')
+    local archive_main_overlay = resolve_ui('ArchiveMain.layout_1')
+    local archive_main_close = resolve_ui('ArchiveMain.layout_1.exit')
+    if is_ui_alive(archive_main_root) and is_ui_alive(archive_main_overlay) and is_ui_alive(archive_main_close) then
+      local ui = {
+        variant = 'archive_main_v2',
+        root = archive_main_root,
+        overlay = archive_main_overlay,
+        window = archive_main_overlay,
+        close_button = archive_main_close,
+        close_chip = {
+          root = archive_main_close,
+          bg = archive_main_close,
         },
-      },
-      talent = {
-        nodes = {},
-        node_by_key = {},
-        column_values = {
-          output = resolve_ui(talent_page_path .. '.talent_layout.output_column.foot.value'),
-          survival = resolve_ui(talent_page_path .. '.talent_layout.survival_column.foot.value'),
-          resource = resolve_ui(talent_page_path .. '.talent_layout.resource_column.foot.value'),
-        },
-        detail = {
-          points = resolve_ui(talent_page_path .. '.detail_card.talent_points'),
-          name = resolve_ui(talent_page_path .. '.detail_card.talent_name'),
-          rank = resolve_ui(talent_page_path .. '.detail_card.talent_rank'),
-          tag_1 = resolve_ui(talent_page_path .. '.detail_card.detail_tag_1'),
-          value_1 = resolve_ui(talent_page_path .. '.detail_card.detail_value_1'),
-          tag_2 = resolve_ui(talent_page_path .. '.detail_card.detail_tag_2'),
-          value_2 = resolve_ui(talent_page_path .. '.detail_card.detail_value_2'),
-          tag_3 = resolve_ui(talent_page_path .. '.detail_card.detail_tag_3'),
-          value_3 = resolve_ui(talent_page_path .. '.detail_card.detail_value_3'),
-          upgrade_button = resolve_archive_chip(talent_page_path .. '.detail_card.reset_button'),
-        },
-      },
-      bound = false,
-    }
-
-    for _, page_key in ipairs(ARCHIVE_PAGE_KEYS) do
-      local page_root_path = get_archive_page_root_path(page_key)
-      local page_content_path = get_archive_page_content_path(page_key)
-      ui.page_roots[page_key] = page_root_path and resolve_ui(page_root_path) or nil
-      ui.page_contents[page_key] = page_content_path and resolve_ui(page_content_path) or nil
-      ui.pages[page_key] = page_root_path and resolve_ui(page_root_path) or nil
-    end
-
-    for _, entry in ipairs(ARCHIVE_MENU_SPECS) do
-      ui.menu_entries[#ui.menu_entries + 1] = {
-        key = entry.key,
-        page_key = entry.page_key,
-        visible = entry.visible,
-        chip = resolve_archive_chip('ArchivePanel.root.overlay.window.sidebar.menu_' .. entry.key),
+        enter_panel_root = resolve_ui('EnterPanel'),
+        enter_panel_icon = resolve_ui('EnterPanel.YangChengIcon'),
+        enter_panel_bg = resolve_ui('EnterPanel.YangChengIcon.bg'),
+        enter_panel_name = resolve_ui('EnterPanel.YangChengIcon.name'),
+        enter_panel_bound = false,
+        bound = false,
       }
+      STATE.archive_panel_ui = ui
+      ensure_archive_main_shop_ui(ui)
+      bind_archive_panel_events(ui)
+      refresh_archive_enter_panel_visible(ui)
+      return ui
     end
 
-    for _, tab_key in ipairs(ARCHIVE_UNIVERSAL_KEYS) do
-      local body = resolve_ui(universal_page_path .. '.main_card.body_' .. tab_key)
-      if body and body.clear_ui_comp_image then
-        body:clear_ui_comp_image()
-      end
-      set_image_color_if_alive(body, { 255, 255, 255, 0 })
-      ui.tab_entries[#ui.tab_entries + 1] = {
-        key = tab_key,
-        chip = resolve_archive_chip(universal_page_path .. '.main_card.tab_' .. tab_key),
-      }
-      ui.universal_bodies[tab_key] = body
-      ui.universal_grids[tab_key] = body
-      ui.universal_details[tab_key] = resolve_ui(universal_page_path .. '.detail_card.detail_' .. tab_key)
-    end
-
-    for tab_key, specs in pairs(ARCHIVE_UNIVERSAL_ITEM_SPECS) do
-      ui.universal_items[tab_key] = {}
-      for index, spec in ipairs(specs) do
-        local static_root = resolve_ui(string.format('%s.main_card.body_%s.%s', universal_page_path, tab_key, spec.node))
-        set_visible_if_alive(static_root, false)
-        local prefab_instance = create_archive_prefab_instance(ui.universal_grids[tab_key], ARCHIVE_PREFAB_NAMES.badge, static_root, index)
-        local root = (prefab_instance and prefab_instance.root) or static_root or nil
-        set_relative_scale_if_alive(root, 0.74, 0.74)
-        ui.universal_items[tab_key][#ui.universal_items[tab_key] + 1] = {
-          spec = spec,
-          prefab_instance = prefab_instance,
-          root = root,
-          glyph = get_archive_prefab_child(prefab_instance, 'glyph')
-            or (static_root and resolve_ui(string.format('%s.main_card.body_%s.%s.glyph', universal_page_path, tab_key, spec.node)))
-            or get_archive_prefab_child(prefab_instance, 'icon.glyph'),
-          caption = get_archive_prefab_child(prefab_instance, 'caption')
-            or (static_root and resolve_ui(string.format('%s.main_card.body_%s.%s.caption', universal_page_path, tab_key, spec.node)))
-            or get_archive_prefab_child(prefab_instance, 'name'),
-          selected = get_archive_prefab_child(prefab_instance, 'selected')
-            or (static_root and resolve_ui(string.format('%s.main_card.body_%s.%s.selected', universal_page_path, tab_key, spec.node))),
-          icon = get_archive_prefab_child(prefab_instance, 'icon')
-            or get_archive_prefab_child(prefab_instance, 'glyph'),
-          frame = get_archive_prefab_child(prefab_instance, 'frame')
-            or (static_root and resolve_ui(string.format('%s.main_card.body_%s.%s.frame', universal_page_path, tab_key, spec.node))),
-        }
-      end
-    end
-
-    ui.pool.board = create_archive_grid_view(ui.pool.board, 660, 310, 526) or ui.pool.board
-    for _, spec in ipairs(ARCHIVE_POOL_ITEM_SPECS) do
-      local static_root = resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node) or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node)
-      set_visible_if_alive(static_root, false)
-      local prefab_instance = create_archive_prefab_instance(ui.pool.board, ARCHIVE_PREFAB_NAMES.pool, static_root)
-      local root = static_root or (prefab_instance and prefab_instance.root) or nil
-      ui.pool.items[#ui.pool.items + 1] = {
-        spec = spec,
-        prefab_instance = prefab_instance,
-        root = (prefab_instance and prefab_instance.root) or root,
-        icon = get_archive_prefab_child(prefab_instance, 'icon_image')
-          or (static_root and (resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node .. '.icon_image') or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node .. '.icon_image')))
-          or get_archive_prefab_child(prefab_instance, 'icon_image'),
-        glyph = get_archive_prefab_child(prefab_instance, 'glyph')
-          or (static_root and (resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node .. '.glyph') or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node .. '.glyph')))
-          or get_archive_prefab_child(prefab_instance, 'glyph'),
-        label = get_archive_prefab_child(prefab_instance, 'name')
-          or (static_root and (resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node .. '.label') or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node .. '.label')))
-          or get_archive_prefab_child(prefab_instance, 'name'),
-      }
-      ui.pool.selected_nodes[spec.node] = get_archive_prefab_child(prefab_instance, 'selected')
-        or (static_root and (resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node .. '.selected') or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node .. '.selected')))
-        or get_archive_prefab_child(prefab_instance, 'selected')
-    end
-
-    for _, spec in ipairs(TALENT_NODE_SPECS) do
-      local node_path = string.format('%s.talent_layout.%s.%s', talent_page_path, spec.column_node, spec.node)
-      local entry = {
-        spec = spec,
-        root = resolve_ui(node_path),
-        label = resolve_ui(node_path .. '.label'),
-        level = resolve_ui(node_path .. '.level'),
-      }
-      ui.talent.nodes[#ui.talent.nodes + 1] = entry
-      ui.talent.node_by_key[spec.key] = entry
-    end
-
-    for index = 1, 10 do
-      ui.profile.count_values[index] = resolve_ui(string.format(
-        '%s.count_card.count_row_%d.count_value_%d',
-        profile_page_path,
-        index,
-        index
-      ))
-    end
-
-    if not is_archive_panel_ui_alive(ui) then
-      if not STATE.archive_panel_ui_warned then
-        STATE.archive_panel_ui_warned = true
-        message('未找到 ArchivePage 分页静态画板，请重新载入地图后再测试存档界面。')
-      end
-      return nil
-    end
-
-    STATE.archive_panel_ui = ui
-    configure_archive_page_shells(ui)
-    configure_archive_grid_views(ui)
-    bind_archive_panel_events(ui)
-    return ui
-  end
-
-  local function get_archive_main_page_key(page_key)
-    if page_key == 'pool' then
-      return 'chest'
-    end
-    return page_key
-  end
-
-  local function set_archive_panel_page(page_key)
-    local ui = ensure_archive_panel_ui()
-    if not is_archive_panel_ui_alive(ui) then
-      return false
-    end
-    if not ui.pages[page_key] then
-      page_key = 'profile'
-    end
-    STATE.archive_panel_page = page_key
-    for key, page in pairs(ui.pages) do
-      local visible = STATE.archive_panel_visible == true and key == page_key
-      set_visible_if_alive(ui.page_roots and ui.page_roots[key], visible)
-      set_visible_if_alive(ui.page_contents and ui.page_contents[key], visible)
-      set_visible_if_alive(page, visible)
-    end
-    local main_page_key = get_archive_main_page_key(page_key)
-    for _, entry in ipairs(ui.menu_entries or {}) do
-      refresh_archive_menu_chip(entry, entry.page_key == main_page_key)
-    end
-    return true
-  end
-
-  local function set_archive_universal_tab(tab_key)
-    local ui = ensure_archive_panel_ui()
-    if not is_archive_panel_ui_alive(ui) then
-      return false
-    end
-    if not ui.universal_bodies[tab_key] then
-      tab_key = 'pass'
-    end
-    STATE.archive_panel_universal_tab = tab_key
-    for _, entry in ipairs(ui.tab_entries or {}) do
-      local selected = entry.key == tab_key
-      refresh_archive_tab_chip(entry.chip, selected)
-      set_visible_if_alive(ui.universal_bodies[entry.key], selected)
-      set_visible_if_alive(ui.universal_details[entry.key], selected)
-    end
-    return true
-  end
-
-  local function refresh_archive_universal_selection(ui, tab_key, selected_node)
-    if not ui or not ui.universal_items then
-      return false
-    end
-    local has_selected = false
-    for entry_tab_key, entries in pairs(ui.universal_items or {}) do
-      for _, entry in ipairs(entries or {}) do
-        local spec = entry.spec or {}
-        local selected = entry_tab_key == tab_key and spec.node == selected_node
-        set_visible_if_alive(entry.selected, selected)
-        has_selected = has_selected or selected
-      end
-    end
-    return has_selected
-  end
-
-  local function find_archive_universal_entry(ui, tab_key, selected_node)
-    local entries = ui and ui.universal_items and ui.universal_items[tab_key] or nil
-    if not entries then
-      return nil
-    end
-    for _, entry in ipairs(entries) do
-      if entry.spec and entry.spec.node == selected_node then
-        return entry
-      end
+    if not STATE.archive_panel_ui_warned then
+      STATE.archive_panel_ui_warned = true
+      message('未找到 ArchiveMain/EnterPanel 节点，请先热更新版存档 UI 后再测试。')
     end
     return nil
   end
 
-  local function refresh_archive_universal_detail(ui, tab_key, spec)
-    if not ui or not spec then
-      return false
-    end
-    STATE.archive_panel_universal_item = {
-      tab_key = tab_key,
-      node = spec.node,
-    }
-    refresh_archive_universal_selection(ui, tab_key, spec.node)
-    local profile = STATE.outgame_profile or load_profile()
-    local detail = ui.universal_details and ui.universal_details[tab_key]
-    if not is_ui_alive(detail) then
-      return false
-    end
-    set_text_if_alive(resolve_ui(string.format('ArchivePageUniversal.root.content.page_universal.detail_card.detail_%s.title', tab_key)), spec.title)
-    set_text_if_alive(resolve_ui(string.format('ArchivePageUniversal.root.content.page_universal.detail_card.detail_%s.line_1', tab_key)), spec.line_1)
-    set_text_if_alive(resolve_ui(string.format('ArchivePageUniversal.root.content.page_universal.detail_card.detail_%s.line_2', tab_key)), spec.line_2)
-    set_text_if_alive(resolve_ui(string.format('ArchivePageUniversal.root.content.page_universal.detail_card.detail_%s.line_3', tab_key)), format_archive_universal_reward_status(profile, tab_key, spec))
-    return true
-  end
 
-  local function refresh_archive_talent_detail(ui, spec)
-    if not ui or not ui.talent or not spec then
-      return false
+  refresh_archive_enter_panel_visible = function(ui)
+    if not is_archive_panel_ui_alive(ui) then
+      return
     end
-    STATE.archive_panel_talent_key = spec.key
-    local profile = STATE.outgame_profile or load_profile()
-    local level = get_archive_talent_level(profile, spec.key)
-    local detail = ui.talent.detail or {}
-    set_text_if_alive(detail.points, string.format('天赋点：%d', get_archive_talent_points(profile)))
-    set_text_if_alive(detail.name, spec.title)
-    set_text_if_alive(detail.rank, string.format('%d / %d', level, spec.max_level or 1))
-    set_text_if_alive(detail.tag_1, '效果')
-    set_text_if_alive(detail.value_1, spec.effect or '-')
-    set_text_if_alive(detail.tag_2, '解锁')
-    set_text_if_alive(detail.value_2, string.format('本系投入 %d 点', spec.require_points or 0))
-    set_text_if_alive(detail.tag_3, '状态')
-    set_text_if_alive(detail.value_3, get_archive_talent_status_text(profile, spec))
-    if detail.upgrade_button then
-      set_text_if_alive(detail.upgrade_button.label, level >= (spec.max_level or 1) and '已满级' or '升级天赋')
-      set_visible_if_alive(detail.upgrade_button.active, is_archive_talent_unlocked(profile, spec))
-    end
-    return true
-  end
-
-  local function refresh_archive_talent_page(ui, profile)
-    if not ui or not ui.talent then
-      return false
-    end
-    profile = profile or load_profile()
-    for column_key, value_ui in pairs(ui.talent.column_values or {}) do
-      set_text_if_alive(value_ui, tostring(get_archive_talent_column_points(profile, column_key)))
-    end
-    for _, entry in ipairs(ui.talent.nodes or {}) do
-      local spec = entry.spec
-      local level = get_archive_talent_level(profile, spec.key)
-      set_text_if_alive(entry.label, spec.title)
-      set_text_if_alive(entry.level, string.format('%d/%d', level, spec.max_level or 1))
-    end
-    local spec = TALENT_BY_KEY[STATE.archive_panel_talent_key] or TALENT_NODE_SPECS[1]
-    if spec then
-      refresh_archive_talent_detail(ui, spec)
-    end
-    return true
-  end
-
-  local function refresh_archive_pool_detail(ui, spec)
-    if not ui or not ui.pool or not spec then
-      return false
-    end
-    STATE.archive_panel_pool_item = spec.node
-    local profile = STATE.outgame_profile or load_profile()
-    local selected_item_key = get_archive_pool_item_key(spec)
-    local owned_count = get_archive_pool_item_count(profile, selected_item_key)
-    local pool_score = get_archive_pool_score(profile)
-    for _, entry in ipairs(ui.pool.items or {}) do
-      local entry_spec = entry.spec or {}
-      local entry_icon = get_archive_pool_item_icon(entry_spec)
-      local has_icon = is_ui_alive(entry.icon) and entry_icon ~= nil
-      set_visible_if_alive(entry.icon, has_icon)
-      set_visible_if_alive(entry.glyph, not has_icon)
-      set_image_if_alive(entry.icon, entry_icon)
-      set_text_if_alive(entry.glyph, entry_spec.glyph or entry_spec.title)
-      set_text_if_alive(entry.label, entry_spec.title)
-    end
-    for node_name, selected_node in pairs(ui.pool.selected_nodes or {}) do
-      set_visible_if_alive(selected_node, node_name == spec.node)
-    end
-    local detail = ui.pool.detail or {}
-    local detail_icon = get_archive_pool_item_icon(spec)
-    set_visible_if_alive(detail.icon, detail_icon ~= nil)
-    set_visible_if_alive(detail.glyph, detail_icon == nil)
-    set_image_if_alive(detail.icon, detail_icon)
-    set_text_if_alive(detail.glyph, spec.glyph or spec.title)
-    set_text_if_alive(detail.name, spec.title)
-    set_text_if_alive(detail.owned, owned_count > 0 and string.format('已拥有 ×%d', owned_count) or '未拥有')
-    set_text_if_alive(detail.attr_line_1, spec.line_1)
-    set_text_if_alive(detail.attr_line_2, spec.line_2)
-    set_text_if_alive(detail.score_text, string.format('夺宝积分：%d', pool_score))
-    set_text_if_alive(detail.cost_text, string.format('兑换需要 %d 积分', spec.cost or 100))
-    return true
+    local visible = STATE.session_phase == 'outgame' and STATE.archive_panel_visible ~= true
+    set_visible_if_alive(ui.enter_panel_root, visible)
+    set_visible_if_alive(ui.enter_panel_icon, visible)
   end
 
   local function set_archive_panel_visible(visible)
@@ -2271,9 +1837,9 @@ function M.create(env)
       end
       set_visible_if_alive(ui.root, true)
       set_visible_if_alive(ui.overlay, true)
+      set_visible_if_alive(ui.window, true)
       STATE.archive_panel_visible = true
-      STATE.archive_panel_universal_tab = 'map'
-      set_archive_panel_page('universal')
+      refresh_archive_enter_panel_visible(ui)
       return true
     end
 
@@ -2282,84 +1848,13 @@ function M.create(env)
       STATE.archive_panel_hidden_non_outgame = false
     end
     if is_archive_panel_ui_alive(ui) then
+      set_visible_if_alive(ui.root, false)
       set_visible_if_alive(ui.overlay, false)
-      for key, page in pairs(ui.pages or {}) do
-        set_visible_if_alive(ui.page_roots and ui.page_roots[key], false)
-        set_visible_if_alive(ui.page_contents and ui.page_contents[key], false)
-        set_visible_if_alive(page, false)
-      end
+      set_visible_if_alive(ui.window, false)
     end
     STATE.archive_panel_visible = false
+    refresh_archive_enter_panel_visible(ui)
     return true
-  end
-
-  local function configure_grid_view(ui, column_count, row_count, cell_width, cell_height, row_space, col_space, scroll)
-    if not is_ui_alive(ui) or not ui.set_ui_gridview_count then
-      return false
-    end
-    if ui.clear_ui_comp_image then
-      ui:clear_ui_comp_image()
-    end
-    set_image_color_if_alive(ui, { 255, 255, 255, 0 })
-    if ui.set_ui_gridview_type then
-      ui:set_ui_gridview_type(0)
-    end
-    ui:set_ui_gridview_count(row_count, column_count)
-    if ui.set_ui_gridview_size then
-      ui:set_ui_gridview_size(cell_width, cell_height)
-    end
-    if ui.set_ui_gridview_margin then
-      ui:set_ui_gridview_margin(0, 0, 0, 0)
-    end
-    if ui.set_ui_gridview_space then
-      ui:set_ui_gridview_space(row_space or 0, col_space or 0)
-    end
-    if ui.set_ui_gridview_align then
-      ui:set_ui_gridview_align(0)
-    end
-    if ui.set_ui_gridview_scroll then
-      ui:set_ui_gridview_scroll(scroll == true)
-    end
-    if ui.set_ui_gridview_size_adaptive then
-      ui:set_ui_gridview_size_adaptive(false)
-    end
-    return true
-  end
-
-  configure_archive_grid_views = function(ui)
-    if not ui then
-      return
-    end
-    local universal_column_count = 8
-    for _, tab_key in ipairs(ARCHIVE_UNIVERSAL_KEYS) do
-      local item_count = #(ARCHIVE_UNIVERSAL_ITEM_SPECS[tab_key] or {})
-      local row_count = math.max(1, math.ceil(item_count / universal_column_count))
-      configure_grid_view(ui.universal_grids and ui.universal_grids[tab_key], universal_column_count, row_count, 76, 82, 14, 8, true)
-    end
-    local pool_column_count = 8
-    local pool_row_count = math.max(1, math.ceil(#ARCHIVE_POOL_ITEM_SPECS / pool_column_count))
-    configure_grid_view(ui.pool and ui.pool.board, pool_column_count, pool_row_count, 64, 74, 14, 16, true)
-  end
-
-  local function bind_archive_demo_interactions()
-    local universal_page_path = get_archive_page_path('universal')
-    local pool_page_path = get_archive_page_path('pool')
-    local profile_page_path = get_archive_page_path('profile')
-    local chest_page_path = get_archive_page_path('chest')
-    local talent_page_path = get_archive_page_path('talent')
-    local equipment_page_path = get_archive_page_path('equipment')
-
-    bind_archive_demo_click(profile_page_path .. '.info_card', '我的信息：查看玩家等级、通关和存档状态')
-    bind_archive_demo_click(profile_page_path .. '.count_card', '通关次数：点击后可用于查看各难度累计次数')
-    bind_archive_demo_click(profile_page_path .. '.limit_card', '每日上限：这里展示今日资源获取限制')
-
-    bind_archive_demo_click(chest_page_path .. '.chest_card.mode_tab_1', '夺宝宝箱：已切换到夺宝奇兵示例')
-    bind_archive_demo_click(chest_page_path .. '.chest_card.stage', '夺宝宝箱：点击宝箱可预览抽奖反馈')
-    bind_archive_demo_click(talent_page_path .. '.talent_layout.output_column.node_1', '天赋页：强击节点，可查看升级消耗和效果')
-    bind_archive_demo_click(talent_page_path .. '.talent_layout.survival_column.node_1', '天赋页：护体节点，可查看升级消耗和效果')
-    bind_archive_demo_click(talent_page_path .. '.talent_layout.resource_column.node_1', '天赋页：富矿节点，可查看升级消耗和效果')
-    bind_archive_demo_click(equipment_page_path .. '.equipment_card.slot_head', '神装：头部装备槽预览')
-    bind_archive_demo_click(equipment_page_path .. '.bag_card.bag_slot_1', '神装：背包装备预览')
   end
 
   bind_archive_panel_events = function(ui)
@@ -2367,6 +1862,23 @@ function M.create(env)
       return
     end
     ui.bound = true
+
+    if ui.enter_panel_bound ~= true then
+      local enter_panel_target = ui.enter_panel_bg
+        or ui.enter_panel_icon
+        or ui.enter_panel_name
+        or ui.enter_panel_root
+      if is_ui_alive(enter_panel_target) then
+        ui.enter_panel_bound = true
+        set_intercepts_if_alive(enter_panel_target, true)
+        enter_panel_target:add_fast_event('左键-按下', function()
+          if play_ui_click then
+            play_ui_click()
+          end
+          api.open_save_panel()
+        end)
+      end
+    end
 
     if is_ui_alive(ui.dim) then
       ui.dim:add_fast_event('左键-按下', function()
@@ -2378,6 +1890,7 @@ function M.create(env)
     end
 
     local close_button_target = get_archive_chip_click_target(ui.close_chip)
+      or (is_ui_alive(ui.close_button) and ui.close_button or nil)
     if is_ui_alive(close_button_target) then
       close_button_target:add_fast_event('左键-按下', function()
         if play_ui_click then
@@ -2386,175 +1899,6 @@ function M.create(env)
         set_archive_panel_visible(false)
       end)
     end
-
-    for _, entry in ipairs(ui.menu_entries or {}) do
-      local page_key = entry.page_key
-      local click_target = get_archive_chip_click_target(entry.chip)
-      if page_key and is_ui_alive(click_target) then
-        click_target:add_fast_event('左键-按下', function()
-          if play_ui_click then
-            play_ui_click()
-          end
-          set_archive_panel_page(page_key)
-        end)
-      end
-    end
-
-    for _, entry in ipairs(ui.tab_entries or {}) do
-      local tab_key = entry.key
-      local click_target = get_archive_chip_click_target(entry.chip)
-      set_text_if_alive(entry.chip and entry.chip.label, ARCHIVE_UNIVERSAL_TAB_LABELS[tab_key])
-      if is_ui_alive(click_target) then
-        click_target:add_fast_event('左键-按下', function()
-          if play_ui_click then
-            play_ui_click()
-          end
-          set_archive_universal_tab(tab_key)
-          local entries = ui.universal_items and ui.universal_items[tab_key]
-          if entries and entries[1] then
-            refresh_archive_universal_detail(ui, tab_key, entries[1].spec)
-          end
-        end)
-      end
-    end
-
-    for tab_key, entries in pairs(ui.universal_items or {}) do
-      for _, entry in ipairs(entries) do
-        if is_ui_alive(entry.root) then
-          set_intercepts_if_alive(entry.root, true)
-          entry.root:add_fast_event('左键-按下', function()
-            if play_ui_click then
-              play_ui_click()
-            end
-            set_archive_universal_tab(tab_key)
-            refresh_archive_universal_detail(ui, tab_key, entry.spec)
-          end)
-        end
-      end
-    end
-
-    for _, entry in ipairs(ui.pool.items or {}) do
-      if is_ui_alive(entry.root) then
-        set_intercepts_if_alive(entry.root, true)
-        entry.root:add_fast_event('左键-按下', function()
-          if play_ui_click then
-            play_ui_click()
-          end
-          refresh_archive_pool_detail(ui, entry.spec)
-        end)
-      end
-    end
-
-    for _, entry in ipairs(ui.talent.nodes or {}) do
-      if is_ui_alive(entry.root) then
-        set_intercepts_if_alive(entry.root, true)
-        entry.root:add_fast_event('左键-按下', function()
-          if play_ui_click then
-            play_ui_click()
-          end
-          refresh_archive_talent_detail(ui, entry.spec)
-        end)
-      end
-    end
-
-    local talent_upgrade_root = get_archive_chip_click_target(ui.talent.detail and ui.talent.detail.upgrade_button)
-    if is_ui_alive(talent_upgrade_root) then
-      talent_upgrade_root:add_fast_event('左键-按下', function()
-        if play_ui_click then
-          play_ui_click()
-        end
-        local talent_key = STATE.archive_panel_talent_key
-        local ok, msg = upgrade_archive_talent(load_profile(), talent_key)
-        message(msg)
-        refresh_archive_panel_ui(load_profile())
-      end)
-    end
-
-    local exchange_button_root = get_archive_chip_click_target(ui.pool.detail and ui.pool.detail.exchange_button)
-    if is_ui_alive(exchange_button_root) then
-      exchange_button_root:add_fast_event('左键-按下', function()
-        if play_ui_click then
-          play_ui_click()
-        end
-        local selected_node = STATE.archive_panel_pool_item
-        local selected_spec = ui.pool.items and ui.pool.items[1] and ui.pool.items[1].spec or nil
-        for _, entry in ipairs(ui.pool.items or {}) do
-          if entry.spec and entry.spec.node == selected_node then
-            selected_spec = entry.spec
-            break
-          end
-        end
-        if not selected_spec then
-          message('请先选择一个奖池物品。')
-          return
-        end
-        local profile = load_profile()
-        local ok, remain = spend_archive_pool_score(profile, selected_spec.cost or 100)
-        if not ok then
-          message(string.format('夺宝积分不足：当前 %d，兑换需要 %d。', remain or 0, selected_spec.cost or 100))
-          refresh_archive_pool_detail(ui, selected_spec)
-          return
-        end
-        local owned_count = add_archive_pool_item(profile, get_archive_pool_item_key(selected_spec), 1)
-        mark_profile_dirty()
-        refresh_archive_panel_ui(profile)
-        refresh_archive_pool_detail(ui, selected_spec)
-        message(string.format('已兑换 %s ×1，当前拥有 %d 个。', selected_spec.title or '奖池物品', owned_count))
-      end)
-    end
-
-    local pool_entry_root = get_archive_chip_click_target(ui.chest.pool_entry)
-    if is_ui_alive(pool_entry_root) then
-      pool_entry_root:add_fast_event('左键-按下', function()
-        if play_ui_click then
-          play_ui_click()
-        end
-        set_archive_panel_page('pool')
-      end)
-    end
-
-    local prob_entry_root = get_archive_chip_click_target(ui.chest.prob_entry)
-    if is_ui_alive(prob_entry_root) then
-      prob_entry_root:add_fast_event('左键-按下', function()
-        if play_ui_click then
-          play_ui_click()
-        end
-        set_archive_panel_page('pool')
-      end)
-    end
-
-    local function bind_pool_draw_button(path, draw_count)
-      local root = resolve_ui(path)
-      if not is_ui_alive(root) then
-        return
-      end
-      set_intercepts_if_alive(root, true)
-      root:add_fast_event('左键-按下', function()
-        if play_ui_click then
-          play_ui_click()
-        end
-        local profile = load_profile()
-        local score, total_draw_count = add_archive_pool_draw_reward(profile, draw_count)
-        mark_profile_dirty()
-        refresh_archive_panel_ui(profile)
-        message(string.format('夺宝 %d 次完成，获得 %d 积分。累计夺宝 %d 次，当前积分 %d。', draw_count, draw_count * 10, total_draw_count, score))
-      end)
-    end
-
-    bind_pool_draw_button(get_archive_page_path('chest') .. '.chest_card.draw_one', 1)
-    bind_pool_draw_button(get_archive_page_path('chest') .. '.chest_card.draw_ten', 10)
-
-    local back_button_root = get_archive_chip_click_target(ui.pool.back_button)
-    if is_ui_alive(back_button_root) then
-      back_button_root:add_fast_event('左键-按下', function()
-        if play_ui_click then
-          play_ui_click()
-        end
-        set_archive_panel_page('chest')
-      end)
-    end
-
-    bind_archive_demo_interactions()
   end
 
   refresh_archive_panel_ui = function(profile)
@@ -2562,77 +1906,12 @@ function M.create(env)
     if not is_archive_panel_ui_alive(ui) then
       return false
     end
-
-    profile = profile or load_profile()
-    local clear_counts, total_clear_count = get_archive_clear_counts(profile)
-    local save_state_color = STATE.outgame_profile_save_enabled == true
-      and { 114, 234, 77, 255 }
-      or { 240, 174, 62, 255 }
-
-    set_text_if_alive(ui.save_status_value, get_archive_save_state_text(false))
-    set_text_color_if_alive(ui.save_status_value, STATE.outgame_profile_save_enabled == true and theme.palette.gold or save_state_color)
-
-    set_text_if_alive(ui.profile.player_name, get_player_display_name())
-    set_text_if_alive(ui.profile.map_level, tostring(get_archive_player_integer('get_map_level')))
-    set_text_if_alive(ui.profile.pass_value, tostring(total_clear_count))
-    set_text_if_alive(ui.profile.sign_value, tostring(get_archive_player_integer('get_sign_in_days')))
-    set_text_if_alive(ui.profile.save_state_value, get_archive_save_state_text(true))
-    set_text_color_if_alive(ui.profile.save_state_value, save_state_color)
-
-    for index = 1, 10 do
-      set_text_if_alive(ui.profile.count_values[index], tostring(clear_counts[index] or 0))
-    end
-
-    set_text_if_alive(ui.chest.ticket_value, '-')
-    set_text_if_alive(ui.chest.score_value, tostring(get_archive_pool_score(profile)))
-    local platform_lottery_count = get_archive_total_lottery_count()
-    local local_draw_count = get_archive_pool_draw_count(profile)
-    set_text_if_alive(ui.chest.count_value, tostring(math.max(platform_lottery_count, local_draw_count)))
-
-    for tab_key, entries in pairs(ui.universal_items or {}) do
-      for index, entry in ipairs(entries or {}) do
-        local spec = entry.spec or {}
-        local icon = get_archive_universal_item_icon(spec)
-        local frame_image = get_archive_universal_frame_image(spec)
-        local has_icon = is_ui_alive(entry.icon) and icon ~= nil
-        set_visible_if_alive(entry.icon, has_icon)
-        set_visible_if_alive(entry.glyph, not has_icon)
-        set_image_if_alive(entry.icon, icon)
-        set_image_if_alive(entry.frame, frame_image)
-        set_text_if_alive(entry.glyph, spec.glyph or ARCHIVE_UNIVERSAL_GLYPHS[tab_key] or tostring(index))
-        set_text_if_alive(entry.caption, spec.title)
-      end
-    end
-
-    set_archive_universal_tab(STATE.archive_panel_universal_tab or 'map')
-    local universal_tab = STATE.archive_panel_universal_tab or 'map'
-    local universal_entries = ui.universal_items and ui.universal_items[universal_tab]
-    local selected_archive_item = STATE.archive_panel_universal_item
-    local selected_entry = selected_archive_item
-      and selected_archive_item.tab_key == universal_tab
-      and find_archive_universal_entry(ui, universal_tab, selected_archive_item.node)
-      or nil
-    selected_entry = selected_entry or (universal_entries and universal_entries[1] or nil)
-    if selected_entry and selected_entry.spec then
-      refresh_archive_universal_detail(ui, universal_tab, selected_entry.spec)
-    else
-      refresh_archive_universal_selection(ui, universal_tab, nil)
-    end
-    if ui.pool.items and ui.pool.items[1] then
-      local selected_pool_item = STATE.archive_panel_pool_item
-      local selected_spec = ui.pool.items[1].spec
-      for _, entry in ipairs(ui.pool.items) do
-        if entry.spec.node == selected_pool_item then
-          selected_spec = entry.spec
-          break
-        end
-      end
-      refresh_archive_pool_detail(ui, selected_spec)
-    end
-    refresh_archive_talent_page(ui, profile)
-    if STATE.archive_panel_visible == true then
-      set_archive_panel_page(STATE.archive_panel_page or 'profile')
-    end
+    set_visible_if_alive(ui.root, STATE.archive_panel_visible == true)
+    set_visible_if_alive(ui.overlay, STATE.archive_panel_visible == true)
+    set_visible_if_alive(ui.window, STATE.archive_panel_visible == true)
+    ensure_archive_main_shop_ui(ui)
+    refresh_archive_main_shop_items(ui)
+    refresh_archive_enter_panel_visible(ui)
     return true
   end
 
@@ -2877,6 +2156,10 @@ function M.create(env)
     set_visible_if_alive(ui.root, STATE.session_phase == 'outgame')
     set_visible_if_alive(ui.hall_root, STATE.session_phase == 'outgame')
     refresh_save_entry_ui(ui, profile)
+    local archive_ui = ensure_archive_panel_ui()
+    if is_archive_panel_ui_alive(archive_ui) then
+      refresh_archive_enter_panel_visible(archive_ui)
+    end
     if STATE.archive_panel_visible == true then
       refresh_archive_panel_ui(profile)
     end
@@ -2947,8 +2230,6 @@ function M.create(env)
     if STATE.archive_panel_visible == true then
       return true
     end
-    STATE.archive_panel_universal_tab = 'map'
-    STATE.archive_panel_universal_item = nil
     if not refresh_archive_panel_ui(profile) then
       message(build_save_status_detail(profile))
       return false
@@ -2968,16 +2249,26 @@ function M.create(env)
     if visible ~= true then
       set_archive_panel_visible(false)
     end
+    local archive_ui = ensure_archive_panel_ui()
+    if is_archive_panel_ui_alive(archive_ui) then
+      refresh_archive_enter_panel_visible(archive_ui)
+    end
     local ui = ensure_ui()
     set_non_outgame_ui_visible(visible ~= true)
     if not is_outgame_ui_alive(ui) then
       if visible == true then
         schedule_ui_retry()
       end
+      if is_archive_panel_ui_alive(archive_ui) then
+        refresh_archive_enter_panel_visible(archive_ui)
+      end
       return
     end
     set_visible_if_alive(ui.root, visible == true)
     set_visible_if_alive(ui.hall_root, visible == true)
+    if is_archive_panel_ui_alive(archive_ui) then
+      refresh_archive_enter_panel_visible(archive_ui)
+    end
   end
 
   function api.enter_outgame(result)

@@ -70,6 +70,7 @@ function M.create(env)
   local try_treasure_entry = env.try_treasure_entry
   local try_start_challenge = env.try_start_challenge
   local open_save_panel = env.open_save_panel
+  local toggle_gm_panel = env.toggle_gm_panel
   local try_upgrade_growth_weapon = env.try_upgrade_growth_weapon
   local use_attr_diamond = env.use_attr_diamond
   local get_attr_choice_runtime = env.get_attr_choice_runtime
@@ -84,6 +85,8 @@ function M.create(env)
   local play_ui_click = env.play_ui_click
   local ensure_hud
   local refresh_hud
+  local bind_click_once
+  local bind_hover_once
 
   local function get_player_safe()
     return get_player and get_player() or nil
@@ -126,6 +129,19 @@ function M.create(env)
       hover_tip_panel_subtitle = nil,
       hover_tip_panel_body = nil,
       hover_tip_visible = false,
+      bond_tips_root = nil,
+      bond_tip_panel = nil,
+      bond_tip_title = nil,
+      bond_tip_owned = nil,
+      bond_tip_skill_label = nil,
+      bond_tip_skill_body = nil,
+      bond_tip_condition_label = nil,
+      bond_tip_condition_body = nil,
+      bond_tip_special_title = nil,
+      bond_tip_special_body = nil,
+      bond_tip_icon = nil,
+      bond_tip_icon_title = nil,
+      bond_tip_visible = false,
       attr_panel = nil,
       attr_panel_title = nil,
       attr_panel_body = nil,
@@ -136,6 +152,8 @@ function M.create(env)
       attr_choice_cards = {},
       big_cursor = nil,
       hero_model_ui = nil,
+      quick_action_root = nil,
+      quick_action_buttons = {},
     }
     return STATE.runtime_hud
   end
@@ -1053,6 +1071,21 @@ function M.create(env)
     }, '\n')
   end
 
+  local function open_exit_confirm_panel()
+    local exit_panel = resolve_first_ui({
+      'GameHUD.setting_panel',
+      'top.top.left_buttons.exit_confirm_panel',
+      'top.top.left_buttons.exit_confirm',
+    })
+    if is_ui_alive(exit_panel) then
+      set_visible_if_alive(exit_panel, true)
+      call_ui(exit_panel, 'set_intercepts_operations', true)
+      return true
+    end
+    message('退出确认面板不可用。')
+    return false
+  end
+
   local function ensure_overlay_widgets()
     local runtime = get_runtime()
     runtime.attr_panel = resolve_first_ui({
@@ -1195,6 +1228,87 @@ function M.create(env)
     set_text_alignment_if_alive(runtime.hover_tip_panel_subtitle, '左', '中')
     set_text_alignment_if_alive(runtime.hover_tip_panel_body, '左', '中')
 
+    runtime.bond_tips_root = resolve_ui('TipsPanel')
+    runtime.bond_tip_panel = resolve_ui('TipsPanel.BondTips')
+    runtime.bond_tip_title = resolve_ui('TipsPanel.BondTips.scroll_view.标题')
+    runtime.bond_tip_owned = resolve_ui('TipsPanel.BondTips.scroll_view.是否拥有')
+    runtime.bond_tip_skill_label = resolve_ui('TipsPanel.BondTips.scroll_view.技能效果')
+    runtime.bond_tip_skill_body = resolve_ui('TipsPanel.BondTips.scroll_view.技能效果内容')
+    runtime.bond_tip_condition_label = resolve_ui('TipsPanel.BondTips.scroll_view.吞噬条件')
+    runtime.bond_tip_condition_body = resolve_ui('TipsPanel.BondTips.scroll_view.详情效果内容')
+    runtime.bond_tip_special_title = resolve_ui('TipsPanel.BondTips.scroll_view.特殊效果标题')
+    runtime.bond_tip_special_body = resolve_ui('TipsPanel.BondTips.scroll_view.特殊效果内容')
+    runtime.bond_tip_icon = resolve_ui('TipsPanel.BondTips.scroll_view.layout_3.image_1')
+    runtime.bond_tip_icon_title = resolve_ui('TipsPanel.BondTips.scroll_view.layout_3.标题_1')
+    set_visible_if_alive(runtime.bond_tip_panel, false)
+    set_visible_if_alive(runtime.bond_tips_root, false)
+    call_ui(runtime.bond_tip_panel, 'set_intercepts_operations', false)
+
+    local function ensure_quick_action_button(key, text, pos_x, pos_y, callback, bg_color)
+      runtime.quick_action_buttons = runtime.quick_action_buttons or {}
+      if is_ui_alive(runtime.quick_action_buttons[key]) then
+        set_text_if_alive(runtime.quick_action_buttons[key], text)
+        return runtime.quick_action_buttons[key]
+      end
+
+      local parent = resolve_first_ui({
+        'BattleBottomHUD.layout.right_station',
+        'BattleBottomHUD.layout',
+      })
+      if not is_ui_alive(parent) then
+        return nil
+      end
+
+      local root = runtime.quick_action_root
+      if not is_ui_alive(root) then
+        root = parent:create_child('图片')
+        runtime.quick_action_root = root
+        set_image_if_alive(root, 999)
+        set_ui_size_if_alive(root, 246, 42)
+        set_pos_if_alive(root, 750, 84)
+        set_image_color_if_alive(root, { 8, 16, 24, 0 })
+        call_ui(root, 'set_intercepts_operations', false)
+        call_ui(root, 'set_z_order', 9390)
+      end
+
+      local bg = root:create_child('图片')
+      set_image_if_alive(bg, 999)
+      set_ui_size_if_alive(bg, 76, 34)
+      set_pos_if_alive(bg, pos_x, pos_y)
+      set_image_color_if_alive(bg, bg_color or { 46, 66, 96, 235 })
+      call_ui(bg, 'set_intercepts_operations', false)
+      call_ui(bg, 'set_z_order', 9391)
+
+      local button = root:create_child('按钮')
+      set_ui_size_if_alive(button, 76, 34)
+      set_pos_if_alive(button, pos_x, pos_y)
+      set_text_if_alive(button, text)
+      set_font_size_if_alive(button, 15)
+      set_text_color_if_alive(button, { 240, 246, 255, 255 })
+      call_ui(button, 'set_z_order', 9392)
+      bind_click_once('quick_action_' .. key, button, function()
+        if callback then
+          callback()
+        end
+      end)
+      runtime.quick_action_buttons[key] = button
+      return button
+    end
+
+    ensure_quick_action_button('setting', '设置', 40, 21, function()
+      message(build_hotkey_help_text())
+    end, { 58, 84, 126, 235 })
+    ensure_quick_action_button('exit', '退出', 123, 21, function()
+      open_exit_confirm_panel()
+    end, { 118, 76, 82, 235 })
+    ensure_quick_action_button('gm', 'GM', 206, 21, function()
+      if toggle_gm_panel then
+        toggle_gm_panel()
+      else
+        message('GM 面板未初始化。')
+      end
+    end, { 70, 106, 146, 235 })
+
     if not is_ui_alive(runtime.big_cursor) then
       local player = get_player_safe()
       local hud = player and UIRoot.get_overlay_parent(y3, player) or nil
@@ -1239,10 +1353,76 @@ function M.create(env)
     call_ui(runtime.hover_tip_panel, 'set_absolute_pos', HOVER_TIP_FIXED_X, HOVER_TIP_FIXED_Y)
   end
 
+  local function parse_bond_tip_sections(text)
+    local sections = {
+      skill = {},
+      condition = {},
+      detail = {},
+    }
+    local current = 'skill'
+    local body = tostring(text or ''):gsub('\r\n', '\n'):gsub('\r', '\n')
+    for line in body:gmatch('[^\n]+') do
+      local value = tostring(line):gsub('^%s+', ''):gsub('%s+$', '')
+      if value ~= '' then
+        if value == '[技能效果]' then
+          current = 'skill'
+        elseif value == '[吞噬条件]' then
+          current = 'condition'
+        elseif string.find(value, '激活效果', 1, true) then
+          current = 'detail'
+        else
+          sections[current][#sections[current] + 1] = value
+        end
+      end
+    end
+
+    if #sections.skill == 0 and body ~= '' then
+      sections.skill[1] = body
+    end
+    return {
+      skill = table.concat(sections.skill, '\n'),
+      condition = table.concat(sections.condition, '\n'),
+      detail = table.concat(sections.detail, '\n'),
+    }
+  end
+
+  local function hide_bond_tip_panel()
+    local runtime = get_runtime()
+    runtime.bond_tip_visible = false
+    set_visible_if_alive(runtime.bond_tip_panel, false)
+    set_visible_if_alive(runtime.bond_tips_root, false)
+  end
+
+  local function show_bond_tip_panel(payload)
+    local runtime = get_runtime()
+    if not is_ui_alive(runtime.bond_tip_panel) then
+      return false
+    end
+
+    local sections = parse_bond_tip_sections(payload.body)
+    runtime.bond_tip_visible = true
+    set_text_if_alive(runtime.bond_tip_title, payload.title or '羁绊')
+    set_text_if_alive(runtime.bond_tip_owned, payload.subtitle or '')
+    set_text_if_alive(runtime.bond_tip_skill_label, '[技能效果]')
+    set_text_if_alive(runtime.bond_tip_skill_body, sections.skill)
+    set_text_if_alive(runtime.bond_tip_condition_label, '[吞噬条件]')
+    set_text_if_alive(runtime.bond_tip_condition_body, sections.condition)
+    set_text_if_alive(runtime.bond_tip_special_title, sections.detail ~= '' and '[详情效果]' or '')
+    set_text_if_alive(runtime.bond_tip_special_body, sections.detail)
+    set_text_if_alive(runtime.bond_tip_icon_title, payload.subtitle or '')
+    set_image_if_alive(runtime.bond_tip_icon, payload.icon)
+    set_visible_if_alive(runtime.bond_tip_special_title, sections.detail ~= '')
+    set_visible_if_alive(runtime.bond_tip_special_body, sections.detail ~= '')
+    set_visible_if_alive(runtime.bond_tips_root, runtime.visible ~= false)
+    set_visible_if_alive(runtime.bond_tip_panel, runtime.visible ~= false)
+    return true
+  end
+
   local function hide_hover_tip_panel()
     local runtime = get_runtime()
     runtime.hover_tip_visible = false
     set_visible_if_alive(runtime.hover_tip_panel, false)
+    hide_bond_tip_panel()
   end
 
   local function show_hover_tip_panel(payload)
@@ -1253,6 +1433,15 @@ function M.create(env)
 
     ensure_hud()
     local runtime = get_runtime()
+    if payload.kind == 'bond' then
+      runtime.hover_tip_visible = false
+      set_visible_if_alive(runtime.hover_tip_panel, false)
+      if show_bond_tip_panel(payload) then
+        return
+      end
+    else
+      hide_bond_tip_panel()
+    end
     refresh_hover_tip_panel_position()
     if not is_ui_alive(runtime.hover_tip_panel) then
       return
@@ -1300,7 +1489,7 @@ function M.create(env)
     return hero_model_ui
   end
 
-  local function bind_click_once(key, ui, callback)
+  bind_click_once = function(key, ui, callback)
     local runtime = get_runtime()
     if runtime.bound_events[key] == ui and is_ui_alive(ui) then
       return
@@ -1318,7 +1507,7 @@ function M.create(env)
     end)
   end
 
-  local function bind_hover_once(key, ui, on_enter, on_leave)
+  bind_hover_once = function(key, ui, on_enter, on_leave)
     local runtime = get_runtime()
     if runtime.bound_events[key] == ui and is_ui_alive(ui) then
       return
@@ -1465,6 +1654,8 @@ function M.create(env)
     local runtime = get_runtime()
     refresh_hover_tip_panel_position()
     set_visible_if_alive(runtime.hover_tip_panel, runtime.visible ~= false and runtime.hover_tip_visible == true)
+    set_visible_if_alive(runtime.bond_tips_root, runtime.visible ~= false and runtime.bond_tip_visible == true)
+    set_visible_if_alive(runtime.bond_tip_panel, runtime.visible ~= false and runtime.bond_tip_visible == true)
   end
 
   local function toggle_big_cursor()
@@ -1743,6 +1934,12 @@ function M.create(env)
     end)
     bind_click_once('top_hotkey', resolve_ui('top.top.left_buttons.btn_hotkey'), function()
       show_tip_panel(build_hotkey_help_text(), 10, '快捷键')
+    end)
+    bind_click_once('top_setting', resolve_ui('top.top.left_buttons.btn_setting'), function()
+      show_tip_panel(build_hotkey_help_text(), 10, '设置')
+    end)
+    bind_click_once('top_exit', resolve_ui('top.top.left_buttons.btn_exit'), function()
+      open_exit_confirm_panel()
     end)
 
     bind_click_once('toggle_damage', resolve_ui('BattleBottomHUD.layout.left_station.toggle_frame.toggle_damage.button'), function()
@@ -2168,7 +2365,10 @@ function M.create(env)
     set_visible_if_alive(runtime.attr_panel, visible == true and runtime.attr_panel_visible)
     set_visible_if_alive(runtime.tip_panel, visible == true and runtime.tip_expires_at > (STATE.runtime_elapsed or 0))
     set_visible_if_alive(runtime.hover_tip_panel, visible == true and runtime.hover_tip_visible == true)
+    set_visible_if_alive(runtime.bond_tips_root, visible == true and runtime.bond_tip_visible == true)
+    set_visible_if_alive(runtime.bond_tip_panel, visible == true and runtime.bond_tip_visible == true)
     set_visible_if_alive(runtime.big_cursor, visible == true and ensure_preferences().big_cursor)
+    set_visible_if_alive(runtime.quick_action_root, visible == true)
     refresh_attr_choice_panel()
   end
 

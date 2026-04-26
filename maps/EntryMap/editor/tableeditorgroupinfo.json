@@ -22,13 +22,6 @@
  {
   "__tuple__": true, 
   "items": [
-   "7746c1fe-46ba-455b-afd1-79227b6f8c41", 
-   "battlefield_scene_config"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
    "8b26c717-1027-4082-bd68-4591c48b5c66", 
    "battlefield_unit_config"
   ]
@@ -92,13 +85,6 @@
  {
   "__tuple__": true, 
   "items": [
-   "063b6287-2e0e-48b8-95e6-b3c8c9ea7300", 
-   "mainline_task_rewards"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
    "fa1695e8-eb67-4989-9705-76d442051f43", 
    "stages"
   ]
@@ -106,22 +92,8 @@
  {
   "__tuple__": true, 
   "items": [
-   "f63d4571-9fea-4881-bd1a-481af9471d22", 
-   "treasures"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
    "b3476553-db26-49f5-9738-fdd9023c39bb", 
    "waves"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "9e01d102-a696-4232-acf1-c1842b135dfe", 
-   "config1"
   ]
  }, 
  {
@@ -148,13 +120,6 @@
  {
   "__tuple__": true, 
   "items": [
-   "6fff7720-381a-45c6-a0a2-f47dcc393321", 
-   "shangchengdaojv"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
    "e84c98de-bd0c-4297-a500-014bf881e385", 
    "shangchengdaojv_rongyudengji"
   ]
@@ -164,6 +129,62 @@
   "items": [
    "3c345d3c-44c9-46fa-98f7-f2a07cb71eb2", 
    "quality_image_table"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "c213fa3d-17e8-4a55-a6cf-1f65946ca094", 
+   "monster_maintask"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "9c38bf9a-fe51-45b5-8ac6-deb60ab11943", 
+   "monster_xiaoguai"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "f821007e-7d20-4706-bb3a-e6f01788c85b", 
+   "monster_boss"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "310049f9-8192-4bfd-b846-c5957907f588", 
+   "nanduxishu"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "c8cb6b65-fb20-4d44-9a47-0392183a318a", 
+   "monster_boss_1"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "d0110369-b418-42b6-8919-d2652d9d3c98", 
+   "shangchengdaojv"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "3ad674ec-7433-4dd5-9dcc-3a4b61f45bb8", 
+   "tongyongcundang"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   "038ac70c-af9b-42bf-a2bc-1846312b994f", 
+   "tipsconfig"
   ]
  }
 ]

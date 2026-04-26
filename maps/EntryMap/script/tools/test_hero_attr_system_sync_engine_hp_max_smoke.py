@@ -31,7 +31,7 @@ def assert_ok(result: subprocess.CompletedProcess[str], message: str) -> None:
 def main() -> None:
     smoke = (
         "package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path "
-        "y3 = { const = { UnitAttr = { ['生命'] = 'hp_cur', ['最大生命'] = 'hp_max' } } } "
+        "y3 = { const = { UnitAttr = { ['生命'] = 'hp_cur', ['最大生命'] = 'hp_max', ['物理攻击'] = 'attack_phy' } } } "
         "local system = require('runtime.hero_attr_system').create() "
         "local hero = { attrs = {}, kv = {} } "
         "function hero:set_attr(name, value) self.attrs[name] = value end "
@@ -39,9 +39,10 @@ def main() -> None:
         "function hero:kv_save(key, value) self.kv[key] = value end "
         "function hero:kv_load(key, _) return self.kv[key] end "
         "function hero:kv_has(key) return self.kv[key] ~= nil end "
-        "system.init_hero_attrs(hero, { ['生命'] = 900 }) "
+        "system.init_hero_attrs(hero, { ['攻击白字'] = 60, ['生命'] = 900 }) "
         "assert((hero.attrs['最大生命'] or 0) == 900, 'expected engine hp_max synced to 900') "
         "assert((system.get_attr(hero, '生命结算值') or 0) == 900, 'expected life final value 900') "
+        "assert((hero.attrs['物理攻击'] or 0) == system.get_attr(hero, '攻击结算值'), 'expected engine physical attack synced to final attack') "
         "print('hero_attr_system sync hp_max smoke ok') "
     )
     with tempfile.NamedTemporaryFile('w', encoding='utf-8', suffix='.lua', delete=False) as handle:

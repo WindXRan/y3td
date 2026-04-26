@@ -16,48 +16,6 @@
             ], 
             "children": [
                 {
-                    "cap_insets": {
-                        "__tuple__": true, 
-                        "items": [
-                            20, 
-                            20, 
-                            20, 
-                            20
-                        ]
-                    }, 
-                    "children": [], 
-                    "color": [
-                        4, 
-                        9, 
-                        14, 
-                        18
-                    ], 
-                    "event_list": [], 
-                    "image": 131998, 
-                    "is_scale9_enable": true, 
-                    "name": "top_bg", 
-                    "open_adapter": true, 
-                    "pos_data": {
-                        "__tuple__": true, 
-                        "items": [
-                            960.0, 
-                            75.0, 
-                            50.0, 
-                            50.0, 
-                            1, 
-                            1
-                        ]
-                    }, 
-                    "prefab_sub_key": null, 
-                    "scene_ui_name": null, 
-                    "size": [
-                        1920.0, 
-                        150.0
-                    ], 
-                    "type": 4, 
-                    "uid": "5ddbd6dd-9c55-4d12-acd3-c8aca7eed6d3"
-                }, 
-                {
                     "adapter_option": [
                         false, 
                         false, 
@@ -160,58 +118,6 @@
                     ], 
                     "type": 4, 
                     "uid": "f8b4a7ff-4394-46b4-9d57-dd18e56afbf6"
-                }, 
-                {
-                    "adapter_option": [
-                        false, 
-                        false, 
-                        false, 
-                        false, 
-                        0.0, 
-                        60.0, 
-                        752.0, 
-                        808.0
-                    ], 
-                    "cap_insets": {
-                        "__tuple__": true, 
-                        "items": [
-                            18, 
-                            18, 
-                            18, 
-                            18
-                        ]
-                    }, 
-                    "children": [], 
-                    "color": [
-                        12, 
-                        14, 
-                        21, 
-                        236
-                    ], 
-                    "event_list": [], 
-                    "image": 100062, 
-                    "is_scale9_enable": true, 
-                    "name": "rail_glow_gold", 
-                    "open_adapter": true, 
-                    "pos_data": {
-                        "__tuple__": true, 
-                        "items": [
-                            932.0006, 
-                            105.0, 
-                            48.5417, 
-                            70.0, 
-                            1, 
-                            1
-                        ]
-                    }, 
-                    "prefab_sub_key": null, 
-                    "scene_ui_name": null, 
-                    "size": [
-                        360.0, 
-                        90.0
-                    ], 
-                    "type": 4, 
-                    "uid": "0facbb94-ad12-4a3b-93e2-6c5cce4be6b2"
                 }, 
                 {
                     "adapter_option": [
@@ -3074,7 +2980,7 @@
                                             "anim_type": 0, 
                                             "comp": "a06c0e95-daa5-4976-9d46-d3e9ebd1db0f", 
                                             "ease_type": 0, 
-                                            "name": "BackToHall_14", 
+                                            "name": "BackToHall_16", 
                                             "open_timeline": true, 
                                             "type": 5
                                         }
@@ -3400,7 +3306,7 @@
                                             "anim_type": 0, 
                                             "comp": "54182739-d294-4dbd-9d3e-6800c3becd7d", 
                                             "ease_type": 0, 
-                                            "name": "Show_14", 
+                                            "name": "Show_16", 
                                             "open_timeline": true, 
                                             "type": 2
                                         }

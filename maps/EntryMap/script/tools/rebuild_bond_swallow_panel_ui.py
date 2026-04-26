@@ -65,35 +65,10 @@ def uid():
     return builder.uid()
 
 
-def group_button(name, x, y, label):
-    root = layout(name, x, y, 124, 32, [255, 255, 255, 0], True)
-    root["children"] = [
-        button(
-            "button",
-            62,
-            16,
-            124,
-            32,
-            label,
-            normal_picture=BUTTON_BLUE,
-            suspend_picture=BUTTON_BLUE_HOV,
-            press_picture=BUTTON_BLUE_DWN,
-            disabled_picture=BUTTON_BLUE,
-            font_size=13,
-        )
-    ]
-    return root
-
-
-def card_slot(name, x, y):
-    root = layout(name, x, y, 68, 68, [255, 255, 255, 0], True)
-    root["children"] = [
-        image("slot_bg", 34, 34, 66, 66, BG_BLACK, [255, 255, 255, 120], True),
-        image("empty_mark", 34, 34, 42, 42, SKILL_SMALL_EMPTY, [255, 255, 255, 65], False),
-        image("frame", 34, 34, 66, 66, PROP_FRAME, [255, 255, 255, 235], False),
-        image("icon", 34, 34, 48, 48, ICON_MISC, [255, 255, 255, 255], False),
-        image("state_glow", 34, 34, 66, 66, SHOP_LINE, [255, 210, 88, 0], True),
-    ]
+def grid_view(name, x, y, width, height):
+    root = layout(name, x, y, width, height, [255, 255, 255, 0], True)
+    root["type"] = 25
+    root["children"] = []
     return root
 
 
@@ -145,44 +120,16 @@ def build_panel():
     left = panel("group_panel", 236, 348, 430, 590, [9, 12, 20, 220])
     left["children"] = [
         image("panel_bg", 215, 295, 420, 580, BG_BLACK, [255, 255, 255, 140], True),
-        text("basic_title", 30, 558, 140, 20, "职业卡组：", 14, [123, 180, 255, 255], 0),
-        text("special_title", 30, 260, 140, 20, "特殊卡组：", 14, [255, 210, 110, 255], 0),
+        text("group_title", 30, 558, 160, 20, "羁绊列表：", 14, [123, 180, 255, 255], 0),
+        grid_view("group_grid", 215, 286, 392, 510),
     ]
-    basic_labels = [
-        "神射手(0/5)", "游侠(0/5)", "枪炮师(0/5)",
-        "猎人(0/5)", "刀锋战士(0/5)", "魔剑士(0/5)",
-        "狂战士(0/5)", "剑魂(0/5)", "骷髅法师(0/5)",
-        "剑宗(0/5)", "龙骑士(0/5)", "雷电法王(0/5)",
-        "火法师(0/5)", "冰霜法师(0/5)", "战斗法师(0/5)",
-    ]
-    for index, label in enumerate(basic_labels, start=1):
-        col = (index - 1) % 3
-        row = (index - 1) // 3
-        left["children"].append(group_button(f"root_btn_{index}", 74 + col * 132, 524 - row * 42, label))
-
-    special_labels = [
-        "新兵套(0/3)", "炼金术(0/3)", "王牌(0/5)",
-        "异火(0/10)", "赌神(0/5)", "狩猎达人(0/3)",
-        "小成箭术(0/3)", "大成箭术(0/5)", "龙珠(0/7)",
-        "凡人修仙(0/10)", "爆战兔(0/3)", "证帝(0/10)",
-        "雀魂麻将(0/8)", "作者宝库(0/10)", "绝学(0/9)",
-        "诛仙剑阵(0/5)", "超能果实(0/6)", "盲盒(0/5)",
-    ]
-    for index, label in enumerate(special_labels, start=16):
-        local_index = index - 16
-        col = local_index % 3
-        row = local_index // 3
-        left["children"].append(group_button(f"root_btn_{index}", 74 + col * 132, 226 - row * 36, label))
 
     grid = panel("card_grid", 725, 410, 500, 420, [8, 10, 16, 210])
     grid["children"] = [
         image("grid_bg", 250, 210, 500, 420, BG_BLACK, [255, 255, 255, 115], True),
         text("grid_title", 34, 394, 170, 22, "当前卡组", 16, [123, 180, 255, 255], 0),
+        grid_view("card_list", 250, 190, 462, 340),
     ]
-    for index in range(1, 21):
-        col = (index - 1) % 5
-        row = (index - 1) // 5
-        grid["children"].append(card_slot(f"card_slot_{index}", 64 + col * 84, 332 - row * 82))
 
     detail = panel("detail_panel", 725, 118, 500, 210, [12, 14, 22, 230])
     detail["children"] = [

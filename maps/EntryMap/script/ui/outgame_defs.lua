@@ -1,6 +1,7 @@
 local M = {}
 local HonorLevels = require 'data.object_tables.honor_levels'
 local EquipmentCatalog = require 'data.object_tables.equipment_catalog'
+local ShopItems = require 'data.object_tables.shop_items'
 
 local function append_specs(target, prefix, start_index, end_index, title_prefix, line_1, line_2, line_3)
   for index = start_index, end_index do
@@ -203,7 +204,7 @@ function M.create(config)
       { key = 'hero', page_key = nil, visible = true },
       { key = 'beast', page_key = nil, visible = true },
       { key = 'skin', page_key = nil, visible = true },
-      { key = 'shop', page_key = nil, visible = true },
+      { key = 'shop', page_key = 'shop', visible = true },
       { key = 'heirloom', page_key = nil, visible = true },
     },
     archive_universal_keys = { 'pass', 'map', 'community', 'achievement', 'lottery', 'test', 'fish' },
@@ -219,6 +220,9 @@ function M.create(config)
     },
     honor_level_specs = HonorLevels.list,
     archive_pool_item_specs = build_pool_specs(),
+    archive_shop_item_specs = ShopItems.list,
+    archive_shop_categories = ShopItems.categories,
+    archive_shop_default_icon = ShopItems.default_icon,
   }
 end
 

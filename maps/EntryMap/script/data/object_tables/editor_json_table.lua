@@ -2,7 +2,22 @@ local Json = require 'y3.tools.json'
 
 local M = {}
 
+local function get_script_root()
+  local source = debug.getinfo(1, 'S').source or ''
+  local path = source:gsub('^@', '')
+  local root = path:match('^(.*[/\\])data[/\\]object_tables[/\\]editor_json_table%.lua$')
+  if root then
+    return (root:gsub('[/\\]+$', ''))
+  end
+  return 'maps/EntryMap/script'
+end
+
+local SCRIPT_ROOT = get_script_root()
+local MAP_ROOT = SCRIPT_ROOT:gsub('[/\\]script$', '')
+
 local TABLE_PATH_PATTERNS = {
+  MAP_ROOT .. '/tables/%s.json',
+  SCRIPT_ROOT .. '/../tables/%s.json',
   'maps/EntryMap/tables/%s.json',
   '../tables/%s.json',
   'tables/%s.json',

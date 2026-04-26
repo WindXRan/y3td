@@ -19,6 +19,7 @@ function M.create(env)
   local dump_temporary_treasures = env.dump_temporary_treasures
   local effect_debug_system = env.effect_debug_system
   local force_trigger_effect = env.force_trigger_effect
+  local open_effect_debug_panel_ui = env.open_effect_debug_panel_ui
 
   local api = {}
 
@@ -212,6 +213,9 @@ function M.create(env)
   function api.debug_open_effect_debug_panel()
     if not guard_battle() then
       return
+    end
+    if open_effect_debug_panel_ui then
+      open_effect_debug_panel_ui()
     end
     debug_message('特效调试面板已打开。')
   end

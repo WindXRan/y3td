@@ -4,6 +4,26 @@
   "key": 2147483647, 
   "group": [
    {
+    "name": "Archive_panel", 
+    "key": "p5fpsEF5EfGvur9IMCbXlp", 
+    "group": [
+     {
+      "__tuple__": true, 
+      "items": [
+       "6f7266eb-92a4-40e7-b789-298b75c399d6", 
+       "ArchiveMain"
+      ]
+     }, 
+     {
+      "__tuple__": true, 
+      "items": [
+       "1b62165d-57b8-4ed7-aa73-71b3b8c1bb36", 
+       "TipsPanel"
+      ]
+     }
+    ]
+   }, 
+   {
     "__tuple__": true, 
     "items": [
      "38ddddb2-6785-4804-9b5c-dfb479bd62b3", 
@@ -97,8 +117,15 @@
    {
     "__tuple__": true, 
     "items": [
-     "848a42be-ba6c-4e99-9f4d-710a14a8b369", 
+     "951fbd00-a07b-438c-9a58-1d7751e5f8c5", 
      "BondSwallowPanel"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "6f1ce24f-1308-4ae6-bde0-828b0bd97e31", 
+     "EnterPanel"
     ]
    }
   ]
