@@ -2120,32 +2120,7 @@ local function collect_modifier_pool_choice_entries(state)
 end
 
 local function collect_candidate_choice_entries(state)
-  if is_modifier_pool_enabled() then
-    return collect_modifier_pool_choice_entries(state) or {}
-  end
-
-  local modifier_choices = collect_modifier_pool_choice_entries(state)
-  if modifier_choices and #modifier_choices > 0 then
-    return modifier_choices
-  end
-
-  local runtime = ensure_runtime(state)
-  if not runtime then
-    return {}
-  end
-
-  M.rebuild_candidate_nodes(state)
-  local candidate_defs = {}
-  for _, node_def in ipairs(M.get_candidate_nodes(state)) do
-    candidate_defs[#candidate_defs + 1] = node_def
-  end
-  local choice_count = BondPickConfig.choice_count or 3
-  local choices = pick_random_candidates(state, candidate_defs, choice_count)
-
-  for index, choice in ipairs(choices) do
-    choice.index = index
-  end
-  return choices
+  return collect_modifier_pool_choice_entries(state) or {}
 end
 
 function M.create_runtime()
