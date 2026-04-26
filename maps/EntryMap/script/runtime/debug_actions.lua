@@ -7,6 +7,7 @@ function M.create(env)
   local get_hero_max_level = env.get_hero_max_level
   local sync_hero_progression = env.sync_hero_progression
   local ATTACK_SKILL_BLUEPRINTS = env.ATTACK_SKILL_BLUEPRINTS or { list = {} }
+  local attack_skill_slot_count = math.max(1, tonumber(env.attack_skill_slot_count) or 5)
   local unlock_attack_skill = env.unlock_attack_skill
   local show_attack_skill_loadout = env.show_attack_skill_loadout
   local show_upgrade_choices = env.show_upgrade_choices
@@ -80,12 +81,17 @@ function M.create(env)
       return
     end
     local unlocked = 0
+    local max_debug_unlocks = math.max(0, attack_skill_slot_count - 1)
+    if max_debug_unlocks <= 0 then
+      debug_message('No free attack skill slots available for debug unlock.')
+      return
+    end
     for _, blueprint in ipairs(ATTACK_SKILL_BLUEPRINTS.list or {}) do
       local _, _, is_new = unlock_attack_skill(blueprint.id)
       if is_new then
         unlocked = unlocked + 1
       end
-      if unlocked >= 3 then
+      if unlocked >= max_debug_unlocks then
         break
       end
     end

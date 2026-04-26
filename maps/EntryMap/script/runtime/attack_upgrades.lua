@@ -925,8 +925,9 @@ function M.create(env)
     local unlock_added = false
 
     if has_unlock_available then
+      local needs_first_attack_skill = unlocked_skill_count <= 1
       local force_unlock = STATE.attack_skill_state
-        and (STATE.attack_skill_state.unlock_offer_fail_streak or 0) >= 3
+        and (needs_first_attack_skill or (STATE.attack_skill_state.unlock_offer_fail_streak or 0) >= 3)
       local should_offer_unlock = force_unlock
         or math.random() <= get_unlock_offer_chance(unlocked_skill_count)
       if should_offer_unlock then

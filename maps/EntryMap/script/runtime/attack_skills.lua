@@ -2281,6 +2281,7 @@ function M.create(env)
   
     local first_target = pick_skill_target(skill)
     if not first_target then
+      skill.cooldown_remaining = math.max(skill.cooldown_remaining or 0, 0.15)
       return
     end
 
@@ -2328,6 +2329,16 @@ function M.create(env)
     end
   
     update_basic_attack(dt)
+
+    for slot = 1, ATTACK_SKILL_SLOT_COUNT, 1 do
+      local skill = get_attack_skill_slot(slot)
+      if skill and skill.id ~= 'basic_attack' then
+        skill.cooldown_remaining = math.max(0, (skill.cooldown_remaining or 0) - dt)
+        if skill.cooldown_remaining <= 0 then
+          try_cast_attack_skill(skill)
+        end
+      end
+    end
   end
 
   return {

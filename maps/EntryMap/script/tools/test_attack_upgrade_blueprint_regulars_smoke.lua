@@ -4,7 +4,9 @@ local AttackSkillBlueprints = require 'data.object_tables.attack_skill_second_ba
 
 assert(type(AttackSkillBlueprints) == 'table', 'expected blueprints object table to be a table')
 assert(type(AttackSkillBlueprints.list) == 'table', 'expected blueprints list to be a table')
-assert(#AttackSkillBlueprints.list == 0, 'expected attack skill blueprints to be disabled in basic attack only mode')
-assert(next(AttackSkillBlueprints.by_id) == nil, 'expected attack skill blueprint map to be empty')
+assert(#AttackSkillBlueprints.list == 2, 'expected two active sample attack skill blueprints')
+assert(AttackSkillBlueprints.by_id.chain_lightning ~= nil, 'expected chain_lightning blueprint to be active')
+assert(AttackSkillBlueprints.by_id.fireball ~= nil, 'expected fireball blueprint to be active')
+assert(AttackSkillBlueprints.by_id.flying_swords == nil, 'expected inactive blueprints to stay disabled')
 
 print('[OK] attack upgrade blueprint regulars smoke passed')

@@ -6,7 +6,10 @@ local lane_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_growth
 local skill_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_skills.csv')
 local evolution_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_evolutions.csv')
 local card_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_cards.csv')
-local ACTIVE_SKILL_IDS = {}
+local ACTIVE_SKILL_IDS = {
+  chain_lightning = true,
+  fireball = true,
+}
 
 local evolution_by_skill = {}
 for _, row in ipairs(evolution_rows) do
