@@ -4005,7 +4005,7 @@
             "p_trigger_id": 430379029, 
             "trigger_id": 178720790, 
             "trigger_name": "签到_鼠标移入", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "INTEGER": {}

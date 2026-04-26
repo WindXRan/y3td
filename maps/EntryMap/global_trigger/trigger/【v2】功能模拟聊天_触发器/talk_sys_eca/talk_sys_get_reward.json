@@ -1261,7 +1261,7 @@
     "p_trigger_id": null, 
     "trigger_id": 574418951, 
     "trigger_name": "talk_sys_get_reward", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "BOOLEAN": {

@@ -458,7 +458,7 @@
     "p_trigger_id": null, 
     "trigger_id": 709308417, 
     "trigger_name": "初始化图鉴表", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "INTEGER": {

@@ -25,6 +25,7 @@
         "INTEGER": {
             "GLOBAL_BAG_MAX_NUM": 0, 
             "\u5175\u4e66\u5806\u53e0\u4e0a\u9650": 0, 
+            "\u5730\u56fe\u7b49\u7ea7": 0, 
             "\u6d3b\u52a8_\u7b7e\u5230_\u672c\u5c40\u65e5\u6570": 0, 
             "\u6d88\u606f\u5217\u8868_\u504f\u79fb\u884c\u6570": 0, 
             "\u6d88\u606f\u5217\u8868_\u6700\u8fd1\u63d2\u5165\u884c\u53f7": 0, 
@@ -88,7 +89,8 @@
             "G_\u57ce\u9547\u5927\u5385": null, 
             "g_talk_sys_hero": null
         }, 
-        "UNIT_NAME": {}
+        "UNIT_NAME": {}, 
+        "UNIT_WRITE_ATTRIBUTE": {}
     }, 
     "variable_group_info": [
         {
@@ -606,6 +608,13 @@
             ], 
             "key": "ztKK8TrlEfG9cv+GIcAtO0", 
             "name": "\u7b7e\u5230\u7cfb\u7edf_\u5168\u5c40\u53d8\u91cf"
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                "\u5730\u56fe\u7b49\u7ea7", 
+                "\u5730\u56fe\u7b49\u7ea7"
+            ]
         }
     ], 
     "variable_length_dict": {
@@ -630,6 +639,7 @@
         "hexGreenRed": 10, 
         "\u5175\u4e66\u5806\u53e0\u4e0a\u9650": 10, 
         "\u56fe\u9274\u8868": 0, 
+        "\u5730\u56fe\u7b49\u7ea7": 0, 
         "\u5f3a\u8c03\u91d1/\u8b66\u544a\u7ea2/\u63d0\u793a\u7eff": 10, 
         "\u6b66\u5c06\u5934\u50cf\u6846_\u5e38\u6001": 10, 
         "\u6d3b\u52a8_\u7b7e\u5230_\u672c\u5c40\u65e5\u6570": 0, 

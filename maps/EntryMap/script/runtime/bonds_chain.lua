@@ -2120,6 +2120,10 @@ local function collect_modifier_pool_choice_entries(state)
 end
 
 local function collect_candidate_choice_entries(state)
+  if is_modifier_pool_enabled() then
+    return collect_modifier_pool_choice_entries(state) or {}
+  end
+
   local modifier_choices = collect_modifier_pool_choice_entries(state)
   if modifier_choices and #modifier_choices > 0 then
     return modifier_choices

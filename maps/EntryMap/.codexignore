@@ -1,0 +1,73 @@
+# Large binary/export files
+*.gmp
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.psd
+*.zip
+*.7z
+*.rar
+
+# Runtime/editor cache and generated output
+.git/
+.pytest_cache/
+pytest-cache-files-*/
+.y3maker/
+deliverables/
+store/
+*.log
+*.tmp
+*.bak
+
+# Large localization/resource dependency tables
+*language.json
+cloudresdependence.json
+manualdependence.json
+resourceobjectdata.data
+
+# Y3 generated/editor-heavy data. Read these only when a task names an id,
+# file, UI layer, object type, or asks specifically for object/UI editing.
+ability/
+modifier/
+unit/
+item/
+projectile/
+destructible/
+physics_entity/
+ui/
+ui_tree/
+editor/
+editor_table/
+global_trigger/
+ui_trigger/
+custom_eca/
+
+# Keep source Lua discoverable, but skip embedded visual references.
+script/docs/
+
+# Existing large project-owned code. Read only when a task names the file or
+# feature, and split touched files toward the 400-line limit.
+script/ui/outgame.lua
+script/ui/runtime_hud.lua
+script/runtime/bonds_chain.lua
+script/runtime/attack_skills.lua
+script/runtime/boot.lua
+script/runtime/rewards.lua
+script/runtime/battlefield.lua
+script/runtime/attack_upgrades.lua
+script/runtime/runtime_ui_helpers.lua
+script/runtime/auto_active_effects.lua
+script/runtime/audio.lua
+script/runtime/mainline_tasks.lua
+script/runtime/debug_tools.lua
+script/runtime/gear_upgrades.lua
+script/runtime/hero_form_skills.lua
+script/runtime/hero_attr_system.lua
+script/tools/sync_runtime_editor_objects.py
+script/tools/rebuild_battle_bottom_hud_ui.py
+script/tools/test_basic_attack_extra_targets_smoke.py
+script/tools/build_top_from_best_html.py
+script/tools/game_watchdog.py
+script/tools/patch_gamehud_core_hud.py

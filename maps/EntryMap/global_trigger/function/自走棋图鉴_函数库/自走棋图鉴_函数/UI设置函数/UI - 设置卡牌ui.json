@@ -1524,7 +1524,7 @@
     "p_trigger_id": null, 
     "trigger_id": 155660304, 
     "trigger_name": "UI - 设置卡牌ui", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "INTEGER": {

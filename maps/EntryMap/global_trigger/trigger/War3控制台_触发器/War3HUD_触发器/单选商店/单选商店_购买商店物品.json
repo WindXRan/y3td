@@ -796,7 +796,7 @@
     "p_trigger_id": null, 
     "trigger_id": 43626608, 
     "trigger_name": "单选商店_购买商店物品", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "ABILITY": {}, 

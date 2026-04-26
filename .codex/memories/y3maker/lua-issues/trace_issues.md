@@ -24,4 +24,15 @@
 
 ---
 
+### 获取鼠标 UI 坐标前未开启鼠标位置同步
+
+- 时间：2026-04-25
+- 场景：战斗 UI 初始化后刷新 hover tip 位置，调用 `player:get_mouse_ui_x_percent()` / `player:get_mouse_ui_y_percent()`
+- Trace：`script/y3/object/runtime_object/player.lua:615: 必须先设置 y3.config.sync.mouse = true`
+- 根因：框架的鼠标位置接口依赖 `y3.config.sync.mouse`，启动入口未在 runtime/UI 初始化前启用鼠标位置同步
+- 解决方案：在 `maps/EntryMap/script/main.lua` 顶部设置 `y3.config.sync.mouse = true`
+- 预防建议：新增任何鼠标位置相关 UI 逻辑前，先确认启动阶段已启用 `Config.Sync.mouse`
+
+---
+
 *最后更新: 2026-04-07*

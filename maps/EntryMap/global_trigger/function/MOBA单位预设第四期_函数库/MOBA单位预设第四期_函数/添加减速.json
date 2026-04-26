@@ -2172,7 +2172,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1996619842, 
     "trigger_name": "添加减速", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "BOOLEAN": {

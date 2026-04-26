@@ -1543,7 +1543,7 @@
     }, 
     "trigger_id": 390541314, 
     "trigger_name": "图鉴筛选触发初始化", 
-    "valid": true, 
+    "valid": false, 
     "var_data": [
         {
             "STRING": {
