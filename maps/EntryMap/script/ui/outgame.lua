@@ -173,6 +173,12 @@ function M.create(env)
     return false
   end
 
+  local function set_relative_scale_if_alive(ui, scale_x, scale_y)
+    if is_ui_alive(ui) and ui.set_widget_relative_scale then
+      ui:set_widget_relative_scale(scale_x or 1, scale_y or scale_x or 1)
+    end
+  end
+
   local function set_text_color_if_alive(ui, color)
     if is_ui_alive(ui) and ui.set_text_color and color then
       ui:set_text_color(color[1], color[2], color[3], color[4] or 255)
@@ -1991,6 +1997,7 @@ function M.create(env)
         set_visible_if_alive(static_root, false)
         local prefab_instance = create_archive_prefab_instance(ui.universal_grids[tab_key], ARCHIVE_PREFAB_NAMES.badge, static_root, index)
         local root = (prefab_instance and prefab_instance.root) or static_root or nil
+        set_relative_scale_if_alive(root, 0.74, 0.74)
         ui.universal_items[tab_key][#ui.universal_items[tab_key] + 1] = {
           spec = spec,
           prefab_instance = prefab_instance,
@@ -2011,7 +2018,7 @@ function M.create(env)
       end
     end
 
-    ui.pool.board = create_archive_grid_view(ui.pool.board, 720, 560, 526) or ui.pool.board
+    ui.pool.board = create_archive_grid_view(ui.pool.board, 660, 310, 526) or ui.pool.board
     for _, spec in ipairs(ARCHIVE_POOL_ITEM_SPECS) do
       local static_root = resolve_ui(pool_page_path .. '.pool_card.pool_board.' .. spec.node) or resolve_ui(pool_page_path .. '.pool_card.' .. spec.node)
       set_visible_if_alive(static_root, false)
@@ -2323,16 +2330,15 @@ function M.create(env)
     if not ui then
       return
     end
-    local map_column_count = 8
-    local map_row_count = math.max(1, math.ceil(#(ARCHIVE_UNIVERSAL_ITEM_SPECS.map or {}) / map_column_count))
-    configure_grid_view(ui.universal_grids and ui.universal_grids.pass, 8, 2, 78, 78, 20, 16, true)
-    configure_grid_view(ui.universal_grids and ui.universal_grids.map, map_column_count, map_row_count, 78, 78, 20, 16, true)
-    configure_grid_view(ui.universal_grids and ui.universal_grids.community, 8, 3, 78, 78, 20, 16, true)
-    configure_grid_view(ui.universal_grids and ui.universal_grids.achievement, 8, 3, 78, 78, 20, 16, true)
-    configure_grid_view(ui.universal_grids and ui.universal_grids.lottery, 8, 3, 78, 78, 20, 16, true)
-    configure_grid_view(ui.universal_grids and ui.universal_grids.test, 8, 2, 78, 78, 20, 16, true)
-    configure_grid_view(ui.universal_grids and ui.universal_grids.fish, 8, 5, 78, 78, 20, 16, true)
-    configure_grid_view(ui.pool and ui.pool.board, 8, 4, 64, 64, 14, 18, true)
+    local universal_column_count = 8
+    for _, tab_key in ipairs(ARCHIVE_UNIVERSAL_KEYS) do
+      local item_count = #(ARCHIVE_UNIVERSAL_ITEM_SPECS[tab_key] or {})
+      local row_count = math.max(1, math.ceil(item_count / universal_column_count))
+      configure_grid_view(ui.universal_grids and ui.universal_grids[tab_key], universal_column_count, row_count, 76, 82, 14, 8, true)
+    end
+    local pool_column_count = 8
+    local pool_row_count = math.max(1, math.ceil(#ARCHIVE_POOL_ITEM_SPECS / pool_column_count))
+    configure_grid_view(ui.pool and ui.pool.board, pool_column_count, pool_row_count, 64, 74, 14, 16, true)
   end
 
   local function bind_archive_demo_interactions()
