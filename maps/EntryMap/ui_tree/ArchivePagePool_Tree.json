@@ -1,1197 +1,1093 @@
 {
   "name": "ArchivePagePool",
-  "uid": "ac8a7e59-3880-4bfb-bddf-d5f8837b96e2",
+  "uid": "f3a95060-1921-4acf-9b64-b6d4f255dec1",
   "type": 2,
   "children": [
     {
       "name": "root",
-      "uid": "ce5d9245-b7cc-435f-b965-12fdcfb444e3",
+      "uid": "f87d02a6-98de-47eb-b2c2-892febbb1563",
       "type": 7,
       "children": [
         {
-          "name": "root_bg",
-          "uid": "fe037fe2-d6e5-454b-8275-5c3410bd259d",
-          "type": 4
-        },
-        {
           "name": "content",
-          "uid": "4644ca7f-5811-4042-b59e-20d9f0211b3c",
+          "uid": "787e0835-f9ed-4891-b4a8-26dc0f807c6f",
           "type": 7,
           "children": [
             {
-              "name": "content_bg",
-              "uid": "4e70f478-d568-44d8-a5dd-7c599064cd8a",
-              "type": 4
-            },
-            {
               "name": "page_pool",
-              "uid": "239f7b51-22a7-4286-be3f-7a1482355463",
+              "uid": "38a63834-3d89-4fac-916e-e3c527dc7e14",
               "type": 7,
               "children": [
                 {
-                  "name": "page_pool_bg",
-                  "uid": "e6156002-674b-4e66-8422-e3b8edd0e4d5",
-                  "type": 4
-                },
-                {
                   "name": "pool_card",
-                  "uid": "70efbbd9-4a98-4770-be19-00f35f0a8ade",
+                  "uid": "33dffd63-0bff-44ca-b445-bc6d80efeddc",
                   "type": 7,
                   "children": [
                     {
-                      "name": "pool_card_bg",
-                      "uid": "76b1bdb0-88eb-48ea-8f07-2aa40a848507",
-                      "type": 4
+                      "name": "frame",
+                      "uid": "835ff213-2ca3-4394-8f43-a89700fed3f4",
+                      "type": 7
                     },
                     {
-                      "name": "pool_board",
-                      "uid": "71f58f0c-dbae-41c8-a3f3-34ac5ee32e73",
+                      "name": "inner",
+                      "uid": "217c1fb0-eaff-41d8-8df0-6a36f003c982",
+                      "type": 7
+                    },
+                    {
+                      "name": "metal_top_line",
+                      "uid": "f137ab87-ac1f-4782-8f07-96afdd769ac2",
+                      "type": 7
+                    },
+                    {
+                      "name": "metal_bottom_line",
+                      "uid": "46f21a0e-a4a8-41ab-b02f-86358694e8c3",
+                      "type": 7
+                    },
+                    {
+                      "name": "title_bg",
+                      "uid": "41ed7b6d-972f-4e90-951d-8ebafc475d00",
+                      "type": 7
+                    },
+                    {
+                      "name": "title",
+                      "uid": "2d60ede8-103b-4b08-a795-51e25dc1b3e1",
+                      "type": 3
+                    },
+                    {
+                      "name": "back_button",
+                      "uid": "c5b57ba4-2126-4b02-bdac-db27fd353dbd",
                       "type": 7,
                       "children": [
                         {
-                          "name": "pool_board_bg",
-                          "uid": "f842c3df-5c67-4052-b0bf-8e2d34a94da6",
-                          "type": 4
+                          "name": "bg",
+                          "uid": "46fc2e52-f5cc-4087-8834-ae264c74fd6c",
+                          "type": 7
                         },
                         {
-                          "name": "item_east",
-                          "uid": "1ad9e4d1-5b9a-4a83-9229-8b0d443f1215",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_east_bg",
-                              "uid": "2f6fcbc0-9565-4b5f-9006-fd5625bee86a",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "739288ba-121d-45c3-b95a-050d703b8d9e",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "5f9628d6-3bab-4603-95f4-1bdc3a0db304",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "8eaaf8f3-7cdd-42b1-81d9-399d87a36322",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "a3f5eb7e-a64f-4d6d-93ae-0a12ce82e25f",
-                              "type": 3
-                            }
-                          ]
+                          "name": "label",
+                          "uid": "7520d20b-7e93-4752-94bb-4334d151da48",
+                          "type": 3
                         },
                         {
-                          "name": "item_south",
-                          "uid": "1dd518c8-3241-4d2b-b1f5-17a959eed8c4",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_south_bg",
-                              "uid": "65b43858-e342-445a-88b4-c90a2351e1ae",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "7dab2296-22dd-4885-9cc1-393c38a4939a",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "a9eacaa2-3ecb-42e5-8c21-cfc5ef54a6b9",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "1318e17d-4e4b-4d16-8fed-4eeac90ef62f",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "e2541b14-7f08-4a3a-b536-64269a57d8d3",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_west",
-                          "uid": "5a1f4084-7d68-4dc5-b737-ee6edba8e493",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_west_bg",
-                              "uid": "e8cac6b6-c743-4862-bcd5-4558d49bc6b7",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "7d60bac8-31d7-4427-afba-8b34cf6ddf50",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "48a8653d-e594-4d2b-ae6e-9d43ced072fc",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "84f28513-fd0a-4daa-95a9-289a82d8d002",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "dbd198db-4b49-4ccc-8fd6-284ed5e7eba6",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_north",
-                          "uid": "f122b762-230e-433d-8967-da1070d50c2f",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_north_bg",
-                              "uid": "92bf1396-0b3b-4569-9ef2-4752067f580e",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "19c27261-6851-4c08-8f71-c15c069067a3",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "dbe9b19c-258d-4fd3-849a-17b1d2358411",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "6d51ccba-2ecf-47c9-bf9b-a6509da54dce",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "1edb5286-edf9-41bd-ad8e-b9e7c78ede65",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_mid",
-                          "uid": "a1f8b65e-1727-412c-863b-fc9227abdb4b",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_mid_bg",
-                              "uid": "f5e37809-41d5-452d-a817-31e08f3f5e49",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "700dd67c-c41b-4b5d-9e86-46b76c7f98fd",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "19d56ab3-9863-40b2-a112-eabd1c3275c7",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "899a1544-2f12-4570-bb8c-ea33c413eac8",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "988174b6-cc21-4d2d-a476-baf27455cb41",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_fa",
-                          "uid": "8b05f5c4-a2c2-44d0-8414-ea51aab49feb",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_fa_bg",
-                              "uid": "6f16c4b5-588d-4d02-ad61-6c74f9943368",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "94c78ddc-4be2-498e-8a07-2e0f634e728e",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "4d541bdc-c9fe-48b3-b551-a5db9de07730",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "2c75d3e8-0d32-48ae-90be-1c39adff0383",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "78c03948-a5ee-496f-a47c-05278ab0deb1",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_sugar",
-                          "uid": "3625152c-a306-4cb1-9130-e2392f3b53f9",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_sugar_bg",
-                              "uid": "91039cda-d4a5-47c4-acf1-79a9db919858",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "bc3e0f6c-3f60-4e76-ab66-4c51e4e57b73",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "ad89389f-d1ed-4172-b5a3-3fe13df228cf",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "86a41ba3-06df-4edc-917a-0eb303f62394",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "5aeb2bd5-90fe-48a5-9c69-a2d467040c8c",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_pop",
-                          "uid": "daaed409-0d76-4cd3-8d37-3a7e01aa4768",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_pop_bg",
-                              "uid": "908e605d-e2d5-4db7-8393-4e218418c53d",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "845fb069-9faa-40b9-b25e-8a48af2fdbdd",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "cdd66e3b-dfdd-42c8-91ef-f33c30635d27",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "01f1c187-ee55-4660-9900-ac07be9ee108",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "1c53c277-b8e4-40ca-ac2e-cf3745737923",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_meat",
-                          "uid": "0f7f2ae6-9dbe-4d2e-a51e-d19580b73690",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_meat_bg",
-                              "uid": "d14a26e7-65b3-4da5-9a1c-0358eaf887b0",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "923c9226-37e0-458c-a919-68aa6c1f0921",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "fc94e019-e267-4e13-bcf8-3520c726ce45",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "0d28bbdb-fc42-4a90-bf11-bdd986ea8b40",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "a0967d7a-812a-4532-8514-60b9e0cc0902",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_1",
-                          "uid": "6a7feadd-78fb-4700-9a77-ab8ea11790cb",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_1_bg",
-                              "uid": "1e46a3ec-3835-4024-a5de-6dc7fa2d6c1d",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "1ead48bf-f1b8-42c7-aafe-19ee007e10be",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "160f0981-d28c-45bb-9252-b076bbe90870",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "17236b22-5cf5-4cbb-8792-9e452456bd71",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "25a48b26-406c-44f0-a528-8101a49665cd",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_2",
-                          "uid": "3f9595e8-152d-4aed-9bc0-99bda136b280",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_2_bg",
-                              "uid": "b8f9a5a0-4b67-4ba0-99be-a3ef8c13620e",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "897d889d-5eef-44fc-ade3-88ac0f52e736",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "cfa81847-8acb-4ebf-9b50-1f7b8310f407",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "69b6b3f8-6fea-44d9-b3b7-d4249e7b0a17",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "bd3e452e-edff-4a1f-adae-9d2103eb286c",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_3",
-                          "uid": "26e248fa-0229-4eb6-bda5-9e9446817275",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_3_bg",
-                              "uid": "153c0920-df8a-480e-be83-b61b9c1a34e0",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "1cf0de68-b224-4cd9-8c0f-a02d4cf4f53a",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "d835f5ae-dda1-4f21-b3e3-f09147cb79c8",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "31681b03-a08d-4fb5-ad11-aacf528e64ef",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "7516e408-0031-4bbf-908d-fd7a5993efc8",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_4",
-                          "uid": "f880f9a1-fd06-4668-900e-9fdbb4b585d9",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_4_bg",
-                              "uid": "a2bddd05-247f-4110-acd6-80d0d1d33927",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "57108bfd-4334-4404-b1d2-2da804849973",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "8f3b2547-7b5d-4dc1-9edf-4eadbdf48cf4",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "b2e4639f-e70a-43cf-b810-268f8c4f3569",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "3c111900-c6cc-4cdc-88f0-b22e832488ab",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_5",
-                          "uid": "609bde7a-e15d-49bb-ba87-463ac2572f58",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_5_bg",
-                              "uid": "d7177e77-2e59-4f22-840c-6c9fac788bc9",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "62bfbe91-a29e-4290-a491-bb5a9c57e087",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "a86d3530-d473-47ea-be18-78a293a0b7bb",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "461d5c75-773d-4138-8603-a0500f5f77d4",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "91a23a4a-cde4-428e-bc42-4e34a606119c",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_6",
-                          "uid": "bcda5ae0-8b79-452f-bfd8-233305ef5a2e",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_6_bg",
-                              "uid": "681ca73b-bfb8-482f-867f-83aa636c7346",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "223044d3-2424-4696-a5bf-9b1a655fd2e9",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "317db78b-55e0-47b3-b9ef-aa8b55640b9c",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "5c9e0ca0-6414-4e35-8557-8db94433e082",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "637f30ca-6abf-4a97-9ebd-961388ed2620",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_7",
-                          "uid": "78a8beb1-fe20-4b23-a4cd-20cd594b4d0e",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_7_bg",
-                              "uid": "09d136d7-415e-4128-bf9f-eac3084ff7b9",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "52d1c2b8-92fd-47b7-a48b-d79abc7c13c3",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "716864c1-5a7d-4be6-811c-733bf58985c6",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "20a3a0cb-2e35-48d0-9224-d3da9eb51fa3",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "dfc956c7-b55e-4338-9297-459014a37fe8",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_8",
-                          "uid": "6024d5f5-6e52-409a-a6b8-e856a65cf083",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_8_bg",
-                              "uid": "2e4ce8fd-b48a-4ce2-a231-1d2463a85896",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "7b2db02e-af5c-4c74-a0b8-1d643427ff7e",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "5d0314e3-43b3-4f58-81bd-fadfa4b90d95",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "27f06566-94d8-48de-8037-ff191fe9c494",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "d3ce0adf-4cfd-46e0-8aeb-9e0c69592ce7",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_9",
-                          "uid": "bde660e1-50fa-4923-9ae3-3572918b4c5f",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_9_bg",
-                              "uid": "482146f2-f196-4862-80ce-88acd2450038",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "a38c6ad0-24ee-4031-9ce2-308c9d4926a8",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "7bc49e5b-21c8-467b-913a-b56cd106b68d",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "ba00d8c3-7579-4f47-9884-432509234d84",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "b1aa4eb8-892f-4b5d-92fa-77d47d9fcf4e",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_10",
-                          "uid": "af2e18e3-071e-4204-bcd8-bf7b6a2e85e3",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_10_bg",
-                              "uid": "7cc8d4a3-030d-43db-b16a-7c01f82566e7",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "31804f19-9b12-4fb4-8710-3c6053c28448",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "68ef8edd-6cbd-43c2-b290-db03191702b2",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "30105304-2c2b-418a-9120-69b24338dd2c",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "b1e78b0d-c3b5-4072-bd90-6409a3ac3087",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_11",
-                          "uid": "ed4e7f7e-1d03-4f2c-96fe-c32cdbf17dcd",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_11_bg",
-                              "uid": "52f96dc9-62c6-4d06-8d59-1eeba7b0702d",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "7d51cf40-beb0-44e4-a963-3f452c6a325b",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "ce3240fa-181e-47f9-b644-dcbd877c8648",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "96ae5116-9561-4124-8849-46609ca148c8",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "9587ec7e-a0fb-41a3-9f83-100f4cabd72e",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_12",
-                          "uid": "7d1550c2-70d7-4dd8-ac57-18daf178c292",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_12_bg",
-                              "uid": "de50f5d2-3979-44cf-9eaa-c35c061f8207",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "ba5e40d4-cc9a-4c69-bcfb-e4706eac4221",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "c5004a74-b1bc-4ea3-82b8-fc8d5153988b",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "f88f2614-ceba-4fdf-9695-bc32d8478b4b",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "49886cc1-0124-4f5b-bce1-8b41ad4b17a4",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_13",
-                          "uid": "a46cbce7-0f27-470d-b46c-d86a45419026",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_13_bg",
-                              "uid": "3e2172fc-2296-4c19-9386-65185862360b",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "accf6436-c0d5-4889-a66b-fe3ff9edc407",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "bb4b81e1-a408-4962-8059-ac17fd84537d",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "06137a68-cd50-4ae0-bb5d-8530abc93e65",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "fa054586-89b5-4405-9ed6-24ce6b70b674",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_14",
-                          "uid": "0cc53c78-ce43-40d4-9e9e-039087e05e72",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_14_bg",
-                              "uid": "94d46720-7faa-4e9c-80af-62721bb4d9d0",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "c84ed499-96da-4107-a539-f8ed383d9755",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "544873ff-e971-40e9-a2cb-eee1938909fb",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "8f71a22b-61b8-4e39-b55a-05576e44a723",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "a22cddad-2ad0-44c4-8803-1f09b6fad91c",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_15",
-                          "uid": "c83a01b7-139a-48a9-aec0-3f115d8d7c06",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_15_bg",
-                              "uid": "dc29561b-b1bd-4852-ae9e-461ca78f059d",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "00f1d4cb-bea5-4d94-8e67-d6347fd973e7",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "5f02b9b2-b3ac-4b18-b771-e82644410308",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "092762c6-82fc-4de7-b4df-530c86decfcf",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "12d33c6e-33e1-4f97-9706-458f7be74228",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_16",
-                          "uid": "6393047a-f006-4aa1-bb81-f21f04640ac8",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_16_bg",
-                              "uid": "c08cc859-da24-4e61-a2ca-60d1812986bb",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "c48bf752-72c2-40df-b13a-855485469597",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "ba286717-7842-462c-a47d-7bca790c547f",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "fff29bfa-1a90-403b-b36c-60e197bcb6ee",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "90faadc9-7d32-40fc-97ec-65ddb2430497",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_17",
-                          "uid": "617c371a-8192-4368-9114-8c6601a9f79a",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_17_bg",
-                              "uid": "0e56fc04-732e-4e5f-baa3-1fde9ac7f7e2",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "709fadfd-448c-4409-af1a-18793e7b9bd6",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "73d48a2e-6b2b-4864-891c-db4a2d9904f4",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "2170bc0e-7708-4d07-b012-24c145852c47",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "e4084af3-88af-4b1c-9f5f-99db7472955a",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_18",
-                          "uid": "6511325e-7d93-4267-a054-e0025874acad",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_18_bg",
-                              "uid": "6b40c023-5644-40e4-8f5e-ce774a61e133",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "6ebcd52f-75f5-44c9-abcc-b536c37637ab",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "d84b0f14-b7f0-4620-818a-0abd43fdba4a",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "226186a9-cdc3-42f2-8e25-8632f9fd7037",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "b80cc6a4-73dd-47c2-8cba-c7ae4350bb43",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_19",
-                          "uid": "06a98ae3-921f-460c-b4ad-64ad5c8427ce",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_19_bg",
-                              "uid": "63757881-1723-480d-a324-6d41bf7e7c14",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "f00c5a6b-5fa2-4f0c-afcc-c37d270ec64e",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "ad3b39c7-7cd7-4ff3-8dd6-b33bd0c5eb57",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "0ec667be-168d-466d-9949-1a980818ef10",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "bb5e7683-0b52-4335-85d6-c4626b27e341",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_20",
-                          "uid": "799fba45-3f8f-44a8-a5b8-2cead31b98ad",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_20_bg",
-                              "uid": "63223ffe-93c1-4fee-bbe3-8787f39c07e8",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "3bb7c86c-61f4-4747-b7da-1c046659f082",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "f86425f6-fe41-4e31-b231-003134718f82",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "412a01be-a6bc-4dc2-922f-920efdd743fd",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "3ff90a1f-f572-43ee-be4d-c4ea4a6b24e4",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_21",
-                          "uid": "db7a134c-2f88-4245-8f21-949df2d728f9",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_21_bg",
-                              "uid": "c60b2cf1-292f-4343-a3d6-8a82c090a4a0",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "b5ef6539-6785-4946-8684-c0d6b9930519",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "00cd605b-b606-4dd1-bffb-f1bc9b79c455",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "de2e2e82-b97b-498c-9b90-7019a673c7af",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "edafa470-63a1-4e67-9dc9-3f052228f440",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_22",
-                          "uid": "f48be503-0fc7-4bc3-8a93-d16e1a3710fe",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_22_bg",
-                              "uid": "ee4fc5e0-d8ad-447b-9128-314f81ec9b5a",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "75c32842-60c0-4467-a968-8079db86ed84",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "f3830020-8aa6-43bc-a4b2-b57bf68d12ce",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "0b573dc9-230d-4ea3-81a9-7864bf40ae54",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "751f5136-ee55-4600-b0ae-3a758d22796a",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_23",
-                          "uid": "a587a5cc-4480-4532-88d0-4159144dc8fb",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_23_bg",
-                              "uid": "203da1ef-c308-4f2d-a78e-06f6b0595008",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "a41991ae-b67b-415f-b434-c95984b273e1",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "09215d05-d5ae-431b-a9b1-5b44c24d8fb3",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "5f61b36d-fb33-47ea-92e5-7b644f57bc62",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "58199daa-d704-4b46-9811-3fb0194bd36a",
-                              "type": 3
-                            }
-                          ]
-                        },
-                        {
-                          "name": "item_extra_24",
-                          "uid": "b2d22af9-1cfa-41fa-b31d-bc8c903eb54e",
-                          "type": 7,
-                          "children": [
-                            {
-                              "name": "item_extra_24_bg",
-                              "uid": "5c67336f-05ec-41b1-beca-ae9776a84eb3",
-                              "type": 4
-                            },
-                            {
-                              "name": "icon_image",
-                              "uid": "2c505e3d-8930-4e7e-8c2c-495c8092cb0c",
-                              "type": 4
-                            },
-                            {
-                              "name": "selected",
-                              "uid": "021cc115-965e-41fd-b5d9-6f8585998ed2",
-                              "type": 3
-                            },
-                            {
-                              "name": "glyph",
-                              "uid": "0d2b2a94-cbdc-42a8-a7d7-6f6a43827a79",
-                              "type": 3
-                            },
-                            {
-                              "name": "name",
-                              "uid": "65e12482-05e2-4466-b0fc-0aa28a1e0cd1",
-                              "type": 3
-                            }
-                          ]
+                          "name": "active",
+                          "uid": "3397f1e1-70ec-4a4a-99ad-247f17a920b0",
+                          "type": 7
                         }
                       ]
                     },
                     {
-                      "name": "pool_tab_1",
-                      "uid": "d0408ffe-94e1-4313-92b9-e40c17a6c98c",
-                      "type": 1
+                      "name": "mode_primary",
+                      "uid": "e392cc1e-f602-4b04-a8ce-613c8b71272f",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "bg",
+                          "uid": "b1c3ace4-2343-41ed-88e1-bcffc1225397",
+                          "type": 7
+                        },
+                        {
+                          "name": "label",
+                          "uid": "d6096765-2fd3-4dc3-8405-202042a0774d",
+                          "type": 3
+                        },
+                        {
+                          "name": "active",
+                          "uid": "691950f0-9f34-4ce9-8666-78c9e09c602e",
+                          "type": 7
+                        }
+                      ]
                     },
                     {
-                      "name": "pool_tab_2",
-                      "uid": "fc0ce2e5-e4dc-42c3-bc08-4a793c1bfad6",
-                      "type": 1
+                      "name": "mode_secondary",
+                      "uid": "4afeebda-5902-4ca4-ae89-6aac534d6e55",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "bg",
+                          "uid": "09b3b5e0-409f-417f-86f6-8531818db050",
+                          "type": 7
+                        },
+                        {
+                          "name": "label",
+                          "uid": "818e43ad-06c3-4f89-865a-c9b8f1ff3132",
+                          "type": 3
+                        },
+                        {
+                          "name": "active",
+                          "uid": "a92d511c-99fa-4b82-bdcd-2b3eb161c6f7",
+                          "type": 7
+                        }
+                      ]
                     },
                     {
-                      "name": "pool_tab_3",
-                      "uid": "3a92dd7a-85c2-4e5e-adc3-e6cb91779ad3",
-                      "type": 1
+                      "name": "n_bar",
+                      "uid": "2a94f8c3-d2e9-400c-ae77-9220b5f4f0f3",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "f616ef4b-d492-4563-8eaa-e9db1903cb45",
+                          "type": 3
+                        },
+                        {
+                          "name": "tail",
+                          "uid": "8e3239fe-c5ad-44c1-b329-5a0193d59c09",
+                          "type": 7
+                        }
+                      ]
                     },
                     {
-                      "name": "pool_tab_4",
-                      "uid": "60d05338-f2b5-404b-9da4-397cf889401b",
-                      "type": 1
+                      "name": "r_bar",
+                      "uid": "955b5b4e-5053-4959-aa8a-29d333e5b349",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "1e53805e-3b01-4cf5-9682-7061f3705915",
+                          "type": 3
+                        },
+                        {
+                          "name": "tail",
+                          "uid": "d78ede70-e2fc-4c68-ad93-e0d5e0029b5e",
+                          "type": 7
+                        }
+                      ]
                     },
                     {
-                      "name": "back_button",
-                      "uid": "9c99debd-0b23-4bd7-9e89-5eb949895107",
-                      "type": 1
+                      "name": "sr_bar",
+                      "uid": "d4fa4ca2-ac44-4a1c-815b-68d839292eaf",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "label",
+                          "uid": "66726176-473d-4314-808d-8fd77f68c51c",
+                          "type": 3
+                        },
+                        {
+                          "name": "tail",
+                          "uid": "0d10223a-76a0-4504-b8e8-0e7adb6cdb6d",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_east",
+                      "uid": "1aacacec-0cee-4a70-9201-ac8869c1f1a5",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "99a939f6-255b-41b4-b29c-505fb6af89bc",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "6c223f62-db85-4d52-9c86-99dab3bc4e16",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "7e8c9971-9672-47d2-949d-518272bc022e",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "9cd39869-b5f3-4890-b650-3f4b8243ee6a",
+                          "type": 3
+                        },
+                        {
+                          "name": "selected",
+                          "uid": "60e13496-0e45-4f62-a9a3-b69b0f2cb310",
+                          "type": 7
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_south",
+                      "uid": "81545ea6-c01b-49b1-9adb-588f5085c720",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "25a0cc4c-4c28-4281-8a1b-84823e600798",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "26fbd39a-916c-433c-971f-cf4391ea1840",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "017e0e2d-6c61-4633-b22a-e7711f021cb9",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "d496d267-2384-4f83-a823-5704fbaac921",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_west",
+                      "uid": "3a221d10-bea2-4883-8926-f67b21c9303c",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "7e6aced2-e863-4b80-af08-476bcea6bb73",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "177db9fa-d615-4413-9126-7e2d9fd0cc4a",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "ffb9a759-051b-4c05-87c5-5b14e6812c4a",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "4d453245-3c1e-405f-80ea-352bf5238a16",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_north",
+                      "uid": "3a2a52e2-aa62-4b90-8f0f-abd75a0ecff3",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "fe193598-c033-46f3-835e-9207b2dd3ab1",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "f3522424-b40d-40b9-9249-b090749d5b85",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "aea217d7-c93d-4212-a5fc-b99ee0d3242c",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "be01fb27-6129-44a3-9b5c-c3cd465e9bcd",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_mid",
+                      "uid": "ef3df7aa-e181-42dc-9702-af09e75eee06",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "76ceadc4-1f10-4175-bb25-0a3a8d940c29",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "57da40f9-bf35-4dd3-972e-219c6fd56ace",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "959f9e74-4352-4db9-8e55-f76c4680a31f",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "bc4fdafc-4054-4e05-878d-cdb040bfab77",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_fa",
+                      "uid": "f88b499d-5e6a-4663-b20a-eca0d6cef88f",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "c9e337bb-ef06-4658-a607-dd4d3254ac62",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "36f02599-98ad-4e17-8f11-fb236c594c60",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "a489b16d-85f6-48d1-92ef-fe7e142a8891",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "99e0295e-34c3-4428-b8f0-3cec626b6a04",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_sugar",
+                      "uid": "c5b781d1-e5cf-405f-9ee8-c64a05a1b36e",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "d89a06d4-cd91-4222-8837-4894862f39d6",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "cf29af8c-1670-45ef-a0b1-e581b94e3d8d",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "6d1d1b9a-2c13-4a65-8e4b-61524145bf45",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "5658b52b-4634-4012-959a-e12b87413486",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_pop",
+                      "uid": "c1880f18-d1b8-4e43-8d79-bb83df6a94c6",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "d5b77441-2e68-4e34-ab29-32bb2047bee0",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "995a9f6e-44a3-4576-b1be-3639cb0df752",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "5e77dc58-27fd-4460-a4a9-ecd2dab78970",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "c5b06543-a335-4a2f-bd6a-6a83a13294eb",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_meat",
+                      "uid": "89c05a50-8c5e-43a3-b03e-d0bc5ec3c769",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "79f05f74-7154-46d1-9b75-8af79f98b85e",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "8efcdbb4-65f8-4c1f-8e83-f324b78c71fe",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "718f6212-8410-4160-9135-d33e402187c9",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "f00ec3f8-daa2-4cc2-8ecf-3ef6a824436d",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_mail",
+                      "uid": "992dcc96-f3a6-4f63-b9cc-fcc7018eec7d",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "4efded8c-7144-46ac-b18b-27bd1834e595",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "a9b52639-f276-4567-a7c2-3a531416eae6",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "29278d9f-03c7-4ca1-bba3-77aa8ea639e0",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "bbc75470-3f3c-4fd2-9d32-3260f9da5674",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_spade",
+                      "uid": "40d1c9ec-9fa1-4992-a822-82d006f448cc",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "a54d4b57-2f18-49f6-b07c-76cc1d3e601b",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "588c7f48-b6e8-44e4-8702-d36adaf601ab",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "de52b7bf-58bf-47a7-bc34-ef9596a37e03",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "56c68b24-e1dd-4a91-8318-fe8d420a87ce",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_heart",
+                      "uid": "ad71e67a-01d7-4f52-80e2-c246c3e36d98",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "7422a7ae-2d44-422a-a756-d0d43f718924",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "901be072-111a-4db4-b6ce-55bbbe345626",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "a11f3516-5c80-42d1-a681-2baaa920c226",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "d4a3475d-c698-4817-ae67-7c87128b0ca3",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_diamond",
+                      "uid": "514b4ac1-cc32-4b0e-acad-a6fc1dca9ded",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "9df67ecc-bb77-4173-83ce-66fb2965424a",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "df285a70-138d-409e-9b21-7cf0ee2b68c7",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "d0579cb6-5854-45f9-b90b-3c71b3c32466",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "f1e67de2-dcf1-4679-bf33-25ad733b989c",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_club",
+                      "uid": "94a21788-253c-4599-ae5c-364256f4b627",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "fd515960-eacd-40e4-a870-cda07375b41e",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "3c77a67c-90c2-4097-a3a7-d62a4d66f72e",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "14e7324d-08b8-411a-8efa-e4e14cc9ab7a",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "417af509-4dd2-49b5-9897-94daa2baa024",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_gun",
+                      "uid": "92a740a6-61cc-464f-abec-6293e7be7a74",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "d7088761-acb7-4f83-be90-6f725f289a16",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "f55f1ae2-2458-4051-b796-089eca62bffc",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "a3b867b2-5186-4c6b-a8b9-2ca91f4871ec",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "55ba6d75-ca08-4ba8-b068-11a63a9b987b",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_shield",
+                      "uid": "9f2ad95b-ec6f-4a38-85f2-76c84fd435b5",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "9ffdee5e-afb2-4eb5-b2c6-af4aa36bdc25",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "e3913d26-7fa3-4079-aae6-fa560bc0dbd7",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "c2683e3d-ed04-46f7-9592-6765d48d4e62",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "d75f0ddc-978d-40ed-91fd-4939b05ad283",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_fist",
+                      "uid": "185a370e-fcd5-4b19-be61-17f25f3b0e81",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "119d0dba-7058-4b32-9ee6-e049e4a14b34",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "c2ba5fd4-29ae-4d0a-8682-0ddbaae99322",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "d69b5429-7815-4d74-9c5a-cd31d14f65da",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "5d67d277-08f9-422b-b971-bd6819e0b93d",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_food",
+                      "uid": "b75663db-6b7a-4803-99f1-5041223cf780",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "d6acad84-d6a5-4897-9292-e5330dea625b",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "b07efe16-09c9-4489-a2b1-b7e209aa85aa",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "8005e2fe-99c3-4be7-ac29-9350fdc5ec92",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "fabd5d10-77fc-4db2-940b-bff479e59430",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_bell",
+                      "uid": "bf764fe4-05b7-4bbc-9cb3-dc38579c977c",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "8a3e040f-1c48-4d6e-830a-a8a9789c204f",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "78e3692f-921a-4291-9e17-906f4464c761",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "93817dd6-94ef-4623-a9c7-a7fb8c4c6c13",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "41ec6636-db7a-4576-a3bc-fceddf74c6fc",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_horn",
+                      "uid": "08323027-1695-47eb-aceb-7e7bf0cd4873",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "cec964c6-c0f7-4f03-917d-bec3fa053145",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "e71a7505-2c5b-4d0d-82f6-a055acb962cb",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "b07fd991-fc1f-4ceb-ab5e-c77f56adb08e",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "fd0c0f1b-2e37-41fb-8333-88c03e9dacbb",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_moon",
+                      "uid": "5401a276-d787-4ebf-9e10-b868a890d707",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "39fe7453-bd7c-41cc-927a-0fce91ec6111",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "ec6497dc-8440-4103-9875-c92153785e64",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "bcf1fa40-b7ea-47d0-af9e-127b634f953b",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "c5c24e5d-1182-4f7b-851d-70b9511f20e4",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_sea",
+                      "uid": "c315db78-b21d-465f-9b55-00fe13eb8fe7",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "ed9c9dad-4bcc-4a78-b76e-3dbb8bec4319",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "f65965da-cf85-463f-8d6f-7ac73b9aaf59",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "a76ab76b-2f08-4ca0-a25b-425de885aaee",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "36e12180-3579-40ee-bd88-0b4ced78dc0a",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_branch",
+                      "uid": "08d981c3-d028-419e-a754-cb14d096f15c",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "9b0a2a6d-7862-48f0-af99-c99ca1218cf3",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "4b0ff7de-f2ea-411e-94bc-64948a5587d0",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "b19ef537-e23f-438c-b42c-61ee07165f59",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "b6368c48-ede3-4637-b0e2-6510dcf13661",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_hat",
+                      "uid": "0ea45abc-b665-4eee-b65a-8576d98f3b81",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "086f3436-6ce7-4207-b388-6224ac15b1cb",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "c845c068-3106-4fec-8252-16a609616a7a",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "0aba3344-82a4-4864-b3bf-ebc6562a498a",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "c5aabf46-5c64-42bc-b2a6-73f3bebee120",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_scale",
+                      "uid": "a461a356-6d54-4305-adaf-a30b7acbb2f2",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "438fd16d-3c2c-4d5a-a232-d772d6d8d7d8",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "0ef6426b-b36b-4194-8390-541e463e5ff7",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "0e7201a4-ace5-490d-8505-6b254a94fd5f",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "370bf8b1-21c2-4b28-bc56-9a84c43c16bc",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_ring",
+                      "uid": "0e622fb2-ebb0-4e4f-9120-3e1500d7db42",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "003760eb-1132-4889-a7dd-c29f3db59526",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "867c9bef-bd0d-49c0-b19d-7e8312039ec9",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "6e4419fa-7686-443a-8294-058711b53f38",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "0abff9fb-d1d6-49d0-a9d6-6bbdf2c00549",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_fire",
+                      "uid": "6e6b98f3-d0f6-4a46-97be-a1dc025f1d6b",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "46cdcd6a-8f37-45fe-8d87-ce8fe05b7b03",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "8db9cedf-4e0e-4dfb-83bd-451a02711a01",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "69001223-4651-4e27-9160-45f0758893df",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "afbcc692-c2ac-4e85-a73f-6ef5e301aa6e",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_lamp",
+                      "uid": "081c57d0-bf73-4a43-ae5e-fbfd3cf2c23e",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "5ef20eb4-95ab-43a8-b398-3d96d78db326",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "55ef9be6-6e2f-4e23-9546-41f65ec58568",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "179dc973-3af2-4a75-96ba-698ddca0ceff",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "dba4002f-bea3-49f2-bf87-7b749cebb075",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_seal",
+                      "uid": "e33303cb-fc72-4f72-bc9f-c09ed70f1afe",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "e81ce1e6-3bba-41b4-8380-cdb4ab403b96",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "142ad1d6-69fd-497c-8bb0-c012c716dfa7",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "25c08440-359a-4642-8187-2104133c2775",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "17c623ca-0206-4ef9-833f-b89fa1edee16",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "name": "item_fruit",
+                      "uid": "7fb7c5d2-47b3-445a-a04b-9be0cb91f609",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "inner",
+                          "uid": "c94369a1-3029-4602-b8ff-647f81344562",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph_bg",
+                          "uid": "d155bf63-e9c6-4801-a9d0-5d8522662135",
+                          "type": 7
+                        },
+                        {
+                          "name": "glyph",
+                          "uid": "ddd030f4-69c7-4748-ad8f-25660f128fdc",
+                          "type": 3
+                        },
+                        {
+                          "name": "label",
+                          "uid": "0050104e-ff4b-45e1-a01f-10ddafaaaf80",
+                          "type": 3
+                        }
+                      ]
                     }
                   ]
                 },
                 {
                   "name": "detail_card",
-                  "uid": "7c07f95d-a899-463d-8d50-2ead108a6518",
+                  "uid": "baf0b30f-7373-47b8-8c4e-3719ba160481",
                   "type": 7,
                   "children": [
                     {
-                      "name": "detail_card_bg",
-                      "uid": "4836d771-da41-4a0d-9be5-0ec6d85314a1",
-                      "type": 4
+                      "name": "frame",
+                      "uid": "dc93ecd9-7079-420e-9680-576cf97ac762",
+                      "type": 7
                     },
                     {
-                      "name": "big_item_icon",
-                      "uid": "5c2fe92c-1cec-4945-9fb6-5a742a6f0bd4",
-                      "type": 4
+                      "name": "inner",
+                      "uid": "d6f7c6b5-25e0-4e72-bba0-b51cdca3b980",
+                      "type": 7
                     },
                     {
-                      "name": "item_name",
-                      "uid": "acf05453-6de5-4eb0-b54b-ff3d641527e1",
+                      "name": "metal_top_line",
+                      "uid": "25a5ea9f-025e-4ec3-b967-704ecdd0c0c4",
+                      "type": 7
+                    },
+                    {
+                      "name": "metal_bottom_line",
+                      "uid": "e238b50d-3d62-42dc-a475-af7d0a0af852",
+                      "type": 7
+                    },
+                    {
+                      "name": "title_bg",
+                      "uid": "2ad82e09-99b3-4145-ad74-061fa42889ad",
+                      "type": 7
+                    },
+                    {
+                      "name": "title",
+                      "uid": "39b3a5f9-1395-4ef5-aba9-e5c5b801bd69",
                       "type": 3
                     },
                     {
-                      "name": "attr_line_1",
-                      "uid": "3286eb75-fd0d-4018-99b6-ea4b633aa1af",
-                      "type": 3
-                    },
-                    {
-                      "name": "attr_line_2",
-                      "uid": "180f99a0-f364-49a1-b329-54917b6b6e12",
-                      "type": 3
+                      "name": "big_item",
+                      "uid": "3e2d354d-1b5d-4e36-aeb7-66f3cbfe69e3",
+                      "type": 7
                     },
                     {
                       "name": "big_item_glyph",
-                      "uid": "e96bc53c-73b9-4eb8-8571-607be6fbf653",
+                      "uid": "80c169fd-b00e-4b35-bfea-9f123f5d7820",
+                      "type": 3
+                    },
+                    {
+                      "name": "item_name",
+                      "uid": "5e46a6db-967c-4a7c-b020-ce77994aa190",
                       "type": 3
                     },
                     {
                       "name": "item_owned",
-                      "uid": "259a323c-df74-47d6-a339-7345a91d155b",
+                      "uid": "1d5ce646-6b87-4e1c-b94f-28e22f8af432",
+                      "type": 3
+                    },
+                    {
+                      "name": "attr_title",
+                      "uid": "7eac547d-3883-4be5-ae8b-56caa5c28a7b",
+                      "type": 3
+                    },
+                    {
+                      "name": "attr_line_1",
+                      "uid": "05b983cf-4cf1-45f1-b256-a714732858d7",
+                      "type": 3
+                    },
+                    {
+                      "name": "attr_line_2",
+                      "uid": "b7a43e76-e2fa-4481-a22b-2887b99e35ae",
                       "type": 3
                     },
                     {
                       "name": "score_text",
-                      "uid": "b26be812-2140-4558-845d-86258128ac4e",
+                      "uid": "cf1d9837-1901-481a-9b21-7ae67c4e524f",
                       "type": 3
                     },
                     {
                       "name": "cost_text",
-                      "uid": "7600c074-6c7c-4a3a-81f4-cb123cd793b3",
+                      "uid": "cfe3c69e-da5f-4da9-a36a-604cc3a4c796",
                       "type": 3
                     },
                     {
                       "name": "exchange_button",
-                      "uid": "07fa3f9c-40c6-4466-93d6-4dab753d29d1",
-                      "type": 1
+                      "uid": "ee39b937-3163-4235-b2a9-a7f244d03ee2",
+                      "type": 7,
+                      "children": [
+                        {
+                          "name": "bg",
+                          "uid": "c574e9de-c03c-409d-a665-ad3fc1bb0e66",
+                          "type": 7
+                        },
+                        {
+                          "name": "label",
+                          "uid": "3f2b0238-ec2e-4601-8e2d-b4d71ed4e7f1",
+                          "type": 3
+                        },
+                        {
+                          "name": "active",
+                          "uid": "06086c86-0cac-4afd-b677-62cd347582d7",
+                          "type": 7
+                        }
+                      ]
                     }
                   ]
                 }

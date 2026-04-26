@@ -26,9 +26,9 @@
                                             "color": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    44, 
-                                                    48, 
-                                                    58, 
+                                                    75, 
+                                                    86, 
+                                                    104, 
                                                     255
                                                 ]
                                             }, 
@@ -37,8 +37,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    367.5, 
-                                                    300.0, 
+                                                    354.1453, 
+                                                    223.5366, 
                                                     50.0, 
                                                     50.0, 
                                                     1, 
@@ -48,8 +48,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                727.0, 
-                                                592.0
+                                                707.6891, 
+                                                441.1122
                                             ], 
                                             "type": 7, 
                                             "uid": "313a5e76-38c8-481e-9d3d-16ca333a6435"
@@ -59,9 +59,9 @@
                                             "color": {
                                                 "__tuple__": true, 
                                                 "items": [
+                                                    13, 
                                                     18, 
-                                                    20, 
-                                                    27, 
+                                                    28, 
                                                     255
                                                 ]
                                             }, 
@@ -70,8 +70,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    367.5, 
-                                                    300.0, 
+                                                    354.1453, 
+                                                    223.5366, 
                                                     50.0, 
                                                     50.0, 
                                                     1, 
@@ -81,8 +81,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                717.0, 
-                                                582.0
+                                                692.1141, 
+                                                429.1903
                                             ], 
                                             "type": 7, 
                                             "uid": "329c7105-0fc1-4596-80c9-505eeeb71131"
@@ -92,21 +92,21 @@
                                             "color": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    61, 
-                                                    88, 
-                                                    140, 
-                                                    244
+                                                    90, 
+                                                    116, 
+                                                    148, 
+                                                    132
                                                 ]
                                             }, 
                                             "event_list": [], 
-                                            "name": "title_bg", 
+                                            "name": "metal_top_line", 
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    367.5, 
-                                                    571.9998, 
+                                                    354.1453, 
+                                                    401.6206, 
                                                     50.0, 
-                                                    95.3333, 
+                                                    89.8333, 
                                                     1, 
                                                     1
                                                 ]
@@ -114,8 +114,74 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                220.0, 
-                                                34.0
+                                                680.4328, 
+                                                1.4902
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "eb1a021c-6f20-41b8-b507-f8efca2d3d3a"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    0, 
+                                                    0, 
+                                                    0, 
+                                                    122
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "metal_bottom_line", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    354.1453, 
+                                                    14.9023, 
+                                                    50.0, 
+                                                    3.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                680.4328, 
+                                                1.4902
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "ecc3c804-2f24-4625-b663-15b5b3af8870"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    30, 
+                                                    84, 
+                                                    137, 
+                                                    248
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "title_bg", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    127.2033, 
+                                                    420.9941, 
+                                                    17.9592, 
+                                                    94.1667, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                214.1563, 
+                                                28.3146
                                             ], 
                                             "type": 7, 
                                             "uid": "0b52371b-6406-4246-abd2-448eb3c67517"
@@ -127,18 +193,28 @@
                                                 "__tuple__": true, 
                                                 "items": [
                                                     "MSYH", 
-                                                    20
+                                                    19
                                                 ]
                                             }, 
+                                            "font_color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    240, 
+                                                    246, 
+                                                    255, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "font_min_size": 14, 
                                             "name": "title", 
                                             "over_pattern": true, 
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    367.5, 
-                                                    571.9998, 
-                                                    50.0, 
-                                                    95.3333, 
+                                                    127.2033, 
+                                                    420.9941, 
+                                                    17.9592, 
+                                                    94.1667, 
                                                     1, 
                                                     1
                                                 ]
@@ -148,8 +224,8 @@
                                             "size": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    220.0, 
-                                                    28.0
+                                                    214.1563, 
+                                                    26.0
                                                 ]
                                             }, 
                                             "text": {
@@ -169,10 +245,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            183, 
-                                                            137, 
-                                                            48, 
-                                                            244
+                                                            206, 
+                                                            145, 
+                                                            42, 
+                                                            248
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -180,8 +256,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            62.0, 
-                                                            17.0, 
+                                                            60.3531, 
+                                                            12.667, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -191,8 +267,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        124.0, 
-                                                        34.0
+                                                        120.7063, 
+                                                        25.3341
                                                     ], 
                                                     "swallow_touches": true, 
                                                     "type": 7, 
@@ -211,19 +287,20 @@
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
+                                                            240, 
+                                                            246, 
                                                             255, 
-                                                            247, 
-                                                            232, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 11, 
                                                     "name": "label", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            62.0, 
-                                                            17.0, 
+                                                            60.3531, 
+                                                            12.667, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -235,7 +312,7 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            112.0, 
+                                                            109.025, 
                                                             22.0
                                                         ]
                                                     }, 
@@ -254,10 +331,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            112, 
-                                                            148, 
-                                                            214, 
-                                                            88
+                                                            255, 
+                                                            212, 
+                                                            78, 
+                                                            118
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -265,8 +342,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            62.0, 
-                                                            17.0, 
+                                                            60.3531, 
+                                                            12.667, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -276,8 +353,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        130.0, 
-                                                        40.0
+                                                        126.5469, 
+                                                        29.8049
                                                     ], 
                                                     "type": 7, 
                                                     "uid": "192b06be-431c-46be-9972-7d9efc89a2aa", 
@@ -289,8 +366,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    154.0001, 
-                                                    546.0, 
+                                                    148.4039, 
+                                                    406.8366, 
                                                     20.9524, 
                                                     91.0, 
                                                     1, 
@@ -300,8 +377,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                124.0, 
-                                                34.0
+                                                120.7063, 
+                                                25.3341
                                             ], 
                                             "swallow_touches": true, 
                                             "type": 7, 
@@ -314,10 +391,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            96, 
+                                                            42, 
                                                             100, 
-                                                            112, 
-                                                            244
+                                                            160, 
+                                                            242
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -325,8 +402,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            62.0, 
-                                                            17.0, 
+                                                            60.3531, 
+                                                            12.667, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -336,8 +413,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        124.0, 
-                                                        34.0
+                                                        120.7063, 
+                                                        25.3341
                                                     ], 
                                                     "swallow_touches": true, 
                                                     "type": 7, 
@@ -356,19 +433,20 @@
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
+                                                            240, 
+                                                            246, 
                                                             255, 
-                                                            247, 
-                                                            232, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 11, 
                                                     "name": "label", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            62.0, 
-                                                            17.0, 
+                                                            60.3531, 
+                                                            12.667, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -380,7 +458,7 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            112.0, 
+                                                            109.025, 
                                                             22.0
                                                         ]
                                                     }, 
@@ -399,10 +477,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            112, 
-                                                            148, 
-                                                            214, 
-                                                            88
+                                                            90, 
+                                                            164, 
+                                                            255, 
+                                                            104
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -410,8 +488,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            62.0, 
-                                                            17.0, 
+                                                            60.3531, 
+                                                            12.667, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -421,8 +499,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        130.0, 
-                                                        40.0
+                                                        126.5469, 
+                                                        29.8049
                                                     ], 
                                                     "type": 7, 
                                                     "uid": "b2d23a22-903b-4ab0-a177-cf8b2d9cf037", 
@@ -434,8 +512,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    288.0002, 
-                                                    546.0, 
+                                                    277.5345, 
+                                                    406.8366, 
                                                     39.1837, 
                                                     91.0, 
                                                     1, 
@@ -445,8 +523,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                124.0, 
-                                                34.0
+                                                120.7063, 
+                                                25.3341
                                             ], 
                                             "swallow_touches": true, 
                                             "type": 7, 
@@ -459,29 +537,23 @@
                                                         {
                                                             "children": [], 
                                                             "event_list": [], 
-                                                            "font": {
-                                                                "__tuple__": true, 
-                                                                "items": [
-                                                                    "MSYH", 
-                                                                    22
-                                                                ]
-                                                            }, 
                                                             "font_color": {
                                                                 "__tuple__": true, 
                                                                 "items": [
                                                                     255, 
-                                                                    238, 
-                                                                    188, 
+                                                                    218, 
+                                                                    91, 
                                                                     255
                                                                 ]
                                                             }, 
+                                                            "font_min_size": 19, 
                                                             "name": "label", 
                                                             "over_pattern": true, 
                                                             "pos_data": {
                                                                 "__tuple__": true, 
                                                                 "items": [
-                                                                    72.0, 
-                                                                    56.0, 
+                                                                    80.7953, 
+                                                                    45.4524, 
                                                                     50.0, 
                                                                     50.0, 
                                                                     1, 
@@ -493,8 +565,8 @@
                                                             "size": {
                                                                 "__tuple__": true, 
                                                                 "items": [
-                                                                    120.0, 
-                                                                    30.0
+                                                                    116.8125, 
+                                                                    33.0
                                                                 ]
                                                             }, 
                                                             "text": {
@@ -511,9 +583,9 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            142, 
-                                                            94, 
-                                                            36, 
+                                                            171, 
+                                                            111, 
+                                                            34, 
                                                             255
                                                         ]
                                                     }, 
@@ -522,10 +594,10 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            210.0, 
-                                                            157.0002, 
+                                                            209.2891, 
+                                                            118.4743, 
                                                             50.0, 
-                                                            53.7672, 
+                                                            57.1942, 
                                                             1, 
                                                             1
                                                         ]
@@ -533,8 +605,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        144.0, 
-                                                        112.0
+                                                        161.5906, 
+                                                        90.9049
                                                     ], 
                                                     "type": 7, 
                                                     "uid": "9f798cc4-92e8-4854-ad7a-b57040f0ebec"
@@ -543,10 +615,10 @@
                                             "color": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    24, 
-                                                    26, 
-                                                    34, 
-                                                    236
+                                                    18, 
+                                                    25, 
+                                                    37, 
+                                                    244
                                                 ]
                                             }, 
                                             "event_list": [], 
@@ -554,10 +626,10 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    363.9999, 
-                                                    331.9998, 
-                                                    49.5238, 
-                                                    55.3333, 
+                                                    353.6637, 
+                                                    231.7328, 
+                                                    49.932, 
+                                                    51.8333, 
                                                     1, 
                                                     1
                                                 ]
@@ -565,8 +637,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                420.0, 
-                                                292.0
+                                                418.5781, 
+                                                207.1439
                                             ], 
                                             "type": 7, 
                                             "uid": "1a155f0b-3f20-449f-85b5-fdf344288f20"
@@ -578,10 +650,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            183, 
-                                                            137, 
-                                                            48, 
-                                                            244
+                                                            206, 
+                                                            145, 
+                                                            42, 
+                                                            248
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -589,8 +661,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            55.0, 
-                                                            17.0, 
+                                                            53.5391, 
+                                                            12.667, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -600,8 +672,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        110.0, 
-                                                        34.0
+                                                        107.0781, 
+                                                        25.3341
                                                     ], 
                                                     "swallow_touches": true, 
                                                     "type": 7, 
@@ -620,19 +692,20 @@
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
+                                                            240, 
+                                                            246, 
                                                             255, 
-                                                            247, 
-                                                            232, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 11, 
                                                     "name": "label", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            55.0, 
-                                                            17.0, 
+                                                            53.5391, 
+                                                            12.667, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -644,7 +717,7 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            98.0, 
+                                                            95.3969, 
                                                             22.0
                                                         ]
                                                     }, 
@@ -663,10 +736,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            112, 
-                                                            148, 
-                                                            214, 
-                                                            88
+                                                            255, 
+                                                            212, 
+                                                            78, 
+                                                            118
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -674,8 +747,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            55.0, 
-                                                            17.0, 
+                                                            53.5391, 
+                                                            12.667, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -685,8 +758,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        116.0, 
-                                                        40.0
+                                                        112.9188, 
+                                                        29.8049
                                                     ], 
                                                     "type": 7, 
                                                     "uid": "c936798c-0c88-444f-8bfe-03801970bf34", 
@@ -698,8 +771,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    279.9997, 
-                                                    84.0, 
+                                                    269.8247, 
+                                                    62.5902, 
                                                     38.0952, 
                                                     14.0, 
                                                     1, 
@@ -709,8 +782,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                110.0, 
-                                                34.0
+                                                107.0781, 
+                                                25.3341
                                             ], 
                                             "swallow_touches": true, 
                                             "type": 7, 
@@ -723,10 +796,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            183, 
-                                                            137, 
-                                                            48, 
-                                                            244
+                                                            206, 
+                                                            145, 
+                                                            42, 
+                                                            248
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -734,8 +807,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            55.0, 
-                                                            17.0, 
+                                                            53.5391, 
+                                                            12.667, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -745,8 +818,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        110.0, 
-                                                        34.0
+                                                        107.0781, 
+                                                        25.3341
                                                     ], 
                                                     "swallow_touches": true, 
                                                     "type": 7, 
@@ -765,19 +838,20 @@
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
+                                                            240, 
+                                                            246, 
                                                             255, 
-                                                            247, 
-                                                            232, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 11, 
                                                     "name": "label", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            55.0, 
-                                                            17.0, 
+                                                            53.5391, 
+                                                            12.667, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -789,7 +863,7 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            98.0, 
+                                                            95.3969, 
                                                             22.0
                                                         ]
                                                     }, 
@@ -808,10 +882,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            112, 
-                                                            148, 
-                                                            214, 
-                                                            88
+                                                            255, 
+                                                            212, 
+                                                            78, 
+                                                            118
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -819,8 +893,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            55.0, 
-                                                            17.0, 
+                                                            53.5391, 
+                                                            12.667, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -830,8 +904,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        116.0, 
-                                                        40.0
+                                                        112.9188, 
+                                                        29.8049
                                                     ], 
                                                     "type": 7, 
                                                     "uid": "f979634f-07ff-4535-8fdc-7f015e4c8031", 
@@ -843,8 +917,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    446.0002, 
-                                                    84.0, 
+                                                    429.7929, 
+                                                    62.5902, 
                                                     60.6803, 
                                                     14.0, 
                                                     1, 
@@ -854,8 +928,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                110.0, 
-                                                34.0
+                                                107.0781, 
+                                                25.3341
                                             ], 
                                             "swallow_touches": true, 
                                             "type": 7, 
@@ -880,13 +954,14 @@
                                                     255
                                                 ]
                                             }, 
+                                            "font_min_size": 10, 
                                             "name": "draw_hint", 
                                             "over_pattern": true, 
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    363.9999, 
-                                                    121.9998, 
+                                                    350.7724, 
+                                                    90.9047, 
                                                     49.5238, 
                                                     20.3333, 
                                                     1, 
@@ -898,7 +973,7 @@
                                             "size": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    320.0, 
+                                                    311.5, 
                                                     18.0
                                                 ]
                                             }, 
@@ -919,10 +994,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            183, 
-                                                            137, 
-                                                            48, 
-                                                            244
+                                                            42, 
+                                                            100, 
+                                                            160, 
+                                                            242
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -930,8 +1005,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            45.0, 
-                                                            16.0, 
+                                                            43.8047, 
+                                                            11.922, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -941,8 +1016,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        90.0, 
-                                                        32.0
+                                                        87.6094, 
+                                                        23.8439
                                                     ], 
                                                     "swallow_touches": true, 
                                                     "type": 7, 
@@ -955,25 +1030,26 @@
                                                         "__tuple__": true, 
                                                         "items": [
                                                             "MSYH", 
-                                                            16
+                                                            15
                                                         ]
                                                     }, 
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
+                                                            240, 
+                                                            246, 
                                                             255, 
-                                                            247, 
-                                                            232, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 10, 
                                                     "name": "label", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            45.0, 
-                                                            16.0, 
+                                                            43.8047, 
+                                                            11.922, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -985,8 +1061,8 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            78.0, 
-                                                            22.0
+                                                            75.9281, 
+                                                            20.0
                                                         ]
                                                     }, 
                                                     "text": {
@@ -1004,10 +1080,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            112, 
-                                                            148, 
-                                                            214, 
-                                                            88
+                                                            90, 
+                                                            164, 
+                                                            255, 
+                                                            104
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -1015,8 +1091,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            45.0, 
-                                                            16.0, 
+                                                            43.8047, 
+                                                            11.922, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -1026,8 +1102,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        96.0, 
-                                                        38.0
+                                                        93.45, 
+                                                        28.3146
                                                     ], 
                                                     "type": 7, 
                                                     "uid": "768a345f-7147-4787-b77a-bba40179e4bc", 
@@ -1039,8 +1115,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    279.9997, 
-                                                    40.0002, 
+                                                    269.8247, 
+                                                    29.805, 
                                                     38.0952, 
                                                     6.6667, 
                                                     1, 
@@ -1050,8 +1126,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                90.0, 
-                                                32.0
+                                                87.6094, 
+                                                23.8439
                                             ], 
                                             "swallow_touches": true, 
                                             "type": 7, 
@@ -1064,10 +1140,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            183, 
-                                                            137, 
-                                                            48, 
-                                                            244
+                                                            42, 
+                                                            100, 
+                                                            160, 
+                                                            242
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -1075,8 +1151,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            45.0, 
-                                                            16.0, 
+                                                            43.8047, 
+                                                            11.922, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -1086,8 +1162,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        90.0, 
-                                                        32.0
+                                                        87.6094, 
+                                                        23.8439
                                                     ], 
                                                     "swallow_touches": true, 
                                                     "type": 7, 
@@ -1100,25 +1176,26 @@
                                                         "__tuple__": true, 
                                                         "items": [
                                                             "MSYH", 
-                                                            16
+                                                            15
                                                         ]
                                                     }, 
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
+                                                            240, 
+                                                            246, 
                                                             255, 
-                                                            247, 
-                                                            232, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 10, 
                                                     "name": "label", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            45.0, 
-                                                            16.0, 
+                                                            43.8047, 
+                                                            11.922, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -1130,8 +1207,8 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            78.0, 
-                                                            22.0
+                                                            75.9281, 
+                                                            20.0
                                                         ]
                                                     }, 
                                                     "text": {
@@ -1149,10 +1226,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            112, 
-                                                            148, 
-                                                            214, 
-                                                            88
+                                                            90, 
+                                                            164, 
+                                                            255, 
+                                                            104
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -1160,8 +1237,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            45.0, 
-                                                            16.0, 
+                                                            43.8047, 
+                                                            11.922, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -1171,8 +1248,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        96.0, 
-                                                        38.0
+                                                        93.45, 
+                                                        28.3146
                                                     ], 
                                                     "type": 7, 
                                                     "uid": "f314ca96-edb3-40d6-b0f4-742ada54f020", 
@@ -1184,8 +1261,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    446.0002, 
-                                                    40.0002, 
+                                                    429.7929, 
+                                                    29.805, 
                                                     60.6803, 
                                                     6.6667, 
                                                     1, 
@@ -1195,8 +1272,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                90.0, 
-                                                32.0
+                                                87.6094, 
+                                                23.8439
                                             ], 
                                             "swallow_touches": true, 
                                             "type": 7, 
@@ -1206,10 +1283,10 @@
                                     "color": {
                                         "__tuple__": true, 
                                         "items": [
-                                            18, 
-                                            20, 
-                                            28, 
-                                            244
+                                            7, 
+                                            10, 
+                                            16, 
+                                            246
                                         ]
                                     }, 
                                     "event_list": [], 
@@ -1217,9 +1294,9 @@
                                     "pos_data": {
                                         "__tuple__": true, 
                                         "items": [
-                                            374.0002, 
-                                            324.0, 
-                                            37.7778, 
+                                            354.1455, 
+                                            241.4195, 
+                                            36.7484, 
                                             50.0, 
                                             1, 
                                             1
@@ -1228,8 +1305,8 @@
                                     "prefab_sub_key": null, 
                                     "scene_ui_name": null, 
                                     "size": [
-                                        735.0, 
-                                        600.0
+                                        708.2906, 
+                                        447.0732
                                     ], 
                                     "type": 7, 
                                     "uid": "c32a46cb-59fe-4677-b007-001556ae5dcb"
@@ -1241,9 +1318,9 @@
                                             "color": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    44, 
-                                                    48, 
-                                                    58, 
+                                                    75, 
+                                                    86, 
+                                                    104, 
                                                     255
                                                 ]
                                             }, 
@@ -1252,8 +1329,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    300.0, 
+                                                    120.7062, 
+                                                    223.5366, 
                                                     50.0, 
                                                     50.0, 
                                                     1, 
@@ -1263,8 +1340,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                240.0, 
-                                                592.0
+                                                233.625, 
+                                                441.1122
                                             ], 
                                             "type": 7, 
                                             "uid": "88cf295e-c981-495a-b16e-0b1f9f7881a2"
@@ -1274,9 +1351,9 @@
                                             "color": {
                                                 "__tuple__": true, 
                                                 "items": [
+                                                    13, 
                                                     18, 
-                                                    20, 
-                                                    27, 
+                                                    28, 
                                                     255
                                                 ]
                                             }, 
@@ -1285,8 +1362,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    300.0, 
+                                                    120.7062, 
+                                                    223.5366, 
                                                     50.0, 
                                                     50.0, 
                                                     1, 
@@ -1296,8 +1373,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                230.0, 
-                                                582.0
+                                                218.05, 
+                                                429.1903
                                             ], 
                                             "type": 7, 
                                             "uid": "466a6591-f2fc-4a2f-b650-542d8706799e"
@@ -1307,21 +1384,21 @@
                                             "color": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    61, 
-                                                    88, 
-                                                    140, 
-                                                    244
+                                                    90, 
+                                                    116, 
+                                                    148, 
+                                                    132
                                                 ]
                                             }, 
                                             "event_list": [], 
-                                            "name": "title_bg", 
+                                            "name": "metal_top_line", 
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    571.9998, 
+                                                    120.7062, 
+                                                    401.6206, 
                                                     50.0, 
-                                                    95.3333, 
+                                                    89.8333, 
                                                     1, 
                                                     1
                                                 ]
@@ -1329,8 +1406,74 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                208.0, 
-                                                34.0
+                                                206.3688, 
+                                                1.4902
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "6858fa6f-9a34-4622-be8c-348a23747995"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    0, 
+                                                    0, 
+                                                    0, 
+                                                    122
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "metal_bottom_line", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    120.7062, 
+                                                    14.9023, 
+                                                    50.0, 
+                                                    3.3333, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                206.3688, 
+                                                1.4902
+                                            ], 
+                                            "type": 7, 
+                                            "uid": "7b9ecb5f-0256-4deb-887f-8f0e8a493cb8"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    30, 
+                                                    84, 
+                                                    137, 
+                                                    248
+                                                ]
+                                            }, 
+                                            "event_list": [], 
+                                            "name": "title_bg", 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    122.6532, 
+                                                    420.9941, 
+                                                    50.8065, 
+                                                    94.1667, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                202.475, 
+                                                28.3146
                                             ], 
                                             "type": 7, 
                                             "uid": "2577580e-703c-4aa4-8fdb-96b46ae5397d"
@@ -1342,18 +1485,28 @@
                                                 "__tuple__": true, 
                                                 "items": [
                                                     "MSYH", 
-                                                    20
+                                                    19
                                                 ]
                                             }, 
+                                            "font_color": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    240, 
+                                                    246, 
+                                                    255, 
+                                                    255
+                                                ]
+                                            }, 
+                                            "font_min_size": 14, 
                                             "name": "title", 
                                             "over_pattern": true, 
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    571.9998, 
-                                                    50.0, 
-                                                    95.3333, 
+                                                    122.6532, 
+                                                    420.9941, 
+                                                    50.8065, 
+                                                    94.1667, 
                                                     1, 
                                                     1
                                                 ]
@@ -1363,8 +1516,8 @@
                                             "size": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    188.0, 
-                                                    28.0
+                                                    202.475, 
+                                                    26.0
                                                 ]
                                             }, 
                                             "text": {
@@ -1399,19 +1552,20 @@
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            232, 
-                                                            230, 
-                                                            224, 
+                                                            172, 
+                                                            183, 
+                                                            201, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 10, 
                                                     "name": "label", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            59.9999, 
-                                                            15.0, 
+                                                            58.4062, 
+                                                            11.1768, 
                                                             30.6122, 
                                                             50.0, 
                                                             1, 
@@ -1423,7 +1577,7 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            110.0, 
+                                                            107.0781, 
                                                             19.0
                                                         ]
                                                     }, 
@@ -1451,25 +1605,26 @@
                                                         "__tuple__": true, 
                                                         "items": [
                                                             "MSYH", 
-                                                            14
+                                                            15
                                                         ]
                                                     }, 
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            114, 
-                                                            234, 
-                                                            77, 
+                                                            100, 
+                                                            255, 
+                                                            143, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 10, 
                                                     "name": "value", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            148.0, 
-                                                            15.0, 
+                                                            144.0688, 
+                                                            11.1768, 
                                                             75.5102, 
                                                             50.0, 
                                                             1, 
@@ -1481,8 +1636,8 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            88.0, 
-                                                            19.0
+                                                            85.6625, 
+                                                            20.0
                                                         ]
                                                     }, 
                                                     "text": {
@@ -1499,10 +1654,10 @@
                                             "color": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    34, 
+                                                    30, 
                                                     37, 
-                                                    46, 
-                                                    214
+                                                    51, 
+                                                    224
                                                 ]
                                             }, 
                                             "event_list": [], 
@@ -1510,8 +1665,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    499.9998, 
+                                                    120.7062, 
+                                                    372.5609, 
                                                     50.0, 
                                                     83.3333, 
                                                     1, 
@@ -1521,8 +1676,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                196.0, 
-                                                30.0
+                                                190.7938, 
+                                                22.3537
                                             ], 
                                             "type": 7, 
                                             "uid": "0f0a1bef-ec50-4adc-b962-bf160dd49e3d"
@@ -1549,19 +1704,20 @@
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            232, 
-                                                            230, 
-                                                            224, 
+                                                            172, 
+                                                            183, 
+                                                            201, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 10, 
                                                     "name": "label", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            59.9999, 
-                                                            15.0, 
+                                                            58.4062, 
+                                                            11.1768, 
                                                             30.6122, 
                                                             50.0, 
                                                             1, 
@@ -1573,7 +1729,7 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            110.0, 
+                                                            107.0781, 
                                                             19.0
                                                         ]
                                                     }, 
@@ -1601,25 +1757,26 @@
                                                         "__tuple__": true, 
                                                         "items": [
                                                             "MSYH", 
-                                                            14
+                                                            15
                                                         ]
                                                     }, 
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            114, 
-                                                            234, 
-                                                            77, 
+                                                            100, 
+                                                            255, 
+                                                            143, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 10, 
                                                     "name": "value", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            148.0, 
-                                                            15.0, 
+                                                            144.0688, 
+                                                            11.1768, 
                                                             75.5102, 
                                                             50.0, 
                                                             1, 
@@ -1631,8 +1788,8 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            88.0, 
-                                                            19.0
+                                                            85.6625, 
+                                                            20.0
                                                         ]
                                                     }, 
                                                     "text": {
@@ -1649,10 +1806,10 @@
                                             "color": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    34, 
+                                                    30, 
                                                     37, 
-                                                    46, 
-                                                    214
+                                                    51, 
+                                                    224
                                                 ]
                                             }, 
                                             "event_list": [], 
@@ -1660,8 +1817,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    462.0, 
+                                                    120.7062, 
+                                                    344.2464, 
                                                     50.0, 
                                                     77.0, 
                                                     1, 
@@ -1671,8 +1828,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                196.0, 
-                                                30.0
+                                                190.7938, 
+                                                22.3537
                                             ], 
                                             "type": 7, 
                                             "uid": "2c587e4c-a104-4b22-9070-26daf3f8fb3b"
@@ -1699,19 +1856,20 @@
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            232, 
-                                                            230, 
-                                                            224, 
+                                                            172, 
+                                                            183, 
+                                                            201, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 10, 
                                                     "name": "label", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            59.9999, 
-                                                            15.0, 
+                                                            58.4062, 
+                                                            11.1768, 
                                                             30.6122, 
                                                             50.0, 
                                                             1, 
@@ -1723,7 +1881,7 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            110.0, 
+                                                            107.0781, 
                                                             19.0
                                                         ]
                                                     }, 
@@ -1751,25 +1909,26 @@
                                                         "__tuple__": true, 
                                                         "items": [
                                                             "MSYH", 
-                                                            14
+                                                            15
                                                         ]
                                                     }, 
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            114, 
-                                                            234, 
-                                                            77, 
+                                                            100, 
+                                                            255, 
+                                                            143, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 10, 
                                                     "name": "value", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            148.0, 
-                                                            15.0, 
+                                                            144.0688, 
+                                                            11.1768, 
                                                             75.5102, 
                                                             50.0, 
                                                             1, 
@@ -1781,8 +1940,8 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            88.0, 
-                                                            19.0
+                                                            85.6625, 
+                                                            20.0
                                                         ]
                                                     }, 
                                                     "text": {
@@ -1799,10 +1958,10 @@
                                             "color": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    34, 
+                                                    30, 
                                                     37, 
-                                                    46, 
-                                                    214
+                                                    51, 
+                                                    224
                                                 ]
                                             }, 
                                             "event_list": [], 
@@ -1810,8 +1969,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    424.0002, 
+                                                    120.7062, 
+                                                    315.9319, 
                                                     50.0, 
                                                     70.6667, 
                                                     1, 
@@ -1821,8 +1980,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                196.0, 
-                                                30.0
+                                                190.7938, 
+                                                22.3537
                                             ], 
                                             "type": 7, 
                                             "uid": "b951ed71-25f4-49d8-b693-fc2da52ba846"
@@ -1834,10 +1993,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            183, 
-                                                            137, 
-                                                            48, 
-                                                            244
+                                                            206, 
+                                                            145, 
+                                                            42, 
+                                                            248
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -1845,8 +2004,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            55.0, 
-                                                            16.0, 
+                                                            53.5391, 
+                                                            11.922, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -1856,8 +2015,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        110.0, 
-                                                        32.0
+                                                        107.0781, 
+                                                        23.8439
                                                     ], 
                                                     "swallow_touches": true, 
                                                     "type": 7, 
@@ -1876,19 +2035,20 @@
                                                     "font_color": {
                                                         "__tuple__": true, 
                                                         "items": [
+                                                            240, 
+                                                            246, 
                                                             255, 
-                                                            247, 
-                                                            232, 
                                                             255
                                                         ]
                                                     }, 
+                                                    "font_min_size": 11, 
                                                     "name": "label", 
                                                     "over_pattern": true, 
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            55.0, 
-                                                            16.0, 
+                                                            53.5391, 
+                                                            11.922, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -1900,7 +2060,7 @@
                                                     "size": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            98.0, 
+                                                            95.3969, 
                                                             22.0
                                                         ]
                                                     }, 
@@ -1919,10 +2079,10 @@
                                                     "color": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            112, 
-                                                            148, 
-                                                            214, 
-                                                            88
+                                                            255, 
+                                                            212, 
+                                                            78, 
+                                                            118
                                                         ]
                                                     }, 
                                                     "event_list": [], 
@@ -1930,8 +2090,8 @@
                                                     "pos_data": {
                                                         "__tuple__": true, 
                                                         "items": [
-                                                            55.0, 
-                                                            16.0, 
+                                                            53.5391, 
+                                                            11.922, 
                                                             50.0, 
                                                             50.0, 
                                                             1, 
@@ -1941,8 +2101,8 @@
                                                     "prefab_sub_key": null, 
                                                     "scene_ui_name": null, 
                                                     "size": [
-                                                        116.0, 
-                                                        38.0
+                                                        112.9188, 
+                                                        28.3146
                                                     ], 
                                                     "type": 7, 
                                                     "uid": "7c0523ea-8e4c-4d6b-9601-ae1e161e0e86", 
@@ -1954,8 +2114,8 @@
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    373.9998, 
+                                                    120.7062, 
+                                                    278.6755, 
                                                     50.0, 
                                                     62.3333, 
                                                     1, 
@@ -1965,8 +2125,8 @@
                                             "prefab_sub_key": null, 
                                             "scene_ui_name": null, 
                                             "size": [
-                                                110.0, 
-                                                32.0
+                                                107.0781, 
+                                                23.8439
                                             ], 
                                             "swallow_touches": true, 
                                             "type": 7, 
@@ -1998,13 +2158,14 @@
                                                     255
                                                 ]
                                             }, 
+                                            "font_min_size": 10, 
                                             "name": "reward_1", 
                                             "over_pattern": true, 
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    325.9998, 
+                                                    120.7062, 
+                                                    242.9096, 
                                                     50.0, 
                                                     54.3333, 
                                                     1, 
@@ -2016,7 +2177,7 @@
                                             "size": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    180.0, 
+                                                    175.2188, 
                                                     18.0
                                                 ]
                                             }, 
@@ -2056,13 +2217,14 @@
                                                     255
                                                 ]
                                             }, 
+                                            "font_min_size": 10, 
                                             "name": "reward_2", 
                                             "over_pattern": true, 
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    298.0002, 
+                                                    120.7062, 
+                                                    222.0465, 
                                                     50.0, 
                                                     49.6667, 
                                                     1, 
@@ -2074,7 +2236,7 @@
                                             "size": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    180.0, 
+                                                    175.2188, 
                                                     18.0
                                                 ]
                                             }, 
@@ -2114,13 +2276,14 @@
                                                     255
                                                 ]
                                             }, 
+                                            "font_min_size": 10, 
                                             "name": "reward_3", 
                                             "over_pattern": true, 
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    270.0, 
+                                                    120.7062, 
+                                                    201.1829, 
                                                     50.0, 
                                                     45.0, 
                                                     1, 
@@ -2132,7 +2295,7 @@
                                             "size": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    180.0, 
+                                                    175.2188, 
                                                     18.0
                                                 ]
                                             }, 
@@ -2172,13 +2335,14 @@
                                                     255
                                                 ]
                                             }, 
+                                            "font_min_size": 10, 
                                             "name": "reward_4", 
                                             "over_pattern": true, 
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    241.9998, 
+                                                    120.7062, 
+                                                    180.3194, 
                                                     50.0, 
                                                     40.3333, 
                                                     1, 
@@ -2190,7 +2354,7 @@
                                             "size": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    180.0, 
+                                                    175.2188, 
                                                     18.0
                                                 ]
                                             }, 
@@ -2230,13 +2394,14 @@
                                                     255
                                                 ]
                                             }, 
+                                            "font_min_size": 10, 
                                             "name": "reward_5", 
                                             "over_pattern": true, 
                                             "pos_data": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    124.0, 
-                                                    214.0002, 
+                                                    120.7062, 
+                                                    159.4563, 
                                                     50.0, 
                                                     35.6667, 
                                                     1, 
@@ -2248,7 +2413,7 @@
                                             "size": {
                                                 "__tuple__": true, 
                                                 "items": [
-                                                    180.0, 
+                                                    175.2188, 
                                                     18.0
                                                 ]
                                             }, 
@@ -2266,10 +2431,10 @@
                                     "color": {
                                         "__tuple__": true, 
                                         "items": [
-                                            18, 
-                                            20, 
-                                            28, 
-                                            244
+                                            7, 
+                                            10, 
+                                            16, 
+                                            246
                                         ]
                                     }, 
                                     "event_list": [], 
@@ -2277,9 +2442,9 @@
                                     "pos_data": {
                                         "__tuple__": true, 
                                         "items": [
-                                            860.0001, 
-                                            324.0, 
-                                            86.8687, 
+                                            842.9964, 
+                                            241.4195, 
+                                            87.4747, 
                                             50.0, 
                                             1, 
                                             1
@@ -2288,8 +2453,8 @@
                                     "prefab_sub_key": null, 
                                     "scene_ui_name": null, 
                                     "size": [
-                                        248.0, 
-                                        600.0
+                                        241.4125, 
+                                        447.0732
                                     ], 
                                     "type": 7, 
                                     "uid": "e12bc488-a40e-4291-9ddc-ebb45b84bc4e"
@@ -2300,8 +2465,8 @@
                             "pos_data": {
                                 "__tuple__": true, 
                                 "items": [
-                                    495.0, 
-                                    324.0002, 
+                                    481.8516, 
+                                    241.4196, 
                                     49.0099, 
                                     42.6316, 
                                     1, 
@@ -2311,8 +2476,8 @@
                             "prefab_sub_key": null, 
                             "scene_ui_name": null, 
                             "size": [
-                                990.0, 
-                                648.0
+                                963.7031, 
+                                482.839
                             ], 
                             "type": 7, 
                             "uid": "9b419a8e-4660-45ad-aa19-2c7d28d6d3a5"
@@ -2323,10 +2488,10 @@
                     "pos_data": {
                         "__tuple__": true, 
                         "items": [
-                            1046.0006, 
-                            521.9996, 
-                            54.4792, 
-                            48.3333, 
+                            960.0, 
+                            540.0, 
+                            50.0, 
+                            50.0, 
                             1, 
                             1
                         ]
@@ -2334,8 +2499,8 @@
                     "prefab_sub_key": null, 
                     "scene_ui_name": null, 
                     "size": [
-                        1010.0, 
-                        760.0
+                        983.1719, 
+                        566.2927
                     ], 
                     "type": 7, 
                     "uid": "6b02666c-ed7a-4362-b65a-e56986abdc2c"
@@ -2372,6 +2537,6 @@
     "type": 2, 
     "ui_anims": [], 
     "uid": "dd36f541-8e33-4c4e-9c03-6797b5d62514", 
-    "visible": true, 
+    "visible": false, 
     "zorder": 431
 }

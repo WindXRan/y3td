@@ -29,7 +29,7 @@
                     "children": [], 
                     "event_list": [], 
                     "image": 906896, 
-                    "name": "bond_choice_3_bg", 
+                    "name": "bond_choice_2_bg", 
                     "open_adapter": true, 
                     "pos_data": {
                         "__tuple__": true, 
@@ -49,8 +49,119 @@
                         1080.0
                     ], 
                     "type": 4, 
-                    "uid": "b8ca0fef-67eb-4ef4-87e4-6bf15ca90904", 
+                    "uid": "36255aef-8743-4331-9d43-01930526383b", 
                     "visible": false
+                }, 
+                {
+                    "adapter_option": [
+                        false, 
+                        false, 
+                        false, 
+                        false, 
+                        480.0, 
+                        573.0, 
+                        905.0, 
+                        905.0
+                    ], 
+                    "children": [], 
+                    "disabled_font_color": [
+                        247, 
+                        247, 
+                        247, 
+                        255
+                    ], 
+                    "disabled_picture": 999, 
+                    "disabled_status_added": true, 
+                    "disabled_text": {
+                        "__tuple__": true, 
+                        "items": [
+                            "\u7a0d\u540e\u518d\u8bf4", 
+                            false
+                        ]
+                    }, 
+                    "event_list": [], 
+                    "font": {
+                        "__tuple__": true, 
+                        "items": [
+                            "MSYH", 
+                            13
+                        ]
+                    }, 
+                    "hover_status_added": true, 
+                    "name": "later_btn", 
+                    "normal_cap_insets": {
+                        "__tuple__": true, 
+                        "items": [
+                            33.0, 
+                            33.0, 
+                            33.0, 
+                            33.0
+                        ]
+                    }, 
+                    "normal_font_color": [
+                        247, 
+                        247, 
+                        247, 
+                        255
+                    ], 
+                    "normal_picture": 999, 
+                    "normal_text": {
+                        "__tuple__": true, 
+                        "items": [
+                            "\u7a0d\u540e\u518d\u8bf4", 
+                            false
+                        ]
+                    }, 
+                    "open_adapter": true, 
+                    "pos_data": {
+                        "__tuple__": true, 
+                        "items": [
+                            960.0, 
+                            586.5005, 
+                            50.0, 
+                            54.3056, 
+                            1, 
+                            1
+                        ]
+                    }, 
+                    "prefab_sub_key": null, 
+                    "press_font_color": [
+                        247, 
+                        247, 
+                        247, 
+                        255
+                    ], 
+                    "press_picture": 999, 
+                    "press_text": {
+                        "__tuple__": true, 
+                        "items": [
+                            "\u7a0d\u540e\u518d\u8bf4", 
+                            false
+                        ]
+                    }, 
+                    "pressed_status_added": true, 
+                    "scene_ui_name": null, 
+                    "size": [
+                        110.0, 
+                        27.0
+                    ], 
+                    "suspend_font_color": [
+                        247, 
+                        247, 
+                        247, 
+                        255
+                    ], 
+                    "suspend_picture": 999, 
+                    "suspend_text": {
+                        "__tuple__": true, 
+                        "items": [
+                            "\u7a0d\u540e\u518d\u8bf4", 
+                            false
+                        ]
+                    }, 
+                    "swallow_touches": true, 
+                    "type": 1, 
+                    "uid": "193b196a-af36-4eaa-8d94-9b2a79e8200b"
                 }, 
                 {
                     "children": [
@@ -88,7 +199,7 @@
                                 1080.0
                             ], 
                             "type": 4, 
-                            "uid": "382f7cd9-9feb-4f67-8029-1921babf2def"
+                            "uid": "afadd1f5-0247-4781-8cbf-f919837d61c9"
                         }
                     ], 
                     "color": [
@@ -118,7 +229,7 @@
                         1080.0
                     ], 
                     "type": 7, 
-                    "uid": "2176bbd4-999e-456a-91a7-29740be61879", 
+                    "uid": "30aad234-97c4-4f93-a90d-70900c11d981", 
                     "visible": false
                 }, 
                 {
@@ -129,8 +240,8 @@
                         false, 
                         56.0, 
                         682.0, 
-                        514.0, 
-                        514.0
+                        654.0, 
+                        654.0
                     ], 
                     "children": [
                         {
@@ -146,13 +257,13 @@
                             ], 
                             "children": [], 
                             "event_list": [], 
-                            "image": 100062, 
+                            "image": 907038, 
                             "name": "cards_row_bg", 
                             "open_adapter": true, 
                             "pos_data": {
                                 "__tuple__": true, 
                                 "items": [
-                                    446.0, 
+                                    306.0, 
                                     171.0, 
                                     50.0, 
                                     50.0, 
@@ -163,11 +274,11 @@
                             "prefab_sub_key": null, 
                             "scene_ui_name": null, 
                             "size": [
-                                892.0, 
+                                612.0, 
                                 342.0
                             ], 
                             "type": 4, 
-                            "uid": "45906d5a-a25c-443d-8a15-3ff111e56a49"
+                            "uid": "b89e2177-82b4-48a1-badf-5112f33dfcd4"
                         }, 
                         {
                             "adapter_option": [
@@ -178,7 +289,7 @@
                                 0.0, 
                                 4.0, 
                                 0.0, 
-                                640.0
+                                360.0
                             ], 
                             "children": [
                                 {
@@ -221,7 +332,7 @@
                                         338.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "b4cc4bbd-9ce7-49d0-b3ad-2c92f0b5bbe8"
+                                    "uid": "773fd36a-ab68-4e53-afe3-e350ff5853b1"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -273,7 +384,7 @@
                                         334.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "ac3000b6-9ba4-434b-929d-b9622d0ae83c"
+                                    "uid": "db205dc5-f333-4dc9-a543-bdb98963eac1"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -325,7 +436,7 @@
                                         330.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "c4ceb737-2fec-4116-92e7-898ee76f6404"
+                                    "uid": "f13b6e04-96d9-4c6f-88ad-76bf4370576a"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -377,7 +488,7 @@
                                         50.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "39cad578-666d-465f-ad48-e25b931a3803"
+                                    "uid": "67ab9b41-89c4-414f-b7fc-deddf9a1e85e"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -429,7 +540,7 @@
                                         34.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "235fcf3c-9bb8-4ae1-ae00-2da83d231e44"
+                                    "uid": "f090b760-2eae-40e8-9e54-a19d608482ad"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -481,7 +592,7 @@
                                         26.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "e90a1483-b457-4cad-80e3-374faff1b8dd"
+                                    "uid": "96789573-7185-453a-9cd7-b22f324c69c2"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -533,7 +644,7 @@
                                         74.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "bf2cde99-b958-453a-8b0e-33f81edaf49d"
+                                    "uid": "60167255-dcfe-417f-ab4a-762596519c36"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -585,7 +696,7 @@
                                         62.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "be7a201e-c189-4104-bc81-cb5a7602cbe9"
+                                    "uid": "b9365605-8ce6-4079-ba11-06236794fbba"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -637,7 +748,7 @@
                                         56.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "cefe2781-bd50-4c0d-a1ca-2ff8447b761e"
+                                    "uid": "581cad3a-6f34-4922-bda7-2975b5d585f2"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -673,7 +784,7 @@
                                         54.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "c626b6d1-24d5-4059-af9f-9b3b7891e25a"
+                                    "uid": "7e4b3229-a6cf-4e07-8b3a-8afd3a31dc5f"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -715,49 +826,7 @@
                                         2.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "b9ba7610-4d50-45fc-95f0-c083e92a5d35"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        31.0, 
-                                        306.0, 
-                                        10.0, 
-                                        10.0
-                                    ], 
-                                    "children": [], 
-                                    "color": [
-                                        136, 
-                                        183, 
-                                        239, 
-                                        85
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 999, 
-                                    "name": "card_header_cut_1", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            306.5001, 
-                                            50.0, 
-                                            90.6805, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        232.0, 
-                                        1.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "ef37b31b-6a28-473a-8d77-0a8999cad2c0"
+                                    "uid": "a773fca4-d216-476b-a9e9-c54c3706dbe0"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -821,7 +890,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "9eefd76d-8ca0-4a6b-82a0-d66c7a7113f4"
+                                    "uid": "2a14d627-7105-484f-9457-705a4a970f8e"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -878,7 +947,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "5f857321-88f5-4fc1-82d6-d4a5c3fc2946"
+                                    "uid": "dc5f7409-077b-441e-9940-0cabf5b427c0"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -935,7 +1004,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "ce10256d-b558-46d9-ab37-07ddd11a87d2"
+                                    "uid": "64ec9ad2-330c-422c-9609-376f8a793a68"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -992,7 +1061,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "a9a45c8f-223f-4f27-a59f-04e965ad92d1"
+                                    "uid": "fd5f6a0e-6e06-46bf-9d6d-29fd97eebcde"
                                 }, 
                                 {
                                     "children": [], 
@@ -1034,7 +1103,7 @@
                                     "suspend_picture": 999, 
                                     "swallow_touches": true, 
                                     "type": 1, 
-                                    "uid": "5e3f61ef-9f2e-48f6-b9f4-52fd52568616"
+                                    "uid": "4d78a371-1d05-44a1-b244-9548a4a7a3b0"
                                 }
                             ], 
                             "event_list": [], 
@@ -1043,9 +1112,9 @@
                             "pos_data": {
                                 "__tuple__": true, 
                                 "items": [
-                                    126.0004, 
+                                    125.9998, 
                                     173.0, 
-                                    14.1256, 
+                                    20.5882, 
                                     50.5848, 
                                     1, 
                                     1
@@ -1058,7 +1127,7 @@
                                 338.0
                             ], 
                             "type": 7, 
-                            "uid": "85f0452a-9a0b-44f2-b06a-b9f361f7a794"
+                            "uid": "c7d44e75-00f5-4eb0-a2ca-c8bd0edbbd2b"
                         }, 
                         {
                             "adapter_option": [
@@ -1068,8 +1137,8 @@
                                 false, 
                                 0.0, 
                                 4.0, 
-                                320.0, 
-                                320.0
+                                360.0, 
+                                0.0
                             ], 
                             "children": [
                                 {
@@ -1112,7 +1181,7 @@
                                         338.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "5b9d219b-3a62-446b-9a4c-f972a1d43436"
+                                    "uid": "c282f362-dbe5-4f21-815c-c9a7222ce875"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1164,7 +1233,7 @@
                                         334.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "e981020e-38e3-4153-b925-030b671a2100"
+                                    "uid": "a1f9a4a1-0a44-48f5-b1fc-930503d527bf"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1216,7 +1285,7 @@
                                         330.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "10b41b06-0c49-4ed4-865e-644e87c6b47b"
+                                    "uid": "1bec5df3-8bd2-432c-bdb5-7a967e7b9ff0"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1268,7 +1337,7 @@
                                         50.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "73c06fd7-ca75-4ea0-ab51-6ff84590bbd6"
+                                    "uid": "c9b051bf-06ac-4a8b-8d55-b6d8083eaf10"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1320,7 +1389,7 @@
                                         34.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "fa49eb63-ca45-4aa2-b3cb-1d93ca8c7dde"
+                                    "uid": "d62d52d3-d805-4e9f-b215-3e4162b5e740"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1372,7 +1441,7 @@
                                         26.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "a58ef687-7629-4ea1-b0c8-cfd96b943a78"
+                                    "uid": "b60145b4-058b-4cab-b87d-61b967ca1175"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1424,7 +1493,7 @@
                                         74.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "aa025760-9d59-4501-a4db-7a0e21c04107"
+                                    "uid": "fbfd3c94-e652-45a1-91f0-60ca6d9c8d2f"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1476,7 +1545,7 @@
                                         62.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "56e301fd-5c16-41c5-9a82-238264f333e6"
+                                    "uid": "ea2ac2dd-25ec-4092-aabf-a3e703efb162"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1528,7 +1597,7 @@
                                         56.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "8008d397-5868-4327-9b74-232f7daaaa1b"
+                                    "uid": "06310e22-aef8-49b3-a824-8801356ae5f9"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1564,7 +1633,7 @@
                                         54.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "7e37c455-3559-4445-a953-1c83dbdc7752"
+                                    "uid": "e0f56e68-6c74-4d52-9741-b1772b39bc0b"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1606,49 +1675,7 @@
                                         2.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "0860bd6c-7d50-4537-8a5f-084f32e571db"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        31.0, 
-                                        306.0, 
-                                        10.0, 
-                                        10.0
-                                    ], 
-                                    "children": [], 
-                                    "color": [
-                                        136, 
-                                        183, 
-                                        239, 
-                                        85
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 999, 
-                                    "name": "card_header_cut_2", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            306.5001, 
-                                            50.0, 
-                                            90.6805, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        232.0, 
-                                        1.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "cc465234-c5ce-4d1c-a09b-3641a89fc9cf"
+                                    "uid": "73f0584d-2d72-41b1-9b51-e8fc7c9f8362"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1712,7 +1739,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "3d78f8df-e409-4716-b613-e95c19f675e6"
+                                    "uid": "0ecfc265-f01b-48ef-bebd-34b28f633af5"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1769,7 +1796,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "ededfec4-7eb8-4c23-afa3-b754fbefd02b"
+                                    "uid": "3a3f8938-3b5f-4c57-9357-7807b0f95aa3"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1826,7 +1853,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "7afe8dae-61a6-438f-9b9f-b2f277e824e2"
+                                    "uid": "68a22b6e-14ce-435c-b667-376d19bdd400"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1883,7 +1910,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "a449694d-41d5-4060-ab01-2dccf17aa6a7"
+                                    "uid": "98f18e4b-1493-483b-b90d-bf5bba34597d"
                                 }, 
                                 {
                                     "children": [], 
@@ -1925,7 +1952,7 @@
                                     "suspend_picture": 999, 
                                     "swallow_touches": true, 
                                     "type": 1, 
-                                    "uid": "d1cdd0eb-2a23-4542-a831-a074ff1a6b28"
+                                    "uid": "fa3bd725-6c92-4525-ae65-e2528b2eff33"
                                 }
                             ], 
                             "event_list": [], 
@@ -1934,9 +1961,9 @@
                             "pos_data": {
                                 "__tuple__": true, 
                                 "items": [
-                                    446.0, 
+                                    486.0002, 
                                     173.0, 
-                                    50.0, 
+                                    79.4118, 
                                     50.5848, 
                                     1, 
                                     1
@@ -1949,898 +1976,7 @@
                                 338.0
                             ], 
                             "type": 7, 
-                            "uid": "469c3fb8-50fa-44dd-9d4f-2f96ffefa27b"
-                        }, 
-                        {
-                            "adapter_option": [
-                                false, 
-                                false, 
-                                false, 
-                                false, 
-                                0.0, 
-                                4.0, 
-                                640.0, 
-                                0.0
-                            ], 
-                            "children": [
-                                {
-                                    "cap_insets": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            20, 
-                                            20, 
-                                            20, 
-                                            20
-                                        ]
-                                    }, 
-                                    "children": [], 
-                                    "color": [
-                                        9, 
-                                        18, 
-                                        26, 
-                                        243
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 131998, 
-                                    "is_scale9_enable": true, 
-                                    "name": "card_bg_3", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            169.0, 
-                                            50.0, 
-                                            50.0, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        252.0, 
-                                        338.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "316e6f3f-f040-46f1-9ffd-8a610856f1c4"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        2.0, 
-                                        2.0, 
-                                        2.0, 
-                                        2.0
-                                    ], 
-                                    "cap_insets": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            18, 
-                                            18, 
-                                            18, 
-                                            18
-                                        ]
-                                    }, 
-                                    "children": [], 
-                                    "color": [
-                                        91, 
-                                        149, 
-                                        214, 
-                                        36
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 100062, 
-                                    "is_scale9_enable": true, 
-                                    "name": "card_edge_3", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            169.0, 
-                                            50.0, 
-                                            50.0, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        248.0, 
-                                        334.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "9e840a51-7016-47e5-b8b3-d940e4263b73"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        4.0, 
-                                        4.0, 
-                                        4.0, 
-                                        4.0
-                                    ], 
-                                    "cap_insets": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            18, 
-                                            18, 
-                                            18, 
-                                            18
-                                        ]
-                                    }, 
-                                    "children": [], 
-                                    "color": [
-                                        19, 
-                                        34, 
-                                        53, 
-                                        70
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 100062, 
-                                    "is_scale9_enable": true, 
-                                    "name": "card_inner_3", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            169.0, 
-                                            50.0, 
-                                            50.0, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        244.0, 
-                                        330.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "25b65edf-afe3-43ca-a5ab-2eda44d387b6"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        182.0, 
-                                        106.0, 
-                                        14.0, 
-                                        14.0
-                                    ], 
-                                    "cap_insets": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            18, 
-                                            18, 
-                                            18, 
-                                            18
-                                        ]
-                                    }, 
-                                    "children": [], 
-                                    "color": [
-                                        0, 
-                                        0, 
-                                        0, 
-                                        30
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 100062, 
-                                    "is_scale9_enable": true, 
-                                    "name": "value_shadow_3", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            131.0, 
-                                            50.0, 
-                                            38.7574, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        224.0, 
-                                        50.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "cab29612-28ec-4b33-ba45-0db537d4c3b2"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        0.0, 
-                                        304.0, 
-                                        0.0, 
-                                        0.0
-                                    ], 
-                                    "cap_insets": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            18, 
-                                            18, 
-                                            18, 
-                                            18
-                                        ]
-                                    }, 
-                                    "children": [], 
-                                    "color": [
-                                        10, 
-                                        36, 
-                                        71, 
-                                        255
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 100062, 
-                                    "is_scale9_enable": true, 
-                                    "name": "card_header_3", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            321.0, 
-                                            50.0, 
-                                            94.9704, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        252.0, 
-                                        34.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "a34b0e6d-18d0-4d35-8411-c0fea8e7113c"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        4.0, 
-                                        308.0, 
-                                        6.0, 
-                                        6.0
-                                    ], 
-                                    "cap_insets": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            18, 
-                                            18, 
-                                            18, 
-                                            18
-                                        ]
-                                    }, 
-                                    "children": [], 
-                                    "color": [
-                                        91, 
-                                        149, 
-                                        214, 
-                                        28
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 100062, 
-                                    "is_scale9_enable": true, 
-                                    "name": "card_header_line_3", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            321.0, 
-                                            50.0, 
-                                            94.9704, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        240.0, 
-                                        26.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "34b26557-d63a-4345-b219-0aa1bca7dca7"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        54.0, 
-                                        210.0, 
-                                        89.0, 
-                                        89.0
-                                    ], 
-                                    "cap_insets": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            16, 
-                                            16, 
-                                            16, 
-                                            16
-                                        ]
-                                    }, 
-                                    "children": [], 
-                                    "color": [
-                                        31, 
-                                        79, 
-                                        135, 
-                                        56
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 100061, 
-                                    "is_scale9_enable": true, 
-                                    "name": "icon_glow_3", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            246.9999, 
-                                            50.0, 
-                                            73.0769, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        74.0, 
-                                        74.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "3f80e183-13ad-437d-94e4-21c64b159509"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        60.0, 
-                                        216.0, 
-                                        95.0, 
-                                        95.0
-                                    ], 
-                                    "cap_insets": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            16, 
-                                            16, 
-                                            16, 
-                                            16
-                                        ]
-                                    }, 
-                                    "children": [], 
-                                    "color": [
-                                        10, 
-                                        23, 
-                                        48, 
-                                        255
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 100061, 
-                                    "is_scale9_enable": true, 
-                                    "name": "icon_frame_3", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            246.9999, 
-                                            50.0, 
-                                            73.0769, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        62.0, 
-                                        62.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "6fcd72dc-f1bc-40be-86f4-ca2f616df916"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        63.0, 
-                                        219.0, 
-                                        98.0, 
-                                        98.0
-                                    ], 
-                                    "cap_insets": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            16, 
-                                            16, 
-                                            16, 
-                                            16
-                                        ]
-                                    }, 
-                                    "children": [], 
-                                    "color": [
-                                        113, 
-                                        181, 
-                                        255, 
-                                        34
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 100062, 
-                                    "is_scale9_enable": true, 
-                                    "name": "icon_edge_3", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            246.9999, 
-                                            50.0, 
-                                            73.0769, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        56.0, 
-                                        56.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "588a252a-c351-4688-8d8a-5f00b38f8dbf"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        64.0, 
-                                        220.0, 
-                                        99.0, 
-                                        99.0
-                                    ], 
-                                    "children": [], 
-                                    "event_list": [], 
-                                    "image": 108148, 
-                                    "name": "icon_3", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            246.9999, 
-                                            50.0, 
-                                            73.0769, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        54.0, 
-                                        54.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "f4a8f503-9013-4524-8ebb-504dbbb96dc3"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        162.0, 
-                                        174.0, 
-                                        16.0, 
-                                        16.0
-                                    ], 
-                                    "children": [], 
-                                    "color": [
-                                        109, 
-                                        142, 
-                                        180, 
-                                        51
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 999, 
-                                    "name": "divider_3", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            174.9998, 
-                                            50.0, 
-                                            51.7751, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        220.0, 
-                                        2.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "afffe603-74c1-45e6-9efd-61556345cf29"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        31.0, 
-                                        306.0, 
-                                        10.0, 
-                                        10.0
-                                    ], 
-                                    "children": [], 
-                                    "color": [
-                                        136, 
-                                        183, 
-                                        239, 
-                                        85
-                                    ], 
-                                    "event_list": [], 
-                                    "image": 999, 
-                                    "name": "card_header_cut_3", 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            306.5001, 
-                                            50.0, 
-                                            90.6805, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        232.0, 
-                                        1.0
-                                    ], 
-                                    "type": 4, 
-                                    "uid": "fea1ecd1-e652-4b16-8a63-f8b19056d102"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        8.0, 
-                                        312.0, 
-                                        18.0, 
-                                        18.0
-                                    ], 
-                                    "alignment": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            2, 
-                                            8
-                                        ]
-                                    }, 
-                                    "children": [], 
-                                    "event_list": [], 
-                                    "font": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            "", 
-                                            16
-                                        ]
-                                    }, 
-                                    "font_color": [
-                                        45, 
-                                        176, 
-                                        255, 
-                                        255
-                                    ], 
-                                    "font_min_size": 12, 
-                                    "name": "title_3", 
-                                    "open_adapter": true, 
-                                    "over_pattern": 2, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            321.0, 
-                                            50.0, 
-                                            94.9704, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        216.0, 
-                                        18.0
-                                    ], 
-                                    "text": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            "\u8fde\u5c04", 
-                                            false
-                                        ]
-                                    }, 
-                                    "type": 3, 
-                                    "uid": "536daf6e-e733-4266-8752-d68b1702df0a"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        136.0, 
-                                        184.0, 
-                                        18.0, 
-                                        20.0
-                                    ], 
-                                    "children": [], 
-                                    "event_list": [], 
-                                    "font": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            "", 
-                                            15
-                                        ]
-                                    }, 
-                                    "font_color": [
-                                        232, 
-                                        237, 
-                                        243, 
-                                        255
-                                    ], 
-                                    "font_min_size": 11, 
-                                    "name": "bond_3", 
-                                    "open_adapter": true, 
-                                    "over_pattern": 2, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            125.0001, 
-                                            193.0, 
-                                            49.6032, 
-                                            57.1006, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        214.0, 
-                                        18.0
-                                    ], 
-                                    "text": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            "\u7f81\u7eca\uff1a \u5929\u5f13\u9053 (2/3)", 
-                                            false
-                                        ]
-                                    }, 
-                                    "type": 3, 
-                                    "uid": "c15c6929-f1be-4251-a03e-cbe2ca3178a9"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        190.0, 
-                                        130.0, 
-                                        18.0, 
-                                        46.0
-                                    ], 
-                                    "children": [], 
-                                    "event_list": [], 
-                                    "font": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            "", 
-                                            15
-                                        ]
-                                    }, 
-                                    "font_color": [
-                                        25, 
-                                        234, 
-                                        63, 
-                                        255
-                                    ], 
-                                    "font_min_size": 11, 
-                                    "name": "value_1_3", 
-                                    "open_adapter": true, 
-                                    "over_pattern": 2, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            111.9999, 
-                                            139.0001, 
-                                            44.4444, 
-                                            41.1243, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        188.0, 
-                                        18.0
-                                    ], 
-                                    "text": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            "+15%\u653b\u51fb\u901f\u5ea6", 
-                                            false
-                                        ]
-                                    }, 
-                                    "type": 3, 
-                                    "uid": "a422fdf7-8435-417c-ac59-2e09b62c478f"
-                                }, 
-                                {
-                                    "adapter_option": [
-                                        false, 
-                                        false, 
-                                        false, 
-                                        false, 
-                                        216.0, 
-                                        104.0, 
-                                        18.0, 
-                                        46.0
-                                    ], 
-                                    "children": [], 
-                                    "event_list": [], 
-                                    "font": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            "", 
-                                            15
-                                        ]
-                                    }, 
-                                    "font_color": [
-                                        25, 
-                                        234, 
-                                        63, 
-                                        255
-                                    ], 
-                                    "font_min_size": 11, 
-                                    "name": "value_2_3", 
-                                    "open_adapter": true, 
-                                    "over_pattern": 2, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            111.9999, 
-                                            113.0002, 
-                                            44.4444, 
-                                            33.432, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        188.0, 
-                                        18.0
-                                    ], 
-                                    "text": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            "+1\u591a\u91cd\u6570\u91cf", 
-                                            false
-                                        ]
-                                    }, 
-                                    "type": 3, 
-                                    "uid": "ace184ef-2b68-4f8b-910a-13eeb08596ba"
-                                }, 
-                                {
-                                    "children": [], 
-                                    "disabled_picture": 999, 
-                                    "disabled_status_added": true, 
-                                    "event_list": [], 
-                                    "hover_status_added": true, 
-                                    "name": "pick_btn_3", 
-                                    "normal_cap_insets": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            33.0, 
-                                            33.0, 
-                                            33.0, 
-                                            33.0
-                                        ]
-                                    }, 
-                                    "normal_picture": 999, 
-                                    "open_adapter": true, 
-                                    "pos_data": {
-                                        "__tuple__": true, 
-                                        "items": [
-                                            126.0, 
-                                            169.0, 
-                                            50.0, 
-                                            50.0, 
-                                            1, 
-                                            1
-                                        ]
-                                    }, 
-                                    "prefab_sub_key": null, 
-                                    "press_picture": 999, 
-                                    "pressed_status_added": true, 
-                                    "scene_ui_name": null, 
-                                    "size": [
-                                        252.0, 
-                                        338.0
-                                    ], 
-                                    "suspend_picture": 999, 
-                                    "swallow_touches": true, 
-                                    "type": 1, 
-                                    "uid": "fa19fecb-5b7b-49c7-b1b9-9800064682ea"
-                                }
-                            ], 
-                            "event_list": [], 
-                            "name": "card_3", 
-                            "open_adapter": true, 
-                            "pos_data": {
-                                "__tuple__": true, 
-                                "items": [
-                                    765.9996, 
-                                    173.0, 
-                                    85.8744, 
-                                    50.5848, 
-                                    1, 
-                                    1
-                                ]
-                            }, 
-                            "prefab_sub_key": null, 
-                            "scene_ui_name": null, 
-                            "size": [
-                                252.0, 
-                                338.0
-                            ], 
-                            "type": 7, 
-                            "uid": "27a38ec1-4076-4228-91ed-bed5bf5723e0"
+                            "uid": "67a0be1a-1bca-459f-ac90-43af9d293c35"
                         }
                     ], 
                     "event_list": [], 
@@ -2860,11 +1996,11 @@
                     "prefab_sub_key": null, 
                     "scene_ui_name": null, 
                     "size": [
-                        892.0, 
+                        612.0, 
                         342.0
                     ], 
                     "type": 7, 
-                    "uid": "d9b306bd-425c-4065-802b-9c59f19dc6b2"
+                    "uid": "da1fbb14-5d8c-4f34-b4cb-ff5e9b0a7fff"
                 }, 
                 {
                     "adapter_option": [
@@ -2872,24 +2008,24 @@
                         false, 
                         false, 
                         false, 
-                        437.0, 
-                        604.0, 
-                        840.0, 
-                        840.0
+                        430.0, 
+                        611.0, 
+                        872.0, 
+                        872.0
                     ], 
                     "children": [], 
                     "disabled_font_color": [
-                        238, 
-                        243, 
-                        250, 
+                        247, 
+                        247, 
+                        247, 
                         255
                     ], 
-                    "disabled_picture": 134242808, 
+                    "disabled_picture": 906051, 
                     "disabled_status_added": true, 
                     "disabled_text": {
                         "__tuple__": true, 
                         "items": [
-                            "\u5237\u65b0\u672c\u8f6e\u5019\u9009", 
+                            "\u5f53\u524d\u4e0d\u53ef\u5237\u65b0", 
                             false
                         ]
                     }, 
@@ -2906,23 +2042,23 @@
                     "normal_cap_insets": {
                         "__tuple__": true, 
                         "items": [
-                            41.0, 
-                            10.0, 
-                            41.0, 
-                            10.0
+                            33.0, 
+                            33.0, 
+                            33.0, 
+                            33.0
                         ]
                     }, 
                     "normal_font_color": [
-                        238, 
-                        243, 
-                        250, 
+                        247, 
+                        247, 
+                        247, 
                         255
                     ], 
-                    "normal_picture": 134242808, 
+                    "normal_picture": 907066, 
                     "normal_text": {
                         "__tuple__": true, 
                         "items": [
-                            "\u5237\u65b0\u672c\u8f6e\u5019\u9009", 
+                            "\u5f53\u524d\u4e0d\u53ef\u5237\u65b0", 
                             false
                         ]
                     }, 
@@ -2931,166 +2067,55 @@
                         "__tuple__": true, 
                         "items": [
                             960.0, 
-                            623.5002, 
+                            630.4997, 
                             50.0, 
-                            57.7315, 
+                            58.3796, 
                             1, 
                             1
                         ]
                     }, 
                     "prefab_sub_key": null, 
                     "press_font_color": [
-                        238, 
-                        243, 
-                        250, 
+                        247, 
+                        247, 
+                        247, 
                         255
                     ], 
-                    "press_picture": 134242808, 
+                    "press_picture": 907330, 
                     "press_text": {
                         "__tuple__": true, 
                         "items": [
-                            "\u5237\u65b0\u672c\u8f6e\u5019\u9009", 
+                            "\u5f53\u524d\u4e0d\u53ef\u5237\u65b0", 
                             false
                         ]
                     }, 
                     "pressed_status_added": true, 
                     "scene_ui_name": null, 
                     "size": [
-                        240.0, 
+                        176.0, 
                         39.0
                     ], 
                     "suspend_font_color": [
-                        238, 
-                        243, 
-                        250, 
+                        247, 
+                        247, 
+                        247, 
                         255
                     ], 
-                    "suspend_picture": 134242808, 
+                    "suspend_picture": 906009, 
                     "suspend_text": {
                         "__tuple__": true, 
                         "items": [
-                            "\u5237\u65b0\u672c\u8f6e\u5019\u9009", 
+                            "\u5f53\u524d\u4e0d\u53ef\u5237\u65b0", 
                             false
                         ]
                     }, 
                     "swallow_touches": true, 
                     "type": 1, 
-                    "uid": "ac66e22a-82b0-4be1-b421-6b26809143dd"
-                }, 
-                {
-                    "adapter_option": [
-                        false, 
-                        false, 
-                        false, 
-                        false, 
-                        491.0, 
-                        562.0, 
-                        905.0, 
-                        905.0
-                    ], 
-                    "children": [], 
-                    "disabled_font_color": [
-                        242, 
-                        242, 
-                        242, 
-                        255
-                    ], 
-                    "disabled_picture": 134242808, 
-                    "disabled_status_added": true, 
-                    "disabled_text": {
-                        "__tuple__": true, 
-                        "items": [
-                            "\u7b49\u4f1a\u518d\u9009", 
-                            false
-                        ]
-                    }, 
-                    "event_list": [], 
-                    "font": {
-                        "__tuple__": true, 
-                        "items": [
-                            "MSYH", 
-                            11
-                        ]
-                    }, 
-                    "hover_status_added": true, 
-                    "name": "later_btn", 
-                    "normal_cap_insets": {
-                        "__tuple__": true, 
-                        "items": [
-                            41.0, 
-                            10.0, 
-                            41.0, 
-                            10.0
-                        ]
-                    }, 
-                    "normal_font_color": [
-                        242, 
-                        242, 
-                        242, 
-                        255
-                    ], 
-                    "normal_picture": 134242808, 
-                    "normal_text": {
-                        "__tuple__": true, 
-                        "items": [
-                            "\u7b49\u4f1a\u518d\u9009", 
-                            false
-                        ]
-                    }, 
-                    "open_adapter": true, 
-                    "pos_data": {
-                        "__tuple__": true, 
-                        "items": [
-                            960.0, 
-                            575.4996, 
-                            50.0, 
-                            53.287, 
-                            1, 
-                            1
-                        ]
-                    }, 
-                    "prefab_sub_key": null, 
-                    "press_font_color": [
-                        242, 
-                        242, 
-                        242, 
-                        255
-                    ], 
-                    "press_picture": 134242808, 
-                    "press_text": {
-                        "__tuple__": true, 
-                        "items": [
-                            "\u7b49\u4f1a\u518d\u9009", 
-                            false
-                        ]
-                    }, 
-                    "pressed_status_added": true, 
-                    "scene_ui_name": null, 
-                    "size": [
-                        110.0, 
-                        27.0
-                    ], 
-                    "suspend_font_color": [
-                        242, 
-                        242, 
-                        242, 
-                        255
-                    ], 
-                    "suspend_picture": 134242808, 
-                    "suspend_text": {
-                        "__tuple__": true, 
-                        "items": [
-                            "\u7b49\u4f1a\u518d\u9009", 
-                            false
-                        ]
-                    }, 
-                    "swallow_touches": true, 
-                    "type": 1, 
-                    "uid": "dbfca2fd-aceb-45f2-bad7-99f31f4e6bfc"
+                    "uid": "c52f19cb-2d8c-459e-9b59-c5a2c95d0837"
                 }
             ], 
             "event_list": [], 
-            "name": "bond_choice_3", 
+            "name": "bond_choice_2", 
             "open_adapter": true, 
             "pos_data": {
                 "__tuple__": true, 
@@ -3110,15 +2135,15 @@
                 1080.0
             ], 
             "type": 7, 
-            "uid": "8a1bfc96-c5f9-40c2-b156-c15155023b80"
+            "uid": "c2d11c0d-5263-4d1a-863c-baa45a3826af"
         }
     ], 
-    "name": "BondChoice3", 
+    "name": "BondChoice2", 
     "opacity": 1.0, 
     "script_name": "", 
     "type": 2, 
     "ui_anims": [], 
-    "uid": "552be7df-c7ef-4e6d-bc31-f7593358a9dc", 
+    "uid": "187db796-73e2-4287-9380-fbe9e9b9058d", 
     "visible": false, 
     "zorder": 520
 }

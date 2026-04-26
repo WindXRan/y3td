@@ -434,7 +434,7 @@
                       ]
                     },
                     {
-                      "name": "修仙模式",
+                      "name": "猎场模式",
                       "uid": "2b1782da-1a81-464f-99a0-439d50426edf",
                       "type": 7,
                       "children": [
@@ -532,7 +532,7 @@
                   "type": 3,
                   "children": [
                     {
-                      "name": "修仙模式tips",
+                      "name": "猎场模式tips",
                       "uid": "863b4e6f-fa4a-44c6-9688-f60db5a0fa5c",
                       "type": 7,
                       "children": [

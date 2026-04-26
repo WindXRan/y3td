@@ -1,0 +1,22 @@
+{
+  "name": "ArchiveTalentNode",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "ArchiveTalentNode_bg",
+      "uid": "a9d18d8f-6e9e-42d5-94be-9cc9669563c5",
+      "type": 4
+    },
+    {
+      "name": "label",
+      "uid": "df71b7f0-52d1-496a-81c0-6aff560b7c27",
+      "type": 3
+    },
+    {
+      "name": "level",
+      "uid": "dc2463d0-ac21-47bd-9d87-38676d2e4bc6",
+      "type": 3
+    }
+  ]
+}

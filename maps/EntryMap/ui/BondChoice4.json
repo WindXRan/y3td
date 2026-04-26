@@ -9,8 +9,8 @@
                 true, 
                 true, 
                 true, 
-                246.2692, 
-                -246.2692, 
+                0.0, 
+                0.0, 
                 0.0, 
                 0.0
             ], 
@@ -49,7 +49,7 @@
                         1080.0
                     ], 
                     "type": 4, 
-                    "uid": "0f560497-8ba8-4254-9a10-5aaaabb9a696", 
+                    "uid": "46014dc1-279e-4919-baf3-27615d7c59f1", 
                     "visible": false
                 }, 
                 {
@@ -66,14 +66,8 @@
                                 0.0
                             ], 
                             "children": [], 
-                            "color": [
-                                5, 
-                                8, 
-                                14, 
-                                184
-                            ], 
                             "event_list": [], 
-                            "image": 999, 
+                            "image": 906896, 
                             "name": "dim_bg_bg", 
                             "open_adapter": true, 
                             "pos_data": {
@@ -94,7 +88,7 @@
                                 1080.0
                             ], 
                             "type": 4, 
-                            "uid": "25f48581-f33f-4fb0-80d9-c7a7beaba4d1"
+                            "uid": "a100b5a5-1dda-433f-8111-ff5d368a6ffa"
                         }
                     ], 
                     "color": [
@@ -123,9 +117,8 @@
                         1920.0, 
                         1080.0
                     ], 
-                    "swallow_touches": true, 
                     "type": 7, 
-                    "uid": "2744251d-8870-4d2c-b79e-c0beeb60fa4e", 
+                    "uid": "3511bc32-1ad4-42eb-8870-94f954315f13", 
                     "visible": false
                 }, 
                 {
@@ -174,7 +167,7 @@
                                 342.0
                             ], 
                             "type": 4, 
-                            "uid": "1fb19f93-1d2a-40f3-b291-8059c2db54c5"
+                            "uid": "fc63e7c9-665d-47a7-b171-e5ebbcc0d723"
                         }, 
                         {
                             "adapter_option": [
@@ -228,7 +221,7 @@
                                         338.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "ff552636-869b-479e-a4de-9d5e4f683b94"
+                                    "uid": "bf1e2e45-3afe-4d55-bf89-34d2d72a28b1"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -280,7 +273,7 @@
                                         334.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "df999a42-9c9c-4fb9-a699-5349c8770e26"
+                                    "uid": "941362be-af12-4c32-8b89-f3589f51dce0"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -332,7 +325,7 @@
                                         330.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "93392128-707a-42bd-b15e-f9679ff5b7bc"
+                                    "uid": "f2415c25-50e4-4f45-9893-b97fd9e65213"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -384,7 +377,7 @@
                                         50.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "ca316870-c599-4feb-a260-ef40d58bb615"
+                                    "uid": "e2d49919-45a6-41db-ba92-ffe80aca4536"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -436,7 +429,7 @@
                                         34.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "8bb603bc-9e4c-4ccd-bac7-86fa2fbdf271"
+                                    "uid": "28a4296a-a1fb-4d4f-b358-2fd797ced6dc"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -488,7 +481,7 @@
                                         74.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "4de17015-6689-4e3c-a53b-8dd231ac8b27"
+                                    "uid": "a2488b5f-ca6a-4311-8d94-49e9424ff5d9"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -540,7 +533,7 @@
                                         26.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "99ccd716-1b99-46e8-b4fb-b089b8d02a42"
+                                    "uid": "d93e41f1-81ba-4c62-96e4-f327a2c7c49d"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -592,7 +585,7 @@
                                         62.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "339794ce-15cd-4c02-b2c6-8dcaf1802d5a"
+                                    "uid": "1d092a15-9e00-4706-9273-915b3d0cb847"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -644,7 +637,7 @@
                                         56.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "ac046045-f951-4098-b1a0-7edce55a5686"
+                                    "uid": "1e6c9a59-98b1-4461-94de-1c4bf7d0266f"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -680,7 +673,7 @@
                                         54.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "05b02fb7-5c64-4583-8b27-d12d3a844bea"
+                                    "uid": "48430a9d-4e53-471b-8a9a-1921b4567bed"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -722,7 +715,7 @@
                                         2.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "b9747662-5bfe-46bc-94a0-1298d2cb15c7"
+                                    "uid": "7209c374-0092-4c33-bf5a-79ded198c85e"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -764,7 +757,7 @@
                                         1.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "b24d3a61-8671-49e1-996d-3d3b6e899b4e"
+                                    "uid": "eaf17185-76de-4e8d-b518-924861d9ed10"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -789,7 +782,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             16
                                         ]
                                     }, 
@@ -828,7 +821,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "933cb759-43d1-4c2f-8e08-750a39cf827d"
+                                    "uid": "38d215b1-fefd-4d30-8b12-60709ace044c"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -846,7 +839,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             15
                                         ]
                                     }, 
@@ -880,12 +873,12 @@
                                     "text": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "\u7f81\u7eca\uff1a \u795e\u5c04\u624b (3/5)", 
+                                            "\u7f81\u7eca\uff1a \u5929\u5f13\u9053 (2/3)", 
                                             false
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "b53621be-9842-4641-89fa-ae76b64db3e4"
+                                    "uid": "3c145906-9d1c-4e8f-8bf2-610d5b67f543"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -903,7 +896,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             15
                                         ]
                                     }, 
@@ -942,7 +935,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "83c5e67d-d187-4a4e-ad97-a61b9d32d06a"
+                                    "uid": "4c5b7dcc-a0ff-4413-8095-caf6e937a9a2"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -960,7 +953,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             15
                                         ]
                                     }, 
@@ -999,7 +992,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "66d9d524-982a-4d53-8c65-56e186bb710e"
+                                    "uid": "0241e0b0-ada7-45a6-9cd4-991ab502cf23"
                                 }, 
                                 {
                                     "children": [], 
@@ -1041,7 +1034,7 @@
                                     "suspend_picture": 999, 
                                     "swallow_touches": true, 
                                     "type": 1, 
-                                    "uid": "2943684a-f02c-452f-b170-8226f667956c"
+                                    "uid": "a0f024a3-f915-4142-8274-671fa559520d"
                                 }
                             ], 
                             "event_list": [], 
@@ -1065,7 +1058,7 @@
                                 338.0
                             ], 
                             "type": 7, 
-                            "uid": "04b9998f-4c69-4e11-ab02-3f057b1b8c6e"
+                            "uid": "57a16afb-93f6-4a01-920c-6901c234ac8c"
                         }, 
                         {
                             "adapter_option": [
@@ -1119,7 +1112,7 @@
                                         338.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "6518d474-402f-4c38-9fa9-d52e218b7004"
+                                    "uid": "767e1c97-cc2c-4a9a-affa-330a4f38626e"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1171,7 +1164,7 @@
                                         334.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "e1f2cb0f-9f51-4875-a8e1-b117d9ea36b4"
+                                    "uid": "bfcdb802-facc-4d81-97dd-12b6c8e70060"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1223,7 +1216,7 @@
                                         330.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "412af793-3c1c-47b5-8aeb-d4d75cf34f50"
+                                    "uid": "3d2af23b-9cbe-40d1-9d4f-7814edee4940"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1275,7 +1268,7 @@
                                         50.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "18116d49-bf5d-40d7-9cf6-a083d3ea8881"
+                                    "uid": "77b15560-3605-4820-8c94-b94ff2271f0f"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1327,7 +1320,7 @@
                                         34.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "28869186-a071-4889-a179-7351396c46a3"
+                                    "uid": "6d361035-91d8-44a8-9bc9-be80ed66250a"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1379,7 +1372,7 @@
                                         74.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "ea4e4b8d-17ac-4b5f-9c65-a071ca75ff78"
+                                    "uid": "445f88ab-f9f5-40c5-997d-162b795ab92e"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1431,7 +1424,7 @@
                                         26.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "1ce8560a-761a-4c02-acca-620a02558f38"
+                                    "uid": "0a0a81e7-19bd-4351-80ee-b215cc128261"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1483,7 +1476,7 @@
                                         62.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "25595215-51f0-4161-a179-6affdc61a257"
+                                    "uid": "8c2f1b89-d3e9-495d-971f-5c3c389cab02"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1535,7 +1528,7 @@
                                         56.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "6fd5bdaf-711f-4c30-b52f-06035a327ae3"
+                                    "uid": "95de6b1b-d921-44c3-8da1-9595c31bd311"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1571,7 +1564,7 @@
                                         54.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "e6b431cf-debf-44d3-bc3a-b1f81e66c5d5"
+                                    "uid": "797f5023-8fa3-44c3-98ca-5099e4673f4b"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1613,7 +1606,7 @@
                                         2.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "84446d78-5332-4631-9c6f-c698685261e6"
+                                    "uid": "84718432-7d44-446e-9e97-43cdc576afa4"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1655,7 +1648,7 @@
                                         1.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "c1a27bcd-f0da-47f3-be3e-8ce774296c43"
+                                    "uid": "8d8aea6d-3a82-43af-aca2-2336ca193652"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1680,7 +1673,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             16
                                         ]
                                     }, 
@@ -1719,7 +1712,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "5a8be07f-943b-4e21-877d-2fc5d4c1d4eb"
+                                    "uid": "662637ad-1771-45cd-8a26-d9d3c4ccc4cf"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1737,7 +1730,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             15
                                         ]
                                     }, 
@@ -1771,12 +1764,12 @@
                                     "text": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "\u7f81\u7eca\uff1a \u5c0f\u6210\u7bad\u672f (0/3)", 
+                                            "\u7f81\u7eca\uff1a \u5929\u5f13\u9053 (2/3)", 
                                             false
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "32314522-3411-481c-8200-eff11b0420bb"
+                                    "uid": "bda6f52a-48f3-4b39-9203-ee304edea962"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1794,7 +1787,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             15
                                         ]
                                     }, 
@@ -1833,7 +1826,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "4d03a7ae-5cb4-4361-9ae2-e55de7f5a09a"
+                                    "uid": "964ddd26-aba9-4d46-bbd7-e670ada6b33d"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -1851,7 +1844,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             15
                                         ]
                                     }, 
@@ -1890,7 +1883,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "1188d97e-3972-4e47-a822-a344042d2970"
+                                    "uid": "affd6346-96e9-4d69-a6a0-67b91d6cdb45"
                                 }, 
                                 {
                                     "children": [], 
@@ -1932,7 +1925,7 @@
                                     "suspend_picture": 999, 
                                     "swallow_touches": true, 
                                     "type": 1, 
-                                    "uid": "18779b63-f700-491e-915c-568eabb96ee1"
+                                    "uid": "f9b8e779-357b-488f-a506-899133dd3768"
                                 }
                             ], 
                             "event_list": [], 
@@ -1956,7 +1949,7 @@
                                 338.0
                             ], 
                             "type": 7, 
-                            "uid": "f650b7dd-8c16-4924-8f69-8b7f27ab5f15"
+                            "uid": "74668850-0fae-4ccf-affb-e1b26e587c34"
                         }, 
                         {
                             "adapter_option": [
@@ -2010,7 +2003,7 @@
                                         338.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "2ae90dbd-d2ff-4223-9237-73d615a03db2"
+                                    "uid": "358eea3b-0430-467e-a30d-dd47bb69672b"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2062,7 +2055,7 @@
                                         334.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "1b331004-5be5-4049-8070-ae5451457339"
+                                    "uid": "d5748641-8ca8-425b-864d-ef8d9d02740d"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2114,7 +2107,7 @@
                                         330.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "19089a87-08f6-4e6a-b6af-6b5edcd9353b"
+                                    "uid": "ab360aa6-ca94-496e-bfa7-ee61a0839a22"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2166,7 +2159,7 @@
                                         50.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "0526877d-185d-4269-b344-ecd85c269e33"
+                                    "uid": "bbfb87fb-d7be-4eb3-8f45-db7690a2e1fe"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2218,7 +2211,7 @@
                                         34.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "ca8fd373-2cd7-4f88-b3f2-664ad1566790"
+                                    "uid": "077acf4d-8e9f-43a1-980e-e9085d2a9301"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2270,7 +2263,7 @@
                                         74.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "8aee022e-bff5-4d2f-abd7-d8ec30338ec5"
+                                    "uid": "f5ea3c73-0629-41b2-8fec-e6a99ae9b0bd"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2322,7 +2315,7 @@
                                         26.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "e4001505-432a-47e4-b576-a8b16cb1b97e"
+                                    "uid": "55e676e3-08c6-48aa-8897-ddefef926c18"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2374,7 +2367,7 @@
                                         62.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "d31a57db-b158-4333-8afd-c7a40307a2c0"
+                                    "uid": "cbf328aa-d152-41dd-8cb5-5c148ccd1698"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2426,7 +2419,7 @@
                                         56.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "b218d6d1-af78-4d2b-8edd-972a1dc3a1b8"
+                                    "uid": "d2eb8df5-89f3-47b9-9010-042afaf50e13"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2462,7 +2455,7 @@
                                         54.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "d02d84ad-6f29-474d-bb21-af517ac980d8"
+                                    "uid": "5d7808cf-a746-4608-9581-a9e546868969"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2504,7 +2497,7 @@
                                         2.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "2da76bfb-bd77-462e-aec9-143c31068e69"
+                                    "uid": "910a98d4-0be4-41b0-9aaf-274f4e9191cc"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2546,7 +2539,7 @@
                                         1.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "74ba2c77-4fe2-4b68-aece-252192b1a4c1"
+                                    "uid": "05cd91ec-6dd6-4e5e-b716-c1cc3ef6e8e5"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2571,7 +2564,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             16
                                         ]
                                     }, 
@@ -2610,7 +2603,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "8ad96da1-c6d3-4179-bf1e-24afb52bce8a"
+                                    "uid": "2defdadb-5555-4a24-818c-c021d38edcb5"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2628,7 +2621,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             15
                                         ]
                                     }, 
@@ -2662,12 +2655,12 @@
                                     "text": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "\u7f81\u7eca\uff1a \u795e\u5c04\u624b (3/5)", 
+                                            "\u7f81\u7eca\uff1a \u5929\u5f13\u9053 (2/3)", 
                                             false
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "83645e4e-36c7-4b32-8ab6-10ba1fabb2d2"
+                                    "uid": "8e5802ce-4464-4f38-8a66-44d644f6eede"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2685,7 +2678,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             15
                                         ]
                                     }, 
@@ -2724,7 +2717,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "a3da7163-c1fd-41d5-9912-48b96b058f9d"
+                                    "uid": "5679ffee-ae1b-436b-895c-d3bb7c2f84b3"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2742,7 +2735,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             15
                                         ]
                                     }, 
@@ -2781,7 +2774,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "97845e62-c355-4aeb-92e5-31405f98d178"
+                                    "uid": "0f77bee1-8bf1-4334-831b-839d5ae87333"
                                 }, 
                                 {
                                     "children": [], 
@@ -2823,7 +2816,7 @@
                                     "suspend_picture": 999, 
                                     "swallow_touches": true, 
                                     "type": 1, 
-                                    "uid": "b4d08826-f1b0-440c-b8b3-b2a3e3ce79ee"
+                                    "uid": "7dc1f37b-8acc-46dd-9fd0-835ecb0e24bd"
                                 }
                             ], 
                             "event_list": [], 
@@ -2847,7 +2840,7 @@
                                 338.0
                             ], 
                             "type": 7, 
-                            "uid": "e8adb80c-4c49-48dd-ad66-811907c75d08"
+                            "uid": "df4f3aef-a642-4150-8d59-0aa921605196"
                         }, 
                         {
                             "adapter_option": [
@@ -2901,7 +2894,7 @@
                                         338.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "67c491aa-7a12-4d92-91ef-baa849e2dbd9"
+                                    "uid": "97dddecf-bfbb-4e79-8921-6549456b8dd8"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -2953,7 +2946,7 @@
                                         334.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "8aa3ff9c-be9b-4557-94a8-d35761128238"
+                                    "uid": "68061367-f81c-4032-b532-d6f3cc2d142f"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3005,7 +2998,7 @@
                                         330.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "1540bc81-9027-4437-abe6-b4c13ca30ca5"
+                                    "uid": "4a48163f-0ac9-46dc-9346-afb05cf9a7f0"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3057,7 +3050,7 @@
                                         42.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "2603aa4e-e170-4fc4-a044-3264b1f00e41"
+                                    "uid": "adc8e49f-3e22-4b61-b8a2-a10fda2b60cb"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3109,7 +3102,7 @@
                                         34.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "11ac4bf2-ce8d-4a95-a94d-f7aaf4c1cdbe"
+                                    "uid": "a72a202c-191c-49fd-aab2-4c03a2d48785"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3161,7 +3154,7 @@
                                         74.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "927dc52b-29c2-422c-baaa-b2b156bb60db"
+                                    "uid": "8af2d4fb-b9d3-4e99-ad8c-ce9f905ba9ab"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3213,7 +3206,7 @@
                                         26.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "714799d9-7d88-4cf3-a3ee-e732f0ecba74"
+                                    "uid": "2f132835-b3a3-43bc-b6ae-ae5f7888255a"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3265,7 +3258,7 @@
                                         62.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "6719fa69-943d-4b11-9dfc-b604f71de554"
+                                    "uid": "0c833416-eaac-4a3f-b163-187b8e3a69ee"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3317,7 +3310,7 @@
                                         56.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "aaf99ff8-f817-4127-bda2-f9a5c8a461de"
+                                    "uid": "cfc8701c-0fe9-421e-bd93-41cf1ab5483d"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3353,7 +3346,7 @@
                                         54.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "70b1a6a0-ad1a-47fc-9575-98373e5a4ba6"
+                                    "uid": "eb59ac1c-3400-4a98-80b3-cd5f123ce003"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3395,7 +3388,7 @@
                                         2.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "416526ab-ffe4-44d5-a78f-29ab9b85cba2"
+                                    "uid": "4a331805-beef-4db6-ae73-19ca90ac2f84"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3437,7 +3430,7 @@
                                         1.0
                                     ], 
                                     "type": 4, 
-                                    "uid": "435bc5de-c021-44ca-80d1-27aeef93f62f"
+                                    "uid": "e913ffd9-d3af-4f4c-9330-96af2adc283d"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3462,7 +3455,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             16
                                         ]
                                     }, 
@@ -3501,7 +3494,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "09d9868f-22ea-4fdd-90c0-e85cbbd08af4"
+                                    "uid": "4d89b7e0-8f82-476d-a68d-dbda707a4e81"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3519,7 +3512,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             15
                                         ]
                                     }, 
@@ -3558,7 +3551,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "77ba9b5b-2c36-4c42-a7d3-476d1f0b1e1a"
+                                    "uid": "1d21483e-8c89-4ecd-ba2c-1d910c053b1d"
                                 }, 
                                 {
                                     "adapter_option": [
@@ -3576,7 +3569,7 @@
                                     "font": {
                                         "__tuple__": true, 
                                         "items": [
-                                            "MSYH", 
+                                            "", 
                                             15
                                         ]
                                     }, 
@@ -3615,7 +3608,7 @@
                                         ]
                                     }, 
                                     "type": 3, 
-                                    "uid": "0a3c2191-a25a-476d-bda4-9f575bf8994e"
+                                    "uid": "d70fc3a0-c18f-4370-a6d3-2ad560fc8653"
                                 }, 
                                 {
                                     "children": [], 
@@ -3657,7 +3650,7 @@
                                     "suspend_picture": 999, 
                                     "swallow_touches": true, 
                                     "type": 1, 
-                                    "uid": "4d9cce15-875b-485c-989f-21ee84ad3bfc"
+                                    "uid": "61bf605b-f11c-4125-9d4e-42672dc3d2b7"
                                 }
                             ], 
                             "event_list": [], 
@@ -3681,7 +3674,7 @@
                                 338.0
                             ], 
                             "type": 7, 
-                            "uid": "1244e8a5-ca07-423f-97c4-de407f029fe5"
+                            "uid": "92a0b3dc-982f-47ba-ac6a-8777d62b7cc2"
                         }
                     ], 
                     "event_list": [], 
@@ -3705,7 +3698,7 @@
                         342.0
                     ], 
                     "type": 7, 
-                    "uid": "be72c8f0-3b61-45e3-af5b-8f840bb0dd5e"
+                    "uid": "0eb43b56-3bec-4dd4-b8d0-5b0baa3e3c8c"
                 }, 
                 {
                     "adapter_option": [
@@ -3715,8 +3708,8 @@
                         false, 
                         437.0, 
                         604.0, 
-                        872.0, 
-                        872.0
+                        840.0, 
+                        840.0
                     ], 
                     "children": [], 
                     "disabled_font_color": [
@@ -3730,7 +3723,7 @@
                     "disabled_text": {
                         "__tuple__": true, 
                         "items": [
-                            "\u514d\u8d39\u5237\u65b0\uff1a 9", 
+                            "\u5237\u65b0\u672c\u8f6e\u5019\u9009", 
                             false
                         ]
                     }, 
@@ -3739,7 +3732,7 @@
                         "__tuple__": true, 
                         "items": [
                             "MSYH", 
-                            16
+                            15
                         ]
                     }, 
                     "hover_status_added": true, 
@@ -3763,7 +3756,7 @@
                     "normal_text": {
                         "__tuple__": true, 
                         "items": [
-                            "\u514d\u8d39\u5237\u65b0\uff1a 9", 
+                            "\u5237\u65b0\u672c\u8f6e\u5019\u9009", 
                             false
                         ]
                     }, 
@@ -3790,14 +3783,14 @@
                     "press_text": {
                         "__tuple__": true, 
                         "items": [
-                            "\u514d\u8d39\u5237\u65b0\uff1a 9", 
+                            "\u5237\u65b0\u672c\u8f6e\u5019\u9009", 
                             false
                         ]
                     }, 
                     "pressed_status_added": true, 
                     "scene_ui_name": null, 
                     "size": [
-                        176.0, 
+                        240.0, 
                         39.0
                     ], 
                     "suspend_font_color": [
@@ -3810,13 +3803,13 @@
                     "suspend_text": {
                         "__tuple__": true, 
                         "items": [
-                            "\u514d\u8d39\u5237\u65b0\uff1a 9", 
+                            "\u5237\u65b0\u672c\u8f6e\u5019\u9009", 
                             false
                         ]
                     }, 
                     "swallow_touches": true, 
                     "type": 1, 
-                    "uid": "a847d6d8-4033-4f39-b342-3e233bdf9ce4"
+                    "uid": "c3681c10-5151-4923-a461-c656e2f409e6"
                 }, 
                 {
                     "adapter_option": [
@@ -3927,7 +3920,7 @@
                     }, 
                     "swallow_touches": true, 
                     "type": 1, 
-                    "uid": "88fc64f9-20bd-4579-b769-78f7ec29e2bf"
+                    "uid": "cd918185-aec1-4b7b-bacc-1c7ad29054fa"
                 }
             ], 
             "event_list": [], 
@@ -3937,9 +3930,9 @@
                 "__tuple__": true, 
                 "items": [
                     960.0, 
-                    293.7308, 
+                    540.0, 
                     50.0, 
-                    27.1973, 
+                    50.0, 
                     1, 
                     1
                 ]
@@ -3951,7 +3944,7 @@
                 1080.0
             ], 
             "type": 7, 
-            "uid": "4b2873ac-aaac-4286-856e-f80ee4dda01a"
+            "uid": "32ff1d3f-27ea-4942-b5a2-2955e26fea4d"
         }
     ], 
     "name": "BondChoice4", 
@@ -3959,7 +3952,7 @@
     "script_name": "", 
     "type": 2, 
     "ui_anims": [], 
-    "uid": "43f05a64-da68-4f0c-867b-4b6761d4e7ab", 
-    "visible": true, 
+    "uid": "25cc8d77-f329-4560-a9d4-5f351937b494", 
+    "visible": false, 
     "zorder": 520
 }

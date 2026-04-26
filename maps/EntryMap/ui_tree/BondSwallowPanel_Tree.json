@@ -1,0 +1,1338 @@
+{
+  "name": "BondSwallowPanel",
+  "uid": "848a42be-ba6c-4e99-9f4d-710a14a8b369",
+  "type": 2,
+  "children": [
+    {
+      "name": "layout",
+      "uid": "8b2f4592-b76e-4dd6-b22e-08cbe1162177",
+      "type": 7,
+      "children": [
+        {
+          "name": "dim_bg",
+          "uid": "060e49db-9458-43c8-bac9-1162606c6171",
+          "type": 4
+        },
+        {
+          "name": "main_frame",
+          "uid": "504f82b2-9067-40ad-a367-726ec1f34656",
+          "type": 7,
+          "children": [
+            {
+              "name": "frame_bg",
+              "uid": "0adcf0e1-1573-4493-bdfd-ef147fdbba08",
+              "type": 4
+            },
+            {
+              "name": "frame_inner",
+              "uid": "9bad84f4-d296-4711-bd3c-6620eb0fc8a6",
+              "type": 4
+            },
+            {
+              "name": "top_bevel",
+              "uid": "f6ba88aa-5760-4a8d-b0a2-dd3de1d9c968",
+              "type": 4
+            },
+            {
+              "name": "group_panel",
+              "uid": "8fb0ac31-2496-4875-9b00-944f575a2c00",
+              "type": 7,
+              "children": [
+                {
+                  "name": "panel_bg",
+                  "uid": "f5452c33-7aef-4dc0-b8ab-b7e7e921015e",
+                  "type": 4
+                },
+                {
+                  "name": "root_btn_1",
+                  "uid": "7304dd51-271f-4433-9696-b846317db658",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_1_bg",
+                      "uid": "2f07d139-a5b8-4c2b-a7f9-c46159b94de5",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "8d053414-2a19-48e6-b7ab-36e41d79e9c8",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_2",
+                  "uid": "9593b0f3-2b01-40a6-80dd-e563523603f7",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_2_bg",
+                      "uid": "23692650-d635-4715-a152-8c10fec1db32",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "9ac59fab-2dff-491b-b17f-9122b6f24b55",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_3",
+                  "uid": "e986f6df-d87d-44fa-854a-cb6c1e55baa7",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_3_bg",
+                      "uid": "111b0c33-0815-4ccc-9441-d30a4aac75f0",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "018998d1-a037-4285-b797-1c6907030eee",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_4",
+                  "uid": "1e4ef025-1e77-453d-a27c-bd896722952c",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_4_bg",
+                      "uid": "ee67a11f-1ed6-440e-8661-50adb490fce1",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "e7337cfa-6c66-4644-a54e-cfcb33c3e03e",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_5",
+                  "uid": "e0b66f02-d493-4e24-b10b-2ea3703b282d",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_5_bg",
+                      "uid": "c8b6b396-df2a-45b3-82d0-3e4f8f05fa08",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "c289ac8f-57a7-44ad-a03f-13e712062726",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_6",
+                  "uid": "8032853e-13d2-480e-9e8a-a795e928c6f8",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_6_bg",
+                      "uid": "6c6254cf-4b12-4c1a-ae69-df5a542183ee",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "ac33c849-97ce-496f-909e-0585f8483351",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_7",
+                  "uid": "9d87ab4a-27c1-4a53-ab5c-19653c9d8c00",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_7_bg",
+                      "uid": "b6a30b5f-2c4c-49b5-8119-33d83c701f27",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "c3d62613-23af-47be-bb38-67ca612a897f",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_8",
+                  "uid": "ca421a0d-5557-4dae-9fec-8b6e58a81860",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_8_bg",
+                      "uid": "6af0d923-b7ce-4de2-b5ed-e586557f23fe",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "2b9bb972-a521-47ae-9379-2765ea645cd6",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_9",
+                  "uid": "c70a713a-76ee-4739-99a6-dcfd5d9ab823",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_9_bg",
+                      "uid": "01f278a5-86a4-42b5-899b-d51bd68643b8",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "8b6b82c7-4641-4897-a21e-e805c7a698f8",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_10",
+                  "uid": "0e53f3b5-e5c7-45cb-8b2e-acdf494b4db7",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_10_bg",
+                      "uid": "9cbddc43-e808-44b6-bf91-2c41a75fc7f2",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "6649fb73-f493-48f5-aae2-a5a3936a9b41",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_11",
+                  "uid": "5206629f-51a2-45a5-8fad-1791cfea7a7a",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_11_bg",
+                      "uid": "13dcea89-a308-46d2-8f1c-23add5f86bb1",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "10dc0154-cd7b-4c86-86bf-1c64a476b6d3",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_12",
+                  "uid": "b5f43cb0-63ac-4a30-b097-19e23f75d24f",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_12_bg",
+                      "uid": "c8f75932-5c2b-4370-a3da-b29ac56cfd8b",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "61db6d29-467f-4c07-b8c6-ed3cea4ef58f",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_13",
+                  "uid": "9d89f39a-b5f5-4aac-8398-43b0ab14b43b",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_13_bg",
+                      "uid": "3646bc1a-1ae2-43ba-a233-848967b2995c",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "90914a13-5d8b-4367-8833-b2eac8e2d3f1",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_14",
+                  "uid": "339ff812-8cb4-48a4-8917-9129b0d895b6",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_14_bg",
+                      "uid": "3418d3ee-e169-4c70-8e9c-51df486b0786",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "fb9e99ab-9960-41a1-8782-1d3d073e6419",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_15",
+                  "uid": "c2e5f87b-537f-48aa-a8f2-1d9826862444",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_15_bg",
+                      "uid": "6064fc62-ae9c-46c9-af47-794d0eac40ed",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "0666729e-f0af-4979-a712-ce773e08d0cd",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_16",
+                  "uid": "88d86fad-df6e-4eca-b377-cb78cc27d9bf",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_16_bg",
+                      "uid": "ee18231a-ba67-4d0d-81b1-72543db01dfd",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "846315fe-f51a-4ef6-976a-452ebcfc7f51",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_17",
+                  "uid": "eb464d80-87fb-441c-be53-b5e736b76e69",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_17_bg",
+                      "uid": "9fbcb7a9-abe6-4e95-9260-5c636c809870",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "d62c52fb-2f99-4178-820d-6f5330c4e071",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_18",
+                  "uid": "51f2cf50-217c-4597-a6d1-61c2bd915ad5",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_18_bg",
+                      "uid": "0f83c6a7-8321-4491-8845-a34f659a0d1d",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "19c8f14a-5977-455c-bdfc-b97c2313ebc6",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_19",
+                  "uid": "81ad6d95-d7af-4af2-a045-9ab0e2f426b2",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_19_bg",
+                      "uid": "3a65bae6-a0af-4d8a-828b-b950a7d0ef32",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "e1a8cbae-c247-457d-b721-1a2eccdc2952",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_20",
+                  "uid": "23c38ff7-39e1-4170-8edb-7ae91d166520",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_20_bg",
+                      "uid": "99e11ed1-1cc1-4d3c-acad-3707b2a022b1",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "5de973fc-7761-4fcb-9f2b-f93ca8322cb3",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_21",
+                  "uid": "eb68d48b-f820-478a-b97c-8ad7c8491e9e",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_21_bg",
+                      "uid": "9228bfe2-fa75-4a4f-bab2-ecb5cb4c38da",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "37f0d88b-3bf2-4ccf-909d-61c0e51c7db7",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_22",
+                  "uid": "19d274bf-1e0d-40fc-b4b2-e54e5934b86b",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_22_bg",
+                      "uid": "51778953-e83c-469d-96c3-12400c381c7a",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "037457da-1e59-423f-b474-ddb53a1f7652",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_23",
+                  "uid": "c9d8ff12-ff45-4c11-a88b-0d0fc1fb1c0f",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_23_bg",
+                      "uid": "21eb89c5-19f9-4ed5-9351-7cb033196436",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "624f434f-cbbc-4d81-93fe-aae9e971f135",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_24",
+                  "uid": "41a5a02d-491a-4d55-829c-0cbd2112113c",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_24_bg",
+                      "uid": "ecc20615-b7e6-40b6-8f07-1e8f08d1bea5",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "b2e23e99-4969-4081-961f-c5ab0d38b885",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_25",
+                  "uid": "40c0aec8-c9b9-463f-be2a-ce71be48d84e",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_25_bg",
+                      "uid": "d998b3e4-ed2b-4366-8d79-7817f399990a",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "f02888ae-2262-48c4-9e9a-c38d41edc755",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_26",
+                  "uid": "d83edc0d-f546-45bb-8a56-b767a07f6c73",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_26_bg",
+                      "uid": "411895d1-30ac-4c58-9e21-2109e7188725",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "b7e704ac-a478-4cce-a7cf-8b5b0a0a2d62",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_27",
+                  "uid": "309b3be7-500f-4548-80c9-da97839aadea",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_27_bg",
+                      "uid": "3543fc04-f000-4698-b9c4-73fc0b042728",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "a6b32f06-233d-4742-8d5e-819032eede5c",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_28",
+                  "uid": "08622f2b-17fe-4c7e-8370-39150e1ca3ed",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_28_bg",
+                      "uid": "f8fab07e-65dc-4aef-8e89-a1a1886cd388",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "2ba8953d-2346-45c6-940f-7df913a58713",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_29",
+                  "uid": "7a8a95de-9d5d-4bca-b5a8-15961351609a",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_29_bg",
+                      "uid": "a22e5ccf-d8bf-476f-9411-c30373e95fad",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "2cbac00f-be88-47fa-9530-1dc597cc8f85",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_30",
+                  "uid": "463d051e-5791-4b3d-876b-e8adeb753b5c",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_30_bg",
+                      "uid": "89460b5c-d266-4cf4-a0f4-a0e62e91a394",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "e4ed912c-4820-482d-8d1a-7284531444ad",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_31",
+                  "uid": "dcdd56a6-ca6c-45c5-ac01-540547cafd66",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_31_bg",
+                      "uid": "1a20eb4f-4fb3-4c29-905c-ba819953c02c",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "bfd18d34-6650-44d0-9da6-8c32f7316e0d",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_32",
+                  "uid": "f482b5ad-99ae-4f95-90be-c0c9bd7f2e27",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_32_bg",
+                      "uid": "401b3d62-247a-4da9-9756-dba5f0da2c89",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "dd1a2891-3706-4be1-aebe-35c862e5e8b6",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "root_btn_33",
+                  "uid": "0188502c-b7bc-4efa-a3d2-9f176b8c6a94",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "root_btn_33_bg",
+                      "uid": "86d17cb7-8b64-450b-824d-5a1cf44d033e",
+                      "type": 4
+                    },
+                    {
+                      "name": "button",
+                      "uid": "4131821d-8b74-48fd-b881-11f376116231",
+                      "type": 1
+                    }
+                  ]
+                },
+                {
+                  "name": "basic_title",
+                  "uid": "53906ff1-e75a-4eef-90c5-ea344f37ad33",
+                  "type": 3
+                },
+                {
+                  "name": "special_title",
+                  "uid": "1321abe8-9105-4df2-8670-2b1653e5b3dd",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "card_grid",
+              "uid": "6d10f8e2-4c01-4845-b455-8f0e62e37a26",
+              "type": 7,
+              "children": [
+                {
+                  "name": "grid_bg",
+                  "uid": "a64a0b0b-70a5-4146-8967-81c1eead93a3",
+                  "type": 4
+                },
+                {
+                  "name": "card_slot_1",
+                  "uid": "158b77f2-ad2f-4cf8-849b-f3416d82e5bd",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "4df60003-e348-4b2c-aeae-436d55c15eb3",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "ebe186b8-52ce-40a0-ac7b-f25233a3cb12",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "60f12e36-e521-4590-b4b5-44026482c7a1",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "1cd46392-5f71-4276-a5f3-bd65689dfad9",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "8b1f4087-514e-4f68-aeb9-306ecf096719",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_2",
+                  "uid": "b5b25b97-6e8f-4483-8ed8-94d11c07dd32",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "c25679f3-e0f6-49c9-b533-3cf3c6f7bd88",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "c302b95c-7f57-4271-b05f-00b690a93e8d",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "6e31f26a-72a4-40a9-be90-e20bf89aba52",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "c2c7654a-481d-43aa-8c9c-62c9fcc41859",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "abd2071a-e2ab-478f-b767-8e3ef9603db0",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_3",
+                  "uid": "eb082e10-0a2e-49e1-aecc-3443c1aa50ee",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "1d8c76a5-2ad3-44d9-ad0c-4944d675140f",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "68928ac2-4fb5-48d4-ab24-66910f92dee7",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "8a074ea6-6126-4f2d-948f-44f6ae05e072",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "d7b10447-b323-420e-9d4f-00556fae0414",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "15afed19-5786-4fb3-baa4-117b97b95513",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_4",
+                  "uid": "f6ad1a9c-4225-46a0-9e90-19f465c1d9de",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "e7efddc6-5944-494c-9b6c-08d37ba3b1f3",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "cc7a825e-2a77-4609-814c-d139a08687ed",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "884a6102-f3e3-4624-a807-1925b9e7019f",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "460a91d1-1be7-4707-b6eb-fa924e27c3c5",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "7658048b-9cb1-4775-b785-4927ac7c5371",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_5",
+                  "uid": "d3903b23-3776-46d0-8600-e3ef2c286ed5",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "4774be6f-93cc-4795-a1a7-b92189df8969",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "cf8bf60b-b063-4dfb-9c13-777fe8f19ee3",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "02d570eb-d67d-4873-8f4e-14d1dde2f780",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "f509c009-038c-439e-9733-610700e2ad84",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "151bbf40-abbc-489e-9106-7de4b8ab408a",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_6",
+                  "uid": "2fe96162-cf97-4dbb-8c22-92c8fb8b114f",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "0e536d2b-2f33-4563-9896-70a4d514e80c",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "45fef2e0-5b74-4684-8dd3-e09347b66b8f",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "b7280be7-9442-4fb6-a24b-0c1ec6734b25",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "6fb9ca9d-ca19-40c7-bb25-23352d8d7056",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "93c0b074-15b7-4097-8f93-3645747ea360",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_7",
+                  "uid": "0cc8859a-f3bc-43fe-881c-2e5467e82d8f",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "362d93f0-90c0-4561-9b0c-38e4f206392c",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "3d5b6bdc-a54d-496b-94f4-a2c8f19fd748",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "9c3b3d08-8e10-4e29-a6f8-47abda307cad",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "f70bab95-5e42-4cdb-a941-61303ddb5c20",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "51f9e3c7-5d1e-496c-9bca-75d1daa397b9",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_8",
+                  "uid": "1c775bd7-4751-4d75-b170-c51be4196331",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "a131ce7e-e615-4e23-ab4c-2a25fbda0882",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "f526105a-ab47-41a6-b117-7546f06183f7",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "ca298c96-3a24-44fc-b9f2-fc020a8b871c",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "5006acad-c255-4847-9432-efec92996e2d",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "1b8decbd-ad70-4c00-a756-2f76a2e3c94d",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_9",
+                  "uid": "a0fe4fd4-8b08-4dae-828c-a87ab41eb715",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "3fd754cf-767d-4995-8b05-e324b1bf0a0f",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "6b18a655-1209-46a2-90ed-d5b170fb4a73",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "71b0b177-2428-43bb-83d9-10efcc28a5c9",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "1d4301e2-fecb-4b03-82d8-2d577c68ff4f",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "23ec0058-e5ca-4798-8a1a-9de7ba9171d8",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_10",
+                  "uid": "ddcfbedd-f5d7-456d-8cfe-ad5cc08e6999",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "96cac78b-ed50-472a-a5bc-e1240a48fde1",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "7c7ea9e4-43cf-493a-9279-f74643d2f824",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "b89daaa6-5fd6-4037-8a50-dedd38dc5721",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "c9371344-2bde-4092-b695-e39296fcac7f",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "922ff322-a7cb-4157-a895-7f94b80dc88a",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_11",
+                  "uid": "79a6515b-70a0-4651-8301-b35d864e76b5",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "8cb21184-4a75-4597-89f8-eeb4f0252ea8",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "0f4b2cb9-4510-4d1d-b61e-e8fc645b2dba",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "897a5c6c-3d14-4535-bb7f-b9a62f3261d3",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "fa1cab6d-d792-4062-a035-916d235cdeb3",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "1bc084c8-8e58-437b-a141-319f75b9db45",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_12",
+                  "uid": "050346f9-1393-4bcb-bfed-fe64861578aa",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "05bd5d7d-61e6-49c3-a4b5-88d7e731cfb8",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "3e3dba0a-11c8-4af1-9298-af7f09289932",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "81da8cf4-d831-47b0-b1e9-fc16ff486ff3",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "845224ef-f6ab-4fd4-9e0f-d469a0988f12",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "19830293-2751-4dcb-af13-d3e59cf657f7",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_13",
+                  "uid": "1e01872d-a6d8-4e45-ae40-240a1fc8b876",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "40ae09c4-9967-4c71-9e43-5257da4042c3",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "b94d4ea7-b95a-469b-a567-cf5ff30ab837",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "0473fc13-6395-486d-a1cb-00e7fb6f868f",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "1f23d45e-20fc-4631-a047-01b530bc49b9",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "7a558894-224b-482e-a100-e612d47f80bb",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_14",
+                  "uid": "84ecdeb4-bacd-4987-999d-eea3239fcded",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "3c372751-8643-4d37-9608-a439cdbd8f28",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "5ee31d98-40ca-4185-97f0-eb957e97ba0d",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "c040c9cd-acc8-42fa-93e5-f535cebd9bc9",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "095b981a-b208-4b12-9641-ed80e8673886",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "ef3b09df-4f90-45ad-a059-ff3f7dc528e0",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_15",
+                  "uid": "9c302b23-e453-4623-a4b6-29319157b247",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "bf691a9e-4b1d-4378-b662-796cf769367b",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "c958ea75-15e5-45d1-8d30-ee9021e3e5b7",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "2992c825-5b41-4f49-8ef7-42c8d0291027",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "a77d7cb2-d916-4b17-9eea-f51d743081c7",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "0add6676-d076-4a9d-b725-0c3e1b6ab8db",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_16",
+                  "uid": "78ab71e5-3bf7-4415-b984-f1fc82c2f026",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "4239828b-185f-4529-93e6-605e0f3f4d81",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "cce74bce-19bd-4339-9343-1b53f4c9d76b",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "567afc11-d2f8-44c5-8310-08cfdc898cbd",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "2f2152fe-027e-4cde-882c-a1154b966f1c",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "18d8dd89-97ee-4cbf-9541-f65b280ee689",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_17",
+                  "uid": "b2169664-4205-4c23-9afe-1f8cd081d077",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "f0974b08-23ec-45f9-b9f8-cc93ac15bfc9",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "2d8f2ffb-28ce-4488-a38a-bbcd4e1e68a0",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "042ebc94-4dc7-4632-b062-41dc9803bf10",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "924e69d0-ceb1-4143-a1bc-e2d03f92978b",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "1458d732-6307-4015-9ece-14a84117604b",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_18",
+                  "uid": "b1d06ec9-e7ff-497f-a7cf-8a1232ede148",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "3c30f489-5cb3-4ab9-a3e4-e04d3e0387d3",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "81da744d-6f14-44d0-834e-0554591d16e0",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "bb02eb66-8e27-48b2-944f-a7a839092473",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "ec478129-7283-48a1-b156-4aa72367a276",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "f3f25f22-f16b-455d-b973-68fb20b6fe1d",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_19",
+                  "uid": "ded642b1-4c31-4691-9db6-0ab5e7fa546a",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "d1bf997b-c8b4-4cd4-b652-e0cba98c3d93",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "ce555d76-fee0-4be3-a1e8-08fc3485877a",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "04525cbd-201b-44a3-9ae3-2291ff75354d",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "09c7a3ce-203a-4f9f-8092-713217dcf0b4",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "fcaf770f-db56-4abc-b9ac-147c57b0a1c5",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "card_slot_20",
+                  "uid": "7c740718-d49e-4f4a-a5ed-1d965e405b01",
+                  "type": 7,
+                  "children": [
+                    {
+                      "name": "slot_bg",
+                      "uid": "6439d5a7-40cd-41af-89c9-3c49ac0b6704",
+                      "type": 4
+                    },
+                    {
+                      "name": "frame",
+                      "uid": "99aa2cac-0d88-4a49-b854-cbbffa2e0939",
+                      "type": 4
+                    },
+                    {
+                      "name": "state_glow",
+                      "uid": "9aaf83c0-f0f9-4b81-9f4a-6975da858d19",
+                      "type": 4
+                    },
+                    {
+                      "name": "icon",
+                      "uid": "a5c734e4-6e87-43b5-81fb-05a80e66ad42",
+                      "type": 4
+                    },
+                    {
+                      "name": "empty_mark",
+                      "uid": "8027113e-7be8-435a-9a2f-969feceb2372",
+                      "type": 4
+                    }
+                  ]
+                },
+                {
+                  "name": "grid_title",
+                  "uid": "0d298973-650c-494c-b5af-5ec88faf9528",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "detail_panel",
+              "uid": "e31f7f85-5c9c-4f0d-a4cc-b275b2a9090f",
+              "type": 7,
+              "children": [
+                {
+                  "name": "detail_bg",
+                  "uid": "ae776636-8146-45c0-bb95-b34a373a1a76",
+                  "type": 4
+                },
+                {
+                  "name": "detail_top",
+                  "uid": "b063f64a-5160-4b0d-bf18-caf2eb62f563",
+                  "type": 4
+                },
+                {
+                  "name": "detail_body",
+                  "uid": "660448c2-ee91-4c6f-8ef1-d540a89efa6e",
+                  "type": 3
+                },
+                {
+                  "name": "detail_title",
+                  "uid": "bd05f3ba-a27e-48ff-9b6a-6333e5e8e6e5",
+                  "type": 3
+                },
+                {
+                  "name": "detail_status",
+                  "uid": "60d7ee3b-f129-44ad-9a2b-28f8615cf63f",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "title",
+              "uid": "adfe728a-e4df-445a-a4de-03bdd20b33d4",
+              "type": 3
+            },
+            {
+              "name": "subtitle",
+              "uid": "6994ae4d-a789-4b3e-aebd-3e1591c3e774",
+              "type": 3
+            },
+            {
+              "name": "total_label",
+              "uid": "5dd34a90-531d-43e2-9103-f4e3ed594230",
+              "type": 3
+            },
+            {
+              "name": "total_value",
+              "uid": "b7545c86-34ed-4d9a-9ccb-055000af53f5",
+              "type": 3
+            },
+            {
+              "name": "close_button",
+              "uid": "1accdae3-d08a-4741-8bac-4e8534fe6171",
+              "type": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

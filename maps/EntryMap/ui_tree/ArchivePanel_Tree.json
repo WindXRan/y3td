@@ -34,6 +34,31 @@
                   "type": 7
                 },
                 {
+                  "name": "top_rail",
+                  "uid": "11dc4d33-a70c-49e8-aaf4-23be6638e65c",
+                  "type": 7
+                },
+                {
+                  "name": "top_rail_glow",
+                  "uid": "6ee402ad-cca7-42aa-85ea-9c4a98ee61bd",
+                  "type": 7
+                },
+                {
+                  "name": "sidebar_plate",
+                  "uid": "10ccdd7f-7271-4061-9f3a-966b6743e447",
+                  "type": 7
+                },
+                {
+                  "name": "content_top_line",
+                  "uid": "e951e1d7-68cb-4f33-be01-8a22ee2d9bba",
+                  "type": 7
+                },
+                {
+                  "name": "content_bottom_shadow",
+                  "uid": "6a97de67-9e44-44fb-a47b-e40082458563",
+                  "type": 7
+                },
+                {
                   "name": "sidebar",
                   "uid": "206d1730-e05f-46be-8799-8e1a6036c886",
                   "type": 7,

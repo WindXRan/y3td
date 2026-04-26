@@ -34,6 +34,16 @@
                       "type": 7
                     },
                     {
+                      "name": "metal_top_line",
+                      "uid": "3c2411bd-b1ee-443f-ba0c-e336e6ffe81b",
+                      "type": 7
+                    },
+                    {
+                      "name": "metal_bottom_line",
+                      "uid": "0772db18-3cb4-4547-9be1-6bb403fe9438",
+                      "type": 7
+                    },
+                    {
                       "name": "title_bg",
                       "uid": "2b94725d-f522-4b08-805c-ddb27b6d7b6b",
                       "type": 7
@@ -171,6 +181,16 @@
                     {
                       "name": "inner",
                       "uid": "a7c5da64-8abb-49f1-946d-29040aae1578",
+                      "type": 7
+                    },
+                    {
+                      "name": "metal_top_line",
+                      "uid": "c0f21a5e-f0cc-4bb1-b09e-153cb638eca3",
+                      "type": 7
+                    },
+                    {
+                      "name": "metal_bottom_line",
+                      "uid": "6ce31754-6c97-4fbb-becd-d2f6a50b6843",
                       "type": 7
                     },
                     {
@@ -520,6 +540,16 @@
                     {
                       "name": "inner",
                       "uid": "1ffa1d11-2242-4b4a-bd70-cabd232e58c5",
+                      "type": 7
+                    },
+                    {
+                      "name": "metal_top_line",
+                      "uid": "f5c508ff-6031-498f-8728-9dec3915f368",
+                      "type": 7
+                    },
+                    {
+                      "name": "metal_bottom_line",
+                      "uid": "59e7c5ec-7a1b-4218-8324-4c17d987a09f",
                       "type": 7
                     },
                     {

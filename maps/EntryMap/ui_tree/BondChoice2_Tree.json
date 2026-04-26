@@ -1,215 +1,215 @@
 {
   "name": "BondChoice2",
-  "uid": "050e5ec5-1faa-43bb-8879-fdd9e17ed281",
+  "uid": "187db796-73e2-4287-9380-fbe9e9b9058d",
   "type": 2,
   "children": [
     {
       "name": "bond_choice_2",
-      "uid": "1d788c51-4ed0-4110-9e5b-7cfc0415ef1d",
+      "uid": "c2d11c0d-5263-4d1a-863c-baa45a3826af",
       "type": 7,
       "children": [
         {
           "name": "bond_choice_2_bg",
-          "uid": "1fea4dc5-5421-4e5c-be19-c9cd5506e4e0",
+          "uid": "36255aef-8743-4331-9d43-01930526383b",
           "type": 4
         },
         {
           "name": "later_btn",
-          "uid": "a4bdd385-cd57-4829-b34f-ca6f6a01ba58",
+          "uid": "193b196a-af36-4eaa-8d94-9b2a79e8200b",
           "type": 1
         },
         {
           "name": "dim_bg",
-          "uid": "2313ebd8-f0e3-44b7-b12b-5c3601aeb60d",
+          "uid": "30aad234-97c4-4f93-a90d-70900c11d981",
           "type": 7,
           "children": [
             {
               "name": "dim_bg_bg",
-              "uid": "ad0dba51-49d1-4156-8abd-056622d3693e",
+              "uid": "afadd1f5-0247-4781-8cbf-f919837d61c9",
               "type": 4
             }
           ]
         },
         {
           "name": "cards_row",
-          "uid": "a6e7a73c-78c1-4ad3-8fb6-a2bb99f79c0d",
+          "uid": "da1fbb14-5d8c-4f34-b4cb-ff5e9b0a7fff",
           "type": 7,
           "children": [
             {
               "name": "cards_row_bg",
-              "uid": "2f1fe502-a1ae-4290-b912-396cc532ed6e",
+              "uid": "b89e2177-82b4-48a1-badf-5112f33dfcd4",
               "type": 4
             },
             {
               "name": "card_1",
-              "uid": "77d38ae8-9a6d-4d84-916c-800ad377269e",
+              "uid": "c7d44e75-00f5-4eb0-a2ca-c8bd0edbbd2b",
               "type": 7,
               "children": [
                 {
                   "name": "card_bg_1",
-                  "uid": "fedc9c34-9062-4f15-a574-5b184a30fccc",
+                  "uid": "773fd36a-ab68-4e53-afe3-e350ff5853b1",
                   "type": 4
                 },
                 {
                   "name": "card_edge_1",
-                  "uid": "86084949-be97-46c8-b38e-f6842de34b87",
+                  "uid": "db205dc5-f333-4dc9-a543-bdb98963eac1",
                   "type": 4
                 },
                 {
                   "name": "card_inner_1",
-                  "uid": "a526a58d-076b-4940-aa21-fff297c11ccc",
+                  "uid": "f13b6e04-96d9-4c6f-88ad-76bf4370576a",
                   "type": 4
                 },
                 {
                   "name": "value_shadow_1",
-                  "uid": "3ff715fd-b363-4ec7-b84f-ba620badd77b",
+                  "uid": "67ab9b41-89c4-414f-b7fc-deddf9a1e85e",
                   "type": 4
                 },
                 {
                   "name": "card_header_1",
-                  "uid": "b7fe19d1-c82f-48d3-acbd-bac1fa3d4e7a",
+                  "uid": "f090b760-2eae-40e8-9e54-a19d608482ad",
                   "type": 4
                 },
                 {
                   "name": "card_header_line_1",
-                  "uid": "6f7a1b48-d667-4af2-9f1f-d17e0fc1e153",
+                  "uid": "96789573-7185-453a-9cd7-b22f324c69c2",
                   "type": 4
                 },
                 {
                   "name": "icon_glow_1",
-                  "uid": "929b3975-cced-4a0c-bf63-5522b23ba657",
+                  "uid": "60167255-dcfe-417f-ab4a-762596519c36",
                   "type": 4
                 },
                 {
                   "name": "icon_frame_1",
-                  "uid": "1c145ae4-4adb-4642-862f-c13f4d6d9003",
+                  "uid": "b9365605-8ce6-4079-ba11-06236794fbba",
                   "type": 4
                 },
                 {
                   "name": "icon_edge_1",
-                  "uid": "d6f9edd9-ca90-443c-a6d5-225d4295a4cc",
+                  "uid": "581cad3a-6f34-4922-bda7-2975b5d585f2",
                   "type": 4
                 },
                 {
                   "name": "icon_1",
-                  "uid": "7a6fb7eb-6d88-41e3-950e-bae964a36d3d",
+                  "uid": "7e4b3229-a6cf-4e07-8b3a-8afd3a31dc5f",
                   "type": 4
                 },
                 {
                   "name": "divider_1",
-                  "uid": "d6cdf603-4725-4731-8596-3ae8894cde0f",
+                  "uid": "a773fca4-d216-476b-a9e9-c54c3706dbe0",
                   "type": 4
                 },
                 {
                   "name": "title_1",
-                  "uid": "dd120426-f9bc-4c91-b4bd-cd278dbe30c1",
+                  "uid": "2a14d627-7105-484f-9457-705a4a970f8e",
                   "type": 3
                 },
                 {
                   "name": "bond_1",
-                  "uid": "f82f17ee-6f0f-4884-be6e-e7bb333d0fd9",
+                  "uid": "dc5f7409-077b-441e-9940-0cabf5b427c0",
                   "type": 3
                 },
                 {
                   "name": "value_2_1",
-                  "uid": "71246372-43b4-411f-95a7-13c4b499ad39",
+                  "uid": "64ec9ad2-330c-422c-9609-376f8a793a68",
                   "type": 3
                 },
                 {
                   "name": "value_1_1",
-                  "uid": "5c6cec63-29da-4b2d-b1ad-b9fbdbf46196",
+                  "uid": "fd5f6a0e-6e06-46bf-9d6d-29fd97eebcde",
                   "type": 3
                 },
                 {
                   "name": "pick_btn_1",
-                  "uid": "c3f886ac-62aa-4389-8ac3-42b55306feea",
+                  "uid": "4d78a371-1d05-44a1-b244-9548a4a7a3b0",
                   "type": 1
                 }
               ]
             },
             {
               "name": "card_2",
-              "uid": "b943d6ae-d129-4143-a750-5903e3001f23",
+              "uid": "67a0be1a-1bca-459f-ac90-43af9d293c35",
               "type": 7,
               "children": [
                 {
                   "name": "card_bg_2",
-                  "uid": "f25543ce-48b7-40b7-bb08-c3afd5b846f1",
+                  "uid": "c282f362-dbe5-4f21-815c-c9a7222ce875",
                   "type": 4
                 },
                 {
                   "name": "card_edge_2",
-                  "uid": "7ba713da-11cc-45aa-b688-2e2eec05f406",
+                  "uid": "a1f9a4a1-0a44-48f5-b1fc-930503d527bf",
                   "type": 4
                 },
                 {
                   "name": "card_inner_2",
-                  "uid": "a4190f83-e7da-4143-84dd-2873650af362",
+                  "uid": "1bec5df3-8bd2-432c-bdb5-7a967e7b9ff0",
                   "type": 4
                 },
                 {
                   "name": "value_shadow_2",
-                  "uid": "61b3c450-dc55-4037-ac14-1b68ccabdc9e",
+                  "uid": "c9b051bf-06ac-4a8b-8d55-b6d8083eaf10",
                   "type": 4
                 },
                 {
                   "name": "card_header_2",
-                  "uid": "028e7ce9-7ba5-4b7f-b7fd-ca3fae97b8d5",
+                  "uid": "d62d52d3-d805-4e9f-b215-3e4162b5e740",
                   "type": 4
                 },
                 {
                   "name": "card_header_line_2",
-                  "uid": "8e521147-e007-45a8-af3d-30c5eb69e846",
+                  "uid": "b60145b4-058b-4cab-b87d-61b967ca1175",
                   "type": 4
                 },
                 {
                   "name": "icon_glow_2",
-                  "uid": "f59d14bb-9eb3-4f47-a446-0eb7c4fa2c2d",
+                  "uid": "fbfd3c94-e652-45a1-91f0-60ca6d9c8d2f",
                   "type": 4
                 },
                 {
                   "name": "icon_frame_2",
-                  "uid": "a602ac57-fc08-42a6-9f0e-db79300924a4",
+                  "uid": "ea2ac2dd-25ec-4092-aabf-a3e703efb162",
                   "type": 4
                 },
                 {
                   "name": "icon_edge_2",
-                  "uid": "07ac9f3d-22cb-43ab-ab21-540e2c132fbc",
+                  "uid": "06310e22-aef8-49b3-a824-8801356ae5f9",
                   "type": 4
                 },
                 {
                   "name": "icon_2",
-                  "uid": "e0ab99c8-ee1e-4784-a4e7-156075d994c4",
+                  "uid": "e0f56e68-6c74-4d52-9741-b1772b39bc0b",
                   "type": 4
                 },
                 {
                   "name": "divider_2",
-                  "uid": "661db50a-2619-4df1-826c-916299d42185",
+                  "uid": "73f0584d-2d72-41b1-9b51-e8fc7c9f8362",
                   "type": 4
                 },
                 {
                   "name": "title_2",
-                  "uid": "7718fe34-cb38-46fe-a5d9-e218f4b68da0",
+                  "uid": "0ecfc265-f01b-48ef-bebd-34b28f633af5",
                   "type": 3
                 },
                 {
                   "name": "bond_2",
-                  "uid": "8a184400-17a0-430c-9da1-b4b2b391a40e",
+                  "uid": "3a3f8938-3b5f-4c57-9357-7807b0f95aa3",
                   "type": 3
                 },
                 {
                   "name": "value_2_2",
-                  "uid": "a1e66fba-ffb5-4d89-8446-0d4609e32e24",
+                  "uid": "68a22b6e-14ce-435c-b667-376d19bdd400",
                   "type": 3
                 },
                 {
                   "name": "value_1_2",
-                  "uid": "8d97eb9d-4645-4939-87c8-febac9d73140",
+                  "uid": "98f18e4b-1493-483b-b90d-bf5bba34597d",
                   "type": 3
                 },
                 {
                   "name": "pick_btn_2",
-                  "uid": "023e4db4-0d85-43be-a1d8-810ac6315731",
+                  "uid": "fa3bd725-6c92-4525-ae65-e2528b2eff33",
                   "type": 1
                 }
               ]
@@ -218,7 +218,7 @@
         },
         {
           "name": "refresh_btn",
-          "uid": "508f088c-8567-456c-930b-3ffc3a2b5af6",
+          "uid": "c52f19cb-2d8c-459e-9b59-c5a2c95d0837",
           "type": 1
         }
       ]
