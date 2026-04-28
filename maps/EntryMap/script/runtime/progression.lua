@@ -250,7 +250,6 @@ function M.create(env)
         progress.exp = 0
         sync_hero_progression()
         apply_hero_level_growth(progress.level)
-        STATE.skill_points = 0
         if on_hero_level_up and progress.level % 5 == 0 then
           on_hero_level_up(progress.level)
         end

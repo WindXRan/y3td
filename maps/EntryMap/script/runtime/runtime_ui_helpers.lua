@@ -95,7 +95,7 @@ for aq in string.gmatch(ap,'[^\n]+')do local ar=a9(aq)if ar~=''then ao[#ao+1]=ar
 return ao end;
 local function as(at,au,av,aw,ab,V)local ao=type(av)=='table'and av or am(av,2)return{title_text=a9(at),subtitle_text=a9(au),body_lines=ao,icon=aw or L,quality=ab or'common',enabled=V~=false}end;
 local function ax(ay)local az=aa(ay and ay.quality or nil)local aA=a9(ay and ay.tag or'')
-if aA==''or aA:find('流派',1,true)then aA='技能强化'end;
+if aA==''or aA:find('流派',1,true)then aA='羁绊技能'end;
 aA=string.format('[%s] %s',az,aA)
 local aB=a9(ay and ay.name or'')
 if aB==''then aB=a9(ay and ay.display_name or'')end;
@@ -133,9 +133,6 @@ local aA=az~=''and string.format('[%s] 替换位 %d',az,aQ)or string.format('替
 return as(aV and aV.name or string.format('宝物位 %d',aQ),aA,ao,ag(aV and aV.editor_item_key or nil),aV and aV.quality or'common',aU~=nil)end;
 local function aX()if d.choice_panel_hidden==true then return nil end;
 local ac=i and i()or nil;
-if ac=='upgrade'then if not d.awaiting_upgrade or not d.current_upgrade_choices or#d.current_upgrade_choices==0 then return nil end;
-local aY={}for aE,ay in ipairs(d.current_upgrade_choices)do aY[#aY+1]=ax(ay)end;
-return{kind=ac,panel_name=a5(#aY),choices=aY,current_round=d.current_upgrade_round,can_refresh=true}end;
 if ac=='gear'then local aI=d and d.gear_state or nil;
 if not aI or aI.awaiting_choice~=true or not aI.current_choices or#aI.current_choices==0 then return nil end;
 local aY={}for aE,ay in ipairs(aI.current_choices)do aY[#aY+1]=aH(ay)end;

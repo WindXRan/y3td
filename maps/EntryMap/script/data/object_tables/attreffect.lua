@@ -18,7 +18,6 @@ local VALID_RESOURCE_KEYS = {
 }
 
 local VALID_STATE_KEYS = {
-  skill_point = true,
   hero_card_count = true,
 }
 
@@ -111,6 +110,8 @@ for _, row in ipairs(rows) do
     assert(validate_attr_key(row.effect_key), 'invalid attr effect_key: ' .. tostring(row.effect_key))
   elseif row.effect_kind == 'resource' then
     assert(VALID_RESOURCE_KEYS[row.effect_key] == true, 'invalid resource effect_key: ' .. tostring(row.effect_key))
+  elseif row.effect_kind == 'state' and row.effect_key == 'skill_point' then
+    goto continue
   elseif row.effect_kind == 'state' then
     assert(VALID_STATE_KEYS[row.effect_key] == true, 'invalid state effect_key: ' .. tostring(row.effect_key))
   elseif row.effect_kind == 'runtime' then

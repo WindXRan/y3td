@@ -51,6 +51,7 @@ function M.create(env)
   local DAMAGE_AREA_DEBUG_EFFECT_ID = tonumber(DEBUG_TUNING.damage_area_effect_id) or 101492
   local DAMAGE_AREA_DEBUG_HEIGHT = tonumber(DEBUG_TUNING.damage_area_height) or 8
   local DAMAGE_AREA_DEBUG_SCALE_BASE = tonumber(DEBUG_TUNING.damage_area_scale_base) or 110
+  local get_skill_damage_template_id
 
   local function scale_visual_duration(seconds)
     return math.max(0.05, (seconds or 0.30) / VISUAL_ANIMATION_SPEED)
@@ -517,20 +518,6 @@ function M.create(env)
     return count
   end
   
-  local function get_upgrade_pick_count(upgrade_key)
-    if not STATE.attack_skill_state then
-      return 0
-    end
-    return STATE.attack_skill_state.upgrade_counts[upgrade_key] or 0
-  end
-  
-  local function record_upgrade_pick(upgrade_key)
-    if not STATE.attack_skill_state then
-      return
-    end
-    STATE.attack_skill_state.upgrade_counts[upgrade_key] = get_upgrade_pick_count(upgrade_key) + 1
-  end
-  
   local function get_skill_current_cooldown(skill)
     if not skill or skill.base_cooldown <= 0 then
       return 0
@@ -576,7 +563,10 @@ function M.create(env)
     elseif skill.base_cooldown > 0 then
       parts[#parts + 1] = string.format('CD %.1fs', get_skill_current_cooldown(skill))
     end
-    if skill.pierce and skill.pierce > 0 and skill.id ~= 'basic_attack' then
+    local cast_family = tostring(skill.cast_family or '')
+    if skill.id ~= 'basic_attack' and (cast_family == 'line' or cast_family == 'line_return' or cast_family == 'beam') then
+      parts[#parts + 1] = '穿透:MAX'
+    elseif skill.pierce and skill.pierce > 0 and skill.id ~= 'basic_attack' then
       parts[#parts + 1] = '穿透+' .. tostring(skill.pierce)
     end
     if skill.extra_targets and skill.extra_targets > 0 then
@@ -590,6 +580,9 @@ function M.create(env)
     end
     if skill.kill_seek_count and skill.kill_seek_count > 0 then
       parts[#parts + 1] = '追命x' .. tostring(skill.kill_seek_count)
+    end
+    if get_skill_damage_template_id then
+      parts[#parts + 1] = '模板:' .. tostring(skill.damage_template_id or get_skill_damage_template_id(skill))
     end
   
     return table.concat(parts, ' | ')
@@ -618,6 +611,9 @@ function M.create(env)
     end
   
     local skill = create_attack_skill_instance(skill_id, empty_slot)
+    if get_skill_damage_template_id then
+      skill.damage_template_id = get_skill_damage_template_id(skill)
+    end
     STATE.attack_skill_state.slots[empty_slot] = skill
     STATE.attack_skill_state.by_id[skill_id] = skill
     STATE.attack_skill_state.new_skill_feed[skill_id] = 2
@@ -658,7 +654,19 @@ function M.create(env)
   
   local function get_enemies_on_line(origin_point, impact_point, max_distance, line_width, max_hits, except_unit)
     local result = {}
-    if not origin_point or not impact_point or max_hits <= 0 then
+    if not origin_point or not impact_point then
+      return result
+    end
+    local normalized_max_hits = nil
+    if type(max_hits) == 'string' then
+      local lowered = string.lower(max_hits)
+      if lowered ~= 'max' and lowered ~= 'all' and lowered ~= '' then
+        normalized_max_hits = tonumber(max_hits)
+      end
+    else
+      normalized_max_hits = tonumber(max_hits)
+    end
+    if normalized_max_hits and normalized_max_hits <= 0 then
       return result
     end
   
@@ -708,7 +716,8 @@ function M.create(env)
       return a.projection < b.projection
     end)
   
-    for index = 1, math.min(max_hits, #candidates), 1 do
+    local limit = normalized_max_hits and math.min(math.max(1, math.floor(normalized_max_hits)), #candidates) or #candidates
+    for index = 1, limit, 1 do
       result[#result + 1] = candidates[index].unit
     end
   
@@ -790,7 +799,7 @@ function M.create(env)
             info.status.ignite = nil
           elseif ignite.tick_cd <= 0 and is_active_enemy(unit) then
             ignite.tick_cd = 1
-            deal_skill_damage(unit, get_hero_attr('攻击结算值', '攻击') * (ignite.tick_ratio or 0), '物理', {
+            skill_damage_api.single(unit, get_hero_attr('攻击结算值', '攻击') * (ignite.tick_ratio or 0), '物理', {
               text_type = 'physics',
             })
           end
@@ -1466,7 +1475,7 @@ function M.create(env)
     end
 
     if options and options.use_skill_damage == true then
-      deal_skill_damage(unit, amount, options.damage_meta or skill, {
+      skill_damage_api.single(unit, amount, options.damage_meta or skill, {
         text_type = options.text_type or 'physics',
         particle = options.particle,
         skip_hunter_first_hit = options.skip_hunter_first_hit == true,
@@ -1510,7 +1519,7 @@ function M.create(env)
     return ''
   end
 
-  local function get_skill_damage_template_id(skill)
+  get_skill_damage_template_id = function(skill)
     local cast_family = get_skill_cast_family(skill)
     if cast_family ~= '' and DAMAGE_TEMPLATE_MAP[cast_family] then
       return DAMAGE_TEMPLATE_MAP[cast_family]
@@ -1607,6 +1616,14 @@ function M.create(env)
     })
   end
 
+  local function deal_single_skill_damage(target, skill, amount, options)
+    return skill_damage_api.single(target, amount, skill, options)
+  end
+
+  local function deal_chain_skill_damage(targets, skill, amount, options)
+    return skill_damage_api.chain(targets, amount, skill, options)
+  end
+
   local function deal_line_skill_damage(origin_point, impact_point, max_distance, line_width, max_hits, except_unit, skill, amount, options)
     return skill_damage_api.line(origin_point, impact_point, amount, skill, {
       max_distance = max_distance,
@@ -1676,7 +1693,7 @@ function M.create(env)
       if hit_count == 0 then
         play_skill_audio(skill, 'chain', unit)
       end
-      deal_skill_damage(unit, get_skill_damage(skill) * ratio, skill, {
+      deal_single_skill_damage(unit, skill, get_skill_damage(skill) * ratio, {
         particle = vfx.chain_particle or vfx.impact_particle,
       })
       apply_generic_skill_statuses(skill, unit)
@@ -1698,14 +1715,20 @@ function M.create(env)
     local tick_interval = 0.50
     local tick_count = math.max(1, round_number(duration / tick_interval))
     local tick_damage = get_skill_damage(skill) * ratio
-    y3.ltimer.loop_count(tick_interval, tick_count, function()
-      if STATE.game_finished then
-        return
-      end
-      play_skill_particle_on_point(skill, center, 'sustain', 0)
-      play_skill_audio(skill, 'tick', center)
-      local hit_units = deal_area_skill_damage(center, radius, skill, tick_damage)
-      for _, unit in ipairs(hit_units) do
+    skill_damage_api.area_ticks(tick_interval, tick_count, skill, {
+      center = center,
+      radius = radius,
+      amount = tick_damage,
+      before_tick = function()
+        if STATE.game_finished then
+          return false
+        end
+        play_skill_particle_on_point(skill, center, 'sustain', 0)
+        play_skill_audio(skill, 'tick', center)
+        return true
+      end,
+      on_hit = function(context)
+        local unit = context.hit_unit
         if (opts and opts.control) or skill.persistent_field_control then
           apply_hold_control(unit, 0.30)
         end
@@ -1713,8 +1736,8 @@ function M.create(env)
           apply_simple_ignite(unit, 3, math.max(0.05, ratio * 0.25))
         end
         apply_generic_skill_statuses(skill, unit)
-      end
-    end)
+      end,
+    })
   end
 
   local function cast_blueprint_line_skill(skill, target, opts)
@@ -1733,7 +1756,7 @@ function M.create(env)
       end
       if is_active_enemy(target) then
         play_skill_audio(skill, 'impact', target)
-        deal_skill_damage(target, damage, skill, {
+        deal_single_skill_damage(target, skill, damage, {
           particle = vfx.impact_particle,
         })
         apply_generic_skill_statuses(skill, target)
@@ -1750,7 +1773,7 @@ function M.create(env)
           center,
           math.max(1, (skill.cast_range or 0) + (skill.range_bonus or 0)),
           skill.pierce_width or 110,
-          math.max(0, skill.pierce or 0),
+          'max',
           target,
           skill,
           damage,
@@ -1767,7 +1790,7 @@ function M.create(env)
             origin_point,
             math.max(1, (skill.cast_range or 0) + (skill.range_bonus or 0)),
             skill.pierce_width or 110,
-            math.max(1, math.max(0, skill.pierce or 0) + 1),
+            'max',
             nil,
             skill,
             damage * (opts and opts.return_ratio or skill.return_pass_ratio or 0.75),
@@ -1792,38 +1815,41 @@ function M.create(env)
       local tick_count = math.max(2, round_number(duration / tick_interval))
       local tick_damage = get_skill_damage(skill) / tick_count
       local locked_point = impact_point or get_unit_point_snapshot(target)
-      y3.ltimer.loop_count(tick_interval, tick_count, function(_, current)
-        if STATE.game_finished or not STATE.hero or not STATE.hero:is_exist() then
-          return
-        end
-        local end_point = get_unit_point_snapshot(target) or locked_point
-        local start_point = get_hero_point()
-        if not start_point or not end_point then
-          return
-        end
-        show_line_area_indicator(start_point, end_point, skill.sweep_enabled and 180 or 120, 0.24)
-        play_skill_particle_on_point(skill, end_point, 'sustain', 12)
-        play_skill_audio(skill, 'tick', end_point)
-        for _, unit in ipairs(deal_line_skill_damage(
-          start_point,
-          end_point,
-          math.max(1, (skill.cast_range or 0) + (skill.range_bonus or 0)),
-          skill.sweep_enabled and 180 or 120,
-          99,
-          nil,
-          skill,
-          tick_damage,
-          nil
-        )) do
-          apply_generic_skill_statuses(skill, unit)
-        end
-        if skill.sweep_enabled then
-          trigger_skill_followup_hits(skill, end_point, nil)
-        end
-        if current == tick_count then
-          trigger_skill_terminal_burst(skill, end_point)
-        end
-      end)
+      skill_damage_api.line_ticks(tick_interval, tick_count, skill, {
+        origin = function()
+          return get_hero_point()
+        end,
+        impact = function()
+          return get_unit_point_snapshot(target) or locked_point
+        end,
+        amount = tick_damage,
+        max_distance = math.max(1, (skill.cast_range or 0) + (skill.range_bonus or 0)),
+        line_width = skill.sweep_enabled and 180 or 120,
+        max_hits = 'max',
+        before_tick = function(context)
+          if STATE.game_finished or not STATE.hero or not STATE.hero:is_exist() then
+            return false
+          end
+          if not context.origin_point or not context.impact_point then
+            return false
+          end
+          show_line_area_indicator(context.origin_point, context.impact_point, context.line_width, 0.24)
+          play_skill_particle_on_point(skill, context.impact_point, 'sustain', 12)
+          play_skill_audio(skill, 'tick', context.impact_point)
+          return true
+        end,
+        on_hit = function(context)
+          apply_generic_skill_statuses(skill, context.hit_unit)
+        end,
+        after_tick = function(context)
+          if skill.sweep_enabled then
+            trigger_skill_followup_hits(skill, context.impact_point, nil)
+          end
+          if context.current == context.total then
+            trigger_skill_terminal_burst(skill, context.impact_point)
+          end
+        end,
+      })
     end, {
       allow_fallback = true,
     })
@@ -1881,22 +1907,11 @@ function M.create(env)
       local current_center = impact_point or get_unit_point_snapshot(target)
       local hit_map = {}
       local visited = {}
+      local center_map = {}
       while current_target and remaining > 0 do
         hit_map[current_target] = true
         visited[#visited + 1] = current_target
-        if current_center then
-          play_skill_particle_on_point(skill, current_center, 'chain', 0)
-        end
-        play_skill_audio(skill, 'chain', current_target or current_center)
-        deal_skill_damage(current_target, damage, skill, {
-          particle = vfx.chain_particle or vfx.impact_particle,
-        })
-        apply_generic_skill_statuses(skill, current_target)
-        apply_enemy_status(current_target, 'shock', {
-          remaining = 1.0,
-          bonus = 0.10,
-        })
-        try_add_status_modifier(current_target, ATTACK_STATUS_MODIFIER_KEYS.shock, 1.0)
+        center_map[current_target] = current_center or get_unit_point_snapshot(current_target)
         remaining = remaining - 1
         if remaining <= 0 then
           break
@@ -1915,18 +1930,62 @@ function M.create(env)
         current_center = next_target and get_unit_point_snapshot(next_target) or nil
       end
 
+      deal_chain_skill_damage(visited, skill, damage, {
+        visual = function()
+          return {
+            particle = vfx.chain_particle or vfx.impact_particle,
+          }
+        end,
+        before_hit = function(context)
+          local unit = context.target
+          if not unit or not unit.is_exist or not unit:is_exist() then
+            return false
+          end
+          local center = center_map[unit] or get_unit_point_snapshot(unit)
+          if center then
+            play_skill_particle_on_point(skill, center, 'chain', 0)
+          end
+          play_skill_audio(skill, 'chain', unit or center)
+          return true
+        end,
+        on_hit = function(context)
+          local unit = context.target
+          apply_generic_skill_statuses(skill, unit)
+          apply_enemy_status(unit, 'shock', {
+            remaining = 1.0,
+            bonus = 0.10,
+          })
+          try_add_status_modifier(unit, ATTACK_STATUS_MODIFIER_KEYS.shock, 1.0)
+        end,
+      })
+
       if skill.return_pass_enabled and #visited >= 2 then
+        local return_targets = {}
         for index = #visited - 1, 1, -1 do
           local unit = visited[index]
           if unit and is_active_enemy(unit) then
-            play_skill_particle_on_point(skill, unit:get_point(), 'chain', 0)
-            play_skill_audio(skill, 'chain', unit)
-            deal_skill_damage(unit, damage * (skill.return_pass_ratio or 0.65), skill, {
-              particle = vfx.chain_particle or vfx.impact_particle,
-            })
-            apply_generic_skill_statuses(skill, unit)
+            return_targets[#return_targets + 1] = unit
           end
         end
+        deal_chain_skill_damage(return_targets, skill, damage * (skill.return_pass_ratio or 0.65), {
+          visual = function()
+            return {
+              particle = vfx.chain_particle or vfx.impact_particle,
+            }
+          end,
+          before_hit = function(context)
+            local unit = context.target
+            if not unit or not unit.is_exist or not unit:is_exist() then
+              return false
+            end
+            play_skill_particle_on_point(skill, unit:get_point(), 'chain', 0)
+            play_skill_audio(skill, 'chain', unit)
+            return true
+          end,
+          on_hit = function(context)
+            apply_generic_skill_statuses(skill, context.target)
+          end,
+        })
       end
 
       trigger_skill_terminal_burst(skill, current_center or impact_point or get_unit_point_snapshot(target))
@@ -2002,23 +2061,31 @@ function M.create(env)
       play_skill_particle_on_point(skill, start_center, 'charge', 0)
       play_skill_audio(skill, 'charge', start_center)
 
-      y3.ltimer.loop_count(tick_interval, tick_count, function(_, current)
-        if STATE.game_finished then
-          return
-        end
-        local center = start_center
-        if skill.field_track_target and target and target:is_exist() then
-          center = get_unit_point_snapshot(target) or center
-        elseif opts and opts.moving and center then
-          center = y3.point.get_point_offset_vector(start_center, angle, move_step * (current - 1))
-        end
-        if not center then
-          return
-        end
-        play_skill_particle_on_point(skill, center, 'sustain', 0)
-        play_skill_audio(skill, 'tick', center)
-        local hit_units = deal_area_skill_damage(center, radius, skill, tick_damage)
-        for _, unit in ipairs(hit_units) do
+      skill_damage_api.area_ticks(tick_interval, tick_count, skill, {
+        center = function(context)
+          local center = start_center
+          if skill.field_track_target and target and target:is_exist() then
+            center = get_unit_point_snapshot(target) or center
+          elseif opts and opts.moving and center then
+            center = y3.point.get_point_offset_vector(start_center, angle, move_step * (context.current - 1))
+          end
+          return center
+        end,
+        radius = radius,
+        amount = tick_damage,
+        before_tick = function(context)
+          if STATE.game_finished then
+            return false
+          end
+          if not context.center then
+            return false
+          end
+          play_skill_particle_on_point(skill, context.center, 'sustain', 0)
+          play_skill_audio(skill, 'tick', context.center)
+          return true
+        end,
+        on_hit = function(context)
+          local unit = context.hit_unit
           if opts and opts.control then
             apply_hold_control(unit, math.min(0.35, duration))
           end
@@ -2026,14 +2093,16 @@ function M.create(env)
             apply_simple_ignite(unit, 3, 0.08)
           end
           if (skill.pull_strength or 0) > 0 then
-            pull_unit_towards_point(unit, center, skill.pull_strength)
+            pull_unit_towards_point(unit, context.center, skill.pull_strength)
           end
           apply_generic_skill_statuses(skill, unit)
-        end
-        if current == tick_count then
-          trigger_skill_terminal_burst(skill, center)
-        end
-      end)
+        end,
+        after_tick = function(context)
+          if context.current == context.total then
+            trigger_skill_terminal_burst(skill, context.center)
+          end
+        end,
+      })
     end, {
       allow_fallback = true,
     })
@@ -2178,7 +2247,7 @@ function M.create(env)
 
         local was_alive = is_unit_alive_now(victim)
         play_skill_audio(skill, 'impact', victim)
-        deal_skill_damage(victim, amount, skill, {
+        deal_single_skill_damage(victim, skill, amount, {
           particle = vfx.impact_particle,
         })
         apply_generic_skill_statuses(skill, victim)
@@ -2340,7 +2409,7 @@ function M.create(env)
           force_hit_effect = true,
         })
         if (runtime.normal_attack_bonus_ratio or 0) > 0 then
-          deal_skill_damage(target, damage * runtime.normal_attack_bonus_ratio, '物理', {
+          deal_single_skill_damage(target, '物理', damage * runtime.normal_attack_bonus_ratio, {
             text_type = 'physics',
           })
         end
@@ -2622,11 +2691,10 @@ function M.create(env)
     get_attack_skill_slot = get_attack_skill_slot,
     get_empty_attack_skill_slot = get_empty_attack_skill_slot,
     get_unlocked_attack_skill_count = get_unlocked_attack_skill_count,
-    get_upgrade_pick_count = get_upgrade_pick_count,
-    record_upgrade_pick = record_upgrade_pick,
     build_attack_skill_slot_text = build_attack_skill_slot_text,
     show_attack_skill_loadout = show_attack_skill_loadout,
     unlock_attack_skill = unlock_attack_skill,
+    get_skill_damage_template_id = get_skill_damage_template_id,
     update_enemy_statuses = update_enemy_statuses,
     update_attack_skills = update_attack_skills,
   }

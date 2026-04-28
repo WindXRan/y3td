@@ -9,7 +9,6 @@ function M.create(env)
   local sync_hero_progress_from_engine = env.sync_hero_progress_from_engine
   local try_queue_mark_node_for_level = env.try_queue_mark_node_for_level
   local grant_attr_diamond = env.grant_attr_diamond
-  local show_upgrade_choices = env.show_upgrade_choices
   local try_bond_draw = env.try_bond_draw
   local show_bond_progress = env.show_bond_progress
   local show_runtime_attr_tip_panel = env.show_runtime_attr_tip_panel
@@ -51,7 +50,6 @@ function M.create(env)
 
       sync_hero_progress_from_engine()
       local current_level = tonumber(STATE.hero_progress.level) or engine_level
-      STATE.skill_points = 0
       if grant_attr_diamond and current_level % 5 == 0 then
         grant_attr_diamond(1, current_level)
       end
@@ -236,9 +234,6 @@ function M.create(env)
       end)
       register_debug_hotkey('F4', function()
         return debug_actions_system.debug_unlock_all_attack_skills()
-      end)
-      register_debug_hotkey('F5', function()
-        return debug_actions_system.debug_open_upgrade_panel()
       end)
       register_debug_hotkey('F6', function()
         return debug_actions_system.debug_trigger_bond_draw()

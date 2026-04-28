@@ -48,7 +48,7 @@
 - 调整脚手架生成：
   - 改 `generate_object_editor_scaffolds.ps1`
 - 调整玩法行为：
-  - 回到 `entry_runtime.lua`、`entry_runtime_battlefield.lua`、`entry_runtime_attack_skills.lua`、`entry_runtime_attack_upgrades.lua`、`runtime_bonds.lua` 等运行时模块
+  - 回到 `entry_runtime.lua`、`entry_runtime_battlefield.lua`、`entry_runtime_attack_skills.lua`、`runtime_bonds.lua` 等运行时模块
 
 ## 当前约定的“不继续拆”
 

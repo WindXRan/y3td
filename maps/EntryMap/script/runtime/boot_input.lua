@@ -12,7 +12,6 @@ function M.create(args)
     sync_hero_progress_from_engine = args.sync_hero_progress_from_engine,
     try_queue_mark_node_for_level = args.try_queue_mark_node_for_level,
     grant_attr_diamond = args.grant_attr_diamond,
-    show_upgrade_choices = args.show_upgrade_choices,
     try_bond_draw = args.try_bond_draw,
     show_bond_progress = args.show_bond_progress,
     show_runtime_attr_overview = args.show_runtime_attr_overview,

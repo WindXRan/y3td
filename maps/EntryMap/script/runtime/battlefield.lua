@@ -1191,12 +1191,6 @@ function M.create(env)
     if STATE.game_finished or STATE.session_phase ~= 'battle' then
       return
     end
-    if STATE.awaiting_upgrade then
-      STATE.awaiting_upgrade = false
-      STATE.current_upgrade_choices = nil
-      return
-    end
-
     local def = CONFIG.challenges[challenge_id]
     if not def then
       return

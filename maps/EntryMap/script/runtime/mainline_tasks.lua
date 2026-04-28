@@ -204,8 +204,6 @@ if a5.type=='resource'then local a6=f[a5.key]or tostring(a5.key or'?')return str
 if a5.type=='special'then local i=_(a0)
 if a5.key=='treasure_choice'then return string.format('获得 %s 次宝物',tostring(i))end;
 
-if a5.key=='skill_point'then return'已移除的攻击强化奖励'end;
-
 if a5.key=='hero_card'then return string.format('英雄卡 %s',a1(a0,false))end end;
 
 local a6=d[a5.key]or e[a5.key]or tostring(a5.key or'?')return string.format('%s %s',a6,a1(a0,tostring(a5.key or''):match('_pct$')~=nil))end;
@@ -284,8 +282,6 @@ elseif a5.type=='resource'then ag[a5.key]=(ag[a5.key]or 0)+(tonumber(a5.value)or
 elseif a5.type=='special'then
 if a5.key=='treasure_choice'and H then
 for Y=1,tonumber(a5.value)or 0 do H('mainline_task',v(o))end
-elseif a5.key=='skill_point'then
-B.skill_points=0
 elseif a5.key=='hero_card'then
 T.hero_card_count=(T.hero_card_count or 0)+(tonumber(a5.value)or 0)
 if E then E(string.format('%s：英雄卡 %+d。',v(o),tonumber(a5.value)or 0))end end end end;

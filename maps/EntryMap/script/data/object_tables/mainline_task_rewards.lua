@@ -51,7 +51,6 @@ local LEGACY_RUNTIME_KEY_BY_CANONICAL_ATTR = {
 }
 
 local LEGACY_SPECIAL_KEY_BY_STATE = {
-  skill_point = 'skill_point',
   hero_card_count = 'hero_card',
 }
 

@@ -61,7 +61,6 @@
   - `maps/EntryMap/script/entry_runtime_progression.lua`
 - 攻击技能：
   - `maps/EntryMap/script/entry_runtime_attack_skills.lua`
-  - `maps/EntryMap/script/entry_runtime_attack_upgrades.lua`
   - `maps/EntryMap/script/entry_objects/attack_skills`
 - 羁绊：
   - `maps/EntryMap/script/runtime/bonds.lua`
@@ -87,7 +86,6 @@
 - 局外选关与基础存档骨架
 - 5 波推进、Boss 切波与挑战
 - 英雄自动战斗与攻击技能运行时
-- `G` 三选一强化
 - `F` 羁绊抽卡与羁绊效果
 - 宝物、烙印、奖励队列与 HUD / GM 调试链路
 
@@ -105,7 +103,7 @@
   - 静态对象：`entry_objects/*`
   - 战场：`entry_runtime_battlefield.lua`
   - 成长：`entry_runtime_progression.lua`
-  - 攻击技能：`entry_runtime_attack_skills.lua` / `entry_runtime_attack_upgrades.lua`
+  - 攻击技能：`entry_runtime_attack_skills.lua`
   - 羁绊：`runtime/bonds.lua` / `runtime/bonds_chain.lua`
   - 总协调：`entry_runtime.lua`
   - 宝物 / 烙印 / 奖励队列：`entry_runtime_rewards.lua`

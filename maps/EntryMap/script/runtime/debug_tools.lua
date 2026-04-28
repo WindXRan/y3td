@@ -75,9 +75,6 @@ function M.create(env)
     if STATE.choice_panel_hidden == true then
       return false
     end
-    if STATE.awaiting_upgrade and STATE.current_upgrade_choices and #STATE.current_upgrade_choices > 0 then
-      return true
-    end
     if STATE.gear_state and STATE.gear_state.awaiting_choice and STATE.gear_state.current_choices and #STATE.gear_state.current_choices > 0 then
       return true
     end
@@ -263,8 +260,7 @@ function M.create(env)
     debug_message('Ctrl+F1：显示调试快捷键说明')
     debug_message('Ctrl+F2：补 500 金币 / 300 木材')
     debug_message('Ctrl+F3：英雄直接升 3 级')
-    debug_message('Ctrl+F4：攻击技能调试入口已停用')
-    debug_message('Ctrl+F5：攻击强化调试入口已停用')
+    debug_message('Ctrl+F4：普攻技能调试入口已停用')
     debug_message('Ctrl+F6：直接触发 F 抽卡（木材不足时自动补足）')
     debug_message('Ctrl+F7：补满挑战次数')
     debug_message('Ctrl+F8：立刻刷出当前波 Boss')
@@ -732,7 +728,6 @@ function M.create(env)
       { '加资源 / F2', env.debug_add_test_resources, { 73, 94, 132 } },
       { '升 3 级 / F3', function() env.debug_grant_levels(3) end, { 64, 88, 128 } },
       { '解锁技能 / F4', env.debug_unlock_all_attack_skills, { 84, 97, 138 } },
-      { '开强化 / F5', env.debug_open_upgrade_panel, { 72, 102, 142 } },
       { '抽流派 / F6', env.debug_trigger_bond_draw, { 84, 110, 150 } },
       { '满挑战 / F7', env.debug_refill_challenge_charges, { 70, 112, 142 } },
       { '刷 Boss / F8', env.debug_force_spawn_boss, { 110, 86, 126 } },

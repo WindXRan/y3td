@@ -178,10 +178,7 @@ function M.create(args)
       by_id = {
         basic_attack = basic_attack,
       },
-      upgrade_counts = {},
-      last_picked_skill_id = nil,
       new_skill_feed = {},
-      unlock_offer_fail_streak = 0,
     }
   end
 
@@ -207,11 +204,7 @@ function M.create(args)
       treasure_runtime = nil,
       auto_active_effects = nil,
       enemy_info_map = nil,
-      skill_points = 0,
       hero_progress = nil,
-      awaiting_upgrade = false,
-      current_upgrade_choices = nil,
-      current_upgrade_round = nil,
       skill_runtime = nil,
       attack_skill_state = nil,
       reward_queue = nil,

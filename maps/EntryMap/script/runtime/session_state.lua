@@ -112,11 +112,7 @@ function M.create(env)
     STATE.treasure_runtime = create_treasure_runtime()
     STATE.auto_active_effects = nil
     STATE.enemy_info_map = {}
-    STATE.skill_points = 0
     STATE.hero_progress = nil
-    STATE.awaiting_upgrade = false
-    STATE.current_upgrade_choices = nil
-    STATE.current_upgrade_round = nil
     STATE.skill_runtime = create_skill_runtime()
     STATE.attack_skill_state = create_attack_skill_state()
     STATE.reward_queue = {}

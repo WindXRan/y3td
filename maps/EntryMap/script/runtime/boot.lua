@@ -1,6 +1,7 @@
 ﻿local CONFIG = require 'entry_config'
 local BondSystem = require 'runtime.bonds'
 local AttackSkillObjects = require 'entry_objects.attack_skills'
+local SkillDamageTemplates = require 'runtime.skill_damage_templates'
 local BondDrawConfig = require 'data.object_tables.bond_draw_config'
 local BondNodeObjects = require 'data.object_tables.bond_nodes'
 local QualityImageTable = require 'data.object_tables.quality_image_table'
@@ -20,7 +21,6 @@ local BattleEventPromptsFactory = require 'runtime.battle_event_prompts'
 local RuntimeUIHelpers = require 'runtime.runtime_ui_helpers'
 local RuntimeHudSystem = require 'ui.runtime_hud'
 local OutgameSystem = require 'ui.outgame'
-local AttackUpgradeSystem = require 'runtime.attack_upgrades'
 local AttackSkillsSystem = require 'runtime.attack_skills'
 local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
 local CannonSkill134258724System = require 'runtime.cannon_skill_134258724'
@@ -56,7 +56,6 @@ session_state_system = nil
 input_events_system = nil
 runtime_loops_system = nil
 hero_tujian_panel_system = nil
-attack_upgrade_system = nil
 attack_skills_system = nil
 auto_active_effects_system = nil
 battle_auto_acceptance_system = nil
@@ -1129,64 +1128,90 @@ local function get_target_point(unit)
 end
 
 
+local SKILL_DAMAGE_REENTRANT_GUARD_LIMIT = 96
+
 deal_skill_damage = function(target, amount, damage, visual)
-  if not STATE.hero or not STATE.hero:is_exist() or not is_active_enemy(target) then
+  local call_depth = (STATE.__skill_damage_call_depth or 0) + 1
+  STATE.__skill_damage_call_depth = call_depth
+  if call_depth > SKILL_DAMAGE_REENTRANT_GUARD_LIMIT then
+    STATE.__skill_damage_guard_drop = (STATE.__skill_damage_guard_drop or 0) + 1
+    STATE.__skill_damage_call_depth = call_depth - 1
     return
   end
 
-  local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false and not is_hit_effect_hidden()
-  local damage_meta = resolve_damage_meta(damage)
-  local target_multiplier = get_damage_bonus_multiplier(target, {
-    is_skill = true,
-  })
-  local final_damage = hero_attr_system.compute_damage(STATE.hero, amount, damage_meta, {
-    damage_kind = 'skill',
-    target_multiplier = target_multiplier,
-  })
-  if final_damage <= 0 then
-    return
-  end
-  show_damage_area_indicator(get_target_point(target), tonumber(visual and visual.debug_radius) or 70, 0.24)
-
-  reserve_formula_damage(target, final_damage, {
-    source = 'skill',
-    damage_meta = damage_meta,
-  })
-  STATE.hero:damage({
-    target = target,
-    damage = final_damage,
-    type = damage_meta.damage_type or '法术',
-    text_type = resolve_runtime_text_type(resolve_damage_text_type(damage_meta.damage_form, visual)),
-    text_track = visual and visual.text_track or 934269508,
-    particle = hit_effect_enabled and visual and visual.particle or nil,
-    socket = hit_effect_enabled and visual and visual.socket or '',
-    pos_socket = hit_effect_enabled and visual and visual.pos_socket or '',
-    common_attack = false,
-    no_miss = true,
-  })
-
-  if battle_auto_acceptance_system and battle_auto_acceptance_system.record_damage then
-    local scope = visual and visual.metric_scope or nil
-    local key = visual and visual.metric_key or nil
-    if (not scope or scope == '') and type(damage) == 'table' then
-      scope = 'attack_skill'
-      key = tostring(damage.id or damage.name or damage.damage_label or 'unknown')
-    elseif (not scope or scope == '') and type(damage) == 'string' then
-      scope = 'damage_type'
-      key = damage
+  local ok, err = pcall(function()
+    if not STATE.hero or not STATE.hero:is_exist() or not is_active_enemy(target) then
+      return
     end
-    battle_auto_acceptance_system.record_damage({
-      scope = scope or 'unknown',
-      key = key or 'unknown',
-      hit = 1,
-      damage = final_damage,
-    })
-  end
 
-  if not (visual and visual.skip_hunter_first_hit) then
-    try_trigger_hunter_first_hit(target)
+    local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false and not is_hit_effect_hidden()
+    local damage_meta = resolve_damage_meta(damage)
+    local target_multiplier = get_damage_bonus_multiplier(target, {
+      is_skill = true,
+    })
+    local final_damage = hero_attr_system.compute_damage(STATE.hero, amount, damage_meta, {
+      damage_kind = 'skill',
+      target_multiplier = target_multiplier,
+    })
+    if final_damage <= 0 then
+      return
+    end
+    show_damage_area_indicator(get_target_point(target), tonumber(visual and visual.debug_radius) or 70, 0.24)
+
+    reserve_formula_damage(target, final_damage, {
+      source = 'skill',
+      damage_meta = damage_meta,
+    })
+    STATE.hero:damage({
+      target = target,
+      damage = final_damage,
+      type = damage_meta.damage_type or '法术',
+      text_type = resolve_runtime_text_type(resolve_damage_text_type(damage_meta.damage_form, visual)),
+      text_track = visual and visual.text_track or 934269508,
+      particle = hit_effect_enabled and visual and visual.particle or nil,
+      socket = hit_effect_enabled and visual and visual.socket or '',
+      pos_socket = hit_effect_enabled and visual and visual.pos_socket or '',
+      common_attack = false,
+      no_miss = true,
+    })
+
+    if battle_auto_acceptance_system and battle_auto_acceptance_system.record_damage then
+      local scope = visual and visual.metric_scope or nil
+      local key = visual and visual.metric_key or nil
+      if (not scope or scope == '') and type(damage) == 'table' then
+        scope = 'attack_skill'
+        key = tostring(damage.id or damage.name or damage.damage_label or 'unknown')
+      elseif (not scope or scope == '') and type(damage) == 'string' then
+        scope = 'damage_type'
+        key = damage
+      end
+      battle_auto_acceptance_system.record_damage({
+        scope = scope or 'unknown',
+        key = key or 'unknown',
+        hit = 1,
+        damage = final_damage,
+      })
+    end
+
+    if not (visual and visual.skip_hunter_first_hit) then
+      try_trigger_hunter_first_hit(target)
+    end
+  end)
+
+  STATE.__skill_damage_call_depth = call_depth - 1
+  if not ok then
+    error(err)
   end
 end
+
+local td_damage_api = SkillDamageTemplates.create({
+  y3 = y3,
+  deal_skill_damage = function(target, amount, damage_meta, visual)
+    deal_skill_damage(target, amount, damage_meta, visual)
+  end,
+  get_enemies_in_range = get_enemies_in_range,
+  is_active_enemy = is_active_enemy,
+})
 
 heal_hero = function(amount)
   if amount <= 0 or not STATE.hero or not STATE.hero:is_exist() then
@@ -1357,30 +1382,33 @@ local function trigger_td_skills_on_hit(data)
   end
 
   if skill.normal_attack_bonus_ratio > 0 then
-    deal_skill_damage(target, data.damage * skill.normal_attack_bonus_ratio, '物理', {
+    td_damage_api.single(target, data.damage * skill.normal_attack_bonus_ratio, '物理', {
       text_type = 'physics',
     })
   end
 
   if skill.splash_ratio > 0 then
-    for _, unit in ipairs(get_enemies_in_range(target, skill.splash_radius, target)) do
-      deal_skill_damage(unit, data.damage * skill.splash_ratio, '物理', {
+    td_damage_api.area(target, skill.splash_radius, data.damage * skill.splash_ratio, '物理', {
+      except_unit = target,
+      visual = {
         text_type = 'physics',
-      })
-    end
+      },
+    })
   end
 
   if skill.chain_bounces > 0 and skill.chain_chance > 0 and math.random() <= skill.chain_chance then
-    local bounced = 0
-    for _, unit in ipairs(get_enemies_in_range(chain_center, skill.chain_radius, target, skill.chain_bounces)) do
-      deal_skill_damage(unit, data.damage * skill.chain_ratio, basic_attack_def, {
-        particle = basic_chain_particle,
-      })
-      bounced = bounced + 1
-      if bounced >= skill.chain_bounces then
-        break
-      end
-    end
+    td_damage_api.chain(
+      get_enemies_in_range(chain_center, skill.chain_radius, target, skill.chain_bounces),
+      data.damage * skill.chain_ratio,
+      basic_attack_def,
+      {
+        visual = function()
+          return {
+            particle = basic_chain_particle,
+          }
+        end,
+      }
+    )
   end
 
   local bond_chain_bounces = math.max(0, round_number(
@@ -1391,22 +1419,24 @@ local function trigger_td_skills_on_hit(data)
     + get_hero_attr_ratio('弹射伤害')
   )
   if bond_chain_bounces > 0 and bond_chain_ratio > 0 then
-    local bounced = 0
-    for _, unit in ipairs(get_enemies_in_range(
-      chain_center,
-      math.max(skill.chain_radius or 0, 420),
-      target,
-      bond_chain_bounces
-    )) do
-      deal_skill_damage(unit, data.damage * bond_chain_ratio, basic_attack_def, {
-        particle = basic_chain_particle,
-        skip_hunter_first_hit = true,
-      })
-      bounced = bounced + 1
-      if bounced >= bond_chain_bounces then
-        break
-      end
-    end
+    td_damage_api.chain(
+      get_enemies_in_range(
+        chain_center,
+        math.max(skill.chain_radius or 0, 420),
+        target,
+        bond_chain_bounces
+      ),
+      data.damage * bond_chain_ratio,
+      basic_attack_def,
+      {
+        visual = function()
+          return {
+            particle = basic_chain_particle,
+            skip_hunter_first_hit = true,
+          }
+        end,
+      }
+    )
   end
 
   if skill.execute_threshold > 0 and target:is_exist() and target:get_hp() > 0 then
@@ -1552,14 +1582,6 @@ end
 
 local function get_unlocked_attack_skill_count()
   return attack_skills_system.get_unlocked_attack_skill_count()
-end
-
-local function get_upgrade_pick_count(upgrade_key)
-  return attack_skills_system.get_upgrade_pick_count(upgrade_key)
-end
-
-local function record_upgrade_pick(upgrade_key)
-  return attack_skills_system.record_upgrade_pick(upgrade_key)
 end
 
 local function build_attack_skill_slot_text(slot)
@@ -1723,33 +1745,7 @@ STATE.hero_form_skills_system = require('runtime.hero_form_skills').create({
   end,
 })
 
-attack_upgrade_system = AttackUpgradeSystem.create({
-  STATE = STATE,
-  message = message,
-  ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS,
-  ATTACK_SKILL_BLUEPRINTS = ATTACK_SKILL_BLUEPRINTS,
-  get_attack_skill = get_attack_skill,
-  get_empty_attack_skill_slot = get_empty_attack_skill_slot,
-  get_unlocked_attack_skill_count = get_unlocked_attack_skill_count,
-  get_upgrade_pick_count = get_upgrade_pick_count,
-  record_upgrade_pick = record_upgrade_pick,
-  unlock_attack_skill = unlock_attack_skill,
-  sync_basic_attack_ability = sync_basic_attack_ability,
-  build_attack_skill_slot_text = build_attack_skill_slot_text,
-  collect_bond_route_tags = function()
-    return BondSystem.collect_route_tags(STATE)
-  end,
-  has_active_treasure = function(treasure_id)
-    return STATE.treasure_runtime
-        and STATE.treasure_runtime.active_by_id
-        and STATE.treasure_runtime.active_by_id[treasure_id] ~= nil
-  end,
-})
-
 local function get_pending_round_choice_kind()
-  if STATE.awaiting_upgrade and STATE.current_upgrade_choices then
-    return 'upgrade'
-  end
   if STATE.gear_state and STATE.gear_state.awaiting_choice and STATE.gear_state.current_choices then
     return 'gear'
   end
@@ -1778,9 +1774,6 @@ local function get_pending_round_choice_kind()
 end
 
 local function get_pending_round_choice_label(kind)
-  if kind == 'upgrade' then
-    return 'G 技能强化'
-  end
   if kind == 'bond' then
     return 'F 战术抽卡'
   end
@@ -1843,9 +1836,6 @@ end
 local function show_pending_round_choice(kind)
   local current_kind = kind or get_pending_round_choice_kind()
   STATE.choice_panel_hidden = false
-  if current_kind == 'upgrade' then
-    return show_upgrade_choices()
-  end
   if current_kind == 'bond' then
     BondSystem.try_draw(create_bond_env())
     return
@@ -1876,25 +1866,6 @@ ensure_round_choice_available = function(allowed_kind)
   return false
 end
 
-local function show_upgrade_choices()
-  if not ensure_round_choice_available('upgrade') then
-    return false
-  end
-  if attack_upgrade_system and attack_upgrade_system.show_upgrade_choices then
-    return attack_upgrade_system.show_upgrade_choices()
-  end
-  return false
-end
-
-local function apply_upgrade(index)
-  local result = attack_upgrade_system.apply_upgrade(index)
-  STATE.choice_panel_hidden = false
-  reward_system.sync_mark_effects()
-  reward_system.sync_treasure_effects()
-  try_open_queued_treasure_round()
-  return result
-end
-
 local function apply_bond_choice(index)
   BondSystem.apply_choice(create_bond_env(), index)
   STATE.choice_panel_hidden = false
@@ -1903,11 +1874,6 @@ end
 
 local function apply_round_choice(index)
   local kind = get_pending_round_choice_kind()
-
-  if kind == 'upgrade' then
-    apply_upgrade(index)
-    return true
-  end
 
   if kind == 'gear' then
     if GearUpgrades.apply_affix_choice({
@@ -1957,12 +1923,6 @@ end
 local function refresh_current_choice()
   STATE.choice_panel_hidden = false
   local kind = get_pending_round_choice_kind()
-
-  if kind == 'upgrade' then
-    return attack_upgrade_system and attack_upgrade_system.refresh_upgrade_choices
-        and attack_upgrade_system.refresh_upgrade_choices()
-        or false
-  end
 
   if kind == 'gear' then
     return GearUpgrades.refresh_affix_choices({
@@ -2029,7 +1989,6 @@ debug_actions_system = DebugActionsSystem.create({
   ATTACK_SKILL_BLUEPRINTS = ATTACK_SKILL_BLUEPRINTS,
   unlock_attack_skill = unlock_attack_skill,
   show_attack_skill_loadout = show_attack_skill_loadout,
-  show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
   force_spawn_boss = function()
     return battlefield_system.force_spawn_boss()
@@ -2088,9 +2047,6 @@ debug_tools_system = DebugToolsSystem.create({
   end,
   debug_unlock_all_attack_skills = function()
     return debug_actions_system.debug_unlock_all_attack_skills()
-  end,
-  debug_open_upgrade_panel = function()
-    return debug_actions_system.debug_open_upgrade_panel()
   end,
   debug_trigger_bond_draw = function()
     return debug_actions_system.debug_trigger_bond_draw()
@@ -2283,7 +2239,6 @@ runtime_hud_system = RuntimeHudSystem.create({
   get_player = get_player,
   hero_attr_system = hero_attr_system,
   message = message,
-  show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
   show_bond_progress = function()
     return open_bond_card_album()
@@ -2707,7 +2662,6 @@ input_events_system = BootInput.create({
     return attr_choice_system and attr_choice_system.grant_diamond and attr_choice_system.grant_diamond(count, level) or
         nil
   end,
-  show_upgrade_choices = show_upgrade_choices,
   try_bond_draw = try_bond_draw,
   show_bond_progress = function()
     return open_bond_card_album()

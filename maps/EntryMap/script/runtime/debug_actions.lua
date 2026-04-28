@@ -9,7 +9,6 @@ function M.create(env)
   local ATTACK_SKILL_BLUEPRINTS = env.ATTACK_SKILL_BLUEPRINTS or { list = {} }
   local unlock_attack_skill = env.unlock_attack_skill
   local show_attack_skill_loadout = env.show_attack_skill_loadout
-  local show_upgrade_choices = env.show_upgrade_choices
   local try_bond_draw = env.try_bond_draw
   local force_spawn_boss = env.force_spawn_boss
   local execute_enemy = env.execute_enemy
@@ -42,12 +41,10 @@ function M.create(env)
 
     STATE.resources.gold = STATE.resources.gold + 500
     STATE.resources.wood = STATE.resources.wood + 300
-    STATE.skill_points = STATE.skill_points + 5
     debug_message(string.format(
-      'Debug resources added: gold %d, wood %d, skill points %d.',
+      'Debug resources added: gold %d, wood %d.',
       STATE.resources.gold,
-      STATE.resources.wood,
-      STATE.skill_points
+      STATE.resources.wood
     ))
   end
 
@@ -65,14 +62,12 @@ function M.create(env)
       STATE.hero_progress.level = STATE.hero_progress.level + 1
       STATE.hero_progress.exp = 0
       sync_hero_progression()
-      STATE.skill_points = STATE.skill_points + 1
       granted = granted + 1
     end
 
     debug_message(string.format(
-      'Debug levels granted: Lv%d, skill points %d.',
-      STATE.hero_progress.level,
-      STATE.skill_points
+      'Debug levels granted: Lv%d.',
+      STATE.hero_progress.level
     ))
   end
 
@@ -91,24 +86,11 @@ function M.create(env)
       end
     end
 
-    STATE.skill_points = STATE.skill_points + 3
     debug_message(string.format(
-      'Debug attack skills unlocked: new %d, skill points %d.',
-      unlocked,
-      STATE.skill_points
+      'Debug attack skills unlocked: new %d.',
+      unlocked
     ))
     show_attack_skill_loadout()
-  end
-
-  function api.debug_open_upgrade_panel()
-    if not guard_battle() then
-      return
-    end
-    if STATE.skill_points <= 0 then
-      STATE.skill_points = 1
-      debug_message('Skill points were empty; auto-added 1 point.')
-    end
-    show_upgrade_choices()
   end
 
   function api.debug_trigger_bond_draw()
