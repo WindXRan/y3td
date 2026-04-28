@@ -381,7 +381,7 @@ function M.create(env)
           lines = build_overview_summary_lines(),
         },
         skills = {
-          title = '攻击技能',
+          title = '普攻技能',
           lines = build_attack_skill_overview_lines(),
         },
         bonds = {

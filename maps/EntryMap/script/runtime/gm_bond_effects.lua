@@ -26,6 +26,9 @@ function M.create(env)
   local set_force_special_effects_100 = env.set_force_special_effects_100
   local is_force_special_effects_100 = env.is_force_special_effects_100
   local run_bond_self_test = env.run_bond_self_test
+  local set_n0_activation_mode = env.set_n0_activation_mode
+  local set_n0_single_bond_name = env.set_n0_single_bond_name
+  local restart_n0_auto_acceptance = env.restart_n0_auto_acceptance
 
   local function trim(text)
     return tostring(text or ''):gsub('^%s+', ''):gsub('%s+$', '')
@@ -55,6 +58,79 @@ function M.create(env)
 
   local function debug_message(text)
     message('[DEBUG] ' .. tostring(text))
+  end
+
+  local function normalize_n0_mode(raw_mode)
+    local mode = string.lower(trim(raw_mode))
+    if mode == 'single' or mode == 'one' then
+      return 'single'
+    end
+    if mode == 'none' or mode == 'off' then
+      return 'none'
+    end
+    return 'all'
+  end
+
+  local function get_n0_mode_and_single_bond()
+    local n0_runtime = STATE and STATE.battle_auto_acceptance or nil
+    local stage_def = STATE and STATE.current_stage_def or nil
+    local mode = normalize_n0_mode(
+      (n0_runtime and n0_runtime.activation_mode_override)
+      or (stage_def and stage_def.n0_activation_mode)
+      or 'all'
+    )
+    local single_bond_name = trim(
+      (n0_runtime and n0_runtime.single_bond_name_override)
+      or (stage_def and stage_def.n0_single_bond)
+    )
+    return mode, single_bond_name
+  end
+
+  local function apply_n0_mode(mode, bond_name)
+    if not set_n0_activation_mode then
+      debug_message('未注入 N0 模式控制回调。')
+      return false
+    end
+    local resolved_mode = normalize_n0_mode(mode)
+    local resolved_bond_name = trim(bond_name)
+
+    if resolved_mode == 'single' then
+      if resolved_bond_name == '' then
+        debug_message('单羁绊模式需要指定羁绊名。')
+        return false
+      end
+      if not set_n0_single_bond_name then
+        debug_message('未注入 N0 单羁绊回调。')
+        return false
+      end
+    end
+
+    set_n0_activation_mode(resolved_mode)
+    if set_n0_single_bond_name then
+      if resolved_mode == 'single' then
+        set_n0_single_bond_name(resolved_bond_name)
+      else
+        set_n0_single_bond_name('')
+      end
+    end
+
+    local restarted = false
+    if restart_n0_auto_acceptance then
+      restarted = restart_n0_auto_acceptance() == true
+    end
+    local mode_label_map = {
+      all = '全开',
+      single = '单羁绊',
+      none = '灵/零羁绊',
+    }
+    local mode_label = mode_label_map[resolved_mode] or resolved_mode
+    debug_message(string.format(
+      'N0 模式已切换：%s%s%s',
+      mode_label,
+      resolved_mode == 'single' and string.format('（%s）', resolved_bond_name) or '',
+      restarted and '（当前战斗已立即生效）' or '（下一次 N0 战斗生效）'
+    ))
+    return true
   end
 
   local function get_runtime()
@@ -271,6 +347,12 @@ function M.create(env)
       selected_card and string.format('单卡：%s', tostring(selected_card.name or selected_card.id)) or '单卡：未选择',
       selected_card and string.format('特殊效果：%s', special_active and '已获得' or '未获得') or '特殊效果：未获得',
     }
+    local n0_mode, n0_single = get_n0_mode_and_single_bond()
+    lines[#lines + 1] = string.format(
+      'N0模式：%s%s',
+      n0_mode,
+      n0_single ~= '' and string.format('（单特效=%s）', n0_single) or ''
+    )
     local activation_desc = get_activation_desc_by_bond(bond_name)
     if activation_desc ~= '' then
       lines[#lines + 1] = '羁绊激活描述：'
@@ -290,9 +372,11 @@ function M.create(env)
     local need = get_required_cards(effect.bond_name)
     local effect_id = 'initial_bond_set_' .. tostring(effect.bond_name)
     local active = runtime and runtime.modifier_pool_active_effects and runtime.modifier_pool_active_effects[effect_id] == true
+    local mode, single_bond_name = get_n0_mode_and_single_bond()
+    local is_single_target = mode == 'single' and tostring(effect.bond_name or '') == tostring(single_bond_name or '')
     local selected = effect == select(1, get_selected_bond(ui))
-    local prefix = selected and '>' or ' '
-    local suffix = active and '已激活' or string.format('%d/%d', owned, need)
+    local prefix = is_single_target and '*' or (selected and '>' or ' ')
+    local suffix = is_single_target and 'N0单羁绊' or (active and '已激活' or string.format('%d/%d', owned, need))
     return string.format('%s%s [%s]', prefix, tostring(effect.bond_name or '未命名'), suffix)
   end
 
@@ -363,7 +447,7 @@ function M.create(env)
     create_text(panel, BOND_GM_PANEL_INTRO, 300, 514, 640, 22, 14, { 160, 186, 214, 255 })
 
     create_rect(panel, 16, 282, 450, 212, { 14, 27, 42, 235 })
-    create_text(panel, '羁绊列表', 28, 468, 140, 22, 17, { 245, 248, 255, 255 })
+    create_text(panel, '单羁绊按钮（点击直达）', 28, 468, 300, 22, 17, { 245, 248, 255, 255 })
     for i = 1, 16 do
       local row = math.floor((i - 1) / 2)
       local col = (i - 1) % 2
@@ -376,6 +460,12 @@ function M.create(env)
         26,
         function()
           ui.selected_bond_index = i
+          local bonds = BondModifierPool.activation_effects or {}
+          local effect = bonds[i]
+          local bond_name = trim(effect and effect.bond_name or '')
+          if bond_name ~= '' then
+            apply_n0_mode('single', bond_name)
+          end
         end,
         { 28, 56, 86, 230 }
       )
@@ -435,11 +525,8 @@ function M.create(env)
       execute_activate_bond(bond.bond_name, false)
     end, { 100, 82, 126, 235 })
 
-    create_button(panel, '打开特殊效果大全', 672, 50, 278, 40, function()
-      ui.encyclopedia_visible = true
-      if refresh_encyclopedia then
-        refresh_encyclopedia()
-      end
+    ui.n0_all_button = create_button(panel, 'N0全开（立即生效）', 672, 50, 278, 40, function()
+      apply_n0_mode('all')
     end, { 64, 96, 132, 235 })
 
     ui.force_effect_button = create_button(panel, '', 672, 258, 278, 40, function()
@@ -451,6 +538,10 @@ function M.create(env)
       set_force_special_effects_100(not current)
       debug_message(string.format('特殊效果100%%触发：%s', not current and '开启' or '关闭'))
     end, { 88, 108, 62, 235 })
+
+    ui.n0_none_button = create_button(panel, 'N0灵/零羁绊（立即生效）', 16, 4, 640, 40, function()
+      apply_n0_mode('none')
+    end, { 70, 92, 116, 235 })
 
     create_button(panel, '关闭', 672, 4, 278, 40, function()
       ui.visible = false
@@ -650,6 +741,17 @@ function M.create(env)
     if is_alive(ui.force_effect_button) then
       local on = is_force_special_effects_100 and is_force_special_effects_100() or false
       set_text(ui.force_effect_button, on and '关闭特殊效果100%触发' or '开启特殊效果100%触发')
+    end
+    if is_alive(ui.n0_all_button) then
+      local mode, single_bond_name = get_n0_mode_and_single_bond()
+      set_text(ui.n0_all_button, mode == 'all' and 'N0全开（当前）' or 'N0全开（立即生效）')
+      if is_alive(ui.n0_none_button) then
+        local label = mode == 'none' and 'N0灵/零羁绊（当前）' or 'N0灵/零羁绊（立即生效）'
+        if mode == 'single' then
+          label = string.format('N0灵/零羁绊（当前单羁绊:%s）', trim(single_bond_name) ~= '' and single_bond_name or '未指定')
+        end
+        set_text(ui.n0_none_button, label)
+      end
     end
     if refresh_encyclopedia then
       refresh_encyclopedia()

@@ -1217,9 +1217,6 @@ function M.create(env)
     if runtime.awaiting_choice or runtime.awaiting_replace then
       return false
     end
-    if STATE.awaiting_upgrade then
-      return false
-    end
     if STATE.gear_state and STATE.gear_state.awaiting_choice then
       return false
     end

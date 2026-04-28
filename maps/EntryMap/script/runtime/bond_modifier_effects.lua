@@ -4,6 +4,7 @@ local BondVisualEditorIds = require 'data.object_tables.bond_visual_editor_ids'
 local AttackSkillObjects = require 'entry_objects.attack_skills'
 local BondModifierSpecialEffectsFactory = require 'runtime.bond_modifier_special_effects'
 local BondModifierCoreEffectsFactory = require 'runtime.bond_modifier_core_effects'
+local SkillDamageTemplates = require 'runtime.skill_damage_templates'
 
 local M = {}
 local FORCE_SPECIAL_EFFECTS_100 = false
@@ -110,29 +111,18 @@ local DEFAULT_VISUAL = {
   projectile_height = 0,
   projectile_target_distance = 0,
 }
-local VISUAL_FORCE_BY_BOND = {
-  ['冰霜法师'] = {
-    projectile_key = 201392022,
-    particle_key = 104964,
-    projectile_speed = 1480,
-    projectile_time = 0.95,
-    projectile_target_distance = 38,
-  },
-  ['寒冰法师'] = {
-    projectile_key = 201392022,
-    particle_key = 104964,
-    projectile_speed = 1480,
-    projectile_time = 0.95,
-    projectile_target_distance = 38,
-  },
-  ['雷电法王'] = {
-    projectile_key = 201392033,
-    particle_key = 102780,
-    projectile_speed = 1080,
-    projectile_time = 1.18,
-    projectile_target_distance = 46,
-  },
-}
+local VISUAL_FORCE_BY_BOND = {}
+for bond_name, visual_entry in pairs(BondVisualEditorIds.visual_by_bond or {}) do
+  if type(visual_entry) == 'table' then
+    VISUAL_FORCE_BY_BOND[bond_name] = {
+      projectile_key = to_positive_number(visual_entry.projectile_key),
+      particle_key = to_positive_number(visual_entry.particle_key),
+      projectile_speed = tonumber(visual_entry.projectile_speed),
+      projectile_time = tonumber(visual_entry.projectile_time),
+      projectile_target_distance = tonumber(visual_entry.target_distance),
+    }
+  end
+end
 
 local function build_bond_visual(opts)
   opts = opts or {}
@@ -193,6 +183,10 @@ local PROJECTILE_EDITOR_PATHS = {
 
 local PROJECTILE_EXIST_CACHE = {}
 local UNIQUE_PROJECTILE_POOL = {
+  201391101, 201391102, 201391103, 201391104,
+  201391105, 201391106, 201391107, 201391108,
+  201391109, 201391110, 201391111, 201391112,
+  201391113, 201391114, 201391115, 201391116,
   201392001, 201392002, 201392003,
   201392011, 201392012, 201392013,
   201392021, 201392022, 201392023,
@@ -1025,6 +1019,23 @@ local function get_three_attr_value(env)
   return get_hero_attr(env, '力量') + get_hero_attr(env, '敏捷') + get_hero_attr(env, '智力')
 end
 
+local function get_damage_template_api(env)
+  if not env then
+    return nil
+  end
+  env.__bond_damage_template_api = env.__bond_damage_template_api or SkillDamageTemplates.create({
+    y3 = env.y3,
+    deal_skill_damage = function(target, amount, damage_meta, visual)
+      env.deal_skill_damage(target, amount, damage_meta, visual)
+    end,
+    get_enemies_in_range = env.get_enemies_in_range,
+    is_active_enemy = env.is_active_enemy or function(unit)
+      return unit and unit.is_exist and unit:is_exist()
+    end,
+  })
+  return env.__bond_damage_template_api
+end
+
 local function damage_target(env, target, amount, damage_type, metric)
   if not env or not env.deal_skill_damage or not target or not target.is_exist or not target:is_exist() then
     return false
@@ -1039,25 +1050,45 @@ local function damage_target(env, target, amount, damage_type, metric)
     visual.metric_scope = 'bond'
     visual.metric_key = metric
   end
-  env.deal_skill_damage(target, math.max(1, env.round_number and env.round_number(amount) or math.floor(amount)), damage_type or '物理', {
+  local api = get_damage_template_api(env)
+  if not api or not api.single then
+    return false
+  end
+  return api.single(target, math.max(1, env.round_number and env.round_number(amount) or math.floor(amount)), damage_type or '物理', {
     text_type = visual.text_type,
     metric_scope = visual.metric_scope,
     metric_key = visual.metric_key,
     -- 羁绊触发伤害不应再次进入“普攻首击”链路，否则会递归触发 notify_basic_attack
     skip_hunter_first_hit = true,
   })
-  return true
 end
 
 local function damage_area(env, center, radius, amount, damage_type, except_unit, max_count, metric)
-  if not env or not env.get_enemies_in_range or not center then
+  if not env or not center then
     return false
   end
-  local hit = false
-  for _, unit in ipairs(env.get_enemies_in_range(center, radius or 320, except_unit, max_count)) do
-    hit = damage_target(env, unit, amount, damage_type, metric) or hit
+  local visual = {
+    text_type = damage_type == '法术' and 'magic' or 'physics',
+  }
+  if type(metric) == 'table' then
+    visual.metric_scope = metric.scope
+    visual.metric_key = metric.key
+  elseif type(metric) == 'string' and metric ~= '' then
+    visual.metric_scope = 'bond'
+    visual.metric_key = metric
   end
-  return hit
+  visual.skip_hunter_first_hit = true
+
+  local api = get_damage_template_api(env)
+  if not api or not api.area then
+    return false
+  end
+  local hit_units = api.area(center, radius or 320, math.max(1, env.round_number and env.round_number(amount) or math.floor(amount)), damage_type or '物理', {
+    except_unit = except_unit,
+    max_count = max_count,
+    visual = visual,
+  })
+  return #hit_units > 0
 end
 
 collect_units_in_line = function(env, origin_point, impact_point, max_distance, line_width, max_hits, fallback_target)
@@ -1457,8 +1488,8 @@ local function trigger_dragon_fireball_effect(env, runtime, target, effect_state
   end
   local visual_cfg = get_visual_config('龙骑士')
   -- 火龙效果强制使用专属火球弹道，避免映射异常时回退到默认普攻弓箭弹道
-  visual_cfg.projectile_key = 201392013
-  visual_cfg.particle_key = to_positive_number(visual_cfg.particle_key) or 102877
+  visual_cfg.projectile_key = 201391110
+  visual_cfg.particle_key = to_positive_number(visual_cfg.particle_key) or 104627
   visual_cfg.line_particle_key = to_positive_number(visual_cfg.line_particle_key) or visual_cfg.particle_key
   visual_cfg.projectile_speed = tonumber(visual_cfg.projectile_speed) or 760
   visual_cfg.projectile_time = tonumber(visual_cfg.projectile_time) or 1.10

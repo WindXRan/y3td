@@ -2361,6 +2361,26 @@ gm_bond_effects_system = GmBondEffectsSystem.create({
       message = message,
     })
   end,
+  set_n0_activation_mode = function(mode)
+    if battle_auto_acceptance_system and battle_auto_acceptance_system.set_activation_mode then
+      battle_auto_acceptance_system.set_activation_mode(mode)
+      return true
+    end
+    return false
+  end,
+  set_n0_single_bond_name = function(bond_name)
+    if battle_auto_acceptance_system and battle_auto_acceptance_system.set_single_bond_name then
+      battle_auto_acceptance_system.set_single_bond_name(bond_name)
+      return true
+    end
+    return false
+  end,
+  restart_n0_auto_acceptance = function()
+    if battle_auto_acceptance_system and battle_auto_acceptance_system.restart_current_run then
+      return battle_auto_acceptance_system.restart_current_run() == true
+    end
+    return false
+  end,
   get_game_time = function()
     if y3 and y3.game and y3.game.current_game_run_time then
       return tonumber(y3.game.current_game_run_time()) or 0

@@ -1,4 +1,5 @@
 local M = {}
+local SkillDamageTemplates = require 'runtime.skill_damage_templates'
 
 function M.create(env)
   local STATE = env.STATE
@@ -29,6 +30,14 @@ function M.create(env)
   local deal_skill_damage = env.deal_skill_damage
   local hero_attr_system = env.hero_attr_system
   local hero_tujian_panel_system = env.hero_tujian_panel_system
+  local skill_damage_api = SkillDamageTemplates.create({
+    y3 = y3,
+    deal_skill_damage = function(target, amount, damage_meta, visual)
+      deal_skill_damage(target, amount, damage_meta, visual)
+    end,
+    get_enemies_in_range = get_enemies_in_range,
+    is_active_enemy = is_active_enemy,
+  })
 
   local function get_hero_attack_value()
     if not STATE.hero or not STATE.hero:is_exist() then
@@ -147,9 +156,7 @@ function M.create(env)
 
       local attack_value = get_hero_attack_value()
       local damage = skill.artillery_base + attack_value * skill.artillery_ratio
-      for _, unit in ipairs(get_enemies_in_range(anchor, skill.artillery_radius)) do
-        deal_skill_damage(unit, damage, '法术')
-      end
+      skill_damage_api.area(anchor, skill.artillery_radius, damage, '法术')
     end)
 
     y3.ltimer.loop(0.25, function()

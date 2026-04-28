@@ -14,6 +14,41 @@ function M.create(env)
   local set_force_special_effects_100 = env.set_force_special_effects_100
   local run_bond_self_test = env.run_bond_self_test
   local get_game_time = env.get_game_time
+  -- N0 默认按真实触发率运行；如需强制 100% 触发，仅在构造时显式传入 true。
+  local force_special_effects_100_in_n0 = env.force_special_effects_100_in_n0 == true
+  local DEFAULT_N0_ACTIVATION_MODE = 'all'
+
+  local function parse_bool(value, default_value)
+    if value == nil then
+      return default_value == true
+    end
+    if type(value) == 'boolean' then
+      return value
+    end
+    local raw = string.lower(tostring(value))
+    if raw == '1' or raw == 'true' or raw == 'yes' or raw == 'on' then
+      return true
+    end
+    if raw == '0' or raw == 'false' or raw == 'no' or raw == 'off' then
+      return false
+    end
+    return default_value == true
+  end
+
+  local function trim_text(value)
+    return tostring(value or ''):gsub('^%s+', ''):gsub('%s+$', '')
+  end
+
+  local function normalize_activation_mode(raw)
+    local mode = string.lower(trim_text(raw))
+    if mode == 'single' or mode == 'one' then
+      return 'single'
+    end
+    if mode == 'none' or mode == 'off' then
+      return 'none'
+    end
+    return 'all'
+  end
 
   local function ensure_runtime()
     STATE.battle_auto_acceptance = STATE.battle_auto_acceptance or {
@@ -34,6 +69,9 @@ function M.create(env)
         last_emit_time = 0,
         evaluated = false,
       },
+      force_special_effects_owned = false,
+      activation_mode_override = nil,
+      single_bond_name_override = nil,
     }
     return STATE.battle_auto_acceptance
   end
@@ -246,15 +284,56 @@ function M.create(env)
     return nil
   end
 
-  local function activate_all_bond_effects()
+  local function resolve_n0_activation_plan(runtime)
+    local stage_def = STATE and STATE.current_stage_def or nil
+    local mode = normalize_activation_mode(
+      runtime.activation_mode_override
+      or (stage_def and stage_def.n0_activation_mode)
+      or DEFAULT_N0_ACTIVATION_MODE
+    )
+    local target_bond_name = trim_text(runtime.single_bond_name_override or (stage_def and stage_def.n0_single_bond))
+
+    local ordered_bonds = {}
+    local bond_exists = {}
+    for _, effect in ipairs(BondModifierPool.activation_effects or {}) do
+      local bond_name = trim_text(effect and effect.bond_name)
+      if bond_name ~= '' and not bond_exists[bond_name] then
+        bond_exists[bond_name] = true
+        ordered_bonds[#ordered_bonds + 1] = bond_name
+      end
+    end
+
+    if mode == 'none' then
+      return mode, {}
+    end
+    if mode == 'single' then
+      if target_bond_name ~= '' and bond_exists[target_bond_name] then
+        return mode, { target_bond_name }
+      end
+      if #ordered_bonds <= 0 then
+        return mode, {}
+      end
+      -- 未指定具体羁绊时按 run_id 轮换单羁绊，便于多局覆盖不同特殊效果。
+      local run_id = tonumber(runtime and runtime.run_id) or 1
+      local index = ((math.max(1, run_id) - 1) % #ordered_bonds) + 1
+      return mode, { ordered_bonds[index] }
+    end
+
+    return mode, ordered_bonds
+  end
+
+  local function activate_bond_effects_by_plan(runtime)
     local ok_count = 0
     local fail_count = 0
-    for _, effect in ipairs(BondModifierPool.activation_effects or {}) do
-      local bond_name = tostring(effect and effect.bond_name or '')
+    local activated_bonds = {}
+    local mode, bond_names = resolve_n0_activation_plan(runtime)
+    for _, bond_name in ipairs(bond_names or {}) do
+      bond_name = tostring(bond_name or '')
       if bond_name ~= '' then
         local ok = activate_modifier_bond_effect and activate_modifier_bond_effect(bond_name, true) or false
         if ok == true then
           ok_count = ok_count + 1
+          activated_bonds[#activated_bonds + 1] = bond_name
         else
           fail_count = fail_count + 1
           message(string.format('[auto_acceptance][FAIL] 羁绊激活失败：%s', bond_name))
@@ -264,7 +343,58 @@ function M.create(env)
     return {
       ok = ok_count,
       fail = fail_count,
+      mode = mode,
+      activated_bonds = activated_bonds,
     }
+  end
+
+  local OPENING_ELAPSED_BY_BOND = {
+    ['火法师'] = 5,
+    ['冰霜法师'] = 5,
+    ['寒冰法师'] = 5,
+    ['雷电法王'] = 1,
+    ['猎人'] = 30,
+    ['骷髅法师'] = 30,
+  }
+
+  local function apply_opening_no_cooldown(runtime)
+    local stage_def = STATE and STATE.current_stage_def or nil
+    local enabled = parse_bool(stage_def and stage_def.n0_opening_no_cooldown, true)
+    if not enabled then
+      return
+    end
+
+    for _, effect_state in pairs(runtime and runtime.modifier_pool_effect_state or {}) do
+      if type(effect_state) == 'table' then
+        local bond_name = tostring(effect_state.bond_name or '')
+        local elapsed = OPENING_ELAPSED_BY_BOND[bond_name]
+        if elapsed and elapsed > 0 then
+          effect_state.elapsed = math.max(tonumber(effect_state.elapsed) or 0, elapsed)
+        end
+        effect_state.cooldown = 0
+      end
+    end
+
+    local attack_state = STATE and STATE.attack_skill_state
+    if attack_state and attack_state.by_id then
+      for skill_id, skill in pairs(attack_state.by_id) do
+        if skill_id ~= 'basic_attack' and type(skill) == 'table' then
+          skill.cooldown_remaining = 0
+        end
+      end
+    end
+
+    if STATE and STATE.auto_active_effects and STATE.auto_active_effects.cooldowns then
+      for effect_id in pairs(STATE.auto_active_effects.cooldowns) do
+        STATE.auto_active_effects.cooldowns[effect_id] = 0
+      end
+    end
+
+    if STATE and STATE.hero_form_skill_runtime and STATE.hero_form_skill_runtime.cooldowns then
+      for skill_id in pairs(STATE.hero_form_skill_runtime.cooldowns) do
+        STATE.hero_form_skill_runtime.cooldowns[skill_id] = 0
+      end
+    end
   end
 
   local function spawn_dummy_targets(runtime)
@@ -367,10 +497,17 @@ function M.create(env)
     end
 
     if set_force_special_effects_100 then
-      set_force_special_effects_100(true)
+      if force_special_effects_100_in_n0 then
+        set_force_special_effects_100(true)
+        runtime.force_special_effects_owned = true
+      else
+        set_force_special_effects_100(false)
+        runtime.force_special_effects_owned = false
+      end
     end
     local self_test = run_bond_self_test and run_bond_self_test() or { total = 0, passed = 0, failed = 0 }
-    local activation = activate_all_bond_effects()
+    local activation = activate_bond_effects_by_plan(runtime)
+    apply_opening_no_cooldown(runtime)
     runtime.activation_report = {
       self_test = self_test,
       activation = activation,
@@ -384,15 +521,18 @@ function M.create(env)
       tostring(self_test.failed or 0)
     ))
     append_log(runtime, string.format(
-      'activation: ok=%d fail=%d',
+      'activation: mode=%s ok=%d fail=%d bonds=%s',
+      tostring(activation.mode or 'all'),
       tonumber(activation.ok) or 0,
-      tonumber(activation.fail) or 0
+      tonumber(activation.fail) or 0,
+      table.concat(activation.activated_bonds or {}, '|')
     ))
     message(string.format(
-      '[auto_acceptance] 特效自动验收启动：自检 pass=%s/%s fail=%s，羁绊激活 ok=%d fail=%d',
+      '[auto_acceptance] 特效自动验收启动：自检 pass=%s/%s fail=%s，羁绊激活 mode=%s ok=%d fail=%d',
       tostring(self_test.passed or 0),
       tostring(self_test.total or 0),
       tostring(self_test.failed or 0),
+      tostring(activation.mode or 'all'),
       tonumber(activation.ok) or 0,
       tonumber(activation.fail) or 0
     ))
@@ -415,6 +555,10 @@ function M.create(env)
         flush_report_to_message(runtime)
         clear_runtime_units(runtime)
       end
+      if set_force_special_effects_100 and runtime.force_special_effects_owned then
+        set_force_special_effects_100(false)
+        runtime.force_special_effects_owned = false
+      end
       runtime.phase_started = false
       runtime.initialized = false
       runtime.phase_start_time = nil
@@ -427,6 +571,10 @@ function M.create(env)
         emit_skill_audit(runtime, true)
         flush_report_to_message(runtime)
         clear_runtime_units(runtime)
+      end
+      if set_force_special_effects_100 and runtime.force_special_effects_owned then
+        set_force_special_effects_100(false)
+        runtime.force_special_effects_owned = false
       end
       runtime.phase_started = false
       runtime.initialized = false
@@ -497,6 +645,33 @@ function M.create(env)
       if cast > 0 then
         record_metric(runtime, scope, key, 'cast', cast)
       end
+    end,
+    set_activation_mode = function(mode)
+      local runtime = ensure_runtime()
+      runtime.activation_mode_override = normalize_activation_mode(mode)
+    end,
+    set_single_bond_name = function(bond_name)
+      local runtime = ensure_runtime()
+      runtime.single_bond_name_override = trim_text(bond_name)
+    end,
+    restart_current_run = function()
+      local runtime = ensure_runtime()
+      clear_runtime_units(runtime)
+      if set_force_special_effects_100 and runtime.force_special_effects_owned then
+        set_force_special_effects_100(false)
+        runtime.force_special_effects_owned = false
+      end
+      runtime.phase_started = false
+      runtime.initialized = false
+      runtime.phase_start_time = nil
+      runtime.hero_anchor = nil
+      runtime.skill_audit = {
+        by_source = {},
+        last_emit_time = 0,
+        evaluated = false,
+      }
+      runtime.log_lines = {}
+      return true
     end,
   }
 end

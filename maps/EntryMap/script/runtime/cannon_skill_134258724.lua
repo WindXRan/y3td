@@ -1,4 +1,5 @@
 local M = {}
+local SkillDamageTemplates = require 'runtime.skill_damage_templates'
 
 local ABILITY_ID = 134258724
 local DAMAGE_RATIO = 2.0
@@ -12,6 +13,16 @@ function M.create(env)
   local deal_skill_damage = env.deal_skill_damage
 
   local api = {}
+  local skill_damage_api = SkillDamageTemplates.create({
+    y3 = y3,
+    deal_skill_damage = function(target, amount, damage_meta, visual)
+      deal_skill_damage(target, amount, damage_meta, visual)
+    end,
+    get_enemies_in_range = get_enemies_in_range,
+    is_active_enemy = function(unit)
+      return unit and unit.is_exist and unit:is_exist()
+    end,
+  })
 
   local function is_valid_unit(unit)
     return unit and unit.is_exist and unit:is_exist()
@@ -73,16 +84,16 @@ function M.create(env)
       return
     end
 
-    for _, unit in ipairs(get_enemies_in_range(center, RADIUS)) do
-      deal_skill_damage(unit, damage, {
-        damage_type = '物理',
-        damage_form = 'weapon',
-        element = 'none',
-        damage_label = '开炮',
-      }, {
+    skill_damage_api.area(center, RADIUS, damage, {
+      damage_type = '物理',
+      damage_form = 'weapon',
+      element = 'none',
+      damage_label = '开炮',
+    }, {
+      visual = {
         text_type = 'physics',
-      })
-    end
+      },
+    })
   end
 
   function api.register()

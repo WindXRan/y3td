@@ -33,7 +33,7 @@ local TRIGGER_LABELS = {
   periodic = '周期检测',
   on_kill = '击杀触发',
   on_basic_attack_count = '普攻计数触发',
-  on_attack_skill_cast = '攻击技能施放触发',
+  on_attack_skill_cast = '普攻技能施放触发',
 }
 
 local SOURCE_LABELS = {
@@ -55,13 +55,13 @@ local SOURCE_ID_LABELS = {
 
 local FUNCTION_HINTS = {
   spell_burst = '每隔冷却时间寻找范围内敌人，以智力倍率造成范围魔法伤害；拥有强化路线时会追加爆发次数并扩大半径。',
-  haste_reset = '施放非普攻类攻击技能时按概率将该技能冷却清零，用于验证急速流派的技能连发。',
+  haste_reset = '施放非基础普攻技能时按概率将该技能冷却清零，用于验证急速流派的技能连发。',
   fighting_spirit_field = '周期性扫过大范围敌人，以力量倍率和目标最大生命附加伤害造成物理伤害，并短暂降低护甲与物攻、尝试挂战意 Buff。',
   rapid_overdrive = '普攻计数触发后按概率给英雄短时间攻击速度加成，并尝试挂疾速超载 Buff。',
   blood_demon_burst = '英雄每损失一段生命比例时触发，治疗英雄并对近距离敌人造成最大生命比例物理伤害、眩晕和减速。',
   charge_breaker_rally = '击杀触发，为英雄提供短时间属性加成并尝试挂破军振奋 Buff。',
   bloodrage_stomp = '普攻计数触发，以英雄攻击结算值为基础对周围敌人造成范围物理伤害。',
-  starfire_echo = '施放攻击技能时寻找目标发射追踪投射物，命中后造成魔法伤害。',
+  starfire_echo = '施放普攻技能时寻找目标发射追踪投射物，命中后造成魔法伤害。',
 }
 
 local function format_percent(value)

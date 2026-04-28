@@ -4,6 +4,13 @@ local function default_is_enemy(unit)
   return unit and unit.is_exist and unit:is_exist()
 end
 
+local function resolve_value(value, context, ...)
+  if type(value) == 'function' then
+    return value(context, ...)
+  end
+  return value
+end
+
 function M.create(env)
   env = env or {}
   local y3 = env.y3
@@ -37,6 +44,52 @@ function M.create(env)
     for _, unit in ipairs(units) do
       if api.single(unit, amount, damage_meta, options.visual) then
         hits[#hits + 1] = unit
+      end
+    end
+    return hits
+  end
+
+  function api.chain(targets, amount, damage_meta, options)
+    options = options or {}
+    local source = targets
+    if source == nil then
+      source = options.targets
+    end
+    if type(source) == 'function' then
+      source = source()
+    end
+    if type(source) ~= 'table' then
+      return {}
+    end
+
+    local hits = {}
+    local total = #source
+    for index, target in ipairs(source) do
+      local context = {
+        index = index,
+        total = total,
+        target = target,
+        amount = amount,
+        damage_meta = damage_meta,
+      }
+      local resolved_amount = resolve_value(options.amount, context)
+      if resolved_amount == nil then
+        resolved_amount = amount
+      end
+      context.amount = resolved_amount
+      context.visual = resolve_value(options.visual, context)
+
+      if not options.before_hit or options.before_hit(context) ~= false then
+        if api.single(target, resolved_amount, damage_meta, context.visual) then
+          hits[#hits + 1] = target
+          context.hit_count = #hits
+          if options.on_hit then
+            options.on_hit(context)
+          end
+        end
+      end
+      if options.should_stop and options.should_stop(context) then
+        break
       end
     end
     return hits
@@ -89,6 +142,92 @@ function M.create(env)
     for current = 1, count do
       callback(current, count)
     end
+  end
+
+  function api.area_ticks(interval, tick_count, damage_meta, options)
+    options = options or {}
+    api.ticks(interval, tick_count, function(current, total)
+      local context = {
+        current = current,
+        total = total,
+        damage_meta = damage_meta,
+      }
+      context.center = resolve_value(options.center, context)
+      context.radius = resolve_value(options.radius, context)
+      context.amount = resolve_value(options.amount, context)
+      context.except_unit = resolve_value(options.except_unit, context)
+      context.max_count = resolve_value(options.max_count, context)
+      context.visual = resolve_value(options.visual, context)
+
+      if options.before_tick and options.before_tick(context) == false then
+        return
+      end
+
+      context.hits = api.area(context.center, context.radius, context.amount, damage_meta, {
+        except_unit = context.except_unit,
+        max_count = context.max_count,
+        visual = context.visual,
+      })
+
+      if options.on_hit then
+        for hit_index, unit in ipairs(context.hits) do
+          context.hit_index = hit_index
+          context.hit_unit = unit
+          options.on_hit(context)
+        end
+      end
+
+      if options.after_tick then
+        options.after_tick(context)
+      end
+    end)
+    return true
+  end
+
+  function api.line_ticks(interval, tick_count, damage_meta, options)
+    options = options or {}
+    api.ticks(interval, tick_count, function(current, total)
+      local context = {
+        current = current,
+        total = total,
+        damage_meta = damage_meta,
+      }
+      context.origin_point = resolve_value(options.origin, context)
+      context.impact_point = resolve_value(options.impact, context)
+      context.amount = resolve_value(options.amount, context)
+      context.max_distance = resolve_value(options.max_distance, context)
+      context.line_width = resolve_value(options.line_width, context)
+      context.max_hits = resolve_value(options.max_hits, context)
+      context.except_unit = resolve_value(options.except_unit, context)
+      context.collect_units = resolve_value(options.collect_units, context)
+      context.visual = resolve_value(options.visual, context)
+
+      if options.before_tick and options.before_tick(context) == false then
+        return
+      end
+
+      context.hits = api.line(context.origin_point, context.impact_point, context.amount, damage_meta, {
+        max_distance = context.max_distance,
+        line_width = context.line_width,
+        max_hits = context.max_hits,
+        except_unit = context.except_unit,
+        collect_units = context.collect_units,
+        visual = context.visual,
+      })
+
+      if options.on_hit then
+        for hit_index, unit in ipairs(context.hits) do
+          context.hit_index = hit_index
+          context.hit_unit = unit
+          options.on_hit(context)
+        end
+      end
+
+      if options.after_tick then
+        options.after_tick(context)
+      end
+    end)
+    return true
   end
 
   return api
