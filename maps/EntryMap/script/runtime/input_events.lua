@@ -23,6 +23,7 @@ function M.create(env)
   local show_debug_hotkey_help = env.show_debug_hotkey_help
   local debug_actions_system = env.debug_actions_system
   local debug_tools_system = env.debug_tools_system
+  local gm_bond_effects_system = env.gm_bond_effects_system
   local toggle_talk_input = env.toggle_talk_input
   local toggle_inventory_panel = env.toggle_inventory_panel
   local open_save_panel = env.open_save_panel
@@ -40,21 +41,23 @@ function M.create(env)
         return
       end
 
+      local previous_level = tonumber(STATE.hero_progress.level) or 1
       local engine_level = math.min(STATE.hero:get_level(), get_hero_max_level())
-      if engine_level <= STATE.hero_progress.level then
+      if engine_level <= previous_level then
         sync_hero_progress_from_engine()
         STATE.hero:set_ability_point(0)
         return
       end
 
-      STATE.hero_progress.level = engine_level
       sync_hero_progress_from_engine()
+      local current_level = tonumber(STATE.hero_progress.level) or engine_level
       STATE.skill_points = 0
-      message(string.format('英雄升级至 %d。', STATE.hero_progress.level))
-      if grant_attr_diamond and STATE.hero_progress.level % 5 == 0 then
-        grant_attr_diamond(1, STATE.hero_progress.level)
+      if grant_attr_diamond and current_level % 5 == 0 then
+        grant_attr_diamond(1, current_level)
       end
-      try_queue_mark_node_for_level(STATE.hero_progress.level)
+      if try_queue_mark_node_for_level then
+        try_queue_mark_node_for_level(current_level)
+      end
     end)
     y3.game:event('键盘-按下', 'F', function()
       if not is_battle_active() then
@@ -250,8 +253,10 @@ function M.create(env)
         return debug_actions_system.debug_kill_all_active_enemies()
       end)
       register_debug_hotkey('F10', function()
-        debug_tools_system.ensure_gm_panel()
-        debug_tools_system.toggle_gm_panel()
+        if gm_bond_effects_system then
+          gm_bond_effects_system.ensure_board()
+          gm_bond_effects_system.toggle_board()
+        end
       end)
     end
   end

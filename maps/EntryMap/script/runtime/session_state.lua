@@ -37,10 +37,10 @@ function M.create(env)
   local disable_local_attack_preview = env.disable_local_attack_preview
 
   local function grant_equipment_drag_test_items(hero)
-    if not hero or not hero.add_item then
+    -- 关闭开局测试武器注入，避免和成长武器并存造成“多余武器槽位”。
+    if not hero then
       return false
     end
-
     if hero.get_bar_cnt and hero.set_bar_cnt then
       local target_bar_cnt = tonumber(EquipmentCatalog.bar_slot_count) or 6
       local current_bar_cnt = tonumber(hero:get_bar_cnt()) or 0
@@ -48,16 +48,7 @@ function M.create(env)
         hero:set_bar_cnt(target_bar_cnt)
       end
     end
-
-    local granted = false
-    for _, item_key in ipairs(EquipmentCatalog.test_loadout_ids or {}) do
-      local has_item = hero.has_item_by_key and hero:has_item_by_key(item_key) or false
-      if not has_item then
-        hero:add_item(item_key, '物品栏')
-        granted = true
-      end
-    end
-    return granted
+    return false
   end
 
   local function grant_test_attack_skills_on_stage_start()
@@ -203,6 +194,9 @@ function M.create(env)
   end
 
   local function rollback_stage_start(text)
+    if set_battle_hud_visible then
+      pcall(set_battle_hud_visible, false)
+    end
     if battlefield_system and battlefield_system.cleanup_battle_units then
       battlefield_system.cleanup_battle_units()
     end

@@ -1,7 +1,7 @@
 local CsvLoader = require 'data.csv_loader'
 local AttrEffect = require 'data.object_tables.attreffect'
 
-local node_rows = CsvLoader.read_rows('data_csv/bond_nodes.csv')
+local node_rows = CsvLoader.read_rows_optional('data_csv/bond_nodes.csv')
 local bond_effects = AttrEffect.by_source.bond_node or {}
 
 local function split_pipe_list(raw)

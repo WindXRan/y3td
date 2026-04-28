@@ -4,10 +4,11 @@ local AttrLog = require 'runtime.hero_attr_log'
 local M = {}
 
 local KV_PREFIX = '__hero_attr__:'
-local MAIN_STAT_ATTACK_RATIO = 5
+local MAIN_STAT_ATTACK_RATIO = 0.5
 local STRENGTH_HP_RATIO = 0.001
 local AGILITY_PHYSICAL_DAMAGE_RATIO = 0.001
 local INTELLIGENCE_MAGIC_DAMAGE_RATIO = 0.001
+local ENGINE_ATTACK_ATTRS = { '攻击力', '物理攻击力', '物理攻击', '法术攻击力', '法术攻击' }
 
 local function normalize_ratio(value)
   local number = tonumber(value) or 0
@@ -29,6 +30,10 @@ local function build_initial_values(values)
 
   if values and values['攻击'] ~= nil and values['攻击白字'] == nil and values['攻击绿字'] == nil then
     result['攻击白字'] = values['攻击']
+    result['攻击'] = 0
+  end
+  if result['攻击'] ~= 0 and result['攻击白字'] == 0 and result['攻击绿字'] == 0 then
+    result['攻击白字'] = result['攻击']
     result['攻击'] = 0
   end
   if values and values['生命'] ~= nil and values['生命白字'] == nil and values['生命绿字'] == nil then
@@ -90,6 +95,13 @@ function M.create()
     return y3 and y3.const and y3.const.UnitAttr and y3.const.UnitAttr[name] ~= nil
   end
 
+  local function can_try_engine_attr(name)
+    if is_engine_unit_attr(name) then
+      return true
+    end
+    return name == '攻击力' or name == '物理攻击力' or name == '法术攻击力'
+  end
+
   local function read_attr(unit, name)
     if can_use_kv(unit) and unit:kv_has(kv_key(name)) then
       local value = load_number(unit, kv_key(name))
@@ -98,6 +110,17 @@ function M.create()
       end
     end
     return tonumber(unit:get_attr(name)) or 0
+  end
+
+  local function read_engine_attr(unit, name)
+    if not unit or not unit.get_attr or not can_try_engine_attr(name) then
+      return 0
+    end
+    local ok, value = pcall(unit.get_attr, unit, name)
+    if ok then
+      return tonumber(value) or 0
+    end
+    return 0
   end
 
   local function save_attr(unit, name, value)
@@ -121,7 +144,17 @@ function M.create()
     if base ~= 0 or bonus ~= 0 then
       return base + bonus
     end
-    return read_attr(unit, '攻击')
+    local attack = read_attr(unit, '攻击')
+    if attack ~= 0 then
+      return attack
+    end
+    for _, attr_name in ipairs(ENGINE_ATTACK_ATTRS) do
+      local value = read_engine_attr(unit, attr_name)
+      if value ~= 0 then
+        return value
+      end
+    end
+    return 0
   end
 
   local function hp_base(unit)
@@ -217,10 +250,16 @@ function M.create()
       unit:set_attr(name, value or 0)
       return
     end
-    if not is_engine_unit_attr(name) then
+    if not can_try_engine_attr(name) then
       return
     end
-    unit:set_attr(name, value or 0)
+    pcall(unit.set_attr, unit, name, value or 0)
+  end
+
+  local function sync_engine_attack(unit, value)
+    for _, attr_name in ipairs(ENGINE_ATTACK_ATTRS) do
+      write_attr(unit, attr_name, value or 0)
+    end
   end
 
   local function sync_engine_max_hp(unit, value)
@@ -266,6 +305,27 @@ function M.create()
     end
 
     return read_attr(unit, normalized_name)
+  end
+
+  function api.get_attack_power(unit)
+    if not unit then
+      return 0
+    end
+    local final_attack = api.get_attr(unit, '攻击结算值')
+    if final_attack > 0 then
+      return final_attack
+    end
+    local attack = api.get_attr(unit, '攻击')
+    if attack > 0 then
+      return attack
+    end
+    for _, attr_name in ipairs(ENGINE_ATTACK_ATTRS) do
+      local value = read_engine_attr(unit, attr_name)
+      if value > 0 then
+        return value
+      end
+    end
+    return 0
   end
 
   function api.set_attr(unit, name, value)
@@ -384,10 +444,11 @@ function M.create()
       * (1 + normalize_ratio(api.get_attr(unit, '智力增幅')))
       * (1 + normalize_ratio(api.get_attr(unit, '最终智力增幅')))
     local attack = attack_base(unit) + attack_bonus(unit)
+    local main_stat_attack_ratio = tonumber(MAIN_STAT_ATTACK_RATIO) or 0.5
     local final_attack = (attack
-      + final_strength * MAIN_STAT_ATTACK_RATIO
-      + final_agility * MAIN_STAT_ATTACK_RATIO
-      + final_intelligence * MAIN_STAT_ATTACK_RATIO)
+      + final_strength * main_stat_attack_ratio
+      + final_agility * main_stat_attack_ratio
+      + final_intelligence * main_stat_attack_ratio)
       * (1 + normalize_ratio(api.get_attr(unit, '攻击增幅')))
       * (1 + normalize_ratio(api.get_attr(unit, '最终攻击')))
     local hp = hp_base(unit) + hp_bonus(unit)
@@ -409,7 +470,7 @@ function M.create()
     save_attr(unit, '敏捷', agility)
     save_attr(unit, '智力', intelligence)
     api.set_attr(unit, '攻击结算值', final_attack)
-    write_attr(unit, '物理攻击', final_attack)
+    sync_engine_attack(unit, final_attack)
     api.set_attr(unit, '生命结算值', final_hp)
     api.set_attr(unit, '护甲结算值', final_armor)
     sync_engine_max_hp(unit, final_hp)
@@ -476,7 +537,7 @@ function M.create()
     api.rebuild_derived_attrs(unit)
   end
 
-  function api.get_damage_multiplier(unit, damage_type, damage_form, element)
+  function api.get_damage_multiplier(unit, damage_type, damage_form)
     local multiplier = 1
     local final_agility = math.max(0, api.get_attr(unit, '最终敏捷'))
     local final_intelligence = math.max(0, api.get_attr(unit, '最终智力'))
@@ -484,18 +545,6 @@ function M.create()
       multiplier = multiplier * (1 + normalize_ratio(api.get_attr(unit, '物理伤害')) + final_agility * AGILITY_PHYSICAL_DAMAGE_RATIO)
     elseif damage_type == '魔法' or damage_type == '法术' or damage_type == 'spell' or damage_type == 'dot' or damage_type == 'summon' then
       multiplier = multiplier * (1 + normalize_ratio(api.get_attr(unit, '魔法伤害')) + final_intelligence * INTELLIGENCE_MAGIC_DAMAGE_RATIO)
-    end
-
-    if element == 'metal' then
-      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(unit, '金行伤害')))
-    elseif element == 'wood' then
-      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(unit, '木行伤害')))
-    elseif element == 'water' then
-      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(unit, '水行伤害')))
-    elseif element == 'fire' then
-      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(unit, '火行伤害')))
-    elseif element == 'earth' then
-      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(unit, '土行伤害')))
     end
 
     if damage_form == 'normal_attack' then
@@ -509,7 +558,44 @@ function M.create()
     return multiplier
   end
 
+  function api.compute_damage(unit, amount, damage_meta, context)
+    damage_meta = damage_meta or {}
+    context = context or {}
+
+    local base = tonumber(amount) or 0
+    if base <= 0 then
+      local ratio = tonumber(damage_meta.damage_ratio or damage_meta.base_damage_ratio or context.damage_ratio) or 0
+      if ratio > 0 then
+        base = api.get_attack_power(unit) * ratio
+      end
+    end
+    if base <= 0 and context.fallback_to_attack ~= false then
+      base = api.get_attack_power(unit) * (tonumber(context.fallback_ratio) or 1)
+    end
+    if base <= 0 then
+      return 0
+    end
+
+    local damage_type = damage_meta.damage_type or context.damage_type or '法术'
+    local damage_form = damage_meta.damage_form or context.damage_form or (damage_type == '物理' and 'weapon' or 'spell')
+    local damage_kind = context.damage_kind or context.form or 'skill'
+    local multiplier = api.get_damage_multiplier(unit, damage_form or damage_type, damage_kind)
+      * (tonumber(context.target_multiplier) or 1)
+      * (tonumber(context.extra_multiplier) or 1)
+
+    return math.max(1, math.floor(base * multiplier + 0.5))
+  end
+
   return api
+end
+
+function M.set_main_stat_attack_ratio(value)
+  local number = tonumber(value)
+  if number == nil then
+    return false
+  end
+  MAIN_STAT_ATTACK_RATIO = number
+  return true
 end
 
 return M

@@ -9,6 +9,7 @@ from pathlib import Path
 
 DEFAULT_MAX_LINES = 400
 DEFAULT_MAX_NESTING = 4
+DEFAULT_MAX_LINE_LENGTH = 240
 CODE_EXTENSIONS = {".lua", ".py", ".bat", ".ps1", ".sh"}
 NESTING_EXTENSIONS = {".lua", ".py"}
 LUA_OPENERS = {"do", "function", "if", "for", "repeat", "while"}
@@ -28,11 +29,19 @@ DEFAULT_EXCLUDED_PARTS = {
 def has_excluded_part(path: Path, root: Path, excluded_parts: set[str]) -> bool:
     rel = path.relative_to(root).as_posix()
     parts = set(path.relative_to(root).parts)
-    return (
-        rel in excluded_parts
-        or any(rel.startswith(f"{excluded}/") for excluded in excluded_parts)
-        or any(part in excluded_parts for part in parts)
-    )
+    for excluded in excluded_parts:
+        # Direct match against relative path.
+        if rel == excluded or rel.startswith(f"{excluded}/"):
+            return True
+        # Allow "script/xxx" style exclusions when root is already "script".
+        if excluded.startswith("script/"):
+            short_excluded = excluded[len("script/") :]
+            if rel == short_excluded or rel.startswith(f"{short_excluded}/"):
+                return True
+        # Fallback part-based exclusion.
+        if excluded in parts:
+            return True
+    return False
 
 
 def iter_code_files(root: Path, excluded_parts: set[str]):
@@ -49,6 +58,16 @@ def iter_code_files(root: Path, excluded_parts: set[str]):
 def count_lines(path: Path) -> int:
     with path.open("r", encoding="utf-8", errors="ignore") as file:
         return sum(1 for _ in file)
+
+
+def max_line_length(path: Path) -> int:
+    max_len = 0
+    with path.open("r", encoding="utf-8", errors="ignore") as file:
+        for raw_line in file:
+            line_len = len(raw_line.rstrip("\r\n"))
+            if line_len > max_len:
+                max_len = line_len
+    return max_len
 
 
 def lua_nesting(path: Path) -> int:
@@ -99,6 +118,12 @@ def main() -> int:
     parser.add_argument("--max-lines", type=int, default=DEFAULT_MAX_LINES)
     parser.add_argument("--max-nesting", type=int, default=DEFAULT_MAX_NESTING)
     parser.add_argument(
+        "--max-line-length",
+        type=int,
+        default=DEFAULT_MAX_LINE_LENGTH,
+        help="Maximum allowed single-line length.",
+    )
+    parser.add_argument(
         "--include-y3-lib",
         action="store_true",
         help="Also scan bundled Y3 libraries and helper metadata.",
@@ -113,10 +138,16 @@ def main() -> int:
 
     line_violations = []
     nesting_violations = []
+    line_length_violations = []
     for path in iter_code_files(root, excluded_parts):
         line_count = count_lines(path)
         if line_count > args.max_lines:
             line_violations.append((line_count, path.relative_to(root).as_posix()))
+        single_line_max_len = max_line_length(path)
+        if single_line_max_len > args.max_line_length:
+            line_length_violations.append(
+                (single_line_max_len, path.relative_to(root).as_posix())
+            )
         if path.suffix.lower() in NESTING_EXTENSIONS:
             depth = nesting_depth(path)
             if depth > args.max_nesting:
@@ -130,12 +161,17 @@ def main() -> int:
         print(f"Files over {args.max_nesting} nesting levels:")
         for depth, rel_path in sorted(nesting_violations, reverse=True):
             print(f"{depth:5d}  {rel_path}")
-    if line_violations or nesting_violations:
+    if line_length_violations:
+        print(f"Files over {args.max_line_length} single-line length:")
+        for max_len, rel_path in sorted(line_length_violations, reverse=True):
+            print(f"{max_len:5d}  {rel_path}")
+    if line_violations or nesting_violations or line_length_violations:
         return 1
 
     print(
         f"All scanned code files are <= {args.max_lines} lines "
-        f"and <= {args.max_nesting} nesting levels."
+        f"and <= {args.max_nesting} nesting levels, "
+        f"and <= {args.max_line_length} single-line length."
     )
     return 0
 

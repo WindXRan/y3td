@@ -5,7 +5,7 @@ local SkillTaxonomy = require 'data.object_tables.attack_skill_taxonomy'
 local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
 local Json = require 'y3.tools.json'
 
-local skill_rows = CsvLoader.read_rows('data_csv/attack_skills.csv')
+local skill_rows = CsvLoader.read_rows_optional('data_csv/attack_skills.csv')
 
 local OPTIONAL_NUMBER_FIELDS = {
   default_slot = true,
@@ -401,6 +401,34 @@ for _, blueprint in ipairs(SecondBatchBlueprints.list or {}) do
     apply_taxonomy(defs_by_id[blueprint.id], blueprint.id)
     vfx_by_id[blueprint.id] = defs_by_id[blueprint.id].vfx
   end
+end
+
+if not defs_by_id.basic_attack then
+  local fallback_basic_editor_ability_key = RuntimeEditorIds.ability and RuntimeEditorIds.ability.basic_attack or nil
+  local fallback_basic_editor_projectile_key = RuntimeEditorIds.projectile and RuntimeEditorIds.projectile.basic_attack or nil
+  local fallback_basic_vfx = build_vfx(fallback_basic_editor_ability_key, fallback_basic_editor_projectile_key)
+  local fallback_basic_def = {
+    id = 'basic_attack',
+    name = '基础攻击',
+    summary = '默认普攻（CSV 缺失兜底）',
+    damage_type = '物理',
+    damage_form = 'weapon',
+    element = 'none',
+    damage_label = '兵刃伤害',
+    editor_ability_key = fallback_basic_editor_ability_key,
+    editor_projectile_key = fallback_basic_editor_projectile_key,
+    base_damage_ratio = 1.0,
+    base_cooldown = 1.7,
+    base_range = 250,
+    base_pierce = 0,
+    base_pierce_width = 90,
+    base_repeat_count = 1,
+    vfx = fallback_basic_vfx,
+  }
+  -- 普攻运行时分发依赖 taxonomy（尤其 cast_family=basic_projectile），
+  -- CSV 缺失时也必须补齐，否则不会进入普攻施法/索敌链路。
+  defs_by_id.basic_attack = apply_taxonomy(fallback_basic_def, 'basic_attack')
+  vfx_by_id.basic_attack = defs_by_id.basic_attack.vfx
 end
 
 return {

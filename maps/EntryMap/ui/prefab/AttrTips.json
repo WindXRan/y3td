@@ -1,0 +1,4758 @@
+{
+    "data": {
+        "adapter_option": [
+            false, 
+            false, 
+            false, 
+            false, 
+            0, 
+            0, 
+            0, 
+            0
+        ], 
+        "anchor": {
+            "__tuple__": true, 
+            "items": [
+                0.5, 
+                0.5
+            ]
+        }, 
+        "can_drag": false, 
+        "children": [
+            {
+                "adapter_option": [
+                    false, 
+                    false, 
+                    false, 
+                    false, 
+                    0, 
+                    0, 
+                    0, 
+                    0
+                ], 
+                "alignment": {
+                    "__tuple__": true, 
+                    "items": [
+                        2, 
+                        8
+                    ]
+                }, 
+                "anchor": {
+                    "__tuple__": true, 
+                    "items": [
+                        0.5, 
+                        0.5
+                    ]
+                }, 
+                "bold": false, 
+                "border": false, 
+                "can_drag": false, 
+                "children": [], 
+                "comp_type": "TextLabel", 
+                "event_list": [], 
+                "font": {
+                    "__tuple__": true, 
+                    "items": [
+                        "MSYH", 
+                        24
+                    ]
+                }, 
+                "font_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        255, 
+                        255, 
+                        255, 
+                        255
+                    ]
+                }, 
+                "font_min_size": 15, 
+                "gradient": false, 
+                "gradient_bl_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        255, 
+                        255, 
+                        255, 
+                        255
+                    ]
+                }, 
+                "gradient_br_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        255, 
+                        255, 
+                        255, 
+                        255
+                    ]
+                }, 
+                "gradient_tl_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        255, 
+                        255, 
+                        255, 
+                        255
+                    ]
+                }, 
+                "gradient_tr_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        255, 
+                        255, 
+                        255, 
+                        255
+                    ]
+                }, 
+                "hover_child": "", 
+                "italics": false, 
+                "label_effect": {
+                    "__tuple__": true, 
+                    "items": [
+                        false, 
+                        false, 
+                        false, 
+                        false, 
+                        false, 
+                        false
+                    ]
+                }, 
+                "line_space": {
+                    "__tuple__": true, 
+                    "items": [
+                        0, 
+                        0
+                    ]
+                }, 
+                "name": "labelPrefab", 
+                "opacity": 1.0, 
+                "open_adapter": false, 
+                "over_pattern": true, 
+                "pos_data": {
+                    "__tuple__": true, 
+                    "items": [
+                        64.0001, 
+                        42.0, 
+                        64.0001, 
+                        42.0, 
+                        0, 
+                        0
+                    ]
+                }, 
+                "prefab_sub_key": "99add722-8b4b-4534-b53b-367393daaf49", 
+                "review_word": false, 
+                "rotation": 0, 
+                "scale": {
+                    "__tuple__": true, 
+                    "items": [
+                        1, 
+                        1
+                    ]
+                }, 
+                "scene_ui_name": null, 
+                "shadow": false, 
+                "size": {
+                    "__tuple__": true, 
+                    "items": [
+                        296.0, 
+                        33.0
+                    ]
+                }, 
+                "strike_through": false, 
+                "strike_through_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        0, 
+                        0, 
+                        0, 
+                        255
+                    ]
+                }, 
+                "strike_through_size": 0, 
+                "swallow_touches": false, 
+                "text": {
+                    "__tuple__": true, 
+                    "items": [
+                        "\u653b\u51fb\u529b\uff1a50", 
+                        false
+                    ]
+                }, 
+                "text_bind": {
+                    "__tuple__": true, 
+                    "items": [
+                        null, 
+                        null
+                    ]
+                }, 
+                "text_border_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        0, 
+                        0, 
+                        0, 
+                        255
+                    ]
+                }, 
+                "text_border_width": 0, 
+                "text_format": "", 
+                "text_italic_radius": 0.5, 
+                "text_shadow_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        123, 
+                        123, 
+                        123, 
+                        255
+                    ]
+                }, 
+                "text_shadow_offset": {
+                    "__tuple__": true, 
+                    "items": [
+                        0, 
+                        0
+                    ]
+                }, 
+                "type": 3, 
+                "typewriter_effect": 0, 
+                "typewriter_space": 0, 
+                "under_line": false, 
+                "visible": true
+            }, 
+            {
+                "adapter_option": [
+                    false, 
+                    false, 
+                    false, 
+                    false, 
+                    0, 
+                    0, 
+                    0, 
+                    0
+                ], 
+                "anchor": {
+                    "__tuple__": true, 
+                    "items": [
+                        0.5, 
+                        0.5
+                    ]
+                }, 
+                "bg_cap_insets": {
+                    "__tuple__": true, 
+                    "items": [
+                        110.0, 
+                        76.0, 
+                        110.0, 
+                        76.0
+                    ]
+                }, 
+                "bg_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        255, 
+                        255, 
+                        255, 
+                        255
+                    ]
+                }, 
+                "bg_image": 106338, 
+                "block_scrolling": false, 
+                "bounce_enabled": false, 
+                "can_drag": false, 
+                "children": [
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_1", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                64.0001, 
+                                42.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "1654eeb9-e6fa-48a7-891f-ad352f04c21b", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_2", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                64.0001, 
+                                42.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "9bedfe6a-015a-4f59-b3f3-be388d10657d", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_3", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                64.0001, 
+                                42.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "d8586a6b-a707-403f-a01f-d7a80ed69efe", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_1_4_1", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                53.6657, 
+                                50.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "47c93cd8-a8a4-43fe-8932-e3b76755f957", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_1_1", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                53.6657, 
+                                50.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "da02450f-ba2e-4760-bbbe-5d1a542fe0aa", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_1_2", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                53.6657, 
+                                50.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "bbefcd8d-f57d-44e0-83c0-311b0f97a179", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_1_3", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                53.6657, 
+                                50.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "ab4b8b5f-5252-486b-a94e-398726c19242", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_2_3", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                53.6657, 
+                                50.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "a5950558-43bb-4f1b-bac8-005d8b330fc7", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_3_3", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                53.6657, 
+                                50.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "202b4ae2-7ff8-4f7d-a3df-05d005e8be35", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_2_2", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                53.6657, 
+                                50.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "07216106-cb04-44b4-84df-6d1019281b25", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_3_2", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                53.6657, 
+                                50.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "c13272f3-869d-40c6-9368-ff8ecf9586f4", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_2_1", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                53.6657, 
+                                50.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "de42ea9e-36ee-4197-96f0-50a7c1b80de4", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_3_1", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                53.6657, 
+                                50.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "a2c45afa-6f06-4d45-abf5-9474a4193cb2", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_2_4_1", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                53.6657, 
+                                50.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "1750dabc-afcd-47c4-a313-1e88bbc455bd", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                2, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "labelPrefab_3_4_1", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                75.0, 
+                                20.0, 
+                                53.6657, 
+                                50.0, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "68336368-1831-4591-ab01-5119c3dcbb8b", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                296.0, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u653b\u51fb\u529b\uff1a50", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }
+                ], 
+                "comp_type": "GridView", 
+                "event_list": [], 
+                "grid_align": {
+                    "__tuple__": true, 
+                    "items": [
+                        2, 
+                        8
+                    ]
+                }, 
+                "grid_count": {
+                    "__tuple__": true, 
+                    "items": [
+                        10, 
+                        2
+                    ]
+                }, 
+                "grid_margin": {
+                    "__tuple__": true, 
+                    "items": [
+                        0, 
+                        0, 
+                        0, 
+                        0
+                    ]
+                }, 
+                "grid_size": {
+                    "__tuple__": true, 
+                    "items": [
+                        150.0, 
+                        40.0
+                    ]
+                }, 
+                "grid_space": {
+                    "__tuple__": true, 
+                    "items": [
+                        0, 
+                        0
+                    ]
+                }, 
+                "hover_child": "", 
+                "is_scale9_enable": true, 
+                "layout_type": 1, 
+                "name": "grid_view", 
+                "opacity": 1.0, 
+                "open_adapter": false, 
+                "pos_data": {
+                    "__tuple__": true, 
+                    "items": [
+                        -446.3333, 
+                        -62.3333, 
+                        -446.3333, 
+                        -62.3333, 
+                        0, 
+                        0
+                    ]
+                }, 
+                "prefab_sub_key": "40925224-1061-427b-af8b-43041dd8389f", 
+                "revert_list_horizontal": false, 
+                "revert_list_vertical": false, 
+                "rotation": 0, 
+                "scale": {
+                    "__tuple__": true, 
+                    "items": [
+                        1, 
+                        1
+                    ]
+                }, 
+                "scene_ui_name": null, 
+                "scroll_bar_enable": false, 
+                "scroll_bar_h_cap_insets": {
+                    "__tuple__": true, 
+                    "items": [
+                        -1, 
+                        -1, 
+                        0, 
+                        0
+                    ]
+                }, 
+                "scroll_bar_h_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        255, 
+                        255, 
+                        255, 
+                        255
+                    ]
+                }, 
+                "scroll_bar_h_image": 133789, 
+                "scroll_bar_h_margin": {
+                    "__tuple__": true, 
+                    "items": [
+                        0, 
+                        0, 
+                        0, 
+                        0
+                    ]
+                }, 
+                "scroll_bar_h_scale9_enable": false, 
+                "scroll_bar_h_thickness": 10, 
+                "scroll_bar_v_cap_insets": {
+                    "__tuple__": true, 
+                    "items": [
+                        -1, 
+                        -1, 
+                        0, 
+                        0
+                    ]
+                }, 
+                "scroll_bar_v_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        255, 
+                        255, 
+                        255, 
+                        255
+                    ]
+                }, 
+                "scroll_bar_v_image": 133789, 
+                "scroll_bar_v_margin": {
+                    "__tuple__": true, 
+                    "items": [
+                        0, 
+                        0, 
+                        0, 
+                        0
+                    ]
+                }, 
+                "scroll_bar_v_scale9_enable": false, 
+                "scroll_bar_v_thickness": 10, 
+                "size": {
+                    "__tuple__": true, 
+                    "items": [
+                        682.0, 
+                        407.4545433521271
+                    ]
+                }, 
+                "size_adaptive": false, 
+                "skip_invisible": false, 
+                "swallow_touches": false, 
+                "type": 25, 
+                "visible": true
+            }, 
+            {
+                "adapter_option": [
+                    false, 
+                    false, 
+                    false, 
+                    false, 
+                    0, 
+                    0, 
+                    0, 
+                    0
+                ], 
+                "allow_size_change_according_children_in_edit_mode": false, 
+                "anchor": {
+                    "__tuple__": true, 
+                    "items": [
+                        0.5, 
+                        0.5
+                    ]
+                }, 
+                "bg_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        255, 
+                        255, 
+                        255, 
+                        255
+                    ]
+                }, 
+                "bg_image": 106338, 
+                "block_scrolling": false, 
+                "bounce_enabled": false, 
+                "can_drag": false, 
+                "cap_insets": {
+                    "__tuple__": true, 
+                    "items": [
+                        110.0, 
+                        76.0, 
+                        110.0, 
+                        76.0
+                    ]
+                }, 
+                "children": [
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "label", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                204.0001, 
+                                208.1817, 
+                                50.0893, 
+                                45.6175, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "5071888d-8e82-4334-b061-bdba940cd1fa", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                408.7272686958313, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u6bcf\u4e00\u70b9\u529b\u91cf", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "label_4", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                204.0001, 
+                                208.1817, 
+                                50.0893, 
+                                45.6175, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "a0ae9bc9-ef5d-4dca-ae29-3ad026f350f4", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                408.7273, 
+                                32.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "+0.5", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "label_5", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                204.0001, 
+                                208.1817, 
+                                50.0893, 
+                                45.6175, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "ae3695f1-afda-4529-8ac3-5d744735fe72", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                408.7273, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u6bcf\u4e00\u70b9\u529b\u91cf", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "label_6", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                204.0001, 
+                                208.1817, 
+                                50.0893, 
+                                45.6175, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "3b928e0a-1fb9-4289-aa9f-932d8722b688", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                408.7273, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u6bcf\u4e00\u70b9\u529b\u91cf", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "label_7", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                204.0001, 
+                                208.1817, 
+                                50.0893, 
+                                45.6175, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "6e974174-4f0e-4f90-8ab3-04e7812a291f", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                408.7273, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u6bcf\u4e00\u70b9\u529b\u91cf", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }, 
+                    {
+                        "adapter_option": [
+                            false, 
+                            false, 
+                            false, 
+                            false, 
+                            0, 
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "alignment": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                8
+                            ]
+                        }, 
+                        "anchor": {
+                            "__tuple__": true, 
+                            "items": [
+                                0.5, 
+                                0.5
+                            ]
+                        }, 
+                        "bold": false, 
+                        "border": false, 
+                        "can_drag": false, 
+                        "children": [], 
+                        "comp_type": "TextLabel", 
+                        "event_list": [], 
+                        "font": {
+                            "__tuple__": true, 
+                            "items": [
+                                "MSYH", 
+                                24
+                            ]
+                        }, 
+                        "font_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "font_min_size": 15, 
+                        "gradient": false, 
+                        "gradient_bl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_br_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tl_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "gradient_tr_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                255, 
+                                255, 
+                                255, 
+                                255
+                            ]
+                        }, 
+                        "hover_child": "", 
+                        "italics": false, 
+                        "label_effect": {
+                            "__tuple__": true, 
+                            "items": [
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false, 
+                                false
+                            ]
+                        }, 
+                        "line_space": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "name": "label_8", 
+                        "opacity": 1.0, 
+                        "open_adapter": false, 
+                        "over_pattern": true, 
+                        "pos_data": {
+                            "__tuple__": true, 
+                            "items": [
+                                204.0001, 
+                                208.1817, 
+                                50.0893, 
+                                45.6175, 
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "prefab_sub_key": "f6c224e7-f267-417d-9e35-ab9c93b27e2a", 
+                        "review_word": false, 
+                        "rotation": 0, 
+                        "scale": {
+                            "__tuple__": true, 
+                            "items": [
+                                1, 
+                                1
+                            ]
+                        }, 
+                        "scene_ui_name": null, 
+                        "shadow": false, 
+                        "size": {
+                            "__tuple__": true, 
+                            "items": [
+                                408.7273, 
+                                33.0
+                            ]
+                        }, 
+                        "strike_through": false, 
+                        "strike_through_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "strike_through_size": 0, 
+                        "swallow_touches": false, 
+                        "text": {
+                            "__tuple__": true, 
+                            "items": [
+                                "\u6bcf\u4e00\u70b9\u529b\u91cf", 
+                                false
+                            ]
+                        }, 
+                        "text_bind": {
+                            "__tuple__": true, 
+                            "items": [
+                                null, 
+                                null
+                            ]
+                        }, 
+                        "text_border_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0, 
+                                0, 
+                                255
+                            ]
+                        }, 
+                        "text_border_width": 0, 
+                        "text_format": "", 
+                        "text_italic_radius": 0.5, 
+                        "text_shadow_color": {
+                            "__tuple__": true, 
+                            "items": [
+                                123, 
+                                123, 
+                                123, 
+                                255
+                            ]
+                        }, 
+                        "text_shadow_offset": {
+                            "__tuple__": true, 
+                            "items": [
+                                0, 
+                                0
+                            ]
+                        }, 
+                        "type": 3, 
+                        "typewriter_effect": 0, 
+                        "typewriter_space": 0, 
+                        "under_line": false, 
+                        "visible": true
+                    }
+                ], 
+                "comp_type": "ScrollView", 
+                "delete_over_limit_children": false, 
+                "event_list": [], 
+                "hover_child": "", 
+                "is_scale9_enable": true, 
+                "layout_reverse": false, 
+                "layout_type": 1, 
+                "margin": 0.0, 
+                "name": "scroll_view_2", 
+                "opacity": 1.0, 
+                "open_adapter": false, 
+                "pos_data": {
+                    "__tuple__": true, 
+                    "items": [
+                        98.0, 
+                        -87.0, 
+                        98.0, 
+                        -87.0, 
+                        0, 
+                        0
+                    ]
+                }, 
+                "prefab_sub_key": "c10a785a-3ee4-4699-a76d-7e9a19f71dcb", 
+                "rotation": 0, 
+                "scale": {
+                    "__tuple__": true, 
+                    "items": [
+                        1, 
+                        1
+                    ]
+                }, 
+                "scene_ui_name": null, 
+                "scroll_bar_cap_insets": {
+                    "__tuple__": true, 
+                    "items": [
+                        -1, 
+                        -1, 
+                        0, 
+                        0
+                    ]
+                }, 
+                "scroll_bar_color": {
+                    "__tuple__": true, 
+                    "items": [
+                        255, 
+                        255, 
+                        255, 
+                        255
+                    ]
+                }, 
+                "scroll_bar_enable": false, 
+                "scroll_bar_image": 133789, 
+                "scroll_bar_margin": {
+                    "__tuple__": true, 
+                    "items": [
+                        0, 
+                        0, 
+                        0, 
+                        0
+                    ]
+                }, 
+                "scroll_bar_scale9_enable": false, 
+                "scroll_bar_thickness": 0, 
+                "size": {
+                    "__tuple__": true, 
+                    "items": [
+                        407.2727162837982, 
+                        456.3636236190796
+                    ]
+                }, 
+                "size_change_according_children": false, 
+                "skip_invisible": true, 
+                "swallow_touches": false, 
+                "type": 10, 
+                "visible": true
+            }
+        ], 
+        "clip_enabled": false, 
+        "clipping_type": 1, 
+        "color": {
+            "__tuple__": true, 
+            "items": [
+                255, 
+                255, 
+                255, 
+                0
+            ]
+        }, 
+        "comp_type": "Layout", 
+        "custom_kv": {}, 
+        "event_list": [], 
+        "hover_child": "", 
+        "mask_image": 100445, 
+        "name": "AttrTips", 
+        "opacity": 1.0, 
+        "open_adapter": false, 
+        "pos_data": {
+            "__tuple__": true, 
+            "items": [
+                960.0, 
+                540.0, 
+                50.0, 
+                50.0, 
+                1, 
+                1
+            ]
+        }, 
+        "prefab_key": "5de61ab1-67fb-431f-982e-aefdba5c6c4b", 
+        "prefab_sub_key": null, 
+        "rotation": 0, 
+        "scale": {
+            "__tuple__": true, 
+            "items": [
+                1, 
+                1
+            ]
+        }, 
+        "scene_ui_name": null, 
+        "size": {
+            "__tuple__": true, 
+            "items": [
+                100, 
+                100
+            ]
+        }, 
+        "swallow_touches": false, 
+        "type": 7, 
+        "visible": false
+    }, 
+    "key": "5de61ab1-67fb-431f-982e-aefdba5c6c4b", 
+    "name": "AttrTips"
+}

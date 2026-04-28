@@ -8,6 +8,8 @@ local BondMiscConfig = require 'data.object_tables.bond_misc_config'
 local BondPickConfig = require 'data.object_tables.bond_pick_config'
 local BondRootSets = require 'data.object_tables.bond_root_sets'
 local BondModifierPool = require 'data.object_tables.bond_modifier_pool'
+local BondModifierEffects = require 'runtime.bond_modifier_effects'
+local SkillRuntimeTuning = require 'data.object_tables.skill_runtime_tuning'
 
 local NODE_LIST = BondNodes.list
 local NODE_BY_ID = BondNodes.by_id
@@ -24,137 +26,50 @@ local SYSTEM_DYNAMIC_NODE_ID = '__system__'
 
 local PER_SECOND_ATTR_KEYS = BondMiscConfig.per_second_attr_keys or {}
 local GROUP_LABELS = BondMiscConfig.group_labels or {}
+local BOND_SKILL_LABELS = SkillRuntimeTuning and SkillRuntimeTuning.bond and SkillRuntimeTuning.bond.labels or {}
+local BOND_SKILL_NAME = tostring(BOND_SKILL_LABELS.effect_name or '羁绊技能')
+local BOND_SKILL_ACTIVATION_TEMPLATE = tostring(BOND_SKILL_LABELS.activation_template or '%s羁绊技能')
+local BOND_SKILL_ACTIVATION_PROMPT = tostring(
+  BOND_SKILL_LABELS.activation_prompt
+  or '抽取并集齐同一羁绊的卡牌后，可自动吞噬并激活羁绊技能。'
+)
+local BOND_SKILL_ALREADY_ACTIVE_TEMPLATE = tostring(
+  BOND_SKILL_LABELS.already_active_template
+  or '羁绊技能已处于激活状态：%s。'
+)
+local BOND_SKILL_ACTIVE_SUCCESS_TEMPLATE = tostring(
+  BOND_SKILL_LABELS.active_success_template
+  or '已激活羁绊技能：%s。'
+)
+
+local function format_bond_skill_title(bond_name)
+  local ok, text = pcall(string.format, BOND_SKILL_ACTIVATION_TEMPLATE, tostring(bond_name or '羁绊'))
+  if ok and text and text ~= '' then
+    return text
+  end
+  return string.format('%s%s', tostring(bond_name or '羁绊'), BOND_SKILL_NAME)
+end
+
+local function format_bond_skill_status(template, bond_name)
+  local ok, text = pcall(string.format, tostring(template or ''), tostring(bond_name or ''))
+  if ok and text and text ~= '' then
+    return text
+  end
+  return string.format('%s：%s。', BOND_SKILL_NAME, tostring(bond_name or '未知羁绊'))
+end
 
 local ROOT_SET_DOC_META = BondRootSets.by_id or {}
 
 local is_root_set_complete
 local is_group_started
 
-local GROUP_CHOICE_ORDER = BondDrawConfig.group_choice_order or {
-  'body',
-  'economy',
-  'magic',
-  'archery',
-  'critical',
-  'growth',
-}
+local GROUP_CHOICE_ORDER = BondDrawConfig.group_choice_order or {}
 
 local GROUP_ROOT_IDS_BY_GROUP = {}
-local GROUP_CHOICE_DEFS = BondDrawConfig.group_choice_defs or {
-  body = {
-    id = '__group_body',
-    group_id = 'body',
-    display_name = '体术',
-    quality = 'rare',
-    desc = '解锁：生命、战术、固守分支',
-  },
-  economy = {
-    id = '__group_economy',
-    group_id = 'economy',
-    display_name = '经济',
-    quality = 'rare',
-    desc = '解锁：贪婪、挑战分支',
-  },
-  magic = {
-    id = '__group_magic',
-    group_id = 'magic',
-    display_name = '法术',
-    quality = 'rare',
-    desc = '解锁：魔法师、魔能、魔术、急速、元素师分支',
-  },
-  archery = {
-    id = '__group_archery',
-    group_id = 'archery',
-    display_name = '箭术',
-    quality = 'rare',
-    desc = '解锁：广射、速攻、射术分支',
-  },
-  critical = {
-    id = '__group_critical',
-    group_id = 'critical',
-    display_name = '暴击',
-    quality = 'rare',
-    desc = '解锁：致命、大炮分支',
-  },
-  growth = {
-    id = '__group_growth',
-    group_id = 'growth',
-    display_name = '成长',
-    quality = 'rare',
-    desc = '解锁：敏捷、力量、智力分支',
-  },
-}
-
-local THEMED_GROUP_LABELS = {
-  body = '炼体',
-  economy = '财缘',
-  magic = '玄法',
-  archery = '弓修',
-  critical = '诛心',
-  growth = '修行',
-}
-
-local THEMED_GROUP_DESCS = {
-  body = '可参悟：长生、兵法、不动、血誓、血魔、破军',
-  economy = '可参悟：吞财、渡劫',
-  magic = '可参悟：金灵、玄炁、爆法、迅诀、厚土',
-  archery = '可参悟：广射、疾风、穿云',
-  critical = '可参悟：致命、天诛法',
-  growth = '可参悟：敏捷、力量、智力三脉',
-}
-
-local THEMED_NODE_NAMES = {
-  bond_body_core = '金刚体',
-  bond_economy_core = '天府缘',
-  bond_magic_core = '玄门法',
-  bond_archery_core = '天弓道',
-  bond_critical_core = '诛心诀',
-  bond_growth_core = '仙途',
-  bond_growth_demon_hunter = '伏魔',
-  bond_growth_barbarian = '搬山',
-  bond_growth_war_god = '显圣真君',
-  bond_growth_archmage = '灵台',
-  bond_growth_archmage_sage = '方寸',
-  bond_growth_archmage_quick_cast = '掐诀',
-  bond_growth_archmage_burst = '炁涌',
-  bond_growth_spell_god = '天师真传',
-  bond_growth_spell_god_element = '五行合参',
-  bond_magic_mage = '金灵',
-  bond_magic_arcane_power = '玄炁',
-  bond_magic_arcane_power_staff = '如意杖',
-  bond_magic_trick = '爆法',
-  bond_magic_trick_mastery = '通玄',
-  bond_magic_haste = '迅诀',
-  bond_magic_haste_cooldown = '返照',
-  bond_magic_haste_charge = '藏炁',
-  bond_magic_elementalist = '厚土',
-  bond_economy_greed = '吞财',
-  bond_economy_greed_coin = '聚宝',
-  bond_economy_greed_key = '灵钥',
-  bond_economy_challenge = '渡劫',
-  bond_economy_challenge_exp_hunter = '功德',
-  bond_economy_challenge_gold_hunter = '纳财',
-  bond_body_life = '长生',
-  bond_body_life_blessing = '甘露',
-  bond_body_life_power = '生机',
-  bond_body_tactics = '兵法',
-  bond_body_fortress = '不动',
-  bond_body_charge_breaker = '破军',
-  bond_body_blood_demon_satan = '红莲魔君',
-  bond_body_blood_demon_armlet = '血煞魔镯',
-  bond_archery_rapid = '疾风',
-  bond_archery_shooting = '穿云',
-  bond_archery_barrage_moon_blade = '逐日',
-  bond_archery_multishot_volley = '百羽',
-  bond_critical_deadly_magic = '破妄',
-  bond_critical_cannon = '天诛法',
-  bond_critical_cannon_attack = '灭形击',
-  bond_growth_bow_god = '羿神',
-  bond_growth_bow_god_master = '神弓真传',
-}
+local GROUP_CHOICE_DEFS = BondDrawConfig.group_choice_defs or {}
 
 local function get_group_theme_name(group_id, fallback)
-  return THEMED_GROUP_LABELS[group_id] or fallback or group_id or '未知分类'
+  return fallback or group_id or '未知分类'
 end
 
 local function get_group_choice_theme_name(group_def)
@@ -168,14 +83,14 @@ local function get_group_choice_desc(group_def)
   if not group_def then
     return ''
   end
-  return THEMED_GROUP_DESCS[group_def.group_id] or group_def.desc or ''
+  return group_def.desc or ''
 end
 
 local function get_node_theme_name(node_def, fallback)
   if not node_def then
     return fallback or ''
   end
-  return THEMED_NODE_NAMES[node_def.id] or fallback or node_def.display_name or ''
+  return fallback or node_def.display_name or ''
 end
 
 for _, node_id in ipairs(ROOT_NODE_IDS) do
@@ -805,11 +720,6 @@ local function get_node_tier(node_def)
   return tonumber(node_def and node_def.tier) or 1
 end
 
-local function get_root_set_doc_meta(node_def)
-  local root_def = get_set_root_def(node_def)
-  return root_def and ROOT_SET_DOC_META[root_def.id] or nil
-end
-
 local function get_root_set_completion_mode(root_id)
   local meta = root_id and ROOT_SET_DOC_META[root_id] or nil
   if not meta then
@@ -1012,28 +922,6 @@ local function build_effect_segment_node_ids(node_def)
   return result
 end
 
-local function get_display_set_root_def(node_def)
-  if not node_def then
-    return nil
-  end
-
-  if is_root_line_node(node_def) then
-    return get_set_root_def(node_def) or node_def
-  end
-
-  local segment_node_ids = build_effect_segment_node_ids(node_def)
-  if #segment_node_ids > 0 then
-    return NODE_BY_ID[segment_node_ids[1]] or node_def
-  end
-
-  local anchor_def = get_branch_anchor_def(node_def)
-  if anchor_def then
-    return anchor_def
-  end
-
-  return get_set_root_def(node_def) or node_def
-end
-
 local function build_choice_progress_values(state, node_def)
   if not node_def then
     return 0, 0
@@ -1083,45 +971,13 @@ local function build_choice_progress_values(state, node_def)
   return unlocked_count, required_count
 end
 
-local function build_line_progress_values(state, node_def)
-  local set_root_def = get_display_set_root_def(node_def)
-  local unlocked_count, required_count = build_choice_progress_values(state, node_def)
-  return string.format(
-    '%s(%d/%d)',
-    set_root_def and get_node_theme_name(set_root_def) or (node_def and get_node_theme_name(node_def)) or '未知仙缘',
-    unlocked_count,
-    required_count
-  )
-end
-
 local function build_line_progress_text(state, node_def)
   local unlocked_count, required_count = build_choice_progress_values(state, node_def)
   return string.format('%d/%d', unlocked_count, required_count)
 end
 
-local function build_root_progress_text(state, node_def)
-  local root_def = get_set_root_def(node_def) or node_def
-  if not root_def then
-    return ''
-  end
-
-  local root_meta = ROOT_SET_DOC_META[root_def.id]
-  if root_meta then
-    local required_count = tonumber(root_meta.required_count) or 0
-    local unlocked_count = math.min(required_count, count_unlocked_root_set_nodes(state, root_def.id))
-    return string.format('%d/%d', unlocked_count, required_count)
-  end
-
-  return build_line_progress_text(state, root_def)
-end
-
 local function trim_choice_prefix(text)
   local trimmed = trim_inline_text(text)
-  trimmed = trimmed:gsub('^当前：', '')
-  trimmed = trimmed:gsub('^后继：', '')
-  trimmed = trimmed:gsub('^进阶链路：', '')
-  trimmed = trimmed:gsub('^终局方向：', '')
-  trimmed = trimmed:gsub('^终阶节点：', '')
   return trim_inline_text(trimmed)
 end
 
@@ -1220,33 +1076,6 @@ local function get_owned_tip_effect_text(node_def)
     guard = guard + 1
   end
   return ''
-end
-
-local function compact_tip_text(text)
-  local compact = trim_choice_prefix(text)
-  compact = compact:gsub('\r', '')
-  compact = compact:gsub('\n', '')
-  compact = compact:gsub('%s+', '')
-  return trim_inline_text(compact)
-end
-
-local function split_tip_lines(text, max_lines)
-  local lines = {}
-  local normalized = trim_choice_prefix(text)
-  if normalized == '' then
-    return lines
-  end
-  normalized = normalized:gsub('\r', '')
-  for line in normalized:gmatch('[^\n]+') do
-    local trimmed = trim_inline_text(line)
-    if trimmed ~= '' then
-      lines[#lines + 1] = trimmed
-    end
-    if max_lines and #lines >= max_lines then
-      break
-    end
-  end
-  return lines
 end
 
 local function build_owned_group_tip_payload(group_def)
@@ -1512,24 +1341,6 @@ local function build_root_overview_entry(state, root_id)
   }
 end
 
-local function build_choice_desc(node_def)
-  local parts = {}
-  local current_text = build_choice_current_text(node_def)
-  local advanced_text = get_choice_advanced_text(node_def)
-  local next_text = build_choice_next_text(node_def)
-
-  if current_text ~= '' then
-    parts[#parts + 1] = current_text
-  end
-  if advanced_text ~= '' then
-    parts[#parts + 1] = advanced_text
-  end
-  if next_text ~= '' then
-    parts[#parts + 1] = next_text
-  end
-  return table.concat(parts, '\n')
-end
-
 local function append_preview_segment(parts, text)
   local trimmed = trim_inline_text(text)
   if trimmed == '' then
@@ -1550,60 +1361,6 @@ local function build_choice_preview_segments(choice)
   end
 
   return parts
-end
-
-local function build_choice_entry(state, node_def, index)
-  local set_root_def = get_set_root_def(node_def) or node_def
-  local display_set_root_def = get_display_set_root_def(node_def) or set_root_def
-  local line_root_def = get_line_root_def(node_def)
-  local card_name_text = get_choice_card_name_text(node_def)
-  local current_text = build_choice_current_text(node_def)
-  local advanced_text = get_choice_advanced_text(node_def)
-  local next_text = build_choice_next_text(node_def)
-  local effect_title = build_choice_effect_title(state, set_root_def or node_def)
-  local effect_text = build_choice_effect_text(set_root_def or node_def)
-  local subtitle_text = card_name_text ~= '' and card_name_text or get_node_theme_name(node_def)
-  local progress_text = build_line_progress_text(state, node_def)
-  local themed_set_name = display_set_root_def and get_node_theme_name(display_set_root_def) or get_node_theme_name(node_def)
-  local bond_root_name = set_root_def and get_node_theme_name(set_root_def) or themed_set_name
-  local bond_root_progress_text = build_root_progress_text(state, node_def)
-
-  return {
-    index = index,
-    node_id = node_def.id,
-    display_name = node_def.display_name,
-    pretty_display_name = get_node_theme_name(node_def),
-    quality = node_def.quality or 'rare',
-    ui_icon = node_def.icon,
-    icon = node_def.icon,
-    group_id = node_def.group_id,
-    line_id = node_def.line_id,
-    tier = node_def.tier,
-    parent_id = node_def.parent_id,
-    next_ids = node_def.next_ids,
-    editor_skill_id = node_def.editor_skill_id,
-    template = node_def.template,
-    title_text = string.format(
-      '%s (%s)',
-      themed_set_name,
-      progress_text
-    ),
-    subtitle_text = subtitle_text,
-    bond_root_name = bond_root_name,
-    bond_root_progress_text = bond_root_progress_text,
-    progress_text = '',
-    current_text = current_text,
-    advanced_text = advanced_text,
-    next_text = next_text,
-    desc_text = build_choice_desc(node_def),
-    value_text = trim_choice_prefix(current_text),
-    effect_title = effect_title,
-    effect_text = effect_text,
-    body_blocks = build_choice_body_blocks(state, node_def, current_text, advanced_text, effect_title, effect_text),
-    effect_color_mode = 'auto',
-    effect_root_id = set_root_def and set_root_def.id or node_def.id,
-    line_root_id = line_root_def and line_root_def.id or node_def.id,
-  }
 end
 
 local function build_group_choice_entry(group_def, index)
@@ -1650,22 +1407,12 @@ local function get_modifier_card(card_id)
   return BondModifierPool and BondModifierPool.card_by_id and BondModifierPool.card_by_id[card_id] or nil
 end
 
-local BOND_SET_ATTR_BONUSES = {
-  ['刀锋战士'] = { ['攻击增幅'] = 0.50 },
-  ['全能骑士'] = {
-    ['攻击增幅'] = 0.10,
-    ['生命增幅'] = 0.10,
-    ['护甲增幅'] = 0.10,
-  },
-}
-
-local BOND_SET_RUNTIME_BONUSES = {
-  ['魔剑士'] = { all_damage_bonus = 0.20 },
-  ['雷电法王'] = { lightning_target_count = 5 },
-}
+local BOND_SET_ATTR_BONUSES = BondModifierEffects.SET_ATTR_BONUSES
+local BOND_SET_RUNTIME_BONUSES = BondModifierEffects.SET_RUNTIME_BONUSES
 
 local function get_modifier_cards_by_bond(bond_name)
-  return BondModifierPool and BondModifierPool.cards_by_bond and BondModifierPool.cards_by_bond[bond_name] or {}
+  local normalized = BondModifierEffects.normalize_bond_name and BondModifierEffects.normalize_bond_name(bond_name) or bond_name
+  return BondModifierPool and BondModifierPool.cards_by_bond and BondModifierPool.cards_by_bond[normalized] or {}
 end
 
 local function get_owned_modifier_bond_count(runtime, bond_name)
@@ -1683,13 +1430,33 @@ local function get_required_modifier_bond_count(bond_name)
   return math.max(1, tonumber(cards[1] and cards[1].required_count) or #cards)
 end
 
+local function get_modifier_bond_activation_text(bond_name, fallback_text)
+  local bond_key = tostring(bond_name or '')
+  if bond_key ~= '' then
+    for _, effect in ipairs(BondModifierPool.activation_effects or {}) do
+      if tostring(effect.bond_name or '') == bond_key then
+        local effect_desc = trim_choice_prefix(effect.desc or '')
+        if effect_desc ~= '' then
+          return effect_desc
+        end
+      end
+    end
+  end
+
+  local card_desc = trim_choice_prefix(fallback_text or '')
+  if card_desc ~= '' then
+    return card_desc
+  end
+  return ''
+end
+
 local function build_modifier_choice_entry(state, card, index)
   local runtime = get_runtime(state)
   local owned_count = get_owned_modifier_bond_count(runtime, card and card.bond_name)
   local total_count = get_required_modifier_bond_count(card and card.bond_name)
   local current_text = card and card.desc or ''
   local set_name = card and card.bond_name or '羁绊'
-  local effect_text = card and card.activation_desc or ''
+  local effect_text = get_modifier_bond_activation_text(card and card.bond_name, card and card.activation_desc or '')
 
   return {
     index = index,
@@ -1723,14 +1490,6 @@ local function collect_merged_bonus_packs(pack_map)
     merge_bonus_pack(result, bonus_pack)
   end
   return result
-end
-
-local function append_unique_candidate(target, seen, candidate)
-  if not target or not seen or not candidate or not candidate.id or seen[candidate.id] then
-    return
-  end
-  seen[candidate.id] = true
-  target[#target + 1] = candidate
 end
 
 local function apply_dynamic_bonuses(env, desired_attr, desired_runtime)
@@ -1874,227 +1633,6 @@ local function sync_attr_bonuses_to_hero(env)
   if hero_attr_system and hero_attr_system.rebuild_derived_attrs then
     hero_attr_system.rebuild_derived_attrs(hero)
   end
-end
-
-local function get_effect_state(runtime, bond_name)
-  local effect_id = 'initial_bond_set_' .. tostring(bond_name)
-  runtime.modifier_pool_effect_state[effect_id] = runtime.modifier_pool_effect_state[effect_id] or {
-    bond_name = bond_name,
-    cooldown = 0,
-    counter = 0,
-    elapsed = 0,
-  }
-  return runtime.modifier_pool_effect_state[effect_id]
-end
-
-local function has_active_modifier_bond(runtime, bond_name)
-  local effect_id = 'initial_bond_set_' .. tostring(bond_name)
-  if runtime and runtime.modifier_pool_active_effects and runtime.modifier_pool_active_effects[effect_id] == true then
-    return true
-  end
-  for _, card in ipairs(get_modifier_cards_by_bond(bond_name)) do
-    if runtime and runtime.modifier_card_effect_ids and runtime.modifier_card_effect_ids[card.id] == true then
-      return true
-    end
-  end
-  return false
-end
-
-local function get_hero_attr(env, name)
-  local state = env and env.STATE
-  local hero = state and state.hero
-  if not hero or not hero.is_exist or not hero:is_exist() then
-    return 0
-  end
-  local hero_attr_system = env and env.hero_attr_system
-  if hero_attr_system and hero_attr_system.get_attr then
-    return tonumber(hero_attr_system.get_attr(hero, name)) or 0
-  end
-  return tonumber(hero:get_attr(name)) or 0
-end
-
-local function get_attack_value(env)
-  local attack = get_hero_attr(env, '攻击结算值')
-  if attack > 0 then
-    return attack
-  end
-  return math.max(1, get_hero_attr(env, '攻击'))
-end
-
-local function get_max_hp_value(env)
-  local hp = get_hero_attr(env, '生命结算值')
-  if hp > 0 then
-    return hp
-  end
-  return math.max(1, get_hero_attr(env, '生命'))
-end
-
-local function get_three_attr_value(env)
-  return get_hero_attr(env, '力量') + get_hero_attr(env, '敏捷') + get_hero_attr(env, '智力')
-end
-
-local function damage_target(env, target, amount, damage_type)
-  if not env or not env.deal_skill_damage or not target or not target.is_exist or not target:is_exist() then
-    return false
-  end
-  env.deal_skill_damage(target, math.max(1, env.round_number and env.round_number(amount) or math.floor(amount)), damage_type or '物理', {
-    text_type = damage_type == '法术' and 'magic' or 'physics',
-  })
-  return true
-end
-
-local function damage_area(env, center, radius, amount, damage_type, except_unit, max_count)
-  if not env or not env.get_enemies_in_range or not center then
-    return false
-  end
-  local hit = false
-  for _, unit in ipairs(env.get_enemies_in_range(center, radius or 320, except_unit, max_count)) do
-    hit = damage_target(env, unit, amount, damage_type) or hit
-  end
-  return hit
-end
-
-local function try_chance(chance)
-  return math.random() <= math.max(0, math.min(1, chance or 0))
-end
-
-local function trigger_modifier_basic_attack_effect(env, bond_name, target)
-  local state = env and env.STATE
-  local runtime = get_runtime(state)
-  if not runtime or not has_active_modifier_bond(runtime, bond_name) or not target then
-    return false
-  end
-
-  local effect_state = get_effect_state(runtime, bond_name)
-  local attack = get_attack_value(env)
-  local max_hp = get_max_hp_value(env)
-  local three_attr = get_three_attr_value(env)
-  local attack_speed = get_hero_attr(env, '攻击速度')
-
-  if bond_name == '枪炮师' then
-    if try_chance(0.08) then
-      return damage_area(env, target, 360, attack * 2.0 + three_attr * 1.0, '物理', nil, 5)
-    end
-  elseif bond_name == '神射手' then
-    if try_chance(0.08) then
-      return damage_target(env, target, attack * 1.2 + attack_speed * 0.5, '物理')
-    end
-  elseif bond_name == '游侠' then
-    if try_chance(0.08) then
-      for index = 0, 2 do
-        env.y3.ltimer.wait(index * 0.2, function()
-          damage_area(env, target, 320, attack * 0.8, '物理')
-        end)
-      end
-      return true
-    end
-  elseif bond_name == '狂战士' then
-    if try_chance(0.30) then
-      local current_hp = target.get_hp and (tonumber(target:get_hp()) or 0) or 0
-      local target_max_hp = target.get_attr and (tonumber(target:get_attr('生命')) or tonumber(target:get_attr('最大生命')) or current_hp) or current_hp
-      return damage_target(env, target, attack * 0.1 + math.max(0, target_max_hp - current_hp) * 0.05, '物理')
-    end
-  elseif bond_name == '剑魂' then
-    effect_state.counter = (effect_state.counter or 0) + 1
-    if effect_state.counter >= 10 then
-      effect_state.counter = 0
-      return damage_target(env, target, attack * 1.5, '物理')
-    end
-  elseif bond_name == '剑宗' then
-    if try_chance(0.08) then
-      local tick_damage = attack * 0.1 + get_hero_attr(env, '剑意') * 2.0
-      for index = 0, 14 do
-        env.y3.ltimer.wait(index * 0.2, function()
-          damage_area(env, target, 320, tick_damage, '物理')
-        end)
-      end
-      return true
-    end
-  elseif bond_name == '龙骑士' then
-    if (effect_state.cooldown or 0) <= 0 and try_chance(math.max(0.08, get_hero_attr(env, '物理暴击'))) then
-      effect_state.cooldown = 1
-      return damage_area(env, target, 360, attack + max_hp * 0.05, '物理', nil, 5)
-    end
-  elseif bond_name == '战斗法师' or bond_name == '战法法师' then
-    if try_chance(0.08) then
-      return damage_area(env, target, 320, attack * 3.0, '法术')
-    end
-  end
-
-  return false
-end
-
-local function trigger_modifier_periodic_effect(env, bond_name, effect_state, dt)
-  effect_state.elapsed = (effect_state.elapsed or 0) + (dt or 0)
-  local attack = get_attack_value(env)
-
-  if bond_name == '火法师' and effect_state.elapsed >= 5 then
-    effect_state.elapsed = effect_state.elapsed - 5
-    local target = env.get_enemies_in_range and env.get_enemies_in_range(env.STATE.hero, 1200, nil, 1)[1] or nil
-    return damage_target(env, target, attack * 1.5, '法术')
-  elseif bond_name == '冰霜法师' and effect_state.elapsed >= 5 then
-    effect_state.elapsed = effect_state.elapsed - 5
-    local target = env.get_enemies_in_range and env.get_enemies_in_range(env.STATE.hero, 1200, nil, 1)[1] or nil
-    if target then
-      local tick_damage = attack * 0.2 + get_max_hp_value(env) * 0.01
-      for index = 0, 5 do
-        env.y3.ltimer.wait(index * 0.5, function()
-          damage_area(env, target, 360, tick_damage, '法术')
-        end)
-      end
-      return true
-    end
-  elseif bond_name == '猎人' and effect_state.elapsed >= 30 then
-    effect_state.elapsed = effect_state.elapsed - 30
-    damage_area(env, env.STATE.hero, 700, attack * (1 + get_hero_attr(env, '召唤加成')), '物理', nil, 3)
-    return true
-  end
-
-  return false
-end
-
-local function pick_random_candidates(state, candidate_defs, count)
-  local pool = {}
-  for _, node_def in ipairs(candidate_defs or {}) do
-    pool[#pool + 1] = node_def
-  end
-
-  local choices = {}
-  while #choices < count and #pool > 0 do
-    local total_weight = 0
-    local weights = {}
-    for index, candidate in ipairs(pool) do
-      local weight = BondPickConfig.get_candidate_weight(candidate) or 1
-      if weight < 0 then
-        weight = 0
-      end
-      weights[index] = weight
-      total_weight = total_weight + weight
-    end
-
-    local picked_index = 1
-    if total_weight > 0 then
-      local roll = math.random() * total_weight
-      local passed = 0
-      for index, weight in ipairs(weights) do
-        passed = passed + weight
-        if roll <= passed then
-          picked_index = index
-          break
-        end
-      end
-    else
-      picked_index = math.random(#pool)
-    end
-
-    local picked = table.remove(pool, picked_index)
-    if picked and picked.id and string.sub(picked.id, 1, 8) == '__group_' then
-      choices[#choices + 1] = build_group_choice_entry(picked, #choices + 1)
-    else
-      choices[#choices + 1] = build_choice_entry(state, picked, #choices + 1)
-    end
-  end
-  return choices
 end
 
 local function collect_modifier_pool_choice_entries(state)
@@ -2450,10 +1988,12 @@ function M.update_effects(env, dt)
     if effect_state.cooldown and effect_state.cooldown > 0 then
       effect_state.cooldown = math.max(0, effect_state.cooldown - (dt or 0))
     end
-    if runtime.modifier_pool_active_effects[effect_id] == true or has_active_modifier_bond(runtime, effect_state.bond_name) then
-      trigger_modifier_periodic_effect(env, effect_state.bond_name, effect_state, dt)
+    if runtime.modifier_pool_active_effects[effect_id] == true
+      or BondModifierEffects.has_active_modifier_bond(runtime, effect_state.bond_name, get_modifier_cards_by_bond) then
+      BondModifierEffects.trigger_modifier_periodic_effect(env, runtime, effect_state.bond_name, effect_state, dt)
     end
   end
+  BondModifierEffects.trigger_modifier_card_periodic_effects(env, runtime, dt)
 
   local desired_attr = {}
   local desired_runtime = {}
@@ -2535,9 +2075,15 @@ function M.try_trigger_hunter_first_hit(env, target)
   end
 
   runtime.hunter_hit_targets[target] = true
+  local damage = env.round_number((hero_attr_system and hero_attr_system.get_attr(state.hero, '攻击结算值') or state.hero:get_attr('攻击') or state.hero:get_attr('物理攻击')) * ratio)
+  if env.reserve_formula_damage then
+    env.reserve_formula_damage(target, damage, {
+      source = 'hunter_first_hit',
+    })
+  end
   state.hero:damage({
     target = target,
-    damage = env.round_number((hero_attr_system and hero_attr_system.get_attr(state.hero, '攻击结算值') or state.hero:get_attr('攻击') or state.hero:get_attr('物理攻击')) * ratio),
+    damage = damage,
     type = env.basic_attack_damage_type,
     text_type = is_damage_text_hidden(state) and nil or 'physics',
     common_attack = false,
@@ -2553,60 +2099,31 @@ function M.handle_enemy_kill(env, info)
     return
   end
 
-  do
-    local strength_on_kill = M.get_runtime_bonus(state, 'strength_on_kill')
-    if strength_on_kill > 0 then
-      add_attr_to_hero(env, '力量', strength_on_kill)
-    end
-
-    local agility_on_kill = M.get_runtime_bonus(state, 'agility_on_kill')
-    if agility_on_kill > 0 then
-      add_attr_to_hero(env, '敏捷', agility_on_kill)
-    end
-
-    local intelligence_on_kill = M.get_runtime_bonus(state, 'intelligence_on_kill')
-    if intelligence_on_kill > 0 then
-      add_attr_to_hero(env, '智力', intelligence_on_kill)
-    end
-
-    local attack_on_kill = env.round_number(M.get_runtime_bonus(state, 'attack_on_kill'))
-    if attack_on_kill > 0 then
-      add_attr_to_hero(env, '攻击', attack_on_kill)
-    end
-
-    if hero_attr_system and hero_attr_system.rebuild_derived_attrs then
-      hero_attr_system.rebuild_derived_attrs(state.hero)
-    end
-    return
-  end
-
   local strength_on_kill = M.get_runtime_bonus(state, 'strength_on_kill')
   if strength_on_kill > 0 then
-    state.hero:add_attr('力量', strength_on_kill)
+    add_attr_to_hero(env, '力量', strength_on_kill)
   end
 
   local agility_on_kill = M.get_runtime_bonus(state, 'agility_on_kill')
   if agility_on_kill > 0 then
-    state.hero:add_attr('敏捷', agility_on_kill)
+    add_attr_to_hero(env, '敏捷', agility_on_kill)
   end
 
   local intelligence_on_kill = M.get_runtime_bonus(state, 'intelligence_on_kill')
   if intelligence_on_kill > 0 then
-    state.hero:add_attr('智力', intelligence_on_kill)
+    add_attr_to_hero(env, '智力', intelligence_on_kill)
   end
 
   local attack_on_kill = env.round_number(M.get_runtime_bonus(state, 'attack_on_kill'))
   if attack_on_kill > 0 then
-    if hero_attr_system then
-      hero_attr_system.add_attr(state.hero, '攻击', attack_on_kill)
-    else
-      state.hero:add_attr('攻击', attack_on_kill)
-    end
+    add_attr_to_hero(env, '攻击', attack_on_kill)
   end
 
-  if hero_attr_system then
+  if hero_attr_system and hero_attr_system.rebuild_derived_attrs then
     hero_attr_system.rebuild_derived_attrs(state.hero)
   end
+
+  BondModifierEffects.handle_modifier_enemy_kill(env, runtime, info, get_modifier_cards_by_bond)
 end
 
 function M.notify_basic_attack(env, target)
@@ -2617,10 +2134,21 @@ function M.notify_basic_attack(env, target)
   end
 
   for _, effect_state in pairs(runtime.modifier_pool_effect_state or {}) do
-    if effect_state and effect_state.bond_name and has_active_modifier_bond(runtime, effect_state.bond_name) then
-      trigger_modifier_basic_attack_effect(env, effect_state.bond_name, target)
+    if effect_state and effect_state.bond_name
+      and BondModifierEffects.has_active_modifier_bond(runtime, effect_state.bond_name, get_modifier_cards_by_bond) then
+      BondModifierEffects.trigger_modifier_basic_attack_effect(env, runtime, effect_state.bond_name, target)
     end
   end
+  BondModifierEffects.trigger_modifier_card_basic_attack_effects(env, runtime, target)
+end
+
+function M.notify_hero_pre_hurt(env, data)
+  local state = env and env.STATE
+  local runtime = get_runtime(state)
+  if not runtime then
+    return
+  end
+  BondModifierEffects.handle_modifier_card_pre_hurt(env, runtime, data)
 end
 
 function M.notify_attack_skill_cast(env, skill, target)
@@ -2643,24 +2171,15 @@ function M.try_draw(env)
   end
 
   if runtime.awaiting_choice and runtime.current_choices and #runtime.current_choices > 0 then
-    if env and env.message then
-      env.message('继续当前 F 仙缘感应三选一。')
-    end
     return true
   end
 
   if not state.resources or (state.resources.wood or 0) < BOND_DRAW_COST then
-    if env and env.message then
-      env.message('木材不足，无法进行仙缘感应。')
-    end
     return false
   end
 
   local choices = collect_candidate_choice_entries(state)
   if #choices == 0 then
-    if env and env.message then
-      env.message('当前没有可感应的仙缘节点。')
-    end
     return false
   end
 
@@ -2674,9 +2193,6 @@ function M.try_draw(env)
   }
   runtime.current_round = runtime.current_offer_round
 
-  if env and env.message then
-    env.message('仙缘感应 3选1：按 1 / 2 / 3 选择。')
-  end
   return true
 end
 
@@ -2689,9 +2205,6 @@ function M.refresh_choice(env)
 
   local choices = collect_candidate_choice_entries(state)
   if #choices == 0 then
-    if env and env.message then
-      env.message('当前没有可刷新的仙缘候选。')
-    end
     return false
   end
 
@@ -2702,23 +2215,14 @@ function M.refresh_choice(env)
 
   if (round.free_refresh_left or 0) > 0 then
     round.free_refresh_left = round.free_refresh_left - 1
-    if env and env.message then
-      env.message(string.format('已免费刷新 F 仙缘感应三选一，剩余免费次数 %d。', round.free_refresh_left))
-    end
   else
     local cost = get_refresh_cost(round.refresh_paid_count or 0)
     local wood = state.resources and state.resources.wood or 0
     if wood < cost then
-      if env and env.message then
-        env.message(string.format('木材不足，刷新 F 仙缘感应三选一需要 %d 木材。', cost))
-      end
       return false
     end
     state.resources.wood = wood - cost
     round.refresh_paid_count = (round.refresh_paid_count or 0) + 1
-    if env and env.message then
-      env.message(string.format('已消耗 %d 木材刷新 F 仙缘感应三选一。', cost))
-    end
   end
 
   runtime.current_choices = choices
@@ -2761,18 +2265,32 @@ local function activate_modifier_bond_effects(state, bond_name)
   runtime.modifier_pool_active_effects[effect_id] = true
   runtime.modifier_card_attr_bonuses[effect_id] = copy_bonus_pack(BOND_SET_ATTR_BONUSES[bond_name] or {})
   runtime.modifier_pool_active_runtime_bonuses[effect_id] = copy_bonus_pack(BOND_SET_RUNTIME_BONUSES[bond_name] or {})
-  runtime.modifier_pool_effect_state[effect_id] = {
-    bond_name = bond_name,
-    cooldown = 0,
-    counter = 0,
-    elapsed = 0,
-  }
+  local effect_state = BondModifierEffects.ensure_effect_state(runtime, bond_name)
+  effect_state.cooldown = 0
+  effect_state.counter = 0
+  effect_state.elapsed = 0
   activated_names[#activated_names + 1] = bond_name
 
   for _, card in ipairs(get_modifier_cards_by_bond(bond_name)) do
     runtime.consumed_root_sets[card.id] = true
   end
   return activated_names
+end
+
+local function grant_modifier_card_to_runtime(runtime, card)
+  if not runtime or not card or runtime.modifier_card_ids[card.id] == true then
+    return false
+  end
+
+  runtime.modifier_card_ids[card.id] = true
+  runtime.modifier_card_attr_bonuses[card.id] = copy_bonus_pack(card.attr_pack or {})
+  if card.extra_skill_desc and card.extra_skill_desc ~= '' and card.extra_skill_desc ~= '无' then
+    runtime.modifier_card_effect_ids[card.id] = true
+    BondModifierEffects.ensure_effect_state(runtime, card.bond_name)
+  end
+  runtime.owned_node_order[#runtime.owned_node_order + 1] = card.id
+  runtime.last_unlocked_node_id = card.id
+  return true
 end
 
 local function apply_modifier_pool_choice(env, choice)
@@ -2787,14 +2305,7 @@ local function apply_modifier_pool_choice(env, choice)
     return false
   end
 
-  runtime.modifier_card_ids[card.id] = true
-  runtime.modifier_card_attr_bonuses[card.id] = copy_bonus_pack(card.attr_pack or {})
-  if card.extra_skill_desc and card.extra_skill_desc ~= '' and card.extra_skill_desc ~= '无' then
-    runtime.modifier_card_effect_ids[card.id] = true
-    get_effect_state(runtime, card.bond_name)
-  end
-  runtime.owned_node_order[#runtime.owned_node_order + 1] = card.id
-  runtime.last_unlocked_node_id = card.id
+  grant_modifier_card_to_runtime(runtime, card)
   sync_attr_bonuses_to_hero(env)
 
   local activated_names = activate_modifier_bond_effects(state, card.bond_name)
@@ -2808,13 +2319,48 @@ local function apply_modifier_pool_choice(env, choice)
   runtime.current_round = nil
   runtime.hunter_hit_targets = {}
 
-  if env and env.message then
-    env.message(string.format('已获得羁绊卡：%s。', tostring(card.name or card.id)))
-    for _, name in ipairs(activated_names) do
-      env.message(string.format('羁绊已激活：%s。', tostring(name)))
+  return true
+end
+
+local function trim_debug_text(text)
+  return tostring(text or ''):gsub('^%s+', ''):gsub('%s+$', '')
+end
+
+local function resolve_modifier_card(card_ref)
+  local key = trim_debug_text(card_ref)
+  if key == '' then
+    return nil
+  end
+
+  local by_id = get_modifier_card(key)
+  if by_id then
+    return by_id
+  end
+
+  local lower_key = string.lower(key)
+  for _, card in ipairs(BondModifierPool.cards or {}) do
+    if card.name == key or string.lower(tostring(card.id or '')) == lower_key then
+      return card
     end
   end
-  return true
+  return nil
+end
+
+local function resolve_modifier_bond_name(raw_name)
+  local target = trim_debug_text(raw_name)
+  target = BondModifierEffects.normalize_bond_name and BondModifierEffects.normalize_bond_name(target) or target
+  if target == '' then
+    return nil
+  end
+  if BondModifierPool.cards_by_bond and BondModifierPool.cards_by_bond[target] then
+    return target
+  end
+  for bond_name in pairs(BondModifierPool.cards_by_bond or {}) do
+    if tostring(bond_name) == target then
+      return bond_name
+    end
+  end
+  return nil
 end
 
 function M.apply_choice(env, index)
@@ -2952,14 +2498,18 @@ function M.build_slot_tip_payload(state, slot)
 
   local modifier_card = get_modifier_card(node_id)
   if modifier_card then
+    local effect_text = get_modifier_bond_activation_text(modifier_card.bond_name, modifier_card.activation_desc or '')
+    local required_count = get_required_modifier_bond_count(modifier_card.bond_name)
     local tip_model = BondTipModelBuilder.build({
       quality_text = '羁绊卡',
       set_name_text = modifier_card.bond_name or '',
-      progress_text = '',
+      progress_text = string.format('%d/%d', get_owned_modifier_bond_count(runtime, modifier_card.bond_name), required_count),
       icon_res = modifier_card.icon,
       item_name_text = modifier_card.name or '羁绊卡牌',
       current_text = modifier_card.desc or '',
-      effect_text = modifier_card.activation_desc or '',
+      effect_body_text = string.format('集齐%d个%s卡牌自动吞噬', required_count, tostring(modifier_card.bond_name or '同羁绊')),
+      set_title_text = format_bond_skill_title(modifier_card.bond_name),
+      effect_text = effect_text,
     })
     return {
       kind = 'bond',
@@ -2999,18 +2549,9 @@ function M.show_loadout(env)
   local state = env and env.STATE
   local runtime = get_runtime(state)
   if not runtime or #runtime.owned_node_order == 0 then
-    if env and env.message then
-      env.message('仙缘图谱栏：暂无已参悟节点。')
-    end
-    return
-  end
+  return
+end
 
-  if env and env.message then
-    env.message('仙缘图谱栏：')
-    for slot = 1, 7 do
-      env.message(M.build_slot_text(state, slot))
-    end
-  end
 end
 
 function M.build_choice_preview_text(index, choice)
@@ -3106,7 +2647,8 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
       if bond_name ~= '' and #cards > 0 then
         local owned_count = get_owned_modifier_bond_count(runtime, bond_name)
         local required_count = get_required_modifier_bond_count(bond_name)
-        local effect_id = effect.id or ('initial_bond_set_' .. tostring(bond_name))
+        -- 运行时激活状态统一使用 initial_bond_set_<bond_name>，避免和配置表 effect.id 混用导致“已激活但未显示吞噬”。
+        local effect_id = 'initial_bond_set_' .. tostring(bond_name)
         local consumed = runtime.modifier_pool_active_effects
           and runtime.modifier_pool_active_effects[effect_id] == true
           or false
@@ -3114,6 +2656,7 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
         root_entries[#root_entries + 1] = {
           index = index,
           root_id = effect_id,
+          source_effect_id = effect.id,
           bond_name = bond_name,
           display_name = bond_name,
           pretty_display_name = bond_name,
@@ -3151,6 +2694,16 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
     local card_entries = {}
     for index, card in ipairs(selected_cards) do
       local unlocked = runtime.modifier_card_ids and runtime.modifier_card_ids[card.id] == true or false
+      local activation_text = get_modifier_bond_activation_text(card.bond_name, card.activation_desc or '')
+      local tip_model = BondTipModelBuilder.build({
+        quality_text = '羁绊卡',
+        set_name_text = card.bond_name or '',
+        progress_text = selected and selected.progress_text or '',
+        icon_res = card.icon,
+        item_name_text = card.name or '羁绊卡牌',
+        current_text = card.desc or '',
+        effect_text = activation_text,
+      })
       card_entries[#card_entries + 1] = {
         index = index,
         modifier_card_id = card.id,
@@ -3166,12 +2719,13 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
         current_text = card.desc or '',
         desc_text = card.desc or '',
         value_text = card.desc or '',
-        advanced_text = card.activation_desc or '',
-        effect_title = card.activation_desc ~= '' and string.format('集齐[%s]激活：', card.bond_name) or '',
-        effect_text = card.activation_desc or '',
+        advanced_text = activation_text,
+        effect_title = activation_text ~= '' and string.format('集齐[%s]激活：', card.bond_name) or '',
+        effect_text = activation_text,
         bond_root_name = card.bond_name,
         bond_root_progress_text = selected and selected.progress_text or '',
         title_text = string.format('%s (%s)', card.bond_name or '羁绊', selected and selected.progress_text or '0/0'),
+        tip_model = tip_model,
       }
     end
 
@@ -3199,7 +2753,7 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
       detail_lines[#detail_lines + 1] = selected.summary
     end
     if #detail_lines == 0 then
-      detail_lines[#detail_lines + 1] = '抽取并集齐同一羁绊的卡牌后，可自动吞噬并激活羁绊效果。'
+      detail_lines[#detail_lines + 1] = BOND_SKILL_ACTIVATION_PROMPT
     end
 
     return {
@@ -3220,14 +2774,7 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
 end
 
 function M.show_bond_progress(env)
-  local state = env and env.STATE
-  local lines = M.build_progress_lines(state, 10)
-  if env and env.message then
-    env.message('仙缘道统进境：')
-    for _, line in ipairs(lines) do
-      env.message(line)
-    end
-  end
+  return nil
 end
 
 function M.debug_grant_card(env, node_id)
@@ -3250,6 +2797,63 @@ function M.debug_grant_card(env, node_id)
   end
 
   return true, string.format('已参悟仙缘节点：%s。', get_node_theme_name(unlocked))
+end
+
+function M.debug_grant_modifier_card(env, card_ref)
+  local state = env and env.STATE
+  local runtime = ensure_runtime(state)
+  local card = resolve_modifier_card(card_ref)
+  if not runtime or not card then
+    return false, '未知羁绊卡（请传 card_id 或卡名）。'
+  end
+  if runtime.modifier_card_ids[card.id] == true then
+    return false, string.format('该羁绊卡已拥有：%s。', tostring(card.name or card.id))
+  end
+
+  grant_modifier_card_to_runtime(runtime, card)
+  sync_attr_bonuses_to_hero(env)
+  return true, string.format('已获得单卡效果：%s（%s）。', tostring(card.name or card.id), tostring(card.bond_name or '未知羁绊'))
+end
+
+function M.debug_activate_modifier_bond(env, bond_name, grant_missing_cards)
+  local state = env and env.STATE
+  local runtime = ensure_runtime(state)
+  local resolved_bond_name = resolve_modifier_bond_name(bond_name)
+  if not runtime or not resolved_bond_name then
+    return false, '未知羁绊名（请传 bonds_init 中的羁绊所属）。'
+  end
+
+  local granted_count = 0
+  if grant_missing_cards == true then
+    for _, card in ipairs(get_modifier_cards_by_bond(resolved_bond_name)) do
+      if grant_modifier_card_to_runtime(runtime, card) then
+        granted_count = granted_count + 1
+      end
+    end
+  end
+
+  local effect_id = 'initial_bond_set_' .. tostring(resolved_bond_name)
+  if runtime.modifier_pool_active_effects[effect_id] == true then
+    if granted_count > 0 then
+      sync_attr_bonuses_to_hero(env)
+    end
+    return true, format_bond_skill_status(BOND_SKILL_ALREADY_ACTIVE_TEMPLATE, resolved_bond_name)
+  end
+
+  local activated_names = activate_modifier_bond_effects(state, resolved_bond_name)
+  if #activated_names > 0 then
+    sync_attr_bonuses_to_hero(env)
+    return true, format_bond_skill_status(BOND_SKILL_ACTIVE_SUCCESS_TEMPLATE, resolved_bond_name)
+  end
+
+  local owned_count = get_owned_modifier_bond_count(runtime, resolved_bond_name)
+  local need_count = get_required_modifier_bond_count(resolved_bond_name)
+  return false, string.format(
+    '羁绊未集齐，无法激活：%s（%d/%d）。',
+    tostring(resolved_bond_name),
+    owned_count,
+    need_count
+  )
 end
 
 return M

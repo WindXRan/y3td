@@ -269,9 +269,9 @@ function M.create(env)
     debug_message('Ctrl+F7：补满挑战次数')
     debug_message('Ctrl+F8：立刻刷出当前波 Boss')
     debug_message('Ctrl+F9：秒杀场上全部敌人')
-    debug_message('Ctrl+F10：显示 / 隐藏 GM 面板')
+    debug_message('Ctrl+F10：显示 / 隐藏 羁绊GM 面板')
     debug_message('特效命令：.eeffect [id] / .eemount [id] / .eeunmount [id] / .eetrigger [id] / .eeobs [id] / .eeclear / .eelog')
-    debug_message('面板命令：.egm [on|off|toggle]')
+    debug_message('羁绊GM命令：.egmbond [on|off|toggle] / .egmcard <card_id|卡名> / .egmbondeffect <羁绊名>')
   end
 
   local function register_dev_commands()
@@ -411,29 +411,6 @@ function M.create(env)
       desc = '打印当前临时宝物列表。',
       onCommand = function()
         env.debug_print_temporary_treasures()
-      end,
-    })
-
-    develop_command.register('EGM', {
-      desc = '显示/隐藏 GM 面板，支持 on/off/toggle。',
-      onCommand = function(mode)
-        ensure_gm_panel()
-        mode = (mode or 'toggle'):lower()
-        if mode == 'on' then
-          if STATE.gm_ui then
-            STATE.gm_ui.visible = true
-          end
-          refresh_gm_panel()
-          return
-        end
-        if mode == 'off' then
-          if STATE.gm_ui then
-            STATE.gm_ui.visible = false
-          end
-          refresh_gm_panel()
-          return
-        end
-        toggle_gm_panel()
       end,
     })
 

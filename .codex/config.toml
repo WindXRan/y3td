@@ -1,5 +1,5 @@
 model_provider = "codex_proxy_codex"
-model = "gpt-5.5"
+model = "gpt-5.3-codex"
 model_reasoning_effort = "medium"
 disable_response_storage = true
 

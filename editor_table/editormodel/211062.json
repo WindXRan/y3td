@@ -1,0 +1,143 @@
+{
+    "describe": -31539974, 
+    "editor_res": false, 
+    "key": 211062, 
+    "model_id": 570062, 
+    "name": -1420650897, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "\u5199\u5b9e", 
+            "\u9b54\u5e7b", 
+            "\u602a\u7269", 
+            "\u7ea4\u7626", 
+            "\u5e7d\u7075", 
+            "\u98de\u884c", 
+            "\u9ed1\u8272"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/211062", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_identify": "all", 
+    "res_type": "\u7206\u6218\u5144\u5f1f\u4e13\u8f91,\u5355\u4f4d,boss", 
+    "rigidbody_offset": [
+        0.0, 
+        1.7802000000000002, 
+        0.0
+    ], 
+    "select_effect_scale": 1.0, 
+    "size": 1.0, 
+    "socket_info": {
+        "base": {
+            "__tuple__": true, 
+            "items": [
+                "base", 
+                "base", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "chest": {
+            "__tuple__": true, 
+            "items": [
+                "chest", 
+                "spine_03", 
+                0.0, 
+                0.0, 
+                0.45, 
+                2.135898088067337e-13, 
+                3.141592, 
+                1.5707966535897933
+            ]
+        }, 
+        "hand_left": {
+            "__tuple__": true, 
+            "items": [
+                "hand_left", 
+                "hand_l", 
+                0.12, 
+                0.0, 
+                -0.04, 
+                -6.535897930762885e-7, 
+                3.141592653589793, 
+                3.141592653589793
+            ]
+        }, 
+        "hand_right": {
+            "__tuple__": true, 
+            "items": [
+                "hand_right", 
+                "hand_r", 
+                0.12, 
+                0.0, 
+                -0.04, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "head": {
+            "__tuple__": true, 
+            "items": [
+                "head", 
+                "head", 
+                0.4, 
+                0.0, 
+                0.15, 
+                -0.0, 
+                0.0, 
+                -1.570796
+            ]
+        }, 
+        "hit_point": {
+            "__tuple__": true, 
+            "items": [
+                "hit_point", 
+                "spine_03", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "root": {
+            "__tuple__": true, 
+            "items": [
+                "root", 
+                "Scene\u00a0Root", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }, 
+        "unit_info": {
+            "__tuple__": true, 
+            "items": [
+                "unit_info", 
+                "head", 
+                0.0, 
+                0.0, 
+                0.0, 
+                -0.0, 
+                0.0, 
+                0.0
+            ]
+        }
+    }, 
+    "source": "code_Source_Import", 
+    "uid": "editor_model_211062", 
+    "unit_prefab": 0, 
+    "yaw": -1.5707963267948966
+}

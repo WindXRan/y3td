@@ -2,6 +2,7 @@ local theme = require 'ui.theme'
 local outgame_defs = require 'ui.outgame_defs'
 local QualityImageTable = require 'data.object_tables.quality_image_table'
 local ArchiveShop = require 'ui.outgame_archive_shop'
+local OutgameHeroGrowth = require 'runtime.outgame_hero_growth'
 
 local M = {}
 
@@ -12,6 +13,7 @@ function M.create(env)
   local message = env.message
   local play_ui_click = env.play_ui_click
   local ensure_music_loop = env.ensure_music_loop
+  local hero_growth_api = OutgameHeroGrowth.create()
 
   local STAGE_LIST = CONFIG.stages and CONFIG.stages.list or {}
   local STAGES_BY_ID = CONFIG.stages and CONFIG.stages.by_id or {}
@@ -223,11 +225,13 @@ function M.create(env)
   end
 
   local function set_non_outgame_ui_visible(visible)
-    local hidden_paths = {
+    local base_paths = {
       'GameHUD',
       'top',
       'bottom_bg',
       'BattleBottomHUD',
+    }
+    local overlay_paths = {
       'BondChoice2',
       'BondChoice3',
       'BondChoice4',
@@ -236,14 +240,24 @@ function M.create(env)
       'CommonTip',
       'SceneUI',
     }
-    for _, path in ipairs(hidden_paths) do
+    for _, path in ipairs(base_paths) do
       local ui = resolve_ui(path)
       set_visible_if_alive(ui, visible == true)
     end
 
+    -- 面板类 UI 不跟随“恢复非局外 UI”强制显示，避免关闭存档时闪出旧界面
+    for _, path in ipairs(overlay_paths) do
+      local ui = resolve_ui(path)
+      set_visible_if_alive(ui, false)
+    end
+
     if STATE.gm_ui then
-      set_visible_if_alive(STATE.gm_ui.panel, visible == true)
       set_visible_if_alive(STATE.gm_ui.toggle_button, visible == true)
+      set_visible_if_alive(STATE.gm_ui.panel, visible == true and STATE.gm_ui.visible == true)
+    end
+    if STATE.gm_bond_ui then
+      set_visible_if_alive(STATE.gm_bond_ui.toggle_button, visible == true)
+      set_visible_if_alive(STATE.gm_bond_ui.panel, visible == true and STATE.gm_bond_ui.visible == true)
     end
   end
 
@@ -691,6 +705,9 @@ function M.create(env)
     end
     if type(profile.archive_rewards.talents) ~= 'table' then
       profile.archive_rewards.talents = {}
+      dirty = true
+    end
+    if hero_growth_api and hero_growth_api.ensure_profile_defaults and hero_growth_api.ensure_profile_defaults(profile) then
       dirty = true
     end
     for _, task_def in ipairs(DAILY_TASK_DEFS) do
@@ -1283,7 +1300,10 @@ function M.create(env)
     state = STATE,
     player = env.get_player and env.get_player() or nil,
     specs = OUTGAME_DEFS.archive_shop_item_specs or {},
+    primary_tabs = OUTGAME_DEFS.archive_shop_primary_tabs or { OUTGAME_DEFS.archive_shop_primary_tab or '地图商城' },
+    primary_tab_label = OUTGAME_DEFS.archive_shop_primary_tab or '地图商城',
     categories = OUTGAME_DEFS.archive_shop_categories or {},
+    categories_by_primary = OUTGAME_DEFS.archive_shop_categories_by_primary or {},
     default_icon = OUTGAME_DEFS.archive_shop_default_icon or 906565,
     play_ui_click = play_ui_click,
   }
@@ -2379,6 +2399,61 @@ function M.create(env)
 
   function api.mark_profile_dirty()
     return mark_profile_dirty()
+  end
+
+  function api.get_hero_growth(hero_ref)
+    local profile = load_profile()
+    return hero_growth_api.get_growth_view(profile, hero_ref)
+  end
+
+  function api.get_all_hero_growth()
+    local profile = load_profile()
+    return hero_growth_api.get_growth_list(profile)
+  end
+
+  function api.add_hero_proficiency(hero_ref, amount)
+    local profile = load_profile()
+    local ok, msg, value = hero_growth_api.add_proficiency(profile, hero_ref, amount)
+    if ok then
+      mark_profile_dirty()
+      refresh_ui()
+    end
+    return ok, msg, value
+  end
+
+  function api.get_awaken_stone()
+    local profile = load_profile()
+    return hero_growth_api.get_awaken_stone(profile)
+  end
+
+  function api.add_awaken_stone(amount)
+    local profile = load_profile()
+    local ok, msg, value = hero_growth_api.add_awaken_stone(profile, amount)
+    if ok then
+      mark_profile_dirty()
+      refresh_ui()
+    end
+    return ok, msg, value
+  end
+
+  function api.try_hero_star_up(hero_ref)
+    local profile = load_profile()
+    local ok, msg, value = hero_growth_api.try_star_up(profile, hero_ref)
+    if ok then
+      mark_profile_dirty()
+      refresh_ui()
+    end
+    return ok, msg, value
+  end
+
+  function api.try_hero_awaken(hero_ref)
+    local profile = load_profile()
+    local ok, msg, value = hero_growth_api.try_awaken(profile, hero_ref)
+    if ok then
+      mark_profile_dirty()
+      refresh_ui()
+    end
+    return ok, msg, value
   end
 
   function api.debug_get_archive_talent_points()

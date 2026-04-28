@@ -83,59 +83,130 @@ local function should_show_attr(def, value)
   return number ~= 0
 end
 
+local function read_value(snapshot, get_fallback_value, name)
+  local value = snapshot and snapshot[name] or nil
+  if value == nil and get_fallback_value then
+    value = get_fallback_value(name)
+  end
+  return tonumber(value) or 0
+end
+
+local function format_named_value(snapshot, defs, get_fallback_value, name, label)
+  local def = defs.by_name[name] or { name = name, format = 'fixed1' }
+  return string.format('%s：%s', label or name, format_value(def, read_value(snapshot, get_fallback_value, name)))
+end
+
+local function pad_right(text, width)
+  text = tostring(text or '')
+  local len = #text
+  if len >= width then
+    return text
+  end
+  return text .. string.rep(' ', width - len)
+end
+
+local function join_columns(columns, separator)
+  separator = separator or '    '
+  local max_rows = 0
+  for _, column in ipairs(columns) do
+    max_rows = math.max(max_rows, #column.lines)
+  end
+
+  local result = {}
+  for row = 1, max_rows do
+    local parts = {}
+    for _, column in ipairs(columns) do
+      parts[#parts + 1] = pad_right(column.lines[row] or '', column.width or 18)
+    end
+    result[#result + 1] = table.concat(parts, separator):gsub('%s+$', '')
+  end
+  return result
+end
+
+local function build_runtime_attr_lines(snapshot, defs, get_fallback_value)
+  local left = {
+    format_named_value(snapshot, defs, get_fallback_value, '每秒攻击', '攻击成长'),
+    format_named_value(snapshot, defs, get_fallback_value, '每秒生命', '生命成长'),
+    format_named_value(snapshot, defs, get_fallback_value, '攻击范围'),
+    format_named_value(snapshot, defs, get_fallback_value, '多重数量'),
+    format_named_value(snapshot, defs, get_fallback_value, '生命恢复'),
+    format_named_value(snapshot, defs, get_fallback_value, '攻击速度'),
+    format_named_value(snapshot, defs, get_fallback_value, '闪避', '闪避概率'),
+    format_named_value(snapshot, defs, get_fallback_value, '命中', '命中概率'),
+  }
+
+  local middle = {
+    format_named_value(snapshot, defs, get_fallback_value, '护甲穿透'),
+    format_named_value(snapshot, defs, get_fallback_value, '物理暴击'),
+    format_named_value(snapshot, defs, get_fallback_value, '物理暴伤'),
+    format_named_value(snapshot, defs, get_fallback_value, '魔法暴击'),
+    format_named_value(snapshot, defs, get_fallback_value, '魔法暴伤'),
+    format_named_value(snapshot, defs, get_fallback_value, '普攻伤害', '射箭伤害'),
+    format_named_value(snapshot, defs, get_fallback_value, '物理伤害', '物理增伤'),
+    format_named_value(snapshot, defs, get_fallback_value, '魔法伤害', '法术增伤'),
+    format_named_value(snapshot, defs, get_fallback_value, '最终伤害'),
+    format_named_value(snapshot, defs, get_fallback_value, '伤害减免', '最终减免'),
+  }
+
+  local right = {
+    format_named_value(snapshot, defs, get_fallback_value, '杀敌经验', '经验加成'),
+    format_named_value(snapshot, defs, get_fallback_value, '杀敌金币', '金币加成'),
+    format_named_value(snapshot, defs, get_fallback_value, '挑战伤害', 'BOSS增伤'),
+    format_named_value(snapshot, defs, get_fallback_value, '精控伤害', '精英增伤'),
+    format_named_value(snapshot, defs, get_fallback_value, '所有伤害', '全伤增幅'),
+    format_named_value(snapshot, defs, get_fallback_value, '技能伤害', '技能增伤'),
+    format_named_value(snapshot, defs, get_fallback_value, '无视护甲'),
+    format_named_value(snapshot, defs, get_fallback_value, '物理吸血'),
+  }
+
+  return join_columns({
+    { lines = left, width = 22 },
+    { lines = middle, width = 22 },
+    { lines = right, width = 22 },
+  }, '  ')
+end
+
+local function build_growth_rule_lines()
+  return {
+    '每1点力量',
+    '增加5攻击力',
+    '增加1生命值',
+    '增加0.1%最大生命',
+    '',
+    '每1点敏捷',
+    '增加5攻击力',
+    '增加0.1%物理伤害',
+    '',
+    '每1点智力',
+    '增加5攻击力',
+    '增加0.1%法术伤害',
+  }
+end
+
 function M.build_chunks(snapshot, defs, get_fallback_value)
   if not snapshot then
     return { '属性面板暂不可用' }
   end
 
-  local category_order = {
-    defs.categories.DAMAGE,
-    defs.categories.DEFENSE,
-    defs.categories.RESOURCE,
-    defs.categories.AMPLIFY,
-    defs.categories.OTHER,
+  local attr_lines = build_runtime_attr_lines(snapshot, defs, get_fallback_value)
+  local growth_lines = build_growth_rule_lines()
+  local rows = {
+    '属性面板',
+    '',
   }
 
-  local lines = {
-    '==========',
-    '英雄属性面板',
-    '==========',
-  }
-
-  for _, category in ipairs(category_order) do
-    local category_lines = {}
-    local entries = defs.sorted_by_category[category] or {}
-    for _, def in ipairs(entries) do
-      local value = snapshot[def.name]
-      if value == nil and get_fallback_value then
-        value = get_fallback_value(def.name)
-      end
-      if should_show_attr(def, value) then
-        category_lines[#category_lines + 1] = string.format('%s: %s', tostring(def.name), format_value(def, value))
-      end
-    end
-    if #category_lines > 0 then
-      lines[#lines + 1] = '[' .. tostring(category) .. ']'
-      for _, line in ipairs(category_lines) do
-        lines[#lines + 1] = line
-      end
+  local max_rows = math.max(#attr_lines, #growth_lines)
+  for index = 1, max_rows do
+    local left = attr_lines[index] or ''
+    local right = growth_lines[index] or ''
+    if right ~= '' then
+      rows[#rows + 1] = pad_right(left, 72) .. right
+    else
+      rows[#rows + 1] = left
     end
   end
 
-  local chunks = {}
-  local chunk_lines = {}
-  local max_lines_per_chunk = 12
-  for _, line in ipairs(lines) do
-    chunk_lines[#chunk_lines + 1] = line
-    if #chunk_lines >= max_lines_per_chunk then
-      chunks[#chunks + 1] = table.concat(chunk_lines, '\n')
-      chunk_lines = {}
-    end
-  end
-  if #chunk_lines > 0 then
-    chunks[#chunks + 1] = table.concat(chunk_lines, '\n')
-  end
-  return chunks
+  return { table.concat(rows, '\n') }
 end
 
 return M

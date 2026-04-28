@@ -1,11 +1,11 @@
 local CsvLoader = require 'data.csv_loader'
 local helpers = require 'entry_objects.helpers'
 
-local meta_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_meta.csv')
-local lane_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_growth_lanes.csv')
-local skill_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_skills.csv')
-local evolution_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_evolutions.csv')
-local card_rows = CsvLoader.read_rows('data_csv/attack_skill_second_batch_cards.csv')
+local meta_rows = CsvLoader.read_rows_optional('data_csv/attack_skill_second_batch_meta.csv')
+local lane_rows = CsvLoader.read_rows_optional('data_csv/attack_skill_second_batch_growth_lanes.csv')
+local skill_rows = CsvLoader.read_rows_optional('data_csv/attack_skill_second_batch_skills.csv')
+local evolution_rows = CsvLoader.read_rows_optional('data_csv/attack_skill_second_batch_evolutions.csv')
+local card_rows = CsvLoader.read_rows_optional('data_csv/attack_skill_second_batch_cards.csv')
 local ACTIVE_SKILL_IDS = {}
 
 local evolution_by_skill = {}

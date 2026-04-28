@@ -1,1 +1,708 @@
-local a={}local b={bgm_loop='201330383',bgm_alt='201355418',ui_click='134237363',ui_open='201387287',ui_confirm='201387323',attack='134257538',attack_alt='134249714',impact='134257420',burst='134257799'}local c={[b.bgm_loop]={'BGM'},[b.bgm_alt]={'场景音乐 3'},[b.ui_click]={'UI-招募界面关闭'},[b.ui_open]={'打开背包'},[b.ui_confirm]={'胜利'},[b.attack]={'弓箭攻击（3D）'},[b.attack_alt]={'关羽普攻'},[b.impact]={'郭嘉1技能'},[b.burst]={'刘备击杀'}}local function d(e,f)local g={}local h={}local function i(j)if j==nil then return end;local k=tostring(j)if k==''or h[k]then return end;h[k]=true;g[#g+1]=k end;if type(e)=='table'then for l,j in ipairs(e)do i(j)end else i(e)end;if type(f)=='table'then for l,j in ipairs(f)do i(j)end else i(f)end;return g end;local m={cast={b.attack,b.attack_alt},impact={b.impact},chain={b.impact,b.attack_alt},burst={b.burst},tick={b.attack_alt,b.attack},charge={b.impact,b.attack}}local n={bgm_loop=d({b.bgm_loop,b.bgm_alt},{'103381','122707'}),battle_loop=d({b.bgm_loop,b.bgm_alt},{'103381','104672','104675','122707'}),boss_loop=d({b.bgm_alt,b.bgm_loop},{'103381','128336','104675','126780'}),ui_click=d({b.ui_click,b.ui_open},{'134223345'}),ui_open=d({b.ui_open,b.ui_click},nil),ui_confirm=d({b.ui_confirm},{'122579'}),ui_error=d({b.impact,b.ui_open},{'126040'}),wave_start=d({b.impact,b.attack_alt},{'125774','123320','126054'}),boss_warning=d({b.burst,b.bgm_alt},{'125774','126780','126042'}),boss_spawn=d({b.burst,b.impact},{'125775','126780','126042'}),challenge_start=d({b.attack_alt,b.impact},{'123320','125774','126042'}),challenge_success=d({b.ui_confirm},{'122579'}),challenge_fail=d({b.impact,b.ui_open},{'126040','126780','126042'}),hero_low_hp=d({b.burst,b.bgm_alt},{'126780','104675','125774'}),defeat=d({b.burst,b.bgm_alt},{'126040','126780','104675'}),basic_attack=d({'134257538',b.attack_alt},{'123160','125770'}),enemy_death_heavy=d({'134257420'},{'126040','125775'}),enemy_death_burst=d({'134257799'},{'126054','126042'})}local o={sword_wave='metal_slash',arcane_laser='beam',arcane_ray='beam',frost_nova='frost_burst',chain_lightning='thunder',earthquake='earth',tornado='wind',electro_net='thunder',meteor='fire',hurricane='wind',fireball='fire',moon_blade='metal_slash',lotus_flame='fire',demon_seal='seal',flying_swords='metal_slash'}local p={metal_slash={cast={ids=d(m.cast,{'123160','125770'}),volume=68,cooldown=0.08,offset_z=35},impact={ids=d(m.impact,{'125775','126523'}),volume=82,cooldown=0.08,offset_z=32},chain={ids=d(m.chain,{'126523','125775'}),volume=74,cooldown=0.10,offset_z=30},burst={ids=d(m.burst,{'125775','125771'}),volume=86,cooldown=0.18,height=28},tick={ids=d(m.tick,{'126523','123160'}),volume=56,cooldown=0.32,height=20},charge={ids=d(m.charge,{'125774','125771'}),volume=60,cooldown=0.20,height=20}},beam={cast={ids=d(m.cast,{'125774','125771'}),volume=70,cooldown=0.10,offset_z=35},impact={ids=d(m.impact,{'125773','125771'}),volume=80,cooldown=0.10,height=28},chain={ids=d(m.chain,{'125771','125773'}),volume=72,cooldown=0.12,height=24},burst={ids=d(m.burst,{'125773','125771'}),volume=86,cooldown=0.20,height=32},tick={ids=d(m.tick,{'125772','125771'}),volume=58,cooldown=0.34,height=24},charge={ids=d(m.charge,{'125774','125772'}),volume=62,cooldown=0.20,height=24}},frost_burst={cast={ids=d(m.cast,{'123320','126523'}),volume=66,cooldown=0.10,offset_z=35},impact={ids=d(m.impact,{'123312','126524'}),volume=82,cooldown=0.08,height=28},chain={ids=d(m.chain,{'126524','123312'}),volume=72,cooldown=0.10,height=24},burst={ids=d(m.burst,{'123312','126524'}),volume=86,cooldown=0.18,height=30},tick={ids=d(m.tick,{'126524','123320'}),volume=56,cooldown=0.32,height=22},charge={ids=d(m.charge,{'123320','126524'}),volume=60,cooldown=0.22,height=22}},thunder={cast={ids=d(m.cast,{'125774','123320'}),volume=70,cooldown=0.10,offset_z=35},impact={ids=d(m.impact,{'125775','125771'}),volume=84,cooldown=0.08,height=30},chain={ids=d(m.chain,{'125771','125775'}),volume=78,cooldown=0.10,height=28},burst={ids=d(m.burst,{'125775','125774'}),volume=90,cooldown=0.18,height=34},tick={ids=d(m.tick,{'125771','123320'}),volume=58,cooldown=0.26,height=24},charge={ids=d(m.charge,{'125774','125771'}),volume=64,cooldown=0.18,height=24}},earth={cast={ids=d(m.cast,{'123320','123160'}),volume=64,cooldown=0.12,offset_z=35},impact={ids=d(m.impact,{'125775','126040'}),volume=84,cooldown=0.10,height=28},chain={ids=d(m.chain,{'125775','126523'}),volume=70,cooldown=0.12,height=24},burst={ids=d(m.burst,{'125775','126040'}),volume=90,cooldown=0.22,height=32},tick={ids=d(m.tick,{'126523','123320'}),volume=54,cooldown=0.34,height=22},charge={ids=d(m.charge,{'125774','123320'}),volume=60,cooldown=0.22,height=22}},wind={cast={ids=d(m.cast,{'126042','123320'}),volume=70,cooldown=0.10,offset_z=35},impact={ids=d(m.impact,{'126054','126042'}),volume=78,cooldown=0.10,height=28},chain={ids=d(m.chain,{'126042','123160'}),volume=72,cooldown=0.10,height=26},burst={ids=d(m.burst,{'126042','126054'}),volume=84,cooldown=0.20,height=30},tick={ids=d(m.tick,{'126042','123320'}),volume=58,cooldown=0.28,height=24},charge={ids=d(m.charge,{'123320','126042'}),volume=62,cooldown=0.20,height=24}},fire={cast={ids=d(m.cast,{'125770','126054'}),volume=70,cooldown=0.10,offset_z=35},impact={ids=d(m.impact,{'126054','125775'}),volume=82,cooldown=0.08,height=28},chain={ids=d(m.chain,{'126054','125770'}),volume=72,cooldown=0.10,height=24},burst={ids=d(m.burst,{'126042','126054'}),volume=90,cooldown=0.18,height=32},tick={ids=d(m.tick,{'125770','126042'}),volume=60,cooldown=0.28,height=24},charge={ids=d(m.charge,{'125774','125770'}),volume=64,cooldown=0.18,height=24}},seal={cast={ids=d(m.cast,{'125774','125771'}),volume=68,cooldown=0.10,offset_z=35},impact={ids=d(m.impact,{'125775','125771'}),volume=82,cooldown=0.10,height=28},chain={ids=d(m.chain,{'125771','125775'}),volume=70,cooldown=0.12,height=24},burst={ids=d(m.burst,{'125773','125775'}),volume=88,cooldown=0.22,height=32},tick={ids=d(m.tick,{'125772','125771'}),volume=56,cooldown=0.32,height=24},charge={ids=d(m.charge,{'125774','125772'}),volume=62,cooldown=0.20,height=24}}}function a.create(q)local r=q.STATE;local s=q.y3;local t=q.get_player;local u=q.trace or function()end;local v=q.debug_missing_audio==true;local w;local x;local y;local function z()if not r.audio_runtime then r.audio_runtime={bgm_sound=nil,music_watchdog=nil,key_cache={},key_alias_cache={},missing_keys={},playback_failures={},stage_gate={},music_phase='outgame',low_hp_gate=0,audio_channels_ready=false,listener_anchor=nil}end;return r.audio_runtime end;local function A()return t and t()or nil end;local function B(C,D)local E=z()if E.playback_failures[C]==true then return end;E.playback_failures[C]=true;u(D)end;local function F(G)if type(G)=='table'then return table.concat(G,', ')end;return tostring(G or'')end;local function H(G)if type(G)=='table'then return G end;if G~=nil then return{G}end;return{}end;local function I()local E=z()local J=A()if not J then return nil end;if E.audio_channels_ready==true then return J end;E.audio_channels_ready=true;if GameAPI and GameAPI.open_background_music then pcall(GameAPI.open_background_music,J.handle,true)end;if GameAPI and GameAPI.open_battle_music then pcall(GameAPI.open_battle_music,J.handle,true)end;if GameAPI and GameAPI.get_bgm_volume and GameAPI.set_background_music_volume then pcall(function()if(tonumber(GameAPI.get_bgm_volume())or 0)<=0 then GameAPI.set_background_music_volume(J.handle,72)end end)end;if GameAPI and GameAPI.get_battle_volume and GameAPI.set_battle_music_volume then pcall(function()if(tonumber(GameAPI.get_battle_volume())or 0)<=0 then GameAPI.set_battle_music_volume(J.handle,80)end end)end;return J end;local function K(L)if not L then return false end;if type(IsValid)=='function'then local M,N=pcall(IsValid,L)if M then return N==true end end;return true end;local function O(P)if not P then return false end;local Q=type(P)if Q~='table'and Q~='userdata'then return false end;if type(P.is_running)=='function'then local M,R=pcall(P.is_running,P)if M then return R==true end end;if type(P.is_removed)=='function'then local M,S=pcall(P.is_removed,P)if M then return S~=true end end;return false end;local function T(U)local J=I()if not J then return nil end;local V=U;if not V or not V.is_exist or not V:is_exist()then V=get_hero()end;if not V or not V.is_exist or not V:is_exist()then return J end;local E=z()if E.listener_anchor==V then return J end;if GameAPI and GameAPI.set_player_listener_to_follow_unit then pcall(GameAPI.set_player_listener_to_follow_unit,J.handle,V.handle)E.listener_anchor=V end;return J end;local function W(L,X)if not L then return end;local J=A()if not J then return end;L:stop(J,X==true)end;local function Y(G,Z,_)local E=z()W(E.bgm_sound,true)E.bgm_sound=nil;E.bgm_sound=w(G,{loop=true,fade_in=Z and Z.fade_in or 0,fade_out=Z and Z.fade_out or 0,volume=Z and Z.volume or 40},_)return E.bgm_sound end;local function get_hero()local a0=r.hero;if a0 and a0.is_exist and a0:is_exist()then return a0 end;return nil end;local function a1()local a0=get_hero()if not a0 then return nil end;local a2=tonumber(a0.get_hp and a0:get_hp()or 0)or 0;local a3=0;if a0.get_max_hp then a3=tonumber(a0:get_max_hp())or 0 end;if a3<=0 and a0.get_attr then a3=tonumber(a0:get_attr('最大生命'))or tonumber(a0:get_attr('生命'))or 0 end;if a3<=0 then return nil end;return a2/a3 end;local function a4(a5)local E=z()local a6=a5 or'outgame'if E.music_phase==a6 and K(E.bgm_sound)then return E.bgm_sound end;E.bgm_sound=nil;E.music_phase=a6;if a6=='battle'then return Y(n.battle_loop,{fade_in=0.5,fade_out=0.2,volume=62},'battle_loop')end;if a6=='boss'then return Y(n.boss_loop,{fade_in=0.35,fade_out=0.15,volume=70},'boss_loop')end;return Y(n.bgm_loop,{fade_in=0.4,fade_out=0.2,volume=58},'bgm_loop')end;local function a7()local E=z()if O(E.music_watchdog)then return E.music_watchdog end;E.music_watchdog=nil;if not s or not s.ltimer or type(s.ltimer.loop)~='function'then return nil end;local M,a8=pcall(function()E.music_watchdog=s.ltimer.loop(2.5,function()local a9=z()if a9.music_phase=='result'then return end;if K(a9.bgm_sound)then return end;a9.bgm_sound=nil;a4(a9.music_phase or'outgame')end,'audio_music_watchdog')end)if not M then B('music_watchdog_create_failed',string.format('[audio] failed to create music watchdog: %s',tostring(a8)))return nil end;return E.music_watchdog end;local function aa(ab)local E=z()local ac=tostring(ab or'')if ac==''then return nil end;local ad=E.key_cache[ac]if ad~=nil then return ad or nil end;local ae=tonumber(ac)if ae then E.key_cache[ac]=ae;return ae end;local M,af=pcall(s.game.str_to_audio_key,ac)if not M or not af then E.key_cache[ac]=false;return nil end;E.key_cache[ac]=af;return af end;local function ag(ab)local E=z()local ac=tostring(ab or'')if ac==''then return{}end;local ad=E.key_alias_cache[ac]if ad~=nil then if ad==false then return{}end;return ad end;local ah=c[ac]if type(ah)~='table'or#ah==0 then E.key_alias_cache[ac]=false;return{}end;local ai={}for l,aj in ipairs(ah)do local M,af=pcall(s.game.str_to_audio_key,aj)if M and af then ai[#ai+1]=af end end;E.key_alias_cache[ac]=#ai>0 and ai or false;if E.key_alias_cache[ac]==false then return{}end;return E.key_alias_cache[ac]end;local function ak(G,_)local al=H(G)local ai={}local h={}local function am(af)if not af then return end;local an=tostring(af)if h[an]then return end;h[an]=true;ai[#ai+1]=af end;for l,ab in ipairs(al)do local af=aa(ab)if af then am(af)end;local ao=ag(ab)for l,ap in ipairs(ao)do am(ap)end end;if v and _ and#al>0 and#ai==0 then local E=z()local aq=string.format('%s::%s',_,table.concat(al,'|'))if E.missing_keys[aq]~=true then E.missing_keys[aq]=true;u(string.format('[audio] all candidates missing for %s: %s',_,table.concat(al,', ')))end end;return ai end;local function ar(G,_,as)local at=ak(G,_)local au=#at>0;for l,af in ipairs(at)do local av,L=pcall(as,af)if av and L then return L end end;if _ then local aw=au and'play'or'resolve'B(aw..':'.._,string.format('[audio] %s failed for %s: %s',aw,_,F(G)))end;return nil end;w=function(G,Z,_)local J=I()if not J then return nil end;local L=ar(G,_,function(af)return s.sound.play(J,af,{loop=Z and Z.loop==true or false,fade_in=Z and Z.fade_in or 0,fade_out=Z and Z.fade_out or 0})end)if L and Z and Z.volume then L:set_volume(J,Z.volume)end;return L end;x=function(G,ax,Z,_)if not ax or not ax.is_exist or not ax:is_exist()then return w(G,Z,_)end;local J=T(ax)if not J then return nil end;local L=ar(G,_,function(af)return s.sound.play_with_object(J,af,ax,{loop=Z and Z.loop==true or false,fade_in=Z and Z.fade_in or 0,fade_out=Z and Z.fade_out or 0,ensure=Z and Z.ensure==true or false,offset_x=Z and Z.offset_x or 0,offset_y=Z and Z.offset_y or 0,offset_z=Z and Z.offset_z or 0})end)if L and Z and Z.volume then L:set_volume(J,Z.volume)end;return L end;y=function(G,ay,Z,_)if not ay then return w(G,Z,_)end;local J=T(get_hero())if not J then return nil end;local L=ar(G,_,function(af)return s.sound.play_3d(J,af,ay,{loop=Z and Z.loop==true or false,fade_in=Z and Z.fade_in or 0,fade_out=Z and Z.fade_out or 0,ensure=Z and Z.ensure==true or false,height=Z and Z.height or 0})end)if L and Z and Z.volume then L:set_volume(J,Z.volume)end;return L end;local function az()a7()return a4('outgame')end;local function aA()return w(n.ui_click,{volume=74},'ui_click')end;local function aB()return w(n.ui_open,{volume=70},'ui_open')end;local function aC()return w(n.ui_confirm,{volume=68},'ui_confirm')end;local function aD()return w(n.ui_error,{volume=76},'ui_error')end;local function aE()return w(n.ui_confirm,{volume=92},'ui_confirm')end;local function aF()return w(n.defeat,{volume=84},'defeat')end;local function aG(ax)return x(n.basic_attack,ax,{volume=66},'basic_attack')end;local function aH(aI)if not aI then return'metal_slash'end;local aJ=aI.id;if aJ and o[aJ]then return o[aJ]end;if aI.element=='fire'then return'fire'end;if aI.element=='water'then return'frost_burst'end;if aI.element=='earth'then return'earth'end;if aI.element=='wood'then return'thunder'end;if aI.damage_form=='weapon'then return'metal_slash'end;return'beam'end;local function aK(aI,aL)local aM=aH(aI)local aN=p[aM]or{}local aO=aN[aL or'cast']or aN.cast or{}return aM,aO end;local function aP(aI,aL,aQ)aQ=tonumber(aQ)or 0;if aQ<=0 then return false end;local E=z()local aR=os.clock and os.clock()or 0;local aS=string.format('%s:%s',tostring(aI and aI.id or'attack_skill'),tostring(aL or'cast'))local aT=E.stage_gate[aS]or 0;if aT>aR then return true end;E.stage_gate[aS]=aR+aQ;return false end;local function aU(aI,U,aL)local aV=aL or'cast'local aM,aO=aK(aI,aV)local G=aO.ids or n.basic_attack;if aP(aI,aV,aO.cooldown)then return nil end;local aW=string.format('attack_skill_%s_%s',tostring(aI and aI.id or aM),aV)local Z={volume=aO.volume or 72,ensure=aO.ensure==true,offset_z=aO.offset_z or 35,height=aO.height or 0}if U and type(U.is_exist)=='function'then return x(G,U,Z,aW)end;if U then return y(G,U,Z,aW)end;return w(G,Z,aW)end;local function aX(ax,aY)local aZ=x(n.enemy_death_heavy,ax,{volume=aY and 100 or 92,ensure=true,offset_z=45},'enemy_death_heavy')x(n.enemy_death_burst,ax,{volume=aY and 94 or 82,offset_z=65},'enemy_death_burst')return aZ end;local function a_()T(get_hero())a7()return a4('battle')end;local function b0(b1)if tonumber(b1)==nil then return nil end;a4('battle')return w(n.wave_start,{volume=b1<=1 and 68 or 74},'wave_start')end;local function b2()return w(n.boss_warning,{volume=78},'boss_warning')end;local function b3(b4)a4('boss')local U=b4 and b4.unit or get_hero()return x(n.boss_spawn,U,{volume=92,ensure=true,offset_z=60},'boss_spawn')end;local function b5(b6)local U=b6 and b6.infos and b6.infos[1]and b6.infos[1].unit or get_hero()return x(n.challenge_start,U,{volume=72,offset_z=40},'challenge_start')end;local function b7(l,b8)if b8==true then return w(n.challenge_success,{volume=76},'challenge_success')end;return w(n.challenge_fail,{volume=74},'challenge_fail')end;local function b9()local ba=a1()if not ba or ba>0.35 then return nil end;local E=z()local aR=os.clock and os.clock()or 0;if E.low_hp_gate and E.low_hp_gate>aR then return nil end;E.low_hp_gate=aR+4.0;return w(n.hero_low_hp,{volume=58},'hero_low_hp')end;local function bb(bc)local E=z()W(E.bgm_sound,true)E.bgm_sound=nil;E.music_phase='result'if bc and bc.is_win==true then return aE()end;return aF()end;return{ensure_music_loop=az,enter_battle=a_,handle_wave_started=b0,handle_boss_warning=b2,handle_boss_spawned=b3,handle_challenge_started=b5,handle_challenge_finished=b7,handle_hero_be_hurt=b9,handle_battle_finished=bb,play_ui_click=aA,play_ui_error=aD,play_panel_open=aB,play_confirm=aC,play_victory=aE,play_defeat=aF,play_basic_attack=aG,play_attack_skill=aU,play_enemy_death=aX}end;return a
+﻿local a={}
+local b={bgm_loop='201330383',
+bgm_alt='201355418',
+ui_click='134237363',
+ui_open='201387287',
+ui_confirm='201387323',
+attack='134257538',
+attack_alt='134249714',
+impact='134257420',
+burst='134257799'}
+local c={[b.bgm_loop]={'BGM'},
+[b.bgm_alt]={'场景音乐 3'},
+[b.ui_click]={'UI-招募界面关闭'},
+[b.ui_open]={'打开背包'},
+[b.ui_confirm]={'胜利'},
+[b.attack]={'弓箭攻击（3D）'},
+[b.attack_alt]={'关羽普攻'},
+[b.impact]={'郭嘉1技能'},
+[b.burst]={'刘备击杀'}}
+local function d(e,f)
+local g={}
+local h={}
+local function i(j)
+if j==nil then return end;
+
+local k=tostring(j)
+if k==''or h[k]then return end;
+h[k]=true;g[#g+1]=k end;
+
+if type(e)=='table'then for l,j in ipairs(e)do i(j)end else i(e)end;
+
+if type(f)=='table'then for l,j in ipairs(f)do i(j)end else i(f)end;
+
+return g end;
+
+local m={cast={b.attack,b.attack_alt},
+impact={b.impact},
+chain={b.impact,b.attack_alt},
+burst={b.burst},
+tick={b.attack_alt,b.attack},
+charge={b.impact,b.attack}}
+local n={bgm_loop=d({b.bgm_loop,b.bgm_alt},
+{'103381','122707'}),
+battle_loop=d({b.bgm_loop,b.bgm_alt},
+{'103381','104672','104675','122707'}),
+boss_loop=d({b.bgm_alt,b.bgm_loop},
+{'103381','128336','104675','126780'}),
+ui_click=d({b.ui_click,b.ui_open},
+{'134223345'}),
+ui_open=d({b.ui_open,b.ui_click},
+nil),
+ui_confirm=d({b.ui_confirm},
+{'122579'}),
+ui_error=d({b.impact,b.ui_open},
+{'126040'}),
+wave_start=d({b.impact,b.attack_alt},
+{'125774','123320','126054'}),
+boss_warning=d({b.burst,b.bgm_alt},
+{'125774','126780','126042'}),
+boss_spawn=d({b.burst,b.impact},
+{'125775','126780','126042'}),
+challenge_start=d({b.attack_alt,b.impact},
+{'123320','125774','126042'}),
+challenge_success=d({b.ui_confirm},
+{'122579'}),
+challenge_fail=d({b.impact,b.ui_open},
+{'126040','126780','126042'}),
+hero_low_hp=d({b.burst,b.bgm_alt},
+{'126780','104675','125774'}),
+defeat=d({b.burst,b.bgm_alt},
+{'126040','126780','104675'}),
+basic_attack=d({'134257538',b.attack_alt},
+{'123160','125770'}),
+enemy_death_heavy=d({'134257420'},
+{'126040','125775'}),
+enemy_death_burst=d({'134257799'},
+{'126054','126042'})}
+local o={sword_wave='metal_slash',
+arcane_laser='beam',
+arcane_ray='beam',
+frost_nova='frost_burst',
+chain_lightning='thunder',
+earthquake='earth',
+tornado='wind',
+electro_net='thunder',
+meteor='fire',
+hurricane='wind',
+fireball='fire',
+moon_blade='metal_slash',
+lotus_flame='fire',
+demon_seal='seal',
+flying_swords='metal_slash'}
+local p={metal_slash={cast={ids=d(m.cast,{'123160','125770'}),
+volume=68,
+cooldown=0.08,
+offset_z=35},
+impact={ids=d(m.impact,{'125775','126523'}),
+volume=82,
+cooldown=0.08,
+offset_z=32},
+chain={ids=d(m.chain,{'126523','125775'}),
+volume=74,
+cooldown=0.10,
+offset_z=30},
+burst={ids=d(m.burst,{'125775','125771'}),
+volume=86,
+cooldown=0.18,
+height=28},
+tick={ids=d(m.tick,{'126523','123160'}),
+volume=56,
+cooldown=0.32,
+height=20},
+charge={ids=d(m.charge,{'125774','125771'}),
+volume=60,
+cooldown=0.20,
+height=20}},
+beam={cast={ids=d(m.cast,{'125774','125771'}),
+volume=70,
+cooldown=0.10,
+offset_z=35},
+impact={ids=d(m.impact,{'125773','125771'}),
+volume=80,
+cooldown=0.10,
+height=28},
+chain={ids=d(m.chain,{'125771','125773'}),
+volume=72,
+cooldown=0.12,
+height=24},
+burst={ids=d(m.burst,{'125773','125771'}),
+volume=86,
+cooldown=0.20,
+height=32},
+tick={ids=d(m.tick,{'125772','125771'}),
+volume=58,
+cooldown=0.34,
+height=24},
+charge={ids=d(m.charge,{'125774','125772'}),
+volume=62,
+cooldown=0.20,
+height=24}},
+frost_burst={cast={ids=d(m.cast,{'123320','126523'}),
+volume=66,
+cooldown=0.10,
+offset_z=35},
+impact={ids=d(m.impact,{'123312','126524'}),
+volume=82,
+cooldown=0.08,
+height=28},
+chain={ids=d(m.chain,{'126524','123312'}),
+volume=72,
+cooldown=0.10,
+height=24},
+burst={ids=d(m.burst,{'123312','126524'}),
+volume=86,
+cooldown=0.18,
+height=30},
+tick={ids=d(m.tick,{'126524','123320'}),
+volume=56,
+cooldown=0.32,
+height=22},
+charge={ids=d(m.charge,{'123320','126524'}),
+volume=60,
+cooldown=0.22,
+height=22}},
+thunder={cast={ids=d(m.cast,{'125774','123320'}),
+volume=70,
+cooldown=0.10,
+offset_z=35},
+impact={ids=d(m.impact,{'125775','125771'}),
+volume=84,
+cooldown=0.08,
+height=30},
+chain={ids=d(m.chain,{'125771','125775'}),
+volume=78,
+cooldown=0.10,
+height=28},
+burst={ids=d(m.burst,{'125775','125774'}),
+volume=90,
+cooldown=0.18,
+height=34},
+tick={ids=d(m.tick,{'125771','123320'}),
+volume=58,
+cooldown=0.26,
+height=24},
+charge={ids=d(m.charge,{'125774','125771'}),
+volume=64,
+cooldown=0.18,
+height=24}},
+earth={cast={ids=d(m.cast,{'123320','123160'}),
+volume=64,
+cooldown=0.12,
+offset_z=35},
+impact={ids=d(m.impact,{'125775','126040'}),
+volume=84,
+cooldown=0.10,
+height=28},
+chain={ids=d(m.chain,{'125775','126523'}),
+volume=70,
+cooldown=0.12,
+height=24},
+burst={ids=d(m.burst,{'125775','126040'}),
+volume=90,
+cooldown=0.22,
+height=32},
+tick={ids=d(m.tick,{'126523','123320'}),
+volume=54,
+cooldown=0.34,
+height=22},
+charge={ids=d(m.charge,{'125774','123320'}),
+volume=60,
+cooldown=0.22,
+height=22}},
+wind={cast={ids=d(m.cast,{'126042','123320'}),
+volume=70,
+cooldown=0.10,
+offset_z=35},
+impact={ids=d(m.impact,{'126054','126042'}),
+volume=78,
+cooldown=0.10,
+height=28},
+chain={ids=d(m.chain,{'126042','123160'}),
+volume=72,
+cooldown=0.10,
+height=26},
+burst={ids=d(m.burst,{'126042','126054'}),
+volume=84,
+cooldown=0.20,
+height=30},
+tick={ids=d(m.tick,{'126042','123320'}),
+volume=58,
+cooldown=0.28,
+height=24},
+charge={ids=d(m.charge,{'123320','126042'}),
+volume=62,
+cooldown=0.20,
+height=24}},
+fire={cast={ids=d(m.cast,{'125770','126054'}),
+volume=70,
+cooldown=0.10,
+offset_z=35},
+impact={ids=d(m.impact,{'126054','125775'}),
+volume=82,
+cooldown=0.08,
+height=28},
+chain={ids=d(m.chain,{'126054','125770'}),
+volume=72,
+cooldown=0.10,
+height=24},
+burst={ids=d(m.burst,{'126042','126054'}),
+volume=90,
+cooldown=0.18,
+height=32},
+tick={ids=d(m.tick,{'125770','126042'}),
+volume=60,
+cooldown=0.28,
+height=24},
+charge={ids=d(m.charge,{'125774','125770'}),
+volume=64,
+cooldown=0.18,
+height=24}},
+seal={cast={ids=d(m.cast,{'125774','125771'}),
+volume=68,
+cooldown=0.10,
+offset_z=35},
+impact={ids=d(m.impact,{'125775','125771'}),
+volume=82,
+cooldown=0.10,
+height=28},
+chain={ids=d(m.chain,{'125771','125775'}),
+volume=70,
+cooldown=0.12,
+height=24},
+burst={ids=d(m.burst,{'125773','125775'}),
+volume=88,
+cooldown=0.22,
+height=32},
+tick={ids=d(m.tick,{'125772','125771'}),
+volume=56,
+cooldown=0.32,
+height=24},
+charge={ids=d(m.charge,{'125774','125772'}),
+volume=62,
+cooldown=0.20,
+height=24}}}function a.create(q)
+local r=q.STATE;
+local s=q.y3;
+local t=q.get_player;
+local u=q.trace or function()end;
+
+local v=q.debug_missing_audio==true;
+local w;
+local x;
+local y;
+local function z()
+if not r.audio_runtime then r.audio_runtime={bgm_sound=nil,
+music_watchdog=nil,
+key_cache={},
+key_alias_cache={},
+missing_keys={},
+playback_failures={},
+stage_gate={},
+music_phase='outgame',
+low_hp_gate=0,
+audio_channels_ready=false,
+listener_anchor=nil}end;
+
+return r.audio_runtime end;
+
+local function A()return t and t()or nil end;
+
+local function B(C,D)
+local E=z()
+if E.playback_failures[C]==true then return end;
+E.playback_failures[C]=true;u(D)end;
+
+local function F(G)
+if type(G)=='table'then return table.concat(G,', ')end;
+
+return tostring(G or'')end;
+
+local function H(G)
+if type(G)=='table'then return G end;
+
+if G~=nil then return{G}end;
+
+return{}end;
+
+local function I()
+local E=z()
+local J=A()
+if not J then return nil end;
+
+if E.audio_channels_ready==true then return J end;
+E.audio_channels_ready=true;
+if GameAPI and GameAPI.open_background_music then pcall(GameAPI.open_background_music,J.handle,true)end;
+
+if GameAPI and GameAPI.open_battle_music then pcall(GameAPI.open_battle_music,J.handle,true)end;
+
+if GameAPI and GameAPI.get_bgm_volume and GameAPI.set_background_music_volume then pcall(function()
+if(tonumber(GameAPI.get_bgm_volume())or 0)<=0 then GameAPI.set_background_music_volume(J.handle,72)end end)end;
+
+if GameAPI and GameAPI.get_battle_volume and GameAPI.set_battle_music_volume then pcall(function()
+if(tonumber(GameAPI.get_battle_volume())or 0)<=0 then GameAPI.set_battle_music_volume(J.handle,80)end end)end;
+
+return J end;
+
+local function K(L)
+if not L then return false end;
+
+if type(IsValid)=='function'then local M,
+N=pcall(IsValid,L)
+if M then return N==true end end;
+
+return true end;
+
+local function O(P)
+if not P then return false end;
+
+local Q=type(P)
+if Q~='table'and Q~='userdata'then return false end;
+
+if type(P.is_running)=='function'then local M,
+R=pcall(P.is_running,P)
+if M then return R==true end end;
+
+if type(P.is_removed)=='function'then local M,
+S=pcall(P.is_removed,P)
+if M then return S~=true end end;
+
+return false end;
+
+local function T(U)
+local J=I()
+if not J then return nil end;
+
+local V=U;
+if not V or not V.is_exist or not V:is_exist()then V=get_hero()end;
+
+if not V or not V.is_exist or not V:is_exist()then return J end;
+
+local E=z()
+if E.listener_anchor==V then return J end;
+
+if GameAPI and GameAPI.set_player_listener_to_follow_unit then pcall(GameAPI.set_player_listener_to_follow_unit,J.handle,V.handle)E.listener_anchor=V end;
+
+return J end;
+
+local function W(L,X)
+if not L then return end;
+
+local J=A()
+if not J then return end;
+L:stop(J,
+X==true)end;
+
+local function Y(G,Z,_)
+local E=z()
+W(E.bgm_sound,true)E.bgm_sound=nil;E.bgm_sound=w(G,{loop=true,
+fade_in=Z and Z.fade_in or 0,
+fade_out=Z and Z.fade_out or 0,
+volume=Z and Z.volume or 40},
+_)return E.bgm_sound end;
+
+local function get_hero()
+local a0=r.hero;
+if a0 and a0.is_exist and a0:is_exist()then return a0 end;
+
+return nil end;
+
+local function a1()
+local a0=get_hero()
+if not a0 then return nil end;
+
+local a2=tonumber(a0.get_hp and a0:get_hp()or 0)or 0;
+local a3=0;
+if a0.get_max_hp then a3=tonumber(a0:get_max_hp())or 0 end;
+
+if a3<=0 and a0.get_attr then a3=tonumber(a0:get_attr('最大生命'))or tonumber(a0:get_attr('生命'))or 0 end;
+
+if a3<=0 then return nil end;
+
+return a2/a3 end;
+
+local function a4(a5)
+local E=z()
+local a6=a5 or'outgame'if E.music_phase==a6 and K(E.bgm_sound)then return E.bgm_sound end;
+E.bgm_sound=nil;E.music_phase=a6;
+if a6=='battle'then return Y(n.battle_loop,{fade_in=0.5,
+fade_out=0.2,
+volume=62},'battle_loop')end;
+
+if a6=='boss'then return Y(n.boss_loop,{fade_in=0.35,
+fade_out=0.15,
+volume=70},'boss_loop')end;
+
+return Y(n.bgm_loop,{fade_in=0.4,
+fade_out=0.2,
+volume=58},'bgm_loop')end;
+
+local function a7()
+local E=z()
+if O(E.music_watchdog)then return E.music_watchdog end;
+E.music_watchdog=nil;
+if not s or not s.ltimer or type(s.ltimer.loop)~='function'then return nil end;
+
+local M,a8=pcall(function()E.music_watchdog=s.ltimer.loop(2.5,function()
+local a9=z()
+if a9.music_phase=='result'then return end;
+
+if K(a9.bgm_sound)then return end;
+a9.bgm_sound=nil;a4(a9.music_phase or'outgame')end,'audio_music_watchdog')end)
+if not M then B('music_watchdog_create_failed',string.format('[audio] failed to create music watchdog: %s',tostring(a8)))return nil end;
+
+return E.music_watchdog end;
+
+local function aa(ab)
+local E=z()
+local ac=tostring(ab or'')
+if ac==''then return nil end;
+
+local ad=E.key_cache[ac]if ad~=nil then return ad or nil end;
+
+local ae=tonumber(ac)
+if ae then E.key_cache[ac]=ae;
+return ae end;
+
+local M,
+af=pcall(s.game.str_to_audio_key,ac)
+if not M or not af then E.key_cache[ac]=false;
+return nil end;
+E.key_cache[ac]=af;
+return af end;
+
+local function ag(ab)
+local E=z()
+local ac=tostring(ab or'')
+if ac==''then return{}end;
+
+local ad=E.key_alias_cache[ac]if ad~=nil then
+if ad==false then return{}end;
+
+return ad end;
+
+local ah=c[ac]if type(ah)~='table'or#ah==0 then E.key_alias_cache[ac]=false;
+return{}end;
+
+local ai={}for l,aj in ipairs(ah)do local M,
+af=pcall(s.game.str_to_audio_key,aj)
+if M and af then ai[#ai+1]=af end end;
+E.key_alias_cache[ac]=#ai>0 and ai or false;
+if E.key_alias_cache[ac]==false then return{}end;
+
+return E.key_alias_cache[ac]end;
+
+local function ak(G,_)
+local al=H(G)
+local ai={}
+local h={}
+local function am(af)
+if not af then return end;
+
+local an=tostring(af)
+if h[an]then return end;
+h[an]=true;ai[#ai+1]=af end;
+
+for l,ab in ipairs(al)do local af=aa(ab)
+if af then am(af)end;
+
+local ao=ag(ab)for l,ap in ipairs(ao)do am(ap)end end;
+
+if v and _ and#al>0 and#ai==0 then local E=z()
+local aq=string.format('%s::%s',_,table.concat(al,'|'))
+if E.missing_keys[aq]~=true then E.missing_keys[aq]=true;u(string.format('[audio] all candidates missing for %s: %s',_,table.concat(al,', ')))end end;
+
+return ai end;
+
+local function ar(G,_,as)
+local at=ak(G,_)
+local au=#at>0;
+for l,af in ipairs(at)do local av,
+L=pcall(as,af)
+if av and L then return L end end;
+
+if _ then local aw=au and'play'or'resolve'B(aw..':'.._,string.format('[audio] %s failed for %s: %s',aw,_,F(G)))end;
+
+return nil end;
+w=function(G,Z,_)
+local J=I()
+if not J then return nil end;
+
+local L=ar(G,_,function(af)return s.sound.play(J,af,{loop=Z and Z.loop==true or false,
+fade_in=Z and Z.fade_in or 0,
+fade_out=Z and Z.fade_out or 0})
+end)
+if L and Z and Z.volume then L:set_volume(J,Z.volume)end;
+
+return L end;
+x=function(G,ax,Z,_)
+if not ax or not ax.is_exist or not ax:is_exist()then return w(G,Z,_)end;
+
+local J=T(ax)
+if not J then return nil end;
+
+local L=ar(G,_,function(af)return s.sound.play_with_object(J,af,ax,{loop=Z and Z.loop==true or false,
+fade_in=Z and Z.fade_in or 0,
+fade_out=Z and Z.fade_out or 0,
+ensure=Z and Z.ensure==true or false,
+offset_x=Z and Z.offset_x or 0,
+offset_y=Z and Z.offset_y or 0,
+offset_z=Z and Z.offset_z or 0})
+end)
+if L and Z and Z.volume then L:set_volume(J,Z.volume)end;
+
+return L end;
+y=function(G,ay,Z,_)
+if not ay then return w(G,Z,_)end;
+
+local J=T(get_hero())
+if not J then return nil end;
+
+local L=ar(G,_,function(af)return s.sound.play_3d(J,af,ay,{loop=Z and Z.loop==true or false,
+fade_in=Z and Z.fade_in or 0,
+fade_out=Z and Z.fade_out or 0,
+ensure=Z and Z.ensure==true or false,
+height=Z and Z.height or 0})
+end)
+if L and Z and Z.volume then L:set_volume(J,Z.volume)end;
+
+return L end;
+
+local function az()
+a7()return a4('outgame')end;
+
+local function aA()return w(n.ui_click,{volume=74},'ui_click')end;
+
+local function aB()return w(n.ui_open,{volume=70},'ui_open')end;
+
+local function aC()return w(n.ui_confirm,{volume=68},'ui_confirm')end;
+
+local function aD()return w(n.ui_error,{volume=76},'ui_error')end;
+
+local function aE()return w(n.ui_confirm,{volume=92},'ui_confirm')end;
+
+local function aF()return w(n.defeat,{volume=84},'defeat')end;
+
+local function aG(ax)return x(n.basic_attack,ax,{volume=66},'basic_attack')end;
+
+local function aH(aI)
+if not aI then return'metal_slash'end;
+
+local aJ=aI.id;
+if aJ and o[aJ]then return o[aJ]end;
+
+if aI.element=='fire'then return'fire'end;
+
+if aI.element=='water'then return'frost_burst'end;
+
+if aI.element=='earth'then return'earth'end;
+
+if aI.element=='wood'then return'thunder'end;
+
+if aI.damage_form=='weapon'then return'metal_slash'end;
+
+return'beam'end;
+
+local function aK(aI,aL)
+local aM=aH(aI)
+local aN=p[aM]or{}
+local aO=aN[aL or'cast']or aN.cast or{}return aM,aO end;
+
+local function aP(aI,aL,aQ)aQ=tonumber(aQ)or 0;
+if aQ<=0 then return false end;
+
+local E=z()
+local aR=os.clock and os.clock()or 0;
+local aS=string.format('%s:%s',tostring(aI and aI.id or'attack_skill'),tostring(aL or'cast'))
+local aT=E.stage_gate[aS]or 0;
+if aT>aR then return true end;
+E.stage_gate[aS]=aR+aQ;
+return false end;
+
+local function aU(aI,U,aL)
+local aV=aL or'cast'local aM,
+aO=aK(aI,aV)
+local G=aO.ids or n.basic_attack;
+if aP(aI,aV,aO.cooldown)then return nil end;
+
+local aW=string.format('attack_skill_%s_%s',tostring(aI and aI.id or aM),aV)
+local Z={volume=aO.volume or 72,
+ensure=aO.ensure==true,
+offset_z=aO.offset_z or 35,
+height=aO.height or 0}if U and type(U.is_exist)=='function'then return x(G,U,Z,aW)end;
+
+if U then return y(G,U,Z,aW)end;
+
+return w(G,Z,aW)end;
+
+local function aX(ax,aY)
+local aZ=x(n.enemy_death_heavy,ax,{volume=aY and 100 or 92,
+ensure=true,
+offset_z=45},'enemy_death_heavy')
+x(n.enemy_death_burst,ax,{volume=aY and 94 or 82,
+offset_z=65},'enemy_death_burst')return aZ end;
+
+local function a_()
+T(get_hero())
+a7()return a4('battle')end;
+
+local function b0(b1)
+if tonumber(b1)==nil then return nil end;
+a4('battle')return w(n.wave_start,{volume=b1<=1 and 68 or 74},'wave_start')end;
+
+local function b2()return w(n.boss_warning,{volume=78},'boss_warning')end;
+
+local function b3(b4)
+a4('boss')
+local U=b4 and b4.unit or get_hero()return x(n.boss_spawn,U,{volume=92,
+ensure=true,
+offset_z=60},'boss_spawn')end;
+
+local function b5(b6)
+local U=b6 and b6.infos and b6.infos[1]and b6.infos[1].unit or get_hero()return x(n.challenge_start,U,{volume=72,
+offset_z=40},'challenge_start')end;
+
+local function b7(l,b8)
+if b8==true then return w(n.challenge_success,{volume=76},'challenge_success')end;
+
+return w(n.challenge_fail,{volume=74},'challenge_fail')end;
+
+local function b9()
+local ba=a1()
+if not ba or ba>0.35 then return nil end;
+
+local E=z()
+local aR=os.clock and os.clock()or 0;
+if E.low_hp_gate and E.low_hp_gate>aR then return nil end;
+E.low_hp_gate=aR+4.0;
+return w(n.hero_low_hp,{volume=58},'hero_low_hp')end;
+
+local function bb(bc)
+local E=z()
+W(E.bgm_sound,true)E.bgm_sound=nil;E.music_phase='result'if bc and bc.is_win==true then return aE()end;
+
+return aF()end;
+
+return{ensure_music_loop=az,
+enter_battle=a_,
+handle_wave_started=b0,
+handle_boss_warning=b2,
+handle_boss_spawned=b3,
+handle_challenge_started=b5,
+handle_challenge_finished=b7,
+handle_hero_be_hurt=b9,
+handle_battle_finished=bb,
+play_ui_click=aA,
+play_ui_error=aD,
+play_panel_open=aB,
+play_confirm=aC,
+play_victory=aE,
+play_defeat=aF,
+play_basic_attack=aG,
+play_attack_skill=aU,
+play_enemy_death=aX}end;
+
+return a
+
+
+

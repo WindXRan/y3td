@@ -19,6 +19,9 @@ return {
   },
   projectile = {
     basic_attack = 134267104,
+    bow_sniper = 201392031,
+    bow_gale = 201392032,
+    bow_multishot = 201392033,
     sword_wave = 201364743,
     arcane_laser = 134255909,
     arcane_ray = 134264830,

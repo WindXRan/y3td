@@ -1,0 +1,35 @@
+{
+    "describe": -649828763, 
+    "editor_res": false, 
+    "key": 100008, 
+    "map_name": "G57\u4e09\u56fd\u5982\u9f99", 
+    "model_id": 100008, 
+    "name": -1660597603, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "code_Realistic", 
+            "code_Green", 
+            "code_Grass", 
+            "P13(Q\u7248\u56fd\u98ce\u7cfb\u5217)"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/100008", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_identify": "all", 
+    "res_type": "code_model_Scene,code_Plant,code_grass", 
+    "rigidbody_offset": [
+        0.0, 
+        0.64, 
+        0.0
+    ], 
+    "select_effect_scale": 1.0, 
+    "size": 1.0, 
+    "socket_info": {}, 
+    "source": "code_Source_Import", 
+    "uid": "editor_model_100008", 
+    "unit_prefab": 0
+}

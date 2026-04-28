@@ -44,10 +44,17 @@ local ChallengeObjects = require 'entry_objects.challenges'
 local StageObjects = require 'entry_objects.stages'
 local StageModeObjects = require 'entry_objects.stage_modes'
 local MainlineTaskRewardObjects = require 'data.object_tables.mainline_task_rewards'
-local TreasureCatalogObjects = require 'entry_objects.treasure_catalog'
-local TreasureCatalogCompatObjects = require 'data.object_tables.treasure_catalog_compat'
+local ok_treasure_catalog, TreasureCatalogObjects = pcall(require, 'entry_objects.treasure_catalog')
+if not ok_treasure_catalog or type(TreasureCatalogObjects) ~= 'table' then
+  TreasureCatalogObjects = { list = {}, by_id = {} }
+end
+local ok_treasure_compat, TreasureCatalogCompatObjects = pcall(require, 'data.object_tables.treasure_catalog_compat')
+if not ok_treasure_compat or type(TreasureCatalogCompatObjects) ~= 'table' then
+  TreasureCatalogCompatObjects = {}
+end
 local OutgameAttrBonusConfig = require 'data.object_tables.outgame_attr_bonus_config'
 local GearUpgradeConfig = require 'data.object_tables.gear_upgrade_config'
+local SkillRuntimeTuning = require 'data.object_tables.skill_runtime_tuning'
 
 local M = {
   debug_time_scale = DEBUG_TIME_SCALE,
@@ -102,6 +109,9 @@ local M = {
   treasure_catalog_compat = TreasureCatalogCompatObjects,
   outgame_attr_bonus_config = OutgameAttrBonusConfig,
   gear_upgrade_config = GearUpgradeConfig,
+  skill_runtime_tuning = SkillRuntimeTuning,
+  attack_skill_runtime_tuning = SkillRuntimeTuning.attack or {},
+  bond_skill_runtime_tuning = SkillRuntimeTuning.bond or {},
 }
 
 for _, wave in ipairs(M.waves) do

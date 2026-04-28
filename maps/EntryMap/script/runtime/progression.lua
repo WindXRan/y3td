@@ -110,12 +110,18 @@ function M.create(env)
       return nil
     end
 
+    local attack_growth = (tonumber(rules.hero_level_attack_growth) or 0) * count
+    local all_attr_growth = (tonumber(rules.hero_level_all_attr_growth) or 0) * count
+    local main_stat_attack_ratio = tonumber(rules.main_stat_attack_ratio) or 0.5
+    local attack_compensation = all_attr_growth * 3 * main_stat_attack_ratio
+
     return {
-      ['攻击'] = (tonumber(rules.hero_level_attack_growth) or 0) * count,
+      -- 力量/敏捷/智力会在重建时转化为攻击，这里抵消该部分，保证升级净攻击按配置生效。
+      ['攻击'] = attack_growth - attack_compensation,
       ['生命'] = (tonumber(rules.hero_level_hp_growth) or 0) * count,
-      ['力量'] = (tonumber(rules.hero_level_all_attr_growth) or 0) * count,
-      ['敏捷'] = (tonumber(rules.hero_level_all_attr_growth) or 0) * count,
-      ['智力'] = (tonumber(rules.hero_level_all_attr_growth) or 0) * count,
+      ['力量'] = all_attr_growth,
+      ['敏捷'] = all_attr_growth,
+      ['智力'] = all_attr_growth,
     }
   end
 
@@ -156,6 +162,9 @@ function M.create(env)
     if hp_growth > 0 and STATE.hero.add_hp then
       STATE.hero:add_hp(hp_growth)
     end
+    progress.last_growth_pack = growth_pack
+    progress.last_growth_from_level = applied_level + 1
+    progress.last_growth_to_level = new_level
     progress.applied_growth_level = new_level
     return true
   end
@@ -165,10 +174,24 @@ function M.create(env)
       return
     end
 
-    STATE.hero_progress.level = math.max(1, math.min(STATE.hero:get_level(), get_engine_exp_cap_level()))
-    STATE.hero_progress.exp = math.max(0, round_number(y3.helper.tonumber(STATE.hero:get_exp()) or 0))
-    STATE.hero_progress.exp_to_next = get_hero_next_level_exp(STATE.hero_progress.level)
-    apply_hero_level_growth(STATE.hero_progress.level)
+    local progress = STATE.hero_progress
+    local engine_cap_level = get_engine_exp_cap_level()
+    local current_level = math.max(1, math.min(tonumber(progress.level) or 1, get_hero_max_level()))
+    local engine_level = math.max(1, math.min(tonumber(STATE.hero:get_level()) or 1, engine_cap_level))
+
+    if engine_cap_level <= 1 or current_level >= engine_cap_level or engine_level < current_level then
+      progress.level = current_level
+      progress.exp = math.max(0, tonumber(progress.exp) or 0)
+      progress.exp_to_next = get_hero_next_level_exp(progress.level)
+      STATE.hero:set_exp(0)
+      STATE.hero:set_ability_point(0)
+      return
+    end
+
+    progress.level = engine_level
+    progress.exp = math.max(0, round_number(y3.helper.tonumber(STATE.hero:get_exp()) or 0))
+    progress.exp_to_next = get_hero_next_level_exp(progress.level)
+    apply_hero_level_growth(progress.level)
   end
 
   local function get_hero_progress_text()
@@ -228,7 +251,6 @@ function M.create(env)
         sync_hero_progression()
         apply_hero_level_growth(progress.level)
         STATE.skill_points = 0
-        message(string.format('英雄升级至 %d。', progress.level))
         if on_hero_level_up and progress.level % 5 == 0 then
           on_hero_level_up(progress.level)
         end

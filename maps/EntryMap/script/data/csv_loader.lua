@@ -11,6 +11,7 @@ local function get_script_root()
 end
 
 local SCRIPT_ROOT = get_script_root()
+local warned_missing_paths = {}
 
 local function is_absolute_path(path)
   return path:match('^%a:[/\\]') ~= nil
@@ -88,6 +89,48 @@ function M.read_rows(path)
     error(string.format('[csv] missing headers in %s', resolved))
   end
 
+  return rows
+end
+
+function M.read_rows_optional(path)
+  local resolved = resolve_path(path)
+  local file, err = io.open(resolved, 'r')
+  if not file then
+    if not warned_missing_paths[resolved] then
+      warned_missing_paths[resolved] = true
+      local message = string.format('[csv] optional file missing, fallback to empty rows: %s (%s)', resolved, tostring(err))
+      if log and log.warn then
+        log.warn(message)
+      else
+        print(message)
+      end
+    end
+    return {}
+  end
+
+  local headers = nil
+  local rows = {}
+
+  for line in file:lines() do
+    line = line:gsub('\r$', '')
+    if line ~= '' then
+      if not headers then
+        headers = split_csv_line(line)
+      else
+        local values = split_csv_line(line)
+        local row = {}
+        for index, header in ipairs(headers) do
+          row[header] = values[index] or ''
+        end
+        rows[#rows + 1] = row
+      end
+    end
+  end
+
+  file:close()
+  if not headers then
+    return {}
+  end
   return rows
 end
 

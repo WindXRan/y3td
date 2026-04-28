@@ -1,0 +1,129 @@
+{
+    "_custom_": true,
+    "_ref_": 201390901,
+    "async_effect": false,
+    "description": "lib_lightning_heavy",
+    "effect_destroy_way_is_immediately": false,
+    "effect_foes": {
+        "__tuple__": true,
+        "items": [
+            102780,
+            [
+                0.0,
+                0.0,
+                0.0
+            ],
+            [
+                0.0,
+                0.0,
+                0.0
+            ],
+            [
+                2.8,
+                2.8,
+                2.8
+            ],
+            1.0,
+            {
+                "anim": "idle1",
+                "base_color_mod": 1,
+                "base_tint_color": [
+                    255,
+                    255,
+                    255,
+                    0.5
+                ],
+                "is_loop": true,
+                "model": 211029,
+                "model_opacity": 1,
+                "offset": [
+                    0,
+                    0,
+                    0
+                ],
+                "rotate": [
+                    0,
+                    0,
+                    0
+                ],
+                "scale": [
+                    1.05,
+                    1.05,
+                    1.05
+                ],
+                "use_base_tint_color": false
+            }
+        ]
+    },
+    "effect_friend": {
+        "__tuple__": true,
+        "items": [
+            102780,
+            [
+                0.0,
+                0.0,
+                0.0
+            ],
+            [
+                0.0,
+                0.0,
+                0.0
+            ],
+            [
+                2.8,
+                2.8,
+                2.8
+            ],
+            1.0,
+            {
+                "anim": "idle1",
+                "base_color_mod": 1,
+                "base_tint_color": [
+                    255,
+                    255,
+                    255,
+                    0.5
+                ],
+                "is_loop": true,
+                "model": 211029,
+                "model_opacity": 1,
+                "offset": [
+                    0,
+                    0,
+                    0
+                ],
+                "rotate": [
+                    0,
+                    0,
+                    0
+                ],
+                "scale": [
+                    1.05,
+                    1.05,
+                    1.05
+                ],
+                "use_base_tint_color": false
+            }
+        ]
+    },
+    "icon": 100000,
+    "key": 201392043,
+    "kv": {},
+    "max_duration": 60,
+    "move_channel": 0,
+    "move_limitation": 1,
+    "name": "lib_lightning_heavy",
+    "poolable": 0,
+    "sfx_loop": false,
+    "sound_event_list": {
+        "__tuple__": true,
+        "items": []
+    },
+    "suffix": "",
+    "tags": {
+        "__tuple__": true,
+        "items": []
+    },
+    "uid": "201392043",
+    "desc": "lib_lightning_heavy"
+}

@@ -841,7 +841,6 @@ function M.create(env)
           finish_game(true, '击败最终 Boss。')
         else
           local next_wave = CONFIG.waves[info.wave.index + 1]
-          message(string.format('%s 被击败，立即切换到 %s。', get_boss_name(info.wave), next_wave.name))
           STATE.active_wave = nil
           STATE.current_wave_index = next_wave.index
           api.start_wave(next_wave.index)
@@ -870,25 +869,7 @@ function M.create(env)
   end
 
   local function get_main_enemy_slow_factor(info)
-    if not info or not info.alive or info.kind ~= 'main' or not info.unit or not info.unit:is_exist() then
-      return 1
-    end
-
-    local rules = CONFIG.main_enemy_slow_zones
-    if not rules then
-      return 1
-    end
-
-    local point = info.unit:get_point()
-    local slow_factor = 1
-    for _, rule in ipairs(rules) do
-      local area = rule and CONFIG.areas and CONFIG.areas[rule.area_id] or nil
-      if area and rule.speed_factor and is_point_in_area(point, area) then
-        slow_factor = math.min(slow_factor, rule.speed_factor)
-      end
-    end
-
-    return slow_factor
+    return 1
   end
 
   local function apply_main_enemy_lane_slow(info)
@@ -923,6 +904,34 @@ function M.create(env)
   local function spawn_enemy(unit_id, area_id, facing, info)
     info = info or {}
     local spawn_point = random_point_in_area(area_id)
+    local hero = STATE.hero
+    if hero and hero.is_exist and hero:is_exist() and hero.get_point and spawn_point then
+      local hero_point = hero:get_point()
+      if hero_point and y3 and y3.point and y3.point.create then
+        local attack_range = tonumber(hero_attr_system and hero_attr_system.get_attr and hero_attr_system.get_attr(hero, '攻击范围'))
+          or tonumber(hero.get_attr and hero:get_attr('攻击范围'))
+          or 250
+        attack_range = math.max(120, attack_range)
+        local ring_inner = attack_range + 120
+        local ring_outer = attack_range + 340
+        -- 保持“敌人从右侧来”的体验：限制在英雄右侧扇形区域刷怪。
+        local angle = (math.random() * 1.2) - 0.6
+        local distance = ring_inner + math.random() * math.max(1, ring_outer - ring_inner)
+        local hx = hero_point.get_x and hero_point:get_x() or 0
+        local hy = hero_point.get_y and hero_point:get_y() or 0
+        local hz = hero_point.get_z and hero_point:get_z() or 0
+        local px = hx + math.cos(angle) * distance
+        local py = hy + math.sin(angle) * distance
+        if px <= hx + ring_inner * 0.4 then
+          px = hx + ring_inner * 0.4 + math.random() * math.max(1, ring_outer - ring_inner * 0.4)
+        end
+        local pz = (spawn_point.get_z and spawn_point:get_z()) or hz
+        local ok_ring, ring_point = pcall(y3.point.create, px, py, pz)
+        if ok_ring and ring_point then
+          spawn_point = ring_point
+        end
+      end
+    end
     local ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), unit_id, spawn_point, facing or 180.0)
     if not ok or not unit_or_err then
       if message then
@@ -1008,8 +1017,6 @@ function M.create(env)
     end
 
     runner.boss_spawned = true
-    message(string.format('%s 登场。', get_boss_name(runner.wave)))
-
     runner.boss_info = spawn_enemy(runner.wave.boss_unit_id, runner.wave.boss_spawn_area_id, 180.0, {
       kind = 'boss',
       owner = runner,
@@ -1050,7 +1057,6 @@ function M.create(env)
     }
     STATE.active_challenges[instance.id] = instance
 
-    message(string.format('%s 开始，持续 %.0f 秒。', def.name, design_seconds(def.duration_sec)))
     if env.on_challenge_started then
       env.on_challenge_started(instance)
     end
@@ -1075,13 +1081,6 @@ function M.create(env)
       alive_count = 0,
       next_spawn_sec = 0,
     }
-
-    message(string.format(
-      '%s 开始，%s 将在 %.0f 秒后登场。',
-      wave.name or string.format('第 %d 波', index),
-      get_boss_name(wave),
-      design_seconds(wave.boss_spawn_sec or 0)
-    ))
 
     if env.on_wave_started then
       env.on_wave_started(index)
@@ -1285,7 +1284,6 @@ function M.create(env)
       local remain = math.max(0, (runner.wave.boss_spawn_sec or 0) - (runner.elapsed or 0))
       if remain <= 6 then
         runner.boss_warning_sent = true
-        message(string.format('警告：%s 将在 %.0f 秒后登场。', get_boss_name(runner.wave), design_seconds(remain)))
         if env.on_boss_warning then
           env.on_boss_warning(runner.wave, remain)
         end
@@ -1352,7 +1350,6 @@ function M.create(env)
           elapsed = elapsed - recover_sec
           current = current + 1
           set_challenge_charge_count(challenge_id, current)
-          message(string.format('%s 次数 +1，当前 %d/%d。', def.name or challenge_id, current, max_charges))
         end
         set_challenge_recover_elapsed(challenge_id, elapsed)
       end
@@ -1463,7 +1460,8 @@ function M.create(env)
       hero_attr_system.log_snapshot(hero, 'create_hero_before_init', string.format('basic_attack_range=%s', tostring(basic_attack_range or 250)))
     end
     hero_attr_system.init_hero_attrs(hero, hero_entry_stats)
-    hero_attr_system.set_attr(hero, '攻击范围', tonumber(hero_entry_stats['攻击范围']) or basic_attack_range or 2000)
+    local initial_attack_range = tonumber(hero_entry_stats['攻击范围']) or basic_attack_range or 2000
+    hero_attr_system.set_attr(hero, '攻击范围', math.max(80, math.floor(initial_attack_range * 0.5)))
     hero:add_state('禁止普攻')
 
     hero:add_state('禁止移动')
@@ -1505,6 +1503,18 @@ function M.create(env)
 
     hero:event('单位-造成伤害后', function(_, data)
       env.on_hero_damage(data)
+    end)
+
+    hero:event('单位-造成伤害时', function(_, data)
+      if env.apply_formula_damage_override then
+        env.apply_formula_damage_override(data)
+      end
+    end)
+
+    hero:event('单位-受到伤害前', function(_, data)
+      if env.on_hero_before_hurt then
+        env.on_hero_before_hurt(data)
+      end
     end)
 
     hero:event('单位-受到伤害后', function()
@@ -1617,6 +1627,11 @@ function M.create(env)
       return false
     end
 
+    if env.reserve_formula_damage then
+      env.reserve_formula_damage(unit, 99999999, {
+        source = 'execute_enemy',
+      })
+    end
     STATE.hero:damage({
       target = unit,
       damage = 99999999,

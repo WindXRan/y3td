@@ -18,6 +18,10 @@
 /.y3maker/memory/sessions/
 /.y3maker/skills/y3-auto-test/.queue/
 /.y3maker/skills/y3-ui-generator/scripts/__pycache__/
+**/__pycache__/
+*.pyc
+*.bak
+*.bak*
 /.pytest_cache/
 /.tmp/
 

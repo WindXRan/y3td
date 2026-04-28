@@ -1,147 +1,106 @@
-local CsvLoader = require 'data.csv_loader'
-
-local slot_rows = CsvLoader.read_rows('data_csv/gear_upgrade_slots.csv')
-local level_rows = CsvLoader.read_rows('data_csv/gear_upgrade_levels.csv')
-local affix_rows = CsvLoader.read_rows('data_csv/gear_upgrade_affixes.csv')
-
-local function to_boolean(raw)
-  return raw == 'true' or raw == '1'
-end
-
-local function to_number(raw)
-  if raw == nil or raw == '' or raw == 'null' then
-    return nil
-  end
-  return tonumber(raw)
-end
-
-local function make_bonus_pack(row)
+local function make_bonus_pack(attack, hp, armor, all_attr)
   local pack = {}
-  local attack = to_number(row.bonus_attack) or 0
-  local life = to_number(row.bonus_hp) or 0
-  local armor = to_number(row.bonus_armor) or 0
-  local all_attr = to_number(row.bonus_all_attr) or 0
-  local attr_name = row.attr_name
-  local attr_value = to_number(row.attr_value) or 0
-
-  if attack ~= 0 then
+  if (attack or 0) ~= 0 then
     pack['攻击'] = attack
   end
-  if life ~= 0 then
-    pack['生命'] = life
+  if (hp or 0) ~= 0 then
+    pack['生命'] = hp
   end
-  if armor ~= 0 then
+  if (armor or 0) ~= 0 then
     pack['护甲'] = armor
   end
-  if all_attr ~= 0 then
-    pack['力量'] = (pack['力量'] or 0) + all_attr
-    pack['敏捷'] = (pack['敏捷'] or 0) + all_attr
-    pack['智力'] = (pack['智力'] or 0) + all_attr
+  if (all_attr or 0) ~= 0 then
+    pack['力量'] = all_attr
+    pack['敏捷'] = all_attr
+    pack['智力'] = all_attr
   end
-  if attr_name and attr_name ~= '' and attr_value ~= 0 then
-    pack[attr_name] = (pack[attr_name] or 0) + attr_value
-  end
-
   return pack
 end
 
-local slots = {}
-local weapons_by_id = {}
-local default_weapon_id = nil
-for _, row in ipairs(slot_rows) do
-  local weapon_id = row.weapon_id ~= '' and row.weapon_id or row.slot
-  slots[row.slot] = {
-    slot = row.slot,
-    order_index = tonumber(row.order_index) or 0,
-    display_name = row.display_name,
-    max_level = tonumber(row.max_level) or 0,
-    affix_choice_count = tonumber(row.affix_choice_count) or 0,
-    item_key = tonumber(row.item_key) or row.item_key,
-    weapon_id = weapon_id,
-    weapon_name = row.weapon_name ~= '' and row.weapon_name or row.display_name,
-    init_level = tonumber(row.init_level) or 1,
-    base_desc = row.base_desc,
-  }
-  weapons_by_id[weapon_id] = {
-    weapon_id = weapon_id,
-    weapon_name = row.weapon_name ~= '' and row.weapon_name or row.display_name,
-    init_level = tonumber(row.init_level) or 1,
-    max_level = tonumber(row.max_level) or 0,
-    item_key = tonumber(row.item_key) or row.item_key,
-    base_desc = row.base_desc,
-    slot = row.slot,
-  }
-  if not default_weapon_id then
-    default_weapon_id = weapon_id
-  end
-end
+local slots = {
+  weapon = {
+    slot = 'weapon',
+    order_index = 1,
+    display_name = '成长武器',
+    max_level = 50,
+    affix_choice_count = 3,
+    item_key = 100001,
+    weapon_id = 'weapon',
+    weapon_name = '成长武器',
+    init_level = 1,
+    base_desc = '可通过金币持续升级，并在关键等级获得词条选择。',
+  },
+}
+
+local weapons_by_id = {
+  weapon = {
+    weapon_id = 'weapon',
+    weapon_name = '成长武器',
+    init_level = 1,
+    max_level = 50,
+    item_key = 100001,
+    base_desc = '可通过金币持续升级，并在关键等级获得词条选择。',
+    slot = 'weapon',
+  },
+}
 
 local levels = {}
 local levels_by_level = {}
-local levels_by_weapon = {}
-for _, row in ipairs(level_rows) do
-  local weapon_id = row.weapon_id ~= '' and row.weapon_id or default_weapon_id
+local levels_by_weapon = { weapon = {} }
+
+for level = 1, 50 do
+  local is_affix_node = (level % 5 == 0)
+  local affix_pool_id = nil
+  if is_affix_node then
+    if level <= 15 then
+      affix_pool_id = 'weapon_affix_t1'
+    elseif level <= 30 then
+      affix_pool_id = 'weapon_affix_t2'
+    else
+      affix_pool_id = 'weapon_affix_t3'
+    end
+  end
+
   local entry = {
-    weapon_id = weapon_id,
-    level = tonumber(row.level) or 0,
-    order_index = tonumber(row.order_index) or 0,
-    gold_cost = tonumber(row.gold_cost) or 0,
-    is_affix_node = to_boolean(row.is_affix_node),
-    affix_pool_id = row.affix_pool_id ~= '' and row.affix_pool_id or nil,
-    bonus_pack = make_bonus_pack(row),
+    weapon_id = 'weapon',
+    level = level,
+    order_index = level,
+    gold_cost = math.floor(35 + level * 22),
+    is_affix_node = is_affix_node,
+    affix_pool_id = affix_pool_id,
+    bonus_pack = make_bonus_pack(8 + level * 3, 30 + level * 12, level >= 20 and 1 or 0, level >= 30 and 1 or 0),
   }
   levels[#levels + 1] = entry
-  levels_by_weapon[weapon_id] = levels_by_weapon[weapon_id] or {}
-  levels_by_weapon[weapon_id][entry.level] = entry
-  if weapon_id == default_weapon_id then
-    levels_by_level[entry.level] = entry
-  end
+  levels_by_weapon.weapon[level] = entry
+  levels_by_level[level] = entry
 end
 
-table.sort(levels, function(a, b)
-  return (a.order_index or 0) < (b.order_index or 0)
-end)
+local affixes = {
+  { affix_id = 'bow_sniper_t1',    pool_id = 'weapon_affix_t1', order_index = 1, quality = 'rare', display_name = '狙击箭', summary = '永久 +50 攻击范围，并且会射出 1 根狙击箭。', attr_name = '攻击范围', attr_value = 50, is_unique = false, unique_group = nil, bonus_pack = { ['攻击范围'] = 50, ['多重数量'] = 1, ['多重伤害'] = 1.25 } },
+  { affix_id = 'bow_gale_t1',      pool_id = 'weapon_affix_t1', order_index = 2, quality = 'rare', display_name = '疾风箭', summary = '永久 +25% 攻速，并且会射出 1 根疾风箭。', attr_name = '攻击速度', attr_value = 25, is_unique = false, unique_group = nil, bonus_pack = { ['攻击速度'] = 25, ['多重数量'] = 1, ['多重伤害'] = 0.85 } },
+  { affix_id = 'bow_multishot_t1', pool_id = 'weapon_affix_t1', order_index = 3, quality = 'rare', display_name = '多重箭', summary = '攻击额外射出 2 根普通箭。', attr_name = '多重数量', attr_value = 2, is_unique = false, unique_group = nil, bonus_pack = { ['多重数量'] = 2, ['多重伤害'] = 1.00 } },
 
-local affixes = {}
+  { affix_id = 'bow_sniper_t2',    pool_id = 'weapon_affix_t2', order_index = 1, quality = 'epic', display_name = '狙击箭+', summary = '永久 +70 攻击范围，并且会射出 1 根更强的狙击箭。', attr_name = '攻击范围', attr_value = 70, is_unique = false, unique_group = nil, bonus_pack = { ['攻击范围'] = 70, ['多重数量'] = 1, ['多重伤害'] = 1.45 } },
+  { affix_id = 'bow_gale_t2',      pool_id = 'weapon_affix_t2', order_index = 2, quality = 'epic', display_name = '疾风箭+', summary = '永久 +30% 攻速，并且会射出 1 根更快的疾风箭。', attr_name = '攻击速度', attr_value = 30, is_unique = false, unique_group = nil, bonus_pack = { ['攻击速度'] = 30, ['多重数量'] = 1, ['多重伤害'] = 0.95 } },
+  { affix_id = 'bow_multishot_t2', pool_id = 'weapon_affix_t2', order_index = 3, quality = 'epic', display_name = '多重箭+', summary = '攻击额外射出 2 根强化普通箭。', attr_name = '多重数量', attr_value = 2, is_unique = false, unique_group = nil, bonus_pack = { ['多重数量'] = 2, ['多重伤害'] = 1.10 } },
+
+  { affix_id = 'bow_sniper_t3',    pool_id = 'weapon_affix_t3', order_index = 1, quality = 'epic', display_name = '狙击箭·终', summary = '永久 +90 攻击范围，并且会射出 1 根终极狙击箭。', attr_name = '攻击范围', attr_value = 90, is_unique = false, unique_group = nil, bonus_pack = { ['攻击范围'] = 90, ['多重数量'] = 1, ['多重伤害'] = 1.70 } },
+  { affix_id = 'bow_gale_t3',      pool_id = 'weapon_affix_t3', order_index = 2, quality = 'epic', display_name = '疾风箭·终', summary = '永久 +35% 攻速，并且会射出 1 根终极疾风箭。', attr_name = '攻击速度', attr_value = 35, is_unique = false, unique_group = nil, bonus_pack = { ['攻击速度'] = 35, ['多重数量'] = 1, ['多重伤害'] = 1.05 } },
+  { affix_id = 'bow_multishot_t3', pool_id = 'weapon_affix_t3', order_index = 3, quality = 'epic', display_name = '多重箭·终', summary = '攻击额外射出 2 根终极普通箭。', attr_name = '多重数量', attr_value = 2, is_unique = false, unique_group = nil, bonus_pack = { ['多重数量'] = 2, ['多重伤害'] = 1.20 } },
+}
+
 local affixes_by_id = {}
 local affixes_by_pool = {}
-for _, row in ipairs(affix_rows) do
-  local entry = {
-    affix_id = row.affix_id,
-    pool_id = row.pool_id,
-    order_index = tonumber(row.order_index) or 0,
-    quality = row.quality ~= '' and row.quality or 'common',
-    display_name = row.display_name,
-    summary = row.summary ~= '' and row.summary or row.display_name,
-    attr_name = row.attr_name,
-    attr_value = to_number(row.attr_value) or 0,
-    is_unique = to_boolean(row.is_unique),
-    unique_group = row.unique_group ~= '' and row.unique_group or nil,
-    bonus_pack = make_bonus_pack(row),
-  }
-  affixes[#affixes + 1] = entry
+for _, entry in ipairs(affixes) do
   affixes_by_id[entry.affix_id] = entry
   affixes_by_pool[entry.pool_id] = affixes_by_pool[entry.pool_id] or {}
-  affixes_by_pool[entry.pool_id][#affixes_by_pool[entry.pool_id] + 1] = entry
-end
-
-table.sort(affixes, function(a, b)
-  if a.pool_id == b.pool_id then
-    return (a.order_index or 0) < (b.order_index or 0)
-  end
-  return tostring(a.pool_id) < tostring(b.pool_id)
-end)
-
-for _, pool in pairs(affixes_by_pool) do
-  table.sort(pool, function(a, b)
-    return (a.order_index or 0) < (b.order_index or 0)
-  end)
+  table.insert(affixes_by_pool[entry.pool_id], entry)
 end
 
 return {
   slots = slots,
   weapons_by_id = weapons_by_id,
-  default_weapon_id = default_weapon_id,
+  default_weapon_id = 'weapon',
   levels = levels,
   levels_by_level = levels_by_level,
   levels_by_weapon = levels_by_weapon,

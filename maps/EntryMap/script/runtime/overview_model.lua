@@ -226,7 +226,7 @@ function M.create(env)
       return { '英雄：当前未创建。' }
     end
 
-    return {
+    local lines = {
       string.format('等级：%s', get_hero_progress_text()),
       string.format('生命：%d / %d',
         format_attr_value(STATE.hero:get_hp()),
@@ -243,6 +243,21 @@ function M.create(env)
         format_attr_value(get_hero_attr('物理吸血'))
       ),
     }
+    local progress = STATE.hero_progress or {}
+    local growth = progress.last_growth_pack
+    if growth then
+      lines[#lines + 1] = string.format(
+        '最近升级成长(Lv.%d->Lv.%d)：攻%+d 生%+d 力%+d 敏%+d 智%+d',
+        tonumber(progress.last_growth_from_level) or 0,
+        tonumber(progress.last_growth_to_level) or 0,
+        tonumber(growth['攻击']) or 0,
+        tonumber(growth['生命']) or 0,
+        tonumber(growth['力量']) or 0,
+        tonumber(growth['敏捷']) or 0,
+        tonumber(growth['智力']) or 0
+      )
+    end
+    return lines
   end
 
   local function build_damage_bonus_lines()

@@ -1,8 +1,0 @@
-set_id,order_index,effect_type,effect_key,op,value,condition,notes
-set_kill,1,passive_income,每秒木材,add,0.3,,杀敌套装效果
-set_crit_damage,1,ratio_bonus,物理暴击,add,0.05,,暴伤套装效果
-set_crit_damage,2,ratio_bonus,魔法暴击,add,0.05,,暴伤套装效果
-set_stat_boost,1,passive_growth,每秒力量,add,0.6,,属性提升套装效果
-set_stat_boost,2,passive_growth,每秒敏捷,add,0.6,,属性提升套装效果
-set_stat_boost,3,passive_growth,每秒智力,add,0.6,,属性提升套装效果
-set_pressure,1,conditional_damage,damage_ratio,add,0.15,target_hp_between_0.30_0.70,攻坚压制套装效果

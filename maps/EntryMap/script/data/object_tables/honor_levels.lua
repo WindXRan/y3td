@@ -2,29 +2,6 @@ local EditorJsonTable = require 'data.object_tables.editor_json_table'
 
 local M = {}
 
-local FALLBACK_ROWS = {
-  { ['名称'] = '荣誉1级', ['图标'] = 131360, ['属性'] = '生命值|生命成长', ['数值'] = '300|10', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到100', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉2级', ['图标'] = 131360, ['属性'] = '攻击力|攻击成长', ['数值'] = '10|1', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到300', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉3级', ['图标'] = 131360, ['属性'] = '金币加成|经验加成', ['数值'] = '3|3', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉4级', ['图标'] = 131360, ['属性'] = '攻击加成|生命加成', ['数值'] = '3|3', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到1000', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉5级', ['图标'] = 131360, ['属性'] = '物理暴伤|法术暴伤', ['数值'] = '5|5', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到1500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉6级', ['图标'] = 131360, ['属性'] = '大招伤害|射箭伤害', ['数值'] = '3|3', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到2000', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉7级', ['图标'] = 131360, ['属性'] = '物理伤害|法术伤害', ['数值'] = '3|3', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到2500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉8级', ['图标'] = 131360, ['属性'] = '物理暴率|法术暴率', ['数值'] = '2|2', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到3500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉9级', ['图标'] = 131360, ['属性'] = '力量加成|敏捷加成|智力加成', ['数值'] = '3|3|3', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到4500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉10级', ['图标'] = 131360, ['属性'] = '开局木头|最终伤害|最终减免', ['数值'] = '200|3|1', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到5500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉11级', ['图标'] = 131360, ['属性'] = '对BOSS伤害', ['数值'] = '4', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到7500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉12级', ['图标'] = 131360, ['属性'] = '对精英伤害|对小怪伤害', ['数值'] = '4|4', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到9500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉13级', ['图标'] = 131360, ['属性'] = '金币加成', ['数值'] = '5', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到11500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉14级', ['图标'] = 131360, ['属性'] = '物理伤害|法术伤害', ['数值'] = '4|4', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到13500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉15级', ['图标'] = 131360, ['属性'] = '经验加成', ['数值'] = '5', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到15500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉16级', ['图标'] = 131360, ['属性'] = '力量加成|敏捷加成|智力加成', ['数值'] = '4|4|4', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到17500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉17级', ['图标'] = 131360, ['属性'] = '最终伤害', ['数值'] = '5', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到17500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉18级', ['图标'] = 131360, ['属性'] = '攻击加成', ['数值'] = '5', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到17500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉19级', ['图标'] = 131360, ['属性'] = '对BOSS伤害', ['数值'] = '5', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到17500', ['是否初始解锁'] = '1' },
-  { ['名称'] = '荣誉20级', ['图标'] = 131360, ['属性'] = '最终伤害|最终减免', ['数值'] = '5|1', ['品质'] = 'SSR', ['获取方式'] = '荣誉积分达到17500', ['是否初始解锁'] = '1' },
-}
-
 local function trim(value)
   return tostring(value or ''):gsub('^%s+', ''):gsub('%s+$', '')
 end
@@ -37,6 +14,46 @@ local function split_pipe(value)
   return result
 end
 
+local PERCENT_ATTR_KEYWORDS = {
+  '加成',
+  '增幅',
+  '伤害',
+  '减免',
+  '暴率',
+  '暴伤',
+  '暴击',
+  '攻速',
+  '速度',
+  '概率',
+  '几率',
+  '收益',
+  '效果',
+}
+
+local function is_percent_attr(attr_name)
+  local name = tostring(attr_name or '')
+  for _, keyword in ipairs(PERCENT_ATTR_KEYWORDS) do
+    if name:find(keyword, 1, true) then
+      return true
+    end
+  end
+  return false
+end
+
+local function format_attr_value(attr_name, value_text)
+  local text = trim(value_text)
+  if text == '' then
+    return text
+  end
+  if text:find('%%', 1, true) then
+    return text
+  end
+  if is_percent_attr(attr_name) then
+    return text .. '%'
+  end
+  return text
+end
+
 local function to_bool(value)
   return value == true or value == 1 or value == '1' or value == 'true' or value == 'TRUE'
 end
@@ -46,7 +63,7 @@ local function build_attr_lines(attr_text, value_text)
   local values = split_pipe(value_text)
   local lines = {}
   for index, attr_name in ipairs(attrs) do
-    local number_text = values[index] or ''
+    local number_text = format_attr_value(attr_name, values[index] or '')
     if attr_name ~= '' then
       lines[#lines + 1] = number_text ~= '' and string.format('%s +%s', attr_name, number_text) or attr_name
     end
@@ -57,13 +74,51 @@ end
 local list = {}
 local by_key = {}
 
-local source_rows = EditorJsonTable.read_rows('shangchengdaojv_rongyudengji')
-if #source_rows <= 0 then
-  source_rows = EditorJsonTable.read_rows('商城道具-荣誉等级')
+local function resolve_primary_tab(row)
+  return trim(row['一级页签'] or row['一级页签 '] or row['一级标签'] or row['一级分类'])
 end
-if #source_rows <= 0 then
-  source_rows = FALLBACK_ROWS
+
+local function resolve_secondary_tab(row)
+  return trim(row['二级页签'] or row['页签'] or row['二级标签'] or row['二级分类'])
 end
+
+local function is_honor_row(row)
+  local primary = resolve_primary_tab(row)
+  local secondary = resolve_secondary_tab(row)
+  local name = trim(row['名称'])
+  if name == '' then
+    return false
+  end
+  return primary == '通用存档' or secondary == '荣誉等级' or name:find('荣誉', 1, true) ~= nil
+end
+
+local function find_honor_rows(source_rows)
+  local rows = {}
+  for _, row in ipairs(source_rows or {}) do
+    if is_honor_row(row) then
+      rows[#rows + 1] = row
+    end
+  end
+  return rows
+end
+
+local function pick_source_rows()
+  local candidates = {
+    EditorJsonTable.read_rows('tongyongcundang'),
+    EditorJsonTable.read_rows('通用存档'),
+    EditorJsonTable.read_rows('shangchengdaojv_rongyudengji'),
+    EditorJsonTable.read_rows('商城道具-荣誉等级'),
+  }
+  for _, rows in ipairs(candidates) do
+    local matched = find_honor_rows(rows)
+    if #matched > 0 then
+      return matched
+    end
+  end
+  return {}
+end
+
+local source_rows = pick_source_rows()
 
 for index, row in ipairs(source_rows) do
   local level = tonumber(tostring(row['名称'] or ''):match('(%d+)')) or index
@@ -74,7 +129,7 @@ for index, row in ipairs(source_rows) do
     node = key,
     level = level,
     title = trim(row['名称']) ~= '' and trim(row['名称']) or string.format('荣誉%d级', level),
-    icon = tonumber(row['图标']) or nil,
+    icon = tonumber(row['图标']) or tonumber(row['图片']) or nil,
     quality = trim(row['品质']),
     obtain = trim(row['获取方式']),
     extra_effect = trim(row['额外效果字符串']),

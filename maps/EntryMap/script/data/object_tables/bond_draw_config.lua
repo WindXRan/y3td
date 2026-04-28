@@ -2,8 +2,8 @@ local CsvLoader = require 'data.csv_loader'
 
 local rule_rows = CsvLoader.read_rows('data_csv/bond_draw_rules.csv')
 local refresh_rows = CsvLoader.read_rows('data_csv/bond_refresh_costs.csv')
-local group_rows = CsvLoader.read_rows('data_csv/bond_group_choices.csv')
-local group_path_rows = CsvLoader.read_rows('data_csv/bond_group_choice_paths.csv')
+local group_rows = CsvLoader.read_rows_optional('data_csv/bond_group_choices.csv')
+local group_path_rows = CsvLoader.read_rows_optional('data_csv/bond_group_choice_paths.csv')
 
 local draw_cost = 100
 for _, row in ipairs(rule_rows) do

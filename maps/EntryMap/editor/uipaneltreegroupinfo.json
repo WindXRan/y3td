@@ -20,6 +20,13 @@
        "1b62165d-57b8-4ed7-aa73-71b3b8c1bb36", 
        "TipsPanel"
       ]
+     }, 
+     {
+      "__tuple__": true, 
+      "items": [
+       "b92d1230-3267-459c-8a9a-156bafdebac6", 
+       "panel_1"
+      ]
      }
     ]
    }, 
@@ -28,55 +35,6 @@
     "items": [
      "38ddddb2-6785-4804-9b5c-dfb479bd62b3", 
      "outgame"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "dd36f541-8e33-4c4e-9c03-6797b5d62514", 
-     "ArchivePageChest"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "c54957ab-d16d-40f0-b930-ea46514d72f6", 
-     "ArchivePageEquipment"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "f3a95060-1921-4acf-9b64-b6d4f255dec1", 
-     "ArchivePagePool"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "b4e26034-ae76-4240-bce4-33c831141b02", 
-     "ArchivePageProfile"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "4d653ea0-efac-4a25-9331-7b3eb00eb871", 
-     "ArchivePageTalent"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "dfc50bbb-ad33-4a49-8fa7-f290325420ce", 
-     "ArchivePageUniversal"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "467420f4-71d6-4ee1-89aa-b850dd021e21", 
-     "ArchivePanel"
     ]
    }, 
    {
@@ -112,13 +70,6 @@
     "items": [
      "25cc8d77-f329-4560-a9d4-5f351937b494", 
      "BondChoice4"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "951fbd00-a07b-438c-9a58-1d7751e5f8c5", 
-     "BondSwallowPanel"
     ]
    }, 
    {

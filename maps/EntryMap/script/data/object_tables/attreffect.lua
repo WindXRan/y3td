@@ -1,7 +1,7 @@
 local CsvLoader = require 'data.csv_loader'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
 
-local rows = CsvLoader.read_rows('data_csv/attreffect.csv')
+local rows = CsvLoader.read_rows_optional('data_csv/attreffect.csv')
 
 local VALID_EFFECT_KINDS = {
   attr = true,
@@ -63,6 +63,14 @@ local COMPAT_ATTR_KEYS = {
   ['全属性'] = true,
 }
 
+local REMOVED_ATTR_KEYS = {
+  ['金行伤害'] = true,
+  ['木行伤害'] = true,
+  ['水行伤害'] = true,
+  ['火行伤害'] = true,
+  ['土行伤害'] = true,
+}
+
 local function validate_attr_key(key)
   return HeroAttrDefs.by_name[key] ~= nil or COMPAT_ATTR_KEYS[key] == true
 end
@@ -85,6 +93,10 @@ local list = {}
 local seen_scoped_order = {}
 
 for _, row in ipairs(rows) do
+  if row.effect_kind == 'attr' and REMOVED_ATTR_KEYS[row.effect_key] == true then
+    goto continue
+  end
+
   assert(row.source_type ~= '', 'attreffect source_type is required')
   assert(row.source_id ~= '', 'attreffect source_id is required')
   assert(VALID_EFFECT_KINDS[row.effect_kind] == true, 'invalid effect_kind: ' .. tostring(row.effect_kind))
@@ -127,6 +139,8 @@ for _, row in ipairs(rows) do
   bucket.ordered[#bucket.ordered + 1] = entry
   bucket[row.effect_kind][row.effect_key] = (bucket[row.effect_kind][row.effect_key] or 0) + number
   list[#list + 1] = entry
+
+  ::continue::
 end
 
 for _, source_group in pairs(by_source) do

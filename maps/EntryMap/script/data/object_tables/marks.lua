@@ -1,69 +1,78 @@
-local CsvLoader = require 'data.csv_loader'
 local AttrEffect = require 'data.object_tables.attreffect'
+local HeroRoster = require 'data.object_tables.hero_roster'
 local helpers = require 'entry_objects.helpers'
 
-local mark_rows = CsvLoader.read_rows('data_csv/marks.csv')
-local tag_rows = CsvLoader.read_rows('data_csv/mark_tags.csv')
 local bonus_groups = AttrEffect.by_source.mark or {}
-local tag_groups = CsvLoader.group_by(tag_rows, 'mark_id')
-
-local function to_number_if_possible(raw)
-  if raw == nil or raw == '' then
-    return nil
-  end
-
-  return tonumber(raw) or raw
-end
-
-local function sort_by_order_index(rows, fallback_key)
-  table.sort(rows, function(a, b)
-    local a_order = tonumber(a.order_index) or 0
-    local b_order = tonumber(b.order_index) or 0
-    if a_order == b_order then
-      return tostring(a[fallback_key] or '') < tostring(b[fallback_key] or '')
-    end
-    return a_order < b_order
-  end)
-end
-
-local function clone_number_map(source)
-  local result = nil
-  for key, value in pairs(source or {}) do
-    result = result or {}
-    result[key] = tonumber(value) or 0
-  end
-  return result
-end
-
-local function build_bonus_bucket(mark_id, bucket_name)
-  local bucket = bonus_groups[mark_id]
-  return clone_number_map(bucket and bucket[bucket_name] or nil)
-end
+local hero_list = HeroRoster.list or {}
 
 local list = {}
-for _, row in ipairs(mark_rows) do
-  local tags = {}
-  local grouped_tags = tag_groups[row.id] or {}
-  sort_by_order_index(grouped_tags, 'tag')
-  for _, tag_row in ipairs(grouped_tags) do
-    tags[#tags + 1] = tag_row.tag
+
+local function build_bonus_bucket(mark_id, bucket_name)
+  local source = bonus_groups[mark_id]
+  local bucket = source and source[bucket_name] or nil
+  if not bucket then
+    return nil
+  end
+  local out = {}
+  for key, value in pairs(bucket) do
+    out[key] = tonumber(value) or 0
+  end
+  return out
+end
+
+local function push_mark(index, hero_entry)
+  local quality = 'common'
+  if index >= 5 then
+    quality = 'epic'
+  elseif index >= 3 then
+    quality = 'rare'
   end
 
+  local mark_id = string.format('mark_%s', tostring(hero_entry.id or index))
   list[#list + 1] = {
-    id = row.id,
-    name = row.name,
-    quality = row.quality,
-    pool_weight = tonumber(row.pool_weight) or 0,
-    order_index = tonumber(row.order_index) or 0,
-    hero_unit_id = to_number_if_possible(row.hero_unit_id),
-    summary = row.summary,
-    tags = tags,
+    id = mark_id,
+    name = hero_entry.name or ('英雄专精' .. tostring(index)),
+    quality = quality,
+    pool_weight = quality == 'epic' and 20 or (quality == 'rare' and 35 or 45),
+    order_index = index,
+    hero_unit_id = hero_entry.unit_id,
+    summary = hero_entry.summary or '激活该英雄真身与专精效果。',
+    tags = { 'hero_form', quality },
     bonuses = {
-      attr = build_bonus_bucket(row.id, 'attr'),
-      runtime = build_bonus_bucket(row.id, 'runtime'),
-      attack_skill = build_bonus_bucket(row.id, 'attack_skill'),
+      attr = build_bonus_bucket(mark_id, 'attr'),
+      runtime = build_bonus_bucket(mark_id, 'runtime'),
+      attack_skill = build_bonus_bucket(mark_id, 'attack_skill'),
     },
   }
+end
+
+for index, hero_entry in ipairs(hero_list) do
+  if index > 8 then
+    break
+  end
+  if hero_entry and hero_entry.id and hero_entry.unit_id then
+    push_mark(index, hero_entry)
+  end
+end
+
+if #list < 2 then
+  for index = #list + 1, 2 do
+    list[#list + 1] = {
+      id = string.format('mark_fallback_%d', index),
+      name = string.format('英雄专精 %d', index),
+      quality = index == 2 and 'rare' or 'common',
+      pool_weight = 30,
+      order_index = index,
+      hero_unit_id = 100001 + index,
+      summary = '激活该英雄真身与专精效果。',
+      tags = { 'hero_form' },
+      bonuses = {
+        attr = nil,
+        runtime = nil,
+        attack_skill = nil,
+      },
+    }
+  end
 end
 
 table.sort(list, function(a, b)

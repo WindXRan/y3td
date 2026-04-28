@@ -10,6 +10,10 @@
 4. 真实启动入口是 `maps/EntryMap/script/main.lua`。
 5. 运行时总协调优先看 `maps/EntryMap/script/entry_runtime.lua` 及 `maps/EntryMap/script/runtime/`。
 6. 不要把 `global_script/global_main.lua`、根目录 `global_trigger`、设计稿或旧示例文件误判为当前玩法主入口。
+7. 每次开启新会话，必须先读取 `.codex/README.md`、`.codex/rules/y3maker/rules.mdc`、`.codex/knowledge/y3maker/README.md`、`.codex/memories/y3maker/Memory.md`，再开始处理用户任务。
+8. 处理具体任务前，按任务类型补读对应技能 `SKILL.md`（至少覆盖 `y3-lua-pipeline`、`y3-ui-pipeline`、`y3-obj-gen`、`y3-obj-edit`、`y3-auto-test`、`y3-ability-api`）。
+9. 出现 Lua/API 报错或 Trace 时，必须补读 `.codex/memories/y3maker/lua-issues/api_issues.md` 与 `.codex/memories/y3maker/lua-issues/trace_issues.md`。
+10. 默认模型使用 `gpt-5.3-codex`；如无明确指示，不切换到其他模型。
 
 ## 自动上下文来源
 

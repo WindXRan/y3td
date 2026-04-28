@@ -2,7 +2,7 @@ group,key,value
 global_rules,debug_time_scale_debug,0.2
 global_rules,debug_time_scale_release,1.0
 global_rules,enemy_player_id,31
-global_rules,enemy_move_speed_scale,0.5
+global_rules,enemy_move_speed_scale,1.0
 global_rules,enemy_spawn_batch_scale,1.5
 global_rules,enemy_alive_cap_scale,1.5
 global_rules,player_id,1
@@ -16,6 +16,7 @@ progression_rules,post_cap_exp_step,55
 progression_rules,hero_level_attack_growth,6
 progression_rules,hero_level_hp_growth,60
 progression_rules,hero_level_all_attr_growth,2
+progression_rules,main_stat_attack_ratio,0.5
 resource_rules,gold_per_sec,2
 resource_rules,initial_gold,0
 resource_rules,initial_wood,0

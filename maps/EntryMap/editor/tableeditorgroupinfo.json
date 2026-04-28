@@ -15,90 +15,6 @@
  {
   "__tuple__": true, 
   "items": [
-   "3677e280-02aa-4f25-ba77-b05ea3d023e0", 
-   "attack_skills"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "8b26c717-1027-4082-bd68-4591c48b5c66", 
-   "battlefield_unit_config"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "9cf93e6d-ad9b-4f86-920f-fa0087da9204", 
-   "bond_nodes"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "446b2570-8ca0-421e-b44a-b305f10a3a9b", 
-   "bond_root_sets"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "3271b61f-d6b4-46f5-9d85-2e8ad6fad64f", 
-   "challenges"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "8d0fc564-46a5-4226-b82d-164c9ba66d84", 
-   "evolution_nodes"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "c6409998-ff84-429a-8d15-09e8b6186902", 
-   "gear_upgrade_affixes"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "0eed1e8e-da02-4109-a71b-026493dcfd66", 
-   "gear_upgrade_levels"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "1c1e04f1-b45e-4675-a466-e6de28b91764", 
-   "gear_upgrade_slots"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "d9cac002-4768-441f-ad4c-4d98486a9f1d", 
-   "hero_level_progression"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "fa1695e8-eb67-4989-9705-76d442051f43", 
-   "stages"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "b3476553-db26-49f5-9738-fdd9023c39bb", 
-   "waves"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
    "2a502327-368d-4d65-accb-f69ef60b307b", 
    "herolist"
   ]
@@ -113,6 +29,13 @@
  {
   "__tuple__": true, 
   "items": [
+   "9d71ad08-d829-49e5-90e1-34602638a973", 
+   "bonds_jihuo"
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
    "c8e2e07f-2867-41a0-a214-da1f6a72e8e6", 
    "bonds_quality_range"
   ]
@@ -121,7 +44,7 @@
   "__tuple__": true, 
   "items": [
    "e84c98de-bd0c-4297-a500-014bf881e385", 
-   "shangchengdaojv_rongyudengji"
+   "tongyongcundang"
   ]
  }, 
  {
@@ -171,13 +94,6 @@
   "items": [
    "d0110369-b418-42b6-8919-d2652d9d3c98", 
    "shangchengdaojv"
-  ]
- }, 
- {
-  "__tuple__": true, 
-  "items": [
-   "3ad674ec-7433-4dd5-9dcc-3a4b61f45bb8", 
-   "tongyongcundang"
   ]
  }, 
  {

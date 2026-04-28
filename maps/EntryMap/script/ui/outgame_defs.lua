@@ -221,7 +221,10 @@ function M.create(config)
     honor_level_specs = HonorLevels.list,
     archive_pool_item_specs = build_pool_specs(),
     archive_shop_item_specs = ShopItems.list,
+    archive_shop_primary_tab = ShopItems.primary_tab,
+    archive_shop_primary_tabs = ShopItems.primary_tabs or {},
     archive_shop_categories = ShopItems.categories,
+    archive_shop_categories_by_primary = ShopItems.categories_by_primary or {},
     archive_shop_default_icon = ShopItems.default_icon,
   }
 end

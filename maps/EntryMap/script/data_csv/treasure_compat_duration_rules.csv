@@ -1,4 +1,0 @@
-order_index,match_field,match_type,match_value,output_duration_type,output_treasure_type,output_trigger,output_duration_sec
-1,scope,equals,30s,timed,tactical_temp,immediate,30
-2,scope,equals,instant,instant,tactical_temp,,
-3,scope,default,*,permanent,general,,

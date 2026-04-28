@@ -13,6 +13,7 @@ function M.create(env)
   local update_attack_skills = env.update_attack_skills
   local update_temporary_treasures = env.update_temporary_treasures
   local update_mainline_task = env.update_mainline_task
+  local update_battle_auto_acceptance = env.update_battle_auto_acceptance
   local ensure_runtime_hud = env.ensure_runtime_hud
   local ensure_choice_panel = env.ensure_choice_panel
   local set_battle_hud_visible = env.set_battle_hud_visible
@@ -22,11 +23,12 @@ function M.create(env)
   local refresh_runtime_overview = env.refresh_runtime_overview
   local refresh_inventory_panel = env.refresh_inventory_panel
   local outgame_system = env.outgame_system
-  local debug_tools_system = env.debug_tools_system
+  local gm_bond_effects_system = env.gm_bond_effects_system
   local is_active_enemy = env.is_active_enemy
   local get_enemies_in_range = env.get_enemies_in_range
   local deal_skill_damage = env.deal_skill_damage
   local hero_attr_system = env.hero_attr_system
+  local hero_tujian_panel_system = env.hero_tujian_panel_system
 
   local function get_hero_attack_value()
     if not STATE.hero or not STATE.hero:is_exist() then
@@ -66,6 +68,9 @@ function M.create(env)
       if refresh_runtime_overview then
         refresh_runtime_overview()
       end
+      if hero_tujian_panel_system and hero_tujian_panel_system.refresh then
+        hero_tujian_panel_system.refresh()
+      end
     end)
     if ok then
       STATE.runtime_ui_fault_logged = false
@@ -93,6 +98,9 @@ function M.create(env)
         if update_mainline_task then
           update_mainline_task(0.25)
         end
+        if update_battle_auto_acceptance then
+          update_battle_auto_acceptance(0.25)
+        end
         update_bond_effects(0.25)
         update_auto_active_effects(0.25)
         if update_effect_debug then
@@ -110,6 +118,9 @@ function M.create(env)
       end
       if outgame_system then
         outgame_system.refresh_ui()
+      end
+      if update_battle_auto_acceptance then
+        update_battle_auto_acceptance(0.25)
       end
     end)
 
@@ -142,8 +153,10 @@ function M.create(env)
     end)
 
     y3.ltimer.loop(0.25, function()
-      debug_tools_system.ensure_gm_panel()
-      debug_tools_system.refresh_gm_panel()
+      if gm_bond_effects_system and gm_bond_effects_system.ensure_board then
+        gm_bond_effects_system.ensure_board()
+        gm_bond_effects_system.refresh_board()
+      end
     end)
   end
 

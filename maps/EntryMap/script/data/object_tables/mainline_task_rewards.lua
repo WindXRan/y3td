@@ -32,11 +32,6 @@ local LEGACY_ATTR_KEY_BY_CANONICAL_ATTR = {
   ['物理暴伤'] = 'physical_crit_damage_pct',
   ['魔法暴击'] = 'magic_crit_pct',
   ['魔法暴伤'] = 'magic_crit_damage_pct',
-  ['金行伤害'] = 'metal_damage_pct',
-  ['木行伤害'] = 'wood_damage_pct',
-  ['水行伤害'] = 'water_damage_pct',
-  ['火行伤害'] = 'fire_damage_pct',
-  ['土行伤害'] = 'earth_damage_pct',
 }
 
 local LEGACY_RUNTIME_KEY_BY_CANONICAL_ATTR = {

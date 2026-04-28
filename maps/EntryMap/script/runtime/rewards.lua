@@ -1,6 +1,9 @@
-local TreasureObjects = require 'entry_objects.treasures'
-local EvolutionObjects = require 'entry_objects.evolutions'
-local EvolutionNodeObjects = require 'entry_objects.evolution_nodes'
+local ok_treasure_objects, TreasureObjects = pcall(require, 'entry_objects.treasures')
+if not ok_treasure_objects or type(TreasureObjects) ~= 'table' then
+  TreasureObjects = { list = {}, by_id = {} }
+end
+local EvolutionObjects = require 'entry_objects.marks'
+local EvolutionNodeObjects = require 'entry_objects.mark_nodes'
 local HeroRoster = require 'data.object_tables.hero_roster'
 local HeroFormSkills = require 'data.object_tables.hero_form_skills'
 
@@ -343,19 +346,19 @@ function M.create(env)
     local runtime = api.get_evolution_runtime()
     local evolution_id = runtime.ordered_evolution_ids[slot]
     if not evolution_id then
-      return string.format('进化位 %d：空。', slot)
+      return string.format('英雄进阶位 %d：空。', slot)
     end
 
     local def = EVOLUTION_DEFS[evolution_id]
     if not def then
-      return string.format('进化位 %d：未知进化 %s。', slot, tostring(evolution_id))
+      return string.format('英雄进阶位 %d：未知进阶 %s。', slot, tostring(evolution_id))
     end
 
     local skill_name = get_evolution_skill_name(def)
     local name_text = get_evolution_display_name(def)
     local role_text = get_evolution_display_role(def)
     return string.format(
-      '进化位 %d：[%s] %s·%s%s',
+      '英雄进阶位 %d：[%s] %s·%s%s',
       slot,
       api.get_evolution_quality_label(def.quality),
       name_text,
@@ -366,7 +369,7 @@ function M.create(env)
   api.build_mark_slot_text = api.build_evolution_slot_text
 
   function api.show_evolution_loadout()
-    message('进化栏：')
+    message('英雄进阶栏：')
     local count = math.max(4, api.get_evolution_active_count())
     for slot = 1, count, 1 do
       message(api.build_evolution_slot_text(slot))
@@ -1223,6 +1226,11 @@ function M.create(env)
     if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice then
       return false
     end
+    if STATE.attr_choice_runtime
+        and STATE.attr_choice_runtime.awaiting_choice
+        and STATE.attr_choice_runtime.current_choices then
+      return false
+    end
 
     local queue = api.get_reward_queue()
     local next_entry = table.remove(queue, 1)
@@ -1233,7 +1241,7 @@ function M.create(env)
     if next_entry.kind == 'evolution_choice' or next_entry.kind == 'mark_choice' then
       local round = next_entry.round_id and evolution_runtime.rounds_by_id[next_entry.round_id] or nil
       if not round then
-        message('进化轮次数据不存在，本次奖励已跳过。')
+        message('英雄进阶轮次数据不存在，本次奖励已跳过。')
         return true
       end
 
@@ -1246,7 +1254,7 @@ function M.create(env)
       end
 
       if #choices == 0 then
-        message(string.format('%s：没有可用进化候选，本轮已跳过。', round.ui_title or '进化选择'))
+        message(string.format('%s：没有可用英雄进阶候选，本轮已跳过。', round.ui_title or '英雄进阶选择'))
         round.state = 'skipped'
         return true
       end
@@ -1258,7 +1266,7 @@ function M.create(env)
       STATE.choice_panel_hidden = false
 
       round.choice_count = #choices
-      message(string.format('%s：获得一次英雄真身 %d选1。', round.ui_title or '真身进化', #choices))
+      message(string.format('%s：获得一次英雄真身 %d选1。', round.ui_title or '英雄进阶', #choices))
       api.show_evolution_choices()
       return true
     end
@@ -1496,7 +1504,7 @@ function M.create(env)
 
     local skill_name = get_evolution_skill_name(def)
     message(string.format(
-      '已完成进化：[%s] %s·%s%s。',
+      '已完成英雄进阶：[%s] %s·%s%s。',
       api.get_evolution_quality_label(def.quality),
       get_evolution_display_name(def),
       get_evolution_display_role(def),
@@ -1514,7 +1522,7 @@ function M.create(env)
     end
 
     STATE.choice_panel_hidden = false
-    local title = runtime.current_round and runtime.current_round.ui_title or '真身进化'
+    local title = runtime.current_round and runtime.current_round.ui_title or '英雄进阶'
     message(string.format(
       '%s：请点击面板完成选择。',
       title
@@ -1714,7 +1722,7 @@ function M.create(env)
 
     local choices = pick_mark_choices_for_rule(node.pool_rule_id, node.choice_count or 2)
     if #choices == 0 then
-      message(string.format('%s：本局没有可用真身候选。', node.ui_title or '真身进化'))
+      message(string.format('%s：本局没有可用英雄候选。', node.ui_title or '英雄进阶'))
       return false
     end
 
@@ -1740,16 +1748,16 @@ function M.create(env)
       kind = 'evolution_choice',
       priority = node.queue_priority or 95,
       round_id = round_id,
-      source_name = node.ui_title or '真身进化',
+      source_name = node.ui_title or '英雄进阶',
     })
 
     if runtime.awaiting_choice then
-      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '真身进化'))
+      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '英雄进阶'))
       return true
     end
 
     if not try_process_reward_queue() and api.get_reward_queue_count() > 0 then
-      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '真身进化'))
+      message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '英雄进阶'))
     end
     return true
   end
