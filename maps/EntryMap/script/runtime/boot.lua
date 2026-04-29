@@ -38,7 +38,10 @@ local HeroSelectionRangeSystem = require 'runtime.hero_selection_range'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
 local HeroAttrPanel = require 'runtime.hero_attr_panel'
+local SampleSkillsSystem = require 'runtime.sample_skills'
 local BootCore = require 'runtime.boot_core'
+local BootDevCommands = require 'runtime.boot_dev_commands'
+local BootBootstrapSequence = require 'runtime.boot_bootstrap_sequence'
 local RuntimeEntry = {}
 local helper_signals_started = false
 heal_hero = nil
@@ -61,11 +64,12 @@ auto_active_effects_system = nil
 battle_auto_acceptance_system = nil
 cannon_skill_134258724_system = nil
 bond_set_effects_system = nil
-effect_debug_system = nil
+local effect_debug_system = nil
 reward_system = nil
 attr_choice_system = nil
 audio_system = nil
 hero_selection_range_system = nil
+sample_skills_system = nil
 message = nil
 ensure_round_choice_available = nil
 get_enemies_in_range = nil
@@ -149,6 +153,7 @@ local ATTACK_SKILL_SLOT_COUNT = boot_core.ATTACK_SKILL_SLOT_COUNT
 local create_skill_runtime = boot_core.create_skill_runtime
 local create_attack_skill_instance = boot_core.create_attack_skill_instance
 local create_attack_skill_state = boot_core.create_attack_skill_state
+local STATE
 
 local BOND_ROUTE_META_BY_TAG = {}
 
@@ -195,6 +200,17 @@ local function safe_get_buff_name(buff_key)
     return name
   end
   return nil
+end
+
+local function has_valid_icon(icon)
+  if icon == nil then
+    return false
+  end
+  local n = tonumber(icon)
+  if n ~= nil then
+    return n ~= 0
+  end
+  return true
 end
 
 local function build_bottom_status_effect_entry(effect_def, snapshot)
@@ -244,29 +260,209 @@ local function build_bottom_status_effect_entry(effect_def, snapshot)
   return {
     id = tostring(effect_def.id or title or 'status_effect'),
     icon = icon,
+    modifier_key = tonumber(effect_def.modifier_key) or nil,
     tip_title = tostring(title or '魔法效果'),
     tip_text = table.concat(lines, '\n'),
   }
 end
 
-local function get_bottom_status_effect_entries(max_slots)
+local function build_runtime_bond_status_entries(limit, taken_modifier_keys)
   local entries = {}
-  local limit = math.max(0, tonumber(max_slots) or 5)
-  if limit == 0
-      or not auto_active_effects_system
-      or not auto_active_effects_system.get_effect_defs
-      or not auto_active_effects_system.get_effect_runtime_snapshot then
+  limit = math.max(0, tonumber(limit) or 0)
+  if limit <= 0 or not STATE or not STATE.bond_runtime then
+    return entries
+  end
+  local status_map = STATE.bond_runtime.modifier_runtime_status
+  if type(status_map) ~= 'table' then
     return entries
   end
 
-  for _, effect_def in ipairs(auto_active_effects_system.get_effect_defs() or {}) do
+  for status_id, runtime_entry in pairs(status_map) do
     if #entries >= limit then
       break
     end
-    local snapshot = auto_active_effects_system.get_effect_runtime_snapshot(effect_def.id)
-    local entry = build_bottom_status_effect_entry(effect_def, snapshot)
-    if entry then
-      entries[#entries + 1] = entry
+    local buff = runtime_entry and runtime_entry.buff or nil
+    if buff and buff.is_exist and buff:is_exist() and buff.get_key then
+      local modifier_key = tonumber(buff:get_key()) or 0
+      if modifier_key > 0 and not (taken_modifier_keys and taken_modifier_keys[modifier_key]) then
+        local icon = safe_get_buff_icon(modifier_key)
+        if has_valid_icon(icon) then
+          local title = (buff.get_name and buff:get_name()) or ''
+          if title == '' then
+            title = safe_get_buff_name(modifier_key) or tostring(status_id or modifier_key)
+          end
+          local lines = {}
+          local desc = (buff.get_description and buff:get_description()) or ''
+          if desc ~= '' then
+            lines[#lines + 1] = tostring(desc)
+          end
+          local stack = (buff.get_stack and tonumber(buff:get_stack())) or 0
+          if stack > 1 then
+            lines[#lines + 1] = string.format('层数：%d', math.floor(stack + 0.5))
+          end
+          local left_time = (buff.get_time and tonumber(buff:get_time())) or 0
+          if left_time > 0 and left_time < 86400 then
+            lines[#lines + 1] = string.format('持续：%.1fs', left_time)
+          end
+          if #lines == 0 then
+            lines[#lines + 1] = '当前已激活。'
+          end
+          entries[#entries + 1] = {
+            id = string.format('bond_runtime_%s', tostring(status_id or modifier_key)),
+            icon = icon,
+            modifier_key = modifier_key,
+            tip_title = tostring(title),
+            tip_text = table.concat(lines, '\n'),
+          }
+        end
+      end
+    end
+  end
+
+  return entries
+end
+
+local function build_hero_buff_status_entries(limit, taken_modifier_keys)
+  local entries = {}
+  limit = math.max(0, tonumber(limit) or 0)
+  if limit <= 0 or not STATE or not STATE.hero then
+    return entries
+  end
+  local hero = STATE.hero
+  if not (hero and hero.is_exist and hero:is_exist() and hero.get_buffs) then
+    return entries
+  end
+
+  local ok, buff_list = pcall(hero.get_buffs, hero)
+  if not ok or type(buff_list) ~= 'table' then
+    return entries
+  end
+
+  local grouped = {}
+  local ordered_keys = {}
+  for _, buff in ipairs(buff_list) do
+    if buff and buff.is_exist and buff:is_exist() and buff.get_key then
+      local modifier_key = tonumber(buff:get_key()) or 0
+      if modifier_key > 0 and not (taken_modifier_keys and taken_modifier_keys[modifier_key]) then
+        local icon_visible = true
+        if buff.is_icon_visible then
+          local ok_visible, visible = pcall(buff.is_icon_visible, buff)
+          if ok_visible then
+            icon_visible = visible == true
+          end
+        end
+        local icon = safe_get_buff_icon(modifier_key)
+        if icon_visible and has_valid_icon(icon) then
+          local group = grouped[modifier_key]
+          if not group then
+            local title = (buff.get_name and buff:get_name()) or ''
+            if title == '' then
+              title = safe_get_buff_name(modifier_key) or tostring(modifier_key)
+            end
+            local desc = (buff.get_description and buff:get_description()) or ''
+            group = {
+              key = modifier_key,
+              icon = icon,
+              title = tostring(title),
+              desc = tostring(desc or ''),
+              max_stack = 0,
+              max_time = 0,
+            }
+            grouped[modifier_key] = group
+            ordered_keys[#ordered_keys + 1] = modifier_key
+          end
+          local stack = (buff.get_stack and tonumber(buff:get_stack())) or 0
+          if stack > group.max_stack then
+            group.max_stack = stack
+          end
+          local left_time = (buff.get_time and tonumber(buff:get_time())) or 0
+          if left_time > group.max_time then
+            group.max_time = left_time
+          end
+        end
+      end
+    end
+  end
+
+  for _, modifier_key in ipairs(ordered_keys) do
+    if #entries >= limit then
+      break
+    end
+    local group = grouped[modifier_key]
+    if group then
+      local lines = {}
+      if group.desc ~= '' then
+        lines[#lines + 1] = group.desc
+      end
+      if group.max_stack > 1 then
+        lines[#lines + 1] = string.format('层数：%d', math.floor(group.max_stack + 0.5))
+      end
+      if group.max_time > 0 and group.max_time < 86400 then
+        lines[#lines + 1] = string.format('持续：%.1fs', group.max_time)
+      end
+      if #lines == 0 then
+        lines[#lines + 1] = '当前已激活。'
+      end
+      entries[#entries + 1] = {
+        id = string.format('hero_buff_%d', modifier_key),
+        icon = group.icon,
+        modifier_key = modifier_key,
+        tip_title = group.title,
+        tip_text = table.concat(lines, '\n'),
+      }
+    end
+  end
+
+  return entries
+end
+
+local function get_bottom_status_effect_entries(max_slots)
+  local entries = {}
+  local limit = math.max(0, tonumber(max_slots) or 5)
+  if limit == 0 then
+    return entries
+  end
+
+  local taken_modifier_keys = {}
+  local function push_entry(entry)
+    if not entry or #entries >= limit then
+      return
+    end
+    entries[#entries + 1] = entry
+    local modifier_key = tonumber(entry.modifier_key) or 0
+    if modifier_key > 0 then
+      taken_modifier_keys[modifier_key] = true
+    end
+  end
+
+  if #entries < limit then
+    for _, entry in ipairs(build_runtime_bond_status_entries(limit - #entries, taken_modifier_keys)) do
+      push_entry(entry)
+      if #entries >= limit then
+        break
+      end
+    end
+  end
+
+  if #entries < limit then
+    for _, entry in ipairs(build_hero_buff_status_entries(limit - #entries, taken_modifier_keys)) do
+      push_entry(entry)
+      if #entries >= limit then
+        break
+      end
+    end
+  end
+
+  if #entries < limit
+      and auto_active_effects_system
+      and auto_active_effects_system.get_effect_defs
+      and auto_active_effects_system.get_effect_runtime_snapshot then
+    for _, effect_def in ipairs(auto_active_effects_system.get_effect_defs() or {}) do
+      if #entries >= limit then
+        break
+      end
+      local snapshot = auto_active_effects_system.get_effect_runtime_snapshot(effect_def.id)
+      push_entry(build_bottom_status_effect_entry(effect_def, snapshot))
     end
   end
 
@@ -274,16 +470,32 @@ local function get_bottom_status_effect_entries(max_slots)
 end
 
 local function resolve_damage_meta(damage)
+  local function normalize_damage_type(raw)
+    local value = tostring(raw or '')
+    if value == '物理' then
+      return '物理'
+    end
+    if value == '法术' or value == '魔法' then
+      return '法术'
+    end
+    if value == '真实' then
+      return '真实'
+    end
+    return '法术'
+  end
+
   if type(damage) == 'table' then
+    local resolved_damage_type = normalize_damage_type(damage.damage_type)
     return {
-      damage_type = damage.damage_type or '法术',
-      damage_form = damage.damage_form or (damage.damage_type == '物理' and 'weapon' or 'spell'),
-      element = damage.element or 'none',
-      damage_label = damage.damage_label or (damage.damage_type == '物理' and '兵刃伤害' or '术法伤害'),
+      damage_type = resolved_damage_type,
+      damage_form = damage.damage_form or (resolved_damage_type == '物理' and 'weapon' or 'spell'),
+      -- 五行伤害已移除：统一按非元素伤害处理。
+      element = 'none',
+      damage_label = resolved_damage_type == '物理' and '兵刃伤害' or '术法伤害',
     }
   end
 
-  local legacy_damage_type = damage or '法术'
+  local legacy_damage_type = normalize_damage_type(damage)
   return {
     damage_type = legacy_damage_type,
     damage_form = legacy_damage_type == '物理' and 'weapon' or 'spell',
@@ -304,7 +516,9 @@ local function create_effect_debug_runtime()
   return EffectDebugSystem.create_runtime()
 end
 
-local STATE = boot_core.create_initial_state()
+STATE = boot_core.create_initial_state()
+STATE.effect_debug_runtime = nil
+STATE.fixed_camera_enabled = true
 
 local function get_player()
   return y3.player(CONFIG.player_id)
@@ -312,6 +526,66 @@ end
 
 local function get_enemy_player()
   return y3.player(CONFIG.enemy_player_id)
+end
+
+function RuntimeEntry.has_valid_hero()
+  return STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist()
+end
+
+function RuntimeEntry.apply_fixed_camera_mode(enabled)
+  local player = get_player()
+  if not player or not y3.camera then
+    return false
+  end
+
+  if enabled == true then
+    if not RuntimeEntry.has_valid_hero() then
+      return false
+    end
+    if y3.camera.set_tps_follow_unit then
+      y3.camera.set_tps_follow_unit(player, STATE.hero, 1, 0, -60, 0, 0, 220, 1800)
+    elseif y3.camera.set_camera_follow_unit then
+      y3.camera.set_camera_follow_unit(player, STATE.hero, 0, 0, 220)
+    end
+    if y3.camera.disable_camera_move then
+      y3.camera.disable_camera_move(player)
+    end
+    if y3.camera.set_moving_with_mouse then
+      y3.camera.set_moving_with_mouse(player, false)
+    end
+    return true
+  end
+
+  if y3.camera.cancel_tps_follow_unit then
+    y3.camera.cancel_tps_follow_unit(player)
+  end
+  if y3.camera.cancel_camera_follow_unit then
+    y3.camera.cancel_camera_follow_unit(player)
+  end
+  if y3.camera.enable_camera_move then
+    y3.camera.enable_camera_move(player)
+  end
+  if y3.camera.set_moving_with_mouse then
+    y3.camera.set_moving_with_mouse(player, true)
+  end
+  return true
+end
+
+function RuntimeEntry.sync_fixed_camera_mode()
+  return RuntimeEntry.apply_fixed_camera_mode(STATE.fixed_camera_enabled == true)
+end
+
+function RuntimeEntry.toggle_fixed_camera()
+  STATE.fixed_camera_enabled = not (STATE.fixed_camera_enabled == true)
+  local ok = RuntimeEntry.sync_fixed_camera_mode()
+  if message then
+    if STATE.fixed_camera_enabled then
+      message(ok and '已切换为固定视角（F12 可切换）。' or '已设为固定视角：等待英雄创建后生效。')
+    else
+      message('已切换为自由视角（F12 可切换）。')
+    end
+  end
+  return STATE.fixed_camera_enabled
 end
 
 local function set_ui_root_visible(path, visible)
@@ -463,6 +737,7 @@ local award_rewards
 local show_mark_choices
 local show_treasure_choices
 local show_attack_skill_loadout
+local emit_damage_debug_visual
 local try_open_queued_treasure_round
 local is_battle_active
 local reset_battle_state
@@ -730,12 +1005,7 @@ local function show_debug_hotkey_help()
   return debug_tools_system.show_debug_hotkey_help()
 end
 
-local function register_dev_commands()
-  debug_tools_system.register_dev_commands()
-  if gm_bond_effects_system and gm_bond_effects_system.register_dev_commands then
-    gm_bond_effects_system.register_dev_commands()
-  end
-end
+local register_dev_commands
 
 function ReservedRuntimeApi.has_unit_data(unit_id)
   return battlefield_system.has_unit_data(unit_id)
@@ -743,6 +1013,25 @@ end
 
 local function is_active_enemy(unit)
   return battlefield_system.is_active_enemy(unit)
+end
+
+function RuntimeEntry.can_receive_skill_damage(target)
+  if not target or not target.is_exist or not target:is_exist() then
+    return false
+  end
+  if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and target == STATE.hero then
+    return false
+  end
+  if is_active_enemy(target) then
+    return true
+  end
+  if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and STATE.hero.is_enemy then
+    local ok, is_enemy_to_hero = pcall(STATE.hero.is_enemy, STATE.hero, target)
+    if ok and is_enemy_to_hero == true then
+      return true
+    end
+  end
+  return false
 end
 
 local function get_enemy_runtime_info(unit)
@@ -923,6 +1212,9 @@ create_bond_env = function()
     is_elite_runtime_enemy = is_elite_runtime_enemy,
     get_enemies_in_range = get_enemies_in_range,
     deal_skill_damage = deal_skill_damage,
+    emit_damage_debug = function(visual)
+      emit_damage_debug_visual(visual, nil)
+    end,
     reserve_formula_damage = reserve_formula_damage,
     basic_attack_damage_type = ATTACK_SKILL_DEFS.basic_attack.damage_type,
     get_player = get_player,
@@ -1091,6 +1383,7 @@ end
 local DAMAGE_AREA_DEBUG_EFFECT_ID = 101492
 local DAMAGE_AREA_DEBUG_SCALE_BASE = 110
 local DAMAGE_AREA_DEBUG_HEIGHT = 8
+local DAMAGE_DEBUG_UID_WINDOW = 0.08
 
 local function should_show_damage_area_debug()
   if STATE and STATE.debug_show_damage_area == true then
@@ -1114,6 +1407,27 @@ local function show_damage_area_indicator(center, radius, duration)
   })
 end
 
+local function get_damage_debug_time()
+  if y3 and y3.game and y3.game.current_game_run_time then
+    return tonumber(y3.game.current_game_run_time()) or 0
+  end
+  return os.clock and os.clock() or 0
+end
+
+local function should_emit_damage_debug_uid(uid)
+  if not uid or uid == '' then
+    return true
+  end
+  STATE.damage_debug_uid_time = STATE.damage_debug_uid_time or {}
+  local now = get_damage_debug_time()
+  local last = tonumber(STATE.damage_debug_uid_time[uid]) or -1
+  if last >= 0 and (now - last) < DAMAGE_DEBUG_UID_WINDOW then
+    return false
+  end
+  STATE.damage_debug_uid_time[uid] = now
+  return true
+end
+
 local function get_target_point(unit)
   if not unit or not unit.get_point then
     return nil
@@ -1125,6 +1439,149 @@ local function get_target_point(unit)
     return point
   end
   return nil
+end
+
+local function resolve_debug_point(anchor)
+  if not anchor then
+    return nil
+  end
+  if anchor.get_x and anchor.get_y then
+    return anchor
+  end
+  if anchor.get_point then
+    local ok, point = pcall(function()
+      return anchor:get_point()
+    end)
+    if ok then
+      return point
+    end
+  end
+  return nil
+end
+
+local function show_damage_line_indicator(origin, impact, width, duration)
+  if not should_show_damage_area_debug() then
+    return
+  end
+  local origin_point = resolve_debug_point(origin)
+  local impact_point = resolve_debug_point(impact)
+  local line_width = math.max(50, tonumber(width) or 120)
+  if not origin_point or not impact_point then
+    show_damage_area_indicator(impact_point or origin_point, line_width, duration or 0.18)
+    return
+  end
+
+  local distance = origin_point.get_distance_with and origin_point:get_distance_with(impact_point) or 0
+  if distance <= 0 then
+    show_damage_area_indicator(impact_point, line_width, duration or 0.18)
+    return
+  end
+  local angle = origin_point.get_angle_with and origin_point:get_angle_with(impact_point) or 0
+  local marker_step = math.max(130, math.min(320, line_width * 1.7))
+  local marker_count = math.max(2, math.min(8, math.floor(distance / marker_step) + 1))
+
+  for index = 0, marker_count, 1 do
+    local travel = distance * (index / marker_count)
+    local marker = nil
+    if y3 and y3.point and y3.point.get_point_offset_vector then
+      marker = y3.point.get_point_offset_vector(origin_point, angle, travel)
+    end
+    if not marker and y3 and y3.point and y3.point.create and origin_point.get_x and origin_point.get_y then
+      local ox = origin_point:get_x()
+      local oy = origin_point:get_y()
+      local oz = origin_point.get_z and origin_point:get_z() or 0
+      marker = y3.point.create(ox + math.cos(angle) * travel, oy + math.sin(angle) * travel, oz)
+    end
+    show_damage_area_indicator(marker, line_width, duration or 0.18)
+  end
+end
+
+emit_damage_debug_visual = function(visual, fallback_target)
+  if not visual or not visual.debug_kind then
+    return
+  end
+  local debug_uid = tostring(visual.debug_uid or '')
+  if visual.debug_kind == 'area' then
+    local center = resolve_debug_point(visual.debug_center) or (fallback_target and get_target_point(fallback_target) or nil)
+    local radius = math.max(50, tonumber(visual.debug_radius) or 70)
+    local area_uid = debug_uid ~= '' and ('area:' .. debug_uid) or nil
+    if should_emit_damage_debug_uid(area_uid) then
+      show_damage_area_indicator(center, radius, tonumber(visual.debug_duration) or 0.20)
+    end
+  elseif visual.debug_kind == 'line' then
+    local line_uid = debug_uid ~= '' and ('line:' .. debug_uid) or nil
+    if should_emit_damage_debug_uid(line_uid) then
+      show_damage_line_indicator(
+        visual.debug_line_origin,
+        visual.debug_line_impact,
+        tonumber(visual.debug_line_width) or 120,
+        tonumber(visual.debug_duration) or 0.20
+      )
+    end
+  end
+end
+
+local function show_damage_debug_indicator(target, visual)
+  local hit_radius = tonumber(visual and visual.debug_hit_radius)
+  if not hit_radius or hit_radius <= 0 then
+    hit_radius = (visual and visual.debug_kind) and 70 or (tonumber(visual and visual.debug_radius) or 70)
+  end
+  show_damage_area_indicator(get_target_point(target), hit_radius, 0.24)
+  emit_damage_debug_visual(visual, target)
+end
+
+function RuntimeEntry.emit_skill_hit_feedback(target, final_damage, hp_before)
+  if not target then
+    return
+  end
+  local now = get_damage_debug_time()
+  STATE.skill_hit_feedback = STATE.skill_hit_feedback or {
+    combo = 0,
+    combo_window_end = 0,
+    next_prompt_time = 0,
+    next_heavy_fx_time = 0,
+  }
+  local stat = STATE.skill_hit_feedback
+  if now <= (stat.combo_window_end or 0) then
+    stat.combo = (stat.combo or 0) + 1
+  else
+    stat.combo = 1
+  end
+  stat.combo_window_end = now + 0.45
+
+  local killed = (tonumber(hp_before) or 0) > 0 and (tonumber(final_damage) or 0) >= (tonumber(hp_before) or 0)
+  local heavy = (tonumber(final_damage) or 0) >= math.max(120, (tonumber(hp_before) or 0) * 0.35)
+  if heavy and now >= (stat.next_heavy_fx_time or 0) then
+    local hit_point = get_target_point(target)
+    if hit_point then
+      pcall(y3.particle.create, {
+        type = 106081,
+        target = hit_point,
+        scale = 0.82,
+        time = 0.08,
+        height = 22,
+        immediate = true,
+      })
+    end
+    stat.next_heavy_fx_time = now + 0.12
+  end
+
+  if now < (stat.next_prompt_time or 0) then
+    return
+  end
+  if killed then
+    if BattleEventPrompts and BattleEventPrompts.push_battle_event then
+      BattleEventPrompts.push_battle_event('斩杀!', 'good', 0.45)
+    end
+    stat.next_prompt_time = now + 0.28
+    return
+  end
+  if (stat.combo or 0) >= 8 and ((stat.combo or 0) % 4 == 0) then
+    if BattleEventPrompts and BattleEventPrompts.push_battle_event then
+      BattleEventPrompts.push_battle_event(string.format('连击 x%d', stat.combo), 'normal', 0.45)
+    end
+    stat.next_prompt_time = now + 0.28
+  end
 end
 
 
@@ -1140,7 +1597,7 @@ deal_skill_damage = function(target, amount, damage, visual)
   end
 
   local ok, err = pcall(function()
-    if not STATE.hero or not STATE.hero:is_exist() or not is_active_enemy(target) then
+    if not STATE.hero or not STATE.hero:is_exist() or not RuntimeEntry.can_receive_skill_damage(target) then
       return
     end
 
@@ -1156,8 +1613,9 @@ deal_skill_damage = function(target, amount, damage, visual)
     if final_damage <= 0 then
       return
     end
-    show_damage_area_indicator(get_target_point(target), tonumber(visual and visual.debug_radius) or 70, 0.24)
+    show_damage_debug_indicator(target, visual)
 
+    local hp_before = target.get_hp and target:get_hp() or 0
     reserve_formula_damage(target, final_damage, {
       source = 'skill',
       damage_meta = damage_meta,
@@ -1174,6 +1632,7 @@ deal_skill_damage = function(target, amount, damage, visual)
       common_attack = false,
       no_miss = true,
     })
+    RuntimeEntry.emit_skill_hit_feedback(target, final_damage, hp_before)
 
     if battle_auto_acceptance_system and battle_auto_acceptance_system.record_damage then
       local scope = visual and visual.metric_scope or nil
@@ -1209,6 +1668,19 @@ local td_damage_api = SkillDamageTemplates.create({
   deal_skill_damage = function(target, amount, damage_meta, visual)
     deal_skill_damage(target, amount, damage_meta, visual)
   end,
+  emit_damage_debug = function(visual)
+    emit_damage_debug_visual(visual, nil)
+  end,
+  get_enemies_in_range = get_enemies_in_range,
+  is_active_enemy = is_active_enemy,
+})
+
+sample_skills_system = SampleSkillsSystem.create({
+  STATE = STATE,
+  y3 = y3,
+  message = message,
+  hero_attr_system = hero_attr_system,
+  skill_damage_api = td_damage_api,
   get_enemies_in_range = get_enemies_in_range,
   is_active_enemy = is_active_enemy,
 })
@@ -1287,6 +1759,21 @@ local function handle_bond_enemy_kill(info)
 end
 
 local function handle_bond_hero_pre_hurt(data)
+  if data and STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() then
+    local source = data.source_unit
+    if source and source == STATE.hero then
+      local damage_instance = data.damage_instance
+      if damage_instance and damage_instance.set_damage then
+        pcall(function()
+          damage_instance:set_damage(0)
+        end)
+      end
+      if STATE and STATE.debug_self_damage_guard == true then
+        message('[DEBUG] 已拦截主角自伤。')
+      end
+      return
+    end
+  end
   BondSystem.notify_hero_pre_hurt(create_bond_env(), data)
 end
 
@@ -1327,7 +1814,7 @@ local function show_runtime_status()
   local challenge_charge_text = ''
   if STATE.challenge_charge_map then
     local parts = {}
-    for _, challenge_id in ipairs({ 'gold_trial', 'wood_trial', 'exp_trial', 'treasure_trial' }) do
+    for _, challenge_id in ipairs({ 'gold_trial', 'wood_trial', 'exp_trial' }) do
       local def = CONFIG.challenges and CONFIG.challenges[challenge_id]
       if def then
         parts[#parts + 1] = string.format(
@@ -1371,8 +1858,8 @@ local function trigger_td_skills_on_hit(data)
   local basic_attack_def = ATTACK_SKILL_DEFS.basic_attack or {
     damage_type = '物理',
     damage_form = 'weapon',
-    element = 'metal',
-    damage_label = '金行剑罡',
+    element = 'none',
+    damage_label = '兵刃伤害',
   }
   local basic_attack_vfx = AttackSkillObjects.vfx_by_id.basic_attack or {}
   local basic_chain_particle = basic_attack_vfx.chain_particle
@@ -1453,7 +1940,7 @@ local function handle_challenge_success(instance)
   end
 
   award_rewards(instance.def.reward, instance.def.name .. ' 成功', false)
-  reward_system.queue_treasure_round(instance.def.id, instance.def.name)
+  message('宝物功能已下线，本次不再发放宝物奖励。')
   return true
 end
 
@@ -1499,9 +1986,65 @@ battlefield_system = BattlefieldSystem.create({
   heal_hero = function(amount)
     return heal_hero(amount)
   end,
-  play_enemy_death_sound = function(unit, info)
-    return audio_system and audio_system.play_enemy_death and
-        audio_system.play_enemy_death(unit, info and info.kind == 'boss') or nil
+  play_enemy_death_sound = function(unit, info, death_point)
+    local is_boss = info and info.kind == 'boss'
+    local played = audio_system and audio_system.play_enemy_death and
+        audio_system.play_enemy_death(unit, is_boss, death_point) or nil
+    if played then
+      return played
+    end
+    if not death_point or not y3 or not y3.sound then
+      return nil
+    end
+
+    local player = get_player()
+    if not player then
+      return nil
+    end
+
+    local function resolve_audio_key(raw_id)
+      if raw_id == nil then
+        return nil
+      end
+      local number_id = tonumber(raw_id)
+      if number_id then
+        return number_id
+      end
+      if y3 and y3.game and y3.game.str_to_audio_key then
+        local ok, key = pcall(y3.game.str_to_audio_key, tostring(raw_id))
+        if ok and key then
+          return key
+        end
+      end
+      return nil
+    end
+
+    local function play_3d_with_candidates(candidates, options)
+      for _, candidate in ipairs(candidates or {}) do
+        local key = resolve_audio_key(candidate)
+        if key then
+          local ok, sound = pcall(y3.sound.play_3d, player, key, death_point, options)
+          if ok and sound then
+            if options and options.volume and sound.set_volume then
+              pcall(sound.set_volume, sound, player, options.volume)
+            end
+            return sound
+          end
+        end
+      end
+      return nil
+    end
+
+    local heavy_sound = play_3d_with_candidates({ '134257420', '126040', '125775' }, {
+      ensure = true,
+      height = 45,
+      volume = is_boss and 100 or 92,
+    })
+    play_3d_with_candidates({ '134257799', '126054', '126042' }, {
+      height = 65,
+      volume = is_boss and 94 or 82,
+    })
+    return heavy_sound
   end,
   on_hero_damage = function(data)
     return trigger_td_skills_on_hit(data)
@@ -1588,14 +2131,24 @@ local function build_attack_skill_slot_text(slot)
   return attack_skills_system.build_attack_skill_slot_text(slot)
 end
 
+local function apply_treasure_bonus_to_attack_skill(skill_id, skill, bonus, direction)
+  if not reward_system or not reward_system.apply_treasure_bonus_to_attack_skill then
+    return nil
+  end
+  return reward_system.apply_treasure_bonus_to_attack_skill(skill_id, skill, bonus, direction)
+end
+
 show_attack_skill_loadout = function()
   return attack_skills_system.show_attack_skill_loadout()
 end
 
 local function unlock_attack_skill(skill_id)
+  if CONFIG.attack_skill_deprecated and skill_id ~= 'basic_attack' then
+    return nil, nil, false
+  end
   local skill, slot, is_new = attack_skills_system.unlock_attack_skill(skill_id)
   if is_new and STATE.treasure_runtime and STATE.treasure_runtime.applied then
-    reward_system.apply_treasure_bonus_to_attack_skill(
+    apply_treasure_bonus_to_attack_skill(
       skill_id,
       skill,
       STATE.treasure_runtime.applied.attack_skill or {},
@@ -1603,7 +2156,7 @@ local function unlock_attack_skill(skill_id)
     )
   end
   if is_new and STATE.mark_runtime and STATE.mark_runtime.applied then
-    reward_system.apply_treasure_bonus_to_attack_skill(
+    apply_treasure_bonus_to_attack_skill(
       skill_id,
       skill,
       STATE.mark_runtime.applied.attack_skill or {},
@@ -1632,6 +2185,9 @@ attack_skills_system = AttackSkillsSystem.create({
   is_active_enemy = is_active_enemy,
   create_attack_skill_instance = create_attack_skill_instance,
   deal_skill_damage = deal_skill_damage,
+  emit_damage_debug = function(visual)
+    emit_damage_debug_visual(visual, nil)
+  end,
   get_damage_bonus_multiplier = get_damage_bonus_multiplier,
   reserve_formula_damage = reserve_formula_damage,
   get_enemies_in_range = get_enemies_in_range,
@@ -1762,14 +2318,6 @@ local function get_pending_round_choice_kind()
   if evolution_runtime and evolution_runtime.awaiting_choice and evolution_runtime.current_choices then
     return 'evolution'
   end
-  if STATE.treasure_runtime then
-    if STATE.treasure_runtime.awaiting_choice and STATE.treasure_runtime.current_choices then
-      return 'treasure'
-    end
-    if STATE.treasure_runtime.awaiting_replace and STATE.treasure_runtime.pending_replace_choice then
-      return 'treasure'
-    end
-  end
   return nil
 end
 
@@ -1785,9 +2333,6 @@ local function get_pending_round_choice_label(kind)
   end
   if kind == 'evolution' or kind == 'mark' then
     return '猎手专精'
-  end
-  if kind == 'treasure' then
-    return '宝物选择'
   end
   return '当前选择'
 end
@@ -1851,7 +2396,9 @@ local function show_pending_round_choice(kind)
     return
   end
   if current_kind == 'treasure' then
-    show_treasure_choices()
+    message('宝物功能已下线。')
+    STATE.choice_panel_hidden = false
+    return
   end
 end
 
@@ -1912,9 +2459,8 @@ local function apply_round_choice(index)
   end
 
   if kind == 'treasure' then
-    reward_system.apply_treasure_choice(index)
-    STATE.choice_panel_hidden = false
-    return true
+    message('宝物功能已下线。')
+    return false
   end
 
   return false
@@ -1946,13 +2492,9 @@ local function refresh_current_choice()
     return false
   end
 
-  if kind == 'treasure' and STATE.treasure_runtime and STATE.treasure_runtime.awaiting_replace then
-    message('当前已选中新的宝物，请先指定要替换的宝物位。')
+  if kind == 'treasure' then
+    message('宝物功能已下线。')
     return false
-  end
-
-  if kind == 'treasure' and STATE.treasure_runtime and STATE.treasure_runtime.awaiting_choice then
-    return reward_system.refresh_treasure_choices()
   end
 
   return false
@@ -2020,6 +2562,7 @@ debug_actions_system = DebugActionsSystem.create({
       gm_bond_effects_system.refresh_board()
     end
   end,
+  sample_skill_system = sample_skills_system,
 })
 
 debug_tools_system = DebugToolsSystem.create({
@@ -2100,6 +2643,28 @@ debug_tools_system = DebugToolsSystem.create({
   debug_print_effect_logs = function()
     return debug_actions_system.debug_print_effect_logs()
   end,
+  debug_list_sample_skills = function()
+    return debug_actions_system.debug_list_sample_skills()
+  end,
+  debug_cast_sample_skill = function(sample_id)
+    return debug_actions_system.debug_cast_sample_skill(sample_id)
+  end,
+  debug_cast_next_sample_skill = function()
+    return debug_actions_system.debug_cast_next_sample_skill()
+  end,
+  debug_print_sample_framework_telemetry = function(sample_id)
+    return debug_actions_system.debug_print_sample_framework_telemetry(sample_id)
+  end,
+  debug_print_sample_framework_report = function()
+    return debug_actions_system.debug_print_sample_framework_report()
+  end,
+  debug_run_framework_tier_suite = function()
+    return debug_actions_system.debug_run_framework_tier_suite()
+  end,
+  debug_print_framework_tier_report = function()
+    return debug_actions_system.debug_print_framework_tier_report()
+  end,
+  sample_skill_system = sample_skills_system,
 })
 
 function RuntimeEntry.start_wave(index)
@@ -2136,6 +2701,10 @@ function RuntimeEntry.push_message_marquee(text, priority, opts)
 end
 
 local function try_start_challenge(challenge_id)
+  if challenge_id == 'treasure_trial' then
+    message('宝物挑战已下线。')
+    return false
+  end
   if not ensure_round_choice_available(nil) then
     return
   end
@@ -2176,23 +2745,7 @@ local function try_evolution_entry()
 end
 
 local function try_treasure_entry()
-  if has_pending_treasure_choice() then
-    STATE.choice_panel_hidden = false
-    show_pending_round_choice('treasure')
-    return true
-  end
-
-  try_open_queued_treasure_round()
-  if not ensure_round_choice_available('treasure') then
-    return false
-  end
-  if has_pending_treasure_choice() then
-    STATE.choice_panel_hidden = false
-    show_pending_round_choice('treasure')
-    return true
-  end
-
-  message('当前没有待领取的宝物三选一。')
+  message('宝物功能已下线。')
   return false
 end
 
@@ -2350,6 +2903,12 @@ gm_bond_effects_system = GmBondEffectsSystem.create({
   activate_modifier_bond_effect = function(bond_name, grant_missing_cards)
     return BondSystem.debug_activate_modifier_bond(create_bond_env(), bond_name, grant_missing_cards)
   end,
+  activate_single_modifier_bond_effect = function(bond_name, grant_missing_cards)
+    return BondSystem.debug_activate_single_modifier_bond(create_bond_env(), bond_name, grant_missing_cards)
+  end,
+  clear_active_modifier_bond_effects = function()
+    return BondSystem.debug_clear_active_modifier_bonds(create_bond_env())
+  end,
   set_force_special_effects_100 = function(enabled)
     BondModifierEffects.set_force_special_effects_100(enabled)
   end,
@@ -2360,6 +2919,30 @@ gm_bond_effects_system = GmBondEffectsSystem.create({
     return BondEffectsTestFramework.run({
       message = message,
     })
+  end,
+  list_sample_skills = function()
+    if sample_skills_system and sample_skills_system.list_samples then
+      return sample_skills_system.list_samples()
+    end
+    return {}
+  end,
+  cast_sample_skill = function(sample_id)
+    if sample_skills_system and sample_skills_system.cast_sample then
+      return sample_skills_system.cast_sample(sample_id)
+    end
+    return false, 'sample 技能系统未初始化。'
+  end,
+  cast_next_sample_skill = function()
+    if sample_skills_system and sample_skills_system.cast_next_sample then
+      return sample_skills_system.cast_next_sample()
+    end
+    return false, 'sample 技能系统未初始化。'
+  end,
+  get_sample_skill_defs = function()
+    if sample_skills_system and sample_skills_system.get_sample_defs then
+      return sample_skills_system.get_sample_defs()
+    end
+    return {}
   end,
   set_n0_activation_mode = function(mode)
     if battle_auto_acceptance_system and battle_auto_acceptance_system.set_activation_mode then
@@ -2403,6 +2986,12 @@ battle_auto_acceptance_system = BattleAutoAcceptanceSystem.create({
   end,
   activate_modifier_bond_effect = function(bond_name, grant_missing_cards)
     return BondSystem.debug_activate_modifier_bond(create_bond_env(), bond_name, grant_missing_cards)
+  end,
+  activate_single_modifier_bond_effect = function(bond_name, grant_missing_cards)
+    return BondSystem.debug_activate_single_modifier_bond(create_bond_env(), bond_name, grant_missing_cards)
+  end,
+  clear_active_modifier_bond_effects = function()
+    return BondSystem.debug_clear_active_modifier_bonds(create_bond_env())
   end,
   set_force_special_effects_100 = function(enabled)
     BondModifierEffects.set_force_special_effects_100(enabled)
@@ -2532,6 +3121,9 @@ cannon_skill_134258724_system = CannonSkill134258724System.create({
   hero_attr_system = hero_attr_system,
   get_enemies_in_range = get_enemies_in_range,
   deal_skill_damage = deal_skill_damage,
+  emit_damage_debug = function(visual)
+    emit_damage_debug_visual(visual, nil)
+  end,
 })
 
 runtime_ui_helpers.install_panel_systems()
@@ -2552,7 +3144,11 @@ set_battle_hud_visible = function(visible)
 end
 
 local function create_hero()
-  return battlefield_system.create_hero(ATTACK_SKILL_DEFS.basic_attack.base_range or 250)
+  local hero = battlefield_system.create_hero(ATTACK_SKILL_DEFS.basic_attack.base_range or 250)
+  if STATE.fixed_camera_enabled == true then
+    RuntimeEntry.sync_fixed_camera_mode()
+  end
+  return hero
 end
 
 local function validate_config()
@@ -2668,53 +3264,58 @@ outgame_system = OutgameSystem.create({
   end,
 })
 
-input_events_system = BootInput.create({
-  STATE = STATE,
-  y3 = y3,
-  message = message,
-  is_battle_active = function()
-    return is_battle_active()
-  end,
-  get_hero_max_level = progression_system.get_hero_max_level,
-  sync_hero_progress_from_engine = progression_system.sync_hero_progress_from_engine,
-  try_queue_mark_node_for_level = reward_system.try_queue_evolution_node_for_level,
-  grant_attr_diamond = function(count, level)
-    return attr_choice_system and attr_choice_system.grant_diamond and attr_choice_system.grant_diamond(count, level) or
-        nil
-  end,
-  try_bond_draw = try_bond_draw,
-  show_bond_progress = function()
-    return open_bond_card_album()
-  end,
-  show_runtime_attr_overview = function()
-    show_runtime_attr_dialog()
-  end,
-  show_runtime_attr_tip_panel = function()
-    runtime_ui_helpers.show_runtime_attr_tip_panel(8)
-  end,
-  show_runtime_attr_dialog = show_runtime_attr_dialog,
-  refresh_runtime_overview = runtime_ui_helpers.refresh_runtime_overview,
-  start_current_task_challenge = function()
-    return mainline_task_system and mainline_task_system.start_current_task_challenge and
-        mainline_task_system.start_current_task_challenge() or nil
-  end,
-  try_start_challenge = try_start_challenge,
-  try_evolution_entry = try_evolution_entry,
-  try_treasure_entry = try_treasure_entry,
-  apply_round_choice = apply_round_choice,
-  show_runtime_status = show_runtime_status,
-  toggle_talk_input = runtime_ui_helpers.toggle_talk_input,
-  toggle_inventory_panel = runtime_ui_helpers.toggle_inventory_panel,
-  open_save_panel = function()
-    return open_runtime_save_panel()
-  end,
-  try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
-  use_attr_diamond = use_attr_diamond,
-  show_debug_hotkey_help = show_debug_hotkey_help,
-  debug_actions_system = debug_actions_system,
-  debug_tools_system = debug_tools_system,
-  gm_bond_effects_system = gm_bond_effects_system,
-})
+local function build_input_events_env()
+  return {
+    STATE = STATE,
+    y3 = y3,
+    message = message,
+    is_battle_active = function()
+      return is_battle_active()
+    end,
+    get_hero_max_level = progression_system.get_hero_max_level,
+    sync_hero_progress_from_engine = progression_system.sync_hero_progress_from_engine,
+    try_queue_mark_node_for_level = reward_system.try_queue_evolution_node_for_level,
+    grant_attr_diamond = function(count, level)
+      return attr_choice_system and attr_choice_system.grant_diamond and attr_choice_system.grant_diamond(count, level) or
+          nil
+    end,
+    try_bond_draw = try_bond_draw,
+    show_bond_progress = function()
+      return open_bond_card_album()
+    end,
+    show_runtime_attr_overview = function()
+      show_runtime_attr_dialog()
+    end,
+    show_runtime_attr_tip_panel = function()
+      runtime_ui_helpers.show_runtime_attr_tip_panel(8)
+    end,
+    show_runtime_attr_dialog = show_runtime_attr_dialog,
+    refresh_runtime_overview = runtime_ui_helpers.refresh_runtime_overview,
+    start_current_task_challenge = function()
+      return mainline_task_system and mainline_task_system.start_current_task_challenge and
+          mainline_task_system.start_current_task_challenge() or nil
+    end,
+    try_start_challenge = try_start_challenge,
+    try_evolution_entry = try_evolution_entry,
+    try_treasure_entry = try_treasure_entry,
+    apply_round_choice = apply_round_choice,
+    show_runtime_status = show_runtime_status,
+    toggle_talk_input = runtime_ui_helpers.toggle_talk_input,
+    toggle_inventory_panel = runtime_ui_helpers.toggle_inventory_panel,
+    open_save_panel = function()
+      return open_runtime_save_panel()
+    end,
+    try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
+    use_attr_diamond = use_attr_diamond,
+    show_debug_hotkey_help = show_debug_hotkey_help,
+    debug_actions_system = debug_actions_system,
+    debug_tools_system = debug_tools_system,
+    gm_bond_effects_system = gm_bond_effects_system,
+    toggle_fixed_camera = RuntimeEntry.toggle_fixed_camera,
+  }
+end
+
+input_events_system = BootInput.create(build_input_events_env())
 
 hero_tujian_panel_system = BootHeroTujian.create({
   STATE = STATE,
@@ -2736,66 +3337,94 @@ local function register_runtime_events()
   })
 end
 
-runtime_loops_system = BootLoops.create({
-  STATE = STATE,
-  y3 = y3,
-  hero_attr_system = hero_attr_system,
-  is_battle_active = function()
-    return is_battle_active()
-  end,
-  update_passive_resources = update_passive_resources,
-  battlefield_system = battlefield_system,
-  update_bond_effects = update_bond_effects,
-  update_auto_active_effects = update_auto_active_effects,
-  update_effect_debug = update_effect_debug,
-  update_enemy_statuses = update_enemy_statuses,
-  update_attack_skills = update_attack_skills,
-  update_temporary_treasures = reward_system.update_temporary_treasures,
-  update_mainline_task = function(dt)
-    return mainline_task_system and mainline_task_system.update and mainline_task_system.update(dt) or nil
-  end,
-  update_battle_auto_acceptance = function(dt)
-    if battle_auto_acceptance_system and battle_auto_acceptance_system.update then
-      return battle_auto_acceptance_system.update(dt)
-    end
-    return nil
-  end,
-  ensure_runtime_hud = runtime_ui_helpers.ensure_runtime_hud,
-  ensure_choice_panel = runtime_ui_helpers.ensure_choice_panel,
-  set_battle_hud_visible = set_battle_hud_visible,
-  refresh_runtime_hud = runtime_ui_helpers.refresh_runtime_hud,
-  refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel,
-  refresh_runtime_overview = runtime_ui_helpers.refresh_runtime_overview,
-  refresh_inventory_panel = runtime_ui_helpers.refresh_inventory_panel,
-  outgame_system = outgame_system,
-  gm_bond_effects_system = gm_bond_effects_system,
-  is_active_enemy = is_active_enemy,
-  get_enemies_in_range = get_enemies_in_range,
-  deal_skill_damage = deal_skill_damage,
-  hero_tujian_panel_system = hero_tujian_panel_system,
-})
+local function build_runtime_loops_env()
+  return {
+    STATE = STATE,
+    y3 = y3,
+    hero_attr_system = hero_attr_system,
+    is_battle_active = function()
+      return is_battle_active()
+    end,
+    update_passive_resources = update_passive_resources,
+    battlefield_system = battlefield_system,
+    update_bond_effects = update_bond_effects,
+    update_auto_active_effects = update_auto_active_effects,
+    update_effect_debug = update_effect_debug,
+    update_enemy_statuses = update_enemy_statuses,
+    update_attack_skills = update_attack_skills,
+    update_temporary_treasures = reward_system.update_temporary_treasures,
+    update_mainline_task = function(dt)
+      return mainline_task_system and mainline_task_system.update and mainline_task_system.update(dt) or nil
+    end,
+    update_battle_auto_acceptance = function(dt)
+      if battle_auto_acceptance_system and battle_auto_acceptance_system.update then
+        return battle_auto_acceptance_system.update(dt)
+      end
+      return nil
+    end,
+    ensure_runtime_hud = runtime_ui_helpers.ensure_runtime_hud,
+    ensure_choice_panel = runtime_ui_helpers.ensure_choice_panel,
+    set_battle_hud_visible = set_battle_hud_visible,
+    refresh_runtime_hud = runtime_ui_helpers.refresh_runtime_hud,
+    refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel,
+    refresh_runtime_overview = runtime_ui_helpers.refresh_runtime_overview,
+    refresh_inventory_panel = runtime_ui_helpers.refresh_inventory_panel,
+    outgame_system = outgame_system,
+    gm_bond_effects_system = gm_bond_effects_system,
+    is_active_enemy = is_active_enemy,
+    get_enemies_in_range = get_enemies_in_range,
+    deal_skill_damage = deal_skill_damage,
+    emit_damage_debug = function(visual)
+      emit_damage_debug_visual(visual, nil)
+    end,
+    hero_tujian_panel_system = hero_tujian_panel_system,
+  }
+end
+
+runtime_loops_system = BootLoops.create(build_runtime_loops_env())
 
 local function start_runtime_loops()
   return runtime_loops_system.start_runtime_loops()
 end
+
+register_dev_commands = BootDevCommands.create({
+  get_debug_tools_system = function()
+    return debug_tools_system
+  end,
+  get_gm_bond_effects_system = function()
+    return gm_bond_effects_system
+  end,
+})
+
+local run_bootstrap_sequence = BootBootstrapSequence.create({
+  ensure_helper_signals = ensure_helper_signals,
+  reset_session_state = function()
+    return reset_session_state()
+  end,
+  register_runtime_events = register_runtime_events,
+  register_cannon_skill = function()
+    return cannon_skill_134258724_system.register()
+  end,
+  register_dev_commands = function()
+    return register_dev_commands()
+  end,
+  start_runtime_loops = start_runtime_loops,
+  setup_post_bootstrap_ui = function()
+    if gm_bond_effects_system and gm_bond_effects_system.ensure_board then
+      gm_bond_effects_system.ensure_board()
+      gm_bond_effects_system.refresh_board()
+    end
+    outgame_system.load_profile()
+    outgame_system.enter_outgame()
+  end,
+})
 
 function RuntimeEntry.bootstrap()
   if not validate_config() then
     return
   end
 
-  ensure_helper_signals()
-  reset_session_state()
-  register_runtime_events()
-  cannon_skill_134258724_system.register()
-  register_dev_commands()
-  start_runtime_loops()
-  if gm_bond_effects_system and gm_bond_effects_system.ensure_board then
-    gm_bond_effects_system.ensure_board()
-    gm_bond_effects_system.refresh_board()
-  end
-  outgame_system.load_profile()
-  outgame_system.enter_outgame()
+  run_bootstrap_sequence()
 end
 
 return RuntimeEntry

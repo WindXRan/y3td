@@ -226,7 +226,7 @@ local bi=a.resolve_ui(e,a0,'GameHUD.exit_btn')
 local bj=a.resolve_ui(e,a0,'GameHUD.setting_panel')
 B(bf,H)B(bj,I)B(bh,J)B(bi,J)t(be,P)
 if P==true then
-t(bf,true)t(bg,true)t(bh,false)t(bi,false)
+t(bf,true)t(bg,true)t(bh,true)t(bi,true)
 t(a.resolve_ui(e,a0,'bottom_bg.bottom_bg'),false)t(a.resolve_ui(e,a0,'bottom_bg'),false)
 if be then
 local bk={

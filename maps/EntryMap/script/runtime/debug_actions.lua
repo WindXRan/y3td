@@ -3,6 +3,7 @@ local M = {}
 function M.create(env)
   local STATE = env.STATE
   local CONFIG = env.CONFIG
+  local ATTACK_SKILL_DEPRECATED = CONFIG and CONFIG.attack_skill_deprecated == true
   local debug_message = env.debug_message
   local get_hero_max_level = env.get_hero_max_level
   local sync_hero_progression = env.sync_hero_progression
@@ -19,6 +20,7 @@ function M.create(env)
   local effect_debug_system = env.effect_debug_system
   local force_trigger_effect = env.force_trigger_effect
   local open_effect_debug_panel_ui = env.open_effect_debug_panel_ui
+  local sample_skill_system = env.sample_skill_system
 
   local api = {}
 
@@ -73,6 +75,11 @@ function M.create(env)
 
   function api.debug_unlock_all_attack_skills()
     if not guard_battle() then
+      return
+    end
+    if ATTACK_SKILL_DEPRECATED then
+      debug_message('攻击技能系统已废弃，仅保留普攻。')
+      show_attack_skill_loadout()
       return
     end
     local unlocked = 0
@@ -271,6 +278,123 @@ function M.create(env)
       return
     end
     effect_debug_system.print_logs(8)
+  end
+
+  function api.debug_list_sample_skills()
+    if not guard_battle() then
+      return
+    end
+    if not sample_skill_system or not sample_skill_system.list_samples then
+      debug_message('Sample 技能系统未初始化。')
+      return
+    end
+    debug_message('Sample 技能列表：')
+    for _, line in ipairs(sample_skill_system.list_samples()) do
+      debug_message(line)
+    end
+  end
+
+  function api.debug_cast_sample_skill(sample_id)
+    if not guard_battle() then
+      return
+    end
+    if not sample_skill_system or not sample_skill_system.cast_sample then
+      debug_message('Sample 技能系统未初始化。')
+      return
+    end
+    if not sample_id or sample_id == '' then
+      debug_message('用法：.esample <sample_id> 或 .esample list')
+      return
+    end
+    local ok, result = sample_skill_system.cast_sample(sample_id)
+    debug_message(ok and result or result)
+  end
+
+  function api.debug_cast_next_sample_skill()
+    if not guard_battle() then
+      return
+    end
+    if not sample_skill_system or not sample_skill_system.cast_next_sample then
+      debug_message('Sample 技能系统未初始化。')
+      return
+    end
+    local ok, result = sample_skill_system.cast_next_sample()
+    debug_message(ok and result or result)
+  end
+
+  function api.debug_print_sample_framework_telemetry(sample_id)
+    if not guard_battle() then
+      return
+    end
+    if not sample_skill_system or not sample_skill_system.get_framework_telemetry then
+      debug_message('技能框架 telemetry 未初始化。')
+      return
+    end
+    local id = tostring(sample_id or '')
+    if id == '' then
+      debug_message('用法：.eframe <sample_id>，例如 .eframe sf_line_pierce')
+      return
+    end
+    local t = sample_skill_system.get_framework_telemetry(id)
+    if not t then
+      debug_message(string.format('未找到 telemetry：%s', id))
+      return
+    end
+    debug_message(string.format(
+      '[FRAME] %s cast=%d succ=%d fail=%d hits=%d avg_hits=%.2f empty=%d empty_rate=%.2f%% dmg=%.0f last=%s',
+      id,
+      tonumber(t.cast_count) or 0,
+      tonumber(t.success_count) or 0,
+      tonumber(t.fail_count) or 0,
+      tonumber(t.total_hits) or 0,
+      tonumber(t.avg_hits_per_cast) or 0,
+      tonumber(t.empty_cast_count) or 0,
+      (tonumber(t.empty_cast_rate) or 0) * 100,
+      tonumber(t.total_damage) or 0,
+      tostring(t.last_reason or '')
+    ))
+  end
+
+  function api.debug_print_sample_framework_report()
+    if not guard_battle() then
+      return
+    end
+    if not sample_skill_system or not sample_skill_system.print_framework_telemetry_report then
+      debug_message('技能框架 telemetry 汇总接口未初始化。')
+      return
+    end
+    local ok, result = sample_skill_system.print_framework_telemetry_report()
+    if ok then
+      debug_message('已打印 telemetry 验收快照。')
+      return
+    end
+    debug_message(tostring(result or 'telemetry report 打印失败。'))
+  end
+
+  function api.debug_run_framework_tier_suite()
+    if not guard_battle() then
+      return
+    end
+    if not sample_skill_system or not sample_skill_system.run_framework_tier_suite then
+      debug_message('分档连测接口未初始化。')
+      return
+    end
+    local ok, result = sample_skill_system.run_framework_tier_suite()
+    debug_message(ok and result or result)
+  end
+
+  function api.debug_print_framework_tier_report()
+    if not guard_battle() then
+      return
+    end
+    if not sample_skill_system or not sample_skill_system.build_framework_tier_report then
+      debug_message('分档报告接口未初始化。')
+      return
+    end
+    debug_message('框架分档报告：')
+    for _, line in ipairs(sample_skill_system.build_framework_tier_report() or {}) do
+      debug_message(line)
+    end
   end
 
   return api

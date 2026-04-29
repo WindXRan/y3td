@@ -11,6 +11,7 @@ function M.create(env)
   local make_point = env.make_point
   local develop_command = env.develop_command
   local effect_debug_system = env.effect_debug_system
+  local sample_skill_system = env.sample_skill_system
 
   local function round(value)
     return round_number(tonumber(value) or 0)
@@ -242,7 +243,7 @@ function M.create(env)
     end
 
     local parts = {}
-    for _, challenge_id in ipairs({ 'gold_trial', 'wood_trial', 'exp_trial', 'treasure_trial' }) do
+    for _, challenge_id in ipairs({ 'gold_trial', 'wood_trial', 'exp_trial' }) do
       local challenge_def = CONFIG.challenges and CONFIG.challenges[challenge_id]
       if challenge_def then
         parts[#parts + 1] = string.format(
@@ -268,6 +269,10 @@ function M.create(env)
     debug_message('Ctrl+F10：显示 / 隐藏 羁绊GM 面板')
     debug_message('特效命令：.eeffect [id] / .eemount [id] / .eeunmount [id] / .eetrigger [id] / .eeobs [id] / .eeclear / .eelog')
     debug_message('羁绊GM命令：.egmbond [on|off|toggle] / .egmcard <card_id|卡名> / .egmbondeffect <羁绊名>')
+    debug_message('样例技能命令：.esample list / .esample next / .esample report / .esample <sample_id>')
+    debug_message('验收快照命令：.esample report（别名：.esample r）')
+    debug_message('框架统计命令：.eframe <sample_id>（示例：.eframe sf_line_pierce）')
+    debug_message('分档连测命令：.etier run / .etier report')
   end
 
   local function register_dev_commands()
@@ -393,20 +398,16 @@ function M.create(env)
     })
 
     develop_command.register('ETREASURE', {
-      desc = '直接获得指定宝物，如 .etreasure ITEM_004 [replace_slot]',
-      onCommand = function(treasure_id, replace_slot)
-        if not treasure_id or treasure_id == '' then
-          message('用法：.etreasure <treasure_id> [replace_slot]')
-          return
-        end
-        env.debug_grant_treasure(treasure_id, tonumber(replace_slot))
+      desc = '宝物功能已下线。',
+      onCommand = function()
+        message('宝物功能已下线。')
       end,
     })
 
     develop_command.register('ETEMP', {
-      desc = '打印当前临时宝物列表。',
+      desc = '宝物功能已下线。',
       onCommand = function()
-        env.debug_print_temporary_treasures()
+        message('宝物功能已下线。')
       end,
     })
 
@@ -466,6 +467,69 @@ function M.create(env)
       desc = '清空全部特效调试挂载。',
       onCommand = function()
         env.debug_clear_mounted_effects()
+      end,
+    })
+
+    develop_command.register('ESAMPLE', {
+      desc = '施放样例技能：.esample list|next|report|<sample_id>',
+      onCommand = function(arg)
+        local raw = tostring(arg or '')
+        local cmd = raw:lower()
+        if cmd == '' or cmd == 'list' or cmd == 'ls' then
+          if env.debug_list_sample_skills then
+            env.debug_list_sample_skills()
+          end
+          return
+        end
+        if cmd == 'next' then
+          if env.debug_cast_next_sample_skill then
+            env.debug_cast_next_sample_skill()
+          end
+          return
+        end
+        if cmd == 'report' or cmd == 'r' then
+          if env.debug_print_sample_framework_report then
+            env.debug_print_sample_framework_report()
+          end
+          return
+        end
+        if env.debug_cast_sample_skill then
+          env.debug_cast_sample_skill(raw)
+        end
+      end,
+    })
+
+    develop_command.register('EFRAME', {
+      desc = '打印技能框架 telemetry：.eframe <sample_id>',
+      onCommand = function(sample_id)
+        local id = tostring(sample_id or '')
+        if id == '' then
+          message('用法：.eframe <sample_id>，例如 .eframe sf_line_pierce')
+          return
+        end
+        if env.debug_print_sample_framework_telemetry then
+          env.debug_print_sample_framework_telemetry(id)
+        end
+      end,
+    })
+
+    develop_command.register('ETIER', {
+      desc = '框架分档连测：.etier run|report',
+      onCommand = function(arg)
+        local cmd = tostring(arg or ''):lower()
+        if cmd == '' or cmd == 'run' then
+          if env.debug_run_framework_tier_suite then
+            env.debug_run_framework_tier_suite()
+          end
+          return
+        end
+        if cmd == 'report' or cmd == 'r' then
+          if env.debug_print_framework_tier_report then
+            env.debug_print_framework_tier_report()
+          end
+          return
+        end
+        message('用法：.etier run|report')
       end,
     })
   end
@@ -652,6 +716,116 @@ function M.create(env)
     return effect_ui
   end
 
+  local function get_showcase_center_point()
+    if STATE and STATE.defense_point then
+      return STATE.defense_point
+    end
+    if env.get_hero_point then
+      return env.get_hero_point()
+    end
+    return nil
+  end
+
+  local function build_sample_showcase_panel(panel)
+    local sample_ui = {
+      list_buttons = {},
+      page = 1,
+    }
+    STATE.gm_ui.sample_showcase = sample_ui
+
+    sample_ui.panel = create_rect(panel, 24, 22, 340, 240, { 14, 26, 40, 232 })
+    create_text(panel, '技能展台模式', 36, 236, 150, 24, 18, { 245, 248, 255, 255 })
+    create_text(panel, '点击条目：切换并施放（固定中区）', 36, 216, 300, 18, 12, { 168, 192, 220, 255 })
+    sample_ui.page_text = create_text(panel, '', 258, 236, 96, 20, 12, { 205, 220, 236, 255 })
+    sample_ui.status_text = create_text(panel, '', 36, 32, 314, 18, 12, { 184, 206, 230, 255 })
+
+    for i = 1, 6 do
+      local y = 184 - (i - 1) * 28
+      sample_ui.list_buttons[i] = create_button(panel, '', 36, y, 286, 24, function()
+        if not sample_skill_system or not sample_skill_system.get_sample_defs then
+          debug_message('样例技能系统未初始化。')
+          return
+        end
+        local defs = sample_skill_system.get_sample_defs() or {}
+        local base = (sample_ui.page - 1) * 6
+        local def = defs[base + i]
+        if not def then
+          return
+        end
+        local center = get_showcase_center_point()
+        if center and STATE and STATE.hero and STATE.hero.blink then
+          pcall(STATE.hero.blink, STATE.hero, center)
+        end
+        local center_text = center and format_point(center) or '(nil)'
+        if env.debug_cast_sample_skill then
+          env.debug_cast_sample_skill(def.id)
+          set_text(sample_ui.status_text, string.format('已施放：%s @ %s', tostring(def.id), center_text))
+        end
+      end, { 30, 56, 84, 235 })
+    end
+
+    create_button(panel, '上一页', 36, 54, 90, 24, function()
+      local defs = sample_skill_system and sample_skill_system.get_sample_defs and sample_skill_system.get_sample_defs() or {}
+      local pages = math.max(1, math.ceil((#defs) / 6))
+      sample_ui.page = math.max(1, sample_ui.page - 1)
+      if sample_ui.page > pages then
+        sample_ui.page = pages
+      end
+    end, { 66, 90, 120, 235 })
+
+    create_button(panel, '下一页', 136, 54, 90, 24, function()
+      local defs = sample_skill_system and sample_skill_system.get_sample_defs and sample_skill_system.get_sample_defs() or {}
+      local pages = math.max(1, math.ceil((#defs) / 6))
+      sample_ui.page = math.min(pages, sample_ui.page + 1)
+    end, { 66, 90, 120, 235 })
+
+    create_button(panel, '中区连播', 236, 54, 86, 24, function()
+      local center = get_showcase_center_point()
+      if center and STATE and STATE.hero and STATE.hero.blink then
+        pcall(STATE.hero.blink, STATE.hero, center)
+      end
+      if env.debug_cast_next_sample_skill then
+        env.debug_cast_next_sample_skill()
+        local center_text = center and format_point(center) or '(nil)'
+        set_text(sample_ui.status_text, string.format('已连播下一个样例 @ %s', center_text))
+      end
+    end, { 92, 82, 116, 235 })
+
+    return sample_ui
+  end
+
+  local function refresh_sample_showcase_panel()
+    local gm_ui = STATE.gm_ui
+    local sample_ui = gm_ui and gm_ui.sample_showcase
+    if not sample_ui then
+      return
+    end
+    local visible = gm_ui.visible == true
+    set_visible(sample_ui.panel, visible)
+    if not visible then
+      return
+    end
+    local defs = sample_skill_system and sample_skill_system.get_sample_defs and sample_skill_system.get_sample_defs() or {}
+    local pages = math.max(1, math.ceil((#defs) / 6))
+    if sample_ui.page > pages then
+      sample_ui.page = pages
+    end
+    if sample_ui.page < 1 then
+      sample_ui.page = 1
+    end
+    set_text(sample_ui.page_text, string.format('第 %d/%d 页', sample_ui.page, pages))
+    local base = (sample_ui.page - 1) * 6
+    for i = 1, 6 do
+      local idx = base + i
+      local def = defs[idx]
+      local btn = sample_ui.list_buttons[i]
+      set_visible(btn, def ~= nil)
+      if def then
+        set_text(btn, string.format('%d) %s', idx, tostring(def.name or def.id)))
+      end
+    end
+  end
+
   refresh_gm_panel = function()
     local gm_ui = STATE.gm_ui
     if not gm_ui then
@@ -669,6 +843,7 @@ function M.create(env)
     end
     set_text(gm_ui.status_text, get_gm_panel_status_text())
     refresh_effect_debug_panel()
+    refresh_sample_showcase_panel()
   end
 
   toggle_gm_panel = function()
@@ -727,7 +902,7 @@ function M.create(env)
       { '帮助 / F1', env.show_debug_hotkey_help or show_debug_hotkey_help, { 58, 84, 120 } },
       { '加资源 / F2', env.debug_add_test_resources, { 73, 94, 132 } },
       { '升 3 级 / F3', function() env.debug_grant_levels(3) end, { 64, 88, 128 } },
-      { '解锁技能 / F4', env.debug_unlock_all_attack_skills, { 84, 97, 138 } },
+      { '技能废弃 / F4', env.debug_unlock_all_attack_skills, { 84, 97, 138 } },
       { '抽流派 / F6', env.debug_trigger_bond_draw, { 84, 110, 150 } },
       { '满挑战 / F7', env.debug_refill_challenge_charges, { 70, 112, 142 } },
       { '刷 Boss / F8', env.debug_force_spawn_boss, { 110, 86, 126 } },
@@ -735,6 +910,11 @@ function M.create(env)
       { '属性对话框', env.debug_open_attr_overview, { 74, 100, 136 } },
       { '输出属性', env.debug_show_attr_tip_panel, { 70, 104, 134 } },
       { '打印状态', env.show_runtime_status, { 60, 92, 120 } },
+      { '样例技能', env.debug_cast_next_sample_skill, { 96, 84, 130 } },
+      { '样例列表', env.debug_list_sample_skills, { 82, 96, 126 } },
+      { '验收快照', env.debug_print_sample_framework_report, { 88, 112, 146 } },
+      { '分档连测', env.debug_run_framework_tier_suite, { 86, 92, 132 } },
+      { '分档报告', env.debug_print_framework_tier_report, { 86, 102, 142 } },
     }
 
     create_text(panel, '通用 GM', 26, 344, 120, 24, 18, { 245, 248, 255, 255 })
@@ -754,6 +934,7 @@ function M.create(env)
     end
 
     build_effect_debug_panel(panel)
+    build_sample_showcase_panel(panel)
     set_z_order(panel, 9500)
     set_intercepts(panel, true)
     refresh_gm_panel()
