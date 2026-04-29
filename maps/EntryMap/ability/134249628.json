@@ -160,7 +160,7 @@
             "p_trigger_id": null, 
             "trigger_id": 595959809, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668_2", 
-            "valid": false, 
+            "valid": true, 
             "var_data": [
                 {}, 
                 {}, 
@@ -332,7 +332,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1938169858, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668", 
-            "valid": false, 
+            "valid": true, 
             "var_data": [
                 {
                     "MODIFIER_ENTITY": {

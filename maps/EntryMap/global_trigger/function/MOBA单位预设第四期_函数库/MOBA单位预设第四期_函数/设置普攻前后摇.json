@@ -4628,7 +4628,7 @@
     "p_trigger_id": null, 
     "trigger_id": 176267517, 
     "trigger_name": "设置普攻前后摇", 
-    "valid": false, 
+    "valid": true, 
     "var_data": [
         {
             "BOOLEAN": {

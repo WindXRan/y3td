@@ -35,6 +35,7 @@ function M.create(env)
     deal_skill_damage = function(target, amount, damage_meta, visual)
       deal_skill_damage(target, amount, damage_meta, visual)
     end,
+    emit_damage_debug = env.emit_damage_debug,
     get_enemies_in_range = get_enemies_in_range,
     is_active_enemy = is_active_enemy,
   })

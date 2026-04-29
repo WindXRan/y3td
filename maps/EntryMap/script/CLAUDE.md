@@ -106,13 +106,13 @@
   - 攻击技能：`entry_runtime_attack_skills.lua`
   - 羁绊：`runtime/bonds.lua` / `runtime/bonds_chain.lua`
   - 总协调：`entry_runtime.lua`
-  - 宝物 / 烙印 / 奖励队列：`entry_runtime_rewards.lua`
+
   - HUD：`entry_runtime_hud.lua`
   - 调试：`entry_runtime_debug_tools.lua` / `entry_runtime_debug_actions.lua`
 - 新系统进入实现前，先明确：
   - 状态放哪
   - 是否进入奖励队列 / 待选轮次互斥
-  - 如何与 `G/F/烙印/宝物/挑战` 并存
+
   - UI 读哪个 runtime
 - 尽量使用 `y3` 封装，不直接调用 CAPI
 - 当前实现已经按模块拆分，不要回退成单文件堆积

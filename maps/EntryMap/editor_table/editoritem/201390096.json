@@ -235,7 +235,15 @@
             0
         ]
     }, 
-    "attached_passive_abilities": [], 
+    "attached_passive_abilities": {
+        "__tuple__": true, 
+        "items": [
+            [
+                134278328, 
+                1
+            ]
+        ]
+    }, 
     "attached_pene_mag": {
         "__tuple__": true, 
         "items": [
@@ -495,11 +503,11 @@
     "tags": {
         "__tuple__": true, 
         "items": [
-            "\u6cd5\u672f", 
-            "\u6cd5\u4f24", 
-            "\u51b7\u5374", 
-            "\u6cd5\u7a7f", 
-            "\u6cd5\u529b\u503c"
+            "\u00e6\u00b3\u0095\u00e6\u009c\u00af", 
+            "\u00e6\u00b3\u0095\u00e4\u00bc\u00a4", 
+            "\u00e5\u0086\u00b7\u00e5\u008d\u00b4", 
+            "\u00e6\u00b3\u0095\u00e7\u00a9\u00bf", 
+            "\u00e6\u00b3\u0095\u00e5\u008a\u009b\u00e5\u0080\u00bc"
         ]
     }, 
     "uid": "201390096", 

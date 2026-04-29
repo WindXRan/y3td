@@ -32,6 +32,7 @@ if type(e)=='table'then for l,j in ipairs(e)do i(j)end else i(e)end;
 if type(f)=='table'then for l,j in ipairs(f)do i(j)end else i(f)end;
 
 return g end;
+local prepend_audio_ids=d
 
 local m={cast={b.attack,b.attack_alt},
 impact={b.impact},
@@ -69,7 +70,7 @@ hero_low_hp=d({b.burst,b.bgm_alt},
 {'126780','104675','125774'}),
 defeat=d({b.burst,b.bgm_alt},
 {'126040','126780','104675'}),
-basic_attack=d({'134257538',b.attack_alt},
+basic_attack = prepend_audio_ids({'134257538',b.attack_alt},
 {'123160','125770'}),
 enemy_death_heavy=d({'134257420'},
 {'126040','125775'}),
@@ -524,6 +525,9 @@ if av and L then return L end end;
 if _ then local aw=au and'play'or'resolve'B(aw..':'.._,string.format('[audio] %s failed for %s: %s',aw,_,F(G)))end;
 
 return nil end;
+local function resolve_audio_key(audio_ids, audio_label)
+local ac=ak(audio_ids,audio_label)
+return ac[1]end;
 w=function(G,Z,_)
 local J=I()
 if not J then return nil end;
@@ -552,6 +556,8 @@ end)
 if L and Z and Z.volume then L:set_volume(J,Z.volume)end;
 
 return L end;
+local function play_for_unit(audio_ids, unit, options, audio_label)
+return x(audio_ids,unit,options,audio_label)end;
 y=function(G,ay,Z,_)
 if not ay then return w(G,Z,_)end;
 
@@ -583,7 +589,10 @@ local function aE()return w(n.ui_confirm,{volume=92},'ui_confirm')end;
 
 local function aF()return w(n.defeat,{volume=84},'defeat')end;
 
-local function aG(ax)return x(n.basic_attack,ax,{volume=66},'basic_attack')end;
+local function play_basic_attack(unit)
+return play_for_unit(n.basic_attack,unit,{volume=66}, 'basic_attack')end;
+
+local function aG(ax)return play_basic_attack(ax)end;
 
 local function aH(aI)
 if not aI then return'metal_slash'end;
@@ -635,8 +644,14 @@ if U then return y(G,U,Z,aW)end;
 
 return w(G,Z,aW)end;
 
-local function aX(ax,aY)
-local aZ=x(n.enemy_death_heavy,ax,{volume=aY and 100 or 92,
+local function aX(ax,aY,ba)
+local aZ=nil;
+if ba then aZ=y(n.enemy_death_heavy,ba,{volume=aY and 100 or 92,
+ensure=true,
+height=45},'enemy_death_heavy')
+y(n.enemy_death_burst,ba,{volume=aY and 94 or 82,
+height=65},'enemy_death_burst')return aZ end;
+aZ=x(n.enemy_death_heavy,ax,{volume=aY and 100 or 92,
 ensure=true,
 offset_z=45},'enemy_death_heavy')
 x(n.enemy_death_burst,ax,{volume=aY and 94 or 82,
@@ -698,7 +713,7 @@ play_panel_open=aB,
 play_confirm=aC,
 play_victory=aE,
 play_defeat=aF,
-play_basic_attack=aG,
+play_basic_attack = play_basic_attack,
 play_attack_skill=aU,
 play_enemy_death=aX}end;
 

@@ -986,7 +986,7 @@
             "p_trigger_id": null, 
             "trigger_id": 961351684, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668_3", 
-            "valid": false, 
+            "valid": true, 
             "var_data": [
                 {
                     "FLOAT": {
@@ -1723,7 +1723,7 @@
             }, 
             "trigger_id": 1300660230, 
             "trigger_name": "\u5b50\u89e6\u53d1\u5668_2", 
-            "valid": false, 
+            "valid": true, 
             "var_data": [
                 {}, 
                 {}, 
@@ -2077,7 +2077,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1424609281, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668", 
-            "valid": false, 
+            "valid": true, 
             "var_data": [
                 {}, 
                 {}, 

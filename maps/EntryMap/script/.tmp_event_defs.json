@@ -1,0 +1,926 @@
+[
+    {
+        "event":  "单位-造成伤害时",
+        "params":  "is_normal_hit,damage,source_unit,target_unit,ability,damage_type,unit,damage_instance"
+    },
+    {
+        "event":  "单位-获得经验后",
+        "params":  "unit,add_exp"
+    },
+    {
+        "event":  "单位-建筑升级取消",
+        "params":  "unit,old_unit_key,new_unit_key"
+    },
+    {
+        "event":  "单位-死亡",
+        "params":  "damage,source_unit,target_unit,ability,damage_type,unit"
+    },
+    {
+        "event":  "技能-建造技能释放前",
+        "params":  "player,unit,ability_seq,ability,new_unit_key,ability_target_pos,ability_release_id"
+    },
+    {
+        "event":  "本地-界面-输入框内容改变",
+        "params":  "player,ui_event_name,comp_name,str1,ui"
+    },
+    {
+        "event":  "本地-鼠标-按下单位",
+        "params":  "player,current_key,unit"
+    },
+    {
+        "event":  "未知-ET_ITEM_ATTACHED_ATTR_CHANGED",
+        "params":  "item,attr_key,delta"
+    },
+    {
+        "event":  "单位-进入草丛",
+        "params":  "unit"
+    },
+    {
+        "event":  "单位-建造完成",
+        "params":  "unit"
+    },
+    {
+        "event":  "未知-ET_ABILITY_CS_END",
+        "params":  "ability,unit,ability_target_unit"
+    },
+    {
+        "event":  "界面-复选框变化",
+        "params":  "player,ui_event_name,comp_name,bool1,ui"
+    },
+    {
+        "event":  "可破坏物-受到伤害",
+        "params":  "destructible,unit_id_of_hurt_dest,damage_value_of_hurt_dest"
+    },
+    {
+        "event":  "物品类型-前置条件成立",
+        "params":  "item_no,player"
+    },
+    {
+        "event":  "命令-出售物品",
+        "params":  "shop_unit,item"
+    },
+    {
+        "event":  "单位类型-前置条件成立",
+        "params":  "unit_key,player"
+    },
+    {
+        "event":  "游戏-逻辑不同步",
+        "params":  "int1"
+    },
+    {
+        "event":  "本地-键盘-抬起",
+        "params":  "player,current_key"
+    },
+    {
+        "event":  "未知-ET_RECV_TRIGGER",
+        "params":  "trigger_id"
+    },
+    {
+        "event":  "单位-寻路结束",
+        "params":  "unit"
+    },
+    {
+        "event":  "单位-建造取消",
+        "params":  "unit"
+    },
+    {
+        "event":  "鼠标-抬起单位",
+        "params":  "player,current_key,unit"
+    },
+    {
+        "event":  "技能-自定义动画轴",
+        "params":  "ability"
+    },
+    {
+        "event":  "游戏-http返回",
+        "params":  "http_req,http_resp_body,http_resp_status"
+    },
+    {
+        "event":  "界面-聊天框可见性变化",
+        "params":  "player,ui_event_name,comp_name,bool1,ui"
+    },
+    {
+        "event":  "未知-ET_ACTOR_ATTR_UPDATED",
+        "params":  "name"
+    },
+    {
+        "event":  "技能-关闭指示器",
+        "params":  "player,unit,ability_type,ability_index,ability_seq,ability"
+    },
+    {
+        "event":  "效果-叠加",
+        "params":  "buff,owner_unit,from_unit,lua_table"
+    },
+    {
+        "event":  "投射物-死亡",
+        "params":  "projectile"
+    },
+    {
+        "event":  "可破坏物-复活",
+        "params":  "destructible"
+    },
+    {
+        "event":  "未知-ET_REACH_MOVE_TARGET_UNIT",
+        "params":  "unit"
+    },
+    {
+        "event":  "施法-开始",
+        "params":  "ability,unit,ability_target_unit,cast"
+    },
+    {
+        "event":  "steam-收到被好友删除",
+        "params":  "player_aid"
+    },
+    {
+        "event":  "物品类型-前置条件不成立",
+        "params":  "item_no,player"
+    },
+    {
+        "event":  "未知-ET_AI_TAKE_CONTROL",
+        "params":  "player"
+    },
+    {
+        "event":  "未知-ET_UNIT_ENTER_MOVER_STATE",
+        "params":  "unit"
+    },
+    {
+        "event":  "商店-售价变化",
+        "params":  "shop_unit,tab_idx,shop_key,res_type,res_cost"
+    },
+    {
+        "event":  "单位-建筑升级开始",
+        "params":  "unit,old_unit_key,new_unit_key"
+    },
+    {
+        "event":  "单位-即将索敌",
+        "params":  "unit"
+    },
+    {
+        "event":  "本地-界面-输入框失去焦点",
+        "params":  "player,ui_event_name,comp_name,ui"
+    },
+    {
+        "event":  "单位-施放技能",
+        "params":  "ability,unit,ability_target_unit"
+    },
+    {
+        "event":  "施法-打断引导",
+        "params":  "ability,unit,ability_target_unit,cast"
+    },
+    {
+        "event":  "未知-ET_UNIT_CREATE_SLAVE",
+        "params":  "unit"
+    },
+    {
+        "event":  "本地-选中-可破坏物",
+        "params":  "player,destructible"
+    },
+    {
+        "event":  "未知-ET_UNIT_3D_ACTIVE",
+        "params":  "unit,is_active"
+    },
+    {
+        "event":  "单位-创建",
+        "params":  "unit,lua_table"
+    },
+    {
+        "event":  "鼠标-滚轮",
+        "params":  "player,mouse_wheel"
+    },
+    {
+        "event":  "游戏-接收广播信息",
+        "params":  "broadcast_lua_msg_id,broadcast_lua_msg_content,player"
+    },
+    {
+        "event":  "键盘-抬起",
+        "params":  "player,current_key"
+    },
+    {
+        "event":  "单位-进入战斗",
+        "params":  "unit"
+    },
+    {
+        "event":  "玩家-属性变化",
+        "params":  "player,res_key,res_value,res_value_delta"
+    },
+    {
+        "event":  "玩家-科技提升",
+        "params":  "player,tech_no,curr_lv"
+    },
+    {
+        "event":  "未知-ET_UNIT_KV_CHANGE",
+        "params":  "kv_name"
+    },
+    {
+        "event":  "技能-升级",
+        "params":  "ability,unit"
+    },
+    {
+        "event":  "技能-学习",
+        "params":  "ability_index,ability,unit"
+    },
+    {
+        "event":  "单位-属性变化",
+        "params":  "unit,attr,old_float_attr_value"
+    },
+    {
+        "event":  "steam-收到队伍邀请",
+        "params":  "player_aid,nick_name,team_id"
+    },
+    {
+        "event":  "玩家-平台道具变化",
+        "params":  "store_key,store_item_type,store_item_change_count,store_item_expire_date,player"
+    },
+    {
+        "event":  "物品-进入背包",
+        "params":  "unit,item,item_no"
+    },
+    {
+        "event":  "玩家-加入游戏",
+        "params":  "player,is_middle_join"
+    },
+    {
+        "event":  "施法-出手",
+        "params":  "ability,unit,ability_target_unit,cast"
+    },
+    {
+        "event":  "单位-出售物品",
+        "params":  "unit,shop_unit,item"
+    },
+    {
+        "event":  "施法-打断开始",
+        "params":  "ability,unit,ability_target_unit,cast"
+    },
+    {
+        "event":  "玩家-发送消息",
+        "params":  "str1,player"
+    },
+    {
+        "event":  "鼠标-双击",
+        "params":  "player,current_key,pointing_world_pos"
+    },
+    {
+        "event":  "物品-采集创建",
+        "params":  "item,destructible,unit,ability"
+    },
+    {
+        "event":  "本地-骨骼碰撞",
+        "params":  "source_unit,target_unit,src_bone,target_bone,hitPos,hitNormal"
+    },
+    {
+        "event":  "玩家-点击小地图",
+        "params":  "player,mini_map_touched_world_pos"
+    },
+    {
+        "event":  "商店-商品变化",
+        "params":  "shop_unit,tab_idx,shop_key,curr_stock"
+    },
+    {
+        "event":  "技能-启用",
+        "params":  "ability"
+    },
+    {
+        "event":  "物品-移除",
+        "params":  "item"
+    },
+    {
+        "event":  "本地-选中-物品",
+        "params":  "player,item"
+    },
+    {
+        "event":  "技能-可用状态变化",
+        "params":  "ability_index,is_forbidden"
+    },
+    {
+        "event":  "投射物-创建",
+        "params":  "projectile"
+    },
+    {
+        "event":  "界面-消息",
+        "params":  "player,ui_event_name,comp_name,pos,touch_id,str1,ui,data"
+    },
+    {
+        "event":  "物品-获得",
+        "params":  "unit,item,item_no"
+    },
+    {
+        "event":  "单位-受到治疗后",
+        "params":  "source_unit,target_unit,cured_value,ability"
+    },
+    {
+        "event":  "鼠标-按下单位",
+        "params":  "player,current_key,unit"
+    },
+    {
+        "event":  "单位-建造开始",
+        "params":  "unit"
+    },
+    {
+        "event":  "单位-寻路开始",
+        "params":  "unit"
+    },
+    {
+        "event":  "未知-ET_UNIT_RELEASE_ABILITY_START",
+        "params":  "ability,unit"
+    },
+    {
+        "event":  "本地-鼠标-抬起",
+        "params":  "player,current_key,pointing_world_pos"
+    },
+    {
+        "event":  "技能-打开指示器",
+        "params":  "player,unit,ability_type,ability_index,ability_seq,ability"
+    },
+    {
+        "event":  "玩家-关系变化",
+        "params":  "src_player,dst_player,relation"
+    },
+    {
+        "event":  "技能-禁用",
+        "params":  "ability"
+    },
+    {
+        "event":  "单位-受到伤害后",
+        "params":  "is_critical_hit,is_normal_hit,damage,source_unit,target_unit,ability,damage_type,unit,damage_instance"
+    },
+    {
+        "event":  "未知-ET_UNIT_ON_UNBIND_ROLE",
+        "params":  "unit,player"
+    },
+    {
+        "event":  "玩家-使用平台道具",
+        "params":  "player,store_key,use_cnt"
+    },
+    {
+        "event":  "物品-离开物品栏",
+        "params":  "unit,item,item_no"
+    },
+    {
+        "event":  "未知-ET_CONSUME_STORE_ITEM",
+        "params":  "player,store_key"
+    },
+    {
+        "event":  "界面-视频播放完成",
+        "params":  "player,ui_event_name,comp_name,str1,ui"
+    },
+    {
+        "event":  "施法-打断完成",
+        "params":  "ability,unit,ability_target_unit"
+    },
+    {
+        "event":  "单位-发现目标",
+        "params":  "unit,target_unit"
+    },
+    {
+        "event":  "单位-改变所属",
+        "params":  "unit,old_player,new_player"
+    },
+    {
+        "event":  "施法-结束",
+        "params":  "ability,unit,ability_target_unit,cast"
+    },
+    {
+        "event":  "鼠标-抬起",
+        "params":  "player,current_key,pointing_world_pos"
+    },
+    {
+        "event":  "单位-购买单位",
+        "params":  "unit,shop_unit,tab_idx,cnt,unit_stuff"
+    },
+    {
+        "event":  "选中-取消",
+        "params":  "player"
+    },
+    {
+        "event":  "未知-ET_ABILITY_CS_INTERRUPT",
+        "params":  "ability,unit,ability_target_unit"
+    },
+    {
+        "event":  "施法-打断出手",
+        "params":  "ability,unit,ability_target_unit,cast"
+    },
+    {
+        "event":  "未知-ET_CONTAINER_ACTOR_REMOVED",
+        "params":  "owner"
+    },
+    {
+        "event":  "单位-脱离战斗",
+        "params":  "unit"
+    },
+    {
+        "event":  "单位-移除",
+        "params":  "unit"
+    },
+    {
+        "event":  "物品-离开背包",
+        "params":  "unit,item,item_no"
+    },
+    {
+        "event":  "未知-ET_UNIT_RELEASE_MAGIC_BOOK",
+        "params":  "ability,unit"
+    },
+    {
+        "event":  "本地-鼠标-双击",
+        "params":  "player,current_key,pointing_world_pos"
+    },
+    {
+        "event":  "单位-击杀",
+        "params":  "damage,source_unit,target_unit,ability,damage_type,unit"
+    },
+    {
+        "event":  "单位-移除后",
+        "params":  "unit"
+    },
+    {
+        "event":  "施法-完成",
+        "params":  "ability,unit,ability_target_unit,cast"
+    },
+    {
+        "event":  "玩家-持有平台道具",
+        "params":  "player,store_key"
+    },
+    {
+        "event":  "玩家-科技降低",
+        "params":  "player,tech_no,curr_lv"
+    },
+    {
+        "event":  "本地-鼠标-双击单位",
+        "params":  "player,current_key,unit"
+    },
+    {
+        "event":  "单位-即将死亡",
+        "params":  "damage,source_unit,target_unit,ability,damage_type,unit"
+    },
+    {
+        "event":  "物品-使用",
+        "params":  "unit,item,item_no"
+    },
+    {
+        "event":  "单位-接收命令",
+        "params":  "unit,cmd_type,target_unit,point,destructible,item,ability"
+    },
+    {
+        "event":  "效果-失去",
+        "params":  "buff,owner_unit,from_unit,lua_table"
+    },
+    {
+        "event":  "玩家-重连",
+        "params":  "player"
+    },
+    {
+        "event":  "玩家-掉线",
+        "params":  "player"
+    },
+    {
+        "event":  "物理-骨骼碰撞",
+        "params":  "source_unit,target_unit,src_bone,target_bone,hitPos,hitNormal"
+    },
+    {
+        "event":  "steam-收到好友申请",
+        "params":  "nick_name"
+    },
+    {
+        "event":  "可破坏物-资源变化",
+        "params":  "destructible,res_chg_cnt_in_dest_event"
+    },
+    {
+        "event":  "本地-键盘-按下",
+        "params":  "player,current_key"
+    },
+    {
+        "event":  "单位类型-前置条件不成立",
+        "params":  "unit_key,player"
+    },
+    {
+        "event":  "游戏-消息",
+        "params":  "c_param_1,c_param_dict,data,event"
+    },
+    {
+        "event":  "技能-获得",
+        "params":  "ability,unit,lua_table"
+    },
+    {
+        "event":  "物品-进入物品栏",
+        "params":  "unit,item,item_no"
+    },
+    {
+        "event":  "玩家-属性图标变化",
+        "params":  "res_key,icon_id"
+    },
+    {
+        "event":  "物品-出售",
+        "params":  "unit,unit2,item,buy_unit,shop_unit"
+    },
+    {
+        "event":  "未知-ET_UNIT_ON_BIND_ROLE",
+        "params":  "unit,player"
+    },
+    {
+        "event":  "施法-引导",
+        "params":  "ability,unit,ability_target_unit,cast"
+    },
+    {
+        "event":  "steam-好友在线状态变化",
+        "params":  "online_state,player_aid"
+    },
+    {
+        "event":  "选中-可破坏物",
+        "params":  "player,destructible"
+    },
+    {
+        "event":  "技能-建造完成",
+        "params":  "ability,ability_type,ability_index,ability_seq,unit,build_unit"
+    },
+    {
+        "event":  "鼠标-双击单位",
+        "params":  "player,current_key,unit"
+    },
+    {
+        "event":  "游戏-地形预设加载完成",
+        "params":  "scene_preset"
+    },
+    {
+        "event":  "单位-研发科技",
+        "params":  "unit,player,tech_no"
+    },
+    {
+        "event":  "可破坏物-创建",
+        "params":  "destructible,lua_table"
+    },
+    {
+        "event":  "商店-库存变化",
+        "params":  "shop_unit,tab_idx,shop_key,curr_stock"
+    },
+    {
+        "event":  "技能类型-前置条件不成立",
+        "params":  "ability_id,player"
+    },
+    {
+        "event":  "效果-覆盖",
+        "params":  "owner_unit,old_buff,new_buff,lua_table"
+    },
+    {
+        "event":  "可破坏物-移除",
+        "params":  "destructible"
+    },
+    {
+        "event":  "控制台-输入",
+        "params":  "str1"
+    },
+    {
+        "event":  "单位-获得科技",
+        "params":  "unit,player,tech_no"
+    },
+    {
+        "event":  "未知-TIMER_TIMEOUT",
+        "params":  "name"
+    },
+    {
+        "event":  "steam-被邀请加入房间",
+        "params":  "room_id,player_aid,nick_name"
+    },
+    {
+        "event":  "未知-ET_ROLE_UNIT_TAG_CHANGE",
+        "params":  "unit"
+    },
+    {
+        "event":  "本地-鼠标-滚轮",
+        "params":  "player,mouse_wheel"
+    },
+    {
+        "event":  "本地-鼠标-按下",
+        "params":  "player,current_key,pointing_world_pos,is_click_swallowed_by_ui"
+    },
+    {
+        "event":  "技能-冷却结束",
+        "params":  "ability,unit"
+    },
+    {
+        "event":  "技能类型-前置条件成立",
+        "params":  "ability_id,player"
+    },
+    {
+        "event":  "单位-受到伤害时",
+        "params":  "is_normal_hit,damage,source_unit,target_unit,ability,damage_type,unit,damage_instance"
+    },
+    {
+        "event":  "单位-即将拾取物品",
+        "params":  "unit,equip_slot_type,item"
+    },
+    {
+        "event":  "科技类型-前置条件成立",
+        "params":  "tech_no,player"
+    },
+    {
+        "event":  "未知-ET_ROLE_UNIT_CHANGE",
+        "params":  "unit"
+    },
+    {
+        "event":  "单位-复活",
+        "params":  "unit"
+    },
+    {
+        "event":  "未知-ET_ACTIVE_ABILITY_CHANGED",
+        "params":  "ability_index"
+    },
+    {
+        "event":  "本地-鼠标-抬起单位",
+        "params":  "player,current_key,unit"
+    },
+    {
+        "event":  "单位-受到伤害前",
+        "params":  "is_normal_hit,damage,source_unit,target_unit,ability,damage_type,unit,damage_instance"
+    },
+    {
+        "event":  "单位-升级",
+        "params":  "unit"
+    },
+    {
+        "event":  "单位-建筑升级完成",
+        "params":  "unit,old_unit_key,new_unit_key"
+    },
+    {
+        "event":  "效果-层数变化",
+        "params":  "buff,owner_unit,layer_change_values,from_unit,lua_table"
+    },
+    {
+        "event":  "选中-单位组",
+        "params":  "player,unit_group_id_list,team_id"
+    },
+    {
+        "event":  "物品-创建",
+        "params":  "item,lua_table"
+    },
+    {
+        "event":  "单位-购买物品合成",
+        "params":  "unit,shop_unit,item"
+    },
+    {
+        "event":  "选中-失去单位",
+        "params":  "player,unit"
+    },
+    {
+        "event":  "技能-失去",
+        "params":  "ability,unit"
+    },
+    {
+        "event":  "本地-鼠标-悬停",
+        "params":  "player,unit,item,destructible"
+    },
+    {
+        "event":  "单位-传送结束",
+        "params":  "unit"
+    },
+    {
+        "event":  "玩家-发送指定消息",
+        "params":  "player,msg"
+    },
+    {
+        "event":  "键盘-按下",
+        "params":  "player,current_key"
+    },
+    {
+        "event":  "技能-交换",
+        "params":  "ability,unit"
+    },
+    {
+        "event":  "未知-ET_UNIT_MUL_KV_CHANGE",
+        "params":  "kv_name_list"
+    },
+    {
+        "event":  "选中-单位",
+        "params":  "player,unit"
+    },
+    {
+        "event":  "单位-受到治疗时",
+        "params":  "source_unit,target_unit,cured_value,ability,heal_instance"
+    },
+    {
+        "event":  "物品-充能变化",
+        "params":  "unit,item,item_no,delta_cnt"
+    },
+    {
+        "event":  "可破坏物-采集",
+        "params":  "destructible,unit_id_in_dest_event,ability_in_dest_event,player_res_cnt_in_event"
+    },
+    {
+        "event":  "未知-ET_ITEM_ABILITY_PS_END",
+        "params":  "ability"
+    },
+    {
+        "event":  "物品-堆叠变化",
+        "params":  "unit,item,item_no,delta_cnt"
+    },
+    {
+        "event":  "施法-停止",
+        "params":  "ability,unit,ability_target_unit,cast"
+    },
+    {
+        "event":  "鼠标-悬停",
+        "params":  "player,unit,item,destructible"
+    },
+    {
+        "event":  "玩家-收到云脚本消息",
+        "params":  "player,mlscript_event_name,mlscript_event_data"
+    },
+    {
+        "event":  "玩家-平台商城窗口变化",
+        "params":  "player,store_page_state"
+    },
+    {
+        "event":  "玩家-离开游戏",
+        "params":  "player"
+    },
+    {
+        "event":  "单位-头像变化",
+        "params":  "unit"
+    },
+    {
+        "event":  "命令-施放技能",
+        "params":  "unit,ability_type,ability_index,ability_seq,target_item,ability"
+    },
+    {
+        "event":  "单位-受到治疗前",
+        "params":  "source_unit,target_unit,cured_value,ability,heal_instance"
+    },
+    {
+        "event":  "本地-选中-单位",
+        "params":  "player,unit"
+    },
+    {
+        "event":  "本地-选中-取消",
+        "params":  "player"
+    },
+    {
+        "event":  "施法-即将开始",
+        "params":  "ability,unit,ability_target_unit,cast"
+    },
+    {
+        "event":  "区域-进入",
+        "params":  "unit,area,trigger_id"
+    },
+    {
+        "event":  "本地-选中-失去单位",
+        "params":  "player,unit"
+    },
+    {
+        "event":  "玩家-科技变化",
+        "params":  "player,tech_no,curr_lv,delta_lv"
+    },
+    {
+        "event":  "命令-攻击移动",
+        "params":  "unit,tar_x,tar_y"
+    },
+    {
+        "event":  "物品-死亡",
+        "params":  "item,unit"
+    },
+    {
+        "event":  "效果-获得",
+        "params":  "buff,owner_unit,from_unit,lua_table"
+    },
+    {
+        "event":  "单位-失去科技",
+        "params":  "unit,player,tech_no"
+    },
+    {
+        "event":  "单位-物品合成",
+        "params":  "unit,compose_id,item_prop"
+    },
+    {
+        "event":  "可破坏物-死亡",
+        "params":  "destructible,unit_id_of_dest_killer"
+    },
+    {
+        "event":  "鼠标-移动",
+        "params":  "player,pointing_world_pos,tar_x,tar_y"
+    },
+    {
+        "event":  "界面-滑动条变化",
+        "params":  "player,ui_event_name,comp_name,float1,ui"
+    },
+    {
+        "event":  "控制台-请求补全",
+        "params":  "str1"
+    },
+    {
+        "event":  "单位-造成伤害前",
+        "params":  "is_normal_hit,damage,source_unit,target_unit,ability,damage_type,unit,damage_instance"
+    },
+    {
+        "event":  "玩家-语音发言",
+        "params":  "player,audio_channel,audio_bool"
+    },
+    {
+        "event":  "鼠标-按下",
+        "params":  "player,current_key,pointing_world_pos,is_click_swallowed_by_ui"
+    },
+    {
+        "event":  "未知-ET_COLLIDE_OBSTACLE_UNIT",
+        "params":  "unit"
+    },
+    {
+        "event":  "界面-装备拖拽",
+        "params":  "ui_event_name,player,equip_slot_id,equip_slot_type,equip_slot_item,equip_slot_unit,equip_slot_is_begin,ui"
+    },
+    {
+        "event":  "未知-ET_DOWNLOAD_MAP_ARCHIVE_CALLBACK",
+        "params":  "player"
+    },
+    {
+        "event":  "游戏-昼夜变化",
+        "params":  "is_day_to_night"
+    },
+    {
+        "event":  "单位-造成伤害后",
+        "params":  "is_critical_hit,is_normal_hit,damage,source_unit,target_unit,ability,damage_type,unit,damage_instance"
+    },
+    {
+        "event":  "本地-鼠标-移动",
+        "params":  "player,pointing_world_pos,tar_x,tar_y"
+    },
+    {
+        "event":  "未知-ET_UNIT_RELEASE_ABILITY_END",
+        "params":  "ability,unit"
+    },
+    {
+        "event":  "区域-离开",
+        "params":  "unit,area,trigger_id"
+    },
+    {
+        "event":  "命令-巡逻",
+        "params":  "unit,tar_x,tar_y"
+    },
+    {
+        "event":  "鼠标-双击可破坏物",
+        "params":  "player,destructible"
+    },
+    {
+        "event":  "本地-选中-单位组",
+        "params":  "player,unit_group_id_list,team_id"
+    },
+    {
+        "event":  "命令-移动",
+        "params":  "unit,tar_x,tar_y"
+    },
+    {
+        "event":  "本地-界面-输入框获取焦点",
+        "params":  "player,ui_event_name,comp_name,ui"
+    },
+    {
+        "event":  "鼠标-双击物品",
+        "params":  "player,item"
+    },
+    {
+        "event":  "效果-即将获得",
+        "params":  "buff,owner_unit,from_unit,lua_table"
+    },
+    {
+        "event":  "未知-ET_CONTAINER_ACTOR_ADDED",
+        "params":  "owner"
+    },
+    {
+        "event":  "单位-离开草丛",
+        "params":  "unit"
+    },
+    {
+        "event":  "科技类型-前置条件不成立",
+        "params":  "tech_no,player"
+    },
+    {
+        "event":  "物品-失去",
+        "params":  "unit,item,item_no"
+    },
+    {
+        "event":  "选中-物品",
+        "params":  "player,item"
+    },
+    {
+        "event":  "未知-ET_CONTAINER_ADDED",
+        "params":  "name,container"
+    },
+    {
+        "event":  "技能-沉默状态变化",
+        "params":  "is_silent"
+    },
+    {
+        "event":  "单位-获得经验前",
+        "params":  "unit,add_exp,set_exp"
+    },
+    {
+        "event":  "单位-购买物品",
+        "params":  "unit,shop_unit,tab_idx,cnt,item"
+    },
+    {
+        "event":  "玩家-检测到作弊",
+        "params":  "player,unit,attr_key,cheating_value,real_value"
+    },
+    {
+        "event":  "效果-心跳",
+        "params":  "buff,owner_unit,from_unit,lua_table"
+    },
+    {
+        "event":  "未知-ET_ROLE_INPUT_ACTIVATION_CODE",
+        "params":  "player,activation_code_group"
+    }
+]

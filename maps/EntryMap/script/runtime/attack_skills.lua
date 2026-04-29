@@ -14,6 +14,7 @@ function M.create(env)
     or (CONFIG.skill_runtime_tuning and CONFIG.skill_runtime_tuning.attack)
     or SkillRuntimeTuning.attack
     or {}
+  local ATTACK_SKILL_DEPRECATED = CONFIG.attack_skill_deprecated == true
   local VISUAL_TUNING = ATTACK_SKILL_RUNTIME_TUNING.visual or {}
   local DEBUG_TUNING = ATTACK_SKILL_RUNTIME_TUNING.debug or {}
   local PROJECTILE_TUNING = ATTACK_SKILL_RUNTIME_TUNING.projectile or {}
@@ -599,6 +600,9 @@ function M.create(env)
     if not skill_id or not ATTACK_SKILL_DEFS[skill_id] then
       return nil, nil, false
     end
+    if ATTACK_SKILL_DEPRECATED and skill_id ~= 'basic_attack' then
+      return nil, nil, false
+    end
 
     local existing = get_attack_skill(skill_id)
     if existing then
@@ -729,6 +733,7 @@ function M.create(env)
     deal_skill_damage = function(target, amount, damage_meta, visual)
       deal_skill_damage(target, amount, damage_meta, visual)
     end,
+    emit_damage_debug = env.emit_damage_debug,
     get_enemies_in_range = get_enemies_in_range,
     get_enemies_on_line = get_enemies_on_line,
     is_active_enemy = is_active_enemy,

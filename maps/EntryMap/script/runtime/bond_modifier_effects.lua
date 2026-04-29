@@ -1,6 +1,7 @@
 local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
 local BondModifierPool = require 'data.object_tables.bond_modifier_pool'
 local BondVisualEditorIds = require 'data.object_tables.bond_visual_editor_ids'
+local BondEffectRuntimeRules = require 'data.object_tables.bond_effect_runtime_rules'
 local AttackSkillObjects = require 'entry_objects.attack_skills'
 local BondModifierSpecialEffectsFactory = require 'runtime.bond_modifier_special_effects'
 local BondModifierCoreEffectsFactory = require 'runtime.bond_modifier_core_effects'
@@ -8,6 +9,9 @@ local SkillDamageTemplates = require 'runtime.skill_damage_templates'
 
 local M = {}
 local FORCE_SPECIAL_EFFECTS_100 = false
+-- 全局视觉缩放：用于快速抑制羁绊特效光污染与闪屏。
+local GLOBAL_PARTICLE_SCALE_MULTIPLIER = 0.90
+local GLOBAL_AREA_SCALE_MULTIPLIER = 0.95
 local get_hero_attr
 local get_attack_value
 local get_max_hp_value
@@ -65,11 +69,11 @@ M.SET_ATTR_BONUSES = {
     ['生命增幅'] = 0.10,
     ['护甲增幅'] = 0.10,
   },
+  ['骷髅法师'] = { ['攻击增幅'] = 0.15 },
 }
 
 -- 激活后生效的运行时加成（按羁绊名）
 M.SET_RUNTIME_BONUSES = {
-  ['雷电法王'] = { lightning_target_count = 5 },
 }
 
 -- 统一视觉层配置：
@@ -120,12 +124,30 @@ for bond_name, visual_entry in pairs(BondVisualEditorIds.visual_by_bond or {}) d
       projectile_speed = tonumber(visual_entry.projectile_speed),
       projectile_time = tonumber(visual_entry.projectile_time),
       projectile_target_distance = tonumber(visual_entry.target_distance),
+      area_fx_base_radius = tonumber(visual_entry.area_fx_base_radius),
+      area_fx_scale_bias = tonumber(visual_entry.area_fx_scale_bias),
+      area_fx_min_scale = tonumber(visual_entry.area_fx_min_scale),
+      area_fx_max_scale = tonumber(visual_entry.area_fx_max_scale),
+      particle_scale_bias = tonumber(visual_entry.particle_scale_bias),
+      particle_min_scale = tonumber(visual_entry.particle_min_scale),
+      particle_max_scale = tonumber(visual_entry.particle_max_scale),
+      delivery_mode = visual_entry.delivery_mode,
+      motion_mode = visual_entry.motion_mode,
     }
   end
 end
 
+-- 不再在运行时硬覆盖单个羁绊视觉参数，统一以 bond_visual_editor_ids.lua 为唯一来源，
+-- 避免“视觉配置与伤害规则调参不同步”。
+
 local function build_bond_visual(opts)
   opts = opts or {}
+  local area_fx_base_radius = math.max(80, tonumber(opts.area_fx_base_radius) or 360)
+  local area_fx_scale_bias = (tonumber(opts.area_fx_scale_bias) or 1.0) * GLOBAL_AREA_SCALE_MULTIPLIER
+  local area_fx_min_scale = (tonumber(opts.area_fx_min_scale) or 0.90) * GLOBAL_AREA_SCALE_MULTIPLIER
+  local area_fx_max_scale = (tonumber(opts.area_fx_max_scale) or 2.20) * GLOBAL_AREA_SCALE_MULTIPLIER
+  area_fx_min_scale = math.max(0.60, math.min(1.10, area_fx_min_scale))
+  area_fx_max_scale = math.max(area_fx_min_scale, math.min(1.55, area_fx_max_scale))
   return {
     particle_key = to_positive_number(opts.particle_key) or DEFAULT_VISUAL.particle_key,
     line_particle_key = to_positive_number(opts.line_particle_key) or nil,
@@ -134,6 +156,15 @@ local function build_bond_visual(opts)
     projectile_time = tonumber(opts.projectile_time) or DEFAULT_VISUAL.projectile_time,
     projectile_height = tonumber(opts.projectile_height) or DEFAULT_VISUAL.projectile_height,
     projectile_target_distance = tonumber(opts.projectile_target_distance) or DEFAULT_VISUAL.projectile_target_distance,
+    area_fx_base_radius = area_fx_base_radius,
+    area_fx_scale_bias = area_fx_scale_bias,
+    area_fx_min_scale = area_fx_min_scale,
+    area_fx_max_scale = area_fx_max_scale,
+    particle_scale_bias = tonumber(opts.particle_scale_bias) or 1.0,
+    particle_min_scale = math.max(0.55, math.min(1.05, tonumber(opts.particle_min_scale) or 0.60)),
+    particle_max_scale = math.max(0.85, math.min(1.28, tonumber(opts.particle_max_scale) or 1.80)),
+    delivery_mode = tostring(opts.delivery_mode or 'projectile'),
+    motion_mode = tostring(opts.motion_mode or 'target'),
   }
 end
 
@@ -162,6 +193,15 @@ for _, effect in ipairs(BondModifierPool.activation_effects or {}) do
       projectile_time = visual_entry and visual_entry.projectile_time or DEFAULT_VISUAL.projectile_time,
       projectile_height = DEFAULT_VISUAL.projectile_height,
       projectile_target_distance = visual_entry and visual_entry.target_distance or DEFAULT_VISUAL.projectile_target_distance,
+      area_fx_base_radius = visual_entry and visual_entry.area_fx_base_radius or nil,
+      area_fx_scale_bias = visual_entry and visual_entry.area_fx_scale_bias or nil,
+      area_fx_min_scale = visual_entry and visual_entry.area_fx_min_scale or nil,
+      area_fx_max_scale = visual_entry and visual_entry.area_fx_max_scale or nil,
+      particle_scale_bias = visual_entry and visual_entry.particle_scale_bias or nil,
+      particle_min_scale = visual_entry and visual_entry.particle_min_scale or nil,
+      particle_max_scale = visual_entry and visual_entry.particle_max_scale or nil,
+      delivery_mode = visual_entry and visual_entry.delivery_mode or nil,
+      motion_mode = visual_entry and visual_entry.motion_mode or nil,
     })
   end
 end
@@ -182,19 +222,6 @@ local PROJECTILE_EDITOR_PATHS = {
 }
 
 local PROJECTILE_EXIST_CACHE = {}
-local UNIQUE_PROJECTILE_POOL = {
-  201391101, 201391102, 201391103, 201391104,
-  201391105, 201391106, 201391107, 201391108,
-  201391109, 201391110, 201391111, 201391112,
-  201391113, 201391114, 201391115, 201391116,
-  201392001, 201392002, 201392003,
-  201392011, 201392012, 201392013,
-  201392021, 201392022, 201392023,
-  201392031, 201392032, 201392033,
-  201392041, 201392042, 201392043,
-  201392051, 201392052,
-  201392061, 201392062, 201392063,
-}
 
 local function projectile_editor_exists(projectile_key)
   projectile_key = to_positive_number(projectile_key)
@@ -230,56 +257,60 @@ for bond_name, visual in pairs(BOND_VISUALS) do
   end
 end
 
--- 强制去重：不同羁绊技能使用不同弹道 key
-do
-  local used = {}
-  local ordered_bonds = {}
-  for _, effect in ipairs(BondModifierPool.activation_effects or {}) do
-    local bond_name = normalize_bond_name(effect and effect.bond_name or '')
-    if bond_name ~= '' and BOND_VISUALS[bond_name] then
-      ordered_bonds[#ordered_bonds + 1] = bond_name
-    end
-  end
-  for bond_name, _ in pairs(BOND_VISUALS) do
-    local exists = false
-    for _, ordered in ipairs(ordered_bonds) do
-      if ordered == bond_name then
-        exists = true
-        break
-      end
-    end
-    if not exists then
-      ordered_bonds[#ordered_bonds + 1] = bond_name
-    end
-  end
-
-  local function pick_unused_projectile()
-    for _, key in ipairs(UNIQUE_PROJECTILE_POOL) do
-      if not used[key] and projectile_editor_exists(key) then
-        return key
-      end
-    end
-    return nil
-  end
-
-  for _, bond_name in ipairs(ordered_bonds) do
-    local visual = BOND_VISUALS[bond_name]
-    if type(visual) == 'table' then
-      local key = to_positive_number(visual.projectile_key)
-      if not key or used[key] then
-        local replacement = pick_unused_projectile()
-        if replacement then
-          visual.projectile_key = replacement
-          used[replacement] = true
-        elseif key then
-          used[key] = true
-        end
-      else
-        used[key] = true
-      end
+local PARTICLE_SCALE_CFG_BY_KEY = {}
+for _, visual in pairs(BOND_VISUALS) do
+  if type(visual) == 'table' then
+    local particle_key = to_positive_number(visual.particle_key)
+    if particle_key then
+      PARTICLE_SCALE_CFG_BY_KEY[particle_key] = {
+        particle_scale_bias = tonumber(visual.particle_scale_bias) or 1.0,
+        particle_min_scale = tonumber(visual.particle_min_scale) or 0.60,
+        particle_max_scale = tonumber(visual.particle_max_scale) or 1.80,
+      }
     end
   end
 end
+
+-- 读取羁绊专属投射物物编后的基准尺寸（effect_foes.items[4]）得到的反向归一系数。
+-- 第一阶段：先把不同资源拉回统一基准视觉尺寸。
+local PARTICLE_BASELINE_NORM_BY_KEY = {
+  [106056] = 1 / 1.08,
+  [106060] = 1 / 0.98,
+  [106065] = 1 / 1.12,
+  [106067] = 1 / 1.10,
+  [106069] = 1 / 0.96,
+  [106074] = 1 / 1.20,
+  [106081] = 1 / 1.18,
+  [106082] = 1 / 1.00,
+  [106088] = 1 / 1.00,
+  [106089] = 1 / 1.42,
+  [106090] = 1 / 0.98,
+  [106092] = 1 / 1.00,
+  [106107] = 1 / 1.00,
+  [106109] = 1 / 1.00,
+  [106112] = 1 / 1.16,
+}
+
+local PARTICLE_BASELINE_NORM_BY_PROJECTILE = {
+  [201391101] = 1 / 1.00,
+  [201391102] = 1 / 1.00,
+  [201391103] = 1 / 1.10,
+  [201391104] = 1 / 1.00,
+  [201391105] = 1 / 1.00,
+  [201391106] = 1 / 1.08,
+  [201391107] = 1 / 1.18,
+  [201391108] = 1 / 1.20,
+  [201391109] = 1 / 0.96,
+  [201391110] = 1 / 1.42,
+  [201391111] = 1 / 1.00,
+  [201391112] = 1 / 1.16,
+  [201391113] = 1 / 1.00,
+  [201391114] = 1 / 0.98,
+  [201391115] = 1 / 0.98,
+  [201391116] = 1 / 1.12,
+}
+
+-- 关闭自动弹道去重：严格使用每个羁绊显式配置，避免运行时“被替换”为其他弹道。
 
 -- 鍘熸枃娉ㄩ噴鍖猴細
 -- 1) ACTIVATION_TEXT_BY_BOND锛氱緛缁娾€滄縺娲绘晥鏋溾€濆師鏂囷紙鎸夌緛缁婅仛鍚堬級
@@ -330,6 +361,7 @@ function M.get_original_effect_docs()
     special_text_by_card = SPECIAL_TEXT_BY_CARD,
     special_text_list = SPECIAL_TEXT_LIST,
     suspected_special_rows = SUSPECTED_SPECIAL_ROWS,
+    runtime_rules = BondEffectRuntimeRules,
   }
 end
 
@@ -352,6 +384,15 @@ local function get_visual_config(bond_name)
       projectile_time = override.projectile_time or base.projectile_time,
       projectile_height = override.projectile_height or base.projectile_height,
       projectile_target_distance = override.projectile_target_distance or base.projectile_target_distance,
+      area_fx_base_radius = override.area_fx_base_radius or base.area_fx_base_radius,
+      area_fx_scale_bias = override.area_fx_scale_bias or base.area_fx_scale_bias,
+      area_fx_min_scale = override.area_fx_min_scale or base.area_fx_min_scale,
+      area_fx_max_scale = override.area_fx_max_scale or base.area_fx_max_scale,
+      particle_scale_bias = override.particle_scale_bias or base.particle_scale_bias,
+      particle_min_scale = override.particle_min_scale or base.particle_min_scale,
+      particle_max_scale = override.particle_max_scale or base.particle_max_scale,
+      delivery_mode = override.delivery_mode or base.delivery_mode,
+      motion_mode = override.motion_mode or base.motion_mode,
     }
   end
   local forced = VISUAL_FORCE_BY_BOND[canonical_bond_name] or VISUAL_FORCE_BY_BOND[bond_name]
@@ -364,6 +405,15 @@ local function get_visual_config(bond_name)
       projectile_time = forced.projectile_time or extra.projectile_time,
       projectile_height = extra.projectile_height,
       projectile_target_distance = forced.projectile_target_distance or extra.projectile_target_distance,
+      area_fx_base_radius = forced.area_fx_base_radius or extra.area_fx_base_radius,
+      area_fx_scale_bias = forced.area_fx_scale_bias or extra.area_fx_scale_bias,
+      area_fx_min_scale = forced.area_fx_min_scale or extra.area_fx_min_scale,
+      area_fx_max_scale = forced.area_fx_max_scale or extra.area_fx_max_scale,
+      particle_scale_bias = forced.particle_scale_bias or extra.particle_scale_bias,
+      particle_min_scale = forced.particle_min_scale or extra.particle_min_scale,
+      particle_max_scale = forced.particle_max_scale or extra.particle_max_scale,
+      delivery_mode = forced.delivery_mode or extra.delivery_mode,
+      motion_mode = forced.motion_mode or extra.motion_mode,
     }
   end
   local projectile_key = to_positive_number(extra.projectile_key)
@@ -378,7 +428,105 @@ local function get_visual_config(bond_name)
     projectile_time = extra.projectile_time or DEFAULT_VISUAL.projectile_time,
     projectile_height = extra.projectile_height or DEFAULT_VISUAL.projectile_height,
     projectile_target_distance = extra.projectile_target_distance or DEFAULT_VISUAL.projectile_target_distance,
+    area_fx_base_radius = math.max(80, tonumber(extra.area_fx_base_radius) or 320),
+    area_fx_scale_bias = tonumber(extra.area_fx_scale_bias) or 1.0,
+    area_fx_min_scale = math.max(0.60, math.min(1.10, tonumber(extra.area_fx_min_scale) or 0.65)),
+    area_fx_max_scale = math.max(0.85, math.min(1.55, tonumber(extra.area_fx_max_scale) or 2.40)),
+    particle_scale_bias = tonumber(extra.particle_scale_bias) or 1.0,
+    particle_min_scale = math.max(0.55, math.min(1.05, tonumber(extra.particle_min_scale) or 0.60)),
+    particle_max_scale = math.max(0.85, math.min(1.28, tonumber(extra.particle_max_scale) or 1.80)),
+    delivery_mode = tostring(extra.delivery_mode or 'projectile'),
+    motion_mode = tostring(extra.motion_mode or 'target'),
   }
+end
+
+local function apply_particle_scale(visual_cfg, effect_key, scale)
+  local base_scale = tonumber(scale) or 1.0
+  local min_scale = tonumber(visual_cfg and visual_cfg.particle_min_scale) or 0.72
+  local max_scale = tonumber(visual_cfg and visual_cfg.particle_max_scale) or 1.28
+  local baseline_norm = 1.0
+  -- 第二阶段：按伤害范围（以 area_fx_base_radius 作为范围代理）做轻量二次缩放。
+  local radius = math.max(80, tonumber(visual_cfg and visual_cfg.area_fx_base_radius) or 220)
+  local range_factor = math.max(0.97, math.min(1.03, (radius / 220) ^ 0.18))
+  local final_scale = base_scale * baseline_norm * range_factor
+  if final_scale < min_scale then
+    final_scale = min_scale
+  end
+  if final_scale > max_scale then
+    final_scale = max_scale
+  end
+  final_scale = math.min(final_scale, 1.20)
+  return final_scale
+end
+
+local function resolve_particle_scale_cfg(effect_key, fallback_cfg)
+  local key = to_positive_number(effect_key)
+  if key and PARTICLE_SCALE_CFG_BY_KEY[key] then
+    return PARTICLE_SCALE_CFG_BY_KEY[key]
+  end
+  return fallback_cfg
+end
+
+local function get_fx_time_now(env)
+  local y3 = env and env.y3
+  if y3 and y3.game and y3.game.current_game_run_time then
+    return tonumber(y3.game.current_game_run_time()) or 0
+  end
+  return 0
+end
+
+local function build_unit_fx_anchor_key(unit)
+  if not unit then
+    return 'unit:nil'
+  end
+  local uid = nil
+  if unit.get_id then
+    local ok, id = pcall(unit.get_id, unit)
+    if ok then
+      uid = id
+    end
+  end
+  if uid == nil and unit.id then
+    uid = unit.id
+  end
+  return 'unit:' .. tostring(uid or unit)
+end
+
+local function build_point_fx_anchor_key(point)
+  if not point then
+    return 'point:nil'
+  end
+  local x = point.get_x and tonumber(point:get_x()) or 0
+  local y = point.get_y and tonumber(point:get_y()) or 0
+  -- 量化到 60 网格，避免极小抖动导致去重失效。
+  local qx = math.floor(x / 60 + 0.5)
+  local qy = math.floor(y / 60 + 0.5)
+  return string.format('point:%d:%d', qx, qy)
+end
+
+local function should_emit_particle(env, effect_key, anchor_key, life_time)
+  local state = env and env.STATE
+  if not state then
+    return true
+  end
+  -- 个别技能可通过此标记放行高频特效（用后即焚）。
+  if state.__bond_fx_allow_spam_once == true then
+    state.__bond_fx_allow_spam_once = nil
+    return true
+  end
+  local now = get_fx_time_now(env)
+  state.__bond_fx_emit_cache = state.__bond_fx_emit_cache or {}
+  local cache = state.__bond_fx_emit_cache
+  local k = string.format('%s|%s', tostring(effect_key), tostring(anchor_key))
+  local prev = tonumber(cache[k]) or -999
+  local t = tonumber(life_time) or 0.20
+  -- 高频短效命中特效才节流，长时/常驻类不拦截。
+  local cooldown = t <= 0.35 and math.max(0.08, math.min(0.20, t * 0.75)) or 0.05
+  if now - prev < cooldown then
+    return false
+  end
+  cache[k] = now
+  return true
 end
 
 local function play_particle_on_unit(env, unit, effect_key, scale, time)
@@ -389,11 +537,15 @@ local function play_particle_on_unit(env, unit, effect_key, scale, time)
   if not y3 or not y3.particle or not y3.particle.create then
     return nil
   end
+  if not should_emit_particle(env, effect_key, build_unit_fx_anchor_key(unit), time) then
+    return nil
+  end
+  local particle_cfg = resolve_particle_scale_cfg(effect_key, env and env.__bond_visual_cfg)
   local ok, particle = pcall(y3.particle.create, {
     type = effect_key,
     target = unit,
     socket = 'origin',
-    scale = scale or 1.0,
+    scale = apply_particle_scale(particle_cfg, effect_key, scale) * GLOBAL_PARTICLE_SCALE_MULTIPLIER,
     time = time or 0.30,
     immediate = true,
   })
@@ -411,10 +563,14 @@ local function play_particle_on_point(env, point, effect_key, scale, time, heigh
   if not y3 or not y3.particle or not y3.particle.create then
     return nil
   end
+  if not should_emit_particle(env, effect_key, build_point_fx_anchor_key(point), time) then
+    return nil
+  end
+  local particle_cfg = resolve_particle_scale_cfg(effect_key, env and env.__bond_visual_cfg)
   local ok, particle = pcall(y3.particle.create, {
     type = effect_key,
     target = point,
-    scale = scale or 1.0,
+    scale = apply_particle_scale(particle_cfg, effect_key, scale) * GLOBAL_PARTICLE_SCALE_MULTIPLIER,
     time = time or 0.30,
     height = height or 0,
     immediate = true,
@@ -461,10 +617,23 @@ local function launch_projectile_to_target(env, target, visual_cfg)
   end
 
   local launch_angle = nil
+  local target_distance_now = nil
   local hero_point = hero.get_point and hero:get_point() or nil
   local target_point = target.get_point and target:get_point() or nil
-  if hero_point and target_point and hero_point.get_angle_with then
-    launch_angle = hero_point:get_angle_with(target_point)
+  if hero_point and target_point then
+    local hx = hero_point.get_x and hero_point:get_x() or nil
+    local hy = hero_point.get_y and hero_point:get_y() or nil
+    local tx = target_point.get_x and target_point:get_x() or nil
+    local ty = target_point.get_y and target_point:get_y() or nil
+    if hx and hy and tx and ty then
+      local dx = tx - hx
+      local dy = ty - hy
+      target_distance_now = math.sqrt(dx * dx + dy * dy)
+      if target_distance_now > 0.001 then
+        -- 使用坐标向量计算角度，避免 get_angle_with 在部分对象上的朝向反转问题。
+        launch_angle = math.atan(dy, dx)
+      end
+    end
   end
 
   local function create_with_key(projectile_key)
@@ -479,20 +648,12 @@ local function launch_projectile_to_target(env, target, visual_cfg)
     })
   end
 
-  local fallback_projectile_key = to_positive_number(DEFAULT_VISUAL.projectile_key) or 201392033
   local requested_key = visual_cfg.projectile_key
-  local used_fallback = false
   local ok_create, projectile = create_with_key(visual_cfg.projectile_key)
-  if (not ok_create or not projectile) and tonumber(visual_cfg.projectile_key) ~= fallback_projectile_key then
-    ok_create, projectile = create_with_key(fallback_projectile_key)
-    used_fallback = ok_create and projectile and true or false
-  end
   if state and state.bond_debug_trace_enabled == true and env and env.message then
     env.message(string.format(
-      '[bond_projectile_trace] requested=%s fallback=%s used_fallback=%s create_ok=%s',
+      '[bond_projectile_trace] requested=%s create_ok=%s',
       tostring(requested_key),
-      tostring(fallback_projectile_key),
-      tostring(used_fallback),
       tostring(ok_create and projectile and true or false)
     ))
   end
@@ -512,37 +673,47 @@ local function launch_projectile_to_target(env, target, visual_cfg)
     end)
   end
 
-  local ok_move = pcall(function()
-    projectile:mover_target({
-      target = target,
-      speed = visual_cfg.projectile_speed,
-      target_distance = visual_cfg.projectile_target_distance,
-      height = visual_cfg.projectile_height,
-      init_angle = launch_angle,
-      rotate_time = 0.0,
-      face_angle = true,
-      miss_when_target_destroy = false,
-      on_finish = function()
-        if projectile and projectile.is_exist and projectile:is_exist() then
-          projectile:remove()
-        end
-      end,
-      on_break = function()
-        if projectile and projectile.is_exist and projectile:is_exist() then
-          projectile:remove()
-        end
-      end,
-      on_miss = function()
-        if projectile and projectile.is_exist and projectile:is_exist() then
-          projectile:remove()
-        end
-      end,
-    })
-  end)
-  if not ok_move then
+  local function remove_projectile_safe()
     if projectile and projectile.is_exist and projectile:is_exist() then
       projectile:remove()
     end
+  end
+
+  local speed = math.max(200, tonumber(visual_cfg.projectile_speed) or 800)
+  local ok_move = false
+  local motion_mode = tostring(visual_cfg and visual_cfg.motion_mode or 'target')
+  local use_line_fallback = motion_mode == 'line' or (target_distance_now ~= nil and target_distance_now < 80)
+
+  if use_line_fallback then
+    ok_move = pcall(function()
+      projectile:mover_line({
+        angle = launch_angle or 0,
+        distance = 160,
+        speed = speed,
+        height = visual_cfg.projectile_height,
+        on_finish = remove_projectile_safe,
+        on_break = remove_projectile_safe,
+      })
+    end)
+  else
+    ok_move = pcall(function()
+      projectile:mover_target({
+        target = target,
+        speed = speed,
+        target_distance = visual_cfg.projectile_target_distance,
+        height = visual_cfg.projectile_height,
+        init_angle = launch_angle,
+        rotate_time = 0.0,
+        face_angle = true,
+        miss_when_target_destroy = false,
+        on_finish = remove_projectile_safe,
+        on_break = remove_projectile_safe,
+        on_miss = remove_projectile_safe,
+      })
+    end)
+  end
+  if not ok_move then
+    remove_projectile_safe()
     return false
   end
   return true
@@ -557,6 +728,36 @@ local function wait_seconds(env, delay, callback)
   if callback then
     callback()
   end
+end
+
+local function is_unit_alive(unit)
+  if not unit or type(unit.is_exist) ~= 'function' then
+    return false
+  end
+  local ok, alive = pcall(unit.is_exist, unit)
+  return ok and alive == true
+end
+
+local function is_active_enemy_safe(env, unit)
+  if not is_unit_alive(unit) then
+    return false
+  end
+  if not env or type(env.is_active_enemy) ~= 'function' then
+    return true
+  end
+  local ok, active = pcall(env.is_active_enemy, unit)
+  return ok and active == true
+end
+
+local function get_enemies_in_range_safe(env, center, radius, except_unit, max_count)
+  if not env or type(env.get_enemies_in_range) ~= 'function' then
+    return {}
+  end
+  local ok, result = pcall(env.get_enemies_in_range, center, radius, except_unit, max_count)
+  if ok and type(result) == 'table' then
+    return result
+  end
+  return {}
 end
 
 local function get_unit_point(unit)
@@ -610,8 +811,11 @@ local function play_lightning_strike(env, target, visual_cfg)
   if not target then
     return
   end
-  launch_projectile_to_target(env, target, visual_cfg)
-  play_impact_burst(env, target, visual_cfg.particle_key, 0.95)
+  local target_point = get_unit_point(target)
+  if play_particle_on_point and target_point then
+    play_particle_on_point(env, target_point, visual_cfg and visual_cfg.particle_key, 1.05, 0.22, 140)
+  end
+  play_impact_burst(env, target, visual_cfg and visual_cfg.particle_key, 0.95)
 end
 
 local function play_summon_arrive_fx(env, hero, visual_cfg)
@@ -629,6 +833,14 @@ local SUMMON_UNIT_CANDIDATES = {
   skeleton = { 134280100, 134280101 },
 }
 local SUMMON_PREFAB_MISS_WARNED = {}
+local SUMMON_INHERIT_PROFILES = BondEffectRuntimeRules.summon_inherit_profiles or {
+  default = {
+    attack_ratio = 0.35,
+    hp_ratio = 0.20,
+    attack_bonus_ratio = 1.00,
+    hp_bonus_ratio = 0.60,
+  },
+}
 
 local function create_summon_unit(env, hero, summon_kind)
   if not hero or not hero.is_exist or not hero:is_exist() then
@@ -690,28 +902,52 @@ local function create_summon_unit(env, hero, summon_kind)
   return nil
 end
 
-local function apply_summon_inherit_attrs(env, summon)
+local function apply_summon_inherit_attrs(env, summon, summon_kind)
   if not summon or not summon.is_exist or not summon:is_exist() then
     return
   end
+  local kind_key = tostring(summon_kind or 'default')
+  local profile = SUMMON_INHERIT_PROFILES[kind_key] or SUMMON_INHERIT_PROFILES.default
   local summon_bonus = math.max(0, get_hero_attr(env, '召唤加成'))
   local attack_value = get_attack_value(env)
   local hp_value = get_max_hp_value(env)
-  local inherit_attack = math.max(20, attack_value * (0.35 + summon_bonus))
-  local inherit_hp = math.max(150, hp_value * (0.20 + summon_bonus * 0.6))
+  local armor_value = get_hero_attr(env, '护甲结算值')
+  if armor_value <= 0 then
+    armor_value = get_hero_attr(env, '护甲')
+  end
+  local move_speed = get_hero_attr(env, '移动速度')
+  local attack_speed = get_hero_attr(env, '攻击速度')
+
+  local inherit_attack = math.max(
+    20,
+    attack_value * ((profile.attack_ratio or 0.35) + summon_bonus * (profile.attack_bonus_ratio or 1.00))
+  )
+  local inherit_hp = math.max(
+    150,
+    hp_value * ((profile.hp_ratio or 0.20) + summon_bonus * (profile.hp_bonus_ratio or 0.60))
+  )
+  local inherit_armor = math.max(0, armor_value * (0.25 + summon_bonus * 0.35))
+  local inherit_move_speed = math.max(260, move_speed * (0.70 + summon_bonus * 0.15))
+  local inherit_attack_speed = math.max(0, attack_speed * (0.85 + summon_bonus * 0.20))
   pcall(function()
     summon:set_attr('攻击', inherit_attack)
     summon:set_attr('生命', inherit_hp)
     summon:set_attr('最大生命', inherit_hp)
+    summon:set_attr('护甲', inherit_armor)
+    summon:set_attr('移动速度', inherit_move_speed)
+    summon:set_attr('攻击速度', inherit_attack_speed)
+    if summon.set_hp then
+      summon:set_hp(inherit_hp)
+    end
   end)
 end
 
 local function drive_summon_attack(env, summon)
-  if not summon or not summon.is_exist or not summon:is_exist() then
+  if not is_unit_alive(summon) then
     return
   end
-  local target = env.get_enemies_in_range and env.get_enemies_in_range(summon, 1200, nil, 1)[1] or nil
-  if target and target.is_exist and target:is_exist() then
+  local target = get_enemies_in_range_safe(env, summon, 1200, nil, 1)[1]
+  if is_unit_alive(target) then
     pcall(function()
       if summon.attack_target then
         summon:attack_target(target, 0)
@@ -727,27 +963,113 @@ local function schedule_summon_lifecycle_fx(env, hero, visual_cfg, duration_sec,
     return false
   end
   local duration = math.max(1, tonumber(duration_sec) or 8)
+  local is_skeleton = tostring(summon_kind or '') == 'skeleton'
+  local burst_triggered = false
 
   local summon = create_summon_unit(env, hero, summon_kind or 'magic_deer')
-  if summon then
-    apply_summon_inherit_attrs(env, summon)
-    drive_summon_attack(env, summon)
+  local ai_timer = nil
+
+  local function stop_summon_ai()
+    if ai_timer and ai_timer.remove then
+      pcall(ai_timer.remove, ai_timer)
+    end
+    ai_timer = nil
   end
+
+  local function start_summon_ai()
+    if not summon or not summon.is_exist or not summon:is_exist() then
+      return
+    end
+    drive_summon_attack(env, summon)
+    local y3 = env and env.y3
+    if not y3 or not y3.ltimer or not y3.ltimer.loop then
+      return
+    end
+    ai_timer = y3.ltimer.loop(0.40, function()
+      if not summon or not summon.is_exist or not summon:is_exist() then
+        stop_summon_ai()
+        return
+      end
+      drive_summon_attack(env, summon)
+    end)
+  end
+
+  if summon then
+    apply_summon_inherit_attrs(env, summon, summon_kind or 'magic_deer')
+    start_summon_ai()
+  end
+
+  local function trigger_skeleton_death_burst(anchor)
+    if not is_skeleton or burst_triggered then
+      return
+    end
+    burst_triggered = true
+    local burst_anchor = anchor
+    if not is_unit_alive(burst_anchor) then
+      burst_anchor = hero
+    end
+    if burst_anchor then
+      play_summon_burst_fx(env, burst_anchor, visual_cfg)
+    end
+
+    if not env or not env.deal_skill_damage or not burst_anchor then
+      return
+    end
+    local attack = get_attack_value and get_attack_value(env) or 0
+    local summon_bonus = math.max(0, get_hero_attr and get_hero_attr(env, '召唤加成') or 0)
+    local amount = math.max(1, (attack * 3.0) + (attack * summon_bonus))
+    local victims = get_enemies_in_range_safe(env, burst_anchor, 320, summon, 64)
+    for _, enemy in ipairs(victims) do
+      if is_active_enemy_safe(env, enemy) then
+        env.deal_skill_damage(
+          enemy,
+          env.round_number and env.round_number(amount) or math.floor(amount),
+          { scope = 'bond', key = '骷髅法师' },
+          {
+            text_type = 'magic',
+            debug_radius = 320,
+            metric_scope = 'bond',
+            metric_key = '骷髅法师',
+            skip_hunter_first_hit = true,
+          }
+        )
+      end
+    end
+  end
+
+  if is_skeleton and summon and summon.event then
+    pcall(function()
+      summon:event('单位-死亡', function()
+        stop_summon_ai()
+        trigger_skeleton_death_burst(summon)
+      end)
+    end)
+  end
+
   play_summon_arrive_fx(env, hero, visual_cfg)
   wait_seconds(env, duration, function()
     if summon and summon.is_exist and summon:is_exist() then
+      stop_summon_ai()
+      trigger_skeleton_death_burst(summon)
       pcall(function()
         summon:remove()
       end)
-      play_summon_burst_fx(env, summon, visual_cfg)
+      if not is_skeleton then
+        play_summon_burst_fx(env, summon, visual_cfg)
+      end
     elseif hero and hero.is_exist and hero:is_exist() then
-      play_summon_burst_fx(env, hero, visual_cfg)
+      stop_summon_ai()
+      if is_skeleton then
+        trigger_skeleton_death_burst(hero)
+      else
+        play_summon_burst_fx(env, hero, visual_cfg)
+      end
     end
   end)
   return true
 end
 
-local function launch_projectile_to_point(env, direction, distance, visual_cfg)
+local function launch_projectile_to_point(env, direction, distance, visual_cfg, life_time_override)
   local state = env and env.STATE
   local hero = state and state.hero
   local y3 = env and env.y3
@@ -768,16 +1090,12 @@ local function launch_projectile_to_point(env, direction, distance, visual_cfg)
       socket = 'origin',
       owner = hero,
       angle = direction,
-      time = visual_cfg.projectile_time,
+      time = math.max(0.05, tonumber(life_time_override) or tonumber(visual_cfg.projectile_time) or 1.0),
       remove_immediately = true,
     })
   end
 
-  local fallback_projectile_key = to_positive_number(DEFAULT_VISUAL.projectile_key) or 201392033
   local ok_create, projectile = create_with_key(visual_cfg.projectile_key)
-  if (not ok_create or not projectile) and tonumber(visual_cfg.projectile_key) ~= fallback_projectile_key then
-    ok_create, projectile = create_with_key(fallback_projectile_key)
-  end
   if not ok_create or not projectile then
     return false
   end
@@ -817,6 +1135,24 @@ local function launch_projectile_to_point(env, direction, distance, visual_cfg)
   return true
 end
 
+local function compute_direction_by_points(from_point, to_point, fallback_angle)
+  local fx = from_point and from_point.get_x and from_point:get_x() or nil
+  local fy = from_point and from_point.get_y and from_point:get_y() or nil
+  local tx = to_point and to_point.get_x and to_point:get_x() or nil
+  local ty = to_point and to_point.get_y and to_point:get_y() or nil
+  if fx and fy and tx and ty then
+    local dx = tx - fx
+    local dy = ty - fy
+    if math.abs(dx) > 0.001 or math.abs(dy) > 0.001 then
+      return math.atan(dy, dx)
+    end
+  end
+  if from_point and from_point.get_angle_with and to_point then
+    return from_point:get_angle_with(to_point)
+  end
+  return fallback_angle or 0
+end
+
 local get_hero
 local collect_units_in_line
 
@@ -847,9 +1183,6 @@ end
 local function safe_collect_units_in_line(env, origin_point, impact_point, max_distance, line_width, max_hits, fallback_target)
   local collect_line = resolve_collect_units_in_line()
   if type(collect_line) ~= 'function' then
-    if fallback_target and fallback_target.is_exist and fallback_target:is_exist() then
-      return { fallback_target }
-    end
     return {}
   end
 
@@ -866,9 +1199,6 @@ local function safe_collect_units_in_line(env, origin_point, impact_point, max_d
   if ok and type(result) == 'table' then
     return result
   end
-  if fallback_target and fallback_target.is_exist and fallback_target:is_exist() then
-    return { fallback_target }
-  end
   return {}
 end
 
@@ -879,7 +1209,11 @@ local function execute_projectile_pierce_template(env, target, visual_cfg, opts,
   local hero = resolve_get_hero()(env)
   local hero_point = get_unit_point(hero)
   local target_point = get_unit_point(target)
-  if not hero or not hero_point or not target_point then
+  local forced_direction = tonumber(opts and opts.force_direction)
+  if not hero or not hero_point then
+    return false
+  end
+  if not forced_direction and not target_point then
     return false
   end
 
@@ -890,13 +1224,27 @@ local function execute_projectile_pierce_template(env, target, visual_cfg, opts,
 
   local line_distance = math.max(1, tonumber(opts and opts.distance) or 0)
   local pierce_width = math.max(40, tonumber(opts and opts.pierce_width) or 120)
+  local sample_mode = tostring(opts and opts.sample_mode or 'line')
+  local sample_radius = math.max(40, tonumber(opts and opts.sample_radius) or math.floor(pierce_width * 0.65))
+  local max_tick_targets = tonumber(opts and opts.max_targets)
+  if max_tick_targets then
+    max_tick_targets = math.max(1, math.floor(max_tick_targets))
+  end
   local projectile_speed = math.max(200, tonumber(opts and opts.projectile_speed) or tonumber(visual_cfg.projectile_speed) or 800)
-  local tick_interval = math.max(0.2, tonumber(opts and opts.tick_interval) or 1.0)
-  local direction = hero_point.get_angle_with and hero_point:get_angle_with(target_point) or 0
+  local tick_interval = math.max(0.08, tonumber(opts and opts.tick_interval) or 1.0)
+  -- 采样步长与线宽联动，避免速度快时“跨段漏采样”导致视觉命中但伤害丢失。
+  local max_segment_length = math.max(80, pierce_width * 0.75)
+  local max_tick_interval = max_segment_length / projectile_speed
+  tick_interval = math.max(0.08, math.min(tick_interval, max_tick_interval))
+  local direction = forced_direction
+  if direction == nil then
+    direction = compute_direction_by_points(hero_point, target_point, 0)
+  end
   local total_time = math.max(tick_interval, line_distance / projectile_speed)
+  local projectile_life_time = math.max(total_time + 0.05, 0.10)
 
   play_bond_sound(env, opts and opts.bond_name, 'cast', hero)
-  launch_projectile_to_point(env, direction, line_distance, visual_cfg)
+  launch_projectile_to_point(env, direction, line_distance, visual_cfg, projectile_life_time)
 
   local elapsed = 0
   local finished = false
@@ -921,18 +1269,19 @@ local function execute_projectile_pierce_template(env, target, visual_cfg, opts,
     end
     play_particle_on_point(env, to_point, visual_cfg.particle_key, tonumber(opts and opts.tick_fx_scale) or 0.9, tonumber(opts and opts.tick_fx_time) or 0.20, 20)
     local segment_length = from_point.get_distance_with and from_point:get_distance_with(to_point) or math.max(1, curr_travel_distance - last_travel_distance)
-    local pierced = safe_collect_units_in_line(env, from_point, to_point, segment_length, pierce_width, nil, nil)
-    if opts and opts.guarantee_target_hit == true and target and target.is_exist and target:is_exist() then
-      local exists = false
-      for _, unit in ipairs(pierced) do
-        if unit == target then
-          exists = true
-          break
+    local pierced = {}
+    if sample_mode == 'point' then
+      local candidates = get_enemies_in_range_safe(env, to_point, sample_radius, nil, max_tick_targets or 64)
+      for _, unit in ipairs(candidates) do
+        if is_active_enemy_safe(env, unit) then
+          pierced[#pierced + 1] = unit
+          if max_tick_targets and #pierced >= max_tick_targets then
+            break
+          end
         end
       end
-      if not exists then
-        pierced[#pierced + 1] = target
-      end
+    else
+      pierced = safe_collect_units_in_line(env, from_point, to_point, segment_length, pierce_width, max_tick_targets, nil)
     end
     for _, unit in ipairs(pierced) do
       if unit and unit.is_exist and unit:is_exist() then
@@ -1028,6 +1377,7 @@ local function get_damage_template_api(env)
     deal_skill_damage = function(target, amount, damage_meta, visual)
       env.deal_skill_damage(target, amount, damage_meta, visual)
     end,
+    emit_damage_debug = env.emit_damage_debug,
     get_enemies_in_range = env.get_enemies_in_range,
     is_active_enemy = env.is_active_enemy or function(unit)
       return unit and unit.is_exist and unit:is_exist()
@@ -1042,6 +1392,7 @@ local function damage_target(env, target, amount, damage_type, metric)
   end
   local visual = {
     text_type = damage_type == '法术' and 'magic' or 'physics',
+    debug_radius = 70,
   }
   if type(metric) == 'table' then
     visual.metric_scope = metric.scope
@@ -1069,6 +1420,7 @@ local function damage_area(env, center, radius, amount, damage_type, except_unit
   end
   local visual = {
     text_type = damage_type == '法术' and 'magic' or 'physics',
+    debug_radius = math.max(60, tonumber(radius) or 320),
   }
   if type(metric) == 'table' then
     visual.metric_scope = metric.scope
@@ -1083,8 +1435,10 @@ local function damage_area(env, center, radius, amount, damage_type, except_unit
   if not api or not api.area then
     return false
   end
+  local hero = env and env.STATE and env.STATE.hero or nil
+  local final_except_unit = except_unit or hero
   local hit_units = api.area(center, radius or 320, math.max(1, env.round_number and env.round_number(amount) or math.floor(amount)), damage_type or '物理', {
-    except_unit = except_unit,
+    except_unit = final_except_unit,
     max_count = max_count,
     visual = visual,
   })
@@ -1093,8 +1447,8 @@ end
 
 collect_units_in_line = function(env, origin_point, impact_point, max_distance, line_width, max_hits, fallback_target)
   local result = {}
-  if not env or not env.get_enemies_in_range or not origin_point or not impact_point then
-    if fallback_target then
+  if not env or type(env.get_enemies_in_range) ~= 'function' or not origin_point or not impact_point then
+    if is_unit_alive(fallback_target) then
       result[1] = fallback_target
     end
     return result
@@ -1109,7 +1463,7 @@ collect_units_in_line = function(env, origin_point, impact_point, max_distance, 
   local length = origin_point.get_distance_with and origin_point:get_distance_with(impact_point)
     or math.sqrt(dir_x * dir_x + dir_y * dir_y)
   if not length or length < 1 then
-    if fallback_target then
+    if is_unit_alive(fallback_target) then
       result[1] = fallback_target
     end
     return result
@@ -1117,14 +1471,16 @@ collect_units_in_line = function(env, origin_point, impact_point, max_distance, 
 
   local reach = math.max(length, tonumber(max_distance) or length)
   local width = math.max(40, tonumber(line_width) or 95)
-  local start_projection = math.max(0, length - width)
+  -- 统一按“完整线段”做判定，避免只命中末端一截导致表现与伤害区域不一致。
+  -- 对于分段采样（from->to），length 本身就是该分段长度，此处同样成立。
+  local start_projection = 0
   local segment_length = reach - start_projection
   local max_target_count = tonumber(max_hits)
   if max_target_count then
     max_target_count = math.max(1, math.floor(max_target_count))
   end
   if segment_length <= 0 then
-    if fallback_target then
+    if is_unit_alive(fallback_target) then
       result[1] = fallback_target
     end
     return result
@@ -1133,7 +1489,7 @@ collect_units_in_line = function(env, origin_point, impact_point, max_distance, 
   local direction = origin_point.get_angle_with and origin_point:get_angle_with(impact_point) or 0
 
   local function push_fallback_target()
-    if #result == 0 and fallback_target and fallback_target.is_exist and fallback_target:is_exist() then
+    if #result == 0 and is_unit_alive(fallback_target) then
       result[1] = fallback_target
     end
   end
@@ -1154,7 +1510,7 @@ collect_units_in_line = function(env, origin_point, impact_point, max_distance, 
       :pick()
     local projected = {}
     for _, unit in ipairs(picked or {}) do
-      if unit and unit.is_exist and unit:is_exist() and (not env.is_active_enemy or env.is_active_enemy(unit)) then
+      if is_active_enemy_safe(env, unit) then
         local point = get_unit_point(unit)
         if point then
           local ux = point.get_x and point:get_x() or ox
@@ -1181,11 +1537,11 @@ collect_units_in_line = function(env, origin_point, impact_point, max_distance, 
   end
 
   local query_radius = math.max(reach + width + 80, 320)
-  local candidates = env.get_enemies_in_range(origin_point, query_radius, nil, 96) or {}
+  local candidates = get_enemies_in_range_safe(env, origin_point, query_radius, nil, 96)
   local projected = {}
 
   for _, unit in ipairs(candidates) do
-    if unit and unit.is_exist and unit:is_exist() and (not env.is_active_enemy or env.is_active_enemy(unit)) then
+    if is_active_enemy_safe(env, unit) then
       local point = get_unit_point(unit)
       if point then
         local ux = point.get_x and point:get_x() or ox
@@ -1252,7 +1608,31 @@ do
   end
 end
 
+local CARD_NAME_ALIASES = {
+  ['嗜剑剑气'] = '赐剑剑气',
+  ['赐剑剑气'] = '赐剑剑气',
+}
+
+local function normalize_card_name(card_name)
+  local key = tostring(card_name or ''):gsub('^%s+', ''):gsub('%s+$', '')
+  key = key:gsub('　', '')
+  if key == '' then
+    return key
+  end
+  local canonical = CARD_NAME_ALIASES[key] or key
+  return canonical
+end
+
+do
+  for alias, canonical in pairs(CARD_NAME_ALIASES) do
+    if CARD_ID_BY_NAME[alias] == nil and CARD_ID_BY_NAME[canonical] ~= nil then
+      CARD_ID_BY_NAME[alias] = CARD_ID_BY_NAME[canonical]
+    end
+  end
+end
+
 local function has_card_effect(runtime, card_name)
+  card_name = normalize_card_name(card_name)
   local card_id = CARD_ID_BY_NAME[card_name]
   if not runtime or not card_id then
     return false
@@ -1273,6 +1653,7 @@ local function has_any_card_effect(runtime, card_names)
 end
 
 local function ensure_card_effect_state(runtime, card_name)
+  card_name = normalize_card_name(card_name)
   local card_id = CARD_ID_BY_NAME[card_name]
   if not runtime or not card_id then
     return nil
@@ -1387,6 +1768,110 @@ local function get_game_time(env)
   return 0
 end
 
+local AUTO_ACTIVE_STATUS_KEYS = RuntimeEditorIds.modifier and RuntimeEditorIds.modifier.auto_active_effect or {}
+local BOND_STATUS_KEYS = RuntimeEditorIds.modifier and RuntimeEditorIds.modifier.bond_status or {}
+local STATUS_RUNTIME_PRESETS = {}
+for status_id, preset in pairs(BondEffectRuntimeRules.status_runtime_presets or {}) do
+  if type(preset) == 'table' then
+    local copied = {}
+    for k, v in pairs(preset) do
+      copied[k] = v
+    end
+    if status_id == 'magic_swordsman_demon' then
+      copied.buff_key = tonumber(BOND_STATUS_KEYS.magic_swordsman_demon) or tonumber(AUTO_ACTIVE_STATUS_KEYS.charge_breaker_rally) or 0
+    elseif status_id == 'berserker_frenzy' then
+      copied.buff_key = tonumber(BOND_STATUS_KEYS.berserker_frenzy) or tonumber(AUTO_ACTIVE_STATUS_KEYS.rapid_overdrive) or 0
+    end
+    STATUS_RUNTIME_PRESETS[status_id] = copied
+  end
+end
+
+local function is_runtime_obj_alive(obj)
+  return obj and obj.is_exist and obj:is_exist() or false
+end
+
+local function sync_runtime_status_effect(env, runtime, status_id, active)
+  local state = env and env.STATE
+  local hero = state and state.hero
+  local preset = STATUS_RUNTIME_PRESETS[status_id]
+  if not runtime or not preset then
+    return
+  end
+  runtime.modifier_runtime_status = runtime.modifier_runtime_status or {}
+  local entry = runtime.modifier_runtime_status[status_id] or {}
+  runtime.modifier_runtime_status[status_id] = entry
+
+  local function clear_entry()
+    if is_runtime_obj_alive(entry.buff) and entry.buff.remove then
+      pcall(entry.buff.remove, entry.buff)
+    end
+    if is_runtime_obj_alive(entry.particle) and entry.particle.remove then
+      pcall(entry.particle.remove, entry.particle)
+    end
+    entry.buff = nil
+    entry.particle = nil
+    entry.next_particle_at = nil
+  end
+
+  if not active or not hero or not hero.is_exist or not hero:is_exist() then
+    clear_entry()
+    return
+  end
+
+  local buff_refresh = math.max(0.8, tonumber(preset.buff_refresh) or 1.2)
+  local buff_key = tonumber(preset.buff_key) or 0
+  if buff_key > 0 and hero.add_buff then
+    if not is_runtime_obj_alive(entry.buff) then
+      entry.buff = hero:add_buff({
+        key = buff_key,
+        source = hero,
+        time = buff_refresh,
+      })
+      if is_runtime_obj_alive(entry.buff) then
+        if preset.name and entry.buff.set_name then
+          pcall(entry.buff.set_name, entry.buff, preset.name)
+        end
+        if preset.description and entry.buff.set_description then
+          pcall(entry.buff.set_description, entry.buff, preset.description)
+        end
+      end
+    elseif entry.buff.set_time then
+      pcall(entry.buff.set_time, entry.buff, buff_refresh)
+    end
+  end
+
+  if not is_runtime_obj_alive(entry.particle) then
+    local visual_cfg = get_visual_config(preset.particle_bond or '')
+    entry.particle = play_particle_on_unit(
+      env,
+      hero,
+      visual_cfg and visual_cfg.particle_key or nil,
+      tonumber(preset.particle_scale) or 1.0,
+      tonumber(preset.particle_time) or 1.0
+    )
+  end
+end
+
+local function clear_all_runtime_status_effects(runtime)
+  if not runtime or type(runtime.modifier_runtime_status) ~= 'table' then
+    return
+  end
+  for _, entry in pairs(runtime.modifier_runtime_status) do
+    if type(entry) == 'table' then
+      if is_runtime_obj_alive(entry.buff) and entry.buff.remove then
+        pcall(entry.buff.remove, entry.buff)
+      end
+      if is_runtime_obj_alive(entry.particle) and entry.particle.remove then
+        pcall(entry.particle.remove, entry.particle)
+      end
+      entry.buff = nil
+      entry.particle = nil
+      entry.next_particle_at = nil
+    end
+  end
+  runtime.modifier_runtime_status = {}
+end
+
 local function update_magic_swordsman_runtime_bonus(runtime, active)
   if not runtime or not runtime.modifier_pool_active_runtime_bonuses then
     return
@@ -1455,7 +1940,7 @@ local function execute_linear_bond_template(env, target, visual_cfg, opts, on_hi
   end
   local projectile_speed = math.max(200, tonumber(opts and opts.projectile_speed) or tonumber(visual_cfg.projectile_speed) or 800)
 
-  local direction = hero_point.get_angle_with and hero_point:get_angle_with(target_point) or 0
+  local direction = compute_direction_by_points(hero_point, target_point, 0)
   local impact_point = create_offset_point(env, hero_point, direction, line_distance, 0) or target_point
 
   play_bond_sound(env, opts and opts.bond_name, 'cast', hero)
@@ -1463,7 +1948,8 @@ local function execute_linear_bond_template(env, target, visual_cfg, opts, on_hi
   play_particle_on_point(env, impact_point, visual_cfg.particle_key, tonumber(opts and opts.target_fx_scale) or 1.0, tonumber(opts and opts.target_fx_time) or 0.25, 20)
 
   local function apply_line_hit()
-    local line_units = safe_collect_units_in_line(env, hero_point, impact_point, line_distance, line_width, max_hits, target)
+    local fallback_target = nil
+    local line_units = safe_collect_units_in_line(env, hero_point, impact_point, line_distance, line_width, max_hits, fallback_target)
     for _, unit in ipairs(line_units) do
       play_bond_sound(env, opts and opts.bond_name, 'impact', unit)
       play_particle_on_unit(env, unit, visual_cfg.particle_key, tonumber(opts and opts.hit_fx_scale) or 0.9, tonumber(opts and opts.hit_fx_time) or 0.18)
@@ -1486,6 +1972,10 @@ local function trigger_dragon_fireball_effect(env, runtime, target, effect_state
   if not effect_state then
     return false
   end
+  local now = get_game_time(env)
+  if (tonumber(effect_state.cast_lock_until) or 0) > now then
+    return false
+  end
   local visual_cfg = get_visual_config('龙骑士')
   -- 火龙效果强制使用专属火球弹道，避免映射异常时回退到默认普攻弓箭弹道
   visual_cfg.projectile_key = 201391110
@@ -1499,38 +1989,55 @@ local function trigger_dragon_fireball_effect(env, runtime, target, effect_state
   local attack = get_attack_value(env)
   local max_hp = get_max_hp_value(env)
   local trigger_chance = math.max(
-    normalize_ratio_chance(trigger_floor, 0.08),
     normalize_ratio_chance(get_hero_attr(env, '物理暴击'), 0),
-    0.22
+    normalize_ratio_chance(trigger_floor, 0.08)
   )
   if (effect_state.cooldown or 0) > 0 or not try_chance(trigger_chance) then
     return false
   end
 
   local has_tail_sweep = has_card_effect(runtime, '神龙摆尾')
-  -- 提升火龙手感：基础射程/宽度上调，尾扫再额外强化覆盖
-  local line_distance = has_tail_sweep and 1520 or 1200
-  local line_width = has_tail_sweep and 360 or 260
+  local dragon_rule = BondEffectRuntimeRules.dragon_fireball or {}
+  -- 提升火龙覆盖：基础射程与线宽都上调，缓解“范围过近”体感。
+  local line_distance = has_tail_sweep
+    and (tonumber(dragon_rule.line_distance_with_tail_sweep) or 1720)
+    or (tonumber(dragon_rule.line_distance_default) or 1450)
+  local line_width = has_tail_sweep
+    and (tonumber(dragon_rule.line_width_with_tail_sweep) or 320)
+    or (tonumber(dragon_rule.line_width_default) or 220)
 
   effect_state.cooldown = 1
   play_particle_on_unit(env, get_hero(env), visual_cfg.particle_key, 1.05, 0.22)
 
   local damage_scale = (extra_damage_scale or 1.0) * (has_card_effect(runtime, '龙族血统') and 1.20 or 1.0)
-  local width_scale = (extra_radius_scale or 1.0) * (has_tail_sweep and 1.20 or 1.0)
-  line_width = math.max(180, math.floor(line_width * width_scale + 0.5))
-  local amount = (attack + max_hp * 0.05) * damage_scale * 1.18
+  local width_scale = (extra_radius_scale or 1.0) * (has_tail_sweep and (tonumber(dragon_rule.width_scale_with_tail_sweep) or 1.20) or 1.0)
+  line_width = math.max(tonumber(dragon_rule.min_width) or 140, math.floor(line_width * width_scale + 0.5))
+  local amount = (attack + max_hp * 0.05) * damage_scale
+
+  local direction = nil
+  local hero = get_hero(env)
+  local hero_point = get_unit_point(hero)
+  local target_point = get_unit_point(target)
+  if hero_point and target_point then
+    direction = compute_direction_by_points(hero_point, target_point, 0)
+  end
+  effect_state.cast_lock_until = now + 0.30
 
   return execute_projectile_pierce_template(env, target, visual_cfg, {
     bond_name = '龙骑士',
     distance = line_distance,
-    pierce_width = math.max(160, math.floor(line_width * 0.70)),
+    pierce_width = math.max(
+      tonumber(dragon_rule.min_pierce_width) or 120,
+      math.floor(line_width * (tonumber(dragon_rule.pierce_width_ratio) or 0.70))
+    ),
+    sample_mode = 'line',
     projectile_speed = visual_cfg.projectile_speed,
-    tick_interval = 0.75,
-    guarantee_target_hit = true,
+    tick_interval = tonumber(dragon_rule.tick_interval) or 0.12,
     tick_fx_scale = 1.05,
     tick_fx_time = 0.22,
     hit_fx_scale = 1.05,
     hit_fx_time = 0.24,
+    force_direction = direction,
   }, function(unit)
     damage_target(env, unit, amount, '物理', { scope = 'bond', key = '龙骑士' })
     damage_target(env, unit, amount, '法术', { scope = 'bond', key = '龙骑士' })
@@ -1538,6 +2045,7 @@ local function trigger_dragon_fireball_effect(env, runtime, target, effect_state
 end
 
 local BondModifierSpecialEffects = BondModifierSpecialEffectsFactory.create({
+  runtime_rules = BondEffectRuntimeRules,
   has_card_effect = has_card_effect,
   has_any_card_effect = has_any_card_effect,
   ensure_card_effect_state = ensure_card_effect_state,
@@ -1550,8 +2058,10 @@ local BondModifierSpecialEffects = BondModifierSpecialEffectsFactory.create({
   get_game_time = get_game_time,
   get_visual_config = get_visual_config,
   play_particle_on_unit = play_particle_on_unit,
+  play_particle_on_point = play_particle_on_point,
   play_lightning_strike = play_lightning_strike,
   launch_projectile_to_target = launch_projectile_to_target,
+  wait_seconds = wait_seconds,
   damage_target = damage_target,
   damage_area = damage_area,
   try_chance = try_chance,
@@ -1561,10 +2071,12 @@ local BondModifierSpecialEffects = BondModifierSpecialEffectsFactory.create({
   schedule_summon_lifecycle_fx = schedule_summon_lifecycle_fx,
   trigger_dragon_fireball_effect = trigger_dragon_fireball_effect,
   update_magic_swordsman_runtime_bonus = update_magic_swordsman_runtime_bonus,
+  sync_runtime_status_effect = sync_runtime_status_effect,
   has_active_modifier_bond = M.has_active_modifier_bond,
 })
 
 local BondModifierCoreEffects = BondModifierCoreEffectsFactory.create({
+  runtime_rules = BondEffectRuntimeRules,
   get_attack_value = get_attack_value,
   get_max_hp_value = get_max_hp_value,
   get_three_attr_value = get_three_attr_value,
@@ -1576,6 +2088,7 @@ local BondModifierCoreEffects = BondModifierCoreEffectsFactory.create({
   try_chance = try_chance,
   play_bond_sound = play_bond_sound,
   play_particle_on_unit = play_particle_on_unit,
+  play_particle_on_point = play_particle_on_point,
   play_impact_burst = play_impact_burst,
   play_lightning_strike = play_lightning_strike,
   launch_projectile_to_target = launch_projectile_to_target,
@@ -1587,6 +2100,7 @@ local BondModifierCoreEffects = BondModifierCoreEffectsFactory.create({
   damage_target = damage_target,
   damage_area = damage_area,
   update_magic_swordsman_runtime_bonus = update_magic_swordsman_runtime_bonus,
+  sync_runtime_status_effect = sync_runtime_status_effect,
 })
 
 function M.trigger_modifier_basic_attack_effect(env, runtime, bond_name, target)
@@ -1621,6 +2135,10 @@ end
 
 function M.handle_modifier_enemy_kill(env, runtime, info, get_cards_by_bond)
   return BondModifierSpecialEffects.handle_modifier_enemy_kill(env, runtime, info, get_cards_by_bond)
+end
+
+function M.clear_runtime_status_effects(runtime)
+  clear_all_runtime_status_effects(runtime)
 end
 
 function M.register_visual_override(bond_name, visual_opts)

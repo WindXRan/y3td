@@ -166,7 +166,7 @@ function M.create(config)
     daily_task_defs = {
       { key = 'clear_any_1', title = '首次通关任意难度', reward = '奖励：天赋点+500', target = 1 },
       { key = 'clear_any_3', title = '通关3次任意难度', reward = '奖励：强化石+3', target = 3 },
-      { key = 'online_60', title = '累计在线60分钟', reward = '奖励：宝物精华+30', target = 60 },
+      { key = 'online_60', title = '累计在线60分钟', reward = '奖励：木材+30', target = 60 },
       { key = 'online_120', title = '累计在线120分钟', reward = '奖励：泡点+300', target = 120 },
       { key = 'online_300', title = '累计在线300分钟', reward = '奖励：重铸石+3', target = 300 },
     },

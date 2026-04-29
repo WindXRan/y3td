@@ -128,6 +128,9 @@ function s.handle_enemy_kill(B)local J=aO()if not J or J.trigger_type~='enemy_ki
 local aR=math.max(1,h(J.trigger_value or 1))if N(J,1)>=aR and aL(J,{info=B,point=A(B)})then P(J)end end;
 function s.get_active_entry()local ah,H=G()return H end;
 function s.get_active_skill()local J=G()return J end;
+function s.force_cast_skill(skill_id,target,point)local J=b.by_id[tostring(skill_id or '')]if not J then return false,'未找到专精技能：'..tostring(skill_id)end;
+local ok=aL(J,{target=target,point=point})if not ok then return false,'专精技能触发失败：'..tostring(J.name or J.id)end;
+return true,'专精技能已触发：'..tostring(J.name or J.id)end;
 function s.get_roster()return a end;
 function s.get_skill_defs()return b end;
 return s end;

@@ -3,7 +3,6 @@ local M = {}
 function M.create(env)
   local STATE = env.STATE
   local y3 = env.y3
-  local message = env.message
   local is_battle_active = env.is_battle_active
   local get_hero_max_level = env.get_hero_max_level
   local sync_hero_progress_from_engine = env.sync_hero_progress_from_engine
@@ -16,25 +15,19 @@ function M.create(env)
   local start_current_task_challenge = env.start_current_task_challenge
   local try_start_challenge = env.try_start_challenge
   local try_evolution_entry = env.try_evolution_entry
-  local try_treasure_entry = env.try_treasure_entry
   local apply_round_choice = env.apply_round_choice
   local show_runtime_status = env.show_runtime_status
   local show_debug_hotkey_help = env.show_debug_hotkey_help
   local debug_actions_system = env.debug_actions_system
-  local debug_tools_system = env.debug_tools_system
   local gm_bond_effects_system = env.gm_bond_effects_system
   local toggle_talk_input = env.toggle_talk_input
   local toggle_inventory_panel = env.toggle_inventory_panel
   local open_save_panel = env.open_save_panel
   local try_upgrade_growth_weapon = env.try_upgrade_growth_weapon
   local use_attr_diamond = env.use_attr_diamond
+  local toggle_fixed_camera = env.toggle_fixed_camera
 
-  local function register_runtime_events()
-    if STATE.events_registered then
-      return
-    end
-    STATE.events_registered = true
-
+  local function register_level_sync_event()
     y3.game:event('单位-升级', function(_, data)
       if not is_battle_active() or data.unit ~= STATE.hero or not STATE.hero_progress then
         return
@@ -57,110 +50,80 @@ function M.create(env)
         try_queue_mark_node_for_level(current_level)
       end
     end)
-    y3.game:event('键盘-按下', 'F', function()
+  end
+
+  local function register_battle_hotkey(key_name, callback)
+    local key = y3.const.KeyboardKey[key_name]
+    if not key then
+      return
+    end
+    y3.game:event('键盘-按下', key, function()
       if not is_battle_active() then
         return
       end
+      callback()
+    end)
+  end
+
+  local function register_battle_hotkeys()
+    register_battle_hotkey('F', function()
       try_bond_draw()
     end)
-    y3.game:event('键盘-按下', 'I', function()
-      if not is_battle_active() then
-        return
-      end
+    register_battle_hotkey('I', function()
       show_bond_progress()
     end)
-    y3.game:event('键盘-按下', 'B', function()
-      if not is_battle_active() or not toggle_inventory_panel then
-        return
+    register_battle_hotkey('B', function()
+      if toggle_inventory_panel then
+        toggle_inventory_panel()
       end
-      toggle_inventory_panel()
     end)
-    y3.game:event('键盘-按下', 'P', function()
-      if not is_battle_active() or not open_save_panel then
-        return
+    register_battle_hotkey('P', function()
+      if open_save_panel then
+        open_save_panel()
       end
-      open_save_panel()
     end)
-    y3.game:event('键盘-按下', y3.const.KeyboardKey['TAB'], function()
-      if not is_battle_active() then
-        return
-      end
+    register_battle_hotkey('TAB', function()
       if show_runtime_attr_dialog then
         show_runtime_attr_dialog()
       end
     end)
-    y3.game:event('键盘-按下', 'T', function()
-      if not is_battle_active() then
-        return
-      end
+    register_battle_hotkey('T', function()
       if show_runtime_attr_dialog then
         show_runtime_attr_dialog()
       elseif show_runtime_attr_tip_panel then
         show_runtime_attr_tip_panel()
       end
     end)
-    y3.game:event('键盘-按下', 'C', function()
-      if not is_battle_active() then
-        return
-      end
+    register_battle_hotkey('C', function()
       if start_current_task_challenge then
         start_current_task_challenge()
       end
     end)
-    y3.game:event('键盘-按下', 'Q', function()
-      if not is_battle_active() then
-        return
-      end
+    register_battle_hotkey('Q', function()
       try_start_challenge('gold_trial')
     end)
-    y3.game:event('键盘-按下', 'W', function()
-      if not is_battle_active() then
-        return
-      end
+    register_battle_hotkey('W', function()
       try_start_challenge('wood_trial')
     end)
-    y3.game:event('键盘-按下', 'E', function()
-      if not is_battle_active() then
-        return
-      end
+    register_battle_hotkey('E', function()
       try_start_challenge('exp_trial')
     end)
-    y3.game:event('键盘-按下', 'R', function()
-      if not is_battle_active() then
-        return
+    register_battle_hotkey('H', function()
+      if try_evolution_entry then
+        try_evolution_entry()
       end
-      try_start_challenge('treasure_trial')
     end)
-    y3.game:event('键盘-按下', 'V', function()
-      if not is_battle_active() then
-        return
-      end
-      try_treasure_entry()
-    end)
-    y3.game:event('键盘-按下', 'H', function()
-      if not is_battle_active() or not try_evolution_entry then
-        return
-      end
-      try_evolution_entry()
-    end)
-    y3.game:event('键盘-按下', y3.const.KeyboardKey['ENTER'], function()
-      if not is_battle_active() or not toggle_talk_input then
-        return
-      end
-      toggle_talk_input()
-    end)
-    if y3.const.KeyboardKey['RETURN'] then
-      y3.game:event('键盘-按下', y3.const.KeyboardKey['RETURN'], function()
-        if not is_battle_active() or not toggle_talk_input then
-          return
-        end
+    register_battle_hotkey('ENTER', function()
+      if toggle_talk_input then
         toggle_talk_input()
-      end)
-    end
-    y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_1'], function()
-      if not is_battle_active() then
-        return
       end
+    end)
+    register_battle_hotkey('RETURN', function()
+      if toggle_talk_input then
+        toggle_talk_input()
+      end
+    end)
+    register_battle_hotkey('KEY_1', function()
       if apply_round_choice(1) then
         return
       end
@@ -171,33 +134,26 @@ function M.create(env)
         try_upgrade_growth_weapon('hotkey')
       end
     end)
-    y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_2'], function()
-      if not is_battle_active() then
-        return
-      end
+    register_battle_hotkey('KEY_2', function()
       apply_round_choice(2)
     end)
-    y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_3'], function()
-      if not is_battle_active() then
-        return
-      end
+    register_battle_hotkey('KEY_3', function()
       apply_round_choice(3)
     end)
-    if y3.const.KeyboardKey['KEY_4'] then
-      y3.game:event('键盘-按下', y3.const.KeyboardKey['KEY_4'], function()
-        if not is_battle_active() then
-          return
-        end
-        apply_round_choice(4)
-      end)
-    end
-    y3.game:event('键盘-按下', 'SPACE', function()
-      if not is_battle_active() then
-        return
-      end
+    register_battle_hotkey('KEY_4', function()
+      apply_round_choice(4)
+    end)
+    register_battle_hotkey('SPACE', function()
       show_runtime_status()
     end)
+    register_battle_hotkey('F12', function()
+      if toggle_fixed_camera then
+        toggle_fixed_camera()
+      end
+    end)
+  end
 
+  local function register_debug_hotkeys()
     if y3.game.is_debug_mode() then
       local function add_debug_ctrl_state(delta)
         STATE.debug_ctrl_down_count = math.max(0, (STATE.debug_ctrl_down_count or 0) + delta)
@@ -254,6 +210,17 @@ function M.create(env)
         end
       end)
     end
+  end
+
+  local function register_runtime_events()
+    if STATE.events_registered then
+      return
+    end
+    STATE.events_registered = true
+
+    register_level_sync_event()
+    register_battle_hotkeys()
+    register_debug_hotkeys()
   end
 
   return {

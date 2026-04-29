@@ -150,7 +150,7 @@
             "p_trigger_id": null, 
             "trigger_id": 305135618, 
             "trigger_name": "\u52a8\u4f5c", 
-            "valid": false, 
+            "valid": true, 
             "var_data": [
                 {}, 
                 {}, 
@@ -331,7 +331,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1647226881, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668", 
-            "valid": false, 
+            "valid": true, 
             "var_data": [
                 {}, 
                 {}, 

@@ -59,7 +59,7 @@ function M.create(env)
     {
       key = 'online_60',
       title = '累计在线60分钟',
-      reward = '奖励：宝物精华+30',
+      reward = '奖励：木材+30',
       target = 60,
     },
     {

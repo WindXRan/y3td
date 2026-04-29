@@ -235,7 +235,15 @@
             0
         ]
     }, 
-    "attached_passive_abilities": [], 
+    "attached_passive_abilities": {
+        "__tuple__": true, 
+        "items": [
+            [
+                134271296, 
+                1
+            ]
+        ]
+    }, 
     "attached_pene_mag": {
         "__tuple__": true, 
         "items": [
@@ -500,8 +508,8 @@
     "tags": {
         "__tuple__": true, 
         "items": [
-            "\u9632\u5fa1", 
-            "\u6c14\u8840"
+            "\u00e9\u0098\u00b2\u00e5\u00be\u00a1", 
+            "\u00e6\u00b0\u0094\u00e8\u00a1\u0080"
         ]
     }, 
     "uid": "134233763", 

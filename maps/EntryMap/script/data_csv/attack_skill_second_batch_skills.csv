@@ -1,0 +1,2 @@
+id,name,summary,damage_type,damage_form,element,damage_label,ui_icon,archetype,damage_ratio,cooldown,range,pierce,duration,radius,bounce
+sword_wave,剑气斩,向前方挥出剑气造成线性伤害。,物理,weapon,none,剑气,100508,直线穿透,2.20,6.5,900,3,0,0,0

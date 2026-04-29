@@ -1,0 +1,135 @@
+{
+    "_custom_": true, 
+    "_ref_": 134266804, 
+    "attach_model_list": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "cycle_time": 0.1, 
+    "description": -956415929, 
+    "disappear_when_dead": false, 
+    "get_effect_list": {
+        "__tuple__": true, 
+        "items": [
+            [
+                101927, 
+                [
+                    0.0, 
+                    0.0, 
+                    0.0
+                ], 
+                [
+                    0.0, 
+                    0.0, 
+                    0.0
+                ], 
+                [
+                    1.0, 
+                    1.0, 
+                    1.0
+                ], 
+                1.0, 
+                "origin", 
+                false, 
+                false, 
+                2, 
+                false
+            ], 
+            [
+                100511, 
+                [
+                    0.0, 
+                    0.8, 
+                    0.0
+                ], 
+                [
+                    0.0, 
+                    0.0, 
+                    0.0
+                ], 
+                [
+                    1.0, 
+                    1.0, 
+                    1.0
+                ], 
+                1.0, 
+                "origin", 
+                false, 
+                false, 
+                2, 
+                false
+            ], 
+            [
+                101360, 
+                [
+                    0.0, 
+                    0.2, 
+                    0.0
+                ], 
+                [
+                    0.0, 
+                    0.0, 
+                    0.0
+                ], 
+                [
+                    0.5, 
+                    0.5, 
+                    0.5
+                ], 
+                1.0, 
+                "origin", 
+                false, 
+                false, 
+                2, 
+                false
+            ]
+        ]
+    }, 
+    "halo_effect": 134270171, 
+    "ign_inf_unit_tag": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "ign_inf_unit_type": 2, 
+    "inf_unit_tag": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "influence_rng": 350.0, 
+    "is_influence_self": true, 
+    "key": 134266804, 
+    "kv": {}, 
+    "layer_change_of_cover": 1, 
+    "layer_max": 1, 
+    "lose_effect_list": [], 
+    "material_alpha": 0.1, 
+    "material_change": 10, 
+    "material_color": [
+        7, 
+        98, 
+        128
+    ], 
+    "material_color_intensity": 0.3, 
+    "modifier_cover_type": 1, 
+    "modifier_effect": 1, 
+    "modifier_icon": 134253037, 
+    "modifier_type": 2, 
+    "name": -1708175442, 
+    "same_origin_cover": true, 
+    "shield_change_of_cover": 2, 
+    "shield_type": 1, 
+    "shield_value": 0.0, 
+    "show_on_ui": false, 
+    "sound_event_list": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "suffix": "\u5149\u73af", 
+    "tags": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "target_allow": 4, 
+    "time_change_of_cover": 1, 
+    "uid": "134266804"
+}

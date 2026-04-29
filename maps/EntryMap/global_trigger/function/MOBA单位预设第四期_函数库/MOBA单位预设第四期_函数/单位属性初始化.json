@@ -1679,7 +1679,7 @@
     "p_trigger_id": null, 
     "trigger_id": 142713081, 
     "trigger_name": "单位属性初始化", 
-    "valid": false, 
+    "valid": true, 
     "var_data": [
         {
             "TABLE": {

@@ -1,0 +1,10 @@
+{
+    "custom": true, 
+    "effect_keep": true, 
+    "effect_max_life": -1, 
+    "effect_path": "Fx_Effect/Overseas/Fx_Skill/Ballistic/f26e1f4c-975f-4a80-8093-7523cc21335b", 
+    "is_beam_effect": false, 
+    "meshes": [], 
+    "model_id": 134233055, 
+    "name": "\u6c34\u7403_1"
+}

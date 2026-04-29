@@ -1,0 +1,16 @@
+key,value
+version,2026-04-23
+status,basic_attack_only
+note,二期攻击技能当前关闭，仅保留基础攻击链路。
+fixed_base_slot,普攻
+free_attack_skill_slots,0
+target_duration_minutes,30
+level_cap,60
+xp_curve,平滑
+first_legend_window,0
+card_notation,同技能三卡同桶顺序展示
+rarity_plan_common,0
+rarity_plan_excellent,0
+rarity_plan_rare,0
+rarity_plan_legendary,0
+atomicity,true

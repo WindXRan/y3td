@@ -6,7 +6,7 @@ assert(type(mod) == 'table', 'challenges object table should return a table')
 assert(type(mod.list) == 'table', 'mod.list should be a table')
 assert(type(mod.by_id) == 'table', 'mod.by_id should be a table')
 
-assert(#mod.list == 4, 'expected 4 challenges')
+assert(#mod.list == 3, 'expected 3 challenges')
 
 local gold_trial = mod.by_id.gold_trial
 assert(gold_trial, 'expected gold_trial to exist')
@@ -32,16 +32,6 @@ assert(exp_trial, 'expected exp_trial to exist')
 assert(exp_trial.recover_sec == 120, 'expected exp_trial recover_sec to match')
 assert(exp_trial.batches[1].count == 4, 'expected exp_trial batch count to match')
 
-local treasure_trial = mod.by_id.treasure_trial
-assert(treasure_trial, 'expected treasure_trial to exist')
-assert(treasure_trial.recover_sec == 150, 'expected treasure_trial recover_sec to match')
-assert(treasure_trial.reward.gold == 60, 'expected treasure_trial gold reward to match')
-assert(treasure_trial.reward.wood == 30, 'expected treasure_trial wood reward to match')
-assert(treasure_trial.kill_reward.gold == 8, 'expected treasure_trial kill reward gold to match')
-assert(treasure_trial.kill_reward.wood == 3, 'expected treasure_trial kill reward wood to match')
-assert(treasure_trial.boss_unit_id == 134228855, 'expected treasure_trial boss_unit_id to match')
-assert(treasure_trial.guard_unit_id == 134241735, 'expected treasure_trial guard_unit_id to match')
-assert(treasure_trial.unit_id == nil, 'expected treasure_trial unit_id to stay nil')
-assert(treasure_trial.batches[1].count == 1, 'expected treasure_trial batch count to match')
+assert(mod.by_id.treasure_trial == nil, 'expected treasure_trial to be removed')
 
 print('[OK] challenges csv loader smoke passed')

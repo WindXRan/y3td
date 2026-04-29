@@ -1,9 +1,10 @@
 {
     "describe": "", 
+    "import_export_folder_info": "/code_explorer_custom_root_folder_name/MOBA\u5355\u4f4d\u9884\u8bbe\u7b2c\u4e09\u671f", 
     "key": 134262729, 
-    "md5": "06ef77da3deb845778f5ee1aa6ea1d5c", 
+    "md5": "e913daa9aa93f178e6b0765e4bb4024f", 
     "name": "\u9738\u8c61\u5927\u738b", 
-    "path": "ui/134262729", 
+    "path": "ui/8a35557d-7b11-4c1c-ad04-5608b62aa633", 
     "res_type": "kkres", 
     "size": "256X256", 
     "sub_type": "icon", 

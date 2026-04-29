@@ -13,6 +13,28 @@ local BOND_GM_ACTIVATION_TAB = tostring(BOND_GM_TEXT.activation_tab or '羁绊�
 local BOND_GM_MODE_ACTIVATION = tostring(BOND_GM_TEXT.mode_activation or '羁绊技能')
 local BOND_GM_CMD_ACTIVATE_DESC = tostring(BOND_GM_TEXT.cmd_activate_desc or '立即激活指定羁绊技能：.egmbondeffect <羁绊名>')
 local BOND_GM_CMD_TEST_DESC = tostring(BOND_GM_TEXT.cmd_test_desc or '运行羁绊技能自动化自检：.egmbondtest')
+local SAMPLE_BOND_NAME_BY_ID = {
+  arrow_rain = '骤雨之幕',
+  blizzard = '极寒之域',
+  sky_thunder = '天罚雷陨',
+  line_lance = '贯日之枪',
+  meteor_grid = '陨星矩阵',
+  orbit_blade = '旋刃风暴',
+  chain_arc = '电弧传导',
+  fan_barrage = '扇幕压制',
+  burn_field = '炽焰禁区',
+  boomerang_blade = '折返刃道',
+  mark_execute = '裂隙处决',
+  sg_guanyu_qinglong = '关羽·青龙偃月',
+  sg_zhangfei_roar = '张飞·怒吼震地',
+  sg_zhaoyun_charge = '赵云·七进七出',
+  sg_zhuge_stars = '诸葛·七星借风',
+  sg_lvbu_cleave = '吕布·无双裂阵',
+  sf_line_pierce = '框架·直线穿透',
+  sf_area_burst = '框架·落点爆发',
+  sf_area_tick = '框架·持续领域',
+  sf_chain_bounce = '框架·连锁弹跳',
+}
 
 function M.create(env)
   local STATE = env.STATE
@@ -23,15 +45,45 @@ function M.create(env)
   local is_battle_active = env.is_battle_active
   local grant_modifier_card_effect = env.grant_modifier_card_effect
   local activate_modifier_bond_effect = env.activate_modifier_bond_effect
+  local activate_single_modifier_bond_effect = env.activate_single_modifier_bond_effect
+  local clear_active_modifier_bond_effects = env.clear_active_modifier_bond_effects
   local set_force_special_effects_100 = env.set_force_special_effects_100
   local is_force_special_effects_100 = env.is_force_special_effects_100
   local run_bond_self_test = env.run_bond_self_test
   local set_n0_activation_mode = env.set_n0_activation_mode
   local set_n0_single_bond_name = env.set_n0_single_bond_name
   local restart_n0_auto_acceptance = env.restart_n0_auto_acceptance
+  local list_sample_skills = env.list_sample_skills
+  local cast_sample_skill = env.cast_sample_skill
+  local cast_next_sample_skill = env.cast_next_sample_skill
+  local get_sample_skill_defs = env.get_sample_skill_defs
 
   local function trim(text)
     return tostring(text or ''):gsub('^%s+', ''):gsub('%s+$', '')
+  end
+
+  local function resolve_sample_bond_name(sample_id, sample_name, sample_desc)
+    local id = trim(sample_id)
+    local mapped = SAMPLE_BOND_NAME_BY_ID[id]
+    if mapped and mapped ~= '' then
+      return mapped
+    end
+
+    local name = trim(sample_name)
+    if name ~= '' then
+      return string.format('羁绊·%s', name)
+    end
+
+    local desc = trim(sample_desc)
+    if desc ~= '' then
+      local summary = desc:match('^(.-)[，。,；;]') or desc
+      summary = trim(summary)
+      if summary ~= '' then
+        return string.format('羁绊·%s', summary)
+      end
+    end
+
+    return string.format('羁绊·%s', id ~= '' and id or '未知样例')
   end
 
   local function is_alive(ui)
@@ -112,6 +164,12 @@ function M.create(env)
       else
         set_n0_single_bond_name('')
       end
+    end
+
+    if resolved_mode == 'single' and activate_single_modifier_bond_effect then
+      activate_single_modifier_bond_effect(resolved_bond_name, true)
+    elseif resolved_mode == 'none' and clear_active_modifier_bond_effects then
+      clear_active_modifier_bond_effects()
     end
 
     local restarted = false
@@ -217,7 +275,10 @@ function M.create(env)
   end
 
   local function get_selected_bond(ui)
-    local bonds = BondModifierPool.activation_effects or {}
+    local bonds = ui and ui.single_bond_entries or {}
+    if #bonds <= 0 then
+      return nil, 1
+    end
     local index = math.max(1, math.min(#bonds, ui.selected_bond_index or 1))
     ui.selected_bond_index = index
     return bonds[index], index
@@ -242,6 +303,26 @@ function M.create(env)
 
   local function execute_activate_bond(bond_name, grant_missing_cards)
     local ok, result = activate_modifier_bond_effect(bond_name, grant_missing_cards == true)
+    debug_message(result or '')
+    return ok == true
+  end
+
+  local function execute_cast_sample(sample_id)
+    if not cast_sample_skill then
+      debug_message('未注入 sample 技能施放回调。')
+      return false
+    end
+    local ok, result = cast_sample_skill(sample_id)
+    debug_message(result or '')
+    return ok == true
+  end
+
+  local function execute_cast_next_sample()
+    if not cast_next_sample_skill then
+      debug_message('未注入 sample 技能轮播施放回调。')
+      return false
+    end
+    local ok, result = cast_next_sample_skill()
     debug_message(result or '')
     return ok == true
   end
@@ -276,6 +357,24 @@ function M.create(env)
         }
       end
     end
+
+    local sample_defs = get_sample_skill_defs and get_sample_skill_defs() or nil
+    if type(sample_defs) == 'table' then
+      for _, def in ipairs(sample_defs) do
+        local sample_id = trim(def and def.id or '')
+        if sample_id ~= '' then
+          local sample_name = trim(def and def.name or sample_id)
+          local sample_desc = normalize_effect_text(def and def.desc or '')
+          local bond_name = resolve_sample_bond_name(sample_id, sample_name, sample_desc)
+          result[#result + 1] = {
+            kind = 'sample_bond',
+            sample_id = sample_id,
+            title = bond_name,
+            desc = sample_desc ~= '' and sample_desc or '无描述。',
+          }
+        end
+      end
+    end
     return result
   end
 
@@ -291,6 +390,54 @@ function M.create(env)
           bond_name = tostring(card.bond_name or ''),
           title = tostring(card.name or card.id),
           desc = special_text,
+        }
+      end
+    end
+    return result
+  end
+
+  local function build_sample_entries()
+    local result = {}
+    local defs = get_sample_skill_defs and get_sample_skill_defs() or nil
+    if type(defs) == 'table' then
+      for index, def in ipairs(defs) do
+        local sample_id = trim(def and def.id or '')
+        if sample_id ~= '' then
+          local sample_name = trim(def and def.name or sample_id)
+          local sample_desc = normalize_effect_text(def and def.desc or '')
+          local bond_name = resolve_sample_bond_name(sample_id, sample_name, sample_desc)
+          result[#result + 1] = {
+            kind = 'sample',
+            order = index,
+            sample_id = sample_id,
+            title = bond_name,
+            desc = sample_desc ~= '' and sample_desc or '无描述。',
+          }
+        end
+      end
+    end
+    if #result > 0 then
+      return result
+    end
+
+    local lines = list_sample_skills and list_sample_skills() or nil
+    if type(lines) ~= 'table' then
+      return result
+    end
+
+    for index, line in ipairs(lines) do
+      local raw = tostring(line or '')
+      local sample_id = trim(raw:match('^%d+%)%s*([^|]+)') or '')
+      if sample_id ~= '' then
+        local sample_name = trim(raw:match('^%d+%)%s*[^|]+|%s*([^|]+)') or sample_id)
+        local sample_desc = normalize_effect_text(raw:match('^%d+%)%s*[^|]+|%s*[^|]+|%s*(.+)$') or '')
+        local bond_name = resolve_sample_bond_name(sample_id, sample_name, sample_desc)
+        result[#result + 1] = {
+          kind = 'sample',
+          order = index,
+          sample_id = sample_id,
+          title = bond_name,
+          desc = sample_desc ~= '' and sample_desc or '无描述。',
         }
       end
     end
@@ -324,6 +471,22 @@ function M.create(env)
   local function build_status_text(ui)
     local runtime = get_runtime()
     local selected_bond = get_selected_bond(ui)
+    if selected_bond and selected_bond.kind == 'sample_bond' then
+      local lines = {
+        string.format('羁绊：%s', tostring(selected_bond.title or 'Sample羁绊')),
+        string.format(BOND_GM_STATUS_TEMPLATE, '可直接施放'),
+        string.format('SampleID：%s', tostring(selected_bond.sample_id or '')),
+        string.format('特殊效果100%%触发：%s', is_force_special_effects_100 and is_force_special_effects_100() and '开启' or '关闭'),
+        '单卡：无（Sample羁绊不使用单卡）',
+      }
+      if selected_bond.desc and selected_bond.desc ~= '' then
+        lines[#lines + 1] = '羁绊说明：'
+        for row in tostring(selected_bond.desc):gmatch('[^\n]+') do
+          lines[#lines + 1] = row
+        end
+      end
+      return table.concat(lines, '\n')
+    end
     local bond_name = selected_bond and selected_bond.bond_name or ''
     local cards = get_cards_by_bond(bond_name)
     local owned = count_owned_cards(runtime, bond_name)
@@ -367,6 +530,11 @@ function M.create(env)
   end
 
   local function format_bond_button_text(ui, effect)
+    if effect and effect.kind == 'sample_bond' then
+      local selected = effect == select(1, get_selected_bond(ui))
+      local prefix = selected and '>' or ' '
+      return string.format('%s%s [Sample]', prefix, tostring(effect.title or effect.sample_id or 'Sample羁绊'))
+    end
     local runtime = get_runtime()
     local owned = count_owned_cards(runtime, effect.bond_name)
     local need = get_required_cards(effect.bond_name)
@@ -409,6 +577,8 @@ function M.create(env)
       encyclopedia_rows = {},
       encyclopedia_activation_entries = build_activation_entries(),
       encyclopedia_special_entries = build_special_entries(),
+      encyclopedia_sample_entries = build_sample_entries(),
+      single_bond_entries = build_activation_entries(),
     }
     STATE.gm_bond_ui = ui
 
@@ -445,23 +615,33 @@ function M.create(env)
     create_rect(panel, 16, 504, 948, 42, { 20, 38, 58, 230 })
     create_text(panel, '羁绊 / 特殊效果 GM', 30, 512, 250, 28, 23, { 245, 248, 255, 255 })
     create_text(panel, BOND_GM_PANEL_INTRO, 300, 514, 640, 22, 14, { 160, 186, 214, 255 })
+    create_button(panel, 'Samples大全', 816, 508, 134, 30, function()
+      ui.encyclopedia_mode = 'sample'
+      ui.encyclopedia_visible = true
+      ui.encyclopedia_page = 1
+      ui.encyclopedia_sample_entries = build_sample_entries()
+    end, { 56, 86, 126, 235 })
 
     create_rect(panel, 16, 282, 450, 212, { 14, 27, 42, 235 })
-    create_text(panel, '单羁绊按钮（点击直达）', 28, 468, 300, 22, 17, { 245, 248, 255, 255 })
-    for i = 1, 16 do
-      local row = math.floor((i - 1) / 2)
-      local col = (i - 1) % 2
+    create_text(panel, '单羁绊按钮（全量直达）', 28, 468, 300, 22, 17, { 245, 248, 255, 255 })
+    for i = 1, 44 do
+      local row = math.floor((i - 1) / 4)
+      local col = (i - 1) % 4
       ui.bond_buttons[i] = create_button(
         panel,
         '',
-        24 + col * 218,
-        434 - row * 30,
-        206,
-        26,
+        24 + col * 106,
+        444 - row * 18,
+        100,
+        16,
         function()
           ui.selected_bond_index = i
-          local bonds = BondModifierPool.activation_effects or {}
+          local bonds = ui.single_bond_entries or {}
           local effect = bonds[i]
+          if effect and effect.kind == 'sample_bond' then
+            execute_cast_sample(effect.sample_id)
+            return
+          end
           local bond_name = trim(effect and effect.bond_name or '')
           if bond_name ~= '' then
             apply_n0_mode('single', bond_name)
@@ -485,7 +665,7 @@ function M.create(env)
         26,
         function()
           local bond = select(1, get_selected_bond(ui))
-          if not bond then
+          if not bond or bond.kind == 'sample_bond' then
             return
           end
           ui.selected_card_index_by_bond[bond.bond_name] = i
@@ -499,6 +679,10 @@ function M.create(env)
 
     create_button(panel, '获得选中单卡特殊效果', 672, 206, 278, 40, function()
       local bond = select(1, get_selected_bond(ui))
+      if bond and bond.kind == 'sample_bond' then
+        debug_message('当前是 Sample羁绊，请使用“激活选中羁绊技能”直接施放。')
+        return
+      end
       local card = bond and select(1, get_selected_card(ui, bond.bond_name)) or nil
       if not card then
         debug_message('当前羁绊无可用单卡。')
@@ -513,6 +697,10 @@ function M.create(env)
         debug_message('请先选择羁绊。')
         return
       end
+      if bond.kind == 'sample_bond' then
+        execute_cast_sample(bond.sample_id)
+        return
+      end
       execute_activate_bond(bond.bond_name, true)
     end, { 82, 118, 86, 235 })
 
@@ -520,6 +708,10 @@ function M.create(env)
       local bond = select(1, get_selected_bond(ui))
       if not bond then
         debug_message('请先选择羁绊。')
+        return
+      end
+      if bond.kind == 'sample_bond' then
+        execute_cast_sample(bond.sample_id)
         return
       end
       execute_activate_bond(bond.bond_name, false)
@@ -577,6 +769,18 @@ function M.create(env)
       ui.encyclopedia_mode = 'special'
       ui.encyclopedia_page = 1
     end, { 52, 90, 132, 235 })
+    create_button(encyclopedia_panel, 'Sample技能', 360, 544, 130, 34, function()
+      ui.encyclopedia_mode = 'sample'
+      ui.encyclopedia_page = 1
+      ui.encyclopedia_sample_entries = build_sample_entries()
+    end, { 52, 90, 132, 235 })
+    create_button(encyclopedia_panel, '刷新Samples', 500, 544, 120, 34, function()
+      ui.encyclopedia_sample_entries = build_sample_entries()
+      debug_message(string.format('Sample 技能条目：%d', #ui.encyclopedia_sample_entries))
+    end, { 72, 86, 120, 235 })
+    create_button(encyclopedia_panel, '施放下一个', 628, 544, 108, 34, function()
+      execute_cast_next_sample()
+    end, { 72, 86, 120, 235 })
     create_button(encyclopedia_panel, '上一页', 744, 544, 96, 34, function()
       ui.encyclopedia_page = math.max(1, (ui.encyclopedia_page or 1) - 1)
     end, { 72, 86, 120, 235 })
@@ -617,7 +821,13 @@ function M.create(env)
           return
         end
         if row.mode == 'activation' then
-          execute_activate_bond(row.entry.bond_name, true)
+          if row.entry.kind == 'sample_bond' then
+            execute_cast_sample(row.entry.sample_id)
+          else
+            execute_activate_bond(row.entry.bond_name, true)
+          end
+        elseif row.mode == 'sample' then
+          execute_cast_sample(row.entry.sample_id)
         else
           execute_grant_card(row.entry.card_id)
         end
@@ -718,7 +928,8 @@ function M.create(env)
     set_visible(ui.panel, show_main)
     set_intercepts(ui.panel, show_main)
 
-    local bonds = BondModifierPool.activation_effects or {}
+    ui.single_bond_entries = build_activation_entries()
+    local bonds = ui.single_bond_entries or {}
     local selected_bond = select(1, get_selected_bond(ui))
     for i, button in ipairs(ui.bond_buttons) do
       local effect = bonds[i]
@@ -774,14 +985,25 @@ function M.create(env)
     end
 
     local runtime = get_runtime()
-    local entries = ui.encyclopedia_mode == 'activation'
-      and (ui.encyclopedia_activation_entries or {})
-      or (ui.encyclopedia_special_entries or {})
+    local entries = {}
+    if ui.encyclopedia_mode == 'activation' then
+      entries = ui.encyclopedia_activation_entries or {}
+    elseif ui.encyclopedia_mode == 'sample' then
+      ui.encyclopedia_sample_entries = build_sample_entries()
+      entries = ui.encyclopedia_sample_entries or {}
+    else
+      entries = ui.encyclopedia_special_entries or {}
+    end
     local page_size = #ui.encyclopedia_rows
     local total_pages = math.max(1, math.ceil(#entries / math.max(1, page_size)))
     ui.encyclopedia_page = math.max(1, math.min(total_pages, ui.encyclopedia_page or 1))
     local start_index = (ui.encyclopedia_page - 1) * page_size
-    local mode_text = ui.encyclopedia_mode == 'activation' and BOND_GM_MODE_ACTIVATION or '单卡特殊效果'
+    local mode_text = BOND_GM_MODE_ACTIVATION
+    if ui.encyclopedia_mode == 'sample' then
+      mode_text = 'Sample技能'
+    elseif ui.encyclopedia_mode ~= 'activation' then
+      mode_text = '单卡特殊效果'
+    end
     set_text(ui.encyclopedia_info_text, string.format('%s | 第 %d/%d 页 | 共 %d 条', mode_text, ui.encyclopedia_page, total_pages, #entries))
     local detail_entry = nil
 
@@ -796,10 +1018,18 @@ function M.create(env)
         row_ui.entry = entry
         row_ui.mode = ui.encyclopedia_mode
         if ui.encyclopedia_mode == 'activation' then
-          local effect_id = 'initial_bond_set_' .. tostring(entry.bond_name or '')
-          local active = runtime and runtime.modifier_pool_active_effects and runtime.modifier_pool_active_effects[effect_id] == true
-          set_text(row_ui.title, string.format('%s [%s]', tostring(entry.title or ''), active and '已激活' or '未激活'))
-          set_text(row_ui.action, active and '已激活' or '一键激活')
+          if entry.kind == 'sample_bond' then
+            set_text(row_ui.title, string.format('%s [%s]', tostring(entry.title or ''), tostring(entry.sample_id or '')))
+            set_text(row_ui.action, '立即施放')
+          else
+            local effect_id = 'initial_bond_set_' .. tostring(entry.bond_name or '')
+            local active = runtime and runtime.modifier_pool_active_effects and runtime.modifier_pool_active_effects[effect_id] == true
+            set_text(row_ui.title, string.format('%s [%s]', tostring(entry.title or ''), active and '已激活' or '未激活'))
+            set_text(row_ui.action, active and '已激活' or '一键激活')
+          end
+        elseif ui.encyclopedia_mode == 'sample' then
+          set_text(row_ui.title, string.format('%s [%s]', tostring(entry.title or ''), tostring(entry.sample_id or '')))
+          set_text(row_ui.action, '立即施放')
         else
           local has_special = runtime and runtime.modifier_card_effect_ids and runtime.modifier_card_effect_ids[entry.card_id] == true
           set_text(row_ui.title, string.format('%s [%s]', tostring(entry.title or ''), has_special and '已获得' or '未获得'))

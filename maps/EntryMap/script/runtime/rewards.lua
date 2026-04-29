@@ -21,6 +21,9 @@ local MARK_QUALITY_LABELS = {
   epic = '史诗',
 }
 
+-- 宝物系统已下线：保留接口做兼容，运行时不再发放/生效宝物。
+local TREASURE_SYSTEM_ENABLED = false
+
 local TREASURE_DEF_LIST = TreasureObjects.list
 local TREASURE_DEFS = TreasureObjects.by_id
 local EVOLUTION_DEF_LIST = EvolutionObjects.list
@@ -147,7 +150,8 @@ function M.create(env)
   local resolve_treasure_pick
 
   function api.create_treasure_runtime()
-    return {
+    local runtime = {
+      disabled = TREASURE_SYSTEM_ENABLED ~= true,
       active_slots = {
         [1] = nil,
         [2] = nil,
@@ -177,6 +181,7 @@ function M.create(env)
         attack_skill = {},
       },
     }
+    return runtime
   end
 
   function api.create_evolution_runtime()
@@ -207,7 +212,43 @@ function M.create(env)
     if not STATE.treasure_runtime then
       STATE.treasure_runtime = api.create_treasure_runtime()
     end
-    return STATE.treasure_runtime
+    local runtime = STATE.treasure_runtime
+
+    runtime.active_slots = runtime.active_slots or { [1] = nil, [2] = nil, [3] = nil }
+    runtime.temporary_buffs = runtime.temporary_buffs or { next_runtime_id = 1, active = {} }
+    runtime.temporary_buffs.active = runtime.temporary_buffs.active or {}
+    runtime.applied = runtime.applied or {}
+    runtime.applied.attr = runtime.applied.attr or {}
+    runtime.applied.runtime = runtime.applied.runtime or {}
+    runtime.applied.skill_runtime = runtime.applied.skill_runtime or {}
+    runtime.applied.reward_ratio = runtime.applied.reward_ratio or {}
+    runtime.applied.passive_income = runtime.applied.passive_income or {}
+    runtime.applied.attack_skill = runtime.applied.attack_skill or {}
+
+    if TREASURE_SYSTEM_ENABLED ~= true then
+      runtime.disabled = true
+      runtime.awaiting_choice = false
+      runtime.awaiting_replace = false
+      runtime.current_round = nil
+      runtime.current_choices = nil
+      runtime.pending_replace_choice = nil
+      runtime.pending_bonus_refreshes = 0
+      runtime.active_slots[1] = nil
+      runtime.active_slots[2] = nil
+      runtime.active_slots[3] = nil
+      runtime.active_by_id = {}
+      runtime.acquired_treasure_ids = {}
+      runtime.discarded_treasure_ids = {}
+      runtime.temporary_buffs.active = {}
+      runtime.applied.attr = {}
+      runtime.applied.runtime = {}
+      runtime.applied.skill_runtime = {}
+      runtime.applied.reward_ratio = {}
+      runtime.applied.passive_income = {}
+      runtime.applied.attack_skill = {}
+    end
+
+    return runtime
   end
 
   function api.get_evolution_runtime()
@@ -268,6 +309,9 @@ function M.create(env)
 
   function api.get_treasure_active_count()
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return 0
+    end
     local count = 0
     for slot = 1, 3, 1 do
       if runtime.active_slots[slot] then
@@ -786,16 +830,25 @@ function M.create(env)
 
   function api.get_treasure_reward_ratio(key)
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return 0
+    end
     return runtime.applied.reward_ratio[key] or 0
   end
 
   function api.get_treasure_passive_income(key)
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return 0
+    end
     return runtime.applied.passive_income[key] or 0
   end
 
   function api.get_treasure_runtime_bonus(key)
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return 0
+    end
     return runtime.applied.runtime[key] or 0
   end
 
@@ -1190,6 +1243,10 @@ function M.create(env)
 
   function api.show_treasure_loadout()
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      message('宝物功能已下线。')
+      return
+    end
     message('宝物栏：')
     for slot = 1, 3, 1 do
       message(api.build_treasure_slot_text(slot))
@@ -1269,6 +1326,10 @@ function M.create(env)
     end
 
     if next_entry.kind == 'treasure_choice' then
+      if runtime.disabled then
+        message('宝物功能已下线，已跳过该奖励。')
+        return true
+      end
       local choices = api.pick_treasure_choices(3)
       if #choices == 0 then
         message('本局可用宝物已经抽空，本次不再生成新的宝物候选。')
@@ -1349,6 +1410,9 @@ function M.create(env)
 
   function api.show_treasure_choices()
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return
+    end
 
     if runtime.awaiting_replace and runtime.pending_replace_choice then
       local def = runtime.pending_replace_choice
@@ -1379,6 +1443,9 @@ function M.create(env)
 
   function api.refresh_treasure_choices()
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return false
+    end
 
     if runtime.awaiting_replace and runtime.pending_replace_choice then
       message('当前已选中新的宝物，请先指定要替换的宝物位。')
@@ -1431,6 +1498,9 @@ function M.create(env)
 
   function api.apply_treasure_choice(index)
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return
+    end
 
     if runtime.awaiting_replace and runtime.pending_replace_choice then
       if not runtime.active_slots[index] then
@@ -1552,6 +1622,9 @@ function M.create(env)
 
   function api.update_temporary_treasures(dt)
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return
+    end
     local dirty = false
     for _, entry in ipairs(runtime.temporary_buffs.active) do
       if entry.active and entry.duration_type == 'timed' and entry.remaining_time then
@@ -1577,6 +1650,10 @@ function M.create(env)
   end
 
   function api.handle_wave_started(wave_index)
+    local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return
+    end
     remove_expired_temporary_buffs(function(entry)
       return entry.duration_type == 'wave'
         and entry.expires_on_wave ~= nil
@@ -1586,6 +1663,9 @@ function M.create(env)
 
   function api.handle_boss_spawned()
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return
+    end
     for _, entry in ipairs(runtime.temporary_buffs.active) do
       if entry.armed_for_boss then
         entry.armed_for_boss = false
@@ -1598,6 +1678,9 @@ function M.create(env)
 
   function api.handle_challenge_started(instance)
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return
+    end
     for _, entry in ipairs(runtime.temporary_buffs.active) do
       if entry.armed_for_challenge then
         entry.armed_for_challenge = false
@@ -1610,6 +1693,9 @@ function M.create(env)
 
   function api.handle_challenge_finished(instance, is_success)
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return
+    end
     for _, entry in ipairs(runtime.temporary_buffs.active) do
       if entry.duration_type == 'next_challenge' and entry.challenge_instance_id == instance.id then
         if is_success and (entry.pending_bonus_refreshes or 0) > 0 then
@@ -1625,6 +1711,9 @@ function M.create(env)
 
   function api.handle_hero_be_hurt()
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return
+    end
     local max_hp = 0
     local before_hp = STATE.hero and STATE.hero:is_exist() and STATE.hero:get_hp() or 0
     if STATE.hero and STATE.hero:is_exist() then
@@ -1662,6 +1751,10 @@ function M.create(env)
   end
 
   function api.debug_grant_treasure(treasure_id, replace_slot)
+    local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return false, '宝物功能已下线。'
+    end
     local def = TREASURE_DEFS[treasure_id]
     if not def then
       return false, '未知宝物。'
@@ -1678,6 +1771,9 @@ function M.create(env)
 
   function api.debug_dump_temporary_treasures()
     local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return {}
+    end
     local lines = {}
     for _, entry in ipairs(runtime.temporary_buffs.active) do
       lines[#lines + 1] = build_temporary_treasure_text(entry)
@@ -1686,6 +1782,10 @@ function M.create(env)
   end
 
   function api.queue_treasure_round(source_type, source_name)
+    local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return false
+    end
     local entry = enqueue_reward_entry({
       kind = 'treasure_choice',
       priority = 90,
@@ -1693,7 +1793,6 @@ function M.create(env)
       source_name = source_name,
     })
 
-    local runtime = api.get_treasure_runtime()
     if runtime.awaiting_choice or runtime.awaiting_replace then
       message('新的宝物候选已加入待处理队列。')
       return
@@ -1761,7 +1860,10 @@ function M.create(env)
   api.try_queue_mark_node_for_level = api.try_queue_evolution_node_for_level
 
   function api.has_pending_treasure_choice()
-    local runtime = STATE.treasure_runtime
+    local runtime = api.get_treasure_runtime()
+    if runtime.disabled then
+      return false
+    end
     return runtime
       and (runtime.awaiting_choice == true or runtime.awaiting_replace == true)
       and true

@@ -11,6 +11,8 @@ function M.create(env)
   local get_enemy_player = env.get_enemy_player
   local has_unit_data = env.has_unit_data
   local activate_modifier_bond_effect = env.activate_modifier_bond_effect
+  local activate_single_modifier_bond_effect = env.activate_single_modifier_bond_effect
+  local clear_active_modifier_bond_effects = env.clear_active_modifier_bond_effects
   local set_force_special_effects_100 = env.set_force_special_effects_100
   local run_bond_self_test = env.run_bond_self_test
   local get_game_time = env.get_game_time
@@ -57,9 +59,12 @@ function M.create(env)
       spawned = false,
       dummy_unit_id = nil,
       units = {},
+      unit_slots = {},
       target_hp = 9999999999,
       spawn_count = 10,
       spawn_radius = 520,
+      spawn_front_distance = 760,
+      spawn_row_spacing = 170,
       activation_report = nil,
       run_id = 0,
       log_file_path = nil,
@@ -178,6 +183,30 @@ function M.create(env)
     return by_source[to_metric_key(scope, key)]
   end
 
+  local BOND_DPS_LIMITS = {
+    ['刀锋战士'] = { min = 0, max = 900 },
+    ['全能骑士'] = { min = 0, max = 900 },
+    ['龙骑士'] = { min = 20, max = 1200 },
+    ['枪炮师'] = { min = 20, max = 1000 },
+    ['冰霜法师'] = { min = 20, max = 1000 },
+    ['雷电法王'] = { min = 20, max = 1200 },
+    ['火法师'] = { min = 20, max = 900 },
+    ['战斗法师'] = { min = 20, max = 1100 },
+    ['战法法师'] = { min = 20, max = 1100 },
+    ['游侠'] = { min = 20, max = 1000 },
+    ['神射手'] = { min = 20, max = 900 },
+    ['剑宗'] = { min = 20, max = 1200 },
+    ['剑魂'] = { min = 20, max = 900 },
+    ['狂战士'] = { min = 20, max = 1100 },
+    ['魔剑士'] = { min = 20, max = 1100 },
+    ['猎人'] = { min = 0, max = 900 },
+    ['骷髅法师'] = { min = 0, max = 900 },
+  }
+  local PASSIVE_BONDS_ALLOW_ZERO = {
+    ['刀锋战士'] = true,
+    ['全能骑士'] = true,
+  }
+
   local function emit_skill_audit(runtime, force)
     if not runtime or not runtime.phase_started then
       return
@@ -213,19 +242,52 @@ function M.create(env)
     message('[auto_acceptance][SKILL_AUDIT_END]')
 
     if runtime.skill_audit and runtime.skill_audit.evaluated ~= true and elapsed >= 8 and #rows > 0 then
-      local required_bonds = { '龙骑士', '枪炮师', '冰霜法师', '雷电法王' }
+      local required_bonds = {}
+      local activation = runtime.activation_report and runtime.activation_report.activation or nil
+      if activation and type(activation.activated_bonds) == 'table' then
+        for _, bond_name in ipairs(activation.activated_bonds) do
+          bond_name = trim_text(bond_name)
+          if bond_name ~= '' then
+            required_bonds[#required_bonds + 1] = bond_name
+          end
+        end
+      end
+      if #required_bonds <= 0 then
+        required_bonds = { '龙骑士', '枪炮师', '冰霜法师', '雷电法王' }
+      end
+      message(string.format(
+        '[auto_acceptance][SKILL_AUDIT_REQUIRED_BONDS] %s',
+        table.concat(required_bonds, '|')
+      ))
       local fail_count = 0
       local pass_count = 0
       for _, bond_name in ipairs(required_bonds) do
         local row = find_bucket(runtime, 'bond', bond_name)
         local hits = tonumber(row and row.hits) or 0
         local damage = tonumber(row and row.total_damage) or 0
-        if hits <= 0 or damage <= 0 then
+        local dps = elapsed > 0 and (damage / elapsed) or 0
+        local limit = BOND_DPS_LIMITS[bond_name]
+        local min_dps = limit and tonumber(limit.min) or 0
+        local max_dps = limit and tonumber(limit.max) or 999999
+        local passive_allow_zero = PASSIVE_BONDS_ALLOW_ZERO[bond_name] == true
+        if (hits <= 0 or damage <= 0) and passive_allow_zero then
+          pass_count = pass_count + 1
+          message(string.format('[auto_acceptance][PASS][SKILL] %s 被动羁绊允许0伤害命中', bond_name))
+        elseif hits <= 0 or damage <= 0 then
           fail_count = fail_count + 1
           message(string.format('[auto_acceptance][FAIL][SKILL] %s 命中或伤害为0 hit=%d dmg=%.0f', bond_name, hits, damage))
+        elseif dps < min_dps or dps > max_dps then
+          fail_count = fail_count + 1
+          message(string.format(
+            '[auto_acceptance][FAIL][BALANCE] %s dps=%.1f 超出区间[%.1f, %.1f]',
+            bond_name,
+            dps,
+            min_dps,
+            max_dps
+          ))
         else
           pass_count = pass_count + 1
-          message(string.format('[auto_acceptance][PASS][SKILL] %s hit=%d dmg=%.0f', bond_name, hits, damage))
+          message(string.format('[auto_acceptance][PASS][SKILL] %s hit=%d dmg=%.0f dps=%.1f', bond_name, hits, damage, dps))
         end
       end
       message(string.format('[auto_acceptance][SKILL_AUDIT_SUMMARY] pass=%d fail=%d', pass_count, fail_count))
@@ -260,6 +322,7 @@ function M.create(env)
       end
     end
     runtime.units = {}
+    runtime.unit_slots = {}
     runtime.spawned = false
   end
 
@@ -327,6 +390,41 @@ function M.create(env)
     local fail_count = 0
     local activated_bonds = {}
     local mode, bond_names = resolve_n0_activation_plan(runtime)
+    if clear_active_modifier_bond_effects then
+      local clear_ok = clear_active_modifier_bond_effects()
+      if clear_ok ~= true then
+        fail_count = fail_count + 1
+        message('[auto_acceptance][WARN] 清空已激活羁绊失败，可能存在残留效果。')
+      end
+    end
+    if mode == 'none' then
+      ok_count = ok_count + 1
+      return {
+        ok = ok_count,
+        fail = fail_count,
+        mode = mode,
+        activated_bonds = activated_bonds,
+      }
+    end
+    if mode == 'single' and #bond_names > 0 and activate_single_modifier_bond_effect then
+      local bond_name = tostring(bond_names[1] or '')
+      if bond_name ~= '' then
+        local ok = activate_single_modifier_bond_effect(bond_name, true)
+        if ok == true then
+          ok_count = 1
+          activated_bonds[#activated_bonds + 1] = bond_name
+        else
+          fail_count = 1
+          message(string.format('[auto_acceptance][FAIL] 羁绊单激活失败：%s', bond_name))
+        end
+      end
+      return {
+        ok = ok_count,
+        fail = fail_count,
+        mode = mode,
+        activated_bonds = activated_bonds,
+      }
+    end
     for _, bond_name in ipairs(bond_names or {}) do
       bond_name = tostring(bond_name or '')
       if bond_name ~= '' then
@@ -352,7 +450,7 @@ function M.create(env)
     ['火法师'] = 5,
     ['冰霜法师'] = 5,
     ['寒冰法师'] = 5,
-    ['雷电法王'] = 1,
+    ['雷电法王'] = 1.2,
     ['猎人'] = 30,
     ['骷髅法师'] = 30,
   }
@@ -409,12 +507,10 @@ function M.create(env)
     end
     runtime.dummy_unit_id = unit_id
 
-    local center = nil
-    if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and STATE.hero.get_point then
+    -- N0 靶子位置固定：优先防线点，不使用英雄实时位置，避免随技能漂移。
+    local center = STATE.defense_point
+    if not center and STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and STATE.hero.get_point then
       center = STATE.hero:get_point()
-    end
-    if not center and STATE.defense_point then
-      center = STATE.defense_point
     end
     if not center then
       return false
@@ -422,14 +518,20 @@ function M.create(env)
 
     clear_runtime_units(runtime)
     local count = math.max(1, tonumber(runtime.spawn_count) or 10)
-    local radius = math.max(180, tonumber(runtime.spawn_radius) or 520)
+    local front_distance = math.max(320, tonumber(runtime.spawn_front_distance) or tonumber(runtime.spawn_radius) or 760)
+    local row_spacing = math.max(80, tonumber(runtime.spawn_row_spacing) or 170)
+    -- 固定朝向：沿 +X 轴前方摆放，确保不同技能不会改变靶子阵列方向。
+    local forward = 0
+    local side = forward + math.pi * 0.5
+    local cx = center.get_x and center:get_x() or 0
+    local cy = center.get_y and center:get_y() or 0
+    local cz = center.get_z and center:get_z() or 0
+    local front_x = cx + math.cos(forward) * front_distance
+    local front_y = cy + math.sin(forward) * front_distance
     for i = 1, count do
-      local angle = (math.pi * 2) * (i - 1) / count
-      local cx = center.get_x and center:get_x() or 0
-      local cy = center.get_y and center:get_y() or 0
-      local cz = center.get_z and center:get_z() or 0
-      local x = cx + math.cos(angle) * radius
-      local y = cy + math.sin(angle) * radius
+      local lateral = (i - (count + 1) * 0.5) * row_spacing
+      local x = front_x + math.cos(side) * lateral
+      local y = front_y + math.sin(side) * lateral
       local point = y3.point.create(x, y, cz)
       local ok, unit = pcall(y3.unit.create_unit, enemy_player, unit_id, point, 180)
       if ok and unit and unit.is_exist and unit:is_exist() then
@@ -445,6 +547,7 @@ function M.create(env)
           end)
         end
         runtime.units[#runtime.units + 1] = unit
+        runtime.unit_slots[#runtime.units] = { x = x, y = y, z = cz or 0 }
       end
     end
     runtime.spawned = #runtime.units > 0
@@ -454,16 +557,53 @@ function M.create(env)
     return runtime.spawned
   end
 
+  local function is_dummy_unit(runtime, unit)
+    for _, dummy in ipairs(runtime.units or {}) do
+      if dummy == unit then
+        return true
+      end
+    end
+    return false
+  end
+
+  local function purge_non_dummy_enemies(runtime)
+    if not STATE or not STATE.all_enemies or not STATE.all_enemies.pick then
+      return
+    end
+    for _, unit in ipairs(STATE.all_enemies:pick() or {}) do
+      if unit and unit.is_exist and unit:is_exist() and (not is_dummy_unit(runtime, unit)) then
+        pcall(function()
+          if unit.set_hp then
+            unit:set_hp(0)
+          elseif unit.kill then
+            unit:kill()
+          elseif unit.remove then
+            unit:remove()
+          end
+        end)
+      end
+    end
+  end
+
   local function sustain_dummy_targets(runtime)
     for index = #runtime.units, 1, -1 do
       local unit = runtime.units[index]
       if not unit or not unit.is_exist or not unit:is_exist() then
         table.remove(runtime.units, index)
+        table.remove(runtime.unit_slots, index)
       else
         pcall(function()
           unit:set_attr('生命', runtime.target_hp)
           unit:set_attr('最大生命', runtime.target_hp)
           unit:set_hp(runtime.target_hp)
+          -- 强制靶子回到固定槽位，避免受击退/寻路导致漂移。
+          local slot = runtime.unit_slots and runtime.unit_slots[index] or nil
+          if slot and y3 and y3.point and y3.point.create and unit.set_point then
+            unit:set_point(y3.point.create(slot.x, slot.y, slot.z or 0))
+          end
+          if unit.stop then
+            unit:stop()
+          end
         end)
       end
     end
@@ -599,6 +739,8 @@ function M.create(env)
     if not runtime.spawned then
       spawn_dummy_targets(runtime)
     end
+    -- N0 禁止刷怪：除验收靶子外，其它敌人全部清除。
+    purge_non_dummy_enemies(runtime)
     sustain_dummy_targets(runtime)
     emit_skill_audit(runtime, false)
   end
@@ -649,10 +791,38 @@ function M.create(env)
     set_activation_mode = function(mode)
       local runtime = ensure_runtime()
       runtime.activation_mode_override = normalize_activation_mode(mode)
+      -- 切换羁绊模式时不重刷靶子，原地重配效果。
+      if runtime.phase_started and is_n0_stage_active() then
+        local activation = activate_bond_effects_by_plan(runtime)
+        apply_opening_no_cooldown(runtime)
+        runtime.activation_report = runtime.activation_report or {}
+        runtime.activation_report.activation = activation
+        append_log(runtime, string.format(
+          'activation_switch: mode=%s ok=%d fail=%d bonds=%s',
+          tostring(activation.mode or 'all'),
+          tonumber(activation.ok) or 0,
+          tonumber(activation.fail) or 0,
+          table.concat(activation.activated_bonds or {}, '|')
+        ))
+      end
     end,
     set_single_bond_name = function(bond_name)
       local runtime = ensure_runtime()
       runtime.single_bond_name_override = trim_text(bond_name)
+      -- 切换单羁绊目标时不重刷靶子，原地重配效果。
+      if runtime.phase_started and is_n0_stage_active() then
+        local activation = activate_bond_effects_by_plan(runtime)
+        apply_opening_no_cooldown(runtime)
+        runtime.activation_report = runtime.activation_report or {}
+        runtime.activation_report.activation = activation
+        append_log(runtime, string.format(
+          'activation_switch_single: bond=%s mode=%s ok=%d fail=%d',
+          tostring(runtime.single_bond_name_override or ''),
+          tostring(activation.mode or 'single'),
+          tonumber(activation.ok) or 0,
+          tonumber(activation.fail) or 0
+        ))
+      end
     end,
     restart_current_run = function()
       local runtime = ensure_runtime()

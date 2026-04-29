@@ -47,7 +47,7 @@ local C=v.message or function()end;
 local E=v.try_bond_draw;
 local F=v.show_bond_progress;
 local G=v.try_evolution_entry;
-local H=v.try_treasure_entry;
+local H=nil;
 local I=v.try_start_challenge;
 local J=v.open_save_panel;
 local K=v.try_upgrade_growth_weapon;
@@ -93,10 +93,12 @@ hover_tip_panel_subtitle=nil,
 hover_tip_panel_body=nil,
 hover_tip_visible=false,
 bond_tip_panel=nil,
+bond_tip_root=nil,
 bond_tip_icon=nil,
 bond_tip_title=nil,
 bond_tip_have=nil,
 bond_tip_swallow=nil,
+bond_tip_detail_body=nil,
 bond_tip_special_title=nil,
 bond_tip_special_body=nil,
 bond_tip_skill_title=nil,
@@ -423,7 +425,8 @@ local function bK(bL)
 local bs=nil
 if O then
 local ok,payload=pcall(O,bL)
-if ok then bs=payload end
+if ok then bs=payload
+elseif C then C(string.format('[runtime_hud] build_bond_slot_tip_payload(%s) failed: %s',tostring(bL),tostring(payload)))end
 end;
 if not bs then return nil end;
 
@@ -629,11 +632,6 @@ if w.bond_runtime and w.bond_runtime.awaiting_choice and w.bond_runtime.current_
 local ct=w.evolution_runtime or w.mark_runtime;
 if ct and ct.awaiting_choice and ct.current_choices then return'英雄功能提示','进阶已迁移到新英雄功能，请打开英雄图鉴查看。'end;
 
-if w.treasure_runtime then
-if w.treasure_runtime.awaiting_choice and w.treasure_runtime.current_choices then return'宝物待选','宝物候选已到位，请点击面板完成选择。'end;
-
-if w.treasure_runtime.awaiting_replace and w.treasure_runtime.pending_replace_choice then return'宝物替换','当前宝物栏已满，请选择替换槽位。'end end;
-
 return nil,nil end;
 
 local function cu()
@@ -670,7 +668,7 @@ local cA=X.soft_paused and'已暂停'or'进行中'return string.format('状态�
 
 local function cB()return'按F抽卡；点击如何变强查看英雄图鉴'end;
 
-local function cC()return table.concat({'F / 抽卡：流派三选一','如何变强：查看英雄图鉴','H / 英雄功能：查看图鉴与成长','V / 宝物：查看宝物入口','Q / W / E / R：试炼入口','TAB / T：属性面板','SPACE：打印状态概览','P：打开存档'},'\n')end;
+local function cC()return table.concat({'F / 抽卡：流派三选一','如何变强：查看英雄图鉴','H / 英雄功能：查看图鉴与成长','Q / W / E：试炼入口','TAB / T：属性面板','SPACE：打印状态概览','P：打开存档'},'\n')end;
 
 local function cD()
 local a0=Y()a0.attr_panel=a3({'BattleBottomHUD.layout.attr_panel','BattleBottomHUD.layout.right_station.attr_panel'})
@@ -705,23 +703,27 @@ a9(a0.hover_tip_panel,false)
 a6(a0.hover_tip_panel,'set_intercepts_operations',false)
 ah(a0.hover_tip_panel_title,'左','中')
 ah(a0.hover_tip_panel_subtitle,'左','中')
-ah(a0.hover_tip_panel_body,'左','中')a0.bond_tip_panel=a3({'TipsPanel.BondTips','BondTips'})
+ah(a0.hover_tip_panel_body,'左','中')
+a0.bond_tip_root=Z('TipsPanel')
+a0.bond_tip_panel=a3({'TipsPanel.BondTips','BondTips'})
 a0.bond_tip_icon=a3({'TipsPanel.BondTips.scroll_view.layout_3.image_1','BondTips.scroll_view.layout_3.image_1'})
 a0.bond_tip_set_title=a3({'TipsPanel.BondTips.scroll_view.layout_3.标题_1','BondTips.scroll_view.layout_3.标题_1'})
 a0.bond_tip_title=a3({'TipsPanel.BondTips.scroll_view.标题','BondTips.scroll_view.标题'})
 a0.bond_tip_have=a3({'TipsPanel.BondTips.scroll_view.是否拥有','BondTips.scroll_view.是否拥有'})
 a0.bond_tip_swallow=a3({'TipsPanel.BondTips.scroll_view.吞噬条件','BondTips.scroll_view.吞噬条件'})
+a0.bond_tip_detail_body=a3({'TipsPanel.BondTips.scroll_view.详情效果内容','BondTips.scroll_view.详情效果内容'})
 a0.bond_tip_special_title=a3({'TipsPanel.BondTips.scroll_view.特殊效果标题','BondTips.scroll_view.特殊效果标题'})
 a0.bond_tip_special_body=a3({'TipsPanel.BondTips.scroll_view.特殊效果内容','BondTips.scroll_view.特殊效果内容'})
 a0.bond_tip_skill_title=a3({'TipsPanel.BondTips.scroll_view.技能效果','BondTips.scroll_view.技能效果'})
 a0.bond_tip_skill_body=a3({'TipsPanel.BondTips.scroll_view.技能效果内容','BondTips.scroll_view.技能效果内容'})
-if not t(a0.bond_tip_panel)then local cE=Z('TipsPanel')if t(cE)then a0.bond_tip_panel=a.resolve_child(cE,'BondTips')end end;
+if not t(a0.bond_tip_panel)then local cE=a0.bond_tip_root or Z('TipsPanel')if t(cE)then a0.bond_tip_panel=a.resolve_child(cE,'BondTips')end end;
 if t(a0.bond_tip_panel)then
 if not t(a0.bond_tip_icon)then a0.bond_tip_icon=a.resolve_child(a0.bond_tip_panel,'scroll_view.layout_3.image_1')end;
 if not t(a0.bond_tip_set_title)then a0.bond_tip_set_title=a.resolve_child(a0.bond_tip_panel,'scroll_view.layout_3.标题_1')end;
 if not t(a0.bond_tip_title)then a0.bond_tip_title=a.resolve_child(a0.bond_tip_panel,'scroll_view.标题')end;
 if not t(a0.bond_tip_have)then a0.bond_tip_have=a.resolve_child(a0.bond_tip_panel,'scroll_view.是否拥有')end;
 if not t(a0.bond_tip_swallow)then a0.bond_tip_swallow=a.resolve_child(a0.bond_tip_panel,'scroll_view.吞噬条件')end;
+if not t(a0.bond_tip_detail_body)then a0.bond_tip_detail_body=a.resolve_child(a0.bond_tip_panel,'scroll_view.详情效果内容')end;
 if not t(a0.bond_tip_special_title)then a0.bond_tip_special_title=a.resolve_child(a0.bond_tip_panel,'scroll_view.特殊效果标题')end;
 if not t(a0.bond_tip_special_body)then a0.bond_tip_special_body=a.resolve_child(a0.bond_tip_panel,'scroll_view.特殊效果内容')end;
 if not t(a0.bond_tip_skill_title)then a0.bond_tip_skill_title=a.resolve_child(a0.bond_tip_panel,'scroll_view.技能效果')end;
@@ -747,16 +749,42 @@ icon=Z(cJ..'.icon')}end;
 
 local function cK()return end;
 
+local function cL0(dA0)
+local a0=Y()
+if not t(a0.bond_tip_root)then a0.bond_tip_root=Z('TipsPanel')end;
+if not t(a0.bond_tip_root)then return end;
+a9(a0.bond_tip_root,dA0==true or w.attr_tips_panel_visible==true)end;
+
 local function cL()
 local a0=Y()a0.hover_tip_visible=false;a0.bond_tip_visible=false;a9(a0.hover_tip_panel,false)
-a9(a0.bond_tip_panel,false)end;
+a9(a0.bond_tip_panel,false)cL0(false)end;
+
+local function cL1(dA0)
+local a0=Y()a0.bond_tip_hover_token=(a0.bond_tip_hover_token or 0)+1;
+local dA1=a0.bond_tip_hover_token;
+if not dA0 or dA0<=0 or not y or not y.ltimer or not y.ltimer.wait then cL()return end;
+y.ltimer.wait(dA0,function()
+local dA2=Y()
+if dA2.bond_tip_hover_token==dA1 then cL()end end)end;
 
 local function cM(bs)
 if not bs then cL()return end;
 T()
 local a0=Y()
-cK()
-if not t(a0.hover_tip_panel)then return end;
+cK()a0.bond_tip_visible=false;a9(a0.bond_tip_panel,false)cL0(false)
+if not t(a0.hover_tip_panel)then
+local dA3=tostring(bs.title or'说明')
+local dA4=tostring(bs.body or'')
+local dA5=tostring(bs.subtitle or'')
+if dA5~=''then
+if dA4~=''then dA4=dA5..'\n'..dA4 else dA4=dA5 end
+end;
+a0.tip_expires_at=math.huge;
+a0.tip_title_text=dA3;
+a0.tip_body_text=dA4;
+ab(a0.tip_panel_title,dA3)
+ab(a0.tip_panel_body,dA4)
+a9(a0.tip_panel,a0.visible~=false)return end;
 a0.hover_tip_visible=true;ab(a0.hover_tip_panel_title,bs.title or'说明')
 ab(a0.hover_tip_panel_subtitle,bs.subtitle or'')
 ab(a0.hover_tip_panel_body,bs.body or'')
@@ -780,17 +808,31 @@ cK()
 if not t(a0.bond_tip_panel)or not t(a0.bond_tip_title)then cD()end;
 if not t(a0.bond_tip_panel)or not t(a0.bond_tip_title)then cM(bs)return end;
 
-local bM=bs.tip_model or{}a0.hover_tip_visible=false;a9(a0.hover_tip_panel,false)a0.bond_tip_visible=true;ab(a0.bond_tip_title,tostring(bM.item_name_text or bs.title or'羁绊卡'))
+local bM=bs.tip_model or{}
+local dA6={}bF(dA6,bM.set_body_lines or{})
+if#dA6==0 then bG(dA6,bs.body)end;
+local dA7={}bF(dA7,bM.bonus_lines or{})
+if#dA7==0 then bG(dA7,bs.body)end;
+local dA8=tostring(bM.effect_body_text or'')
+if dA8==''then dA8=tostring(bs.subtitle or'')end;
+if dA8==''then local dA9=tostring(bM.set_name_text or'')..tostring(bM.progress_text or'')if dA9~=''then dA8='收录进度：'..dA9 end end;
+a0.hover_tip_visible=false;a9(a0.hover_tip_panel,false)a0.bond_tip_visible=true;ab(a0.bond_tip_title,tostring(bM.item_name_text or bs.title or'羁绊卡'))
 ab(a0.bond_tip_have,tostring(bM.quality_text or''))
-ab(a0.bond_tip_swallow,tostring(bM.effect_body_text or''))
+ab(a0.bond_tip_swallow,dA8)
+ab(a0.bond_tip_detail_body,dA8)
 ab(a0.bond_tip_special_title,tostring(bM.set_title_text or bond_skill_label))
-ab(a0.bond_tip_special_body,table.concat(bM.set_body_lines or{},'\n'))
+ab(a0.bond_tip_special_body,table.concat(dA6,'\n'))
 ab(a0.bond_tip_skill_title,bond_skill_label)
-ab(a0.bond_tip_skill_body,table.concat(bM.bonus_lines or{},'\n'))
+ab(a0.bond_tip_skill_body,table.concat(dA7,'\n'))
 ab(a0.bond_tip_set_title,tostring(bM.set_name_text or'')..tostring(bM.progress_text or''))
+a9(a0.bond_tip_special_title,#dA6>0)
+a9(a0.bond_tip_special_body,#dA6>0)
+a9(a0.bond_tip_detail_body,dA8~='')
+a9(a0.bond_tip_skill_title,#dA7>0)
+a9(a0.bond_tip_skill_body,#dA7>0)
 a9(a0.bond_tip_icon,bM.icon_res~=nil)
 ak(a0.bond_tip_icon,bM.icon_res)
-a9(a0.bond_tip_panel,a0.visible~=false)end;
+a9(a0.bond_tip_panel,a0.visible~=false)cL0(a0.visible~=false)end;
 
 local function cN(cO)return Z('BattleBottomHUD.layout.center_hub.combat_module.'..cO)end;
 
@@ -824,7 +866,7 @@ local a0=Y()
 if a0.bound_events[cT]==u and t(u)then return end;
 
 if not t(u)or not u.add_fast_event then return end;
-a0.bound_events[cT]=u;u:add_fast_event('鼠标-移入',function()
+a0.bound_events[cT]=u;a6(u,'set_intercepts_operations',true)u:add_fast_event('鼠标-移入',function()
 if cW then cW(u)end end)u:add_fast_event('鼠标-移出',function()
 if cX then cX(u)end end)end;
 
@@ -1047,7 +1089,7 @@ cS('gold_trial',cN('challenge_row.gold_trial'),function()
 if I then I('gold_trial')end;
 U()end)
 cS('treasure_trial',cN('challenge_row.treasure_trial'),function()
-if I then I('treasure_trial')end;
+if I then I('wood_trial')end;
 U()end)
 cS('battle_loadout_slot_1',Z('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_1'),function()
 if K then K('loadout_slot_click')end;
@@ -1063,10 +1105,17 @@ for bL=1,i do cV('battle_buff_hover_'..tostring(bL),cN(string.format('buff_row.b
 df(bL)end,function()
 cY()end)end;
 
-for bL=1,7 do cV('battle_bond_hover_'..tostring(bL),Z(string.format('BattleBottomHUD.layout.right_station.card_panel.card_slot_%d',bL)),function()
-dh(bL)end,function()
-cL()end)
-cS('battle_bond_slot_'..tostring(bL),Z(string.format('BattleBottomHUD.layout.right_station.card_panel.card_slot_%d',bL)),function()
+for bL=1,g do local dA3=string.format('BattleBottomHUD.layout.right_station.card_panel.card_slot_%d',bL)
+local dA4=Z(dA3)
+local function dA5()
+local a0=Y()a0.bond_tip_hover_token=(a0.bond_tip_hover_token or 0)+1;
+dh(bL)end;
+local function dA6()cL1(0.06)end;
+cV('battle_bond_hover_'..tostring(bL),dA4,dA5,dA6)
+cV('battle_bond_hover_icon_'..tostring(bL),Z(dA3..'.icon'),dA5,dA6)
+cV('battle_bond_hover_frame_'..tostring(bL),Z(dA3..'.frame'),dA5,dA6)
+cV('battle_bond_hover_bg_'..tostring(bL),Z(dA3..'.card_slot_'..tostring(bL)..'_bg'),dA5,dA6)
+cS('battle_bond_slot_'..tostring(bL),dA4,function()
 if F then F()
 else cZ('当前没有流派进度可展示。',4,'流派进度')end end)end;
 cS('battle_exp_bar_evolve',cN('exp_bar.evolve_click_area'),function()
@@ -1103,7 +1152,7 @@ ab(Z('top.top.scoreboard.player_name'),ba())
 ab(Z('top.top.scoreboard.player_power'),aH(b0('攻击结算值','攻击')))
 ab(Z('top.top.scoreboard.player_state'),w.session_phase=='battle'and'战斗中'or'局外')
 ab(Z('top.top.scoreboard.player_level'),tostring(b4()))
-ab(Z('top.top.scoreboard.player_equip'),tostring(w.treasure_runtime and w.treasure_runtime.active_slots and#w.treasure_runtime.active_slots or 0))
+ab(Z('top.top.scoreboard.player_equip'),'0')
 ab(Z('top.top.scoreboard.player_swallow'),tostring(w.bond_runtime and aX(w.bond_runtime.completed_root_sets)or 0))for cH=2,4 do ab(Z(string.format('top.top.scoreboard.player_name_%d',cH)),'-')
 ab(Z(string.format('top.top.scoreboard.player_power_%d',cH)),'-')
 ab(Z(string.format('top.top.scoreboard.player_state_%d',cH)),'-')
@@ -1179,9 +1228,9 @@ a9(cN('hero_level'),false)end;
 
 local function dO()
 local dP=w.challenge_charge_map and w.challenge_charge_map.gold_trial or w.challenge_charges or 0;
-local dQ=w.challenge_charge_map and w.challenge_charge_map.treasure_trial or w.challenge_charges or 0;ab(cN('challenge_row.gold_trial.title'),'金币挑战')
+local dQ=w.challenge_charge_map and w.challenge_charge_map.wood_trial or w.challenge_charges or 0;ab(cN('challenge_row.gold_trial.title'),'金币挑战')
 ab(cN('challenge_row.gold_trial.count'),tostring(math.max(0,tonumber(dP)or 0)))
-ab(cN('challenge_row.treasure_trial.title'),'宝物挑战')
+ab(cN('challenge_row.treasure_trial.title'),'木材挑战')
 ab(cN('challenge_row.treasure_trial.count'),tostring(math.max(0,tonumber(dQ)or 0)))
 ab(cN('challenge_row.climb_layer.title'),'当前波次')
 ab(cN('challenge_row.climb_layer.count'),tostring(math.max(0,tonumber(w.current_wave_index)or 0)))
@@ -1258,6 +1307,7 @@ a9(a0.hover_tip_panel,
 aa==true and a0.hover_tip_visible==true)
 a9(a0.bond_tip_panel,
 aa==true and a0.bond_tip_visible==true)
+cL0(aa==true and a0.bond_tip_visible==true)
 a9(a0.big_cursor,
 aa==true and W().big_cursor)
 a9(a0.hero_tujian_root,

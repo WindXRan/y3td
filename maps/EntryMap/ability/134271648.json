@@ -53,7 +53,7 @@
             "p_trigger_id": null, 
             "trigger_id": 50581505, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668", 
-            "valid": false, 
+            "valid": true, 
             "var_data": [
                 {}, 
                 {}, 
@@ -434,7 +434,7 @@
             "p_trigger_id": 50581505, 
             "trigger_id": 1579397123, 
             "trigger_name": "\u5b50\u89e6\u53d1\u5668", 
-            "valid": false, 
+            "valid": true, 
             "var_data": [
                 {}, 
                 {}, 

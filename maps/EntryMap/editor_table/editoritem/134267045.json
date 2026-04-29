@@ -3,7 +3,10 @@
     "_ref_": 134267045, 
     "attached_ability": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            134253638, 
+            1
+        ]
     }, 
     "attached_agility": {
         "__tuple__": true, 
@@ -503,10 +506,10 @@
     "tags": {
         "__tuple__": true, 
         "items": [
-            "\u6cd5\u672f", 
-            "\u51b7\u5374", 
-            "\u6cd5\u4f24", 
-            "\u4e3b\u52a8"
+            "\u00e6\u00b3\u0095\u00e6\u009c\u00af", 
+            "\u00e5\u0086\u00b7\u00e5\u008d\u00b4", 
+            "\u00e6\u00b3\u0095\u00e4\u00bc\u00a4", 
+            "\u00e4\u00b8\u00bb\u00e5\u008a\u00a8"
         ]
     }, 
     "uid": "134267045", 

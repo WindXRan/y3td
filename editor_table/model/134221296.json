@@ -1,0 +1,10 @@
+{
+    "custom": true, 
+    "effect_keep": false, 
+    "effect_max_life": 1.9666666666666668, 
+    "effect_path": "Fx_Effect/LuoLin/Fx_Skill/Light/159e4b47-1536-4776-b3bf-e8a6a37810bf", 
+    "is_beam_effect": false, 
+    "meshes": [], 
+    "model_id": 134221296, 
+    "name": "\u6cbb\u7597\u5723\u5149_1"
+}

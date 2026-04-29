@@ -65,7 +65,9 @@
     }, 
     "ability_stage_config": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            1
+        ]
     }, 
     "ability_timeline_resource": {
         "model_id": 0
@@ -73,13 +75,13 @@
     "arrow_length": {
         "__tuple__": true, 
         "items": [
-            " (275)/100"
+            "2.75"
         ]
     }, 
     "arrow_width": {
         "__tuple__": true, 
         "items": [
-            " (200)/100"
+            "2.0"
         ]
     }, 
     "auto_pick": true, 
@@ -261,7 +263,7 @@
     "sector_radius": {
         "__tuple__": true, 
         "items": [
-            " (450)/100"
+            "4.5"
         ]
     }, 
     "show_building_attack_range": false, 

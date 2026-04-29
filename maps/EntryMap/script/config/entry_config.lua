@@ -55,12 +55,16 @@ end
 local OutgameAttrBonusConfig = require 'data.object_tables.outgame_attr_bonus_config'
 local GearUpgradeConfig = require 'data.object_tables.gear_upgrade_config'
 local SkillRuntimeTuning = require 'data.object_tables.skill_runtime_tuning'
+local ATTACK_SKILL_DEPRECATED = true
 
 local M = {
   debug_time_scale = DEBUG_TIME_SCALE,
-  debug_auto_unlock_attack_skills_on_stage_start = y3.game.is_debug_mode(),
+  attack_skill_deprecated = ATTACK_SKILL_DEPRECATED,
+  debug_auto_unlock_attack_skills_on_stage_start = (not ATTACK_SKILL_DEPRECATED) and y3.game.is_debug_mode(),
   enemy_hit_reaction_enabled = false,
   enemy_death_reaction_enabled = false,
+  enemy_main_death_reaction_enabled = true,
+  enemy_main_death_sound_enabled = true,
   damage_hit_effect_enabled = false,
   player_id = global_rules.player_id,
   enemy_player_id = global_rules.enemy_player_id,

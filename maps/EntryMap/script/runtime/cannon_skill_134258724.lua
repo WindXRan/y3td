@@ -11,6 +11,7 @@ function M.create(env)
   local hero_attr_system = env.hero_attr_system
   local get_enemies_in_range = env.get_enemies_in_range
   local deal_skill_damage = env.deal_skill_damage
+  local emit_damage_debug = env.emit_damage_debug
 
   local api = {}
   local skill_damage_api = SkillDamageTemplates.create({
@@ -18,6 +19,7 @@ function M.create(env)
     deal_skill_damage = function(target, amount, damage_meta, visual)
       deal_skill_damage(target, amount, damage_meta, visual)
     end,
+    emit_damage_debug = emit_damage_debug,
     get_enemies_in_range = get_enemies_in_range,
     is_active_enemy = function(unit)
       return unit and unit.is_exist and unit:is_exist()

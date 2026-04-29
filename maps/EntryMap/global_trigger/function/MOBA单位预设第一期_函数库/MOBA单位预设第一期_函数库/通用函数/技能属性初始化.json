@@ -1182,7 +1182,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1045786683, 
     "trigger_name": "技能属性初始化", 
-    "valid": false, 
+    "valid": true, 
     "var_data": [
         {
             "ABILITY": {

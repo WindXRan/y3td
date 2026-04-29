@@ -1,0 +1,10 @@
+{
+    "custom": true, 
+    "effect_keep": false, 
+    "effect_max_life": 2.300000012, 
+    "effect_path": "Fx_Effect/Realism/Fx_Skill/Shadow/474c3e19-40aa-45c5-9cef-99ec8e51e9f1", 
+    "is_beam_effect": false, 
+    "meshes": [], 
+    "model_id": 134221105, 
+    "name": "\u5c0f\u9f99\u51fa\u73b0"
+}

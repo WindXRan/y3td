@@ -319,6 +319,9 @@ local function ensure_runtime(state)
   state.bond_runtime.modifier_pool_active_effects = state.bond_runtime.modifier_pool_active_effects or {}
   state.bond_runtime.modifier_pool_active_runtime_bonuses = state.bond_runtime.modifier_pool_active_runtime_bonuses or {}
   state.bond_runtime.modifier_pool_effect_state = state.bond_runtime.modifier_pool_effect_state or {}
+  if state.bond_runtime.modifier_effects_disabled == nil then
+    state.bond_runtime.modifier_effects_disabled = false
+  end
   state.bond_runtime.state_ref = state
   return state.bond_runtime
 end
@@ -1404,7 +1407,22 @@ local function is_modifier_pool_enabled()
 end
 
 local function get_modifier_card(card_id)
-  return BondModifierPool and BondModifierPool.card_by_id and BondModifierPool.card_by_id[card_id] or nil
+  if not BondModifierPool or not BondModifierPool.card_by_id then
+    return nil
+  end
+  local by_id = BondModifierPool.card_by_id
+  if by_id[card_id] then
+    return by_id[card_id]
+  end
+  local key = tostring(card_id or '')
+  if key ~= '' and by_id[key] then
+    return by_id[key]
+  end
+  local numeric = tonumber(card_id)
+  if numeric and by_id[numeric] then
+    return by_id[numeric]
+  end
+  return nil
 end
 
 local BOND_SET_ATTR_BONUSES = BondModifierEffects.SET_ATTR_BONUSES
@@ -1697,6 +1715,7 @@ function M.create_runtime()
     modifier_pool_active_effects = {},
     modifier_pool_active_runtime_bonuses = {},
     modifier_pool_effect_state = {},
+    modifier_effects_disabled = false,
   }
 end
 
@@ -1962,10 +1981,23 @@ function M.get_total_runtime_bonuses(state)
   if not runtime then
     return {}
   end
-  local result = collect_merged_bonus_packs(runtime.applied_node_runtime_bonuses)
-  merge_bonus_pack(result, collect_merged_bonus_packs(runtime.dynamic_node_runtime_bonuses))
-  merge_bonus_pack(result, collect_merged_bonus_packs(runtime.modifier_pool_active_runtime_bonuses))
-  apply_completed_root_set_bonus_pack(result, runtime, 'completed_root_set_runtime_bonuses')
+  if runtime.__collect_runtime_bonus_busy == true then
+    return runtime.__collect_runtime_bonus_last or {}
+  end
+  runtime.__collect_runtime_bonus_busy = true
+  local ok, result = pcall(function()
+    local merged = collect_merged_bonus_packs(runtime.applied_node_runtime_bonuses)
+    merge_bonus_pack(merged, collect_merged_bonus_packs(runtime.dynamic_node_runtime_bonuses))
+    merge_bonus_pack(merged, collect_merged_bonus_packs(runtime.modifier_pool_active_runtime_bonuses))
+    apply_completed_root_set_bonus_pack(merged, runtime, 'completed_root_set_runtime_bonuses')
+    return merged
+  end)
+  if not ok then
+    runtime.__collect_runtime_bonus_busy = false
+    error(result)
+  end
+  runtime.__collect_runtime_bonus_last = result
+  runtime.__collect_runtime_bonus_busy = false
   return result
 end
 
@@ -1984,16 +2016,18 @@ function M.update_effects(env, dt)
     return
   end
 
-  for effect_id, effect_state in pairs(runtime.modifier_pool_effect_state or {}) do
-    if effect_state.cooldown and effect_state.cooldown > 0 then
-      effect_state.cooldown = math.max(0, effect_state.cooldown - (dt or 0))
+  if runtime.modifier_effects_disabled ~= true then
+    for effect_id, effect_state in pairs(runtime.modifier_pool_effect_state or {}) do
+      if effect_state.cooldown and effect_state.cooldown > 0 then
+        effect_state.cooldown = math.max(0, effect_state.cooldown - (dt or 0))
+      end
+      if runtime.modifier_pool_active_effects[effect_id] == true
+        or BondModifierEffects.has_active_modifier_bond(runtime, effect_state.bond_name, get_modifier_cards_by_bond) then
+        BondModifierEffects.trigger_modifier_periodic_effect(env, runtime, effect_state.bond_name, effect_state, dt)
+      end
     end
-    if runtime.modifier_pool_active_effects[effect_id] == true
-      or BondModifierEffects.has_active_modifier_bond(runtime, effect_state.bond_name, get_modifier_cards_by_bond) then
-      BondModifierEffects.trigger_modifier_periodic_effect(env, runtime, effect_state.bond_name, effect_state, dt)
-    end
+    BondModifierEffects.trigger_modifier_card_periodic_effects(env, runtime, dt)
   end
-  BondModifierEffects.trigger_modifier_card_periodic_effects(env, runtime, dt)
 
   local desired_attr = {}
   local desired_runtime = {}
@@ -2123,7 +2157,9 @@ function M.handle_enemy_kill(env, info)
     hero_attr_system.rebuild_derived_attrs(state.hero)
   end
 
-  BondModifierEffects.handle_modifier_enemy_kill(env, runtime, info, get_modifier_cards_by_bond)
+  if runtime.modifier_effects_disabled ~= true then
+    BondModifierEffects.handle_modifier_enemy_kill(env, runtime, info, get_modifier_cards_by_bond)
+  end
 end
 
 function M.notify_basic_attack(env, target)
@@ -2132,20 +2168,35 @@ function M.notify_basic_attack(env, target)
   if not runtime then
     return
   end
-
-  for _, effect_state in pairs(runtime.modifier_pool_effect_state or {}) do
-    if effect_state and effect_state.bond_name
-      and BondModifierEffects.has_active_modifier_bond(runtime, effect_state.bond_name, get_modifier_cards_by_bond) then
-      BondModifierEffects.trigger_modifier_basic_attack_effect(env, runtime, effect_state.bond_name, target)
-    end
+  if runtime.__notify_basic_attack_busy == true then
+    return
   end
-  BondModifierEffects.trigger_modifier_card_basic_attack_effects(env, runtime, target)
+  if runtime.modifier_effects_disabled == true then
+    return
+  end
+  runtime.__notify_basic_attack_busy = true
+  local ok, err = pcall(function()
+    for _, effect_state in pairs(runtime.modifier_pool_effect_state or {}) do
+      if effect_state and effect_state.bond_name
+        and BondModifierEffects.has_active_modifier_bond(runtime, effect_state.bond_name, get_modifier_cards_by_bond) then
+        BondModifierEffects.trigger_modifier_basic_attack_effect(env, runtime, effect_state.bond_name, target)
+      end
+    end
+    BondModifierEffects.trigger_modifier_card_basic_attack_effects(env, runtime, target)
+  end)
+  runtime.__notify_basic_attack_busy = false
+  if not ok then
+    error(err)
+  end
 end
 
 function M.notify_hero_pre_hurt(env, data)
   local state = env and env.STATE
   local runtime = get_runtime(state)
   if not runtime then
+    return
+  end
+  if runtime.modifier_effects_disabled == true then
     return
   end
   BondModifierEffects.handle_modifier_card_pre_hurt(env, runtime, data)
@@ -2255,6 +2306,7 @@ local function activate_modifier_bond_effects(state, bond_name)
   if not runtime or not is_modifier_bond_complete(runtime, bond_name) then
     return {}
   end
+  runtime.modifier_effects_disabled = false
 
   local activated_names = {}
   local effect_id = 'initial_bond_set_' .. tostring(bond_name)
@@ -2269,12 +2321,33 @@ local function activate_modifier_bond_effects(state, bond_name)
   effect_state.cooldown = 0
   effect_state.counter = 0
   effect_state.elapsed = 0
+  effect_state.__periodic_ready_on_gain = nil
   activated_names[#activated_names + 1] = bond_name
 
   for _, card in ipairs(get_modifier_cards_by_bond(bond_name)) do
     runtime.consumed_root_sets[card.id] = true
   end
   return activated_names
+end
+
+local function clear_active_modifier_bond_effects(runtime)
+  if not runtime then
+    return
+  end
+  if BondModifierEffects and BondModifierEffects.clear_runtime_status_effects then
+    BondModifierEffects.clear_runtime_status_effects(runtime)
+  end
+  -- N0 单羁绊/零羁绊切换需要真正互斥：清空已激活效果，同时重置羁绊卡运行时态。
+  runtime.modifier_pool_active_effects = {}
+  runtime.modifier_card_attr_bonuses = {}
+  runtime.modifier_pool_active_runtime_bonuses = {}
+  runtime.modifier_pool_effect_state = {}
+  runtime.modifier_card_ids = {}
+  runtime.modifier_card_effect_ids = {}
+  runtime.modifier_card_effect_state = {}
+  runtime.modifier_card_effect_custom_state = {}
+  runtime.consumed_root_sets = {}
+  runtime.modifier_effects_disabled = true
 end
 
 local function grant_modifier_card_to_runtime(runtime, card)
@@ -2524,10 +2597,56 @@ function M.build_slot_tip_payload(state, slot)
   end
 
   if string.sub(node_id, 1, 8) == '__group_' then
-    return build_owned_group_tip_payload(GROUP_CHOICE_DEFS[string.sub(node_id, 9)])
+    local group_payload = build_owned_group_tip_payload(GROUP_CHOICE_DEFS[string.sub(node_id, 9)])
+    if group_payload then
+      return group_payload
+    end
+    local group_name = string.sub(node_id, 9)
+    return {
+      kind = 'bond',
+      quality = 'rare',
+      badge_text = '羁绊组',
+      icon_res = nil,
+      title_text = group_name ~= '' and group_name or '羁绊组',
+      bonus_lines = {},
+      effect_area_bonus_count = 0,
+      tip_model = {
+        quality_text = '羁绊组',
+        set_name_text = group_name ~= '' and group_name or '羁绊组',
+        progress_text = '',
+        item_name_text = group_name ~= '' and group_name or '羁绊组',
+        effect_body_text = '当前羁绊组暂无可展示说明。',
+        set_title_text = format_bond_skill_title(group_name),
+        set_body_lines = {},
+        bonus_lines = {},
+      },
+    }
   end
 
-  return build_owned_node_tip_payload(state, NODE_BY_ID[node_id])
+  local node_payload = build_owned_node_tip_payload(state, NODE_BY_ID[node_id])
+  if node_payload then
+    return node_payload
+  end
+
+  return {
+    kind = 'bond',
+    quality = 'rare',
+    badge_text = '羁绊',
+    icon_res = M.get_slot_icon(state, slot),
+    title_text = tostring(node_id),
+    bonus_lines = {},
+    effect_area_bonus_count = 0,
+    tip_model = {
+      quality_text = '羁绊',
+      set_name_text = '',
+      progress_text = '',
+      item_name_text = tostring(node_id),
+      effect_body_text = '当前羁绊节点暂无可展示说明。',
+      set_title_text = format_bond_skill_title('羁绊'),
+      set_body_lines = {},
+      bonus_lines = {},
+    },
+  }
 end
 
 function M.build_latest_owned_tip_payload(state)
@@ -2691,20 +2810,27 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
     local consumed = runtime.modifier_pool_active_effects
       and runtime.modifier_pool_active_effects[effect_id] == true
       or false
-    local card_entries = {}
-    for index, card in ipairs(selected_cards) do
-      local unlocked = runtime.modifier_card_ids and runtime.modifier_card_ids[card.id] == true or false
-      local activation_text = get_modifier_bond_activation_text(card.bond_name, card.activation_desc or '')
-      local tip_model = BondTipModelBuilder.build({
-        quality_text = '羁绊卡',
-        set_name_text = card.bond_name or '',
-        progress_text = selected and selected.progress_text or '',
-        icon_res = card.icon,
-        item_name_text = card.name or '羁绊卡牌',
-        current_text = card.desc or '',
-        effect_text = activation_text,
-      })
-      card_entries[#card_entries + 1] = {
+	    local card_entries = {}
+	    for index, card in ipairs(selected_cards) do
+	      local unlocked = runtime.modifier_card_ids and runtime.modifier_card_ids[card.id] == true or false
+	      local activation_text = get_modifier_bond_activation_text(card.bond_name, card.activation_desc or '')
+	      local special_text = tostring(card.extra_skill_desc or '')
+	      local display_effect_text = special_text ~= '' and special_text ~= '无' and special_text or activation_text
+	      local display_effect_body = ''
+	      if display_effect_text ~= activation_text and activation_text ~= '' then
+	        display_effect_body = string.format('集齐[%s]激活：%s', tostring(card.bond_name or '羁绊'), activation_text)
+	      end
+	      local tip_model = BondTipModelBuilder.build({
+	        quality_text = '羁绊卡',
+	        set_name_text = card.bond_name or '',
+	        progress_text = selected and selected.progress_text or '',
+	        icon_res = card.icon,
+	        item_name_text = card.name or '羁绊卡牌',
+	        current_text = card.desc or '',
+	        effect_text = display_effect_text,
+	        effect_body_text = display_effect_body,
+	      })
+	      card_entries[#card_entries + 1] = {
         index = index,
         modifier_card_id = card.id,
         display_name = card.name,
@@ -2717,12 +2843,12 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
         unlocked = unlocked,
         consumed = consumed,
         current_text = card.desc or '',
-        desc_text = card.desc or '',
-        value_text = card.desc or '',
-        advanced_text = activation_text,
-        effect_title = activation_text ~= '' and string.format('集齐[%s]激活：', card.bond_name) or '',
-        effect_text = activation_text,
-        bond_root_name = card.bond_name,
+	        desc_text = card.desc or '',
+	        value_text = card.desc or '',
+	        advanced_text = display_effect_text,
+	        effect_title = display_effect_text ~= '' and '特殊效果：' or '',
+	        effect_text = display_effect_text,
+	        bond_root_name = card.bond_name,
         bond_root_progress_text = selected and selected.progress_text or '',
         title_text = string.format('%s (%s)', card.bond_name or '羁绊', selected and selected.progress_text or '0/0'),
         tip_model = tip_model,
@@ -2822,6 +2948,7 @@ function M.debug_activate_modifier_bond(env, bond_name, grant_missing_cards)
   if not runtime or not resolved_bond_name then
     return false, '未知羁绊名（请传 bonds_init 中的羁绊所属）。'
   end
+  runtime.modifier_effects_disabled = false
 
   local granted_count = 0
   if grant_missing_cards == true then
@@ -2854,6 +2981,33 @@ function M.debug_activate_modifier_bond(env, bond_name, grant_missing_cards)
     owned_count,
     need_count
   )
+end
+
+function M.debug_activate_single_modifier_bond(env, bond_name, grant_missing_cards)
+  local state = env and env.STATE
+  local runtime = ensure_runtime(state)
+  local resolved_bond_name = resolve_modifier_bond_name(bond_name)
+  if not runtime or not resolved_bond_name then
+    return false, '未知羁绊名（请传 bonds_init 中的羁绊所属）。'
+  end
+
+  clear_active_modifier_bond_effects(runtime)
+  runtime.modifier_effects_disabled = false
+  sync_attr_bonuses_to_hero(env)
+
+  return M.debug_activate_modifier_bond(env, resolved_bond_name, grant_missing_cards)
+end
+
+function M.debug_clear_active_modifier_bonds(env)
+  local state = env and env.STATE
+  local runtime = ensure_runtime(state)
+  if not runtime then
+    return false, '羁绊运行时未初始化。'
+  end
+
+  clear_active_modifier_bond_effects(runtime)
+  sync_attr_bonuses_to_hero(env)
+  return true, '已清空当前激活羁绊与羁绊卡效果。'
 end
 
 return M

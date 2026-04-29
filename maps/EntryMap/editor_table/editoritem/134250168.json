@@ -3,7 +3,10 @@
     "_ref_": 134250168, 
     "attached_ability": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            134250677, 
+            1
+        ]
     }, 
     "attached_agility": {
         "__tuple__": true, 
@@ -503,8 +506,8 @@
     "tags": {
         "__tuple__": true, 
         "items": [
-            "\u79fb\u901f", 
-            "\u4e3b\u52a8"
+            "\u00e7\u00a7\u00bb\u00e9\u0080\u009f", 
+            "\u00e4\u00b8\u00bb\u00e5\u008a\u00a8"
         ]
     }, 
     "uid": "134250168", 

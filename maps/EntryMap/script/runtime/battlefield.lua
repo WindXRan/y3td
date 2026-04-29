@@ -562,40 +562,28 @@ function M.create(env)
   local function resolve_enemy_death_reaction_profile(info)
     if info and info.kind == 'boss' then
       return {
-        corpse_distance = 110,
-        corpse_speed = 720,
-        remove_delay = 1.35,
-        burst_scale = 1.28,
-        burst_time = 0.48,
-        mist_scale = 1.02,
-        mist_time = 0.78,
-        trail_scale = 0.78,
-        trail_time = 0.86,
-        trail_distance = 140,
-        trail_speed = 760,
-        pool_scale = 1.12,
-        pool_time = 1.18,
-        shock_scale = 0.96,
-        shock_time = 0.92,
+        corpse_distance = 96,
+        corpse_speed = 680,
+        remove_delay = 1.30,
+        effect_id = 100031, -- 资源库标签：嗜血
+        effect_scale = 1.26,
+        effect_time = 0.72,
+        effect_height = 18,
+        effect_anim_speed = 1.18,
+        effect_color = { 232, 36, 32, 224 },
       }
     end
 
     return {
-      corpse_distance = 180,
-      corpse_speed = 980,
-      remove_delay = 1.05,
-      burst_scale = 0.98,
-      burst_time = 0.40,
-      mist_scale = 0.78,
-      mist_time = 0.62,
-      trail_scale = 0.62,
-      trail_time = 0.72,
-      trail_distance = 185,
-      trail_speed = 980,
-      pool_scale = 0.86,
-      pool_time = 0.96,
-      shock_scale = 0.76,
-      shock_time = 0.72,
+      corpse_distance = 160,
+      corpse_speed = 920,
+      remove_delay = 1.00,
+      effect_id = 100031, -- 资源库标签：嗜血
+      effect_scale = 0.96,
+      effect_time = 0.56,
+      effect_height = 14,
+      effect_anim_speed = 1.10,
+      effect_color = { 220, 30, 26, 210 },
     }
   end
 
@@ -603,6 +591,7 @@ function M.create(env)
     if not unit or not unit.is_exist or not unit:is_exist() then
       return 0.30
     end
+    local is_main_enemy = info and info.kind == 'main'
 
     local death_point = get_unit_point_snapshot(unit)
     if not death_point then
@@ -619,12 +608,19 @@ function M.create(env)
       end
     end
 
-    if play_enemy_death_sound then
-      play_enemy_death_sound(unit, info)
+    local death_sound_enabled = true
+    if is_main_enemy then
+      death_sound_enabled = CONFIG.enemy_main_death_sound_enabled ~= false
+    end
+    if play_enemy_death_sound and death_sound_enabled then
+      play_enemy_death_sound(unit, info, death_point)
     end
 
-    -- 默认关闭死亡粒子反馈，只保留音效与后续结算。
-    if CONFIG.enemy_death_reaction_enabled ~= true then
+    local death_reaction_enabled = CONFIG.enemy_death_reaction_enabled == true
+    if is_main_enemy then
+      death_reaction_enabled = CONFIG.enemy_main_death_reaction_enabled ~= false
+    end
+    if not death_reaction_enabled then
       return 0.30
     end
 
@@ -639,81 +635,18 @@ function M.create(env)
       })
     end)
 
-    local blood_burst = create_point_particle(
-      102702,
+    local blood_fx = create_point_particle(
+      profile.effect_id or 100031,
       death_point,
       death_angle,
-      profile.burst_scale,
-      profile.burst_time,
-      26,
-      { 255, 32, 24, 220 },
-      1.28
+      profile.effect_scale or 1.0,
+      profile.effect_time or 0.56,
+      profile.effect_height or 14,
+      profile.effect_color or { 220, 30, 26, 210 },
+      profile.effect_anim_speed or 1.10
     )
-    if blood_burst then
-      blood_burst:set_rotate(0, 0, death_angle)
-    end
-
-    local blood_shock = create_point_particle(
-      102706,
-      death_point,
-      death_angle,
-      profile.shock_scale,
-      profile.shock_time,
-      12,
-      { 190, 18, 18, 200 },
-      1.12
-    )
-    if blood_shock then
-      blood_shock:set_rotate(0, 0, death_angle)
-    end
-
-    local blood_mist = create_point_particle(
-      102877,
-      death_point,
-      death_angle,
-      profile.mist_scale,
-      profile.mist_time,
-      20,
-      { 110, 8, 8, 190 },
-      1.12
-    )
-    if blood_mist then
-      spray_particle_line(blood_mist, death_angle, math.max(50, profile.trail_distance * 0.55), math.max(320, profile.trail_speed * 0.55))
-    end
-
-    local blood_pool = create_point_particle(
-      102705,
-      death_point,
-      death_angle,
-      profile.pool_scale,
-      profile.pool_time,
-      8,
-      { 148, 12, 12, 190 },
-      0.96
-    )
-    if blood_pool then
-      blood_pool:set_rotate(0, 0, death_angle)
-    end
-
-    for _, spray in ipairs({
-      { angle = death_angle - 18, scale = profile.trail_scale * 0.72, distance = profile.trail_distance * 0.76, speed = profile.trail_speed * 0.82 },
-      { angle = death_angle - 7, scale = profile.trail_scale * 0.90, distance = profile.trail_distance * 0.92, speed = profile.trail_speed * 0.94 },
-      { angle = death_angle + 5, scale = profile.trail_scale, distance = profile.trail_distance, speed = profile.trail_speed },
-      { angle = death_angle + 17, scale = profile.trail_scale * 0.82, distance = profile.trail_distance * 0.88, speed = profile.trail_speed * 0.88 },
-    }) do
-      local blood_trail = create_point_particle(
-        102820,
-        death_point,
-        spray.angle,
-        spray.scale,
-        profile.trail_time,
-        52,
-        { 205, 18, 18, 220 },
-        1.36
-      )
-      if blood_trail then
-        spray_particle_line(blood_trail, spray.angle, spray.distance, spray.speed)
-      end
+    if blood_fx then
+      blood_fx:set_rotate(0, 0, death_angle)
     end
 
     return profile.remove_delay or 0.55
@@ -1122,57 +1055,16 @@ function M.create(env)
     local spawned_any = false
     local batch_count = get_scaled_challenge_batch_count(instance, batch)
 
-    if instance.def.id == 'treasure_trial' then
-      if batch_index == 1 then
-        local boss_info = spawn_enemy(instance.def.boss_unit_id, instance.def.spawn_area_id, 180.0, {
-          kind = 'challenge',
-          owner = instance,
-          is_boss = true,
-          is_elite = true,
-          reward = instance.def.kill_reward,
-        })
-        if boss_info then
-          instance.infos[#instance.infos + 1] = boss_info
-          spawned_any = true
-        end
-        for _ = 1, math.max(0, batch_count - 1), 1 do
-          local info = spawn_enemy(instance.def.guard_unit_id, instance.def.spawn_area_id, 180.0, {
-            kind = 'challenge',
-            owner = instance,
-            is_elite = true,
-            reward = instance.def.kill_reward,
-          })
-          if info then
-            instance.infos[#instance.infos + 1] = info
-            spawned_any = true
-          end
-        end
-      else
-        for _ = 1, batch_count, 1 do
-          local info = spawn_enemy(instance.def.guard_unit_id, instance.def.spawn_area_id, 180.0, {
-            kind = 'challenge',
-            owner = instance,
-            is_elite = true,
-            reward = instance.def.kill_reward,
-          })
-          if info then
-            instance.infos[#instance.infos + 1] = info
-            spawned_any = true
-          end
-        end
-      end
-    else
-      for _ = 1, batch_count, 1 do
-        local info = spawn_enemy(instance.def.unit_id, instance.def.spawn_area_id, 180.0, {
-          kind = 'challenge',
-          owner = instance,
-          attr_overrides = instance.def.attr_overrides,
-          reward = instance.def.kill_reward,
-        })
-        if info then
-          instance.infos[#instance.infos + 1] = info
-          spawned_any = true
-        end
+    for _ = 1, batch_count, 1 do
+      local info = spawn_enemy(instance.def.unit_id, instance.def.spawn_area_id, 180.0, {
+        kind = 'challenge',
+        owner = instance,
+        attr_overrides = instance.def.attr_overrides,
+        reward = instance.def.kill_reward,
+      })
+      if info then
+        instance.infos[#instance.infos + 1] = info
+        spawned_any = true
       end
     end
 

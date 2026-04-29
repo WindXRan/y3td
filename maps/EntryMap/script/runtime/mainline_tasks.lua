@@ -25,11 +25,7 @@ physical_crit_pct='物理暴击',
 physical_crit_damage_pct='物理暴伤',
 magic_crit_pct='魔法暴击',
 magic_crit_damage_pct='魔法暴伤',
-metal_damage_pct='金行伤害',
-wood_damage_pct='木行伤害',
-water_damage_pct='水行伤害',
-fire_damage_pct='火行伤害',
-earth_damage_pct='土行伤害'}
+}
 local e={gold_per_sec='每秒金币',
 wood_per_sec='每秒木材',
 exp_per_sec='每秒经验',

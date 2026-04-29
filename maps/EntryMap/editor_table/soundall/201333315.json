@@ -22,10 +22,7 @@
     ], 
     "speed": 1, 
     "suffix": "", 
-    "tags": {
-        "__tuple__": true, 
-        "items": []
-    }, 
+    "tags": [], 
     "total_time": 0.417361111111, 
     "type": 0, 
     "uid": "201333315", 

@@ -31,7 +31,6 @@ local VALID_RUNTIME_KEYS = {
   chain_bounces = true,
   bounce_count_bonus = true,
   critical_damage_bonus = true,
-  elemental_damage_bonus = true,
   elite_damage_bonus = true,
   gold_per_sec_bonus = true,
   intelligence_on_kill = true,

@@ -1384,7 +1384,7 @@
             "p_trigger_id": null, 
             "trigger_id": 550764546, 
             "trigger_name": "trigger_2", 
-            "valid": false, 
+            "valid": true, 
             "var_data": [
                 {
                     "BOOLEAN": {

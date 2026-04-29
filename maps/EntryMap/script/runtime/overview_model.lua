@@ -155,8 +155,13 @@ function M.create(env)
 
   local function build_treasure_and_mark_overview_lines()
     local lines = {}
-    for slot = 1, 3, 1 do
-      lines[#lines + 1] = build_treasure_slot_text(slot)
+    local treasure_runtime = get_treasure_runtime()
+    if not (treasure_runtime and treasure_runtime.disabled == true) then
+      for slot = 1, 3, 1 do
+        lines[#lines + 1] = build_treasure_slot_text(slot)
+      end
+    else
+      lines[#lines + 1] = '宝物系统：已下线'
     end
     local mark_count = math.max(4, get_mark_active_count())
     for slot = 1, mark_count, 1 do
@@ -308,22 +313,23 @@ function M.create(env)
   end
 
   local function build_economy_bonus_lines()
+    local treasure_runtime = get_treasure_runtime()
+    local treasure_disabled = treasure_runtime and treasure_runtime.disabled == true
     return {
       string.format('资源恢复：金币每秒 %+d  木材每秒 %+d',
         format_attr_value(get_bond_runtime_bonus('gold_per_sec_bonus')),
         format_attr_value(get_bond_runtime_bonus('wood_per_sec_bonus'))
       ),
       string.format('奖励倍率：金币 %+d%%  木材 %+d%%  经验 %+d%%',
-        format_attr_value(env.get_treasure_reward_ratio('gold') * 100),
-        format_attr_value(env.get_treasure_reward_ratio('wood') * 100),
-        format_attr_value(env.get_treasure_reward_ratio('exp') * 100)
+        treasure_disabled and 0 or format_attr_value(env.get_treasure_reward_ratio('gold') * 100),
+        treasure_disabled and 0 or format_attr_value(env.get_treasure_reward_ratio('wood') * 100),
+        treasure_disabled and 0 or format_attr_value(env.get_treasure_reward_ratio('exp') * 100)
       ),
       string.format('被动收入：金币 %+d / 秒  木材 %+d / 秒',
-        format_attr_value(env.get_treasure_passive_income('gold')),
-        format_attr_value(env.get_treasure_passive_income('wood'))
+        treasure_disabled and 0 or format_attr_value(env.get_treasure_passive_income('gold')),
+        treasure_disabled and 0 or format_attr_value(env.get_treasure_passive_income('wood'))
       ),
-      string.format('构筑计数：宝物 %d / 3  进化 %d  已结战术卡 %d',
-        get_treasure_active_count(),
+      string.format('构筑计数：进化 %d  已结战术卡 %d',
         get_mark_active_count(),
         STATE.bond_runtime and #(STATE.bond_runtime.owned_node_order or {}) or 0
       ),
@@ -389,7 +395,7 @@ function M.create(env)
           lines = build_bond_overview_lines(),
         },
         treasures = {
-          title = '宝物与进化',
+          title = '进化概览',
           lines = build_treasure_and_mark_overview_lines(),
         },
         pending = {

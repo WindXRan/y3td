@@ -3,7 +3,10 @@
     "_ref_": 201390023, 
     "attached_ability": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            134259356, 
+            1
+        ]
     }, 
     "attached_agility": 0, 
     "attached_attack_interval": {
@@ -478,7 +481,7 @@
     "tags": {
         "__tuple__": true, 
         "items": [
-            "\u6d88\u8017\u54c1"
+            "\u00e6\u00b6\u0088\u00e8\u0080\u0097\u00e5\u0093\u0081"
         ]
     }, 
     "uid": "201390023", 

@@ -561,7 +561,7 @@
     "p_trigger_id": null, 
     "trigger_id": 1022095418, 
     "trigger_name": "发射一枚普攻飞刀", 
-    "valid": false, 
+    "valid": true, 
     "var_data": [
         {
             "ABILITY": {

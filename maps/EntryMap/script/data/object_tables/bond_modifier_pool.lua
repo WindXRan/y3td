@@ -1,4 +1,5 @@
 local EditorJsonTable = require 'data.object_tables.editor_json_table'
+local BondSkillTextTemplates = require 'data.object_tables.bond_skill_text_templates'
 
 local M = {}
 
@@ -143,8 +144,10 @@ local function build_card(row, index)
     read_first(row, { 'attr', 'attrs', '属性' }, ''),
     read_first(row, { 'value', 'values', '数值' }, '')
   )
-  local effect_desc = trim(read_first(row, { 'activation_desc', 'bond_effect', '羁绊激活效果' }, ''))
-  local extra_desc = trim(read_first(row, { 'extra_skill_desc', 'extra_desc', '额外技能效果' }, ''))
+  local effect_desc_raw = trim(read_first(row, { 'activation_desc', 'bond_effect', '羁绊激活效果' }, ''))
+  local extra_desc_raw = trim(read_first(row, { 'extra_skill_desc', 'extra_desc', '额外技能效果' }, ''))
+  local effect_desc = BondSkillTextTemplates.get_activation_desc(bond_name, effect_desc_raw)
+  local extra_desc = BondSkillTextTemplates.get_card_desc(name, bond_name, extra_desc_raw)
   local icon = tonumber(read_first(row, { 'icon', '图片icon', '图片', '图标' }, nil))
   local quality = normalize_quality(read_first(row, { 'quality', '品质' }, nil))
 

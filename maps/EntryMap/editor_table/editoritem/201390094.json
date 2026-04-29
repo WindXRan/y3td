@@ -3,7 +3,10 @@
     "_ref_": 201390094, 
     "attached_ability": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            134244639, 
+            1
+        ]
     }, 
     "attached_agility": {
         "__tuple__": true, 
@@ -235,7 +238,15 @@
             0.0
         ]
     }, 
-    "attached_passive_abilities": [], 
+    "attached_passive_abilities": {
+        "__tuple__": true, 
+        "items": [
+            [
+                134221612, 
+                1
+            ]
+        ]
+    }, 
     "attached_pene_mag": {
         "__tuple__": true, 
         "items": [
@@ -495,8 +506,8 @@
     "tags": {
         "__tuple__": true, 
         "items": [
-            "\u66b4\u51fb", 
-            "\u7269\u653b"
+            "\u00e6\u009a\u00b4\u00e5\u0087\u00bb", 
+            "\u00e7\u0089\u00a9\u00e6\u0094\u00bb"
         ]
     }, 
     "uid": "201390094", 

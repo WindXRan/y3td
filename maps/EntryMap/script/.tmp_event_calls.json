@@ -1,0 +1,202 @@
+[
+    {
+        "file":  "可重载的代码.lua",
+        "line":  1,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "main.lua",
+        "line":  64,
+        "event":  "游戏-初始化"
+    },
+    {
+        "file":  "runtime\\attack_skills.lua",
+        "line":  470,
+        "event":  "施法-出手"
+    },
+    {
+        "file":  "runtime\\battlefield.lua",
+        "line":  754,
+        "event":  "单位-受到伤害后"
+    },
+    {
+        "file":  "runtime\\battlefield.lua",
+        "line":  759,
+        "event":  "单位-死亡"
+    },
+    {
+        "file":  "runtime\\battlefield.lua",
+        "line":  1379,
+        "event":  "单位-死亡"
+    },
+    {
+        "file":  "runtime\\battlefield.lua",
+        "line":  1390,
+        "event":  "单位-造成伤害后"
+    },
+    {
+        "file":  "runtime\\battlefield.lua",
+        "line":  1394,
+        "event":  "单位-造成伤害时"
+    },
+    {
+        "file":  "runtime\\battlefield.lua",
+        "line":  1400,
+        "event":  "单位-受到伤害前"
+    },
+    {
+        "file":  "runtime\\battlefield.lua",
+        "line":  1406,
+        "event":  "单位-受到伤害后"
+    },
+    {
+        "file":  "runtime\\bond_modifier_effects.lua",
+        "line":  926,
+        "event":  "单位-死亡"
+    },
+    {
+        "file":  "runtime\\cannon_skill_134258724.lua",
+        "line":  105,
+        "event":  "施法-出手"
+    },
+    {
+        "file":  "runtime\\hero_selection_range.lua",
+        "line":  179,
+        "event":  "本地-鼠标-按下单位"
+    },
+    {
+        "file":  "runtime\\hero_selection_range.lua",
+        "line":  185,
+        "event":  "本地-选中-单位"
+    },
+    {
+        "file":  "runtime\\hero_selection_range.lua",
+        "line":  191,
+        "event":  "本地-选中-单位组"
+    },
+    {
+        "file":  "runtime\\hero_selection_range.lua",
+        "line":  198,
+        "event":  "本地-选中-取消"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  37,
+        "event":  "单位-升级"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  59,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  65,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  71,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  77,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  83,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  91,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  101,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  109,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  115,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  121,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  127,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  133,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  140,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  147,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  161,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  167,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  174,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  181,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  193,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  196,
+        "event":  "键盘-按下"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  199,
+        "event":  "键盘-抬起"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  202,
+        "event":  "键盘-抬起"
+    },
+    {
+        "file":  "runtime\\input_events.lua",
+        "line":  207,
+        "event":  "键盘-按下"
+    }
+]

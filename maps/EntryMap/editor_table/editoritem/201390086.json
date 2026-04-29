@@ -423,88 +423,7 @@
     "init_stock": 5, 
     "item_billboard_type": 1, 
     "key": 201390086, 
-    "kv": {
-        "entry_active_ability": {
-            "annotation": "", 
-            "desc": "", 
-            "etype": 0, 
-            "key": "entry_active_ability", 
-            "prop_cls": "PText", 
-            "remark": "", 
-            "type": 0, 
-            "value": ""
-        }, 
-        "entry_archetype": {
-            "annotation": "", 
-            "desc": "", 
-            "etype": 0, 
-            "key": "entry_archetype", 
-            "prop_cls": "PText", 
-            "remark": "", 
-            "type": 0, 
-            "value": "\u8ffd\u51fb\u65a9\u9996"
-        }, 
-        "entry_attr_pack": {
-            "annotation": "", 
-            "desc": "", 
-            "etype": 0, 
-            "key": "entry_attr_pack", 
-            "prop_cls": "PText", 
-            "remark": "", 
-            "type": 0, 
-            "value": "attached_attack_phy=0, 0, 20, 0, 0 | attached_critical_chance=0, 0, 10, 0, 0"
-        }, 
-        "entry_handler": {
-            "annotation": "", 
-            "desc": "", 
-            "etype": 0, 
-            "key": "entry_handler", 
-            "prop_cls": "PText", 
-            "remark": "", 
-            "type": 0, 
-            "value": "editor_item_builtin"
-        }, 
-        "entry_item_kind": {
-            "annotation": "", 
-            "desc": "", 
-            "etype": 0, 
-            "key": "entry_item_kind", 
-            "prop_cls": "PText", 
-            "remark": "", 
-            "type": 0, 
-            "value": "equipment"
-        }, 
-        "entry_passive_abilities": {
-            "annotation": "", 
-            "desc": "", 
-            "etype": 0, 
-            "key": "entry_passive_abilities", 
-            "prop_cls": "PText", 
-            "remark": "", 
-            "type": 0, 
-            "value": ""
-        }, 
-        "entry_summary": {
-            "annotation": "", 
-            "desc": "", 
-            "etype": 0, 
-            "key": "entry_summary", 
-            "prop_cls": "PText", 
-            "remark": "", 
-            "type": 0, 
-            "value": "\u7a33\u5b9a\u63d0\u5347\u7269\u653b\u4e0e\u66b4\u51fb\u7684\u5355\u5200\uff0c\u9002\u5408\u6253\u8ffd\u51fb\u6536\u5272\u548c\u65a9\u6740\u7a97\u53e3\u3002"
-        }, 
-        "entry_tags": {
-            "annotation": "", 
-            "desc": "", 
-            "etype": 0, 
-            "key": "entry_tags", 
-            "prop_cls": "PText", 
-            "remark": "", 
-            "type": 0, 
-            "value": "\u7269\u653b, \u66b4\u51fb, \u6536\u5272"
-        }
-    }, 
+    "kv": {}, 
     "level": 1, 
     "material_alpha": 0, 
     "material_change": 0, 
@@ -579,8 +498,8 @@
     "tags": {
         "__tuple__": true, 
         "items": [
-            "\u7269\u653b", 
-            "\u66b4\u51fb"
+            "\u00e7\u0089\u00a9\u00e6\u0094\u00bb", 
+            "\u00e6\u009a\u00b4\u00e5\u0087\u00bb"
         ]
     }, 
     "uid": "201390086", 

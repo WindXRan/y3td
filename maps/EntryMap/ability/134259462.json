@@ -276,7 +276,7 @@
             "p_trigger_id": null, 
             "trigger_id": 661020674, 
             "trigger_name": "Action", 
-            "valid": false, 
+            "valid": true, 
             "var_data": [
                 {}, 
                 {}, 

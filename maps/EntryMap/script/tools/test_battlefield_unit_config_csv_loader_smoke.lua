@@ -8,8 +8,8 @@ assert(type(cfg.fixed_unit_ids) == 'table', 'fixed_unit_ids should be a table')
 
 assert(cfg.temp_unit_labels.hero == '守关弓手', 'hero temp label should stay intact')
 assert(cfg.temp_unit_labels.wave_5_boss == '赵云', 'wave_5_boss temp label should stay intact')
-assert(cfg.temp_unit_labels.treasure_trial_guard == '刘备', 'treasure_trial_guard temp label should stay intact')
+assert(cfg.temp_unit_labels.treasure_trial_guard == nil, 'treasure_trial_guard temp label should be removed')
 
-assert(cfg.fixed_unit_ids.hero == 134259567, 'hero unit id should use initial archer')
+assert(cfg.fixed_unit_ids.hero == 134248910, 'hero unit id should use current configured archer')
 
 print('battlefield_unit_config csv loader smoke ok')

@@ -3,7 +3,10 @@
     "_ref_": 134253920, 
     "attached_ability": {
         "__tuple__": true, 
-        "items": []
+        "items": [
+            134256522, 
+            1
+        ]
     }, 
     "attached_agility": {
         "__tuple__": true, 
@@ -235,7 +238,15 @@
             0
         ]
     }, 
-    "attached_passive_abilities": [], 
+    "attached_passive_abilities": {
+        "__tuple__": true, 
+        "items": [
+            [
+                134220131, 
+                1
+            ]
+        ]
+    }, 
     "attached_pene_mag": {
         "__tuple__": true, 
         "items": [
@@ -500,10 +511,10 @@
     "tags": {
         "__tuple__": true, 
         "items": [
-            "\u9632\u5fa1", 
-            "\u62a4\u7532", 
-            "\u51b7\u5374", 
-            "\u4e3b\u52a8"
+            "\u00e9\u0098\u00b2\u00e5\u00be\u00a1", 
+            "\u00e6\u008a\u00a4\u00e7\u0094\u00b2", 
+            "\u00e5\u0086\u00b7\u00e5\u008d\u00b4", 
+            "\u00e4\u00b8\u00bb\u00e5\u008a\u00a8"
         ]
     }, 
     "uid": "134253920", 
