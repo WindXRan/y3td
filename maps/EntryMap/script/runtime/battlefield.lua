@@ -16,6 +16,7 @@ function M.create(env)
   local api = {}
   local VISUAL_ANIMATION_SPEED = 0.5
   local HERO_RUNTIME_FALLBACK_UNIT_ID = 134274912
+  local ENEMY_RUNTIME_FALLBACK_UNIT_ID = 100005
   local ENEMY_BASE_SPEED_FACTORS = {
     main = 0.76,
     boss = 0.82,
@@ -112,6 +113,16 @@ function M.create(env)
 
   local function has_unit_data(unit_id)
     return unit_id ~= nil and y3.object.unit[unit_id] and y3.object.unit[unit_id].data ~= nil
+  end
+
+  local function resolve_runtime_enemy_unit_id(unit_id)
+    if has_unit_data(unit_id) then
+      return unit_id
+    end
+    if has_unit_data(ENEMY_RUNTIME_FALLBACK_UNIT_ID) then
+      return ENEMY_RUNTIME_FALLBACK_UNIT_ID
+    end
+    return unit_id
   end
 
   local function is_active_enemy(unit)
@@ -836,6 +847,7 @@ function M.create(env)
 
   local function spawn_enemy(unit_id, area_id, facing, info)
     info = info or {}
+    local runtime_unit_id = resolve_runtime_enemy_unit_id(unit_id)
     local spawn_point = random_point_in_area(area_id)
     local hero = STATE.hero
     if hero and hero.is_exist and hero:is_exist() and hero.get_point and spawn_point then
@@ -865,10 +877,10 @@ function M.create(env)
         end
       end
     end
-    local ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), unit_id, spawn_point, facing or 180.0)
+    local ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), runtime_unit_id, spawn_point, facing or 180.0)
     if not ok or not unit_or_err then
       if message then
-        message(string.format('刷怪失败：单位 %s 创建失败，请检查物编/模型资源是否已加载。', tostring(unit_id)))
+        message(string.format('刷怪失败：单位 %s(解析后:%s) 创建失败，请检查物编/模型资源是否已加载。', tostring(unit_id), tostring(runtime_unit_id)))
       end
       return nil
     end
@@ -1134,7 +1146,7 @@ function M.create(env)
       spawn_area_id = task.spawn_area_id,
       reward = { gold = 0, wood = 0, exp = 0, special = nil },
       kill_reward = { gold = 0, wood = 0, exp = 0, special = nil },
-      unit_id = task.spawn_unit_id,
+      unit_id = resolve_runtime_enemy_unit_id(task.spawn_unit_id),
       attr_overrides = task.attr_overrides,
       boss_unit_id = nil,
       guard_unit_id = nil,
@@ -1444,6 +1456,7 @@ function M.create(env)
   function api.validate_config()
     local missing = {}
     local checked = {}
+    local fallback_lines = {}
 
     local function check_unit(name, unit_id)
       if unit_id == nil then
@@ -1455,7 +1468,8 @@ function M.create(env)
       end
       checked[unit_id] = true
       if not has_unit_data(unit_id) then
-        missing[#missing + 1] = string.format('%s: %d', name, unit_id)
+        local fallback_id = resolve_runtime_enemy_unit_id(unit_id)
+        fallback_lines[#fallback_lines + 1] = string.format('%s: %d -> fallback:%s', name, unit_id, tostring(fallback_id))
       end
     end
 
@@ -1486,15 +1500,22 @@ function M.create(env)
       end
     end
 
-    if #missing == 0 then
-      return true
+    if #fallback_lines > 0 then
+      message('检测到缺失单位物编 ID，主循环将继续并使用 fallback 单位：')
+      for _, line in ipairs(fallback_lines) do
+        message(line)
+      end
     end
 
-    message('主循环骨架未启动：以下单位物编 ID 不存在，请先替换 entry_config.lua 中的配置。')
-    for _, line in ipairs(missing) do
-      message(line)
+    if #missing > 0 then
+      message('配置存在缺失项（非单位物编），主循环骨架未启动：')
+      for _, line in ipairs(missing) do
+        message(line)
+      end
+      return false
     end
-    return false
+
+    return true
   end
 
   function api.get_active_challenge_count()
