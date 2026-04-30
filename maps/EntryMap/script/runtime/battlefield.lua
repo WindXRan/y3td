@@ -875,6 +875,17 @@ function M.create(env)
       end
     end
     local ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), runtime_unit_id, spawn_point, facing or 180.0)
+    if (not ok or not unit_or_err) and runtime_unit_id ~= ENEMY_RUNTIME_FALLBACK_UNIT_ID then
+      ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), ENEMY_RUNTIME_FALLBACK_UNIT_ID, spawn_point, facing or 180.0)
+      if ok and unit_or_err and message then
+        message(string.format(
+          '刷怪降级：单位 %s(解析后:%s) 创建失败，已自动回退到 %s。',
+          tostring(unit_id),
+          tostring(runtime_unit_id),
+          tostring(ENEMY_RUNTIME_FALLBACK_UNIT_ID)
+        ))
+      end
+    end
     if not ok or not unit_or_err then
       if message then
         message(string.format('刷怪失败：单位 %s(解析后:%s) 创建失败，请检查物编/模型资源是否已加载。', tostring(unit_id), tostring(runtime_unit_id)))
