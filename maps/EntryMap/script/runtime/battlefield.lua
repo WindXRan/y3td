@@ -853,12 +853,9 @@ function M.create(env)
     if hero and hero.is_exist and hero:is_exist() and hero.get_point and spawn_point then
       local hero_point = hero:get_point()
       if hero_point and y3 and y3.point and y3.point.create then
-        local attack_range = tonumber(hero_attr_system and hero_attr_system.get_attr and hero_attr_system.get_attr(hero, '攻击范围'))
-          or tonumber(hero.get_attr and hero:get_attr('攻击范围'))
-          or 250
-        attack_range = math.max(120, attack_range)
-        local ring_inner = attack_range + 120
-        local ring_outer = attack_range + 340
+        -- 刷怪距离不再跟英雄攻击范围绑定，避免攻击范围成长后刷到视野外。
+        local ring_inner = 320
+        local ring_outer = 520
         -- 保持“敌人从右侧来”的体验：限制在英雄右侧扇形区域刷怪。
         local angle = (math.random() * 1.2) - 0.6
         local distance = ring_inner + math.random() * math.max(1, ring_outer - ring_inner)
