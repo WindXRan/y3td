@@ -3160,10 +3160,27 @@ local function resolve_choice_panel_card(scroll, index)
     names = { 'Card4', 'Card_4' }
   end
   for _, name in ipairs(names) do
-    local card = a.resolve_child(scroll, name)
+    local card = nil
+    if scroll and scroll.get_child then
+      local ok, child = pcall(scroll.get_child, scroll, name)
+      if ok then
+        card = child
+      end
+    end
     if card then
       return card
     end
+  end
+  return nil
+end
+
+local function resolve_ui_child(parent, child_name)
+  if not parent or not child_name or not parent.get_child then
+    return nil
+  end
+  local ok, child = pcall(parent.get_child, parent, child_name)
+  if ok then
+    return child
   end
   return nil
 end
@@ -3239,27 +3256,27 @@ local function build_choice_list_cards()
     set_ui_visible(card, is_visible and choice ~= nil)
 
     if card and is_visible and choice then
-      local title = a.resolve_child(card, 'title')
+      local title = resolve_ui_child(card, 'title')
       if title and title.set_text then
         title:set_text(tostring(choice.pretty_display_name or choice.display_name or choice.title_text or choice.name or '候选'))
       end
 
-      local subtitle = a.resolve_child(card, 'sub_title')
+      local subtitle = resolve_ui_child(card, 'sub_title')
       if subtitle and subtitle.set_text then
         subtitle:set_text(tostring(choice.bond_root_name or choice.bond_name or choice.tag or choice.quality or kind or '候选'))
       end
 
-      local desc = a.resolve_child(card, 'desc')
+      local desc = resolve_ui_child(card, 'desc')
       if desc and desc.set_text then
         desc:set_text(tostring(choice.desc_text or choice.summary or choice.effect_body_text or ''))
       end
 
-      local icon = a.resolve_child(card, 'image_2_1')
+      local icon = resolve_ui_child(card, 'image_2_1')
       if icon and icon.set_image then
         icon:set_image(choice.ui_icon or choice.icon or 999)
       end
 
-      local pick_btn = a.resolve_child(card, 'pick_btn') or a.resolve_child(card, 'btn')
+      local pick_btn = resolve_ui_child(card, 'pick_btn') or resolve_ui_child(card, 'btn')
       if pick_btn and pick_btn.set_btn_status_string then
         pick_btn:set_btn_status_string('常态', '选择')
         pick_btn:set_btn_status_string('悬浮', '选择')
