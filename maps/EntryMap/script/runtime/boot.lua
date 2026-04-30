@@ -1,4 +1,4 @@
-﻿local CONFIG = require 'entry_config'
+﻿local CONFIG = require 'config.entry_config'
 local BondSystem = require 'runtime.bonds_chain'
 local AttackSkillObjects = require 'data.object_tables.attack_skills'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
@@ -1357,7 +1357,9 @@ local function get_damage_bonus_multiplier(target, context)
 end
 
 local function try_trigger_hunter_first_hit(target)
-  BondSystem.notify_basic_attack(create_bond_env(), target)
+  if STATE.basic_attack_bond_enabled ~= false then
+    BondSystem.notify_basic_attack(create_bond_env(), target)
+  end
   BondSystem.try_trigger_hunter_first_hit(create_bond_env(), target)
 end
 
@@ -2987,6 +2989,13 @@ gm_bond_effects_system = GmBondEffectsSystem.create({
       return debug_actions_system.debug_get_global_projectile_override()
     end
     return nil
+  end,
+  set_basic_attack_enabled = function(enabled)
+    STATE.basic_attack_bond_enabled = enabled == true
+    return true
+  end,
+  get_basic_attack_enabled = function()
+    return STATE.basic_attack_bond_enabled ~= false
   end,
   get_game_time = function()
     if y3 and y3.game and y3.game.current_game_run_time then

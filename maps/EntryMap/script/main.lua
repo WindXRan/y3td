@@ -22,11 +22,11 @@ local function load_runtime()
   runtime_load_attempted = true
 
   local ok, result = xpcall(function()
-    return require 'entry_runtime'
+    return require 'runtime.boot'
   end, debug.traceback)
 
   if not ok then
-    print('[EntryMap] failed to require entry_runtime:\n' .. tostring(result))
+    print('[EntryMap] failed to require runtime.boot:\n' .. tostring(result))
     return nil
   end
 
@@ -44,7 +44,7 @@ local function bootstrap_once()
     return
   end
   if type(loaded_runtime.bootstrap) ~= 'function' then
-    print('[EntryMap] entry_runtime.bootstrap is missing')
+    print('[EntryMap] runtime.boot.bootstrap is missing')
     return
   end
 
