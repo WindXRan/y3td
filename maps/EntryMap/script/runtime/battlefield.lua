@@ -268,24 +268,24 @@ function M.create(env)
       return nil
     end
 
-    local ok, particle = pcall(y3.particle.create, {
-      type = effect_key,
+    local forced = tonumber(STATE and STATE.debug_force_projectile_key) or 0
+    local key = forced > 0 and math.floor(forced) or 201392033
+    local ok, particle = pcall(y3.projectile.create, {
+      key = key,
       target = point,
+      socket = 'origin',
+      owner = STATE and STATE.hero or nil,
       angle = angle or 0,
-      scale = scale or 1.0,
       time = scale_visual_duration(time),
-      height = height or 0,
-      immediate = true,
+      remove_immediately = true,
     })
     if not ok or not particle then
       return nil
     end
 
-    particle:set_facing(angle or 0)
-    if color then
-      particle:set_color(color[1], color[2], color[3], color[4])
-    end
-    particle:set_animation_speed(resolve_visual_animation_speed(anim_speed))
+    pcall(function()
+      particle:set_facing(angle or 0)
+    end)
     return particle
   end
 
@@ -482,8 +482,10 @@ function M.create(env)
       profile.burst_color,
       profile.burst_anim_speed
     )
-    if burst then
-      burst:set_rotate(0, 0, hit_angle)
+    if burst and burst.set_rotate then
+      pcall(function()
+        burst:set_rotate(0, 0, hit_angle)
+      end)
     end
 
     local mist = create_point_particle(
@@ -548,8 +550,10 @@ function M.create(env)
         { 190, 20, 20, 196 },
         1.12
       )
-      if shock then
-        shock:set_rotate(0, 0, hit_angle)
+      if shock and shock.set_rotate then
+        pcall(function()
+          shock:set_rotate(0, 0, hit_angle)
+        end)
       end
     end
 
@@ -656,8 +660,10 @@ function M.create(env)
       profile.effect_color or { 220, 30, 26, 210 },
       profile.effect_anim_speed or 1.10
     )
-    if blood_fx then
-      blood_fx:set_rotate(0, 0, death_angle)
+    if blood_fx and blood_fx.set_rotate then
+      pcall(function()
+        blood_fx:set_rotate(0, 0, death_angle)
+      end)
     end
 
     return profile.remove_delay or 0.55
