@@ -10,6 +10,15 @@ local SkillDamageTemplates = require 'runtime.skill_damage_templates'
 local M = {}
 local FORCE_SPECIAL_EFFECTS_100 = false
 local DEFAULT_LINE_MOTION_ANGLE_OFFSET = 0
+local TWO_PI = math.pi * 2
+
+local function angle_to_radian(angle)
+  local value = tonumber(angle) or 0
+  if math.abs(value) > (TWO_PI + 0.001) then
+    return math.rad(value)
+  end
+  return value
+end
 -- 全局视觉缩放：用于快速抑制羁绊特效光污染与闪屏。
 local GLOBAL_PARTICLE_SCALE_MULTIPLIER = 0.90
 local GLOBAL_AREA_SCALE_MULTIPLIER = 0.95
@@ -660,6 +669,11 @@ local function launch_projectile_to_target(env, target, visual_cfg)
     end
   end)
   if hero_point and target_point then
+    if hero_point.get_angle_with then
+      pcall(function()
+        launch_angle = hero_point:get_angle_with(target_point)
+      end)
+    end
     local hx = hero_point.get_x and hero_point:get_x() or nil
     local hy = hero_point.get_y and hero_point:get_y() or nil
     local tx = target_point.get_x and target_point:get_x() or nil
@@ -668,15 +682,9 @@ local function launch_projectile_to_target(env, target, visual_cfg)
       local dx = tx - hx
       local dy = ty - hy
       target_distance_now = math.sqrt(dx * dx + dy * dy)
-      if target_distance_now > 0.001 then
-        -- 使用坐标向量计算角度，避免 get_angle_with 在部分对象上的朝向反转问题。
-        launch_angle = math.atan(dy, dx)
+      if launch_angle == nil and target_distance_now > 0.001 then
+        launch_angle = math.deg(math.atan(dy, dx))
       end
-    end
-    if launch_angle == nil and hero_point.get_angle_with then
-      pcall(function()
-        launch_angle = hero_point:get_angle_with(target_point)
-      end)
     end
   end
   if launch_angle == nil then
@@ -842,8 +850,9 @@ local function create_offset_point(env, center_point, angle, distance, z)
   local base_y = center_point.get_y and center_point:get_y() or 0
   local base_z = center_point.get_z and center_point:get_z() or 0
   local offset = distance or 0
-  local point_x = base_x + math.cos(angle or 0) * offset
-  local point_y = base_y + math.sin(angle or 0) * offset
+  local angle_rad = angle_to_radian(angle)
+  local point_x = base_x + math.cos(angle_rad) * offset
+  local point_y = base_y + math.sin(angle_rad) * offset
   local point_z = base_z + (z or 0)
   local ok, point = pcall(y3.point.create, point_x, point_y, point_z)
   if ok then
@@ -1203,6 +1212,14 @@ local function launch_projectile_to_point(env, direction, distance, visual_cfg, 
 end
 
 local function compute_direction_by_points(from_point, to_point, fallback_angle)
+  if from_point and from_point.get_angle_with and to_point then
+    local ok, angle = pcall(function()
+      return from_point:get_angle_with(to_point)
+    end)
+    if ok and angle ~= nil then
+      return angle
+    end
+  end
   local fx = from_point and from_point.get_x and from_point:get_x() or nil
   local fy = from_point and from_point.get_y and from_point:get_y() or nil
   local tx = to_point and to_point.get_x and to_point:get_x() or nil
@@ -1211,11 +1228,8 @@ local function compute_direction_by_points(from_point, to_point, fallback_angle)
     local dx = tx - fx
     local dy = ty - fy
     if math.abs(dx) > 0.001 or math.abs(dy) > 0.001 then
-      return math.atan(dy, dx)
+      return math.deg(math.atan(dy, dx))
     end
-  end
-  if from_point and from_point.get_angle_with and to_point then
-    return from_point:get_angle_with(to_point)
   end
   return fallback_angle or 0
 end

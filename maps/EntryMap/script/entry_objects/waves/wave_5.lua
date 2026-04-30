@@ -5,9 +5,9 @@ local segment = helpers.segment
 return {
       id = 'wave_5',
       index = 5,
-      name = 'ç¬¬5æ³¢ï¼šæ·±æ¸Šç¥­ä»†',
-      main_unit_id = 134280101,
-      boss_unit_id = 134222661,
+      name = 'µÚ5²¨£ºÉîÔ¨¼ÀÆÍ',
+      main_unit_id = 100013,
+      boss_unit_id = 100014,
       spawn_area_id = 'main_spawn_wave_5',
       boss_spawn_area_id = 'boss_spawn_wave_5',
       boss_spawn_sec = scale(240),
@@ -22,8 +22,8 @@ return {
       post_boss_interval_sec = scale(1.55),
       main_kill_reward = { exp = 16, gold = 8, wood = 2 },
       boss_kill_reward = { exp = 210, gold = 165, wood = 40 },
-      boss_special = 'èƒœåˆ©ç»“ç®—',
-      theme = 'ç»ˆç›˜é«˜åŽ‹',
+      boss_special = 'Ê¤Àû½áËã',
+      theme = 'ÖÕÅÌ¸ßÑ¹',
       boss_timeline_profile_id = 'boss_timeline_wave_5',
       boss_low_hp_profile_id = 'boss_low_hp_wave_5',
     }

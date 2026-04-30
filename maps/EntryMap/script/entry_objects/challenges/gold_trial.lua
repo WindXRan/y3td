@@ -4,13 +4,13 @@ local challenge_batch = helpers.challenge_batch
 
 return {
   id = 'gold_trial',
-  name = 'é‡‘å¸æŒ‘æˆ˜',
+  name = '½ğ±ÒÌôÕ½',
   hotkey = 'Q',
   duration_sec = scale(60),
   cost_charge = 1,
   spawn_area_id = 'challenge_spawn_top',
   reward = { gold = 260, wood = 0, exp = 0, special = nil },
-  unit_id = 134242543,
+  unit_id = 100003,
   batches = {
     challenge_batch(0, 10),
   },
