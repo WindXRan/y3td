@@ -9,7 +9,7 @@ local SkillDamageTemplates = require 'runtime.skill_damage_templates'
 
 local M = {}
 local FORCE_SPECIAL_EFFECTS_100 = false
-local DEFAULT_LINE_MOTION_ANGLE_OFFSET = math.pi / 2
+local DEFAULT_LINE_MOTION_ANGLE_OFFSET = 0
 -- 全局视觉缩放：用于快速抑制羁绊特效光污染与闪屏。
 local GLOBAL_PARTICLE_SCALE_MULTIPLIER = 0.90
 local GLOBAL_AREA_SCALE_MULTIPLIER = 0.95
@@ -640,9 +640,25 @@ local function launch_projectile_to_target(env, target, visual_cfg)
   end
 
   local launch_angle = nil
+  local fallback_facing = 0
+  pcall(function()
+    if hero.get_facing then
+      fallback_facing = tonumber(hero:get_facing()) or 0
+    end
+  end)
   local target_distance_now = nil
-  local hero_point = hero.get_point and hero:get_point() or nil
-  local target_point = target.get_point and target:get_point() or nil
+  local hero_point = nil
+  local target_point = nil
+  pcall(function()
+    if hero.get_point then
+      hero_point = hero:get_point()
+    end
+  end)
+  pcall(function()
+    if target.get_point then
+      target_point = target:get_point()
+    end
+  end)
   if hero_point and target_point then
     local hx = hero_point.get_x and hero_point:get_x() or nil
     local hy = hero_point.get_y and hero_point:get_y() or nil
@@ -657,6 +673,14 @@ local function launch_projectile_to_target(env, target, visual_cfg)
         launch_angle = math.atan(dy, dx)
       end
     end
+    if launch_angle == nil and hero_point.get_angle_with then
+      pcall(function()
+        launch_angle = hero_point:get_angle_with(target_point)
+      end)
+    end
+  end
+  if launch_angle == nil then
+    launch_angle = fallback_facing
   end
 
   local function create_with_key(projectile_key)
@@ -711,6 +735,15 @@ local function launch_projectile_to_target(env, target, visual_cfg)
     local line_motion_angle_offset = tonumber(visual_cfg and visual_cfg.projectile_motion_angle_offset)
     if line_motion_angle_offset == nil then
       line_motion_angle_offset = DEFAULT_LINE_MOTION_ANGLE_OFFSET
+    end
+    if state and state.bond_debug_trace_enabled == true and env and env.message then
+      env.message(string.format(
+        '[bond_line_angle] mode=%s launch=%.4f offset=%.4f final=%.4f',
+        tostring(motion_mode),
+        tonumber(launch_angle or 0) or 0,
+        tonumber(line_motion_angle_offset or 0) or 0,
+        (tonumber(launch_angle or 0) or 0) + (tonumber(line_motion_angle_offset or 0) or 0)
+      ))
     end
     ok_move = pcall(function()
       projectile:mover_line({

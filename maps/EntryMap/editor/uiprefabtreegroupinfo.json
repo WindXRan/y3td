@@ -104,6 +104,13 @@
       ]
      }
     ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "a2082192-b8a2-40f2-a3c7-a47acd74468b", 
+     "ChoiceTest"
+    ]
    }
   ]
  }, 
