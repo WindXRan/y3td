@@ -6,7 +6,6 @@ local BondTemplates = require 'runtime.bond_templates.init'
 local BondDrawConfig = require 'data.object_tables.bond_draw_config'
 local BondMiscConfig = require 'data.object_tables.bond_misc_config'
 local BondPickConfig = require 'data.object_tables.bond_pick_config'
-local BondRootSets = require 'data.object_tables.bond_root_sets'
 local BondModifierPool = require 'data.object_tables.bond_modifier_pool'
 local BondModifierEffects = require 'runtime.bond_modifier_effects'
 local SkillRuntimeTuning = require 'data.object_tables.skill_runtime_tuning'
@@ -58,7 +57,7 @@ local function format_bond_skill_status(template, bond_name)
   return string.format('%s：%s。', BOND_SKILL_NAME, tostring(bond_name or '未知羁绊'))
 end
 
-local ROOT_SET_DOC_META = BondRootSets.by_id or {}
+local ROOT_SET_DOC_META = {}
 
 local is_root_set_complete
 local is_group_started
