@@ -295,9 +295,6 @@ function M.create(deps)
           + three_attr * rule_number(basic_rule.wave_damage_three_attr_ratio, 1.00)
         local line_rule = type(basic_rule.line) == 'table' and basic_rule.line or {}
         for index = 1, wave_count do
-          if index > 1 then
-            blink_hero_tactical_reposition(env, target, visual_cfg)
-          end
           execute_linear_bond_template(env, target, visual_cfg, {
             bond_name = '枪炮师',
             distance = rule_number(line_rule.distance, 1600),
