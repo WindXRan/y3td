@@ -15,7 +15,7 @@ function M.create(env)
 
   local api = {}
   local VISUAL_ANIMATION_SPEED = 0.5
-  local HERO_RUNTIME_FALLBACK_UNIT_ID = 134248910
+  local HERO_RUNTIME_FALLBACK_UNIT_ID = 100001
   local ENEMY_BASE_SPEED_FACTORS = {
     main = 0.76,
     boss = 0.82,
@@ -1543,4 +1543,3 @@ function M.create(env)
 end
 
 return M
-
