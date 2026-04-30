@@ -124,6 +124,8 @@ for bond_name, visual_entry in pairs(BondVisualEditorIds.visual_by_bond or {}) d
       projectile_speed = tonumber(visual_entry.projectile_speed),
       projectile_time = tonumber(visual_entry.projectile_time),
       projectile_target_distance = tonumber(visual_entry.target_distance),
+      projectile_line_distance = tonumber(visual_entry.projectile_line_distance),
+      projectile_angle_offset = tonumber(visual_entry.projectile_angle_offset),
       area_fx_base_radius = tonumber(visual_entry.area_fx_base_radius),
       area_fx_scale_bias = tonumber(visual_entry.area_fx_scale_bias),
       area_fx_min_scale = tonumber(visual_entry.area_fx_min_scale),
@@ -1098,6 +1100,8 @@ local function launch_projectile_to_point(env, direction, distance, visual_cfg, 
   if not visual_cfg or not visual_cfg.projectile_key then
     return false
   end
+  local move_angle = tonumber(direction) or 0
+  local facing_angle = move_angle + (tonumber(visual_cfg.projectile_angle_offset) or 0)
 
   local function create_with_key(projectile_key)
     return pcall(y3.projectile.create, {
@@ -1105,7 +1109,7 @@ local function launch_projectile_to_point(env, direction, distance, visual_cfg, 
       target = hero,
       socket = 'origin',
       owner = hero,
-      angle = direction,
+      angle = move_angle,
       time = math.max(0.05, tonumber(life_time_override) or tonumber(visual_cfg.projectile_time) or 1.0),
       remove_immediately = true,
     })
@@ -1120,12 +1124,12 @@ local function launch_projectile_to_point(env, direction, distance, visual_cfg, 
     projectile:set_height(visual_cfg.projectile_height)
   end)
   pcall(function()
-    projectile:set_facing(direction)
+    projectile:set_facing(facing_angle)
   end)
 
   local ok_move = pcall(function()
     projectile:mover_line({
-      angle = direction,
+      angle = move_angle,
       distance = math.max(1, tonumber(distance) or 1),
       speed = math.max(200, tonumber(visual_cfg.projectile_speed) or 800),
       height = visual_cfg.projectile_height,
@@ -1238,7 +1242,7 @@ local function execute_projectile_pierce_template(env, target, visual_cfg, opts,
     return false
   end
 
-  local line_distance = math.max(1, tonumber(opts and opts.distance) or 0)
+  local line_distance = math.max(1, tonumber(opts and opts.distance) or tonumber(visual_cfg and visual_cfg.projectile_line_distance) or 0)
   local pierce_width = math.max(40, tonumber(opts and opts.pierce_width) or 120)
   local sample_mode = tostring(opts and opts.sample_mode or 'line')
   local sample_radius = math.max(40, tonumber(opts and opts.sample_radius) or math.floor(pierce_width * 0.65))
