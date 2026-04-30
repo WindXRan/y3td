@@ -31,28 +31,29 @@ local M = {
   },
   bond = {
     labels = {
-      effect_name = '羁绊技能',
-      activation_template = '%s羁绊技能',
-      activation_prompt = '抽取并集齐同一羁绊的卡牌后，可自动吞噬并激活羁绊技能。',
-      already_active_template = '羁绊技能已处于激活状态：%s。',
-      active_success_template = '已激活羁绊技能：%s。',
+      effect_name = '技能系统',
+      activation_template = '%s技能系统',
+      activation_prompt = '抽取并集齐同一技能的卡牌后，可自动吞噬并激活技能系统。',
+      already_active_template = '技能系统已处于激活状态：%s。',
+      active_success_template = '已激活技能系统：%s。',
     },
     ui = {
-      skill_block_title = '[羁绊技能]',
-      skill_section_template = '【%s】羁绊技能：',
-      skill_section_fallback = '【羁绊】羁绊技能：',
-      hud_skill_title = '羁绊技能',
+      skill_block_title = '[技能系统]',
+      skill_section_template = '【%s】技能系统：',
+      skill_section_fallback = '【技能】技能系统：',
+      hud_skill_title = '技能系统',
     },
     gm = {
-      status_template = '羁绊技能：%s',
-      panel_intro = '用于立刻获得单卡特殊效果，或立刻激活整套羁绊技能。',
-      activate_button = '激活选中羁绊技能（自动补齐）',
-      activation_tab = '羁绊技能',
-      mode_activation = '羁绊技能',
-      cmd_activate_desc = '立即激活指定羁绊技能：.egmbondeffect <羁绊名>',
-      cmd_test_desc = '运行羁绊技能自动化自检：.egmbondtest',
+      status_template = '技能系统：%s',
+      panel_intro = '用于立刻获得单卡特殊效果，或立刻激活整套技能系统。',
+      activate_button = '激活选中技能系统（自动补齐）',
+      activation_tab = '技能系统',
+      mode_activation = '技能系统',
+      cmd_activate_desc = '立即激活指定技能系统：.egmbondeffect <技能名>',
+      cmd_test_desc = '运行技能系统自动化自检：.egmbondtest',
     },
   },
 }
 
 return M
+

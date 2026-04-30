@@ -45,7 +45,6 @@ local B=v.hero_attr_system;
 local C=v.message or function()end;
 
 local E=v.try_bond_draw;
-local F=v.show_bond_progress;
 local G=v.try_evolution_entry;
 local H=nil;
 local I=v.try_start_challenge;
@@ -1116,8 +1115,7 @@ cV('battle_bond_hover_icon_'..tostring(bL),Z(dA3..'.icon'),dA5,dA6)
 cV('battle_bond_hover_frame_'..tostring(bL),Z(dA3..'.frame'),dA5,dA6)
 cV('battle_bond_hover_bg_'..tostring(bL),Z(dA3..'.card_slot_'..tostring(bL)..'_bg'),dA5,dA6)
 cS('battle_bond_slot_'..tostring(bL),dA4,function()
-if F then F()
-else cZ('当前没有流派进度可展示。',4,'流派进度')end end)end;
+cZ('bond_progress 功能已移除。',4,'提示')end)end;
 cS('battle_exp_bar_evolve',cN('exp_bar.evolve_click_area'),function()
 if G then G()end;
 U()end)

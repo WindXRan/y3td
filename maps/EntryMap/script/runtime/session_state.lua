@@ -106,6 +106,7 @@ function M.create(env)
     }
     STATE.resource_income_elapsed = 0
     STATE.bond_runtime = create_bond_runtime()
+    STATE.skill_runtime = STATE.bond_runtime
     STATE.battle_event_feed = create_battle_event_feed_runtime()
     STATE.effect_debug_runtime = create_effect_debug_runtime()
     STATE.mark_runtime = create_mark_runtime()
@@ -118,6 +119,7 @@ function M.create(env)
     STATE.reward_queue = {}
     reset_challenge_charge_state()
     STATE.bond_draw_count = 0
+    STATE.skill_draw_count = 0
     STATE.defeated_boss_waves = {}
     STATE.basic_attack_ability_bound = false
     STATE.basic_attack_ability_warned = false
@@ -126,6 +128,8 @@ function M.create(env)
     STATE.attr_choice_runtime = nil
     STATE.bond_swallow_panel_visible = false
     STATE.bond_swallow_selected_root_index = nil
+    STATE.skill_swallow_panel_visible = false
+    STATE.skill_swallow_selected_root_index = nil
     STATE.gear_state = nil
     STATE.choice_panel_hidden = false
     STATE.choice_panel = nil

@@ -2364,9 +2364,6 @@ overview_model_system = OverviewModelSystem.create({
   build_bond_choice_preview_text = function(index, choice)
     return BondSystem.build_choice_preview_text(index, choice)
   end,
-  build_bond_progress_lines = function(max_lines)
-    return BondSystem.build_progress_lines(STATE, max_lines)
-  end,
 })
 
 get_runtime_overview_model = function()
@@ -2506,6 +2503,10 @@ local function try_bond_draw()
     end
   end
   BondSystem.try_draw(create_bond_env())
+end
+
+local function try_skill_draw()
+  return try_bond_draw()
 end
 
 local function finish_game(is_win, reason)
@@ -2775,8 +2776,11 @@ local function open_bond_card_album()
       return true
     end
   end
-  BondSystem.show_bond_progress(create_bond_env())
   return false
+end
+
+local function open_skill_card_album()
+  return open_bond_card_album()
 end
 
 local function open_runtime_save_panel()
@@ -2800,9 +2804,7 @@ runtime_hud_system = RuntimeHudSystem.create({
   hero_attr_system = hero_attr_system,
   message = message,
   try_bond_draw = try_bond_draw,
-  show_bond_progress = function()
-    return open_bond_card_album()
-  end,
+  try_skill_draw = try_skill_draw,
   try_evolution_entry = try_evolution_entry,
   try_treasure_entry = try_treasure_entry,
   try_start_challenge = try_start_challenge,
@@ -3402,7 +3404,9 @@ RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({
     return is_battle_active()
   end,
   try_bond_draw = try_bond_draw,
+  try_skill_draw = try_skill_draw,
   open_bond_card_album = open_bond_card_album,
+  open_skill_card_album = open_skill_card_album,
   show_runtime_attr_dialog = show_runtime_attr_dialog,
   try_start_challenge = try_start_challenge,
   try_evolution_entry = try_evolution_entry,

@@ -9,7 +9,6 @@ function M.create(env)
   local try_queue_mark_node_for_level = env.try_queue_mark_node_for_level
   local grant_attr_diamond = env.grant_attr_diamond
   local try_bond_draw = env.try_bond_draw
-  local show_bond_progress = env.show_bond_progress
   local show_runtime_attr_tip_panel = env.show_runtime_attr_tip_panel
   local show_runtime_attr_dialog = env.show_runtime_attr_dialog
   local start_current_task_challenge = env.start_current_task_challenge
@@ -68,9 +67,6 @@ function M.create(env)
   local function register_battle_hotkeys()
     register_battle_hotkey('F', function()
       try_bond_draw()
-    end)
-    register_battle_hotkey('I', function()
-      show_bond_progress()
     end)
     register_battle_hotkey('B', function()
       if toggle_inventory_panel then

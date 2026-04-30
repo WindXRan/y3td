@@ -1,4 +1,4 @@
-﻿local a=require'ui.ui_root'local bt=require'runtime.bond_tip_model_builder'local QualityImageTable=require'data.object_tables.quality_image_table'local SkillRuntimeTuning=require'data.object_tables.skill_runtime_tuning'local BondUiText=SkillRuntimeTuning and SkillRuntimeTuning.bond and SkillRuntimeTuning.bond.ui or{}local BondUiSkillBlockTitle=tostring(BondUiText.skill_block_title or'[羁绊技能]')local BondUiSkillSectionTemplate=tostring(BondUiText.skill_section_template or'【%s】羁绊技能：')local BondUiSkillSectionFallback=tostring(BondUiText.skill_section_fallback or'【羁绊】羁绊技能：')local b={}function b.create(c)local d=c.STATE;
+local a=require'ui.ui_root'local bt=require'runtime.bond_tip_model_builder'local QualityImageTable=require'data.object_tables.quality_image_table'local SkillRuntimeTuning=require'data.object_tables.skill_runtime_tuning'local BondUiText=SkillRuntimeTuning and SkillRuntimeTuning.bond and SkillRuntimeTuning.bond.ui or{}local BondUiSkillBlockTitle=tostring(BondUiText.skill_block_title or'[技能系统]')local BondUiSkillSectionTemplate=tostring(BondUiText.skill_section_template or'【%s】技能系统：')local BondUiSkillSectionFallback=tostring(BondUiText.skill_section_fallback or'【技能】技能系统：')local b={}function b.create(c)local d=c.STATE;
 local e=c.y3;
 local f=c.get_player;
 local g=c.get_runtime_hud_system;
@@ -91,7 +91,7 @@ for aq in string.gmatch(ap,'[^\n]+')do local ar=a9(aq)if ar~=''then ao[#ao+1]=ar
 return ao end;
 local function as(at,au,av,aw,ab,V)local ao=type(av)=='table'and av or am(av,2)return{title_text=a9(at),subtitle_text=a9(au),body_lines=ao,icon=aw or L,quality=ab or'common',enabled=V~=false}end;
 local function ax(ay)local az=aa(ay and ay.quality or nil)local aA=a9(ay and ay.tag or'')
-if aA==''or aA:find('流派',1,true)then aA='羁绊技能'end;
+if aA==''or aA:find('流派',1,true)then aA='技能系统'end;
 aA=string.format('[%s] %s',az,aA)
 local aB=a9(ay and ay.name or'')
 if aB==''then aB=a9(ay and ay.display_name or'')end;
@@ -101,7 +101,7 @@ for aG,aq in ipairs(ao)do local aH=a9(aq):gsub('^当前：',''):gsub('。$','')i
 if#aE<2 then for aG,aq in ipairs(aD)do if#aE>=2 then break end;
 local aH=a9(aq):gsub('^当前：',''):gsub('。$','')if aH~=''and not aF[aH]then aF[aH]=true;aE[#aE+1]=aH end end end;ao=aE;
 local aI=a9(ay and ay.bond_root_name or'')local aJ=a9(ay and ay.bond_root_progress_text or'')local aA=''
-if aI~=''then if aJ~=''then aA=string.format('羁绊： %s (%s)',aI,aJ)else aA='羁绊： '..aI end else aA=a9(ay and ay.title_text or'')if aA~=''then aA='羁绊： '..aA end end;
+if aI~=''then if aJ~=''then aA=string.format('技能： %s (%s)',aI,aJ)else aA='技能： '..aI end else aA=a9(ay and ay.title_text or'')if aA~=''then aA='技能： '..aA end end;
 local aB=a9(ay and(ay.pretty_display_name or ay.display_name or ay.title_text)or'')if aB==''then aB='未命名战术卡'end;
 local ret=as(aB,aA,ao,ay and(ay.ui_icon or ay.icon)or L,ay and ay.quality or'common')ret.source_choice=ay;ret.tip_model=bt.build_from_choice(ay)return ret end;
 local function aH(ay)local aI=d and d.gear_state or nil;
@@ -176,7 +176,7 @@ local aJ={}local aK=tostring(aI.set_name_text or ay.bond_root_name or'')local aL
 if aI.bonus_lines and#aI.bonus_lines>0 then aJ[#aJ+1]=BondUiSkillBlockTitle for aE,aq in ipairs(aI.bonus_lines)do aJ[#aJ+1]=tostring(aq)end end;
 if#aJ>0 then aJ[#aJ+1]=''end;
 aJ[#aJ+1]='[吞噬条件]'
-if aK~=''and aM>0 then aJ[#aJ+1]=string.format('集齐%d个 %s 卡牌自动吞噬',aM,aK)elseif aK~=''then aJ[#aJ+1]=string.format('集齐同羁绊的 %s 卡牌自动吞噬',aK)else aJ[#aJ+1]='集齐相同羁绊的卡牌自动吞噬'end;
+if aK~=''and aM>0 then aJ[#aJ+1]=string.format('集齐%d个 %s 卡牌自动吞噬',aM,aK)elseif aK~=''then aJ[#aJ+1]=string.format('集齐同技能的 %s 卡牌自动吞噬',aK)else aJ[#aJ+1]='集齐相同技能的卡牌自动吞噬'end;
 local aN={}
 if aI.set_body_lines and#aI.set_body_lines>0 then
 for aE,aq in ipairs(aI.set_body_lines)do aN[#aN+1]=tostring(aq)end
@@ -187,7 +187,7 @@ for aq in tostring(ay.advanced_text):gmatch('[^\n]+')do aN[#aN+1]=aq end
 end;
 if#aN>0 then aJ[#aJ+1]=''if aK~=''then aJ[#aJ+1]=string.format(BondUiSkillSectionTemplate,aK)else aJ[#aJ+1]=BondUiSkillSectionFallback end;
 for aE,aq in ipairs(aN)do aJ[#aJ+1]=tostring(aq)end end;
-local aO={}if aK~=''then aO[#aO+1]='羁绊：'..aK..aL end;
+local aO={}if aK~=''then aO[#aO+1]='技能：'..aK..aL end;
 return{kind='bond',title=tostring(aI.item_name_text or ay.title_text or'流派卡牌'),subtitle=table.concat(aO,'  '),body=table.concat(aJ,'\n'),icon=aI.icon_res or ay.icon}end;
 local function b4c(Z,af)local bq=aX()if not bq or bq.kind~='bond'then return end;
 local ay=bq.choices and bq.choices[af]or nil;
@@ -317,7 +317,7 @@ local function bO(bP,bq,af,cb)local cc=bM(bI(bP,'空节点',184,42,0,0))
 if not s(cc)then return end;
 A(cc,true)
 bK(cc,999,92,21,184,42,cb and{255,212,76,110}or{72,126,190,88})
-bJ(cc,bq.pretty_display_name or bq.display_name or bq.title or'羁绊',10,22,118,18,14,cb and{255,235,135,255}or{224,238,255,255})
+bJ(cc,bq.pretty_display_name or bq.display_name or bq.title or'技能',10,22,118,18,14,cb and{255,235,135,255}or{224,238,255,255})
 bJ(cc,bq.progress_text or'0/0',130,22,46,18,13,bq.consumed and{255,214,90,255}or{168,198,230,255})
 if cc.add_fast_event then cc:add_fast_event('左键-点击',function()d.bond_swallow_selected_root_index=af;d.bond_swallow_panel_visible=true;
 if F then F()end end)end;
@@ -349,7 +349,7 @@ bN(ce,math.max(1,math.ceil(#cg/2)),2)bN(cf,math.max(1,math.ceil(#ch/5)),5)
 for af,bR in ipairs(cg)do bO(ce,bR,af,af==(bq.selected_root_index or 1))end;
 for af,bR in ipairs(ch)do bQ(cf,bR,af)end;
 local bS=bq.detail or{}
-u(bF('layout.main_frame.detail_panel.detail_title'),bS.title or'未选择羁绊')
+u(bF('layout.main_frame.detail_panel.detail_title'),bS.title or'未选择技能')
 u(bF('layout.main_frame.detail_panel.detail_status'),string.format('%s  %s',tostring(bS.status or'未激活'),tostring(bS.progress or'0/0')))
 u(bF('layout.main_frame.detail_panel.detail_body'),bS.body or'')
 return a1 end;
@@ -373,6 +373,7 @@ toggle_talk_input=bB
 }
 end;
 return b
+
 
 
 

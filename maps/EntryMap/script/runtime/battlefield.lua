@@ -1402,7 +1402,6 @@ function M.create(env)
     hero_attr_system.init_hero_attrs(hero, hero_entry_stats)
     local initial_attack_range = tonumber(hero_entry_stats['攻击范围']) or basic_attack_range or 2000
     hero_attr_system.set_attr(hero, '攻击范围', math.max(80, math.floor(initial_attack_range * 0.5)))
-    hero:add_state('禁止普攻')
 
     hero:add_state('禁止移动')
     hero:stop()

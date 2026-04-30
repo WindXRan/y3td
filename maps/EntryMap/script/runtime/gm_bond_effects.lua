@@ -1,4 +1,4 @@
-﻿local M = {}
+local M = {}
 
 local UiRoot = require 'ui.ui_root'
 local BondModifierPool = require 'data.object_tables.bond_modifier_pool'
@@ -6,13 +6,13 @@ local BondVisualEditorIds = require 'data.object_tables.bond_visual_editor_ids'
 local SkillRuntimeTuning = require 'data.object_tables.skill_runtime_tuning'
 
 local BOND_GM_TEXT = SkillRuntimeTuning and SkillRuntimeTuning.bond and SkillRuntimeTuning.bond.gm or {}
-local BOND_GM_STATUS_TEMPLATE = tostring(BOND_GM_TEXT.status_template or '羁绊技能：%s')
-local BOND_GM_PANEL_INTRO = tostring(BOND_GM_TEXT.panel_intro or '用于立刻获得单卡特殊效果，或立刻激活整套羁绊技能。')
-local BOND_GM_ACTIVATE_BUTTON = tostring(BOND_GM_TEXT.activate_button or '激活选中羁绊技能（自动补齐）')
-local BOND_GM_ACTIVATION_TAB = tostring(BOND_GM_TEXT.activation_tab or '羁绊技能')
-local BOND_GM_MODE_ACTIVATION = tostring(BOND_GM_TEXT.mode_activation or '羁绊技能')
-local BOND_GM_CMD_ACTIVATE_DESC = tostring(BOND_GM_TEXT.cmd_activate_desc or '立即激活指定羁绊技能：.egmbondeffect <羁绊名>')
-local BOND_GM_CMD_TEST_DESC = tostring(BOND_GM_TEXT.cmd_test_desc or '运行羁绊技能自动化自检：.egmbondtest')
+local BOND_GM_STATUS_TEMPLATE = tostring(BOND_GM_TEXT.status_template or '技能系统：%s')
+local BOND_GM_PANEL_INTRO = tostring(BOND_GM_TEXT.panel_intro or '用于立刻获得单卡特殊效果，或立刻激活整套技能系统。')
+local BOND_GM_ACTIVATE_BUTTON = tostring(BOND_GM_TEXT.activate_button or '激活选中技能系统（自动补齐）')
+local BOND_GM_ACTIVATION_TAB = tostring(BOND_GM_TEXT.activation_tab or '技能系统')
+local BOND_GM_MODE_ACTIVATION = tostring(BOND_GM_TEXT.mode_activation or '技能系统')
+local BOND_GM_CMD_ACTIVATE_DESC = tostring(BOND_GM_TEXT.cmd_activate_desc or '立即激活指定技能系统：.egmbondeffect <技能名>')
+local BOND_GM_CMD_TEST_DESC = tostring(BOND_GM_TEXT.cmd_test_desc or '运行技能系统自动化自检：.egmbondtest')
 local SAMPLE_BOND_NAME_BY_ID = {
   arrow_rain = '骤雨之幕',
   blizzard = '极寒之域',
@@ -76,7 +76,7 @@ function M.create(env)
 
     local name = trim(sample_name)
     if name ~= '' then
-      return string.format('羁绊·%s', name)
+      return string.format('技能·%s', name)
     end
 
     local desc = trim(sample_desc)
@@ -84,11 +84,11 @@ function M.create(env)
       local summary = desc:match('^(.-)[，。,；;]') or desc
       summary = trim(summary)
       if summary ~= '' then
-        return string.format('羁绊·%s', summary)
+        return string.format('技能·%s', summary)
       end
     end
 
-    return string.format('羁绊·%s', id ~= '' and id or '未知样例')
+    return string.format('技能·%s', id ~= '' and id or '未知技能样例')
   end
 
   local function is_alive(ui)
@@ -153,11 +153,11 @@ function M.create(env)
 
     if resolved_mode == 'single' then
       if resolved_bond_name == '' then
-        debug_message('单羁绊模式需要指定羁绊名。')
+        debug_message('单技能模式需要指定技能名。')
         return false
       end
       if not set_n0_single_bond_name then
-        debug_message('未注入 N0 单羁绊回调。')
+        debug_message('未注入 N0 单技能回调。')
         return false
       end
     end
@@ -183,8 +183,8 @@ function M.create(env)
     end
     local mode_label_map = {
       all = '全开',
-      single = '单羁绊',
-      none = '灵/零羁绊',
+      single = '单技能',
+      none = '灵/零技能',
     }
     local mode_label = mode_label_map[resolved_mode] or resolved_mode
     debug_message(string.format(
@@ -478,14 +478,14 @@ function M.create(env)
     local selected_bond = get_selected_bond(ui)
     if selected_bond and selected_bond.kind == 'sample_bond' then
       local lines = {
-        string.format('羁绊：%s', tostring(selected_bond.title or 'Sample羁绊')),
+        string.format('技能：%s', tostring(selected_bond.title or 'Sample技能')),
         string.format(BOND_GM_STATUS_TEMPLATE, '可直接施放'),
         string.format('特殊效果100%%触发：%s', is_force_special_effects_100 and is_force_special_effects_100() and '开启' or '关闭'),
         string.format('投射物覆盖：%s', tostring((debug_get_global_projectile_override and debug_get_global_projectile_override()) or '关闭')),
-        '单卡：无（Sample羁绊不使用单卡）',
+        '单卡：无（Sample技能不使用单卡）',
       }
       if selected_bond.desc and selected_bond.desc ~= '' then
-        lines[#lines + 1] = '羁绊说明：'
+        lines[#lines + 1] = '技能说明：'
         for row in tostring(selected_bond.desc):gmatch('[^\n]+') do
           lines[#lines + 1] = row
         end
@@ -508,7 +508,7 @@ function M.create(env)
     end
 
     local lines = {
-      string.format('羁绊：%s', bond_name ~= '' and bond_name or '未选择'),
+      string.format('技能：%s', bond_name ~= '' and bond_name or '未选择'),
       string.format('进度：%d/%d', owned, need),
       string.format(BOND_GM_STATUS_TEMPLATE, active and '已激活' or '未激活'),
       string.format('特殊效果100%%触发：%s', is_force_special_effects_100 and is_force_special_effects_100() and '开启' or '关闭'),
@@ -524,7 +524,7 @@ function M.create(env)
     )
     local activation_desc = get_activation_desc_by_bond(bond_name)
     if activation_desc ~= '' then
-      lines[#lines + 1] = '羁绊激活描述：'
+      lines[#lines + 1] = '技能激活描述：'
       for row in tostring(activation_desc):gmatch('[^\n]+') do
         lines[#lines + 1] = row
       end
@@ -539,7 +539,7 @@ function M.create(env)
     if effect and effect.kind == 'sample_bond' then
       local selected = effect == select(1, get_selected_bond(ui))
       local prefix = selected and '>' or ' '
-      return string.format('%s%s [Sample]', prefix, tostring(effect.title or effect.sample_id or 'Sample羁绊'))
+      return string.format('%s%s [Sample]', prefix, tostring(effect.title or effect.sample_id or 'Sample技能'))
     end
     local runtime = get_runtime()
     local owned = count_owned_cards(runtime, effect.bond_name)
@@ -550,7 +550,7 @@ function M.create(env)
     local is_single_target = mode == 'single' and tostring(effect.bond_name or '') == tostring(single_bond_name or '')
     local selected = effect == select(1, get_selected_bond(ui))
     local prefix = is_single_target and '*' or (selected and '>' or ' ')
-    local suffix = is_single_target and 'N0单羁绊' or (active and '已激活' or string.format('%d/%d', owned, need))
+    local suffix = is_single_target and 'N0单技能' or (active and '已激活' or string.format('%d/%d', owned, need))
     return string.format('%s%s [%s]', prefix, tostring(effect.bond_name or '未命名'), suffix)
   end
 
@@ -592,7 +592,7 @@ function M.create(env)
     toggle_button:set_ui_size(120, 34)
     toggle_button:set_relative_parent_pos('顶部', 18)
     toggle_button:set_relative_parent_pos('右侧', 170)
-    toggle_button:set_text('羁绊GM')
+    toggle_button:set_text('技能GM')
     toggle_button:set_font_size(15)
     if toggle_button.set_image then
       toggle_button:set_image(999)
@@ -619,7 +619,7 @@ function M.create(env)
     ui.panel = panel
 
     create_rect(panel, 16, 504, 948, 42, { 20, 38, 58, 230 })
-    create_text(panel, '羁绊 / 特殊效果 GM', 30, 512, 250, 28, 23, { 245, 248, 255, 255 })
+    create_text(panel, '技能 / 特殊效果 GM', 30, 512, 250, 28, 23, { 245, 248, 255, 255 })
     create_text(panel, BOND_GM_PANEL_INTRO, 300, 514, 640, 22, 14, { 160, 186, 214, 255 })
     create_button(panel, 'Samples大全', 816, 508, 134, 30, function()
       ui.encyclopedia_mode = 'sample'
@@ -629,7 +629,7 @@ function M.create(env)
     end, { 56, 86, 126, 235 })
 
     create_rect(panel, 16, 282, 450, 212, { 14, 27, 42, 235 })
-    create_text(panel, '单羁绊按钮（全量直达）', 28, 468, 300, 22, 17, { 245, 248, 255, 255 })
+    create_text(panel, '单技能按钮（全量直达）', 28, 468, 300, 22, 17, { 245, 248, 255, 255 })
     for i = 1, 44 do
       local row = math.floor((i - 1) / 4)
       local col = (i - 1) % 4
@@ -658,7 +658,7 @@ function M.create(env)
     end
 
     create_rect(panel, 482, 282, 482, 212, { 14, 27, 42, 235 })
-    create_text(panel, '单卡列表（选中羁绊）', 496, 468, 230, 22, 17, { 245, 248, 255, 255 })
+    create_text(panel, '单卡列表（选中技能）', 496, 468, 230, 22, 17, { 245, 248, 255, 255 })
     for i = 1, 12 do
       local row = math.floor((i - 1) / 2)
       local col = (i - 1) % 2
@@ -686,12 +686,12 @@ function M.create(env)
     create_button(panel, '获得选中单卡特殊效果', 672, 206, 278, 40, function()
       local bond = select(1, get_selected_bond(ui))
       if bond and bond.kind == 'sample_bond' then
-        debug_message('当前是 Sample羁绊，请使用“激活选中羁绊技能”直接施放。')
+        debug_message('当前是 Sample技能，请使用“激活选中技能系统”直接施放。')
         return
       end
       local card = bond and select(1, get_selected_card(ui, bond.bond_name)) or nil
       if not card then
-        debug_message('当前羁绊无可用单卡。')
+        debug_message('当前技能无可用单卡。')
         return
       end
       execute_grant_card(card.id)
@@ -700,7 +700,7 @@ function M.create(env)
     create_button(panel, BOND_GM_ACTIVATE_BUTTON, 672, 154, 278, 40, function()
       local bond = select(1, get_selected_bond(ui))
       if not bond then
-        debug_message('请先选择羁绊。')
+        debug_message('请先选择技能。')
         return
       end
       if bond.kind == 'sample_bond' then
@@ -713,7 +713,7 @@ function M.create(env)
     create_button(panel, '仅尝试激活（不补齐）', 672, 102, 278, 40, function()
       local bond = select(1, get_selected_bond(ui))
       if not bond then
-        debug_message('请先选择羁绊。')
+        debug_message('请先选择技能。')
         return
       end
       if bond.kind == 'sample_bond' then
@@ -745,7 +745,7 @@ function M.create(env)
       end
     end, { 96, 106, 132, 235 })
 
-    ui.n0_none_button = create_button(panel, 'N0灵/零羁绊（立即生效）', 16, 4, 640, 40, function()
+    ui.n0_none_button = create_button(panel, 'N0灵/零技能（立即生效）', 16, 4, 640, 40, function()
       apply_n0_mode('none')
     end, { 70, 92, 116, 235 })
 
@@ -772,7 +772,7 @@ function M.create(env)
     ui.encyclopedia_panel = encyclopedia_panel
 
     create_rect(encyclopedia_panel, 16, 586, 948, 36, { 20, 38, 58, 235 })
-    create_text(encyclopedia_panel, '羁绊特殊效果大全', 28, 590, 320, 28, 19, { 245, 248, 255, 255 })
+    create_text(encyclopedia_panel, '技能特殊效果大全', 28, 590, 320, 28, 19, { 245, 248, 255, 255 })
     ui.encyclopedia_info_text = create_text(encyclopedia_panel, '', 360, 590, 592, 28, 13, { 170, 198, 228, 255 })
 
     create_button(encyclopedia_panel, BOND_GM_ACTIVATION_TAB, 20, 544, 140, 34, function()
@@ -979,9 +979,9 @@ function M.create(env)
       local mode, single_bond_name = get_n0_mode_and_single_bond()
       set_text(ui.n0_all_button, mode == 'all' and 'N0全开（当前）' or 'N0全开（立即生效）')
       if is_alive(ui.n0_none_button) then
-        local label = mode == 'none' and 'N0灵/零羁绊（当前）' or 'N0灵/零羁绊（立即生效）'
+        local label = mode == 'none' and 'N0灵/零技能（当前）' or 'N0灵/零技能（立即生效）'
         if mode == 'single' then
-          label = string.format('N0灵/零羁绊（当前单羁绊:%s）', trim(single_bond_name) ~= '' and single_bond_name or '未指定')
+          label = string.format('N0灵/零技能（当前单技能:%s）', trim(single_bond_name) ~= '' and single_bond_name or '未指定')
         end
         set_text(ui.n0_none_button, label)
       end
@@ -1090,7 +1090,25 @@ function M.create(env)
     STATE.dev_commands_bond_gm_registered = true
 
     develop_command.register('EGMBOND', {
-      desc = '显示/隐藏羁绊GM面板，支持 on/off/toggle。',
+      desc = '显示/隐藏技能GM面板，支持 on/off/toggle。',
+      onCommand = function(mode)
+        local ui = ensure_board()
+        if not ui then
+          return
+        end
+        mode = trim(mode):lower()
+        if mode == 'on' then
+          ui.visible = true
+        elseif mode == 'off' then
+          ui.visible = false
+        else
+          ui.visible = not ui.visible
+        end
+        refresh_board()
+      end,
+    })
+    develop_command.register('EGMSKILL', {
+      desc = '显示/隐藏技能GM面板，支持 on/off/toggle。',
       onCommand = function(mode)
         local ui = ensure_board()
         if not ui then
@@ -1113,10 +1131,21 @@ function M.create(env)
       onCommand = function(bond_name)
         bond_name = trim(bond_name)
         if bond_name == '' then
-          debug_message('用法：.egmbondeffect <羁绊名>')
+          debug_message('用法：.egmbondeffect <技能名>')
           return
         end
         execute_activate_bond(bond_name, true)
+      end,
+    })
+    develop_command.register('EGMSKILLEFFECT', {
+      desc = '立即激活指定技能系统：.egmskilleffect <技能名>',
+      onCommand = function(skill_name)
+        skill_name = trim(skill_name)
+        if skill_name == '' then
+          debug_message('用法：.egmskilleffect <技能名>')
+          return
+        end
+        execute_activate_bond(skill_name, true)
       end,
     })
 
@@ -1192,7 +1221,7 @@ function M.create(env)
     })
 
     develop_command.register('EGMBONDTRACE', {
-      desc = '羁绊特效追踪开关：.egmbondtrace [on/off/toggle]',
+      desc = '技能特效追踪开关：.egmbondtrace [on/off/toggle]',
       onCommand = function(mode)
         mode = trim(mode):lower()
         local current = STATE.bond_debug_trace_enabled == true
@@ -1205,15 +1234,49 @@ function M.create(env)
           target = not current
         end
         STATE.bond_debug_trace_enabled = target
-        debug_message(string.format('羁绊追踪日志：%s', target and '开启' or '关闭'))
+        debug_message(string.format('技能追踪日志：%s', target and '开启' or '关闭'))
+      end,
+    })
+    develop_command.register('EGMSKILLTRACE', {
+      desc = '技能特效追踪开关：.egmskilltrace [on/off/toggle]',
+      onCommand = function(mode)
+        mode = trim(mode):lower()
+        local current = STATE.bond_debug_trace_enabled == true
+        local target = current
+        if mode == 'on' then
+          target = true
+        elseif mode == 'off' then
+          target = false
+        else
+          target = not current
+        end
+        STATE.bond_debug_trace_enabled = target
+        debug_message(string.format('技能追踪日志：%s', target and '开启' or '关闭'))
       end,
     })
 
     develop_command.register('EGMBONDMAP', {
-      desc = '打印羁绊投射物映射：.egmbondmap',
+      desc = '打印技能投射物映射：.egmbondmap',
       onCommand = function()
         local map = BondVisualEditorIds.visual_by_bond or {}
-        debug_message('---- 羁绊投射物映射 ----')
+        debug_message('---- 技能投射物映射 ----')
+        for bond_name, cfg in pairs(map) do
+          debug_message(string.format(
+            '%s => projectile=%s, particle=%s, speed=%s, time=%s',
+            tostring(bond_name),
+            tostring(cfg.projectile_key),
+            tostring(cfg.particle_key),
+            tostring(cfg.projectile_speed),
+            tostring(cfg.projectile_time)
+          ))
+        end
+      end,
+    })
+    develop_command.register('EGMSKILLMAP', {
+      desc = '打印技能投射物映射：.egmskillmap',
+      onCommand = function()
+        local map = BondVisualEditorIds.visual_by_bond or {}
+        debug_message('---- 技能投射物映射 ----')
         for bond_name, cfg in pairs(map) do
           debug_message(string.format(
             '%s => projectile=%s, particle=%s, speed=%s, time=%s',
@@ -1236,7 +1299,23 @@ function M.create(env)
         end
         local report = run_bond_self_test() or {}
         debug_message(string.format(
-          '羁绊自检完成：total=%s pass=%s fail=%s',
+          '技能自检完成：total=%s pass=%s fail=%s',
+          tostring(report.total or 0),
+          tostring(report.passed or 0),
+          tostring(report.failed or 0)
+        ))
+      end,
+    })
+    develop_command.register('EGMSKILLTEST', {
+      desc = '运行技能系统自动化自检：.egmskilltest',
+      onCommand = function()
+        if not run_bond_self_test then
+          debug_message('未注入 run_bond_self_test 回调。')
+          return
+        end
+        local report = run_bond_self_test() or {}
+        debug_message(string.format(
+          '技能自检完成：total=%s pass=%s fail=%s',
           tostring(report.total or 0),
           tostring(report.passed or 0),
           tostring(report.failed or 0)
@@ -1245,7 +1324,7 @@ function M.create(env)
     })
 
     develop_command.register('EGMBONDAUTO', {
-      desc = '全自动羁绊回归：.egmbondauto（自检+激活关键羁绊+校验）',
+      desc = '全自动技能回归：.egmbondauto（自检+激活关键技能+校验）',
       onCommand = function()
         local runtime = get_runtime()
         if not runtime then
@@ -1278,13 +1357,57 @@ function M.create(env)
         end
 
         debug_message(string.format(
-          '[AUTO][SUMMARY] 自检 pass=%s/%s fail=%s | 关键羁绊 pass=%d fail=%d | 特效100%%=%s',
+          '[AUTO][SUMMARY] 自检 pass=%s/%s fail=%s | 关键技能 pass=%d fail=%d | 特效100%%=%s',
           tostring(report.passed or 0),
           tostring(report.total or 0),
           tostring(report.failed or 0),
           ok_count,
           fail_count,
           is_force_special_effects_100 and is_force_special_effects_100() and 'on' or 'off'
+        ))
+      end,
+    })
+    develop_command.register('EGMSKILLAUTO', {
+      desc = '全自动技能回归：.egmskillauto（自检+激活关键技能+校验）',
+      onCommand = function()
+        local runtime = get_runtime()
+        if not runtime then
+          debug_message('运行时未初始化，无法执行全自动回归。')
+          return
+        end
+
+        if set_force_special_effects_100 then
+          set_force_special_effects_100(true)
+        end
+
+        local report = run_bond_self_test and run_bond_self_test() or { total = 0, passed = 0, failed = 0 }
+        local targets = { '龙骑士', '冰霜法师' }
+        local ok_count = 0
+        local fail_count = 0
+
+        for _, bond_name in ipairs(targets) do
+          local ok_activate = execute_activate_bond(bond_name, true)
+          local effect_id = 'initial_bond_set_' .. tostring(bond_name)
+          local active = runtime.modifier_pool_active_effects and runtime.modifier_pool_active_effects[effect_id] == true or false
+          local owned = get_owned_cards_count(runtime, bond_name)
+          local need = get_required_cards(bond_name)
+          if ok_activate and active and owned >= need then
+            ok_count = ok_count + 1
+            debug_message(string.format('[AUTO][PASS] %s 激活成功（%d/%d）', bond_name, owned, need))
+          else
+            fail_count = fail_count + 1
+            debug_message(string.format('[AUTO][FAIL] %s 激活失败（%d/%d）', bond_name, owned, need))
+          end
+        end
+
+        debug_message(string.format(
+          '[AUTO][SUMMARY] 自检 pass=%s/%s fail=%s | 关键技能 pass=%d fail=%d | 特效100%%=%s',
+          tostring(report.passed or 0),
+          tostring(report.total or 0),
+          tostring(report.failed or 0),
+          ok_count,
+          fail_count,
+          set_force_special_effects_100 and (is_force_special_effects_100() and 'ON' or 'OFF') or 'N/A'
         ))
       end,
     })
@@ -1299,4 +1422,5 @@ function M.create(env)
 end
 
 return M
+
 

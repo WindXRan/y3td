@@ -1,8 +1,9 @@
-﻿local M = {}
+local M = {}
 
 local BondNodes = require 'data.object_tables.bond_nodes'
 local BondTipModelBuilder = require 'runtime.bond_tip_model_builder'
 local BondTemplates = require 'runtime.bond_templates.init'
+local BondBonusPack = require 'runtime.bond_bonus_pack'
 local BondDrawConfig = require 'data.object_tables.bond_draw_config'
 local BondMiscConfig = require 'data.object_tables.bond_misc_config'
 local BondPickConfig = require 'data.object_tables.bond_pick_config'
@@ -26,27 +27,27 @@ local SYSTEM_DYNAMIC_NODE_ID = '__system__'
 local PER_SECOND_ATTR_KEYS = BondMiscConfig.per_second_attr_keys or {}
 local GROUP_LABELS = BondMiscConfig.group_labels or {}
 local BOND_SKILL_LABELS = SkillRuntimeTuning and SkillRuntimeTuning.bond and SkillRuntimeTuning.bond.labels or {}
-local BOND_SKILL_NAME = tostring(BOND_SKILL_LABELS.effect_name or '羁绊技能')
-local BOND_SKILL_ACTIVATION_TEMPLATE = tostring(BOND_SKILL_LABELS.activation_template or '%s羁绊技能')
+local BOND_SKILL_NAME = tostring(BOND_SKILL_LABELS.effect_name or '技能系统')
+local BOND_SKILL_ACTIVATION_TEMPLATE = tostring(BOND_SKILL_LABELS.activation_template or '%s技能系统')
 local BOND_SKILL_ACTIVATION_PROMPT = tostring(
   BOND_SKILL_LABELS.activation_prompt
-  or '抽取并集齐同一羁绊的卡牌后，可自动吞噬并激活羁绊技能。'
+  or '抽取并集齐同一技能的卡牌后，可自动吞噬并激活技能系统。'
 )
 local BOND_SKILL_ALREADY_ACTIVE_TEMPLATE = tostring(
   BOND_SKILL_LABELS.already_active_template
-  or '羁绊技能已处于激活状态：%s。'
+  or '技能系统已处于激活状态：%s。'
 )
 local BOND_SKILL_ACTIVE_SUCCESS_TEMPLATE = tostring(
   BOND_SKILL_LABELS.active_success_template
-  or '已激活羁绊技能：%s。'
+  or '已激活技能系统：%s。'
 )
 
 local function format_bond_skill_title(bond_name)
-  local ok, text = pcall(string.format, BOND_SKILL_ACTIVATION_TEMPLATE, tostring(bond_name or '羁绊'))
+  local ok, text = pcall(string.format, BOND_SKILL_ACTIVATION_TEMPLATE, tostring(bond_name or '技能'))
   if ok and text and text ~= '' then
     return text
   end
-  return string.format('%s%s', tostring(bond_name or '羁绊'), BOND_SKILL_NAME)
+  return string.format('%s%s', tostring(bond_name or '技能'), BOND_SKILL_NAME)
 end
 
 local function format_bond_skill_status(template, bond_name)
@@ -54,7 +55,7 @@ local function format_bond_skill_status(template, bond_name)
   if ok and text and text ~= '' then
     return text
   end
-  return string.format('%s：%s。', BOND_SKILL_NAME, tostring(bond_name or '未知羁绊'))
+  return string.format('%s：%s。', BOND_SKILL_NAME, tostring(bond_name or '未知技能'))
 end
 
 local ROOT_SET_DOC_META = {}
@@ -145,46 +146,11 @@ for _, root_id in ipairs(ROOT_NODE_IDS) do
   ROOT_STAGE_TIERS[root_id] = ordered_tiers
 end
 
-local function add_bonus_value(target, key, value)
-  if not target or not key or value == nil or value == 0 then
-    return
-  end
-  target[key] = (target[key] or 0) + value
-end
-
-local function remove_bonus_value(target, key, value)
-  if not target or not key or value == nil or value == 0 then
-    return
-  end
-  target[key] = (target[key] or 0) - value
-  if target[key] == 0 then
-    target[key] = nil
-  end
-end
-
-local function merge_bonus_pack(target, source)
-  if not target or not source then
-    return
-  end
-  for key, value in pairs(source) do
-    add_bonus_value(target, key, value)
-  end
-end
-
-local function subtract_bonus_pack(target, source)
-  if not target or not source then
-    return
-  end
-  for key, value in pairs(source) do
-    remove_bonus_value(target, key, value)
-  end
-end
-
-local function copy_bonus_pack(source)
-  local result = {}
-  merge_bonus_pack(result, source)
-  return result
-end
+local add_bonus_value = BondBonusPack.add_value
+local remove_bonus_value = BondBonusPack.remove_value
+local merge_bonus_pack = BondBonusPack.merge
+local subtract_bonus_pack = BondBonusPack.subtract
+local copy_bonus_pack = BondBonusPack.copy
 
 local function get_refresh_cost(paid_count)
   local index = (paid_count or 0) + 1
@@ -304,7 +270,11 @@ local function ensure_runtime(state)
   if not state then
     return nil
   end
+  if state.skill_runtime and not state.bond_runtime then
+    state.bond_runtime = state.skill_runtime
+  end
   state.bond_runtime = state.bond_runtime or M.create_runtime()
+  state.skill_runtime = state.bond_runtime
   state.bond_runtime.pool_node_ids = state.bond_runtime.pool_node_ids or {}
   state.bond_runtime.completed_root_sets = state.bond_runtime.completed_root_sets or {}
   state.bond_runtime.consumed_root_sets = state.bond_runtime.consumed_root_sets or {}
@@ -322,6 +292,7 @@ local function ensure_runtime(state)
     state.bond_runtime.modifier_effects_disabled = false
   end
   state.bond_runtime.state_ref = state
+  state.skill_runtime = state.bond_runtime
   return state.bond_runtime
 end
 
@@ -1472,7 +1443,7 @@ local function build_modifier_choice_entry(state, card, index)
   local owned_count = get_owned_modifier_bond_count(runtime, card and card.bond_name)
   local total_count = get_required_modifier_bond_count(card and card.bond_name)
   local current_text = card and card.desc or ''
-  local set_name = card and card.bond_name or '羁绊'
+  local set_name = card and card.bond_name or '技能'
   local effect_text = get_modifier_bond_activation_text(card and card.bond_name, card and card.activation_desc or '')
 
   return {
@@ -2235,6 +2206,7 @@ function M.try_draw(env)
 
   state.resources.wood = state.resources.wood - BOND_DRAW_COST
   state.bond_draw_count = (state.bond_draw_count or 0) + 1
+  state.skill_draw_count = state.bond_draw_count
   runtime.awaiting_choice = true
   runtime.current_choices = choices
   runtime.current_offer_round = {
@@ -2336,7 +2308,7 @@ local function clear_active_modifier_bond_effects(runtime)
   if BondModifierEffects and BondModifierEffects.clear_runtime_status_effects then
     BondModifierEffects.clear_runtime_status_effects(runtime)
   end
-  -- N0 单羁绊/零羁绊切换需要真正互斥：清空已激活效果，同时重置羁绊卡运行时态。
+  -- N0 单技能/零技能切换需要真正互斥：清空已激活效果，同时重置技能卡运行时态。
   runtime.modifier_pool_active_effects = {}
   runtime.modifier_card_attr_bonuses = {}
   runtime.modifier_pool_active_runtime_bonuses = {}
@@ -2494,7 +2466,7 @@ function M.apply_choice(env, index)
 
   if env and env.message then
     env.message(string.format('已参悟仙缘：%s。', get_node_theme_name(node_def)))
-    if unlock_rewards_or_err and #unlock_rewards_or_err > 0 then
+    if type(unlock_rewards_or_err) == 'table' and #unlock_rewards_or_err > 0 then
       env.message('节点奖励：' .. table.concat(unlock_rewards_or_err, '，') .. '。')
     end
   end
@@ -2513,7 +2485,7 @@ function M.build_slot_text(state, slot)
   local modifier_card = node_id and get_modifier_card(node_id) or nil
   if modifier_card then
     return string.format(
-      '%d号仙缘位 [羁绊卡]%s | %s',
+      '%d号仙缘位 [技能卡]%s | %s',
       slot,
       tostring(modifier_card.name or modifier_card.id),
       tostring(modifier_card.desc or '')
@@ -2573,22 +2545,22 @@ function M.build_slot_tip_payload(state, slot)
     local effect_text = get_modifier_bond_activation_text(modifier_card.bond_name, modifier_card.activation_desc or '')
     local required_count = get_required_modifier_bond_count(modifier_card.bond_name)
     local tip_model = BondTipModelBuilder.build({
-      quality_text = '羁绊卡',
+      quality_text = '技能卡',
       set_name_text = modifier_card.bond_name or '',
       progress_text = string.format('%d/%d', get_owned_modifier_bond_count(runtime, modifier_card.bond_name), required_count),
       icon_res = modifier_card.icon,
-      item_name_text = modifier_card.name or '羁绊卡牌',
+      item_name_text = modifier_card.name or '技能卡牌',
       current_text = modifier_card.desc or '',
-      effect_body_text = string.format('集齐%d个%s卡牌自动吞噬', required_count, tostring(modifier_card.bond_name or '同羁绊')),
+      effect_body_text = string.format('集齐%d个%s卡牌自动吞噬', required_count, tostring(modifier_card.bond_name or '同技能')),
       set_title_text = format_bond_skill_title(modifier_card.bond_name),
       effect_text = effect_text,
     })
     return {
       kind = 'bond',
       quality = modifier_card.quality or 'rare',
-      badge_text = '羁绊卡',
+      badge_text = '技能卡',
       icon_res = modifier_card.icon,
-      title_text = modifier_card.name or '羁绊卡牌',
+      title_text = modifier_card.name or '技能卡牌',
       bonus_lines = tip_model.bonus_lines,
       effect_area_bonus_count = math.min(3, #tip_model.bonus_lines),
       tip_model = tip_model,
@@ -2604,17 +2576,17 @@ function M.build_slot_tip_payload(state, slot)
     return {
       kind = 'bond',
       quality = 'rare',
-      badge_text = '羁绊组',
+      badge_text = '技能组',
       icon_res = nil,
-      title_text = group_name ~= '' and group_name or '羁绊组',
+      title_text = group_name ~= '' and group_name or '技能组',
       bonus_lines = {},
       effect_area_bonus_count = 0,
       tip_model = {
-        quality_text = '羁绊组',
-        set_name_text = group_name ~= '' and group_name or '羁绊组',
+        quality_text = '技能组',
+        set_name_text = group_name ~= '' and group_name or '技能组',
         progress_text = '',
-        item_name_text = group_name ~= '' and group_name or '羁绊组',
-        effect_body_text = '当前羁绊组暂无可展示说明。',
+        item_name_text = group_name ~= '' and group_name or '技能组',
+        effect_body_text = '当前技能组暂无可展示说明。',
         set_title_text = format_bond_skill_title(group_name),
         set_body_lines = {},
         bonus_lines = {},
@@ -2630,18 +2602,18 @@ function M.build_slot_tip_payload(state, slot)
   return {
     kind = 'bond',
     quality = 'rare',
-    badge_text = '羁绊',
+    badge_text = '技能',
     icon_res = M.get_slot_icon(state, slot),
     title_text = tostring(node_id),
     bonus_lines = {},
     effect_area_bonus_count = 0,
     tip_model = {
-      quality_text = '羁绊',
+      quality_text = '技能',
       set_name_text = '',
       progress_text = '',
       item_name_text = tostring(node_id),
-      effect_body_text = '当前羁绊节点暂无可展示说明。',
-      set_title_text = format_bond_skill_title('羁绊'),
+      effect_body_text = '当前技能节点暂无可展示说明。',
+      set_title_text = format_bond_skill_title('技能'),
       set_body_lines = {},
       bonus_lines = {},
     },
@@ -2686,43 +2658,6 @@ function M.build_choice_preview_text(index, choice)
   end
 
   return table.concat(parts, ' | ')
-end
-
-function M.build_progress_lines(state, max_lines)
-  local started_lines = {}
-  local frontier_lines = {}
-  local result = {}
-
-  for _, root_id in ipairs(ROOT_NODE_IDS) do
-    local entry = build_root_progress_entry(state, root_id)
-    if entry and entry.text and entry.text ~= '' then
-      if entry.started then
-        started_lines[#started_lines + 1] = entry.text
-      else
-        frontier_lines[#frontier_lines + 1] = entry.text
-      end
-    end
-  end
-
-  local limit = math.max(1, max_lines or (#started_lines + #frontier_lines))
-  for _, text in ipairs(started_lines) do
-    if #result >= limit then
-      break
-    end
-    result[#result + 1] = text
-  end
-  for _, text in ipairs(frontier_lines) do
-    if #result >= limit then
-      break
-    end
-    result[#result + 1] = text
-  end
-
-  local remaining = (#started_lines + #frontier_lines) - #result
-  if remaining > 0 then
-    result[#result + 1] = string.format('其余 %d 条道统可在仙缘感应界面查看。', remaining)
-  end
-  return result
 end
 
 function M.get_root_overview_entries(state)
@@ -2817,14 +2752,14 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
 	      local display_effect_text = special_text ~= '' and special_text ~= '无' and special_text or activation_text
 	      local display_effect_body = ''
 	      if display_effect_text ~= activation_text and activation_text ~= '' then
-	        display_effect_body = string.format('集齐[%s]激活：%s', tostring(card.bond_name or '羁绊'), activation_text)
+	        display_effect_body = string.format('集齐[%s]激活：%s', tostring(card.bond_name or '技能'), activation_text)
 	      end
 	      local tip_model = BondTipModelBuilder.build({
-	        quality_text = '羁绊卡',
+	        quality_text = '技能卡',
 	        set_name_text = card.bond_name or '',
 	        progress_text = selected and selected.progress_text or '',
 	        icon_res = card.icon,
-	        item_name_text = card.name or '羁绊卡牌',
+	        item_name_text = card.name or '技能卡牌',
 	        current_text = card.desc or '',
 	        effect_text = display_effect_text,
 	        effect_body_text = display_effect_body,
@@ -2849,7 +2784,7 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
 	        effect_text = display_effect_text,
 	        bond_root_name = card.bond_name,
         bond_root_progress_text = selected and selected.progress_text or '',
-        title_text = string.format('%s (%s)', card.bond_name or '羁绊', selected and selected.progress_text or '0/0'),
+        title_text = string.format('%s (%s)', card.bond_name or '技能', selected and selected.progress_text or '0/0'),
         tip_model = tip_model,
       }
     end
@@ -2887,7 +2822,7 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
       root_entries = root_entries,
       card_entries = card_entries,
       detail = {
-        title = selected and selected.pretty_display_name or '未选择羁绊',
+        title = selected and selected.pretty_display_name or '未选择技能',
         status = status,
         progress = selected and selected.progress_text or '0/0',
         body = table.concat(detail_lines, '\n'),
@@ -2895,10 +2830,6 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
     }
   end
 
-  return nil
-end
-
-function M.show_bond_progress(env)
   return nil
 end
 
@@ -2929,15 +2860,15 @@ function M.debug_grant_modifier_card(env, card_ref)
   local runtime = ensure_runtime(state)
   local card = resolve_modifier_card(card_ref)
   if not runtime or not card then
-    return false, '未知羁绊卡（请传 card_id 或卡名）。'
+    return false, '未知技能卡（请传 card_id 或卡名）。'
   end
   if runtime.modifier_card_ids[card.id] == true then
-    return false, string.format('该羁绊卡已拥有：%s。', tostring(card.name or card.id))
+    return false, string.format('该技能卡已拥有：%s。', tostring(card.name or card.id))
   end
 
   grant_modifier_card_to_runtime(runtime, card)
   sync_attr_bonuses_to_hero(env)
-  return true, string.format('已获得单卡效果：%s（%s）。', tostring(card.name or card.id), tostring(card.bond_name or '未知羁绊'))
+  return true, string.format('已获得单卡效果：%s（%s）。', tostring(card.name or card.id), tostring(card.bond_name or '未知技能'))
 end
 
 function M.debug_activate_modifier_bond(env, bond_name, grant_missing_cards)
@@ -2945,7 +2876,7 @@ function M.debug_activate_modifier_bond(env, bond_name, grant_missing_cards)
   local runtime = ensure_runtime(state)
   local resolved_bond_name = resolve_modifier_bond_name(bond_name)
   if not runtime or not resolved_bond_name then
-    return false, '未知羁绊名（请传 bonds_init 中的羁绊所属）。'
+    return false, '未知技能名（请传 bonds_init 中的技能所属）。'
   end
   runtime.modifier_effects_disabled = false
 
@@ -2987,7 +2918,7 @@ function M.debug_activate_modifier_bond(env, bond_name, grant_missing_cards)
   local owned_count = get_owned_modifier_bond_count(runtime, resolved_bond_name)
   local need_count = get_required_modifier_bond_count(resolved_bond_name)
   return false, string.format(
-    '羁绊未集齐，无法激活：%s（%d/%d）。',
+    '技能未集齐，无法激活：%s（%d/%d）。',
     tostring(resolved_bond_name),
     owned_count,
     need_count
@@ -2999,7 +2930,7 @@ function M.debug_activate_single_modifier_bond(env, bond_name, grant_missing_car
   local runtime = ensure_runtime(state)
   local resolved_bond_name = resolve_modifier_bond_name(bond_name)
   if not runtime or not resolved_bond_name then
-    return false, '未知羁绊名（请传 bonds_init 中的羁绊所属）。'
+    return false, '未知技能名（请传 bonds_init 中的技能所属）。'
   end
 
   clear_active_modifier_bond_effects(runtime)
@@ -3013,12 +2944,24 @@ function M.debug_clear_active_modifier_bonds(env)
   local state = env and env.STATE
   local runtime = ensure_runtime(state)
   if not runtime then
-    return false, '羁绊运行时未初始化。'
+    return false, '技能运行时未初始化。'
   end
 
   clear_active_modifier_bond_effects(runtime)
   sync_attr_bonuses_to_hero(env)
-  return true, '已清空当前激活羁绊与羁绊卡效果。'
+  return true, '已清空当前激活技能与技能卡效果。'
 end
 
+-- skill_* 兼容别名：对外逐步迁移到“技能系统”命名。
+M.try_skill_draw = M.try_draw
+M.refresh_skill_choice = M.refresh_choice
+M.apply_skill_choice = M.apply_choice
+M.build_skill_slot_text = M.build_slot_text
+M.build_skill_choice_preview_text = M.build_choice_preview_text
+M.build_skill_swallow_panel_model = M.build_bond_swallow_panel_model
+M.debug_activate_modifier_skill = M.debug_activate_modifier_bond
+M.debug_activate_single_modifier_skill = M.debug_activate_single_modifier_bond
+M.debug_clear_active_modifier_skills = M.debug_clear_active_modifier_bonds
+
 return M
+

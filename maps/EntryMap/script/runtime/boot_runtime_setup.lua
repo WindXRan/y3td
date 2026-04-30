@@ -17,9 +17,6 @@ function M.create(ctx)
             nil
       end,
       try_bond_draw = ctx.try_bond_draw,
-      show_bond_progress = function()
-        return ctx.open_bond_card_album()
-      end,
       show_runtime_attr_overview = function()
         ctx.show_runtime_attr_dialog()
       end,

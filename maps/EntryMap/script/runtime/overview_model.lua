@@ -21,7 +21,6 @@ function M.create(env)
   local build_attack_skill_slot_text = env.build_attack_skill_slot_text
   local build_bond_slot_text = env.build_bond_slot_text
   local build_bond_choice_preview_text = env.build_bond_choice_preview_text
-  local build_bond_progress_lines = env.build_bond_progress_lines
 
   local function get_active_challenge_count_value()
     local count = 0
@@ -141,14 +140,6 @@ function M.create(env)
     local lines = {}
     for slot = 1, 7, 1 do
       lines[#lines + 1] = build_bond_slot_text(slot)
-    end
-    return lines
-  end
-
-  local function build_bond_progress_overview_lines()
-    local lines = build_bond_progress_lines(8)
-    if not lines or #lines == 0 then
-      return { '当前没有可显示的流派进境。' }
     end
     return lines
   end
@@ -366,10 +357,6 @@ function M.create(env)
             title = '待处理轮次',
             lines = build_pending_overview_lines(),
           },
-          progress = {
-            title = '流派进境',
-            lines = build_bond_progress_overview_lines(),
-          },
         },
       }
     end
@@ -401,10 +388,6 @@ function M.create(env)
         pending = {
           title = '待处理轮次',
           lines = build_pending_overview_lines(),
-        },
-        progress = {
-          title = '流派进境',
-          lines = build_bond_progress_overview_lines(),
         },
       },
     }
