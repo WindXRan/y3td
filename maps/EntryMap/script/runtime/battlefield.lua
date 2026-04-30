@@ -1322,35 +1322,11 @@ function M.create(env)
   end
 
   function api.create_hero(basic_attack_range)
-        local player = env.get_player()
-    local hero = nil
-
-    if player and player.get_all_units then
-      local player_units = player:get_all_units()
-      if player_units and player_units.pick then
-        local alive_units = {}
-        for _, unit in ipairs(player_units:pick()) do
-          if unit and unit.is_exist and unit:is_exist() then
-            alive_units[#alive_units + 1] = unit
-          end
-        end
-
-        if #alive_units > 0 then
-          hero = alive_units[1]
-          for i = 2, #alive_units do
-            alive_units[i]:remove()
-          end
-        end
-      end
-    end
-
+    local player = env.get_player()
     local preferred_unit_id = CONFIG.unit_ids.hero
-    local hero_create_err = nil
-    if not hero then
-      hero, hero_create_err = try_create_player_unit(player, preferred_unit_id, STATE.hero_spawn_point, 0)
-      if not hero and preferred_unit_id ~= HERO_RUNTIME_FALLBACK_UNIT_ID then
-        hero, hero_create_err = try_create_player_unit(player, HERO_RUNTIME_FALLBACK_UNIT_ID, STATE.hero_spawn_point, 0)
-      end
+    local hero, hero_create_err = try_create_player_unit(player, preferred_unit_id, STATE.hero_spawn_point, 0)
+    if not hero and preferred_unit_id ~= HERO_RUNTIME_FALLBACK_UNIT_ID then
+      hero, hero_create_err = try_create_player_unit(player, HERO_RUNTIME_FALLBACK_UNIT_ID, STATE.hero_spawn_point, 0)
     end
     if not hero then
       error(string.format(
@@ -1369,57 +1345,31 @@ function M.create(env)
     if hero_attr_system and hero_attr_system.log_snapshot then
       hero_attr_system.log_snapshot(hero, 'create_hero_before_init', string.format('basic_attack_range=%s', tostring(basic_attack_range or 250)))
     end
-        local hero_attr_init_ok = true
-    local hero_attr_init_err = nil
-    if hero_attr_system and hero_attr_system.init_hero_attrs then
-      local ok, err = pcall(hero_attr_system.init_hero_attrs, hero, hero_entry_stats)
-      if not ok then
-        hero_attr_init_ok = false
-        hero_attr_init_err = err
-      end
-    end
-
-    local initial_attack_range = tonumber(hero_entry_stats['¹¥»÷·¶Î§']) or basic_attack_range or 250
-    if hero_attr_system and hero_attr_system.set_attr then
-      pcall(hero_attr_system.set_attr, hero, '¹¥»÷·¶Î§', math.max(80, math.floor(initial_attack_range * 0.5)))
-    end
-
+    hero_attr_system.init_hero_attrs(hero, hero_entry_stats)
+    local initial_attack_range = tonumber(hero_entry_stats['¹¥»÷·¶Î§']) or basic_attack_range or 2000
+    hero_attr_system.set_attr(hero, '¹¥»÷·¶Î§', math.max(80, math.floor(initial_attack_range * 0.5)))
     hero:add_state('½ûÖ¹ÆÕ¹¥')
+
     hero:add_state('½ûÖ¹ÒÆ¶¯')
     hero:stop()
 
-    if CONFIG.debug_time_scale < 1 and CONFIG.debug_apply_hero_bonus_on_spawn == true and hero_attr_system then
+    if CONFIG.debug_time_scale < 1 and CONFIG.debug_apply_hero_bonus_on_spawn == true then
       for attr_name, value in pairs(CONFIG.debug_hero_bonus_stats) do
-        if hero_attr_system.add_attr then
-          pcall(hero_attr_system.add_attr, hero, attr_name, value)
-        end
+        hero_attr_system.add_attr(hero, attr_name, value)
       end
-      if hero_attr_system.log_snapshot then
-        pcall(hero_attr_system.log_snapshot, hero, 'create_hero_after_debug_bonus')
+      if hero_attr_system and hero_attr_system.log_snapshot then
+        hero_attr_system.log_snapshot(hero, 'create_hero_after_debug_bonus')
       end
     end
 
-    if hero_attr_system and hero_attr_system.rebuild_derived_attrs then
-      pcall(hero_attr_system.rebuild_derived_attrs, hero)
-    end
+    hero_attr_system.rebuild_derived_attrs(hero)
     if hero_attr_system and hero_attr_system.log_snapshot then
-      pcall(hero_attr_system.log_snapshot, hero, 'create_hero_after_rebuild')
+      hero_attr_system.log_snapshot(hero, 'create_hero_after_rebuild')
     end
-
-    if hero_attr_system and hero_attr_system.get_attr then
-      local ok_hp, max_hp = pcall(hero_attr_system.get_attr, hero, 'ÉúÃü½áËãÖµ')
-      if ok_hp and tonumber(max_hp) and tonumber(max_hp) > 0 then
-        hero:set_hp(tonumber(max_hp))
-      end
-    end
-
+    hero:set_hp(hero_attr_system.get_attr(hero, 'ÉúÃü½áËãÖµ'))
     STATE.hero_common_attack = hero:get_common_attack()
     local spawn_hp = resolve_hero_spawn_hp(hero)
-    hero:set_hp(math.max(1, tonumber(spawn_hp) or 1))
-
-    if not hero_attr_init_ok then
-      print(string.format('[battlefield] hero attr init failed, continue with fallback hp. err=%s', tostring(hero_attr_init_err)))
-    end
+    hero:set_hp(spawn_hp)
     if hero_attr_system and hero_attr_system.log_snapshot then
       hero_attr_system.log_snapshot(hero, 'create_hero_after_set_hp', string.format('spawn_hp=%s current_hp=%s', tostring(spawn_hp), tostring(hero:get_hp())))
     end
@@ -1593,7 +1543,4 @@ function M.create(env)
 end
 
 return M
-
-
-
 
