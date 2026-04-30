@@ -3172,8 +3172,18 @@ local function ensure_choice_list_choice_panel()
 end
 
 local function build_choice_list_cards()
-  local bond_runtime = STATE.bond_runtime
-  local choices = bond_runtime and bond_runtime.current_choices or nil
+  local kind = get_pending_round_choice_kind()
+  local choices = nil
+  if kind == 'gear' then
+    choices = STATE.gear_state and STATE.gear_state.current_choices or nil
+  elseif kind == 'attr' then
+    choices = STATE.attr_choice_runtime and STATE.attr_choice_runtime.current_choices or nil
+  elseif kind == 'bond' then
+    choices = STATE.bond_runtime and STATE.bond_runtime.current_choices or nil
+  elseif kind == 'evolution' or kind == 'mark' then
+    local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
+    choices = evolution_runtime and evolution_runtime.current_choices or nil
+  end
   local root, scroll = ensure_choice_list_choice_panel()
   if not root or not scroll then
     return
@@ -3181,11 +3191,14 @@ local function build_choice_list_cards()
 
   local is_visible = choices and #choices > 0 and STATE.choice_panel_hidden ~= true
   set_ui_visible(root, is_visible)
+  local player = get_player()
   local old_choice_panels = { 'BondChoice2', 'BondChoice3', 'BondChoice4' }
-  for _, panel_name in ipairs(old_choice_panels) do
-    local ok_old, old_panel = pcall(y3.ui.get_ui, player, panel_name)
-    if ok_old and old_panel then
-      set_ui_visible(old_panel, false)
+  if player then
+    for _, panel_name in ipairs(old_choice_panels) do
+      local ok_old, old_panel = pcall(y3.ui.get_ui, player, panel_name)
+      if ok_old and old_panel then
+        set_ui_visible(old_panel, false)
+      end
     end
   end
   if not is_visible then
@@ -3234,7 +3247,16 @@ local function build_choice_list_cards()
       if subtitle then
         if subtitle.set_ui_size then subtitle:set_ui_size(206, 24) end
         if subtitle.set_pos then subtitle:set_pos(114, 242) end
-        if subtitle.set_text then subtitle:set_text(tostring(choice.bond_root_name or choice.bond_name or '羁绊')) end
+        if subtitle.set_text then
+          subtitle:set_text(tostring(
+            choice.bond_root_name
+              or choice.bond_name
+              or choice.tag
+              or choice.quality
+              or kind
+              or '候选'
+          ))
+        end
         if subtitle.set_font_size then subtitle:set_font_size(13) end
       end
       local icon = card.create_child and card:create_child('图片') or nil
@@ -3270,10 +3292,9 @@ end
 
 runtime_ui_helpers.__raw_refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel
 runtime_ui_helpers.refresh_choice_panel = function(...)
-  local result = runtime_ui_helpers.__raw_refresh_choice_panel(...)
-  apply_bond_choice_quality_frames()
+  -- 选择面板统一走 ChoiceList 动态卡片链路，不再依赖旧 BondChoice2/3/4 渲染。
   build_choice_list_cards()
-  return result
+  return nil
 end
 
 cannon_skill_134258724_system = CannonSkill134258724System.create({
