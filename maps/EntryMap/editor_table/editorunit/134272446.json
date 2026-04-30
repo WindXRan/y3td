@@ -79,30 +79,10 @@
         "items": []
     }, 
     "collision_radius_2": 0.7, 
-    "common_ability_list": [
-        [
-            134223563, 
-            1
-        ], 
-        [
-            134222998, 
-            1
-        ], 
-        [
-            134237322, 
-            1
-        ], 
-        [
-            134232944, 
-            1
-        ]
-    ], 
+    "common_ability_list": [], 
     "common_atk": {
         "__tuple__": true, 
-        "items": [
-            201347498, 
-            1
-        ]
+        "items": []
     }, 
     "common_atk_type": 0, 
     "counterattack_range": 0.0, 
@@ -213,24 +193,7 @@
         ]
     }, 
     "outline_pass_width": 2, 
-    "passive_ability_list": [
-        [
-            134222892, 
-            1
-        ], 
-        [
-            134240125, 
-            1
-        ], 
-        [
-            134276386, 
-            1
-        ], 
-        [
-            134255946, 
-            1
-        ]
-    ], 
+    "passive_ability_list": [], 
     "path_finding_external_size": 0, 
     "pene_mag": 0.0, 
     "pene_mag_grow": 0.0, 

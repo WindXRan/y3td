@@ -143,10 +143,7 @@
     }, 
     "common_atk": {
         "__tuple__": true, 
-        "items": [
-            201347498, 
-            1
-        ]
+        "items": []
     }, 
     "common_atk_type": 999, 
     "counterattack_range": 0.0, 

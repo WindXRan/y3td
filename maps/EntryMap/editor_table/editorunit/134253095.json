@@ -79,16 +79,11 @@
         "items": []
     }, 
     "collision_radius_2": 0.7, 
-    "common_ability_list": [
-        [
-            134223010, 
-            1
-        ]
-    ], 
-    "common_atk": [
-        134254661, 
-        1
-    ], 
+    "common_ability_list": [], 
+    "common_atk": {
+        "__tuple__": true, 
+        "items": []
+    }, 
     "common_atk_type": 999, 
     "counterattack_range": 0.0, 
     "critical_chance": 0.0, 

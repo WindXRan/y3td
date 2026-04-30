@@ -82,10 +82,7 @@
     }, 
     "common_atk": {
         "__tuple__": true, 
-        "items": [
-            134255685, 
-            1
-        ]
+        "items": []
     }, 
     "common_atk_type": 2, 
     "counterattack_range": 0.0, 
@@ -131,27 +128,7 @@
     "healing_effect": 0.0, 
     "healing_effect_grow": 0.0, 
     "height_offset": 0, 
-    "hero_ability_list": {
-        "__tuple__": true, 
-        "items": [
-            [
-                134257727, 
-                0
-            ], 
-            [
-                134259387, 
-                0
-            ], 
-            [
-                134283088, 
-                0
-            ], 
-            [
-                134281670, 
-                0
-            ]
-        ]
-    }, 
+    "hero_ability_list": [], 
     "hit_rate": 100.0, 
     "hit_rate_grow": 0.0, 
     "hp_max": 490.0, 

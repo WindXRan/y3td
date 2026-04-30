@@ -9,6 +9,7 @@ local SkillDamageTemplates = require 'runtime.skill_damage_templates'
 
 local M = {}
 local FORCE_SPECIAL_EFFECTS_100 = false
+local DEFAULT_LINE_MOTION_ANGLE_OFFSET = math.pi / 2
 -- 全局视觉缩放：用于快速抑制羁绊特效光污染与闪屏。
 local GLOBAL_PARTICLE_SCALE_MULTIPLIER = 0.90
 local GLOBAL_AREA_SCALE_MULTIPLIER = 0.95
@@ -125,6 +126,7 @@ for bond_name, visual_entry in pairs(BondVisualEditorIds.visual_by_bond or {}) d
       projectile_target_distance = tonumber(visual_entry.target_distance),
       projectile_line_distance = tonumber(visual_entry.projectile_line_distance),
       projectile_angle_offset = tonumber(visual_entry.projectile_angle_offset),
+      projectile_motion_angle_offset = tonumber(visual_entry.projectile_motion_angle_offset),
       area_fx_base_radius = tonumber(visual_entry.area_fx_base_radius),
       area_fx_scale_bias = tonumber(visual_entry.area_fx_scale_bias),
       area_fx_min_scale = tonumber(visual_entry.area_fx_min_scale),
@@ -159,6 +161,7 @@ local function build_bond_visual(opts)
     projectile_target_distance = tonumber(opts.projectile_target_distance) or DEFAULT_VISUAL.projectile_target_distance,
     projectile_line_distance = tonumber(opts.projectile_line_distance) or nil,
     projectile_angle_offset = tonumber(opts.projectile_angle_offset) or 0,
+    projectile_motion_angle_offset = tonumber(opts.projectile_motion_angle_offset),
     area_fx_base_radius = area_fx_base_radius,
     area_fx_scale_bias = area_fx_scale_bias,
     area_fx_min_scale = area_fx_min_scale,
@@ -389,6 +392,7 @@ local function get_visual_config(bond_name)
       projectile_target_distance = override.projectile_target_distance or base.projectile_target_distance,
       projectile_line_distance = override.projectile_line_distance or base.projectile_line_distance,
       projectile_angle_offset = override.projectile_angle_offset or base.projectile_angle_offset,
+      projectile_motion_angle_offset = override.projectile_motion_angle_offset or base.projectile_motion_angle_offset,
       area_fx_base_radius = override.area_fx_base_radius or base.area_fx_base_radius,
       area_fx_scale_bias = override.area_fx_scale_bias or base.area_fx_scale_bias,
       area_fx_min_scale = override.area_fx_min_scale or base.area_fx_min_scale,
@@ -412,6 +416,7 @@ local function get_visual_config(bond_name)
       projectile_target_distance = forced.projectile_target_distance or extra.projectile_target_distance,
       projectile_line_distance = forced.projectile_line_distance or extra.projectile_line_distance,
       projectile_angle_offset = forced.projectile_angle_offset or extra.projectile_angle_offset,
+      projectile_motion_angle_offset = forced.projectile_motion_angle_offset or extra.projectile_motion_angle_offset,
       area_fx_base_radius = forced.area_fx_base_radius or extra.area_fx_base_radius,
       area_fx_scale_bias = forced.area_fx_scale_bias or extra.area_fx_scale_bias,
       area_fx_min_scale = forced.area_fx_min_scale or extra.area_fx_min_scale,
@@ -437,6 +442,7 @@ local function get_visual_config(bond_name)
     projectile_target_distance = extra.projectile_target_distance or DEFAULT_VISUAL.projectile_target_distance,
     projectile_line_distance = tonumber(extra.projectile_line_distance) or nil,
     projectile_angle_offset = tonumber(extra.projectile_angle_offset) or 0,
+    projectile_motion_angle_offset = tonumber(extra.projectile_motion_angle_offset),
     area_fx_base_radius = math.max(80, tonumber(extra.area_fx_base_radius) or 320),
     area_fx_scale_bias = tonumber(extra.area_fx_scale_bias) or 1.0,
     area_fx_min_scale = math.max(0.60, math.min(1.10, tonumber(extra.area_fx_min_scale) or 0.65)),
@@ -702,9 +708,13 @@ local function launch_projectile_to_target(env, target, visual_cfg)
   local use_line_fallback = motion_mode == 'line' or (target_distance_now ~= nil and target_distance_now < 80)
 
   if use_line_fallback then
+    local line_motion_angle_offset = tonumber(visual_cfg and visual_cfg.projectile_motion_angle_offset)
+    if line_motion_angle_offset == nil then
+      line_motion_angle_offset = DEFAULT_LINE_MOTION_ANGLE_OFFSET
+    end
     ok_move = pcall(function()
       projectile:mover_line({
-        angle = launch_angle or 0,
+        angle = (launch_angle or 0) + line_motion_angle_offset,
         distance = 160,
         speed = speed,
         height = visual_cfg.projectile_height,
@@ -1099,8 +1109,13 @@ local function launch_projectile_to_point(env, direction, distance, visual_cfg, 
   if not visual_cfg or not visual_cfg.projectile_key then
     return false
   end
-  local move_angle = tonumber(direction) or 0
-  local facing_angle = move_angle + (tonumber(visual_cfg.projectile_angle_offset) or 0)
+  local raw_angle = tonumber(direction) or 0
+  local motion_angle_offset = tonumber(visual_cfg and visual_cfg.projectile_motion_angle_offset)
+  if motion_angle_offset == nil then
+    motion_angle_offset = DEFAULT_LINE_MOTION_ANGLE_OFFSET
+  end
+  local move_angle = raw_angle + motion_angle_offset
+  local facing_angle = raw_angle + (tonumber(visual_cfg.projectile_angle_offset) or 0)
 
   local function create_with_key(projectile_key)
     return pcall(y3.projectile.create, {

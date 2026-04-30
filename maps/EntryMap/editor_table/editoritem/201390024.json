@@ -3,10 +3,7 @@
     "_ref_": 201390024, 
     "attached_ability": {
         "__tuple__": true, 
-        "items": [
-            134219675, 
-            1
-        ]
+        "items": []
     }, 
     "attached_agility": 0, 
     "attached_attack_interval": {

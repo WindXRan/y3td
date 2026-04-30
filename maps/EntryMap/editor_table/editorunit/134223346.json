@@ -79,20 +79,11 @@
         "items": []
     }, 
     "collision_radius_2": 0.7, 
-    "common_ability_list": [
-        [
-            134256219, 
-            1
-        ], 
-        [
-            134256500, 
-            1
-        ]
-    ], 
-    "common_atk": [
-        134250176, 
-        1
-    ], 
+    "common_ability_list": [], 
+    "common_atk": {
+        "__tuple__": true, 
+        "items": []
+    }, 
     "common_atk_type": 999, 
     "counterattack_range": 0.0, 
     "critical_chance": 0.0, 
@@ -202,12 +193,7 @@
         ]
     }, 
     "outline_pass_width": 2, 
-    "passive_ability_list": [
-        [
-            134271836, 
-            1
-        ]
-    ], 
+    "passive_ability_list": [], 
     "path_finding_external_size": 0, 
     "pene_mag": 0.0, 
     "pene_mag_grow": 0.0, 

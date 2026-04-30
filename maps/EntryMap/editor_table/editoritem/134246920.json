@@ -11,10 +11,10 @@
             0
         ]
     }, 
-    "attached_ability": [
-        134221700, 
-        1
-    ], 
+    "attached_ability": {
+        "__tuple__": true, 
+        "items": []
+    }, 
     "attached_agility": 0.0, 
     "attached_attack_interval": {
         "__tuple__": true, 

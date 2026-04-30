@@ -173,12 +173,7 @@
             0
         ]
     }, 
-    "attached_passive_abilities": [
-        [
-            134242733, 
-            1
-        ]
-    ], 
+    "attached_passive_abilities": [], 
     "attached_pene_mag": 0.0, 
     "attached_pene_mag_ratio": {
         "__tuple__": true, 

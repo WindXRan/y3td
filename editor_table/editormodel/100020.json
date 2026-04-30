@@ -1,0 +1,40 @@
+{
+    "describe": 681894153, 
+    "editor_res": false, 
+    "key": 100020, 
+    "map_name": "H52\u975e\u4eba\u5b66\u56ed", 
+    "model_id": 100020, 
+    "name": -334363064, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "code_Realistic", 
+            "code_Modern", 
+            "code_Urban", 
+            "code_Prop", 
+            "code_Red", 
+            "code_Plastic", 
+            "code_Icon", 
+            "P10(Q\u7248\u90fd\u5e02\u7cfb\u5217)"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/100020", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_identify": "all", 
+    "res_type": "code_model_Scene,code_Prop", 
+    "rigidbody_offset": [
+        0.0, 
+        0.64, 
+        0.0
+    ], 
+    "rigidbody_type": 3, 
+    "select_effect_scale": 1.0, 
+    "size": 1.0, 
+    "socket_info": {}, 
+    "source": "code_Source_Import", 
+    "uid": "editor_model_100020", 
+    "unit_prefab": 0
+}
