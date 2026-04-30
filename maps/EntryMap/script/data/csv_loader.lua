@@ -12,6 +12,7 @@ end
 
 local SCRIPT_ROOT = get_script_root()
 local warned_missing_paths = {}
+local warned_invalid_paths = {}
 
 local function is_absolute_path(path)
   return path:match('^%a:[/\\]') ~= nil
@@ -57,11 +58,29 @@ local function split_csv_line(line)
   return result
 end
 
-function M.read_rows(path)
+local function warn_once(registry, key, message)
+  if registry[key] then
+    return
+  end
+  registry[key] = true
+  if log and log.warn then
+    log.warn(message)
+  else
+    print(message)
+  end
+end
+
+local function read_rows_safe(path, optional)
   local resolved = resolve_path(path)
   local file, err = io.open(resolved, 'r')
   if not file then
-    error(string.format('[csv] failed to open %s: %s', resolved, tostring(err)))
+    local level = optional and 'optional' or 'required'
+    warn_once(
+      warned_missing_paths,
+      resolved,
+      string.format('[csv] %s file missing, fallback to empty rows: %s (%s)', level, resolved, tostring(err))
+    )
+    return {}
   end
 
   local headers = nil
@@ -86,52 +105,24 @@ function M.read_rows(path)
   file:close()
 
   if not headers then
-    error(string.format('[csv] missing headers in %s', resolved))
+    local level = optional and 'optional' or 'required'
+    warn_once(
+      warned_invalid_paths,
+      resolved,
+      string.format('[csv] %s file invalid (missing headers), fallback to empty rows: %s', level, resolved)
+    )
+    return {}
   end
 
   return rows
 end
 
+function M.read_rows(path)
+  return read_rows_safe(path, false)
+end
+
 function M.read_rows_optional(path)
-  local resolved = resolve_path(path)
-  local file, err = io.open(resolved, 'r')
-  if not file then
-    if not warned_missing_paths[resolved] then
-      warned_missing_paths[resolved] = true
-      local message = string.format('[csv] optional file missing, fallback to empty rows: %s (%s)', resolved, tostring(err))
-      if log and log.warn then
-        log.warn(message)
-      else
-        print(message)
-      end
-    end
-    return {}
-  end
-
-  local headers = nil
-  local rows = {}
-
-  for line in file:lines() do
-    line = line:gsub('\r$', '')
-    if line ~= '' then
-      if not headers then
-        headers = split_csv_line(line)
-      else
-        local values = split_csv_line(line)
-        local row = {}
-        for index, header in ipairs(headers) do
-          row[header] = values[index] or ''
-        end
-        rows[#rows + 1] = row
-      end
-    end
-  end
-
-  file:close()
-  if not headers then
-    return {}
-  end
-  return rows
+  return read_rows_safe(path, true)
 end
 
 function M.group_by(rows, key_field)

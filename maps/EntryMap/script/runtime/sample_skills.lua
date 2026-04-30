@@ -362,7 +362,8 @@ function M.create(env)
     if not hero or not y3 or not y3.projectile or not y3.projectile.create then
       return nil
     end
-    projectile_key = clamp_positive(projectile_key, nil)
+    local forced_projectile_key = clamp_positive(STATE and STATE.debug_force_projectile_key, nil)
+    projectile_key = clamp_positive(forced_projectile_key or projectile_key, nil)
     if not projectile_key then
       return nil
     end

@@ -1,2 +1,0 @@
-id,projectile_key,projectile_speed,projectile_time,target_distance,cast_particle,cast_scale,cast_time,impact_particle,impact_scale,impact_time,explosion_particle,explosion_scale,explosion_time,charge_particle,charge_scale,charge_time,chain_particle,chain_scale,chain_time,strike_delay
-basic_attack,134267104,3760,2.9,28,101175,0.90,0.14,101175,1.08,0.28,101175,1.08,0.30,101175,0.86,0.20,101175,0.92,0.22,

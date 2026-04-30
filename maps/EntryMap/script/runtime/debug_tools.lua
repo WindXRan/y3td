@@ -12,6 +12,7 @@ function M.create(env)
   local develop_command = env.develop_command
   local effect_debug_system = env.effect_debug_system
   local sample_skill_system = env.sample_skill_system
+  local DEFAULT_DEBUG_PROJECTILE_KEY = 134255250
 
   local function round(value)
     return round_number(tonumber(value) or 0)
@@ -267,6 +268,7 @@ function M.create(env)
     debug_message('Ctrl+F8：立刻刷出当前波 Boss')
     debug_message('Ctrl+F9：秒杀场上全部敌人')
     debug_message('Ctrl+F10：显示 / 隐藏 羁绊GM 面板')
+    debug_message('投射物覆盖命令：.eproj [id|off|toggle]（默认ID=134255250）')
     debug_message('特效命令：.eeffect [id] / .eemount [id] / .eeunmount [id] / .eetrigger [id] / .eeobs [id] / .eeclear / .eelog')
     debug_message('羁绊GM命令：.egmbond [on|off|toggle] / .egmcard <card_id|卡名> / .egmbondeffect <羁绊名>')
     debug_message('样例技能命令：.esample list / .esample next / .esample report / .esample <sample_id>')
@@ -532,6 +534,33 @@ function M.create(env)
         message('用法：.etier run|report')
       end,
     })
+
+    develop_command.register('EPROJ', {
+      desc = '全局投射物覆盖：.eproj 134255250 / .eproj off / .eproj toggle',
+      onCommand = function(arg)
+        local cmd = tostring(arg or ''):lower()
+        if cmd == 'off' or cmd == 'close' or cmd == '0' then
+          if env.debug_clear_global_projectile_override then
+            env.debug_clear_global_projectile_override()
+          end
+          return
+        end
+        if cmd == '' or cmd == 'toggle' then
+          if env.debug_toggle_global_projectile_override then
+            env.debug_toggle_global_projectile_override(DEFAULT_DEBUG_PROJECTILE_KEY)
+          end
+          return
+        end
+        local key = tonumber(cmd)
+        if not key or key <= 0 then
+          message('用法：.eproj [id|off|toggle]，例如 .eproj 134255250')
+          return
+        end
+        if env.debug_set_global_projectile_override then
+          env.debug_set_global_projectile_override(key)
+        end
+      end,
+    })
   end
 
   local function get_gm_panel_wave_text()
@@ -567,6 +596,7 @@ function M.create(env)
       string.format('金币：%d    木材：%d', round(gold), round(wood)),
       string.format('挑战次数：%s', get_challenge_charge_text()),
       string.format('进行中挑战：%d', round(challenge_count)),
+      string.format('全局投射物覆盖：%s', tostring((env.debug_get_global_projectile_override and env.debug_get_global_projectile_override()) or '关闭')),
     }, '\n')
   end
 
@@ -915,6 +945,11 @@ function M.create(env)
       { '验收快照', env.debug_print_sample_framework_report, { 88, 112, 146 } },
       { '分档连测', env.debug_run_framework_tier_suite, { 86, 92, 132 } },
       { '分档报告', env.debug_print_framework_tier_report, { 86, 102, 142 } },
+      { '投射物覆盖', function()
+        if env.debug_toggle_global_projectile_override then
+          env.debug_toggle_global_projectile_override(DEFAULT_DEBUG_PROJECTILE_KEY)
+        end
+      end, { 96, 106, 132 } },
     }
 
     create_text(panel, '通用 GM', 26, 344, 120, 24, 18, { 245, 248, 255, 255 })
@@ -939,6 +974,36 @@ function M.create(env)
     set_intercepts(panel, true)
     refresh_gm_panel()
     return gm_ui
+  end
+
+  local function remove_ui_if_alive(ui)
+    if ui and ui.is_exist and ui:is_exist() and ui.remove then
+      pcall(ui.remove, ui)
+      return
+    end
+    if ui and ui.is_removed and (not ui:is_removed()) and ui.remove then
+      pcall(ui.remove, ui)
+    end
+  end
+
+  local function disable_legacy_gm_panel()
+    if STATE.gm_ui then
+      remove_ui_if_alive(STATE.gm_ui.panel)
+      remove_ui_if_alive(STATE.gm_ui.toggle_button)
+      STATE.gm_ui = nil
+    end
+  end
+
+  disable_legacy_gm_panel()
+
+  refresh_gm_panel = function()
+    return
+  end
+  toggle_gm_panel = function()
+    return
+  end
+  ensure_gm_panel = function()
+    return nil
   end
 
   return {

@@ -599,6 +599,14 @@ local function play_bond_sound(env, bond_name, stage, anchor)
   return nil
 end
 
+local function resolve_projectile_key(state, projectile_key)
+  local forced = tonumber(state and state.debug_force_projectile_key) or 0
+  if forced > 0 then
+    return forced
+  end
+  return projectile_key
+end
+
 local function launch_projectile_to_target(env, target, visual_cfg)
   local state = env and env.STATE
   local hero = state and state.hero
@@ -648,8 +656,8 @@ local function launch_projectile_to_target(env, target, visual_cfg)
     })
   end
 
-  local requested_key = visual_cfg.projectile_key
-  local ok_create, projectile = create_with_key(visual_cfg.projectile_key)
+  local requested_key = resolve_projectile_key(state, visual_cfg.projectile_key)
+  local ok_create, projectile = create_with_key(requested_key)
   if state and state.bond_debug_trace_enabled == true and env and env.message then
     env.message(string.format(
       '[bond_projectile_trace] requested=%s create_ok=%s',
@@ -659,7 +667,7 @@ local function launch_projectile_to_target(env, target, visual_cfg)
   end
   if not ok_create or not projectile then
     if env and env.message then
-      env.message(string.format('[bond_projectile] create failed key=%s', tostring(visual_cfg.projectile_key)))
+      env.message(string.format('[bond_projectile] create failed key=%s', tostring(requested_key)))
     end
     return false
   end
@@ -1095,7 +1103,7 @@ local function launch_projectile_to_point(env, direction, distance, visual_cfg, 
     })
   end
 
-  local ok_create, projectile = create_with_key(visual_cfg.projectile_key)
+  local ok_create, projectile = create_with_key(resolve_projectile_key(state, visual_cfg.projectile_key))
   if not ok_create or not projectile then
     return false
   end
@@ -2163,4 +2171,3 @@ function M.get_visual_registry_snapshot()
 end
 
 return M
-

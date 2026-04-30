@@ -21,6 +21,7 @@ function M.create(env)
   local force_trigger_effect = env.force_trigger_effect
   local open_effect_debug_panel_ui = env.open_effect_debug_panel_ui
   local sample_skill_system = env.sample_skill_system
+  local DEFAULT_DEBUG_PROJECTILE_KEY = 134255250
 
   local api = {}
 
@@ -395,6 +396,48 @@ function M.create(env)
     for _, line in ipairs(sample_skill_system.build_framework_tier_report() or {}) do
       debug_message(line)
     end
+  end
+
+  function api.debug_set_global_projectile_override(projectile_key)
+    if not guard_battle() then
+      return
+    end
+    local key = tonumber(projectile_key) or 0
+    key = math.floor(key)
+    if key <= 0 then
+      debug_message('用法：设置全局投射物时，ID 必须为正整数。')
+      return
+    end
+    STATE.debug_force_projectile_key = key
+    debug_message(string.format('全局投射物覆盖已开启：%d', key))
+  end
+
+  function api.debug_clear_global_projectile_override()
+    if not guard_battle() then
+      return
+    end
+    STATE.debug_force_projectile_key = nil
+    debug_message('全局投射物覆盖已关闭。')
+  end
+
+  function api.debug_toggle_global_projectile_override(projectile_key)
+    if not guard_battle() then
+      return
+    end
+    if tonumber(STATE.debug_force_projectile_key) and tonumber(STATE.debug_force_projectile_key) > 0 then
+      api.debug_clear_global_projectile_override()
+      return
+    end
+    local key = tonumber(projectile_key) or DEFAULT_DEBUG_PROJECTILE_KEY
+    api.debug_set_global_projectile_override(key)
+  end
+
+  function api.debug_get_global_projectile_override()
+    local key = tonumber(STATE.debug_force_projectile_key) or 0
+    if key <= 0 then
+      return nil
+    end
+    return key
   end
 
   return api

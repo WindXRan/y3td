@@ -52,7 +52,12 @@ local function safe_call(unit, method_name, ...)
   if not unit or not unit.is_exist or not unit:is_exist() then
     return nil
   end
-  local method = unit[method_name]
+  local ok_method, method = pcall(function()
+    return unit[method_name]
+  end)
+  if not ok_method then
+    return nil
+  end
   if type(method) ~= 'function' then
     return nil
   end
@@ -67,7 +72,12 @@ local function safe_gameapi_call(gameapi, method_name, unit, ...)
   if not gameapi or not unit or not unit.is_exist or not unit:is_exist() then
     return nil
   end
-  local method = gameapi[method_name]
+  local ok_method, method = pcall(function()
+    return gameapi[method_name]
+  end)
+  if not ok_method then
+    return nil
+  end
   if type(method) ~= 'function' then
     return nil
   end

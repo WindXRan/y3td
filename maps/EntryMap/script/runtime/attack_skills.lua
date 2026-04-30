@@ -964,6 +964,13 @@ function M.create(env)
   local PROJECTILE_DEFAULT_TARGET_DISTANCE = tonumber(PROJECTILE_TUNING.default_target_distance) or 60
   local PROJECTILE_DEFAULT_TIME = tonumber(PROJECTILE_TUNING.default_time) or 3.0
   local PROJECTILE_LOCAL_DEFAULT_TIME = tonumber(PROJECTILE_TUNING.local_default_time) or 0.25
+  local function resolve_projectile_key(projectile_key)
+    local forced = tonumber(STATE and STATE.debug_force_projectile_key) or 0
+    if forced > 0 then
+      return forced
+    end
+    return projectile_key
+  end
 
   local function resolve_projectile_hit_on_break(projectile, target, target_distance)
     if not projectile or not projectile.is_exist or not projectile:is_exist() then
@@ -995,7 +1002,7 @@ function M.create(env)
     end
   
     local ok_create, projectile = pcall(y3.projectile.create, {
-      key = vfx.projectile_key,
+      key = resolve_projectile_key(vfx.projectile_key),
       target = STATE.hero,
       socket = 'origin',
       owner = STATE.hero,
@@ -1096,7 +1103,7 @@ function M.create(env)
     end
 
     local ok_create, projectile = pcall(y3.projectile.create, {
-      key = vfx.projectile_key,
+      key = resolve_projectile_key(vfx.projectile_key),
       target = origin_point,
       owner = STATE.hero,
       ability = ability,
@@ -1185,7 +1192,7 @@ function M.create(env)
     end
 
     local ok_create, projectile = pcall(y3.projectile.create, {
-      key = vfx.projectile_key,
+      key = resolve_projectile_key(vfx.projectile_key),
       target = STATE.hero,
       socket = 'origin',
       owner = STATE.hero,

@@ -39,10 +39,15 @@ local HeroAttrSystem = require 'runtime.hero_attr_system'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
 local HeroAttrPanel = require 'runtime.hero_attr_panel'
 local SampleSkillsSystem = require 'runtime.sample_skills'
+local ProjectileNameGuard = require 'runtime.projectile_name_guard'
 local BootCore = require 'runtime.boot_core'
 local BootDevCommands = require 'runtime.boot_dev_commands'
 local BootBootstrapSequence = require 'runtime.boot_bootstrap_sequence'
 local RuntimeEntry = {}
+local projectile_create_original = nil
+local particle_create_original = nil
+local projectile_override_hook_installed = false
+local particle_override_hook_installed = false
 local helper_signals_started = false
 heal_hero = nil
 progression_system = nil
@@ -519,6 +524,58 @@ end
 STATE = boot_core.create_initial_state()
 STATE.effect_debug_runtime = nil
 STATE.fixed_camera_enabled = true
+
+local function install_projectile_override_hook()
+  if projectile_override_hook_installed then
+    return
+  end
+  if not y3 or not y3.projectile or type(y3.projectile.create) ~= 'function' then
+    return
+  end
+  projectile_create_original = y3.projectile.create
+  y3.projectile.create = function(args, ...)
+    local forced_key = tonumber(STATE and STATE.debug_force_projectile_key) or 0
+    if forced_key > 0 and type(args) == 'table' then
+      local copied = {}
+      for k, v in pairs(args) do
+        copied[k] = v
+      end
+      args = copied
+      args.key = math.floor(forced_key)
+    end
+    return projectile_create_original(args, ...)
+  end
+  projectile_override_hook_installed = true
+end
+
+install_projectile_override_hook()
+
+local function install_particle_disable_hook()
+  if particle_override_hook_installed then
+    return
+  end
+  if not y3 or not y3.particle or type(y3.particle.create) ~= 'function' then
+    return
+  end
+  particle_create_original = y3.particle.create
+  y3.particle.create = function(args, ...)
+    local forced_key = tonumber(STATE and STATE.debug_force_projectile_key) or 0
+    if forced_key > 0 then
+      -- 纯投射物模式：开启投射物覆盖后，禁用粒子/地面特效创建。
+      return nil
+    end
+    return particle_create_original(args, ...)
+  end
+  particle_override_hook_installed = true
+end
+
+install_particle_disable_hook()
+
+ProjectileNameGuard.validate({
+  y3 = y3,
+}, {
+  134255250,
+})
 
 local function get_player()
   return y3.player(CONFIG.player_id)
@@ -2664,6 +2721,18 @@ debug_tools_system = DebugToolsSystem.create({
   debug_print_framework_tier_report = function()
     return debug_actions_system.debug_print_framework_tier_report()
   end,
+  debug_set_global_projectile_override = function(projectile_key)
+    return debug_actions_system.debug_set_global_projectile_override(projectile_key)
+  end,
+  debug_clear_global_projectile_override = function()
+    return debug_actions_system.debug_clear_global_projectile_override()
+  end,
+  debug_toggle_global_projectile_override = function(projectile_key)
+    return debug_actions_system.debug_toggle_global_projectile_override(projectile_key)
+  end,
+  debug_get_global_projectile_override = function()
+    return debug_actions_system.debug_get_global_projectile_override()
+  end,
   sample_skill_system = sample_skills_system,
 })
 
@@ -2964,6 +3033,27 @@ gm_bond_effects_system = GmBondEffectsSystem.create({
     end
     return false
   end,
+  debug_set_global_projectile_override = function(projectile_key)
+    if debug_actions_system and debug_actions_system.debug_set_global_projectile_override then
+      return debug_actions_system.debug_set_global_projectile_override(projectile_key)
+    end
+  end,
+  debug_clear_global_projectile_override = function()
+    if debug_actions_system and debug_actions_system.debug_clear_global_projectile_override then
+      return debug_actions_system.debug_clear_global_projectile_override()
+    end
+  end,
+  debug_toggle_global_projectile_override = function(projectile_key)
+    if debug_actions_system and debug_actions_system.debug_toggle_global_projectile_override then
+      return debug_actions_system.debug_toggle_global_projectile_override(projectile_key)
+    end
+  end,
+  debug_get_global_projectile_override = function()
+    if debug_actions_system and debug_actions_system.debug_get_global_projectile_override then
+      return debug_actions_system.debug_get_global_projectile_override()
+    end
+    return nil
+  end,
   get_game_time = function()
     if y3 and y3.game and y3.game.current_game_run_time then
       return tonumber(y3.game.current_game_run_time()) or 0
@@ -3108,9 +3198,9 @@ local function apply_bond_choice_quality_frames()
   end
 end
 
-local raw_refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel
+runtime_ui_helpers.__raw_refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel
 runtime_ui_helpers.refresh_choice_panel = function(...)
-  local result = raw_refresh_choice_panel(...)
+  local result = runtime_ui_helpers.__raw_refresh_choice_panel(...)
   apply_bond_choice_quality_frames()
   return result
 end
@@ -3128,14 +3218,14 @@ cannon_skill_134258724_system = CannonSkill134258724System.create({
 
 runtime_ui_helpers.install_panel_systems()
 
-local raw_set_battle_hud_visible = runtime_ui_helpers.set_battle_hud_visible
+runtime_ui_helpers.__raw_set_battle_hud_visible = runtime_ui_helpers.set_battle_hud_visible
 set_battle_hud_visible = function(visible)
   if visible == true and STATE.archive_panel_visible == true then
-    local result = raw_set_battle_hud_visible(false)
+    local result = runtime_ui_helpers.__raw_set_battle_hud_visible(false)
     enforce_runtime_ui_phase(false)
     return result
   end
-  local result = raw_set_battle_hud_visible(visible)
+  local result = runtime_ui_helpers.__raw_set_battle_hud_visible(visible)
   enforce_runtime_ui_phase(visible == true)
   if runtime_ui_helpers and runtime_ui_helpers.refresh_bond_swallow_panel then
     runtime_ui_helpers.refresh_bond_swallow_panel()
@@ -3143,288 +3233,125 @@ set_battle_hud_visible = function(visible)
   return result
 end
 
-local function create_hero()
-  local hero = battlefield_system.create_hero(ATTACK_SKILL_DEFS.basic_attack.base_range or 250)
-  if STATE.fixed_camera_enabled == true then
-    RuntimeEntry.sync_fixed_camera_mode()
-  end
-  return hero
-end
-
-local function validate_config()
-  return battlefield_system.validate_config()
-end
-
-hero_selection_range_system = HeroSelectionRangeSystem.create({
-  STATE = STATE,
-  y3 = y3,
-  is_battle_active = function()
-    return STATE.session_phase == 'battle' and STATE.game_finished ~= true
-  end,
-  get_current_basic_attack_range = function()
-    return attack_skills_system and attack_skills_system.get_current_basic_attack_range and
-        attack_skills_system.get_current_basic_attack_range() or 0
-  end,
-})
-
-session_state_system = BootSession.create({
+RuntimeEntry._session_bundle = require('runtime.boot_session_setup').create({
+  RuntimeEntry = RuntimeEntry,
+  HeroSelectionRangeSystem = HeroSelectionRangeSystem,
+  BootSession = BootSession,
+  OutgameSystem = OutgameSystem,
   STATE = STATE,
   CONFIG = CONFIG,
   y3 = y3,
   message = message,
+  round_number = round_number,
   hero_attr_system = hero_attr_system,
   make_point = make_point,
   get_resource_rules = get_resource_rules,
   create_bond_runtime = create_bond_runtime,
   create_battle_event_feed_runtime = create_battle_event_feed_runtime,
   create_effect_debug_runtime = create_effect_debug_runtime,
-  create_mark_runtime = reward_system.create_evolution_runtime,
-  create_treasure_runtime = reward_system.create_treasure_runtime,
+  reward_system = reward_system,
   create_skill_runtime = create_skill_runtime,
   create_attack_skill_state = create_attack_skill_state,
   ATTACK_SKILL_BLUEPRINTS = ATTACK_SKILL_BLUEPRINTS,
-  destroy_choice_panel = runtime_ui_helpers.destroy_choice_panel,
+  ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS,
+  runtime_ui_helpers = runtime_ui_helpers,
   battlefield_system = battlefield_system,
+  progression_system = progression_system,
+  GearUpgrades = GearUpgrades,
   get_player = get_player,
   get_enemy_player = get_enemy_player,
-  create_hero = create_hero,
-  initialize_hero_progression = progression_system.initialize_hero_progression,
-  ensure_gear_runtime = function(state, config)
-    return GearUpgrades.ensure_runtime(state, config)
-  end,
-  sync_gear_items_to_hero = function(state, hero, config)
-    return GearUpgrades.sync_items_to_hero(state, hero, config)
-  end,
-  sync_gear_runtime_effects = function(state, hero, config)
-    return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
+  get_outgame_system = function()
+    return outgame_system
   end,
   unlock_attack_skill = unlock_attack_skill,
   show_attack_skill_loadout = show_attack_skill_loadout,
   setup_basic_attack_ability = setup_basic_attack_ability,
-  ensure_runtime_hud = runtime_ui_helpers.ensure_runtime_hud,
   set_battle_hud_visible = function(visible)
     return set_battle_hud_visible(visible)
   end,
-  refresh_runtime_hud = runtime_ui_helpers.refresh_runtime_hud,
-  enter_battle_audio = function()
-    return audio_system and audio_system.enter_battle and audio_system.enter_battle() or nil
-  end,
-  disable_local_attack_preview = function()
-    return hero_selection_range_system
-        and hero_selection_range_system.disable_local_preview
-        and hero_selection_range_system.disable_local_preview()
-        or false
-  end,
-  get_outgame_system = function()
-    return outgame_system
-  end,
-  start_wave = function(index)
-    return RuntimeEntry.start_wave(index)
-  end,
+  audio_system = audio_system,
 })
 
-is_battle_active = function()
-  return session_state_system.is_battle_active()
-end
+hero_selection_range_system = RuntimeEntry._session_bundle.hero_selection_range_system
+session_state_system = RuntimeEntry._session_bundle.session_state_system
+outgame_system = RuntimeEntry._session_bundle.outgame_system
+is_battle_active = RuntimeEntry._session_bundle.is_battle_active
+reset_battle_state = RuntimeEntry._session_bundle.reset_battle_state
+reset_session_state = RuntimeEntry._session_bundle.reset_session_state
 
-reset_battle_state = function()
-  return session_state_system.reset_battle_state()
-end
-
-reset_session_state = function()
-  return session_state_system.reset_session_state()
-end
-
-outgame_system = OutgameSystem.create({
-  STATE = STATE,
-  CONFIG = CONFIG,
-  y3 = y3,
-  message = message,
-  round_number = round_number,
-  get_player = get_player,
-  stage_runtime = {
-    get_current_stage_text = function()
-      if STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) then
-        return STATE.current_stage_def.display_label or STATE.current_stage_def.display_name
-      end
-      return '第1关'
-    end,
-    start_selected_stage = function(stage_id, mode_id)
-      return session_state_system.start_selected_stage(stage_id, mode_id)
-    end,
-  },
-  play_ui_click = function()
-    return audio_system and audio_system.play_ui_click and audio_system.play_ui_click() or nil
-  end,
-  ensure_music_loop = function()
-    return audio_system and audio_system.ensure_music_loop and audio_system.ensure_music_loop() or nil
-  end,
-  set_battle_hud_visible = function(visible)
-    return set_battle_hud_visible(visible)
-  end,
-})
-
-local function build_input_events_env()
-  return {
-    STATE = STATE,
-    y3 = y3,
-    message = message,
-    is_battle_active = function()
-      return is_battle_active()
-    end,
-    get_hero_max_level = progression_system.get_hero_max_level,
-    sync_hero_progress_from_engine = progression_system.sync_hero_progress_from_engine,
-    try_queue_mark_node_for_level = reward_system.try_queue_evolution_node_for_level,
-    grant_attr_diamond = function(count, level)
-      return attr_choice_system and attr_choice_system.grant_diamond and attr_choice_system.grant_diamond(count, level) or
-          nil
-    end,
-    try_bond_draw = try_bond_draw,
-    show_bond_progress = function()
-      return open_bond_card_album()
-    end,
-    show_runtime_attr_overview = function()
-      show_runtime_attr_dialog()
-    end,
-    show_runtime_attr_tip_panel = function()
-      runtime_ui_helpers.show_runtime_attr_tip_panel(8)
-    end,
-    show_runtime_attr_dialog = show_runtime_attr_dialog,
-    refresh_runtime_overview = runtime_ui_helpers.refresh_runtime_overview,
-    start_current_task_challenge = function()
-      return mainline_task_system and mainline_task_system.start_current_task_challenge and
-          mainline_task_system.start_current_task_challenge() or nil
-    end,
-    try_start_challenge = try_start_challenge,
-    try_evolution_entry = try_evolution_entry,
-    try_treasure_entry = try_treasure_entry,
-    apply_round_choice = apply_round_choice,
-    show_runtime_status = show_runtime_status,
-    toggle_talk_input = runtime_ui_helpers.toggle_talk_input,
-    toggle_inventory_panel = runtime_ui_helpers.toggle_inventory_panel,
-    open_save_panel = function()
-      return open_runtime_save_panel()
-    end,
-    try_upgrade_growth_weapon = BattleEventPrompts.try_upgrade_growth_weapon,
-    use_attr_diamond = use_attr_diamond,
-    show_debug_hotkey_help = show_debug_hotkey_help,
-    debug_actions_system = debug_actions_system,
-    debug_tools_system = debug_tools_system,
-    gm_bond_effects_system = gm_bond_effects_system,
-    toggle_fixed_camera = RuntimeEntry.toggle_fixed_camera,
-  }
-end
-
-input_events_system = BootInput.create(build_input_events_env())
-
-hero_tujian_panel_system = BootHeroTujian.create({
+RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({
+  RuntimeEntry = RuntimeEntry,
+  BootInput = BootInput,
+  BootEvents = BootEvents,
+  BootLoops = BootLoops,
+  BootHeroTujian = BootHeroTujian,
+  BootDevCommands = BootDevCommands,
+  BootBootstrapSequence = BootBootstrapSequence,
+  BattleEventPrompts = BattleEventPrompts,
   STATE = STATE,
   y3 = y3,
-  get_player = get_player,
   message = message,
-  get_audio_system = function()
-    return audio_system
+  progression_system = progression_system,
+  reward_system = reward_system,
+  attr_choice_system = attr_choice_system,
+  runtime_ui_helpers = runtime_ui_helpers,
+  mainline_task_system = mainline_task_system,
+  debug_actions_system = debug_actions_system,
+  debug_tools_system = debug_tools_system,
+  gm_bond_effects_system = gm_bond_effects_system,
+  audio_system = audio_system,
+  hero_attr_system = hero_attr_system,
+  battle_auto_acceptance_system = battle_auto_acceptance_system,
+  battlefield_system = battlefield_system,
+  hero_selection_range_system = hero_selection_range_system,
+  outgame_system = outgame_system,
+  get_player = get_player,
+  is_battle_active = function()
+    return is_battle_active()
   end,
-  get_outgame_system = function()
-    return outgame_system
-  end,
-})
-
-local function register_runtime_events()
-  BootEvents.register({
-    input_events_system = input_events_system,
-    hero_selection_range_system = hero_selection_range_system,
-  })
-end
-
-local function build_runtime_loops_env()
-  return {
-    STATE = STATE,
-    y3 = y3,
-    hero_attr_system = hero_attr_system,
-    is_battle_active = function()
-      return is_battle_active()
-    end,
-    update_passive_resources = update_passive_resources,
-    battlefield_system = battlefield_system,
-    update_bond_effects = update_bond_effects,
-    update_auto_active_effects = update_auto_active_effects,
-    update_effect_debug = update_effect_debug,
-    update_enemy_statuses = update_enemy_statuses,
-    update_attack_skills = update_attack_skills,
-    update_temporary_treasures = reward_system.update_temporary_treasures,
-    update_mainline_task = function(dt)
-      return mainline_task_system and mainline_task_system.update and mainline_task_system.update(dt) or nil
-    end,
-    update_battle_auto_acceptance = function(dt)
-      if battle_auto_acceptance_system and battle_auto_acceptance_system.update then
-        return battle_auto_acceptance_system.update(dt)
-      end
-      return nil
-    end,
-    ensure_runtime_hud = runtime_ui_helpers.ensure_runtime_hud,
-    ensure_choice_panel = runtime_ui_helpers.ensure_choice_panel,
-    set_battle_hud_visible = set_battle_hud_visible,
-    refresh_runtime_hud = runtime_ui_helpers.refresh_runtime_hud,
-    refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel,
-    refresh_runtime_overview = runtime_ui_helpers.refresh_runtime_overview,
-    refresh_inventory_panel = runtime_ui_helpers.refresh_inventory_panel,
-    outgame_system = outgame_system,
-    gm_bond_effects_system = gm_bond_effects_system,
-    is_active_enemy = is_active_enemy,
-    get_enemies_in_range = get_enemies_in_range,
-    deal_skill_damage = deal_skill_damage,
-    emit_damage_debug = function(visual)
-      emit_damage_debug_visual(visual, nil)
-    end,
-    hero_tujian_panel_system = hero_tujian_panel_system,
-  }
-end
-
-runtime_loops_system = BootLoops.create(build_runtime_loops_env())
-
-local function start_runtime_loops()
-  return runtime_loops_system.start_runtime_loops()
-end
-
-register_dev_commands = BootDevCommands.create({
-  get_debug_tools_system = function()
-    return debug_tools_system
-  end,
-  get_gm_bond_effects_system = function()
-    return gm_bond_effects_system
-  end,
-})
-
-local run_bootstrap_sequence = BootBootstrapSequence.create({
+  try_bond_draw = try_bond_draw,
+  open_bond_card_album = open_bond_card_album,
+  show_runtime_attr_dialog = show_runtime_attr_dialog,
+  try_start_challenge = try_start_challenge,
+  try_evolution_entry = try_evolution_entry,
+  try_treasure_entry = try_treasure_entry,
+  apply_round_choice = apply_round_choice,
+  show_runtime_status = show_runtime_status,
+  open_runtime_save_panel = open_runtime_save_panel,
+  use_attr_diamond = use_attr_diamond,
+  show_debug_hotkey_help = show_debug_hotkey_help,
+  update_passive_resources = update_passive_resources,
+  update_bond_effects = update_bond_effects,
+  update_auto_active_effects = update_auto_active_effects,
+  update_effect_debug = update_effect_debug,
+  update_enemy_statuses = update_enemy_statuses,
+  update_attack_skills = update_attack_skills,
+  is_active_enemy = is_active_enemy,
+  get_enemies_in_range = get_enemies_in_range,
+  deal_skill_damage = deal_skill_damage,
+  emit_damage_debug_visual = emit_damage_debug_visual,
+  set_battle_hud_visible = set_battle_hud_visible,
   ensure_helper_signals = ensure_helper_signals,
   reset_session_state = function()
     return reset_session_state()
   end,
-  register_runtime_events = register_runtime_events,
-  register_cannon_skill = function()
-    return cannon_skill_134258724_system.register()
-  end,
-  register_dev_commands = function()
-    return register_dev_commands()
-  end,
-  start_runtime_loops = start_runtime_loops,
-  setup_post_bootstrap_ui = function()
-    if gm_bond_effects_system and gm_bond_effects_system.ensure_board then
-      gm_bond_effects_system.ensure_board()
-      gm_bond_effects_system.refresh_board()
-    end
-    outgame_system.load_profile()
-    outgame_system.enter_outgame()
-  end,
+  cannon_skill_134258724_system = cannon_skill_134258724_system,
 })
 
+input_events_system = RuntimeEntry._runtime_bundle.input_events_system
+hero_tujian_panel_system = RuntimeEntry._runtime_bundle.hero_tujian_panel_system
+runtime_loops_system = RuntimeEntry._runtime_bundle.runtime_loops_system
+register_dev_commands = RuntimeEntry._runtime_bundle.register_dev_commands
+RuntimeEntry.register_runtime_events = RuntimeEntry._runtime_bundle.register_runtime_events
+RuntimeEntry.start_runtime_loops = RuntimeEntry._runtime_bundle.start_runtime_loops
+RuntimeEntry.run_bootstrap_sequence = RuntimeEntry._runtime_bundle.run_bootstrap_sequence
+
 function RuntimeEntry.bootstrap()
-  if not validate_config() then
+  if not RuntimeEntry.validate_config() then
     return
   end
 
-  run_bootstrap_sequence()
+  RuntimeEntry.run_bootstrap_sequence()
 end
 
 return RuntimeEntry

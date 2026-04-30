@@ -57,6 +57,11 @@ function M.create(env)
   local cast_sample_skill = env.cast_sample_skill
   local cast_next_sample_skill = env.cast_next_sample_skill
   local get_sample_skill_defs = env.get_sample_skill_defs
+  local debug_set_global_projectile_override = env.debug_set_global_projectile_override
+  local debug_clear_global_projectile_override = env.debug_clear_global_projectile_override
+  local debug_toggle_global_projectile_override = env.debug_toggle_global_projectile_override
+  local debug_get_global_projectile_override = env.debug_get_global_projectile_override
+  local DEFAULT_DEBUG_PROJECTILE_KEY = 134255250
 
   local function trim(text)
     return tostring(text or ''):gsub('^%s+', ''):gsub('%s+$', '')
@@ -477,6 +482,7 @@ function M.create(env)
         string.format(BOND_GM_STATUS_TEMPLATE, '可直接施放'),
         string.format('SampleID：%s', tostring(selected_bond.sample_id or '')),
         string.format('特殊效果100%%触发：%s', is_force_special_effects_100 and is_force_special_effects_100() and '开启' or '关闭'),
+        string.format('投射物覆盖：%s', tostring((debug_get_global_projectile_override and debug_get_global_projectile_override()) or '关闭')),
         '单卡：无（Sample羁绊不使用单卡）',
       }
       if selected_bond.desc and selected_bond.desc ~= '' then
@@ -507,6 +513,7 @@ function M.create(env)
       string.format('进度：%d/%d', owned, need),
       string.format(BOND_GM_STATUS_TEMPLATE, active and '已激活' or '未激活'),
       string.format('特殊效果100%%触发：%s', is_force_special_effects_100 and is_force_special_effects_100() and '开启' or '关闭'),
+      string.format('投射物覆盖：%s', tostring((debug_get_global_projectile_override and debug_get_global_projectile_override()) or '关闭')),
       selected_card and string.format('单卡：%s', tostring(selected_card.name or selected_card.id)) or '单卡：未选择',
       selected_card and string.format('特殊效果：%s', special_active and '已获得' or '未获得') or '特殊效果：未获得',
     }
@@ -731,6 +738,14 @@ function M.create(env)
       debug_message(string.format('特殊效果100%%触发：%s', not current and '开启' or '关闭'))
     end, { 88, 108, 62, 235 })
 
+    ui.projectile_override_button = create_button(panel, '', 672, 310, 278, 40, function()
+      if debug_toggle_global_projectile_override then
+        debug_toggle_global_projectile_override(DEFAULT_DEBUG_PROJECTILE_KEY)
+      else
+        debug_message('未注入投射物覆盖回调。')
+      end
+    end, { 96, 106, 132, 235 })
+
     ui.n0_none_button = create_button(panel, 'N0灵/零羁绊（立即生效）', 16, 4, 640, 40, function()
       apply_n0_mode('none')
     end, { 70, 92, 116, 235 })
@@ -953,6 +968,14 @@ function M.create(env)
       local on = is_force_special_effects_100 and is_force_special_effects_100() or false
       set_text(ui.force_effect_button, on and '关闭特殊效果100%触发' or '开启特殊效果100%触发')
     end
+    if is_alive(ui.projectile_override_button) then
+      local projectile_key = debug_get_global_projectile_override and debug_get_global_projectile_override() or nil
+      if projectile_key then
+        set_text(ui.projectile_override_button, string.format('关闭投射物覆盖（当前:%s）', tostring(projectile_key)))
+      else
+        set_text(ui.projectile_override_button, string.format('开启投射物覆盖（ID:%d）', DEFAULT_DEBUG_PROJECTILE_KEY))
+      end
+    end
     if is_alive(ui.n0_all_button) then
       local mode, single_bond_name = get_n0_mode_and_single_bond()
       set_text(ui.n0_all_button, mode == 'all' and 'N0全开（当前）' or 'N0全开（立即生效）')
@@ -1129,6 +1152,42 @@ function M.create(env)
         end
         set_force_special_effects_100(target)
         debug_message(string.format('特殊效果100%%触发：%s', target and '开启' or '关闭'))
+        refresh_board()
+      end,
+    })
+
+    develop_command.register('EGMPROJ', {
+      desc = '全局投射物覆盖：.egmproj [id|off|toggle]，默认 134255250',
+      onCommand = function(mode)
+        local cmd = trim(mode):lower()
+        if cmd == '' or cmd == 'toggle' then
+          if debug_toggle_global_projectile_override then
+            debug_toggle_global_projectile_override(DEFAULT_DEBUG_PROJECTILE_KEY)
+          else
+            debug_message('未注入投射物覆盖回调。')
+          end
+          refresh_board()
+          return
+        end
+        if cmd == 'off' or cmd == 'close' or cmd == '0' then
+          if debug_clear_global_projectile_override then
+            debug_clear_global_projectile_override()
+          else
+            debug_message('未注入投射物覆盖回调。')
+          end
+          refresh_board()
+          return
+        end
+        local key = tonumber(cmd)
+        if not key or key <= 0 then
+          debug_message('用法：.egmproj [id|off|toggle]，例如 .egmproj 134255250')
+          return
+        end
+        if debug_set_global_projectile_override then
+          debug_set_global_projectile_override(key)
+        else
+          debug_message('未注入投射物覆盖回调。')
+        end
         refresh_board()
       end,
     })
