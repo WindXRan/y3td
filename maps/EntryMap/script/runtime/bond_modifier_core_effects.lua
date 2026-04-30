@@ -328,6 +328,23 @@ function M.create(deps)
           local amount = attack * rule_number(basic_rule.damage_attack_ratio, 1.2)
             + attack_speed * rule_number(basic_rule.damage_attack_speed_ratio, 0.5)
           bond_damage_target(impact_target, amount, '物理')
+          local split_count = math.max(1, rule_integer(basic_rule.split_count, 2, 1))
+          local split_range = math.max(220, rule_number(basic_rule.split_range, 680))
+          local split_ratio = math.max(0.25, rule_number(basic_rule.split_damage_ratio, 0.55))
+          local split_targets = env.get_enemies_in_range and env.get_enemies_in_range(impact_target, split_range, nil, split_count + 1) or {}
+          local fired = 0
+          for _, split_target in ipairs(split_targets) do
+            if split_target and split_target ~= impact_target and split_target.is_exist and split_target:is_exist() then
+              fired = fired + 1
+              perform_visual_delivery(env, split_target, visual_cfg, function()
+                play_particle_on_unit(env, split_target, visual_cfg.particle_key, 0.78, 0.16)
+                bond_damage_target(split_target, amount * split_ratio, '物理')
+              end)
+              if fired >= split_count then
+                break
+              end
+            end
+          end
           if is_line_motion then
             bond_damage_area(impact_target, line_aoe_radius, amount * line_aoe_ratio, '物理', impact_target)
           end
@@ -354,6 +371,15 @@ function M.create(deps)
         local amount = attack * rule_number(basic_rule.damage_attack_ratio, 0.10)
           + math.max(0, target_max_hp - current_hp) * rule_number(basic_rule.damage_missing_hp_ratio, 0.05)
         local hit = bond_damage_target(target, amount, '物理')
+        local blood_burst_delay = math.max(0.08, rule_number(basic_rule.burst_delay, 0.18))
+        local blood_burst_radius = math.max(120, rule_number(basic_rule.burst_radius, 320))
+        local blood_burst_ratio = math.max(0.20, rule_number(basic_rule.burst_damage_ratio, 0.45))
+        wait_seconds(env, blood_burst_delay, function()
+          if target and target.is_exist and target:is_exist() then
+            play_impact_burst(env, target, visual_cfg.particle_key, 1.25)
+            bond_damage_area(target, blood_burst_radius, amount * blood_burst_ratio, '物理', target)
+          end
+        end)
         if is_line_motion then
           bond_damage_area(target, line_aoe_radius, amount * math.max(0.35, line_aoe_ratio - 0.05), '物理', target)
         end
@@ -376,6 +402,20 @@ function M.create(deps)
           play_impact_burst(env, impact_target, visual_cfg.particle_key, 1.0)
           local amount = attack * rule_number(basic_rule.damage_attack_ratio, 1.5)
           bond_damage_target(impact_target, amount, '物理')
+          execute_linear_bond_template(env, impact_target, visual_cfg, {
+            bond_name = '剑魂',
+            distance = math.max(500, rule_number(basic_rule.return_slash_distance, 980)),
+            width = math.max(140, rule_number(basic_rule.return_slash_width, 180)),
+            max_targets = rule_optional_max_targets(basic_rule.return_slash_max_targets),
+            projectile_speed = visual_cfg.projectile_speed,
+            instant_hit = true,
+            target_fx_scale = 0.92,
+            target_fx_time = 0.18,
+            hit_fx_scale = 0.82,
+            hit_fx_time = 0.14,
+          }, function(unit)
+            bond_damage_target(unit, amount * math.max(0.25, rule_number(basic_rule.return_slash_ratio, 0.5)), '物理')
+          end)
           if is_line_motion then
             bond_damage_area(impact_target, line_aoe_radius, amount * line_aoe_ratio, '物理', impact_target)
           end
@@ -467,6 +507,20 @@ function M.create(deps)
             attack * rule_number(basic_rule.damage_attack_ratio, 3.0),
             basic_rule.damage_type or '法术'
           )
+          local pulse_count = math.max(1, rule_integer(basic_rule.pulse_count, 2, 1))
+          local pulse_interval = math.max(0.06, rule_number(basic_rule.pulse_interval, 0.16))
+          local pulse_ratio = math.max(0.20, rule_number(basic_rule.pulse_damage_ratio, 0.45))
+          for pulse_index = 1, pulse_count do
+            wait_seconds(env, pulse_index * pulse_interval, function()
+              play_particle_on_point(env, impact_anchor, visual_cfg.particle_key, 1.08 + pulse_index * 0.08, 0.18, 16)
+              bond_damage_area(
+                impact_anchor,
+                aoe_radius + pulse_index * 60,
+                attack * rule_number(basic_rule.damage_attack_ratio, 3.0) * pulse_ratio,
+                basic_rule.damage_type or '法术'
+              )
+            end)
+          end
         end)
         return true
       end
@@ -485,6 +539,15 @@ function M.create(deps)
           play_particle_on_unit(env, impact_target, visual_cfg.particle_key, 0.8, 0.20)
           local amount = attack * rule_number(basic_rule.demon_damage_attack_ratio, 2.0)
           bond_damage_target(impact_target, amount, '法术')
+          local dark_spread_range = math.max(220, rule_number(basic_rule.dark_spread_range, 460))
+          local dark_spread_ratio = math.max(0.20, rule_number(basic_rule.dark_spread_ratio, 0.40))
+          local spread_targets = env.get_enemies_in_range and env.get_enemies_in_range(impact_target, dark_spread_range, nil, 3) or {}
+          for _, spread_target in ipairs(spread_targets) do
+            if spread_target and spread_target ~= impact_target and spread_target.is_exist and spread_target:is_exist() then
+              play_particle_on_unit(env, spread_target, visual_cfg.particle_key, 0.65, 0.12)
+              bond_damage_target(spread_target, amount * dark_spread_ratio, '法术')
+            end
+          end
           if is_line_motion then
             bond_damage_area(impact_target, line_aoe_radius, amount * math.max(0.35, line_aoe_ratio - 0.10), '法术', impact_target)
           end
