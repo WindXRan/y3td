@@ -103,7 +103,7 @@ function M.create()
   end
 
   local function read_attr(unit, name)
-    if can_use_kv(unit) and unit:kv_has(kv_key(name)) then
+    if can_use_kv(unit) then
       local value = load_number(unit, kv_key(name))
       if value ~= nil then
         return value
