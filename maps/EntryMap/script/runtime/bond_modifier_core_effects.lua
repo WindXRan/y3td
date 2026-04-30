@@ -570,6 +570,23 @@ function M.create(deps)
       end
       return false
     else
+      if bond_name == '冰霜法师' then
+        local aura_interval = math.max(0.10, rule_number(periodic_rule.aura_interval, 0.70))
+        effect_state.__ice_aura_elapsed = (effect_state.__ice_aura_elapsed or 0) + dt
+        if effect_state.__ice_aura_elapsed >= aura_interval then
+          effect_state.__ice_aura_elapsed = effect_state.__ice_aura_elapsed - aura_interval
+          local hero = get_hero(env)
+          if hero then
+            play_particle_on_unit(
+              env,
+              hero,
+              visual_cfg.particle_key,
+              rule_number(periodic_rule.aura_scale, 0.95),
+              rule_number(periodic_rule.aura_time, 1.00)
+            )
+          end
+        end
+      end
       local ice_interval = math.max(0.05, rule_number(periodic_rule.interval, 5))
       if bond_name == '冰霜法师' and effect_state.elapsed >= ice_interval then
       report_cast(1)
