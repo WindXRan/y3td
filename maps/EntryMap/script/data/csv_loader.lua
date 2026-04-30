@@ -74,12 +74,14 @@ local function read_rows_safe(path, optional)
   local resolved = resolve_path(path)
   local file, err = io.open(resolved, 'r')
   if not file then
-    local level = optional and 'optional' or 'required'
-    warn_once(
-      warned_missing_paths,
-      resolved,
-      string.format('[csv] %s file missing, fallback to empty rows: %s (%s)', level, resolved, tostring(err))
-    )
+    if not optional then
+      local level = 'required'
+      warn_once(
+        warned_missing_paths,
+        resolved,
+        string.format('[csv] %s file missing, fallback to empty rows: %s (%s)', level, resolved, tostring(err))
+      )
+    end
     return {}
   end
 
@@ -105,12 +107,14 @@ local function read_rows_safe(path, optional)
   file:close()
 
   if not headers then
-    local level = optional and 'optional' or 'required'
-    warn_once(
-      warned_invalid_paths,
-      resolved,
-      string.format('[csv] %s file invalid (missing headers), fallback to empty rows: %s', level, resolved)
-    )
+    if not optional then
+      local level = 'required'
+      warn_once(
+        warned_invalid_paths,
+        resolved,
+        string.format('[csv] %s file invalid (missing headers), fallback to empty rows: %s', level, resolved)
+      )
+    end
     return {}
   end
 
