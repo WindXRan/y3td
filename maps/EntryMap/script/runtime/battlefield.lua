@@ -1322,21 +1322,35 @@ function M.create(env)
   end
 
   function api.create_hero(basic_attack_range)
-    local player = env.get_player()
+        local player = env.get_player()
+    local hero = nil
+
     if player and player.get_all_units then
       local player_units = player:get_all_units()
       if player_units and player_units.pick then
+        local alive_units = {}
         for _, unit in ipairs(player_units:pick()) do
           if unit and unit.is_exist and unit:is_exist() then
-            unit:remove()
+            alive_units[#alive_units + 1] = unit
+          end
+        end
+
+        if #alive_units > 0 then
+          hero = alive_units[1]
+          for i = 2, #alive_units do
+            alive_units[i]:remove()
           end
         end
       end
     end
+
     local preferred_unit_id = CONFIG.unit_ids.hero
-    local hero, hero_create_err = try_create_player_unit(player, preferred_unit_id, STATE.hero_spawn_point, 0)
-    if not hero and preferred_unit_id ~= HERO_RUNTIME_FALLBACK_UNIT_ID then
-      hero, hero_create_err = try_create_player_unit(player, HERO_RUNTIME_FALLBACK_UNIT_ID, STATE.hero_spawn_point, 0)
+    local hero_create_err = nil
+    if not hero then
+      hero, hero_create_err = try_create_player_unit(player, preferred_unit_id, STATE.hero_spawn_point, 0)
+      if not hero and preferred_unit_id ~= HERO_RUNTIME_FALLBACK_UNIT_ID then
+        hero, hero_create_err = try_create_player_unit(player, HERO_RUNTIME_FALLBACK_UNIT_ID, STATE.hero_spawn_point, 0)
+      end
     end
     if not hero then
       error(string.format(
@@ -1579,6 +1593,7 @@ function M.create(env)
 end
 
 return M
+
 
 
 
