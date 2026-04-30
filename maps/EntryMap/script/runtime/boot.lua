@@ -3184,7 +3184,22 @@ local function ensure_choice_list_choice_panel()
   return root, scroll, player
 end
 
-local choice_click_bound = setmetatable({}, { __mode = 'k' })\nlocal function bind_choice_click_target(target, index)\n  if not target or not target.add_fast_event then\n    return\n  end\n  if choice_click_bound[target] then\n    return\n  end\n  choice_click_bound[target] = true\n  if target.set_intercepts_operations then\n    target:set_intercepts_operations(true)\n  end\n  target:add_fast_event('左键-点击', function()\n    apply_round_choice(index)\n  end)\nend
+local choice_click_bound = setmetatable({}, { __mode = 'k' })
+local function bind_choice_click_target(target, index)
+  if not target or not target.add_fast_event then
+    return
+  end
+  if choice_click_bound[target] then
+    return
+  end
+  choice_click_bound[target] = true
+  if target.set_intercepts_operations then
+    target:set_intercepts_operations(true)
+  end
+  target:add_fast_event('左键-点击', function()
+    apply_round_choice(index)
+  end)
+end
 
 local function build_choice_list_cards()
   local kind = get_pending_round_choice_kind()
