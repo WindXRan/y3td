@@ -395,10 +395,16 @@ function M.create(env)
   local function is_mode_unlocked(profile, stage_id, mode_id)
     mode_id = mode_id or SINGLE_MODE_ID
     local progress = get_stage_progress(profile, stage_id)
+    if not progress and (stage_id == '1-0' or stage_id == '1-1') and mode_id == SINGLE_MODE_ID then
+      return true
+    end
     if not progress then
       return false
     end
     if mode_id == SINGLE_MODE_ID then
+      if stage_id == '1-0' or stage_id == '1-1' then
+        return true
+      end
       return progress.standard_unlocked == true
     end
     return false
@@ -539,7 +545,7 @@ function M.create(env)
       dirty = true
     end
     local progress = profile.stage_progress[stage_id]
-    local is_first_stage = stage_id == get_first_stage_id()
+    local is_first_stage = stage_id == get_first_stage_id() or stage_id == '1-0' or stage_id == '1-1'
     if progress.standard_unlocked == nil then
       progress.standard_unlocked = is_first_stage
       dirty = true
@@ -1257,14 +1263,35 @@ function M.create(env)
 
     bind_save_entry(ui)
 
-    if is_ui_alive(ui.start_button) and ui.start_bound ~= true then
-      ui.start_bound = true
-      ui.start_button:add_fast_event('左键-按下', function()
-        if play_ui_click then
-          play_ui_click()
+    if ui.start_bound ~= true then
+      local click_targets = {}
+      local seen = {}
+      local function push_target(target)
+        if not is_ui_alive(target) then
+          return
         end
-        api.start_selected_stage()
-      end)
+        if seen[target] then
+          return
+        end
+        seen[target] = true
+        click_targets[#click_targets + 1] = target
+      end
+      push_target(ui.start_button)
+      push_target(ui.start_button_bg)
+      push_target(ui.start_anchor)
+      if #click_targets > 0 then
+        ui.start_bound = true
+        local function on_start_click()
+          if play_ui_click then
+            play_ui_click()
+          end
+          message('[outgame] 点击开始游戏')
+          api.start_selected_stage()
+        end
+        for _, target in ipairs(click_targets) do
+          target:add_fast_event('左键-按下', on_start_click)
+        end
+      end
     end
   end
 
@@ -2080,6 +2107,7 @@ function M.create(env)
         stage_slot_container = stage_slot_container,
         start_button_bg = resolve_ui('outgame.大厅.layout.start_bg') or start_button,
         start_button = start_button,
+        start_anchor = resolve_ui('outgame.大厅.layout.start_anchor') or resolve_ui('outgame.大厅.layout.start_root') or nil,
         start_bound = false,
         save_entry = {
           root = resolve_ui('outgame.大厅.layout.save_anchor.save_root'),
@@ -2227,6 +2255,9 @@ function M.create(env)
     refresh_footer(ui, profile)
 
     local start_enabled = not is_cultivation_mode and is_mode_unlocked(profile, selected_stage_id, selected_mode_id)
+    if not start_enabled and selected_stage_id == get_first_stage_id() then
+      start_enabled = true
+    end
     ui.start_button:set_text(start_enabled and '开始游戏' or '未解锁')
     ui.start_button:set_button_enable(start_enabled)
 
@@ -2357,6 +2388,15 @@ function M.create(env)
     local profile = load_profile()
     local stage_id = STATE.selected_stage_id or profile.selected_stage_id
     local mode_id = SINGLE_MODE_ID
+
+    local first_stage_id = get_first_stage_id()
+    if stage_id == first_stage_id then
+      local progress = get_stage_progress(profile, stage_id)
+      if progress and progress.standard_unlocked ~= true then
+        progress.standard_unlocked = true
+        mark_profile_dirty()
+      end
+    end
 
     if not is_mode_unlocked(profile, stage_id, mode_id) then
       message(build_start_hint(profile, stage_id, mode_id))

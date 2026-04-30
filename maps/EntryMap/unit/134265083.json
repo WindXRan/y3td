@@ -39,7 +39,7 @@
             "p_trigger_id": null, 
             "trigger_id": 196190211, 
             "trigger_name": "\u97f3\u9891\u63a7\u5236", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "AUDIO_KEY": {
@@ -440,7 +440,7 @@
             "p_trigger_id": 196190211, 
             "trigger_id": 347185159, 
             "trigger_name": "\u8f6e\u64ad", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 

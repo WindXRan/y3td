@@ -536,7 +536,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1259859969, 
             "trigger_name": "\u51fa\u624b", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 

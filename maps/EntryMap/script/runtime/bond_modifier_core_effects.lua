@@ -3,7 +3,6 @@ local M = {}
 function M.create(deps)
   deps = deps or {}
   local BOND_NAME_ALIASES = {
-    ['战法法师'] = '战斗法师',
     ['寒冰法师'] = '冰霜法师',
     ['冰法'] = '冰霜法师',
     ['电法'] = '雷电法王',

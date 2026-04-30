@@ -1226,7 +1226,6 @@ local BOND_AUDIO_ELEMENT = {
   ['剑宗'] = 'metal',
   ['魔剑士'] = 'thunder',
   ['战斗法师'] = 'thunder',
-  ['战法法师'] = 'thunder',
   ['游侠'] = 'wind',
   ['风暴萨满'] = 'wind',
   ['神射手'] = 'metal',

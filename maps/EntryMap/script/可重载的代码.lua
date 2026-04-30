@@ -1,4 +1,4 @@
-y3.game:event('键盘-按下', y3.const.KeyboardKey['R'], function ()
+y3.game:event('键盘-按下', 'R', function ()
     print('你按下了R键！试试修改这句话，然后运行重载！')
     print('你有多种方法进行重载')
     print('1. 在游戏中输入 .rd')

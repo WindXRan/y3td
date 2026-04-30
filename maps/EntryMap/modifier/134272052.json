@@ -1997,7 +1997,7 @@
             "p_trigger_id": null, 
             "trigger_id": 604557313, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 
@@ -2382,7 +2382,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1763909634, 
             "trigger_name": "\u65b0\u5efa\u89e6\u53d1\u5668_2", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {}, 
                 {}, 

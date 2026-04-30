@@ -9,15 +9,15 @@
                     "cap_insets": {
                         "__tuple__": true, 
                         "items": [
-                            356, 
-                            233, 
-                            356, 
-                            233
+                            96, 
+                            153, 
+                            96, 
+                            153
                         ]
                     }, 
                     "children": [], 
                     "event_list": [], 
-                    "image": 131193, 
+                    "image": 904622, 
                     "is_scale9_enable": true, 
                     "name": "bg", 
                     "pos_data": {

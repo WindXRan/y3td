@@ -1,3 +1,0 @@
-{
-    "talk_sys_eca.folder": 0
-}

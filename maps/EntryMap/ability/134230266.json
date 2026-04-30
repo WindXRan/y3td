@@ -509,7 +509,7 @@
             "p_trigger_id": null, 
             "trigger_id": 1447989252, 
             "trigger_name": "\u65bd\u6cd5\u51fa\u624b", 
-            "valid": true, 
+            "valid": false, 
             "var_data": [
                 {
                     "UNIT_ENTITY": {

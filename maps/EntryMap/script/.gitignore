@@ -1,6 +1,2 @@
 /log
 /.log
-/.pytest_cache/
-/tools/.run_cmd_id.txt
-/tools/__pycache__/
-**/.vscode/
