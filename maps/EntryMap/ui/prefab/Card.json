@@ -1,0 +1,139 @@
+{
+  "data": {
+    "adapter_option": [false, false, false, false, 0, 0, 0, 0],
+    "anchor": {
+      "__tuple__": true,
+      "items": [0.5, 0.5]
+    },
+    "can_drag": false,
+    "children": [
+      {
+        "children": [],
+        "comp_type": "Image",
+        "event_list": [],
+        "image": 131998,
+        "name": "bg",
+        "open_adapter": false,
+        "pos_data": {
+          "__tuple__": true,
+          "items": [114, 150, 50, 50, 1, 1]
+        },
+        "size": {
+          "__tuple__": true,
+          "items": [228, 300]
+        },
+        "type": 4,
+        "visible": true
+      },
+      {
+        "children": [],
+        "comp_type": "Image",
+        "event_list": [],
+        "image": 999,
+        "name": "icon",
+        "open_adapter": false,
+        "pos_data": {
+          "__tuple__": true,
+          "items": [114, 188, 50, 50, 1, 1]
+        },
+        "size": {
+          "__tuple__": true,
+          "items": [74, 74]
+        },
+        "type": 4,
+        "visible": true
+      },
+      {
+        "children": [],
+        "comp_type": "Label",
+        "event_list": [],
+        "font_size": 16,
+        "name": "title",
+        "open_adapter": false,
+        "pos_data": {
+          "__tuple__": true,
+          "items": [114, 270, 50, 50, 1, 1]
+        },
+        "size": {
+          "__tuple__": true,
+          "items": [206, 28]
+        },
+        "text": "候选",
+        "type": 1,
+        "visible": true
+      },
+      {
+        "children": [],
+        "comp_type": "Label",
+        "event_list": [],
+        "font_size": 13,
+        "name": "subtitle",
+        "open_adapter": false,
+        "pos_data": {
+          "__tuple__": true,
+          "items": [114, 242, 50, 50, 1, 1]
+        },
+        "size": {
+          "__tuple__": true,
+          "items": [206, 24]
+        },
+        "text": "说明",
+        "type": 1,
+        "visible": true
+      },
+      {
+        "children": [],
+        "comp_type": "Button",
+        "event_list": [],
+        "name": "pick_btn",
+        "open_adapter": false,
+        "pos_data": {
+          "__tuple__": true,
+          "items": [114, 34, 50, 50, 1, 1]
+        },
+        "size": {
+          "__tuple__": true,
+          "items": [206, 42]
+        },
+        "text": "选择",
+        "type": 6,
+        "visible": true
+      }
+    ],
+    "clip_enabled": false,
+    "clipping_type": 1,
+    "color": {
+      "__tuple__": true,
+      "items": [255, 255, 255, 0]
+    },
+    "comp_type": "Layout",
+    "custom_kv": {},
+    "event_list": [],
+    "hover_child": "",
+    "mask_image": 100445,
+    "name": "Card",
+    "opacity": 1.0,
+    "open_adapter": false,
+    "pos_data": {
+      "__tuple__": true,
+      "items": [960, 540, 50, 50, 1, 1]
+    },
+    "prefab_key": "f1d8df85-0b35-4fba-a8b4-19f6ece871ab",
+    "prefab_sub_key": null,
+    "rotation": 0,
+    "scale": {
+      "__tuple__": true,
+      "items": [1, 1]
+    },
+    "scene_ui_name": null,
+    "size": {
+      "__tuple__": true,
+      "items": [228, 300]
+    },
+    "swallow_touches": false,
+    "type": 7,
+    "visible": true
+  },
+  "key": "f1d8df85-0b35-4fba-a8b4-19f6ece871ab",
+  "name": "Card"
+}

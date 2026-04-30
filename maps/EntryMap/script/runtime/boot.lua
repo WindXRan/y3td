@@ -3146,7 +3146,14 @@ local function apply_bond_choice_quality_frames()
 end
 
 local choice_list_dynamic_cards = {}
+local choice_list_dynamic_prefabs = {}
 local function cleanup_choice_list_cards()
+  for _, prefab in ipairs(choice_list_dynamic_prefabs) do
+    if prefab and prefab.remove then
+      pcall(prefab.remove, prefab)
+    end
+  end
+  choice_list_dynamic_prefabs = {}
   for _, ui in ipairs(choice_list_dynamic_cards) do
     if ui and (not ui.is_removed or not ui:is_removed()) and ui.remove then
       pcall(ui.remove, ui)
@@ -3227,7 +3234,17 @@ local function build_choice_list_cards()
 
   cleanup_choice_list_cards()
   for index, choice in ipairs(choices) do
-    local card = scroll.create_child and scroll:create_child('空节点') or nil
+    local card = nil
+    if y3 and y3.ui_prefab and y3.ui_prefab.create and player then
+      local ok_prefab, prefab = pcall(y3.ui_prefab.create, player, 'Card', scroll)
+      if ok_prefab and prefab then
+        choice_list_dynamic_prefabs[#choice_list_dynamic_prefabs + 1] = prefab
+        card = prefab.get_child and prefab:get_child() or nil
+      end
+    end
+    if not card then
+      card = scroll.create_child and scroll:create_child('空节点') or nil
+    end
     if card then
       choice_list_dynamic_cards[#choice_list_dynamic_cards + 1] = card
       if card.set_ui_size then
@@ -3242,20 +3259,20 @@ local function build_choice_list_cards()
       if card.set_intercepts_operations then
         card:set_intercepts_operations(true)
       end
-      local bg = card.create_child and card:create_child('图片') or nil
+      local bg = a.resolve_child(card, 'bg') or (card.create_child and card:create_child('图片') or nil)
       if bg then
         if bg.set_ui_size then bg:set_ui_size(228, 300) end
         if bg.set_pos then bg:set_pos(114, 150) end
         if bg.set_image then bg:set_image(131998) end
       end
-      local title = card.create_child and card:create_child('文本') or nil
+      local title = a.resolve_child(card, 'title') or (card.create_child and card:create_child('文本') or nil)
       if title then
         if title.set_ui_size then title:set_ui_size(206, 28) end
         if title.set_pos then title:set_pos(114, 270) end
         if title.set_text then title:set_text(tostring(choice.pretty_display_name or choice.display_name or choice.title_text or choice.name or '羁绊卡')) end
         if title.set_font_size then title:set_font_size(16) end
       end
-      local subtitle = card.create_child and card:create_child('文本') or nil
+      local subtitle = a.resolve_child(card, 'subtitle') or (card.create_child and card:create_child('文本') or nil)
       if subtitle then
         if subtitle.set_ui_size then subtitle:set_ui_size(206, 24) end
         if subtitle.set_pos then subtitle:set_pos(114, 242) end
@@ -3271,13 +3288,13 @@ local function build_choice_list_cards()
         end
         if subtitle.set_font_size then subtitle:set_font_size(13) end
       end
-      local icon = card.create_child and card:create_child('图片') or nil
+      local icon = a.resolve_child(card, 'icon') or (card.create_child and card:create_child('图片') or nil)
       if icon then
         if icon.set_ui_size then icon:set_ui_size(74, 74) end
         if icon.set_pos then icon:set_pos(114, 188) end
         if icon.set_image then icon:set_image(choice.ui_icon or choice.icon or 999) end
       end
-      local pick_btn = card.create_child and card:create_child('按钮') or nil
+      local pick_btn = a.resolve_child(card, 'pick_btn') or (card.create_child and card:create_child('按钮') or nil)
       if pick_btn then
         if pick_btn.set_ui_size then pick_btn:set_ui_size(206, 42) end
         if pick_btn.set_pos then pick_btn:set_pos(114, 34) end
