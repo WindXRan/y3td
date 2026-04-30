@@ -1,5 +1,5 @@
 ﻿local a=require'ui.ui_root'
-local b=require'entry_objects.marks'
+local b=require'data.object_tables.marks'
 local c=require'data.object_tables.hero_roster'
 local d=require'data.object_tables.hero_form_skills'
 local e={}
