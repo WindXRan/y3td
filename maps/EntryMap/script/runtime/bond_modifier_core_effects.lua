@@ -179,22 +179,23 @@ function M.create(deps)
   end
 
   local function schedule_projectile_impact(env, visual_cfg, callback)
-    local delay = math.max(0.0, rule_number(visual_cfg and visual_cfg.projectile_time, 0))
+    local delay = math.max(0.15, rule_number(visual_cfg and visual_cfg.projectile_time, 0.15))
     wait_seconds(env, delay, callback)
   end
 
   local function perform_visual_delivery(env, target, visual_cfg, on_impact)
-    local mode = tostring(visual_cfg and visual_cfg.delivery_mode or 'projectile')
-    if mode == 'projectile' then
-      launch_projectile_to_target(env, target, visual_cfg)
+    if type(visual_cfg) == 'table' then
+      visual_cfg.delivery_mode = 'projectile'
+      visual_cfg.projectile_time = math.max(0.15, rule_number(visual_cfg.projectile_time, 0.15))
+    end
+
+    local launched = launch_projectile_to_target(env, target, visual_cfg)
+    if launched then
       schedule_projectile_impact(env, visual_cfg, on_impact)
       return
     end
-    -- instant / persistent_area: 不强塞投射物，按特效类型走短前摇命中。
-    local warmup = mode == 'persistent_area'
-      and rule_number(presentation_defaults.persistent_area_warmup, 0.10)
-      or rule_number(presentation_defaults.instant_warmup, 0.05)
-    wait_seconds(env, warmup, on_impact)
+
+    wait_seconds(env, rule_number(presentation_defaults.instant_warmup, 0.05), on_impact)
   end
 
   local function trigger_ranger_arrow_rain(env, target, visual_cfg, bond_damage_area, attack, rain_rule)
