@@ -2,8 +2,8 @@ local ok_treasure_objects, TreasureObjects = pcall(require, 'entry_objects.treas
 if not ok_treasure_objects or type(TreasureObjects) ~= 'table' then
   TreasureObjects = { list = {}, by_id = {} }
 end
-local EvolutionObjects = require 'entry_objects.marks'
-local EvolutionNodeObjects = require 'entry_objects.mark_nodes'
+local EvolutionObjects = require 'data.object_tables.marks'
+local EvolutionNodeObjects = require 'data.object_tables.evolution_nodes'
 local HeroRoster = require 'data.object_tables.hero_roster'
 local HeroFormSkills = require 'data.object_tables.hero_form_skills'
 

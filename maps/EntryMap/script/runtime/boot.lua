@@ -1,6 +1,6 @@
 ﻿local CONFIG = require 'entry_config'
-local BondSystem = require 'runtime.bonds'
-local AttackSkillObjects = require 'entry_objects.attack_skills'
+local BondSystem = require 'runtime.bonds_chain'
+local AttackSkillObjects = require 'data.object_tables.attack_skills'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
 local BondDrawConfig = require 'data.object_tables.bond_draw_config'
 local BondNodeObjects = require 'data.object_tables.bond_nodes'
@@ -44,9 +44,7 @@ local BootDevCommands = require 'runtime.boot_dev_commands'
 local BootBootstrapSequence = require 'runtime.boot_bootstrap_sequence'
 local RuntimeEntry = {}
 local projectile_create_original = nil
-local particle_create_original = nil
 local projectile_override_hook_installed = false
-local particle_override_hook_installed = false
 local helper_signals_started = false
 heal_hero = nil
 progression_system = nil
@@ -548,27 +546,6 @@ local function install_projectile_override_hook()
 end
 
 install_projectile_override_hook()
-
-local function install_particle_disable_hook()
-  if particle_override_hook_installed then
-    return
-  end
-  if not y3 or not y3.particle or type(y3.particle.create) ~= 'function' then
-    return
-  end
-  particle_create_original = y3.particle.create
-  y3.particle.create = function(args, ...)
-    local forced_key = tonumber(STATE and STATE.debug_force_projectile_key) or 0
-    if forced_key > 0 then
-      -- 纯投射物模式：开启投射物覆盖后，禁用粒子/地面特效创建。
-      return nil
-    end
-    return particle_create_original(args, ...)
-  end
-  particle_override_hook_installed = true
-end
-
-install_particle_disable_hook()
 
 ProjectileNameGuard.validate({
   y3 = y3,
@@ -1405,13 +1382,16 @@ local function show_damage_area_indicator(center, radius, duration)
     return
   end
   local scale = math.max(0.6, (tonumber(radius) or 0) / DAMAGE_AREA_DEBUG_SCALE_BASE)
-  pcall(y3.particle.create, {
-    type = DAMAGE_AREA_DEBUG_EFFECT_ID,
+  local forced = tonumber(STATE and STATE.debug_force_projectile_key) or 0
+  local key = forced > 0 and math.floor(forced) or 201392033
+  pcall(y3.projectile.create, {
+    key = key,
     target = center,
-    scale = scale,
+    socket = 'origin',
+    owner = STATE and STATE.hero or nil,
+    angle = 0,
     time = duration or 0.30,
-    height = DAMAGE_AREA_DEBUG_HEIGHT,
-    immediate = true,
+    remove_immediately = true,
   })
 end
 
@@ -1562,13 +1542,16 @@ function RuntimeEntry.emit_skill_hit_feedback(target, final_damage, hp_before)
   if heavy and now >= (stat.next_heavy_fx_time or 0) then
     local hit_point = get_target_point(target)
     if hit_point then
-      pcall(y3.particle.create, {
-        type = 106081,
+      local forced = tonumber(STATE and STATE.debug_force_projectile_key) or 0
+      local key = forced > 0 and math.floor(forced) or 201392033
+      pcall(y3.projectile.create, {
+        key = key,
         target = hit_point,
-        scale = 0.82,
+        socket = 'origin',
+        owner = STATE and STATE.hero or nil,
+        angle = 0,
         time = 0.08,
-        height = 22,
-        immediate = true,
+        remove_immediately = true,
       })
     end
     stat.next_heavy_fx_time = now + 0.12

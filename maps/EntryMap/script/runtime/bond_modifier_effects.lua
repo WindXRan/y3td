@@ -2,7 +2,7 @@ local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
 local BondModifierPool = require 'data.object_tables.bond_modifier_pool'
 local BondVisualEditorIds = require 'data.object_tables.bond_visual_editor_ids'
 local BondEffectRuntimeRules = require 'data.object_tables.bond_effect_runtime_rules'
-local AttackSkillObjects = require 'entry_objects.attack_skills'
+local AttackSkillObjects = require 'data.object_tables.attack_skills'
 local BondModifierSpecialEffectsFactory = require 'runtime.bond_modifier_special_effects'
 local BondModifierCoreEffectsFactory = require 'runtime.bond_modifier_core_effects'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
@@ -130,11 +130,7 @@ for bond_name, visual_entry in pairs(BondVisualEditorIds.visual_by_bond or {}) d
       projectile_motion_angle_offset = tonumber(visual_entry.projectile_motion_angle_offset),
       area_fx_base_radius = tonumber(visual_entry.area_fx_base_radius),
       area_fx_scale_bias = tonumber(visual_entry.area_fx_scale_bias),
-      area_fx_min_scale = tonumber(visual_entry.area_fx_min_scale),
-      area_fx_max_scale = tonumber(visual_entry.area_fx_max_scale),
       particle_scale_bias = tonumber(visual_entry.particle_scale_bias),
-      particle_min_scale = tonumber(visual_entry.particle_min_scale),
-      particle_max_scale = tonumber(visual_entry.particle_max_scale),
       delivery_mode = visual_entry.delivery_mode,
       motion_mode = visual_entry.motion_mode,
     }
@@ -148,10 +144,6 @@ local function build_bond_visual(opts)
   opts = opts or {}
   local area_fx_base_radius = math.max(80, tonumber(opts.area_fx_base_radius) or 360)
   local area_fx_scale_bias = (tonumber(opts.area_fx_scale_bias) or 1.0) * GLOBAL_AREA_SCALE_MULTIPLIER
-  local area_fx_min_scale = (tonumber(opts.area_fx_min_scale) or 0.90) * GLOBAL_AREA_SCALE_MULTIPLIER
-  local area_fx_max_scale = (tonumber(opts.area_fx_max_scale) or 2.20) * GLOBAL_AREA_SCALE_MULTIPLIER
-  area_fx_min_scale = math.max(0.60, math.min(1.10, area_fx_min_scale))
-  area_fx_max_scale = math.max(area_fx_min_scale, math.min(1.55, area_fx_max_scale))
   return {
     particle_key = to_positive_number(opts.particle_key) or DEFAULT_VISUAL.particle_key,
     line_particle_key = to_positive_number(opts.line_particle_key) or nil,
@@ -165,11 +157,7 @@ local function build_bond_visual(opts)
     projectile_motion_angle_offset = tonumber(opts.projectile_motion_angle_offset),
     area_fx_base_radius = area_fx_base_radius,
     area_fx_scale_bias = area_fx_scale_bias,
-    area_fx_min_scale = area_fx_min_scale,
-    area_fx_max_scale = area_fx_max_scale,
     particle_scale_bias = tonumber(opts.particle_scale_bias) or 1.0,
-    particle_min_scale = math.max(0.55, math.min(1.05, tonumber(opts.particle_min_scale) or 0.60)),
-    particle_max_scale = math.max(0.85, math.min(1.28, tonumber(opts.particle_max_scale) or 1.80)),
     delivery_mode = tostring(opts.delivery_mode or 'projectile'),
     motion_mode = tostring(opts.motion_mode or 'target'),
   }
@@ -202,11 +190,7 @@ for _, effect in ipairs(BondModifierPool.activation_effects or {}) do
       projectile_target_distance = visual_entry and visual_entry.target_distance or DEFAULT_VISUAL.projectile_target_distance,
       area_fx_base_radius = visual_entry and visual_entry.area_fx_base_radius or nil,
       area_fx_scale_bias = visual_entry and visual_entry.area_fx_scale_bias or nil,
-      area_fx_min_scale = visual_entry and visual_entry.area_fx_min_scale or nil,
-      area_fx_max_scale = visual_entry and visual_entry.area_fx_max_scale or nil,
       particle_scale_bias = visual_entry and visual_entry.particle_scale_bias or nil,
-      particle_min_scale = visual_entry and visual_entry.particle_min_scale or nil,
-      particle_max_scale = visual_entry and visual_entry.particle_max_scale or nil,
       delivery_mode = visual_entry and visual_entry.delivery_mode or nil,
       motion_mode = visual_entry and visual_entry.motion_mode or nil,
     })
@@ -271,8 +255,6 @@ for _, visual in pairs(BOND_VISUALS) do
     if particle_key then
       PARTICLE_SCALE_CFG_BY_KEY[particle_key] = {
         particle_scale_bias = tonumber(visual.particle_scale_bias) or 1.0,
-        particle_min_scale = tonumber(visual.particle_min_scale) or 0.60,
-        particle_max_scale = tonumber(visual.particle_max_scale) or 1.80,
       }
     end
   end
@@ -396,11 +378,7 @@ local function get_visual_config(bond_name)
       projectile_motion_angle_offset = override.projectile_motion_angle_offset or base.projectile_motion_angle_offset,
       area_fx_base_radius = override.area_fx_base_radius or base.area_fx_base_radius,
       area_fx_scale_bias = override.area_fx_scale_bias or base.area_fx_scale_bias,
-      area_fx_min_scale = override.area_fx_min_scale or base.area_fx_min_scale,
-      area_fx_max_scale = override.area_fx_max_scale or base.area_fx_max_scale,
       particle_scale_bias = override.particle_scale_bias or base.particle_scale_bias,
-      particle_min_scale = override.particle_min_scale or base.particle_min_scale,
-      particle_max_scale = override.particle_max_scale or base.particle_max_scale,
       delivery_mode = override.delivery_mode or base.delivery_mode,
       motion_mode = override.motion_mode or base.motion_mode,
     }
@@ -420,11 +398,7 @@ local function get_visual_config(bond_name)
       projectile_motion_angle_offset = forced.projectile_motion_angle_offset or extra.projectile_motion_angle_offset,
       area_fx_base_radius = forced.area_fx_base_radius or extra.area_fx_base_radius,
       area_fx_scale_bias = forced.area_fx_scale_bias or extra.area_fx_scale_bias,
-      area_fx_min_scale = forced.area_fx_min_scale or extra.area_fx_min_scale,
-      area_fx_max_scale = forced.area_fx_max_scale or extra.area_fx_max_scale,
       particle_scale_bias = forced.particle_scale_bias or extra.particle_scale_bias,
-      particle_min_scale = forced.particle_min_scale or extra.particle_min_scale,
-      particle_max_scale = forced.particle_max_scale or extra.particle_max_scale,
       delivery_mode = forced.delivery_mode or extra.delivery_mode,
       motion_mode = forced.motion_mode or extra.motion_mode,
     }
@@ -446,11 +420,7 @@ local function get_visual_config(bond_name)
     projectile_motion_angle_offset = tonumber(extra.projectile_motion_angle_offset),
     area_fx_base_radius = math.max(80, tonumber(extra.area_fx_base_radius) or 320),
     area_fx_scale_bias = tonumber(extra.area_fx_scale_bias) or 1.0,
-    area_fx_min_scale = math.max(0.60, math.min(1.10, tonumber(extra.area_fx_min_scale) or 0.65)),
-    area_fx_max_scale = math.max(0.85, math.min(1.55, tonumber(extra.area_fx_max_scale) or 2.40)),
     particle_scale_bias = tonumber(extra.particle_scale_bias) or 1.0,
-    particle_min_scale = math.max(0.55, math.min(1.05, tonumber(extra.particle_min_scale) or 0.60)),
-    particle_max_scale = math.max(0.85, math.min(1.28, tonumber(extra.particle_max_scale) or 1.80)),
     delivery_mode = tostring(extra.delivery_mode or 'projectile'),
     motion_mode = tostring(extra.motion_mode or 'target'),
   }
@@ -458,20 +428,11 @@ end
 
 local function apply_particle_scale(visual_cfg, effect_key, scale)
   local base_scale = tonumber(scale) or 1.0
-  local min_scale = tonumber(visual_cfg and visual_cfg.particle_min_scale) or 0.72
-  local max_scale = tonumber(visual_cfg and visual_cfg.particle_max_scale) or 1.28
   local baseline_norm = 1.0
   -- 第二阶段：按伤害范围（以 area_fx_base_radius 作为范围代理）做轻量二次缩放。
   local radius = math.max(80, tonumber(visual_cfg and visual_cfg.area_fx_base_radius) or 220)
   local range_factor = math.max(0.97, math.min(1.03, (radius / 220) ^ 0.18))
   local final_scale = base_scale * baseline_norm * range_factor
-  if final_scale < min_scale then
-    final_scale = min_scale
-  end
-  if final_scale > max_scale then
-    final_scale = max_scale
-  end
-  final_scale = math.min(final_scale, 1.20)
   return final_scale
 end
 
@@ -550,20 +511,23 @@ local function play_particle_on_unit(env, unit, effect_key, scale, time)
     return nil
   end
   local y3 = env and env.y3
-  if not y3 or not y3.particle or not y3.particle.create then
+  if not y3 or not y3.projectile or not y3.projectile.create then
     return nil
   end
   if not should_emit_particle(env, effect_key, build_unit_fx_anchor_key(unit), time) then
     return nil
   end
-  local particle_cfg = resolve_particle_scale_cfg(effect_key, env and env.__bond_visual_cfg)
-  local ok, particle = pcall(y3.particle.create, {
-    type = effect_key,
+  local state = env and env.STATE
+  local forced = tonumber(state and state.debug_force_projectile_key) or 0
+  local key = forced > 0 and math.floor(forced) or 201392033
+  local ok, particle = pcall(y3.projectile.create, {
+    key = key,
     target = unit,
     socket = 'origin',
-    scale = apply_particle_scale(particle_cfg, effect_key, scale) * GLOBAL_PARTICLE_SCALE_MULTIPLIER,
+    owner = state and state.hero or nil,
+    angle = 0,
     time = time or 0.30,
-    immediate = true,
+    remove_immediately = true,
   })
   if ok and particle then
     return particle
@@ -576,20 +540,23 @@ local function play_particle_on_point(env, point, effect_key, scale, time, heigh
     return nil
   end
   local y3 = env and env.y3
-  if not y3 or not y3.particle or not y3.particle.create then
+  if not y3 or not y3.projectile or not y3.projectile.create then
     return nil
   end
   if not should_emit_particle(env, effect_key, build_point_fx_anchor_key(point), time) then
     return nil
   end
-  local particle_cfg = resolve_particle_scale_cfg(effect_key, env and env.__bond_visual_cfg)
-  local ok, particle = pcall(y3.particle.create, {
-    type = effect_key,
+  local state = env and env.STATE
+  local forced = tonumber(state and state.debug_force_projectile_key) or 0
+  local key = forced > 0 and math.floor(forced) or 201392033
+  local ok, particle = pcall(y3.projectile.create, {
+    key = key,
     target = point,
-    scale = apply_particle_scale(particle_cfg, effect_key, scale) * GLOBAL_PARTICLE_SCALE_MULTIPLIER,
+    socket = 'origin',
+    owner = state and state.hero or nil,
+    angle = 0,
     time = time or 0.30,
-    height = height or 0,
-    immediate = true,
+    remove_immediately = true,
   })
   if ok and particle then
     return particle

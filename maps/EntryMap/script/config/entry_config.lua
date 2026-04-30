@@ -1,6 +1,6 @@
-local battle_base = require 'entry_data.battle_base_config'
-local battlefield_scene = require 'entry_data.battlefield_scene_config'
-local battlefield_unit_config = require 'entry_data.battlefield_unit_config'
+local battle_base = require 'data.object_tables.battle_base_config'
+local battlefield_scene = require 'data.object_tables.battlefield_scene_config'
+local battlefield_unit_config = require 'data.object_tables.battlefield_unit_config'
 local global_rules = battle_base.global_rules
 local hero_init_stats = battle_base.hero_init_stats
 local debug_hero_bonus_stats = battle_base.debug_hero_bonus_stats
@@ -39,10 +39,10 @@ local ENEMY_SPAWN_BATCH_SCALE = clamp_scale(global_rules.enemy_spawn_batch_scale
 local ENEMY_ALIVE_CAP_SCALE = clamp_scale(global_rules.enemy_alive_cap_scale, 1.0)
 local TOTAL_ENEMY_SOFT_CAP_SCALE = clamp_scale(global_rules.total_enemy_soft_cap_scale, 1.0)
 
-local WaveObjects = require 'entry_objects.waves'
-local ChallengeObjects = require 'entry_objects.challenges'
-local StageObjects = require 'entry_objects.stages'
-local StageModeObjects = require 'entry_objects.stage_modes'
+local WaveObjects = require 'data.object_tables.waves'
+local ChallengeObjects = require 'data.object_tables.challenges'
+local StageObjects = require 'data.object_tables.stages'
+local StageModeObjects = require 'data.object_tables.stage_modes'
 local MainlineTaskRewardObjects = require 'data.object_tables.mainline_task_rewards'
 local ok_treasure_catalog, TreasureCatalogObjects = pcall(require, 'entry_objects.treasure_catalog')
 if not ok_treasure_catalog or type(TreasureCatalogObjects) ~= 'table' then

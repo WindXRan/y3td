@@ -1,6 +1,6 @@
 local M = {}
 
-local BondNodes = require 'runtime.bond_nodes'
+local BondNodes = require 'data.object_tables.bond_nodes'
 local BondTipModelBuilder = require 'runtime.bond_tip_model_builder'
 local BondTemplates = require 'runtime.bond_templates.init'
 local BondDrawConfig = require 'data.object_tables.bond_draw_config'
@@ -2963,12 +2963,24 @@ function M.debug_activate_modifier_bond(env, bond_name, grant_missing_cards)
     if granted_count > 0 then
       sync_attr_bonuses_to_hero(env)
     end
+    if env and env.setup_basic_attack_ability then
+      env.setup_basic_attack_ability()
+    end
+    if env and env.sync_basic_attack_ability then
+      env.sync_basic_attack_ability()
+    end
     return true, format_bond_skill_status(BOND_SKILL_ALREADY_ACTIVE_TEMPLATE, resolved_bond_name)
   end
 
   local activated_names = activate_modifier_bond_effects(state, resolved_bond_name)
   if #activated_names > 0 then
     sync_attr_bonuses_to_hero(env)
+    if env and env.setup_basic_attack_ability then
+      env.setup_basic_attack_ability()
+    end
+    if env and env.sync_basic_attack_ability then
+      env.sync_basic_attack_ability()
+    end
     return true, format_bond_skill_status(BOND_SKILL_ACTIVE_SUCCESS_TEMPLATE, resolved_bond_name)
   end
 
