@@ -27,14 +27,6 @@ local get_attack_value
 local get_max_hp_value
 
 -- 热更早期兜底：旧闭包可能在本文件完成加载前按全局名调用。
-if type(_G.collect_units_in_line) ~= 'function' then
-  _G.collect_units_in_line = function(_, _, _, _, _, _, fallback_target)
-    if fallback_target and fallback_target.is_exist and fallback_target:is_exist() then
-      return { fallback_target }
-    end
-    return {}
-  end
-end
 if type(_G.get_hero) ~= 'function' then
   _G.get_hero = function(env)
     local hero = env and env.STATE and env.STATE.hero
@@ -606,19 +598,10 @@ local function play_particle_on_point(env, point, effect_key, scale, time, heigh
 end
 
 local function play_bond_sound(env, bond_name, stage, anchor)
-  if not env or not env.play_bond_sound then
-    return nil
-  end
+  -- 已按需求禁用羁绊音频调用链（audio.lua 相关）。
   local state = env and env.STATE
-  local ok, result = pcall(env.play_bond_sound, bond_name, stage, anchor)
-  if ok then
-    if state and state.bond_debug_trace_enabled == true and env.message then
-      env.message(string.format('[bond_audio_trace] bond=%s stage=%s ok=true', tostring(bond_name), tostring(stage)))
-    end
-    return result
-  end
-  if state and state.bond_debug_trace_enabled == true and env.message then
-    env.message(string.format('[bond_audio_trace] bond=%s stage=%s ok=false', tostring(bond_name), tostring(stage)))
+  if state and state.bond_debug_trace_enabled == true and env and env.message then
+    env.message(string.format('[bond_audio_trace] disabled bond=%s stage=%s', tostring(bond_name), tostring(stage)))
   end
   return nil
 end
@@ -683,7 +666,7 @@ local function launch_projectile_to_target(env, target, visual_cfg)
       local dy = ty - hy
       target_distance_now = math.sqrt(dx * dx + dy * dy)
       if launch_angle == nil and target_distance_now > 0.001 then
-        launch_angle = math.deg(math.atan(dy, dx))
+        launch_angle = math.atan(dy, dx)
       end
     end
   end
@@ -691,10 +674,14 @@ local function launch_projectile_to_target(env, target, visual_cfg)
     launch_angle = fallback_facing
   end
 
+  local delivery_mode = tostring(visual_cfg and visual_cfg.delivery_mode or 'projectile')
+  local spawn_on_target = delivery_mode == 'spawn_on_target'
+  local spawn_anchor = spawn_on_target and target or hero
+
   local function create_with_key(projectile_key)
     return pcall(y3.projectile.create, {
       key = projectile_key,
-      target = hero,
+      target = spawn_anchor,
       socket = 'origin',
       owner = hero,
       angle = launch_angle,
@@ -753,10 +740,16 @@ local function launch_projectile_to_target(env, target, visual_cfg)
         (tonumber(launch_angle or 0) or 0) + (tonumber(line_motion_angle_offset or 0) or 0)
       ))
     end
+    local line_distance = math.max(
+      spawn_on_target and 80 or 120,
+      tonumber(visual_cfg and visual_cfg.projectile_line_distance)
+        or target_distance_now
+        or 420
+    )
     ok_move = pcall(function()
       projectile:mover_line({
         angle = (launch_angle or 0) + line_motion_angle_offset,
-        distance = 160,
+        distance = line_distance,
         speed = speed,
         height = visual_cfg.projectile_height,
         on_finish = remove_projectile_safe,
@@ -1138,7 +1131,7 @@ local function schedule_summon_lifecycle_fx(env, hero, visual_cfg, duration_sec,
   return true
 end
 
-local function launch_projectile_to_point(env, direction, distance, visual_cfg, life_time_override)
+local function launch_projectile_to_point(env, direction, distance, visual_cfg, life_time_override, mover_opts)
   local state = env and env.STATE
   local hero = state and state.hero
   local y3 = env and env.y3
@@ -1190,6 +1183,11 @@ local function launch_projectile_to_point(env, direction, distance, visual_cfg, 
       speed = math.max(200, tonumber(visual_cfg.projectile_speed) or 800),
       height = visual_cfg.projectile_height,
       face_angle = true,
+      hit_type = tonumber(mover_opts and mover_opts.hit_type) or 0,
+      hit_radius = math.max(0, tonumber(mover_opts and mover_opts.hit_radius) or 0),
+      hit_same = mover_opts and mover_opts.hit_same == true or false,
+      hit_interval = math.max(0, tonumber(mover_opts and mover_opts.hit_interval) or 0),
+      on_hit = mover_opts and mover_opts.on_hit or nil,
       on_finish = function()
         if projectile and projectile.is_exist and projectile:is_exist() then
           projectile:remove()
@@ -1208,7 +1206,7 @@ local function launch_projectile_to_point(env, direction, distance, visual_cfg, 
     end
     return false
   end
-  return true
+  return projectile
 end
 
 local function compute_direction_by_points(from_point, to_point, fallback_angle)
@@ -1249,20 +1247,8 @@ local function resolve_get_hero()
   end
 end
 
-local function resolve_collect_units_in_line()
-  if type(collect_units_in_line) == 'function' then
-    return collect_units_in_line
-  end
-  if type(_G.collect_units_in_line) == 'function' then
-    return _G.collect_units_in_line
-  end
-  return function(_, _, _, _, _, _, _)
-    return {}
-  end
-end
-
 local function safe_collect_units_in_line(env, origin_point, impact_point, max_distance, line_width, max_hits, fallback_target)
-  local collect_line = resolve_collect_units_in_line()
+  local collect_line = collect_units_in_line
   if type(collect_line) ~= 'function' then
     return {}
   end
@@ -1298,100 +1284,53 @@ local function execute_projectile_pierce_template(env, target, visual_cfg, opts,
     return false
   end
 
-  local y3 = env and env.y3
-  if not y3 or not y3.ltimer or not y3.ltimer.loop then
-    return false
-  end
-
   local line_distance = math.max(1, tonumber(opts and opts.distance) or tonumber(visual_cfg and visual_cfg.projectile_line_distance) or 0)
   local pierce_width = math.max(40, tonumber(opts and opts.pierce_width) or 120)
-  local sample_mode = tostring(opts and opts.sample_mode or 'line')
-  local sample_radius = math.max(40, tonumber(opts and opts.sample_radius) or math.floor(pierce_width * 0.65))
-  local max_tick_targets = tonumber(opts and opts.max_targets)
-  if max_tick_targets then
-    max_tick_targets = math.max(1, math.floor(max_tick_targets))
-  end
-  local projectile_speed = math.max(200, tonumber(opts and opts.projectile_speed) or tonumber(visual_cfg.projectile_speed) or 800)
-  local tick_interval = math.max(0.08, tonumber(opts and opts.tick_interval) or 1.0)
-  -- 采样步长与线宽联动，避免速度快时“跨段漏采样”导致视觉命中但伤害丢失。
-  local max_segment_length = math.max(80, pierce_width * 0.75)
-  local max_tick_interval = max_segment_length / projectile_speed
-  tick_interval = math.max(0.08, math.min(tick_interval, max_tick_interval))
   local direction = forced_direction
   if direction == nil then
     direction = compute_direction_by_points(hero_point, target_point, 0)
   end
-  local total_time = math.max(tick_interval, line_distance / projectile_speed)
+  local projectile_speed = math.max(200, tonumber(opts and opts.projectile_speed) or tonumber(visual_cfg.projectile_speed) or 800)
+  local total_time = math.max(0.08, line_distance / projectile_speed)
   local projectile_life_time = math.max(total_time + 0.05, 0.10)
 
   play_bond_sound(env, opts and opts.bond_name, 'cast', hero)
-  launch_projectile_to_point(env, direction, line_distance, visual_cfg, projectile_life_time)
-
-  local elapsed = 0
-  local finished = false
-  local last_travel_distance = 0
-  local function apply_tick(next_elapsed)
-    if finished then
-      return true
-    end
-    next_elapsed = math.max(elapsed, math.min(total_time, tonumber(next_elapsed) or elapsed))
-    if next_elapsed <= elapsed then
-      return finished
-    end
-    local curr_travel_distance = math.min(line_distance, projectile_speed * next_elapsed)
-    local from_point = create_offset_point(env, hero_point, direction, last_travel_distance, 0)
-    local to_point = create_offset_point(env, hero_point, direction, curr_travel_distance, 0)
-    if not from_point or not to_point then
-      elapsed = next_elapsed
-      if elapsed >= total_time then
-        finished = true
-      end
-      return finished
-    end
-    play_particle_on_point(env, to_point, visual_cfg.particle_key, tonumber(opts and opts.tick_fx_scale) or 0.9, tonumber(opts and opts.tick_fx_time) or 0.20, 20)
-    local segment_length = from_point.get_distance_with and from_point:get_distance_with(to_point) or math.max(1, curr_travel_distance - last_travel_distance)
-    local pierced = {}
-    if sample_mode == 'point' then
-      local candidates = get_enemies_in_range_safe(env, to_point, sample_radius, nil, max_tick_targets or 64)
-      for _, unit in ipairs(candidates) do
-        if is_active_enemy_safe(env, unit) then
-          pierced[#pierced + 1] = unit
-          if max_tick_targets and #pierced >= max_tick_targets then
-            break
-          end
-        end
-      end
-    else
-      pierced = safe_collect_units_in_line(env, from_point, to_point, segment_length, pierce_width, max_tick_targets, nil)
-    end
-    for _, unit in ipairs(pierced) do
-      if unit and unit.is_exist and unit:is_exist() then
-        play_bond_sound(env, opts and opts.bond_name, 'impact', unit)
-        play_particle_on_unit(env, unit, visual_cfg.particle_key, tonumber(opts and opts.hit_fx_scale) or 0.9, tonumber(opts and opts.hit_fx_time) or 0.18)
-        if on_tick_hit then
-          on_tick_hit(unit)
-        end
-      end
-    end
-    last_travel_distance = curr_travel_distance
-    elapsed = next_elapsed
-    if elapsed >= total_time then
-      finished = true
-    end
-    return finished
+  local hit_radius = math.max(20, tonumber(opts and opts.hit_radius) or math.floor(pierce_width * 0.5))
+  local hit_interval = math.max(0.02, tonumber(opts and opts.hit_interval) or 0.05)
+  local hit_same = opts and opts.hit_same == true or false
+  local max_hit_targets = tonumber(opts and opts.max_targets)
+  if max_hit_targets then
+    max_hit_targets = math.max(1, math.floor(max_hit_targets))
   end
+  local hit_count = 0
+  local hit_marks = {}
+  local projectile = launch_projectile_to_point(env, direction, line_distance, visual_cfg, projectile_life_time, {
+    hit_type = 0,
+    hit_radius = hit_radius,
+    hit_same = hit_same,
+    hit_interval = hit_interval,
+    on_hit = function(_, unit)
+      if not unit or not unit.is_exist or not unit:is_exist() or not is_active_enemy_safe(env, unit) then
+        return
+      end
+      if max_hit_targets and hit_count >= max_hit_targets then
+        return
+      end
+      local uid = tostring(unit)
+      if not hit_same and hit_marks[uid] then
+        return
+      end
+      hit_marks[uid] = true
+      hit_count = hit_count + 1
+      play_bond_sound(env, opts and opts.bond_name, 'impact', unit)
+      play_particle_on_unit(env, unit, visual_cfg.particle_key, tonumber(opts and opts.hit_fx_scale) or 0.9, tonumber(opts and opts.hit_fx_time) or 0.18)
+      if on_tick_hit then
+        on_tick_hit(unit)
+      end
+    end,
+  })
+  return projectile ~= false and projectile ~= nil
 
-  if apply_tick(math.min(total_time, tick_interval)) then
-    return true
-  end
-  local timer
-  timer = y3.ltimer.loop(tick_interval, function()
-    local done = apply_tick(elapsed + tick_interval)
-    if done and timer and timer.remove then
-      timer:remove()
-    end
-  end)
-  return true
 end
 
 local function blink_hero_tactical_reposition(env, target, visual_cfg)
@@ -1652,7 +1591,6 @@ collect_units_in_line = function(env, origin_point, impact_point, max_distance, 
   return result
 end
 -- 兼容旧闭包/旧热更环境：有些路径会按全局名解析，兜底注册一次，避免 nil 崩溃。
-_G.collect_units_in_line = collect_units_in_line
 
 local function try_chance(chance)
   if FORCE_SPECIAL_EFFECTS_100 then
@@ -2111,7 +2049,9 @@ local function trigger_dragon_fireball_effect(env, runtime, target, effect_state
       tonumber(dragon_rule.min_pierce_width) or 120,
       math.floor(line_width * (tonumber(dragon_rule.pierce_width_ratio) or 0.70))
     ),
-    sample_mode = 'line',
+    hit_radius = math.max(60, math.floor(line_width * 0.45)),
+    hit_interval = 0.04,
+    hit_same = false,
     projectile_speed = visual_cfg.projectile_speed,
     tick_interval = tonumber(dragon_rule.tick_interval) or 0.12,
     tick_fx_scale = 1.05,

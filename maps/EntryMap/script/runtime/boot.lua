@@ -33,7 +33,6 @@ local BattleEventFeedSystem = require 'runtime.battle_event_feed'
 local RewardSystem = require 'runtime.rewards'
 local GearUpgrades = require 'runtime.gear_upgrades'
 local AttrChoices = require 'runtime.attr_choices'
-local AudioSystem = require 'runtime.audio'
 local HeroSelectionRangeSystem = require 'runtime.hero_selection_range'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
@@ -927,12 +926,7 @@ reward_system = RewardSystem.create({
   end,
 })
 
-audio_system = AudioSystem.create({
-  STATE = STATE,
-  y3 = y3,
-  get_player = get_player,
-  trace = function() end,
-})
+audio_system = nil
 
 mainline_task_system = require('runtime.mainline_tasks').create({
   STATE = STATE,
@@ -1212,47 +1206,6 @@ local function apply_formula_damage_override(data)
   return ok == true
 end
 
-local BOND_AUDIO_ELEMENT = {
-  ['龙骑士'] = 'fire',
-  ['枪炮师'] = 'earth',
-  ['寒冰法师'] = 'water',
-  ['冰霜法师'] = 'water',
-  ['雷电法王'] = 'wood',
-  ['火法师'] = 'fire',
-  ['骷髅法师'] = 'wood',
-  ['猎人'] = 'wind',
-  ['狂战士'] = 'metal',
-  ['剑魂'] = 'metal',
-  ['剑宗'] = 'metal',
-  ['魔剑士'] = 'thunder',
-  ['战斗法师'] = 'thunder',
-  ['游侠'] = 'wind',
-  ['风暴萨满'] = 'wind',
-  ['神射手'] = 'metal',
-}
-
-local function play_bond_sound(bond_name, stage, anchor)
-  if not audio_system or not audio_system.play_attack_skill then
-    return nil
-  end
-  local state = STATE
-  state.bond_audio_gate = state.bond_audio_gate or {}
-  local gate_key = string.format('%s:%s', tostring(bond_name or 'bond'), tostring(stage or 'cast'))
-  local now = os.clock and os.clock() or 0
-  local next_time = tonumber(state.bond_audio_gate[gate_key]) or 0
-  if next_time > now then
-    return nil
-  end
-  state.bond_audio_gate[gate_key] = now + 0.10
-
-  local skill_stub = {
-    id = 'bond_' .. tostring(bond_name or 'generic'),
-    element = BOND_AUDIO_ELEMENT[bond_name] or 'none',
-    damage_form = 'spell',
-  }
-  return audio_system.play_attack_skill(skill_stub, anchor or STATE.hero, stage or 'cast')
-end
-
 create_bond_env = function()
   return {
     STATE = STATE,
@@ -1274,7 +1227,6 @@ create_bond_env = function()
     reserve_formula_damage = reserve_formula_damage,
     basic_attack_damage_type = ATTACK_SKILL_DEFS.basic_attack.damage_type,
     get_player = get_player,
-    play_bond_sound = play_bond_sound,
     report_auto_acceptance_event = function(payload)
       if battle_auto_acceptance_system and battle_auto_acceptance_system.record_event then
         battle_auto_acceptance_system.record_event(payload)

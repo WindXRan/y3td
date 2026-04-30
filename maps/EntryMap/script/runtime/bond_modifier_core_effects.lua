@@ -30,7 +30,6 @@ function M.create(deps)
   local play_particle_on_unit = deps.play_particle_on_unit
   local play_particle_on_point = deps.play_particle_on_point
   local play_impact_burst = deps.play_impact_burst
-  local play_lightning_strike = deps.play_lightning_strike
   local launch_projectile_to_target = deps.launch_projectile_to_target
   local wait_seconds = deps.wait_seconds
   local execute_linear_bond_template = deps.execute_linear_bond_template
@@ -196,6 +195,19 @@ function M.create(deps)
     end
 
     wait_seconds(env, rule_number(presentation_defaults.instant_warmup, 0.05), on_impact)
+  end
+
+  local function find_visual_anchor_target(env, range)
+    local hero = env and env.STATE and env.STATE.hero
+    if not hero or not env or not env.get_enemies_in_range then
+      return nil
+    end
+    local targets = env.get_enemies_in_range(hero, range or 1200, nil, 1) or {}
+    local target = targets[1]
+    if target and target.is_exist and target:is_exist() then
+      return target
+    end
+    return nil
   end
 
   local function trigger_ranger_arrow_rain(env, target, visual_cfg, bond_damage_area, attack, rain_rule)
@@ -365,25 +377,32 @@ function M.create(deps)
         report_cast(1)
         local current_hp = target.get_hp and (tonumber(target:get_hp()) or 0) or 0
         local target_max_hp = target.get_attr and (tonumber(target:get_attr('生命')) or tonumber(target:get_attr('最大生命')) or current_hp) or current_hp
-        play_bond_sound(env, '狂战士', 'cast', get_hero(env))
-        play_bond_sound(env, '狂战士', 'impact', target)
-        play_particle_on_unit(env, target, visual_cfg.particle_key, 1.1, 0.25)
         local amount = attack * rule_number(basic_rule.damage_attack_ratio, 0.10)
           + math.max(0, target_max_hp - current_hp) * rule_number(basic_rule.damage_missing_hp_ratio, 0.05)
-        local hit = bond_damage_target(target, amount, '物理')
         local blood_burst_delay = math.max(0.08, rule_number(basic_rule.burst_delay, 0.18))
         local blood_burst_radius = math.max(120, rule_number(basic_rule.burst_radius, 320))
         local blood_burst_ratio = math.max(0.20, rule_number(basic_rule.burst_damage_ratio, 0.45))
-        wait_seconds(env, blood_burst_delay, function()
-          if target and target.is_exist and target:is_exist() then
-            play_impact_burst(env, target, visual_cfg.particle_key, 1.25)
-            bond_damage_area(target, blood_burst_radius, amount * blood_burst_ratio, '物理', target)
+        local impact_point = get_unit_point_snapshot(target)
+        play_bond_sound(env, '狂战士', 'cast', get_hero(env))
+        perform_visual_delivery(env, target, visual_cfg, function()
+          local impact_target = pick_impact_unit(env, impact_point, target)
+          if not impact_target then
+            return
           end
+          play_bond_sound(env, '狂战士', 'impact', impact_target)
+          play_particle_on_unit(env, impact_target, visual_cfg.particle_key, 1.1, 0.25)
+          bond_damage_target(impact_target, amount, '物理')
+          wait_seconds(env, blood_burst_delay, function()
+            if impact_target and impact_target.is_exist and impact_target:is_exist() then
+              play_impact_burst(env, impact_target, visual_cfg.particle_key, 1.25)
+              bond_damage_area(impact_target, blood_burst_radius, amount * blood_burst_ratio, '物理', impact_target)
+              if is_line_motion then
+                bond_damage_area(impact_target, line_aoe_radius, amount * math.max(0.35, line_aoe_ratio - 0.05), '物理', impact_target)
+              end
+            end
+          end)
         end)
-        if is_line_motion then
-          bond_damage_area(target, line_aoe_radius, amount * math.max(0.35, line_aoe_ratio - 0.05), '物理', target)
-        end
-        return hit
+        return true
       end
     elseif bond_name == '剑魂' then
       effect_state.counter = (effect_state.counter or 0) + 1
@@ -600,22 +619,18 @@ function M.create(deps)
       effect_state.elapsed = effect_state.elapsed - fire_interval
       local target = env.get_enemies_in_range and env.get_enemies_in_range(env.STATE.hero, 1200, nil, 1)[1] or nil
       local impact_point = get_unit_point_snapshot(target)
-      if target then
-        play_bond_sound(env, '火法师', 'cast', get_hero(env))
-        perform_visual_delivery(env, target, visual_cfg, function()
-          play_bond_sound(env, '火法师', 'impact', target)
-          play_particle_on_unit(env, target, visual_cfg.particle_key, 1.25, 0.30)
-          play_impact_burst(env, target, visual_cfg.particle_key, 1.35)
-        end)
-      end
       local main_damage = attack * rule_number(periodic_rule.damage_attack_ratio, 2.6)
       local splash_radius = math.max(80, rule_number(periodic_rule.splash_radius, 320))
       local splash_damage = attack * rule_number(periodic_rule.splash_damage_attack_ratio, 1.2)
       if target or impact_point then
+        play_bond_sound(env, '火法师', 'cast', get_hero(env))
         perform_visual_delivery(env, target, visual_cfg, function()
           local impact_anchor = impact_point or target
           local impact_target = pick_impact_unit(env, impact_point, target)
           if impact_target then
+            play_bond_sound(env, '火法师', 'impact', impact_target)
+            play_particle_on_unit(env, impact_target, visual_cfg.particle_key, 1.25, 0.30)
+            play_impact_burst(env, impact_target, visual_cfg.particle_key, 1.35)
             bond_damage_target(impact_target, main_damage, periodic_rule.damage_type or '法术')
           end
           bond_damage_area(
@@ -701,6 +716,19 @@ function M.create(deps)
       local hunter_interval = math.max(0.05, rule_number(periodic_rule.interval, 30))
       effect_state.elapsed = effect_state.elapsed - hunter_interval
       local hero = env and env.STATE and env.STATE.hero
+      local anchor_target = find_visual_anchor_target(env, rule_number(periodic_rule.range, 1200))
+      if anchor_target then
+        perform_visual_delivery(env, anchor_target, visual_cfg, function()
+          schedule_summon_lifecycle_fx(
+            env,
+            hero,
+            visual_cfg,
+            rule_number(periodic_rule.summon_duration, 23),
+            periodic_rule.summon_kind or 'magic_deer'
+          )
+        end)
+        return true
+      end
       return schedule_summon_lifecycle_fx(
         env,
         hero,
@@ -746,9 +774,11 @@ function M.create(deps)
         for _, target in ipairs(targets) do
           if target and target.is_exist and target:is_exist() then
             play_bond_sound(env, '雷电法王', 'cast', get_hero(env))
-            play_lightning_strike(env, target, visual_cfg)
-            play_bond_sound(env, '雷电法王', 'impact', target)
-            hit = bond_damage_target(target, attack * damage_ratio, '法术') or hit
+            perform_visual_delivery(env, target, visual_cfg, function()
+              play_bond_sound(env, '雷电法王', 'impact', target)
+              play_impact_burst(env, target, visual_cfg.particle_key, 1.05)
+              hit = bond_damage_target(target, attack * damage_ratio, '法术') or hit
+            end)
           end
         end
       end
@@ -759,13 +789,26 @@ function M.create(deps)
       effect_state.elapsed = effect_state.elapsed - repeat_count * skeleton_interval
       for _ = 1, repeat_count do
         local hero = env and env.STATE and env.STATE.hero
-        schedule_summon_lifecycle_fx(
-          env,
-          hero,
-          visual_cfg,
-          rule_number(periodic_rule.summon_duration, 25),
-          periodic_rule.summon_kind or 'skeleton'
-        )
+        local anchor_target = find_visual_anchor_target(env, rule_number(periodic_rule.range, 1200))
+        if anchor_target then
+          perform_visual_delivery(env, anchor_target, visual_cfg, function()
+            schedule_summon_lifecycle_fx(
+              env,
+              hero,
+              visual_cfg,
+              rule_number(periodic_rule.summon_duration, 25),
+              periodic_rule.summon_kind or 'skeleton'
+            )
+          end)
+        else
+          schedule_summon_lifecycle_fx(
+            env,
+            hero,
+            visual_cfg,
+            rule_number(periodic_rule.summon_duration, 25),
+            periodic_rule.summon_kind or 'skeleton'
+          )
+        end
       end
       return true
     elseif bond_name == '魔剑士' then
