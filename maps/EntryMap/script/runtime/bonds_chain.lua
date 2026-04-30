@@ -1,4 +1,4 @@
-local M = {}
+﻿local M = {}
 
 local BondNodes = require 'data.object_tables.bond_nodes'
 local BondTipModelBuilder = require 'runtime.bond_tip_model_builder'
@@ -1666,7 +1666,7 @@ local function collect_modifier_pool_choice_entries(state)
   end
 
   local choices = {}
-  local choice_count = BondPickConfig.choice_count or 3
+  local choice_count = 4
   while #choices < choice_count and #pool > 0 do
     local picked = table.remove(pool, math.random(1, #pool))
     choices[#choices + 1] = build_modifier_choice_entry(state, picked, #choices + 1)

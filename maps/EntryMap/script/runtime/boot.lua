@@ -665,9 +665,7 @@ local function enforce_runtime_ui_phase(is_battle)
     'top',
     'BattleBottomHUD',
     'GameHUD',
-    'BondChoice2',
-    'BondChoice3',
-    'BondChoice4',
+    'ChoiceList',
     'BondSwallowPanel',
     'CommonTip',
     'SceneUI',
@@ -2949,6 +2947,12 @@ gm_bond_effects_system = GmBondEffectsSystem.create({
     end
     return {}
   end,
+  cast_basic_attack_ability = function()
+    if attack_skills_system and attack_skills_system.debug_cast_basic_attack_once then
+      return attack_skills_system.debug_cast_basic_attack_once()
+    end
+    return false, '普攻能力系统未初始化。'
+  end,
   set_n0_activation_mode = function(mode)
     if battle_auto_acceptance_system and battle_auto_acceptance_system.set_activation_mode then
       battle_auto_acceptance_system.set_activation_mode(mode)
@@ -2991,11 +2995,11 @@ gm_bond_effects_system = GmBondEffectsSystem.create({
     return nil
   end,
   set_basic_attack_enabled = function(enabled)
-    STATE.basic_attack_bond_enabled = enabled == true
+    STATE.basic_attack_enabled = enabled == true
     return true
   end,
   get_basic_attack_enabled = function()
-    return STATE.basic_attack_bond_enabled ~= false
+    return STATE.basic_attack_enabled ~= false
   end,
   get_game_time = function()
     if y3 and y3.game and y3.game.current_game_run_time then
@@ -3121,8 +3125,8 @@ local function apply_bond_choice_quality_frames()
   if not player then
     return
   end
-  local panel_name = #choices <= 2 and 'BondChoice2' or (#choices >= 4 and 'BondChoice4' or 'BondChoice3')
-  local panel_index = #choices <= 2 and '2' or (#choices >= 4 and '4' or '3')
+  local panel_name = 'BondChoice4'
+  local panel_index = '4'
   for index = 1, 4 do
     local path = string.format(
       '%s.bond_choice_%s.cards_row.card_%d.icon_frame_%d',
@@ -3141,10 +3145,134 @@ local function apply_bond_choice_quality_frames()
   end
 end
 
+local choice_list_dynamic_cards = {}
+local function cleanup_choice_list_cards()
+  for _, ui in ipairs(choice_list_dynamic_cards) do
+    if ui and (not ui.is_removed or not ui:is_removed()) and ui.remove then
+      pcall(ui.remove, ui)
+    end
+  end
+  choice_list_dynamic_cards = {}
+end
+
+local function ensure_choice_list_choice_panel()
+  local player = get_player()
+  if not player then
+    return nil, nil
+  end
+  local ok_root, root = pcall(y3.ui.get_ui, player, 'ChoiceList')
+  if not ok_root or not root then
+    return nil, nil
+  end
+  local ok_scroll, scroll = pcall(y3.ui.get_ui, player, 'ChoiceList.scroll_view')
+  if not ok_scroll or not scroll then
+    return nil, nil
+  end
+  return root, scroll
+end
+
+local function build_choice_list_cards()
+  local bond_runtime = STATE.bond_runtime
+  local choices = bond_runtime and bond_runtime.current_choices or nil
+  local root, scroll = ensure_choice_list_choice_panel()
+  if not root or not scroll then
+    return
+  end
+
+  local is_visible = choices and #choices > 0 and STATE.choice_panel_hidden ~= true
+  set_ui_visible(root, is_visible)
+  local old_choice_panels = { 'BondChoice2', 'BondChoice3', 'BondChoice4' }
+  for _, panel_name in ipairs(old_choice_panels) do
+    local ok_old, old_panel = pcall(y3.ui.get_ui, player, panel_name)
+    if ok_old and old_panel then
+      set_ui_visible(old_panel, false)
+    end
+  end
+  if not is_visible then
+    cleanup_choice_list_cards()
+    return
+  end
+
+  if scroll.set_ui_gridview_count then
+    scroll:set_ui_gridview_count(1, math.max(1, #choices))
+  end
+  if scroll.set_ui_gridview_size then
+    scroll:set_ui_gridview_size(228, 300)
+  end
+  if scroll.set_ui_gridview_space then
+    scroll:set_ui_gridview_space(10, 10)
+  end
+  if scroll.set_ui_gridview_scroll then
+    scroll:set_ui_gridview_scroll(false)
+  end
+
+  cleanup_choice_list_cards()
+  for index, choice in ipairs(choices) do
+    local card = scroll.create_child and scroll:create_child('空节点') or nil
+    if card then
+      choice_list_dynamic_cards[#choice_list_dynamic_cards + 1] = card
+      if card.set_ui_size then
+        card:set_ui_size(228, 300)
+      end
+      if card.set_intercepts_operations then
+        card:set_intercepts_operations(true)
+      end
+      local bg = card.create_child and card:create_child('图片') or nil
+      if bg then
+        if bg.set_ui_size then bg:set_ui_size(228, 300) end
+        if bg.set_pos then bg:set_pos(114, 150) end
+        if bg.set_image then bg:set_image(131998) end
+      end
+      local title = card.create_child and card:create_child('文本') or nil
+      if title then
+        if title.set_ui_size then title:set_ui_size(206, 28) end
+        if title.set_pos then title:set_pos(114, 270) end
+        if title.set_text then title:set_text(tostring(choice.pretty_display_name or choice.display_name or choice.title_text or choice.name or '羁绊卡')) end
+        if title.set_font_size then title:set_font_size(16) end
+      end
+      local subtitle = card.create_child and card:create_child('文本') or nil
+      if subtitle then
+        if subtitle.set_ui_size then subtitle:set_ui_size(206, 24) end
+        if subtitle.set_pos then subtitle:set_pos(114, 242) end
+        if subtitle.set_text then subtitle:set_text(tostring(choice.bond_root_name or choice.bond_name or '羁绊')) end
+        if subtitle.set_font_size then subtitle:set_font_size(13) end
+      end
+      local icon = card.create_child and card:create_child('图片') or nil
+      if icon then
+        if icon.set_ui_size then icon:set_ui_size(74, 74) end
+        if icon.set_pos then icon:set_pos(114, 188) end
+        if icon.set_image then icon:set_image(choice.ui_icon or choice.icon or 999) end
+      end
+      local pick_btn = card.create_child and card:create_child('按钮') or nil
+      if pick_btn then
+        if pick_btn.set_ui_size then pick_btn:set_ui_size(206, 42) end
+        if pick_btn.set_pos then pick_btn:set_pos(114, 34) end
+        if pick_btn.set_btn_status_string then
+          pick_btn:set_btn_status_string('常态', '选择')
+          pick_btn:set_btn_status_string('悬浮', '选择')
+          pick_btn:set_btn_status_string('按下', '选择')
+          pick_btn:set_btn_status_string('禁用', '选择')
+        elseif pick_btn.set_text then
+          pick_btn:set_text('选择')
+        end
+        if pick_btn.add_fast_event then
+          pick_btn:add_fast_event('左键-点击', function()
+            apply_round_choice(index)
+          end)
+        end
+      end
+      if scroll.insert_ui_gridview_comp then
+        scroll:insert_ui_gridview_comp(card, index)
+      end
+    end
+  end
+end
+
 runtime_ui_helpers.__raw_refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel
 runtime_ui_helpers.refresh_choice_panel = function(...)
   local result = runtime_ui_helpers.__raw_refresh_choice_panel(...)
   apply_bond_choice_quality_frames()
+  build_choice_list_cards()
   return result
 end
 

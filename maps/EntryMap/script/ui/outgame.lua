@@ -232,9 +232,7 @@ function M.create(env)
       'BattleBottomHUD',
     }
     local overlay_paths = {
-      'BondChoice2',
-      'BondChoice3',
-      'BondChoice4',
+      'ChoiceList',
       'BondSwallowPanel',
       'panel_1',
       'CommonTip',
