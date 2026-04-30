@@ -665,7 +665,7 @@ local function enforce_runtime_ui_phase(is_battle)
     'top',
     'BattleBottomHUD',
     'GameHUD',
-    'ChoiceList',
+    'Choice_Panel',
     'BondSwallowPanel',
     'CommonTip',
     'SceneUI',
@@ -3145,38 +3145,46 @@ local function apply_bond_choice_quality_frames()
   end
 end
 
-local choice_list_dynamic_cards = {}
-local choice_list_dynamic_prefabs = {}
-local function cleanup_choice_list_cards()
-  for _, prefab in ipairs(choice_list_dynamic_prefabs) do
-    if prefab and prefab.remove then
-      pcall(prefab.remove, prefab)
+local function resolve_choice_panel_card(scroll, index)
+  if not scroll then
+    return nil
+  end
+  local names
+  if index == 1 then
+    names = { 'Card1', 'Card_1' }
+  elseif index == 2 then
+    names = { 'Card2', 'Card_2' }
+  elseif index == 3 then
+    names = { 'Card3', 'Card_3' }
+  else
+    names = { 'Card4', 'Card_4' }
+  end
+  for _, name in ipairs(names) do
+    local card = a.resolve_child(scroll, name)
+    if card then
+      return card
     end
   end
-  choice_list_dynamic_prefabs = {}
-  for _, ui in ipairs(choice_list_dynamic_cards) do
-    if ui and (not ui.is_removed or not ui:is_removed()) and ui.remove then
-      pcall(ui.remove, ui)
-    end
-  end
-  choice_list_dynamic_cards = {}
+  return nil
 end
 
 local function ensure_choice_list_choice_panel()
   local player = get_player()
   if not player then
-    return nil, nil
+    return nil, nil, nil
   end
-  local ok_root, root = pcall(y3.ui.get_ui, player, 'ChoiceList')
+  local ok_root, root = pcall(y3.ui.get_ui, player, 'Choice_Panel')
   if not ok_root or not root then
-    return nil, nil
+    return nil, nil, nil
   end
-  local ok_scroll, scroll = pcall(y3.ui.get_ui, player, 'ChoiceList.scroll_view')
+  local ok_scroll, scroll = pcall(y3.ui.get_ui, player, 'Choice_Panel.ChoiceList.scroll_view')
   if not ok_scroll or not scroll then
-    return nil, nil
+    return nil, nil, nil
   end
-  return root, scroll
+  return root, scroll, player
 end
+
+local choice_click_bound = setmetatable({}, { __mode = 'k' })\nlocal function bind_choice_click_target(target, index)\n  if not target or not target.add_fast_event then\n    return\n  end\n  if choice_click_bound[target] then\n    return\n  end\n  choice_click_bound[target] = true\n  if target.set_intercepts_operations then\n    target:set_intercepts_operations(true)\n  end\n  target:add_fast_event('左键-点击', function()\n    apply_round_choice(index)\n  end)\nend
 
 local function build_choice_list_cards()
   local kind = get_pending_round_choice_kind()
@@ -3191,15 +3199,16 @@ local function build_choice_list_cards()
     local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
     choices = evolution_runtime and evolution_runtime.current_choices or nil
   end
-  local root, scroll = ensure_choice_list_choice_panel()
+
+  local root, scroll, player = ensure_choice_list_choice_panel()
   if not root or not scroll then
     return
   end
 
   local is_visible = choices and #choices > 0 and STATE.choice_panel_hidden ~= true
   set_ui_visible(root, is_visible)
-  local player = get_player()
-  local old_choice_panels = { 'BondChoice2', 'BondChoice3', 'BondChoice4' }
+
+  local old_choice_panels = { 'BondChoice2', 'BondChoice3', 'BondChoice4', 'ChoiceList' }
   if player then
     for _, panel_name in ipairs(old_choice_panels) do
       local ok_old, old_panel = pcall(y3.ui.get_ui, player, panel_name)
@@ -3208,117 +3217,48 @@ local function build_choice_list_cards()
       end
     end
   end
-  if not is_visible then
-    cleanup_choice_list_cards()
-    return
+
+  for index = 1, 4 do
+    local card = resolve_choice_panel_card(scroll, index)
+    local choice = choices and choices[index] or nil
+    set_ui_visible(card, is_visible and choice ~= nil)
+
+    if card and is_visible and choice then
+      local title = a.resolve_child(card, 'title')
+      if title and title.set_text then
+        title:set_text(tostring(choice.pretty_display_name or choice.display_name or choice.title_text or choice.name or '候选'))
+      end
+
+      local subtitle = a.resolve_child(card, 'sub_title')
+      if subtitle and subtitle.set_text then
+        subtitle:set_text(tostring(choice.bond_root_name or choice.bond_name or choice.tag or choice.quality or kind or '候选'))
+      end
+
+      local desc = a.resolve_child(card, 'desc')
+      if desc and desc.set_text then
+        desc:set_text(tostring(choice.desc_text or choice.summary or choice.effect_body_text or ''))
+      end
+
+      local icon = a.resolve_child(card, 'image_2_1')
+      if icon and icon.set_image then
+        icon:set_image(choice.ui_icon or choice.icon or 999)
+      end
+
+      local pick_btn = a.resolve_child(card, 'pick_btn') or a.resolve_child(card, 'btn')
+      if pick_btn and pick_btn.set_btn_status_string then
+        pick_btn:set_btn_status_string('常态', '选择')
+        pick_btn:set_btn_status_string('悬浮', '选择')
+        pick_btn:set_btn_status_string('按下', '选择')
+        pick_btn:set_btn_status_string('禁用', '选择')
+      end
+      bind_choice_click_target(pick_btn or card, index)
+    end
   end
 
-  if scroll.set_ui_gridview_count then
-    scroll:set_ui_gridview_count(1, math.max(1, #choices))
-  end
-  if scroll.set_ui_gridview_size then
-    scroll:set_ui_gridview_size(228, 300)
-  end
-  if scroll.set_ui_gridview_space then
-    scroll:set_ui_gridview_space(10, 10)
-  end
-  if scroll.set_ui_gridview_scroll then
-    scroll:set_ui_gridview_scroll(false)
-  end
-  if scroll.set_visible then
-    scroll:set_visible(true)
-  end
   if root.set_z_order then
     root:set_z_order(9600)
   end
-
-  cleanup_choice_list_cards()
-  for index, choice in ipairs(choices) do
-    local card = nil
-    if y3 and y3.ui_prefab and y3.ui_prefab.create and player then
-      local ok_prefab, prefab = pcall(y3.ui_prefab.create, player, 'Card', scroll)
-      if ok_prefab and prefab then
-        choice_list_dynamic_prefabs[#choice_list_dynamic_prefabs + 1] = prefab
-        card = prefab.get_child and prefab:get_child() or nil
-      end
-    end
-    if not card then
-      card = scroll.create_child and scroll:create_child('空节点') or nil
-    end
-    if card then
-      choice_list_dynamic_cards[#choice_list_dynamic_cards + 1] = card
-      if card.set_ui_size then
-        card:set_ui_size(228, 300)
-      end
-      if card.set_pos then
-        card:set_pos(130 + (index - 1) * 238, 128)
-      end
-      if card.set_visible then
-        card:set_visible(true)
-      end
-      if card.set_intercepts_operations then
-        card:set_intercepts_operations(true)
-      end
-      local bg = a.resolve_child(card, 'bg') or (card.create_child and card:create_child('图片') or nil)
-      if bg then
-        if bg.set_ui_size then bg:set_ui_size(228, 300) end
-        if bg.set_pos then bg:set_pos(114, 150) end
-        if bg.set_image then bg:set_image(131998) end
-      end
-      local title = a.resolve_child(card, 'title') or (card.create_child and card:create_child('文本') or nil)
-      if title then
-        if title.set_ui_size then title:set_ui_size(206, 28) end
-        if title.set_pos then title:set_pos(114, 270) end
-        if title.set_text then title:set_text(tostring(choice.pretty_display_name or choice.display_name or choice.title_text or choice.name or '羁绊卡')) end
-        if title.set_font_size then title:set_font_size(16) end
-      end
-      local subtitle = a.resolve_child(card, 'subtitle') or (card.create_child and card:create_child('文本') or nil)
-      if subtitle then
-        if subtitle.set_ui_size then subtitle:set_ui_size(206, 24) end
-        if subtitle.set_pos then subtitle:set_pos(114, 242) end
-        if subtitle.set_text then
-          subtitle:set_text(tostring(
-            choice.bond_root_name
-              or choice.bond_name
-              or choice.tag
-              or choice.quality
-              or kind
-              or '候选'
-          ))
-        end
-        if subtitle.set_font_size then subtitle:set_font_size(13) end
-      end
-      local icon = a.resolve_child(card, 'icon') or (card.create_child and card:create_child('图片') or nil)
-      if icon then
-        if icon.set_ui_size then icon:set_ui_size(74, 74) end
-        if icon.set_pos then icon:set_pos(114, 188) end
-        if icon.set_image then icon:set_image(choice.ui_icon or choice.icon or 999) end
-      end
-      local pick_btn = a.resolve_child(card, 'pick_btn') or (card.create_child and card:create_child('按钮') or nil)
-      if pick_btn then
-        if pick_btn.set_ui_size then pick_btn:set_ui_size(206, 42) end
-        if pick_btn.set_pos then pick_btn:set_pos(114, 34) end
-        if pick_btn.set_btn_status_string then
-          pick_btn:set_btn_status_string('常态', '选择')
-          pick_btn:set_btn_status_string('悬浮', '选择')
-          pick_btn:set_btn_status_string('按下', '选择')
-          pick_btn:set_btn_status_string('禁用', '选择')
-        elseif pick_btn.set_text then
-          pick_btn:set_text('选择')
-        end
-        if pick_btn.add_fast_event then
-          pick_btn:add_fast_event('左键-点击', function()
-            apply_round_choice(index)
-          end)
-        end
-      end
-      if scroll.insert_ui_gridview_comp then
-        pcall(scroll.insert_ui_gridview_comp, scroll, card, index)
-      end
-    end
-  end
 end
-
 runtime_ui_helpers.__raw_refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel
 runtime_ui_helpers.refresh_choice_panel = function(...)
   -- 选择面板统一走 ChoiceList 动态卡片链路，不再依赖旧 BondChoice2/3/4 渲染。

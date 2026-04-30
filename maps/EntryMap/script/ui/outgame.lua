@@ -1,4 +1,4 @@
-local theme = require 'ui.theme'
+﻿local theme = require 'ui.theme'
 local outgame_defs = require 'ui.outgame_defs'
 local QualityImageTable = require 'data.object_tables.quality_image_table'
 local ArchiveShop = require 'ui.outgame_archive_shop'
@@ -232,7 +232,7 @@ function M.create(env)
       'BattleBottomHUD',
     }
     local overlay_paths = {
-      'ChoiceList',
+      'Choice_Panel',
       'BondSwallowPanel',
       'panel_1',
       'CommonTip',
