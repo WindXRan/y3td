@@ -3218,6 +3218,12 @@ local function build_choice_list_cards()
   if scroll.set_ui_gridview_scroll then
     scroll:set_ui_gridview_scroll(false)
   end
+  if scroll.set_visible then
+    scroll:set_visible(true)
+  end
+  if root.set_z_order then
+    root:set_z_order(9600)
+  end
 
   cleanup_choice_list_cards()
   for index, choice in ipairs(choices) do
@@ -3226,6 +3232,12 @@ local function build_choice_list_cards()
       choice_list_dynamic_cards[#choice_list_dynamic_cards + 1] = card
       if card.set_ui_size then
         card:set_ui_size(228, 300)
+      end
+      if card.set_pos then
+        card:set_pos(130 + (index - 1) * 238, 128)
+      end
+      if card.set_visible then
+        card:set_visible(true)
       end
       if card.set_intercepts_operations then
         card:set_intercepts_operations(true)
@@ -3284,7 +3296,7 @@ local function build_choice_list_cards()
         end
       end
       if scroll.insert_ui_gridview_comp then
-        scroll:insert_ui_gridview_comp(card, index)
+        pcall(scroll.insert_ui_gridview_comp, scroll, card, index)
       end
     end
   end
