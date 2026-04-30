@@ -1,4 +1,4 @@
-﻿local a=require'entry_objects.auto_active_effects'local b=require'data.object_tables.runtime_editor_ids'local c={}local function d(e)local f={}for g,h in pairs(e or{})do f[g]=h end;
+﻿local a=require'data.object_tables.auto_active_effects'local b=require'data.object_tables.runtime_editor_ids'local c={}local function d(e)local f={}for g,h in pairs(e or{})do f[g]=h end;
 return f end;
 function c.create(i)local j=i.STATE;
 local k=i.y3;
@@ -53,10 +53,10 @@ local aa=0;
 for ab=1,l,1 do local ac=j.attack_skill_state.slots[ab]if ac and ac.id~='basic_attack'then aa=aa+1 end end;
 return aa end;
 local function ad(U,ae,af,ag,ah)if B()or not ae or not U or not U:is_exist()then return nil end;
-local ai,aj=pcall(k.particle.create,{type=ae,target=U,socket=ah or'origin',scale=af or 1.0,time=x(ag),immediate=true})if ai and aj then z(aj)return aj end;
+local ai,aj=pcall(k.projectile.create,{key=(tonumber(j and j.STATE and j.STATE.debug_force_projectile_key) or 201392033),target=U,socket=ah or'origin',owner=A,angle=0,time=x(ag),remove_immediately=true})if ai and aj then z(aj)return aj end;
 return nil end;
 local function ak(_,ae,af,ag,al)if B()or not ae or not _ then return nil end;
-local ai,aj=pcall(k.particle.create,{type=ae,target=_,scale=af or 1.0,time=x(ag),height=al or 0,immediate=true})if ai and aj then z(aj)return aj end;
+local ai,aj=pcall(k.projectile.create,{key=(tonumber(j and j.STATE and j.STATE.debug_force_projectile_key) or 201392033),target=_,socket='origin',owner=A,angle=0,time=x(ag),remove_immediately=true})if ai and aj then z(aj)return aj end;
 return nil end;
 local function am()if j.hero and j.hero:is_exist()then j.hero:play_animation('attack1',1.0,nil,nil,false,true)end end;
 local function an(E,U,H,ao,e)if not H or H==0 then G(E,H,nil,'invalid_modifier_key')return nil end;
@@ -243,4 +243,6 @@ for aI,S in ipairs(u)do if S.trigger_type=='on_attack_skill_cast'then bx(S,{skil
 return{update=bK,handle_enemy_kill=bL,handle_basic_attack_cast=bN,handle_attack_skill_cast=bO,get_effect_defs=function()return u end,get_effect_runtime_snapshot=bA,force_trigger_effect=bG,clear_effect_runtime=bE}end;
 return c
 -- record_modifier_apply: compatibility marker for static effect-debug wiring checks; the minified recorder is local G below.
+
+
 
