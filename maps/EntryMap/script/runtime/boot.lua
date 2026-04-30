@@ -3276,14 +3276,8 @@ local function build_choice_list_cards()
         icon:set_image(choice.ui_icon or choice.icon or 999)
       end
 
-      local pick_btn = resolve_ui_child(card, 'pick_btn') or resolve_ui_child(card, 'btn')
-      if pick_btn and pick_btn.set_btn_status_string then
-        pick_btn:set_btn_status_string('常态', '选择')
-        pick_btn:set_btn_status_string('悬浮', '选择')
-        pick_btn:set_btn_status_string('按下', '选择')
-        pick_btn:set_btn_status_string('禁用', '选择')
-      end
-      bind_choice_click_target(pick_btn or card, index)
+      local click_image = resolve_ui_child(card, 'image_2')
+      bind_choice_click_target(click_image or card, index)
     end
   end
 
