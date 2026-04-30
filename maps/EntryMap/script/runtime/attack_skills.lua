@@ -360,18 +360,23 @@ function M.create(env)
     local runtime_chain_count, runtime_chain_chance, runtime_chain_ratio = get_basic_attack_runtime_chain_stats()
     local bonus_chain_count, bonus_chain_ratio = get_basic_attack_bonus_chain_stats()
   
-    if STATE.skill_runtime and STATE.skill_runtime.normal_attack_bonus_ratio > 0 then
+    local runtime = STATE.skill_runtime or {}
+    local normal_attack_bonus_ratio = tonumber(runtime.normal_attack_bonus_ratio) or 0
+    local splash_ratio = tonumber(runtime.splash_ratio) or 0
+    local splash_radius = tonumber(runtime.splash_radius) or 0
+
+    if normal_attack_bonus_ratio > 0 then
       lines[#lines + 1] = string.format(
         '额外追伤：%.0f%% 攻击。',
-        STATE.skill_runtime.normal_attack_bonus_ratio * 100
+        normal_attack_bonus_ratio * 100
       )
     end
   
-    if STATE.skill_runtime and STATE.skill_runtime.splash_ratio > 0 then
+    if splash_ratio > 0 then
       lines[#lines + 1] = string.format(
         '溅射：%.0f%% 攻击，半径 %d。',
-        STATE.skill_runtime.splash_ratio * 100,
-        round_number(STATE.skill_runtime.splash_radius)
+        splash_ratio * 100,
+        round_number(splash_radius)
       )
     end
   
@@ -409,10 +414,11 @@ function M.create(env)
       )
     end
   
-    if STATE.skill_runtime and STATE.skill_runtime.execute_threshold > 0 then
+    local execute_threshold = tonumber(runtime.execute_threshold) or 0
+    if execute_threshold > 0 then
       lines[#lines + 1] = string.format(
         '处决：目标生命低于 %.0f%% 时立即击杀。',
-        STATE.skill_runtime.execute_threshold * 100
+        execute_threshold * 100
       )
     end
 

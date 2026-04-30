@@ -285,11 +285,33 @@ function M.create(env)
     if not guard_battle() then
       return
     end
+    debug_message('当前已装配技能（含普攻）：')
+    if STATE.attack_skill_state and STATE.attack_skill_state.slots then
+      local printed = 0
+      for slot = 1, 5 do
+        local skill = STATE.attack_skill_state.slots[slot]
+        if skill then
+          printed = printed + 1
+          debug_message(string.format(
+            '  [%d] %s (%s)',
+            slot,
+            tostring(skill.name or skill.id or '未知技能'),
+            tostring(skill.id or 'unknown')
+          ))
+        end
+      end
+      if printed == 0 then
+        debug_message('  （暂无已装配技能）')
+      end
+    else
+      debug_message('  （技能状态未初始化）')
+    end
+
     if not sample_skill_system or not sample_skill_system.list_samples then
       debug_message('Sample 技能系统未初始化。')
       return
     end
-    debug_message('Sample 技能列表：')
+    debug_message('Sample 技能列表（不含普攻，仅测试样例）：')
     for _, line in ipairs(sample_skill_system.list_samples()) do
       debug_message(line)
     end

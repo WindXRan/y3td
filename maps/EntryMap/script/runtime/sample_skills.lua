@@ -38,69 +38,8 @@ local function make_vfx(pattern, element)
   }
 end
 
-local ARCHETYPES = {
-  { key = 'breaker', name = '破阵', atk = 2.10, stat = 0.90, cd = 0.78, line_w = 210, burst_r = 300 },
-  { key = 'hunter', name = '猎杀', atk = 2.25, stat = 1.00, cd = 0.88, line_w = 180, burst_r = 280 },
-  { key = 'storm', name = '风暴', atk = 2.35, stat = 1.10, cd = 0.96, line_w = 190, burst_r = 320 },
-  { key = 'crusher', name = '碎岳', atk = 2.55, stat = 1.15, cd = 1.08, line_w = 230, burst_r = 340 },
-  { key = 'void', name = '虚空', atk = 2.75, stat = 1.25, cd = 1.20, line_w = 200, burst_r = 360 },
-  { key = 'doom', name = '天陨', atk = 2.95, stat = 1.35, cd = 1.35, line_w = 240, burst_r = 390 },
-}
-
-local ELEMENTS = {
-  { key = 'phys', name = '物理', damage_type = '物理', stat = '力量' },
-  { key = 'fire', name = '焚炎', damage_type = '法术', stat = '智力' },
-  { key = 'ice', name = '寒霜', damage_type = '法术', stat = '智力' },
-  { key = 'lightning', name = '雷鸣', damage_type = '法术', stat = '智力' },
-  { key = 'arcane', name = '奥能', damage_type = '法术', stat = '敏捷' },
-}
-
-local PATTERNS = {
-  { key = 'line', pattern = 'line_pierce', target_mode = 'unit', base_id = 'sf_line_pierce', suffix = '贯穿', range = 1280 },
-  { key = 'burst', pattern = 'area_burst', target_mode = 'point', base_id = 'sf_area_burst', suffix = '爆点', range = nil },
-}
-
 local function build_rows()
-  local rows = {}
-  for ai, a in ipairs(ARCHETYPES) do
-    for ei, e in ipairs(ELEMENTS) do
-      for pi, p in ipairs(PATTERNS) do
-        local id = string.format('mx_%s_%s_%s', a.key, e.key, p.key)
-        local name = string.format('%s%s%s', e.name, a.name, p.suffix)
-        local atk = a.atk + (ei - 1) * 0.05 + (pi == 2 and 0.08 or 0)
-        local stat_ratio = a.stat + (pi == 2 and 0.10 or 0.0)
-        local cooldown = a.cd + (pi == 2 and 0.08 or 0)
-        local line_range = p.range and (p.range + ai * 40 + ei * 20) or nil
-        local line_width = p.key == 'line' and (a.line_w + ei * 6) or nil
-        local burst_radius = p.key == 'burst' and (a.burst_r + ei * 8) or nil
-        local desc
-        if p.key == 'line' then
-          desc = string.format('发射%s弹道，对路径敌人造成[%s攻击×%d%% + %s×%d%%]%s伤害。', e.name, e.damage_type == '物理' and '物理' or '法术', math.floor(atk * 100 + 0.5), e.stat, math.floor(stat_ratio * 100 + 0.5), e.damage_type)
-        else
-          desc = string.format('在目标点引爆%s能量，对范围敌人造成[%s攻击×%d%% + %s×%d%%]%s伤害。', e.name, e.damage_type == '物理' and '物理' or '法术', math.floor(atk * 100 + 0.5), e.stat, math.floor(stat_ratio * 100 + 0.5), e.damage_type)
-        end
-
-        rows[#rows + 1] = {
-          id = id,
-          name = name,
-          desc = desc,
-          base_id = p.base_id,
-          pattern = p.pattern,
-          target_mode = p.target_mode,
-          damage_type = e.damage_type,
-          cooldown = cooldown,
-          attack_ratio = atk,
-          stat = e.stat,
-          stat_ratio = stat_ratio,
-          range = line_range,
-          width = line_width,
-          radius = burst_radius,
-          visual = make_vfx(p.pattern, e.key),
-        }
-      end
-    end
-  end
-  return rows
+  return {}
 end
 
 function M.create(env)

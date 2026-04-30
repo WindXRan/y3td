@@ -139,13 +139,16 @@ function M.create(env)
         return
       end
 
-      local skill = STATE.skill_runtime
-      if skill.artillery_interval <= 0 or skill.artillery_radius <= 0 or skill.artillery_ratio <= 0 then
+      local skill = STATE.skill_runtime or {}
+      local artillery_interval = tonumber(skill.artillery_interval) or 0
+      local artillery_radius = tonumber(skill.artillery_radius) or 0
+      local artillery_ratio = tonumber(skill.artillery_ratio) or 0
+      if artillery_interval <= 0 or artillery_radius <= 0 or artillery_ratio <= 0 then
         return
       end
 
-      skill.artillery_cd = skill.artillery_cd + 1
-      if skill.artillery_cd < skill.artillery_interval then
+      skill.artillery_cd = (tonumber(skill.artillery_cd) or 0) + 1
+      if skill.artillery_cd < artillery_interval then
         return
       end
       skill.artillery_cd = 0
@@ -156,8 +159,9 @@ function M.create(env)
       end
 
       local attack_value = get_hero_attack_value()
-      local damage = skill.artillery_base + attack_value * skill.artillery_ratio
-      skill_damage_api.area(anchor, skill.artillery_radius, damage, '法术')
+      local artillery_base = tonumber(skill.artillery_base) or 0
+      local damage = artillery_base + attack_value * artillery_ratio
+      skill_damage_api.area(anchor, artillery_radius, damage, '法术')
     end)
 
     y3.ltimer.loop(0.25, function()
