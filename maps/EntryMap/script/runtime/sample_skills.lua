@@ -1,1762 +1,229 @@
-local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
-local BondVisualEditorIds = require 'data.object_tables.bond_visual_editor_ids'
+ï»¿local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
 local SkillFramework = require 'runtime.skill_framework'
 local Skills = require 'runtime.skills'
 
 local M = {}
 
-local function round_number(value)
-  return math.floor((tonumber(value) or 0) + 0.5)
+local function deepcopy(src)
+  if type(src) ~= 'table' then
+    return src
+  end
+  local out = {}
+  for k, v in pairs(src) do
+    out[k] = deepcopy(v)
+  end
+  return out
 end
 
-local function unit_alive(unit)
-  return unit and unit.is_exist and unit:is_exist()
+local function build_vfx(kind)
+  local projectile = RuntimeEditorIds.projectile or {}
+  if kind == 'point_burst' then
+    return {
+      cast = 106082,
+      warning = 106082,
+      impact = 106089,
+      hit = 106089,
+      projectile_key = projectile.meteor or projectile.basic_attack or 201392013,
+      projectile_height = 28,
+      projectile_time = 0.70,
+    }
+  end
+  return {
+    cast = 106060,
+    warning = 106060,
+    impact = 106069,
+    hit = 106069,
+    projectile_key = projectile.basic_attack or 201391110,
+    projectile_height = 20,
+    projectile_time = 0.62,
+  }
 end
 
-local function point_xyz(point)
-  if not point then
-    return nil, nil, nil
-  end
-  return point:get_x(), point:get_y(), point:get_z() or 0
+local function make_skill(id, name, desc, family, tier, coeff)
+  local is_burst = family == 'point_burst'
+  return {
+    id = id,
+    name = name,
+    desc = desc,
+    family = family,
+    tier = tier,
+    coeff = coeff,
+    base_id = is_burst and 'sf_area_burst' or 'sf_line_pierce',
+    pattern = is_burst and 'area_burst' or 'line_pierce',
+    target_mode = is_burst and 'point' or 'unit',
+    damage_type = coeff.damage_type,
+    visual = build_vfx(family),
+  }
 end
 
-local function create_offset_point(y3, base_point, angle, distance, z_offset)
-  if not y3 or not y3.point or not y3.point.create or not base_point then
-    return nil
-  end
-  local bx, by, bz = point_xyz(base_point)
-  if not bx or not by then
-    return nil
-  end
-  local x = bx + math.cos(angle) * (distance or 0)
-  local y = by + math.sin(angle) * (distance or 0)
-  local z = bz + (z_offset or 0)
-  return y3.point.create(x, y, z)
-end
+local SKILLS = {
+  make_skill('s_str_1', 'è£‚åœ°é‡æ–©', 'å‘å‰åŠˆå‡ºå†²å‡»æ³¢ï¼Œå¯¹è·¯å¾„æ•Œäººé€ æˆ[ç‰©ç†æ”»å‡»Ã—220% + åŠ›é‡Ã—90%]ç‰©ç†ä¼¤å®³ã€‚', 'line', 'mid', { attack_ratio = 2.20, stat_ratio = 0.90, stat = 'åŠ›é‡', damage_type = 'ç‰©ç†', cd = 0.80, range = 1100, width = 240 }),
+  make_skill('s_str_2', 'æˆ˜å¼éœ‡è¸', 'åœ¨ç›®æ ‡ç‚¹è·µè¸çˆ†å‘ï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[ç‰©ç†æ”»å‡»Ã—240% + åŠ›é‡Ã—110%]ç‰©ç†ä¼¤å®³ã€‚', 'point_burst', 'mid', { attack_ratio = 2.40, stat_ratio = 1.10, stat = 'åŠ›é‡', damage_type = 'ç‰©ç†', cd = 1.00, radius = 320 }),
+  make_skill('s_str_3', 'ç ´é˜µçªåˆº', 'å‘å‰çªåˆºè´¯ç©¿æ•Œé˜µï¼Œå¯¹è·¯å¾„æ•Œäººé€ æˆ[ç‰©ç†æ”»å‡»Ã—260% + åŠ›é‡Ã—95%]ç‰©ç†ä¼¤å®³ã€‚', 'line', 'heavy', { attack_ratio = 2.60, stat_ratio = 0.95, stat = 'åŠ›é‡', damage_type = 'ç‰©ç†', cd = 1.20, range = 1350, width = 210 }),
+  make_skill('s_str_4', 'ç£çŸ³å å‡»', 'åœ¨ç›®æ ‡ç‚¹è½ä¸‹é‡å‡»ï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[ç‰©ç†æ”»å‡»Ã—280% + åŠ›é‡Ã—120%]ç‰©ç†ä¼¤å®³ã€‚', 'point_burst', 'heavy', { attack_ratio = 2.80, stat_ratio = 1.20, stat = 'åŠ›é‡', damage_type = 'ç‰©ç†', cd = 1.30, radius = 360 }),
+  make_skill('s_str_5', 'ä¸å±ˆæ¨ªæ‰«', 'å‘å‰æ¨ªæ‰«å‹åˆ¶ï¼Œå¯¹è·¯å¾„æ•Œäººé€ æˆ[ç‰©ç†æ”»å‡»Ã—210% + åŠ›é‡Ã—85%]ç‰©ç†ä¼¤å®³ã€‚', 'line', 'light', { attack_ratio = 2.10, stat_ratio = 0.85, stat = 'åŠ›é‡', damage_type = 'ç‰©ç†', cd = 0.70, range = 980, width = 260 }),
 
-local function spawn_particle(y3, target, effect_id, scale, time, height)
-  if not y3 or not y3.particle or not y3.particle.create or not target then
-    return
-  end
-  if not effect_id or effect_id <= 0 then
-    return
-  end
-  pcall(y3.particle.create, {
-    type = effect_id,
-    target = target,
-    scale = (scale or 1.0) * 0.88,
-    time = (time or 0.2) * 0.85,
-    height = height or 20,
-    immediate = true,
-  })
-end
+  make_skill('s_dex_1', 'ç©¿å¿ƒè¿å°„', 'å°„å‡ºé«˜é€Ÿå¼¹é“ï¼Œå¯¹é¦–æ¡è·¯å¾„æ•Œäººé€ æˆ[ç‰©ç†æ”»å‡»Ã—205% + æ•æ·Ã—115%]ç‰©ç†ä¼¤å®³ã€‚', 'line', 'mid', { attack_ratio = 2.05, stat_ratio = 1.15, stat = 'æ•æ·', damage_type = 'ç‰©ç†', cd = 0.72, range = 1400, width = 160 }),
+  make_skill('s_dex_2', 'å›æ—‹åˆƒé›¨', 'åœ¨ç›®æ ‡ç‚¹æŠ›å‡ºåˆƒé›¨ï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[ç‰©ç†æ”»å‡»Ã—225% + æ•æ·Ã—125%]ç‰©ç†ä¼¤å®³ã€‚', 'point_burst', 'mid', { attack_ratio = 2.25, stat_ratio = 1.25, stat = 'æ•æ·', damage_type = 'ç‰©ç†', cd = 0.95, radius = 300 }),
+  make_skill('s_dex_3', 'ç–¾é£ç©¿äº‘', 'å‘å°„ç©¿äº‘ç®­ï¼Œå¯¹è·¯å¾„æ•Œäººé€ æˆ[ç‰©ç†æ”»å‡»Ã—250% + æ•æ·Ã—130%]ç‰©ç†ä¼¤å®³ã€‚', 'line', 'heavy', { attack_ratio = 2.50, stat_ratio = 1.30, stat = 'æ•æ·', damage_type = 'ç‰©ç†', cd = 1.10, range = 1550, width = 140 }),
+  make_skill('s_dex_4', 'è½å½±ä¼å‡»', 'åœ¨ç›®æ ‡ç‚¹å¼•çˆ†è½å½±ï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[ç‰©ç†æ”»å‡»Ã—235% + æ•æ·Ã—140%]ç‰©ç†ä¼¤å®³ã€‚', 'point_burst', 'mid', { attack_ratio = 2.35, stat_ratio = 1.40, stat = 'æ•æ·', damage_type = 'ç‰©ç†', cd = 1.00, radius = 280 }),
+  make_skill('s_dex_5', 'ä¸‰æ®µè¿½çŒ', 'ä¸‰æ®µå¼¹é“è¿½çŒï¼Œå¯¹è·¯å¾„æ•Œäººé€ æˆ[ç‰©ç†æ”»å‡»Ã—215% + æ•æ·Ã—120%]ç‰©ç†ä¼¤å®³ã€‚', 'line', 'mid', { attack_ratio = 2.15, stat_ratio = 1.20, stat = 'æ•æ·', damage_type = 'ç‰©ç†', cd = 0.82, range = 1200, width = 180 }),
 
-local function normalize_angle(value)
-  local angle = tonumber(value) or 0
-  if math.abs(angle) > (math.pi * 2 + 0.1) then
-    angle = angle * math.pi / 180
-  end
-  return angle
-end
+  make_skill('s_int_1', 'å¯’æ˜Ÿå è½', 'åœ¨ç›®æ ‡ç‚¹å è½å¯’æ˜Ÿï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[æ³•æœ¯æ”»å‡»Ã—240% + æ™ºåŠ›Ã—130%]æ³•æœ¯ä¼¤å®³ã€‚', 'point_burst', 'mid', { attack_ratio = 2.40, stat_ratio = 1.30, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 1.00, radius = 330 }),
+  make_skill('s_int_2', 'é›·æªè´¯ä½“', 'å‘å°„é›·æªå¼¹é“ï¼Œå¯¹è·¯å¾„æ•Œäººé€ æˆ[æ³•æœ¯æ”»å‡»Ã—250% + æ™ºåŠ›Ã—120%]æ³•æœ¯ä¼¤å®³ã€‚', 'line', 'mid', { attack_ratio = 2.50, stat_ratio = 1.20, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 0.90, range = 1450, width = 170 }),
+  make_skill('s_int_3', 'çˆ†è£‚é™¨ç„°', 'åœ¨ç›®æ ‡ç‚¹å¼•çˆ†é™¨ç„°ï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[æ³•æœ¯æ”»å‡»Ã—285% + æ™ºåŠ›Ã—145%]æ³•æœ¯ä¼¤å®³ã€‚', 'point_burst', 'heavy', { attack_ratio = 2.85, stat_ratio = 1.45, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 1.35, radius = 380 }),
+  make_skill('s_int_4', 'å¥¥èƒ½ç©¿åˆº', 'å‘å°„å¥¥èƒ½å¼¹é“ï¼Œå¯¹è·¯å¾„æ•Œäººé€ æˆ[æ³•æœ¯æ”»å‡»Ã—230% + æ™ºåŠ›Ã—135%]æ³•æœ¯ä¼¤å®³ã€‚', 'line', 'mid', { attack_ratio = 2.30, stat_ratio = 1.35, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 0.86, range = 1320, width = 190 }),
+  make_skill('s_int_5', 'è™šç©ºè„‰å†²', 'åœ¨ç›®æ ‡ç‚¹å‹ç¼©åçˆ†å‘ï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[æ³•æœ¯æ”»å‡»Ã—265% + æ™ºåŠ›Ã—150%]æ³•æœ¯ä¼¤å®³ã€‚', 'point_burst', 'mid', { attack_ratio = 2.65, stat_ratio = 1.50, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 1.15, radius = 340 }),
 
-local function clamp_positive(value, fallback)
-  local num = tonumber(value)
-  if num and num > 0 then
-    return num
-  end
-  return fallback
-end
+  make_skill('s_phy_1', 'æ–­å²³é‡ç‚®', 'é‡ç‚®å¼¹é“å‘½ä¸­è·¯å¾„æ•Œäººï¼Œé€ æˆ[ç‰©ç†æ”»å‡»Ã—255% + åŠ›é‡Ã—80%]ç‰©ç†ä¼¤å®³ã€‚', 'line', 'mid', { attack_ratio = 2.55, stat_ratio = 0.80, stat = 'åŠ›é‡', damage_type = 'ç‰©ç†', cd = 0.92, range = 1380, width = 200 }),
+  make_skill('s_phy_2', 'ç¢ç”²è½°è½', 'åœ¨ç›®æ ‡ç‚¹è½°è½ç¢ç”²å¼¹ï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[ç‰©ç†æ”»å‡»Ã—245% + åŠ›é‡Ã—100%]ç‰©ç†ä¼¤å®³ã€‚', 'point_burst', 'mid', { attack_ratio = 2.45, stat_ratio = 1.00, stat = 'åŠ›é‡', damage_type = 'ç‰©ç†', cd = 1.05, radius = 320 }),
+  make_skill('s_phy_3', 'è¡€çº¿åˆ‡å‰²', 'è¡€åˆƒå¼¹é“åˆ‡å‰²è·¯å¾„æ•Œäººï¼Œé€ æˆ[ç‰©ç†æ”»å‡»Ã—235% + æ•æ·Ã—105%]ç‰©ç†ä¼¤å®³ã€‚', 'line', 'mid', { attack_ratio = 2.35, stat_ratio = 1.05, stat = 'æ•æ·', damage_type = 'ç‰©ç†', cd = 0.84, range = 1280, width = 185 }),
+  make_skill('s_phy_4', 'è¿ç¯çˆ†çŸ¢', 'åœ¨ç›®æ ‡ç‚¹çˆ†è£‚è¿ç¯çŸ¢ï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[ç‰©ç†æ”»å‡»Ã—260% + æ•æ·Ã—110%]ç‰©ç†ä¼¤å®³ã€‚', 'point_burst', 'heavy', { attack_ratio = 2.60, stat_ratio = 1.10, stat = 'æ•æ·', damage_type = 'ç‰©ç†', cd = 1.20, radius = 350 }),
+  make_skill('s_phy_5', 'çŒæ€è´¯ç©¿', 'çŒæ€å¼¹é“è´¯ç©¿è·¯å¾„æ•Œäººï¼Œé€ æˆ[ç‰©ç†æ”»å‡»Ã—270% + æ•æ·Ã—95%]ç‰©ç†ä¼¤å®³ã€‚', 'line', 'heavy', { attack_ratio = 2.70, stat_ratio = 0.95, stat = 'æ•æ·', damage_type = 'ç‰©ç†', cd = 1.10, range = 1500, width = 160 }),
 
-local function clamp(value, min_value, max_value)
-  if value < min_value then
-    return min_value
-  end
-  if value > max_value then
-    return max_value
-  end
-  return value
-end
+  make_skill('s_spell_1', 'éœœç‹±çˆ†ç‚¹', 'åœ¨ç›®æ ‡ç‚¹å†»ç»“çˆ†ç‚¹ï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[æ³•æœ¯æ”»å‡»Ã—255% + æ™ºåŠ›Ã—125%]æ³•æœ¯ä¼¤å®³ã€‚', 'point_burst', 'mid', { attack_ratio = 2.55, stat_ratio = 1.25, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 1.00, radius = 330 }),
+  make_skill('s_spell_2', 'ç‚è„‰è´¯æµ', 'ç‚è„‰å¼¹é“è´¯æµè·¯å¾„æ•Œäººï¼Œé€ æˆ[æ³•æœ¯æ”»å‡»Ã—245% + æ™ºåŠ›Ã—120%]æ³•æœ¯ä¼¤å®³ã€‚', 'line', 'mid', { attack_ratio = 2.45, stat_ratio = 1.20, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 0.88, range = 1420, width = 175 }),
+  make_skill('s_spell_3', 'å¤©é›·å®šæ ‡', 'åœ¨ç›®æ ‡ç‚¹å®šæ ‡è½é›·ï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[æ³•æœ¯æ”»å‡»Ã—275% + æ™ºåŠ›Ã—135%]æ³•æœ¯ä¼¤å®³ã€‚', 'point_burst', 'heavy', { attack_ratio = 2.75, stat_ratio = 1.35, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 1.22, radius = 360 }),
+  make_skill('s_spell_4', 'ç§˜èƒ½å…‰çŸ›', 'ç§˜èƒ½å…‰çŸ›å¼¹é“å‘½ä¸­è·¯å¾„æ•Œäººï¼Œé€ æˆ[æ³•æœ¯æ”»å‡»Ã—235% + æ™ºåŠ›Ã—140%]æ³•æœ¯ä¼¤å®³ã€‚', 'line', 'mid', { attack_ratio = 2.35, stat_ratio = 1.40, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 0.86, range = 1360, width = 180 }),
+  make_skill('s_spell_5', 'è™šç„°éœ‡çˆ†', 'åœ¨ç›®æ ‡ç‚¹å¼•çˆ†è™šç„°ï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[æ³•æœ¯æ”»å‡»Ã—290% + æ™ºåŠ›Ã—150%]æ³•æœ¯ä¼¤å®³ã€‚', 'point_burst', 'heavy', { attack_ratio = 2.90, stat_ratio = 1.50, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 1.30, radius = 390 }),
+
+  make_skill('s_summon_1', 'é­‚æªæŒ‡ä»¤', 'å¬å”¤æŒ‡ä»¤å¼¹é“æ‰“å‡»è·¯å¾„æ•Œäººï¼Œé€ æˆ[æ³•æœ¯æ”»å‡»Ã—220% + æ™ºåŠ›Ã—110%]æ³•æœ¯ä¼¤å®³ã€‚', 'line', 'mid', { attack_ratio = 2.20, stat_ratio = 1.10, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 0.84, range = 1260, width = 170 }),
+  make_skill('s_summon_2', 'çµé˜µå å‡»', 'åœ¨ç›®æ ‡ç‚¹å¬å”¤çµé˜µçˆ†å‘ï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[æ³•æœ¯æ”»å‡»Ã—240% + æ™ºåŠ›Ã—120%]æ³•æœ¯ä¼¤å®³ã€‚', 'point_burst', 'mid', { attack_ratio = 2.40, stat_ratio = 1.20, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 1.02, radius = 320 }),
+  make_skill('s_summon_3', 'å‚€å„¡æ·æª', 'å‚€å„¡æŠ•æ·å¼¹é“ç©¿é€è·¯å¾„æ•Œäººï¼Œé€ æˆ[ç‰©ç†æ”»å‡»Ã—230% + åŠ›é‡Ã—90%]ç‰©ç†ä¼¤å®³ã€‚', 'line', 'mid', { attack_ratio = 2.30, stat_ratio = 0.90, stat = 'åŠ›é‡', damage_type = 'ç‰©ç†', cd = 0.90, range = 1300, width = 200 }),
+  make_skill('s_summon_4', 'æ­»çµçˆ†å¿ƒ', 'åœ¨ç›®æ ‡ç‚¹è§¦å‘æ­»çµçˆ†å¿ƒï¼Œå¯¹èŒƒå›´æ•Œäººé€ æˆ[æ³•æœ¯æ”»å‡»Ã—265% + æ™ºåŠ›Ã—130%]æ³•æœ¯ä¼¤å®³ã€‚', 'point_burst', 'heavy', { attack_ratio = 2.65, stat_ratio = 1.30, stat = 'æ™ºåŠ›', damage_type = 'æ³•æœ¯', cd = 1.20, radius = 360 }),
+  make_skill('s_summon_5', 'å†›å›¢é½å°„', 'å†›å›¢å¼¹é“é½å°„è·¯å¾„æ•Œäººï¼Œé€ æˆ[ç‰©ç†æ”»å‡»Ã—245% + æ•æ·Ã—100%]ç‰©ç†ä¼¤å®³ã€‚', 'line', 'mid', { attack_ratio = 2.45, stat_ratio = 1.00, stat = 'æ•æ·', damage_type = 'ç‰©ç†', cd = 0.88, range = 1400, width = 175 }),
+}
 
 function M.create(env)
   env = env or {}
-  local STATE = env.STATE
-  local y3 = env.y3
-  local message = env.message or print
-  local hero_attr_system = env.hero_attr_system
-  local skill_damage_api = env.skill_damage_api
-  local get_enemies_in_range = env.get_enemies_in_range or function()
-    return {}
-  end
-  local is_active_enemy = env.is_active_enemy or function(unit)
-    return unit_alive(unit)
-  end
-
-  local BOND_VISUALS = BondVisualEditorIds.visual_by_bond or {}
-  local PROJECTILES = RuntimeEditorIds.projectile or {}
-  local function bond_particle(name, fallback)
-    local entry = BOND_VISUALS[name]
-    if entry and entry.particle_key and entry.particle_key > 0 then
-      return entry.particle_key
-    end
-    return fallback
-  end
-
-  local function bond_projectile(name, fallback)
-    local entry = BOND_VISUALS[name]
-    if entry and entry.projectile_key and entry.projectile_key > 0 then
-      return entry.projectile_key
-    end
-    return fallback
-  end
-
-  local fx = {
-    neutral_warning = 106088,
-    neutral_hit = 106069,
-    neutral_impact = 106088,
-    arrow_warning = 106090,
-    arrow_impact = 106069,
-    ice_warning = 106070,
-    ice_impact = 106070,
-    lightning_warning = 106074,
-    lightning_impact = 106074,
-    arcane_cast = 106065,
-    arcane_impact = 106065,
-    meteor_warning = 106082,
-    meteor_impact = 106089,
-    blade_cast = 106109,
-    blade_impact = 106092,
-    flame_cast = 106053,
-    flame_impact = 106053,
-    shadow_warning = 106107,
-    shadow_impact = 106107,
-  }
-
-  local DAMAGE_BOOST = 1.75
-
-  local SAMPLE_VISUALS = {
-    arrow_rain = {
-      warning = bond_particle('ÓÎÏÀ', fx.arrow_warning),
-      cast = bond_particle('ÓÎÏÀ', fx.arrow_warning),
-      impact = bond_particle('ÓÎÏÀ', fx.arrow_impact),
-      hit = bond_particle('ÓÎÏÀ', fx.arrow_impact),
-      projectile_key = bond_projectile('ÓÎÏÀ', PROJECTILES['¶àÖØ¼ı']),
-      projectile_time = 0.66,
-      projectile_height = 24,
-    },
-    blizzard = {
-      warning = 106067,
-      cast = 106070,
-      impact = 106067,
-      hit = 106070,
-      projectile_key = 201392022,
-      projectile_time = 1.05,
-      projectile_height = 22,
-    },
-    sky_thunder = {
-      warning = fx.lightning_warning,
-      cast = fx.lightning_warning,
-      impact = fx.lightning_impact,
-      hit = fx.lightning_impact,
-    },
-    line_lance = {
-      warning = bond_particle('ÁúÆïÊ¿', fx.flame_cast),
-      cast = bond_particle('ÁúÆïÊ¿', fx.flame_cast),
-      impact = bond_particle('ÁúÆïÊ¿', fx.flame_impact),
-      hit = bond_particle('ÁúÆïÊ¿', fx.flame_impact),
-      projectile_key = bond_projectile('ÁúÆïÊ¿', PROJECTILES['»ğÇò']),
-      projectile_time = 1.05,
-      projectile_height = 32,
-    },
-    meteor_grid = {
-      warning = bond_particle('»ğ·¨Ê¦', fx.meteor_warning),
-      cast = bond_particle('»ğ·¨Ê¦', fx.meteor_warning),
-      impact = bond_particle('»ğ·¨Ê¦', fx.meteor_impact),
-      hit = bond_particle('»ğ·¨Ê¦', fx.flame_impact),
-      projectile_key = bond_projectile('»ğ·¨Ê¦', PROJECTILES['ÔÉÊ¯']),
-      projectile_time = 1.15,
-      projectile_height = 44,
-    },
-    orbit_blade = {
-      warning = 106109,
-      cast = 106109,
-      impact = 106092,
-      hit = 106092,
-      projectile_key = 201392033,
-      projectile_time = 0.75,
-      projectile_height = 18,
-    },
-    chain_arc = {
-      warning = bond_particle('À×µç·¨Íõ', fx.lightning_warning),
-      cast = bond_particle('À×µç·¨Íõ', fx.lightning_warning),
-      impact = bond_particle('À×µç·¨Íõ', fx.lightning_impact),
-      hit = bond_particle('À×µç·¨Íõ', fx.lightning_impact),
-      projectile_key = bond_projectile('À×µç·¨Íõ', PROJECTILES['Á¬ËøÉÁµç']),
-      projectile_time = 0.82,
-      projectile_height = 30,
-    },
-    fan_barrage = {
-      warning = bond_particle('ÉñÉäÊÖ', fx.arrow_warning),
-      cast = bond_particle('ÉñÉäÊÖ', fx.arrow_impact),
-      impact = bond_particle('ÉñÉäÊÖ', fx.arrow_impact),
-      hit = bond_particle('ÉñÉäÊÖ', fx.arrow_impact),
-      projectile_key = bond_projectile('ÉñÉäÊÖ', PROJECTILES['¼²·ç¼ı']),
-      projectile_time = 0.68,
-      projectile_height = 16,
-    },
-    burn_field = {
-      warning = bond_particle('»ğ·¨Ê¦', fx.flame_cast),
-      cast = bond_particle('»ğ·¨Ê¦', fx.flame_cast),
-      impact = bond_particle('»ğ·¨Ê¦', fx.flame_impact),
-      hit = bond_particle('»ğ·¨Ê¦', fx.flame_impact),
-      projectile_key = bond_projectile('»ğ·¨Ê¦', PROJECTILES['Á«»ğ']),
-      projectile_time = 0.92,
-      projectile_height = 20,
-    },
-    boomerang_blade = {
-      warning = bond_particle('½£×Ú', fx.blade_cast),
-      cast = bond_particle('½£×Ú', fx.blade_cast),
-      impact = bond_particle('½£×Ú', fx.blade_impact),
-      hit = bond_particle('½£×Ú', fx.blade_impact),
-      projectile_key = bond_projectile('½£×Ú', PROJECTILES['ÔÂÈĞ']),
-      projectile_time = 0.82,
-      projectile_height = 18,
-    },
-    mark_execute = {
-      warning = bond_particle('Ä§½£Ê¿', fx.shadow_warning),
-      cast = bond_particle('Ä§½£Ê¿', fx.shadow_warning),
-      impact = bond_particle('Ä§½£Ê¿', fx.shadow_impact),
-      hit = bond_particle('Ä§½£Ê¿', fx.shadow_impact),
-      projectile_key = bond_projectile('Ä§½£Ê¿', PROJECTILES['¶ñÄ§·âÓ¡']),
-      projectile_time = 0.90,
-      projectile_height = 24,
-    },
-  }
-
-  -- ³ÉÆ·ÌØĞ§°ü£¨production_v2£©£ºÍ³Ò»Ìæ»» samples ÌØĞ§£¬½µµÍÉÁÆÁºÍ¹ıÆØ¡£
-  local CLOUD_VFX_PACKS = {
-    production_v2 = {
-      arrow_rain = { warning = 106060, cast = 106060, impact = 106090, hit = 106069, projectile_key = PROJECTILES['¶àÖØ¼ı'], projectile_time = 0.64, projectile_height = 22 },
-      blizzard = { warning = 106067, cast = 106070, impact = 106067, hit = 106070, projectile_key = 201392022, projectile_time = 0.96, projectile_height = 20 },
-      sky_thunder = { warning = 106074, cast = 106112, impact = 106074, hit = 106112 },
-      line_lance = { warning = 106089, cast = 106089, impact = 106081, hit = 106053, projectile_key = PROJECTILES['»ğÇò'], projectile_time = 0.90, projectile_height = 28 },
-      meteor_grid = { warning = 106082, cast = 106082, impact = 106089, hit = 106053, projectile_key = PROJECTILES['ÔÉÊ¯'], projectile_time = 1.02, projectile_height = 36 },
-      orbit_blade = { warning = 106109, cast = 106109, impact = 106092, hit = 106092, projectile_key = 201392033, projectile_time = 0.66, projectile_height = 16 },
-      chain_arc = { warning = 106074, cast = 106074, impact = 106112, hit = 106074, projectile_key = PROJECTILES['Á¬ËøÉÁµç'], projectile_time = 0.74, projectile_height = 24 },
-      fan_barrage = { warning = 106090, cast = 106060, impact = 106069, hit = 106060, projectile_key = PROJECTILES['¼²·ç¼ı'], projectile_time = 0.62, projectile_height = 14 },
-      burn_field = { warning = 106082, cast = 106053, impact = 106081, hit = 106053, projectile_key = PROJECTILES['Á«»ğ'], projectile_time = 0.82, projectile_height = 18 },
-      boomerang_blade = { warning = 106092, cast = 106109, impact = 106092, hit = 106109, projectile_key = PROJECTILES['ÔÂÈĞ'], projectile_time = 0.72, projectile_height = 16 },
-      mark_execute = { warning = 106107, cast = 106056, impact = 106107, hit = 106056, projectile_key = PROJECTILES['¶ñÄ§·âÓ¡'], projectile_time = 0.78, projectile_height = 20 },
-    },
-  }
-
-  local function mount_cloud_vfx_pack(pack_name)
-    local pack = CLOUD_VFX_PACKS[pack_name]
-    if type(pack) ~= 'table' then
-      return false
-    end
-    for sample_id, override in pairs(pack) do
-      local base = SAMPLE_VISUALS[sample_id]
-      if type(base) == 'table' and type(override) == 'table' then
-        for k, v in pairs(override) do
-          base[k] = v
-        end
-      end
-    end
-    return true
-  end
-
-  mount_cloud_vfx_pack('production_v2')
-
-  local PROJECTILE_REQUIRED_SAMPLES = {
-    arrow_rain = true,
-    blizzard = true,
-    line_lance = true,
-    meteor_grid = true,
-    orbit_blade = true,
-    chain_arc = true,
-    fan_barrage = true,
-    burn_field = true,
-    boomerang_blade = true,
-    mark_execute = true,
-  }
-
-  local PROJECTILE_FALLBACK_BY_SAMPLE = {
-    arrow_rain = 201392033,
-    blizzard = 201392022,
-    line_lance = 201392012,
-    meteor_grid = 201392013,
-    orbit_blade = 201392033,
-    chain_arc = 201392043,
-    fan_barrage = 201392032,
-    burn_field = 201392011,
-    boomerang_blade = 201392001,
-    mark_execute = 201392023,
-  }
-  local function validate_visual_config_or_error(sample_id, cfg)
-    if type(cfg) ~= 'table' then
-      error(string.format('[sample_skills] %s visual ÅäÖÃÈ±Ê§', tostring(sample_id)))
-    end
-    local required_particles = {'cast', 'impact', 'hit'}
-    for _, key in ipairs(required_particles) do
-      local value = tonumber(cfg[key]) or 0
-      if value <= 0 then
-        error(string.format('[sample_skills] %s visual.%s ·Ç·¨: %s', tostring(sample_id), key, tostring(cfg[key])))
-      end
-    end
-    if PROJECTILE_REQUIRED_SAMPLES[sample_id] == true then
-      local projectile_key = tonumber(cfg.projectile_key) or 0
-      if projectile_key <= 0 then
-        projectile_key = PROJECTILE_FALLBACK_BY_SAMPLE[sample_id] or 0
-        if projectile_key > 0 then
-          cfg.projectile_key = projectile_key
-        end
-      end
-      if projectile_key <= 0 then
-        error(string.format('[sample_skills] %s projectile_key ·Ç·¨: %s', tostring(sample_id), tostring(cfg.projectile_key)))
-      end
-    end
-  end
-
-  local function validate_sample_visuals_or_error()
-    for sample_id, cfg in pairs(SAMPLE_VISUALS) do
-      validate_visual_config_or_error(sample_id, cfg)
-    end
-  end
-
-  local function get_hero()
-    local hero = STATE and STATE.hero or nil
-    if unit_alive(hero) then
-      return hero
-    end
-    return nil
-  end
-
-  local function get_hero_attack()
-    local hero = get_hero()
-    if not hero then
-      return 0
-    end
-    local value = 0
-    if hero_attr_system and hero_attr_system.get_attr then
-      value = tonumber(hero_attr_system.get_attr(hero, '¹¥»÷½áËãÖµ')) or 0
-      if value <= 0 then
-        value = tonumber(hero_attr_system.get_attr(hero, '¹¥»÷')) or 0
-      end
-    end
-    if value <= 0 and hero.get_attr then
-      value = tonumber(hero:get_attr('¹¥»÷½áËãÖµ')) or tonumber(hero:get_attr('¹¥»÷')) or tonumber(hero:get_attr('ÎïÀí¹¥»÷')) or 0
-    end
-    return math.max(1, value)
-  end
-
-  local function get_hero_point()
-    local hero = get_hero()
-    if not hero or not hero.get_point then
-      return nil
-    end
-    return hero:get_point()
-  end
-
-  local function get_primary_target(range)
-    local hero = get_hero()
-    if not hero then
-      return nil
-    end
-    local targets = get_enemies_in_range(hero, range or 1200, nil, 1) or {}
-    local target = targets[1]
-    if unit_alive(target) and is_active_enemy(target) then
-      return target
-    end
-    return nil
-  end
-
-  local function get_sample_vfx(sample_id)
-    return SAMPLE_VISUALS[sample_id] or {}
-  end
-
-
-  local function launch_projectile_from_hero(projectile_key, target, point, angle, time, height)
-    local hero = get_hero()
-    if not hero or not y3 or not y3.projectile or not y3.projectile.create then
-      return nil
-    end
-    local forced_projectile_key = clamp_positive(STATE and STATE.debug_force_projectile_key, nil)
-    projectile_key = clamp_positive(forced_projectile_key or projectile_key, nil)
-    if not projectile_key then
-      return nil
-    end
-
-    local launch_angle = angle
-    local hero_point = get_hero_point()
-    if launch_angle == nil and hero_point and target and target.get_point and hero_point.get_angle_with then
-      local target_point = target:get_point()
-      if target_point then
-        launch_angle = hero_point:get_angle_with(target_point)
-      end
-    end
-    if launch_angle == nil and hero_point and point and hero_point.get_angle_with then
-      launch_angle = hero_point:get_angle_with(point)
-    end
-
-    local ok, projectile = pcall(y3.projectile.create, {
-      key = projectile_key,
-      target = hero,
-      socket = 'origin',
-      owner = hero,
-      angle = launch_angle,
-      time = time or 0.9,
-      remove_immediately = true,
-    })
-    if not ok or not projectile then
-      return nil
-    end
-    if height and projectile.set_height then
-      pcall(projectile.set_height, projectile, height)
-    end
-    if launch_angle and projectile.set_facing then
-      pcall(projectile.set_facing, projectile, launch_angle)
-    end
-    return projectile
-  end
-
-  local function apply_single_damage(unit, amount, damage_type, visual)
-    if not skill_damage_api or not skill_damage_api.single then
-      return false
-    end
-    local ok = skill_damage_api.single(unit, amount, damage_type or '·¨Êõ', visual)
-    if ok and unit_alive(unit) then
-      local particle = visual and visual.particle or fx.neutral_impact
-      spawn_particle(y3, unit, particle, 1.05, 0.14, 24)
-    end
-    return ok
-  end
-
-  local function apply_area_damage(center, radius, amount, damage_type, visual)
-    if not skill_damage_api or not skill_damage_api.area then
-      return {}
-    end
-    local result = skill_damage_api.area(center, radius, amount, damage_type or '·¨Êõ', {
-      visual = visual,
-    })
-    if center then
-      local particle = visual and visual.particle or fx.neutral_hit
-      local area_scale = clamp((tonumber(radius) or 260) / 260, 0.75, 2.20)
-      spawn_particle(y3, center, particle, area_scale, 0.12, 20)
-    end
-    return result
-  end
-
-  local function collect_units_in_line(origin_point, impact_point, max_distance, line_width, max_hits)
-    if not origin_point or not impact_point then
-      return {}
-    end
-    local ox, oy = point_xyz(origin_point)
-    local tx, ty = point_xyz(impact_point)
-    if not ox or not oy or not tx or not ty then
-      return {}
-    end
-
-    local dx = tx - ox
-    local dy = ty - oy
-    local length = math.sqrt(dx * dx + dy * dy)
-    if length <= 0 then
-      return {}
-    end
-
-    local reach = math.max(length, tonumber(max_distance) or length)
-    local width = math.max(40, tonumber(line_width) or 120)
-    local ux = dx / length
-    local uy = dy / length
-    local query_radius = math.max(320, reach + width + 120)
-    local limit = math.max(96, tonumber(max_hits) or 96)
-    local candidates = get_enemies_in_range(origin_point, query_radius, nil, limit) or {}
-    local hits = {}
-
-    for _, unit in ipairs(candidates) do
-      if unit_alive(unit) and is_active_enemy(unit) then
-        local point = unit.get_point and unit:get_point() or nil
-        local px, py = point_xyz(point)
-        if px and py then
-          local vx = px - ox
-          local vy = py - oy
-          local projection = ux * vx + uy * vy
-          if projection >= 0 and projection <= reach then
-            local perpendicular = math.abs(ux * vy - uy * vx)
-            if perpendicular <= width then
-              hits[#hits + 1] = {
-                unit = unit,
-                projection = projection,
-              }
-            end
-          end
-        end
-      end
-    end
-
-    table.sort(hits, function(a, b)
-      return (a.projection or 0) < (b.projection or 0)
-    end)
-
-    local result = {}
-    local cap = max_hits and math.max(1, math.floor(max_hits)) or #hits
-    for i = 1, math.min(cap, #hits) do
-      result[#result + 1] = hits[i].unit
-    end
-    return result
-  end
-
-  local function apply_line_damage(origin_point, impact_point, distance, width, amount, damage_type, visual, max_hits)
-    local units = collect_units_in_line(origin_point, impact_point, distance, width, max_hits)
-    local hit_count = 0
-    for _, unit in ipairs(units) do
-      if apply_single_damage(unit, amount, damage_type, visual) then
-        hit_count = hit_count + 1
-      end
-    end
-    if impact_point and visual and visual.particle then
-      local line_scale = clamp(((tonumber(width) or 180) / 180) * clamp((tonumber(distance) or 1200) / 1200, 0.85, 1.20), 0.80, 2.10)
-      spawn_particle(y3, impact_point, visual.particle, line_scale, 0.14, 24)
-    end
-    return hit_count
-  end
-
-  local function get_hero_facing_towards(target)
-    local hero = get_hero()
-    if not hero then
-      return 0
-    end
-    local hero_point = get_hero_point()
-    if target and target.get_point and hero_point and hero_point.get_angle_with then
-      local target_point = target:get_point()
-      if target_point then
-        return hero_point:get_angle_with(target_point)
-      end
-    end
-    if hero.get_facing then
-      return normalize_angle(hero:get_facing())
-    end
-    return 0
-  end
-
   local skill_framework = SkillFramework.create({
-    y3 = y3,
-    skill_damage_api = skill_damage_api,
-    get_primary_target = get_primary_target,
-    get_enemies_in_range = get_enemies_in_range,
-    get_hero = get_hero,
-    get_hero_point = get_hero_point,
-    get_hero_attack = get_hero_attack,
-    get_hero_facing_towards = get_hero_facing_towards,
-    create_offset_point = create_offset_point,
-    launch_projectile_from_hero = launch_projectile_from_hero,
-    spawn_particle = spawn_particle,
+    y3 = env.y3,
+    skill_damage_api = env.skill_damage_api,
+    get_primary_target = env.get_primary_target,
+    get_enemies_in_range = env.get_enemies_in_range,
+    get_hero = env.get_hero,
+    get_hero_point = env.get_hero_point,
+    get_hero_attack = env.get_hero_attack,
+    get_hero_facing_towards = env.get_hero_facing_towards,
+    create_offset_point = env.create_offset_point,
+    launch_projectile_from_hero = env.launch_projectile_from_hero,
+    spawn_particle = env.spawn_particle,
   })
 
-  local SAMPLE_DEFS = {
-    {
-      id = 'arrow_rain',
-      name = '¼ıÓê¸²¸Ç',
-      desc = '»úÖÆ£ºÇøÓò³ÖĞø´ò»÷£»±íÏÖ£º¸ßÃÜ¶È×¹¼ı¸²¸Ç£»µ÷²Î£ºshots/radius/Ã¿·¢ÉËº¦¡£',
-      cast = function()
-        local vfx = get_sample_vfx('arrow_rain')
-        local target = get_primary_target(1500)
-        local center = target and target:get_point() or get_hero_point()
-        if not center then
-          return false, 'ÎŞ·¨È·¶¨¼ıÓêÖĞĞÄ¡£'
-        end
-        local attack = get_hero_attack()
-        local shots = 30
-        local radius = 520
-        if target then
-          launch_projectile_from_hero(vfx.projectile_key, target, center, nil, vfx.projectile_time, vfx.projectile_height)
-        end
-        for i = 1, shots do
-          local delay = (i - 1) * 0.05
-          local angle = math.random() * math.pi * 2
-          local dist = math.sqrt(math.random()) * radius
-          local hit_point = create_offset_point(y3, center, angle, dist, 0)
-          if hit_point then
-            spawn_particle(y3, hit_point, vfx.warning, 1.18, 0.24 + delay, 32)
-            y3.ltimer.wait(delay, function()
-              spawn_particle(y3, hit_point, vfx.impact, 1.42, 0.20, 40)
-              apply_area_damage(hit_point, 180, attack * 0.85 * DAMAGE_BOOST, 'ÎïÀí', {
-                particle = vfx.hit,
-                metric_scope = 'sample_skill',
-                metric_key = 'arrow_rain',
-              })
-            end)
-          end
-        end
-        return true, '¼ıÓê¸²¸ÇÒÑÊÍ·Å¡£'
-      end,
-    },
-    {
-      id = 'blizzard',
-      name = '±©·çÑ©ÁìÓò',
-      desc = '»úÖÆ£ºÖĞĞÄ³ÖĞøÉËº¦+ÍâÈ¦²¹µ¶£»±íÏÖ£º´ó·¶Î§±ù±©£»µ÷²Î£ºtick_count/radius/edge_ratio¡£',
-      cast = function()
-        local vfx = get_sample_vfx('blizzard')
-        local target = get_primary_target(1500)
-        local center = target and target:get_point() or get_hero_point()
-        if not center then
-          return false, 'ÎŞ·¨È·¶¨±©·çÑ©ÖĞĞÄ¡£'
-        end
-        local attack = get_hero_attack()
-        local ticks = 18
-        local radius = 460
-        if target then
-          launch_projectile_from_hero(vfx.projectile_key, target, center, nil, vfx.projectile_time, vfx.projectile_height)
-        end
-        for i = 1, ticks do
-          y3.ltimer.wait((i - 1) * 0.28, function()
-            spawn_particle(y3, center, vfx.warning, 1.45, 0.18, 30)
-            apply_area_damage(center, radius, attack * 0.52 * DAMAGE_BOOST, '·¨Êõ', {
-              particle = vfx.hit,
-              metric_scope = 'sample_skill',
-              metric_key = 'blizzard',
-            })
-            for spoke = 1, 6 do
-              local angle = (spoke - 1) * (math.pi / 3) + i * 0.18
-              local edge = create_offset_point(y3, center, angle, radius * 0.78, 0)
-              if edge then
-                spawn_particle(y3, edge, vfx.cast, 0.95, 0.16, 22)
-                apply_area_damage(edge, 155, attack * 0.32 * DAMAGE_BOOST, '·¨Êõ', {
-                  particle = vfx.hit,
-                  metric_scope = 'sample_skill',
-                  metric_key = 'blizzard_edge',
-                })
-              end
-            end
-          end)
-        end
-        return true, '±©·çÑ©ÁìÓòÒÑÕ¹¿ª¡£'
-      end,
-    },
-    {
-      id = 'sky_thunder',
-      name = 'ÌìÀ×½µÊÀ',
-      desc = '»úÖÆ£ºÎŞµ¯µÀÂäµãÖ±»÷£»±íÏÖ£º¸ßÁÁÔ¤¾¯ºóË²·¢À×»÷£»µ÷²Î£ºdelay/hit_count/µ¥´Î±¶ÂÊ¡£',
-      cast = function()
-        local vfx = get_sample_vfx('sky_thunder')
-        local hero = get_hero()
-        if not hero then
-          return false, 'Ó¢ĞÛ²»´æÔÚ¡£'
-        end
-        local targets = get_enemies_in_range(hero, 1300, nil, 6) or {}
-        if #targets == 0 then
-          return false, '¸½½üÃ»ÓĞ¿É¹¥»÷Ä¿±ê¡£'
-        end
-        local attack = get_hero_attack()
-        local hero_point = get_hero_point()
-        if hero_point then
-          spawn_particle(y3, hero_point, vfx.cast, 1.25, 0.30, 36)
-        end
-        for index, unit in ipairs(targets) do
-          local delay = (index - 1) * 0.08
-          local snapshot_point = unit.get_point and unit:get_point() or nil
-          if snapshot_point then
-            spawn_particle(y3, snapshot_point, vfx.warning, 1.18, delay + 0.20, 52)
-          end
-          y3.ltimer.wait(delay + 0.18, function()
-            local point = snapshot_point
-            if unit_alive(unit) and unit.get_point then
-              point = unit:get_point()
-            end
-            if point then
-              -- ¹Ø¼ü£ºÖ»ÔÚÂäµã²¥·ÅÀ×»÷£¬²»·¢ÉäÍ¶ÉäÎï¡£
-              spawn_particle(y3, point, vfx.impact, 1.58, 0.22, 56)
-              apply_area_damage(point, 320, attack * 1.65 * DAMAGE_BOOST, '·¨Êõ', {
-                particle = vfx.hit,
-                metric_scope = 'sample_skill',
-                metric_key = 'sky_thunder',
-              })
-            end
-          end)
-        end
-        return true, string.format('ÌìÀ×ÒÑËø¶¨£º%d ¸öÂäµã', #targets)
-      end,
-    },
-    {
-      id = 'line_lance',
-      name = '´©´Ì¹âÇ¹',
-      desc = '»úÖÆ£º¹Ì¶¨³¤¶ÈÖ±Ïß´©Í¸£»±íÏÖ£ºÖØĞÍÇ¹Ã¢ÍÆ½ø£»µ÷²Î£ºdistance/width/max_hits¡£',
-      cast = function()
-        local vfx = get_sample_vfx('line_lance')
-        local hero_point = get_hero_point()
-        local target = get_primary_target(1800)
-        if not hero_point then
-          return false, 'Ó¢ĞÛÎ»ÖÃÎŞĞ§¡£'
-        end
-        local angle = get_hero_facing_towards(target)
-        local distance = 1650
-        local impact = create_offset_point(y3, hero_point, angle, distance, 0)
-        local damage = get_hero_attack() * 3.1 * DAMAGE_BOOST
-        spawn_particle(y3, hero_point, vfx.cast, 1.40, 0.26, 34)
-        if impact then
-          launch_projectile_from_hero(vfx.projectile_key, target, impact, angle, vfx.projectile_time, vfx.projectile_height)
-          spawn_particle(y3, impact, vfx.impact, 1.55, 0.26, 30)
-          local hits = apply_line_damage(hero_point, impact, distance, 280, damage, 'ÎïÀí', {
-            particle = vfx.hit,
-                metric_scope = 'sample_skill',
-                metric_key = 'line_lance',
-              }, 20)
-          return true, string.format('´©´Ì¹âÇ¹ÃüÖĞ£º%d', hits)
-        end
-        return false, 'Ö±ÏßÖÕµã´´½¨Ê§°Ü¡£'
-      end,
-    },
-    {
-      id = 'meteor_grid',
-      name = '¾Å¹¬ÔÉ±¬',
-      desc = '»úÖÆ£º¾Å¹¬¸ñÑÓ³Ù±¬·¢£»±íÏÖ£ºÁ¬ĞøÔ¤¾¯+Á¬»·×¹Âä£»µ÷²Î£ºgrid_spacing/fall_delay/aoe¡£',
-      cast = function()
-        local vfx = get_sample_vfx('meteor_grid')
-        local target = get_primary_target(1500)
-        local center = target and target:get_point() or get_hero_point()
-        if not center then
-          return false, 'ÎŞ·¨È·¶¨Ê©·¨ÖĞĞÄ¡£'
-        end
-        local base_damage = get_hero_attack() * 1.65 * DAMAGE_BOOST
-        local spacing = 220
-        local cast_count = 0
-        if target then
-          launch_projectile_from_hero(vfx.projectile_key, target, center, nil, vfx.projectile_time, vfx.projectile_height)
-        end
-        for row = -1, 1 do
-          for col = -1, 1 do
-            local delay = 0.18 * (math.abs(row) + math.abs(col))
-            local offset_x = col * spacing
-            local offset_y = row * spacing
-            local cx, cy, cz = point_xyz(center)
-            if cx and cy then
-              local point = y3.point.create(cx + offset_x, cy + offset_y, cz or 0)
-              cast_count = cast_count + 1
-              spawn_particle(y3, point, vfx.warning, 1.22, delay + 0.20, 20)
-              y3.ltimer.wait(delay, function()
-                spawn_particle(y3, point, vfx.impact, 1.70, 0.24, 40)
-                apply_area_damage(point, 300, base_damage, '·¨Êõ', {
-                  particle = vfx.hit,
-                  metric_scope = 'sample_skill',
-                  metric_key = 'meteor_grid',
-                })
-              end)
-            end
-          end
-        end
-        return true, string.format('¾Å¹¬ÔÉ±¬ÒÑÊÍ·Å£º%d Âäµã', cast_count)
-      end,
-    },
-    {
-      id = 'orbit_blade',
-      name = 'ĞıÈĞ·ç±©',
-      desc = '»úÖÆ£º»·ÈÆ¶à¶ÎÇĞ¸î£»±íÏÖ£ºĞı×ªµ¶»·³ÖĞøÃüÖĞ£»µ÷²Î£ºring_radius/step_count/tick_interval¡£',
-      cast = function()
-        local vfx = get_sample_vfx('orbit_blade')
-        local hero = get_hero()
-        local hero_point = get_hero_point()
-        if not hero or not hero_point then
-          return false, 'Ó¢ĞÛ²»´æÔÚ¡£'
-        end
-        local base_damage = get_hero_attack() * 0.72 * DAMAGE_BOOST
-        local ring_radius = 420
-        local ticks = 14
-        local start_angle = normalize_angle(hero.get_facing and hero:get_facing() or 0)
-        for i = 1, ticks do
-          y3.ltimer.wait((i - 1) * 0.16, function()
-            local current_hero = get_hero()
-            local current_point = get_hero_point()
-            if not current_hero or not current_point then
-              return
-            end
-            local angle = start_angle + i * 0.82
-            local hit_point = create_offset_point(y3, current_point, angle, ring_radius, 0)
-            if hit_point then
-              spawn_particle(y3, hit_point, vfx.cast, 1.18, 0.18, 26)
-              launch_projectile_from_hero(vfx.projectile_key, nil, hit_point, angle, vfx.projectile_time, vfx.projectile_height)
-              apply_area_damage(hit_point, 220, base_damage, 'ÎïÀí', {
-                particle = vfx.hit,
-                metric_scope = 'sample_skill',
-                metric_key = 'orbit_blade',
-              })
-            end
-          end)
-        end
-        return true, 'ĞıÈĞ·ç±©ÒÑÆô¶¯¡£'
-      end,
-    },
-    {
-      id = 'chain_arc',
-      name = 'Á¬Ëøµç»¡',
-      desc = '»úÖÆ£ºÄ¿±ê¼äÁ´Ê½µ¯Ìø£»±íÏÖ£ºµç»¡ÌøÁ´ÓëÖğ¶ÎË¥¼õ£»µ÷²Î£ºmax_bounce/falloff/jump_range¡£',
-      cast = function()
-        local vfx = get_sample_vfx('chain_arc')
-        local hero = get_hero()
-        if not hero then
-          return false, 'Ó¢ĞÛ²»´æÔÚ¡£'
-        end
-        local targets = get_enemies_in_range(hero, 1400, nil, 8) or {}
-        if #targets == 0 then
-          return false, '¸½½üÃ»ÓĞ¿É¹¥»÷Ä¿±ê¡£'
-        end
-        local damage = get_hero_attack() * 2.6 * DAMAGE_BOOST
-        local hits = 0
-        for index, unit in ipairs(targets) do
-          local ratio = math.max(0.35, 1.0 - (index - 1) * 0.12)
-          spawn_particle(y3, unit, vfx.cast, 1.22, 0.18, 28)
-          launch_projectile_from_hero(vfx.projectile_key, unit, nil, nil, vfx.projectile_time, vfx.projectile_height)
-          if apply_single_damage(unit, damage * ratio, '·¨Êõ', {
-            particle = vfx.hit,
-            metric_scope = 'sample_skill',
-            metric_key = 'chain_arc',
-          }) then
-            hits = hits + 1
-          end
-          apply_area_damage(unit, 120, damage * ratio * 0.35, '·¨Êõ', {
-            particle = vfx.impact,
-            metric_scope = 'sample_skill',
-            metric_key = 'chain_arc_burst',
-          })
-        end
-        return true, string.format('Á¬Ëøµç»¡ÃüÖĞ£º%d', hits)
-      end,
-    },
-    {
-      id = 'fan_barrage',
-      name = 'ÉÈĞÎÉ¨Éä',
-      desc = '»úÖÆ£º¶àÏßÉÈÃæ¸²¸Ç£»±íÏÖ£ºÇ°·½»ğÁ¦Ç½£»µ÷²Î£ºline_count/fan_angle/line_width¡£',
-      cast = function()
-        local vfx = get_sample_vfx('fan_barrage')
-        local hero = get_hero()
-        local hero_point = get_hero_point()
-        local target = get_primary_target(1600)
-        if not hero or not hero_point then
-          return false, 'Ó¢ĞÛ²»´æÔÚ¡£'
-        end
-        local facing = get_hero_facing_towards(target)
-        local damage = get_hero_attack() * 1.28 * DAMAGE_BOOST
-        local rays = { -0.52, -0.34, -0.17, 0, 0.17, 0.34, 0.52 }
-        local total_hits = 0
-        for _, delta in ipairs(rays) do
-          local angle = facing + delta
-          local impact = create_offset_point(y3, hero_point, angle, 980, 0)
-          if impact then
-            launch_projectile_from_hero(vfx.projectile_key, nil, impact, angle, vfx.projectile_time, vfx.projectile_height)
-            total_hits = total_hits + apply_line_damage(hero_point, impact, 1180, 190, damage, 'ÎïÀí', {
-              particle = vfx.hit,
-              metric_scope = 'sample_skill',
-              metric_key = 'fan_barrage',
-            }, 20)
-          end
-        end
-        spawn_particle(y3, hero_point, vfx.cast, 1.40, 0.24, 30)
-        return true, string.format('ÉÈĞÎÉ¨ÉäÀÛ¼ÆÃüÖĞ£º%d', total_hits)
-      end,
-    },
-    {
-      id = 'burn_field',
-      name = '³ãÑæÁìÓò',
-      desc = '»úÖÆ£ºÂäµã³ÖĞø×ÆÉÕ£»±íÏÖ£º»ğÈ¦Âö³åÓëµØÃæ×ÆÁ÷£»µ÷²Î£ºduration/tick_interval/radius¡£',
-      cast = function()
-        local vfx = get_sample_vfx('burn_field')
-        local center_target = get_primary_target(1500)
-        local center = center_target and center_target:get_point() or get_hero_point()
-        if not center then
-          return false, 'ÎŞ·¨È·¶¨Ê©·¨Î»ÖÃ¡£'
-        end
-        local tick_damage = get_hero_attack() * 0.82 * DAMAGE_BOOST
-        local ticks = 16
-        if center_target then
-          launch_projectile_from_hero(vfx.projectile_key, center_target, center, nil, vfx.projectile_time, vfx.projectile_height)
-        end
-        for i = 1, ticks do
-          y3.ltimer.wait((i - 1) * 0.26, function()
-            spawn_particle(y3, center, vfx.warning, 1.34, 0.18, 20)
-            apply_area_damage(center, 420, tick_damage, '·¨Êõ', {
-              particle = vfx.hit,
-              metric_scope = 'sample_skill',
-              metric_key = 'burn_field',
-            })
-          end)
-        end
-        return true, '³ãÑæÁìÓòÒÑÕ¹¿ª¡£'
-      end,
-    },
-    {
-      id = 'boomerang_blade',
-      name = '»ØĞıÈĞ',
-      desc = '»úÖÆ£ºÈ¥»ØË«¶ÎÅĞ¶¨£»±íÏÖ£º»ØÊÕ¶Î¸üÖØ£»µ÷²Î£ºout_width/back_width/back_multiplier¡£',
-      cast = function()
-        local vfx = get_sample_vfx('boomerang_blade')
-        local hero_point = get_hero_point()
-        local target = get_primary_target(1700)
-        if not hero_point then
-          return false, 'Ó¢ĞÛÎ»ÖÃÎŞĞ§¡£'
-        end
-        local base_damage = get_hero_attack() * 1.50 * DAMAGE_BOOST
-        local direction = get_hero_facing_towards(target)
-        local far_point = create_offset_point(y3, hero_point, direction, 1250, 0)
-        if not far_point then
-          return false, '»ØĞıÈĞÖÕµã´´½¨Ê§°Ü¡£'
-        end
-        spawn_particle(y3, hero_point, vfx.cast, 1.20, 0.24, 28)
-        launch_projectile_from_hero(vfx.projectile_key, nil, far_point, direction, vfx.projectile_time, vfx.projectile_height)
-        local out_hits = apply_line_damage(hero_point, far_point, 1250, 220, base_damage, 'ÎïÀí', {
-          particle = vfx.hit,
-          metric_scope = 'sample_skill',
-          metric_key = 'boomerang_blade_out',
-        }, 14)
-        y3.ltimer.wait(0.28, function()
-          spawn_particle(y3, far_point, vfx.impact, 1.25, 0.20, 24)
-          launch_projectile_from_hero(vfx.projectile_key, nil, hero_point, direction + math.pi, vfx.projectile_time, vfx.projectile_height)
-          apply_line_damage(far_point, hero_point, 1250, 260, base_damage * 1.85, 'ÎïÀí', {
-            particle = vfx.impact,
-            metric_scope = 'sample_skill',
-            metric_key = 'boomerang_blade_back',
-          }, 18)
-        end)
-        return true, string.format('»ØĞıÈĞÈ¥³ÌÃüÖĞ£º%d£¨»Ø³ÌÒÑÅÅ¶Ó£©', out_hits)
-      end,
-    },
-    {
-      id = 'mark_execute',
-      name = 'ÁÑÏ¶Ó¡¼Ç',
-      desc = '»úÖÆ£ºÏÈ¹ÒÓ¡ºó½áËã£»±íÏÖ£ºÒõÓ°Ô¤¾¯ºóË²Ê±´¦¾ö£»µ÷²Î£ºmark_delay/lost_hp_ratio_scale¡£',
-      cast = function()
-        local vfx = get_sample_vfx('mark_execute')
-        local hero = get_hero()
-        if not hero then
-          return false, 'Ó¢ĞÛ²»´æÔÚ¡£'
-        end
-        local targets = get_enemies_in_range(hero, 1200, nil, 5) or {}
-        if #targets == 0 then
-          return false, '¸½½üÃ»ÓĞ¿É¹¥»÷Ä¿±ê¡£'
-        end
-        local attack = get_hero_attack()
-        for _, unit in ipairs(targets) do
-          spawn_particle(y3, unit, vfx.warning, 1.15, 0.9, 32)
-          launch_projectile_from_hero(vfx.projectile_key, unit, nil, nil, vfx.projectile_time, vfx.projectile_height)
-        end
-        y3.ltimer.wait(0.9, function()
-          for _, unit in ipairs(targets) do
-            if unit_alive(unit) and is_active_enemy(unit) then
-              local hp = tonumber(unit.get_hp and unit:get_hp() or 0) or 0
-              local max_hp = tonumber(unit.get_attr and (unit:get_attr('ÉúÃü') or unit:get_attr('×î´óÉúÃü')) or 0) or 0
-              local lost_ratio = 0
-              if max_hp > 0 then
-                lost_ratio = math.max(0, math.min(1, (max_hp - hp) / max_hp))
-              end
-              local amount = attack * (1.9 + lost_ratio * 2.1) * DAMAGE_BOOST
-              spawn_particle(y3, unit, vfx.impact, 1.35, 0.24, 34)
-              apply_single_damage(unit, amount, '·¨Êõ', {
-                particle = vfx.hit,
-                metric_scope = 'sample_skill',
-                metric_key = 'mark_execute',
-              })
-            end
-          end
-        end)
-        return true, string.format('ÁÑÏ¶Ó¡¼ÇÒÑÊ©¼Ó£º%d', #targets)
-      end,
-    },
-    {
-      id = 'starfall_corridor',
-      name = 'ĞÇÆÙ×ßÀÈ',
-      desc = '»úÖÆ£ºÑØÖ±Ïß·Ö¶Î×¹Âä£»±íÏÖ£º×ßÀÈÊ½Á¬ĞøÌì½µ´ò»÷£»µ÷²Î£ºsegment_count/segment_gap/segment_radius¡£',
-      cast = function()
-        local hero_point = get_hero_point()
-        local target = get_primary_target(1800)
-        if not hero_point then
-          return false, 'Ó¢ĞÛÎ»ÖÃÎŞĞ§¡£'
-        end
-        local vfx = get_sample_vfx('sky_thunder')
-        local angle = get_hero_facing_towards(target)
-        local attack = get_hero_attack()
-        local segments = 8
-        local gap = 170
-        local radius = 190
-        for i = 1, segments do
-          local p = create_offset_point(y3, hero_point, angle, i * gap, 0)
-          if p then
-            y3.ltimer.wait((i - 1) * 0.08, function()
-              spawn_particle(y3, p, vfx.warning, 0.95, 0.20, 34)
-            end)
-            y3.ltimer.wait((i - 1) * 0.08 + 0.16, function()
-              spawn_particle(y3, p, vfx.impact, 1.15, 0.16, 38)
-              apply_area_damage(p, radius, attack * 1.25 * DAMAGE_BOOST, '·¨Êõ', {
-                particle = vfx.hit,
-                metric_scope = 'sample_skill',
-                metric_key = 'starfall_corridor',
-              })
-            end)
-          end
-        end
-        return true, 'ĞÇÆÙ×ßÀÈÒÑÊÍ·Å¡£'
-      end,
-    },
-    {
-      id = 'thunder_prison',
-      name = 'À×ÀÎ',
-      desc = '»úÖÆ£º¶¨µãÀ×»·ÖÜÆÚÂö³å£»±íÏÖ£ºÖĞĞÄÊø¸¿¸ĞÇ¿£»µ÷²Î£ºpulse_count/pulse_radius/pulse_interval¡£',
-      cast = function()
-        local target = get_primary_target(1500)
-        local center = target and target:get_point() or get_hero_point()
-        if not center then
-          return false, 'ÎŞ·¨È·¶¨À×ÀÎÖĞĞÄ¡£'
-        end
-        local vfx = get_sample_vfx('chain_arc')
-        local attack = get_hero_attack()
-        local pulses = 7
-        local radius = 360
-        spawn_particle(y3, center, vfx.warning, 1.30, 0.55, 28)
-        for i = 1, pulses do
-          y3.ltimer.wait((i - 1) * 0.20, function()
-            spawn_particle(y3, center, vfx.impact, 1.10, 0.12, 28)
-            apply_area_damage(center, radius, attack * 0.48 * DAMAGE_BOOST, '·¨Êõ', {
-              particle = vfx.hit,
-              metric_scope = 'sample_skill',
-              metric_key = 'thunder_prison',
-            })
-          end)
-        end
-        return true, 'À×ÀÎÒÑÕ¹¿ª¡£'
-      end,
-    },
-    {
-      id = 'phoenix_dive',
-      name = 'Ñ×»Ë¸©³å',
-      desc = '»úÖÆ£ºÇ°³åÖ±ÏßºóÂäµØ±¬Õ¨£»±íÏÖ£ºÏÈ¹á´©ºó±¬ÁÑ£»µ÷²Î£ºdash_distance/line_width/explosion_radius¡£',
-      cast = function()
-        local hero_point = get_hero_point()
-        local target = get_primary_target(1700)
-        if not hero_point then
-          return false, 'Ó¢ĞÛÎ»ÖÃÎŞĞ§¡£'
-        end
-        local vfx = get_sample_vfx('meteor_grid')
-        local attack = get_hero_attack()
-        local angle = get_hero_facing_towards(target)
-        local impact = create_offset_point(y3, hero_point, angle, 1350, 0)
-        if not impact then
-          return false, 'Ñ×»ËÖÕµã´´½¨Ê§°Ü¡£'
-        end
-        launch_projectile_from_hero(vfx.projectile_key, nil, impact, angle, vfx.projectile_time, vfx.projectile_height)
-        spawn_particle(y3, hero_point, vfx.cast, 1.25, 0.24, 30)
-        local hit = apply_line_damage(hero_point, impact, 1350, 220, attack * 1.70 * DAMAGE_BOOST, '·¨Êõ', {
-          particle = vfx.hit,
-          metric_scope = 'sample_skill',
-          metric_key = 'phoenix_dive_line',
-        }, 20)
-        y3.ltimer.wait(0.18, function()
-          spawn_particle(y3, impact, vfx.impact, 1.45, 0.18, 36)
-          apply_area_damage(impact, 360, attack * 2.20 * DAMAGE_BOOST, '·¨Êõ', {
-            particle = vfx.impact,
-            metric_scope = 'sample_skill',
-            metric_key = 'phoenix_dive_burst',
-          })
-        end)
-        return true, string.format('Ñ×»Ë¸©³å´©Í¸ÃüÖĞ£º%d£¨±¬Õ¨ÒÑ´¥·¢£©', hit)
-      end,
-    },
-    {
-      id = 'void_pulse',
-      name = 'Ğé¿ÕÂö³å',
-      desc = '»úÖÆ£ºÖĞĞÄ¸ßÆµÂö³å+Ä©¶Ë´ó±¬·¢£»±íÏÖ£ºÑ¹ËõºóÊÍ·Å£»µ÷²Î£ºtick_count/tick_radius/final_multiplier¡£',
-      cast = function()
-        local target = get_primary_target(1400)
-        local center = target and target:get_point() or get_hero_point()
-        if not center then
-          return false, 'ÎŞ·¨È·¶¨Ğé¿ÕÖĞĞÄ¡£'
-        end
-        local vfx = get_sample_vfx('mark_execute')
-        local attack = get_hero_attack()
-        local ticks = 10
-        local radius = 300
-        spawn_particle(y3, center, vfx.warning, 1.35, 0.85, 26)
-        for i = 1, ticks do
-          y3.ltimer.wait((i - 1) * 0.11, function()
-            spawn_particle(y3, center, vfx.hit, 0.92, 0.10, 20)
-            apply_area_damage(center, radius, attack * 0.30 * DAMAGE_BOOST, '·¨Êõ', {
-              particle = vfx.hit,
-              metric_scope = 'sample_skill',
-              metric_key = 'void_pulse_tick',
-            })
-          end)
-        end
-        y3.ltimer.wait(ticks * 0.11 + 0.06, function()
-          spawn_particle(y3, center, vfx.impact, 1.55, 0.22, 34)
-          apply_area_damage(center, 420, attack * 2.60 * DAMAGE_BOOST, 'ÕæÊµ', {
-            particle = vfx.impact,
-            metric_scope = 'sample_skill',
-            metric_key = 'void_pulse_final',
-          })
-        end)
-        return true, 'Ğé¿ÕÂö³åÒÑÊÍ·Å¡£'
-      end,
-    },
+  local defs = {}
+  local by_id = {}
+  local alias_to_id = {
+    sf_line_pierce_mid = 's_str_1',
+    sf_area_burst_mid = 's_int_1',
+    sf_chain_bounce_mid = 's_dex_1',
+    ['è£‚åœ°é‡æ–©'] = 's_str_1',
+    ['è¡€æ€’å¤„å†³'] = 's_str_2',
+    ['çŒ›å†²è·µè¸'] = 's_str_3',
+    ['ç©¿å¿ƒè¿å°„'] = 's_dex_1',
+    ['å›æ—‹åˆƒé˜µ'] = 's_dex_2',
+    ['å¯’æ˜Ÿå è½'] = 's_int_1',
+    ['é›·æªè´¯ä½“'] = 's_int_2',
+    ['çˆ†è£‚é™¨ç„°'] = 's_int_3',
+    ['è™šç©ºè„‰å†²'] = 's_int_5',
   }
+  local next_index = 1
 
-  local function add_framework_samples()
-    local function add(def)
-      SAMPLE_DEFS[#SAMPLE_DEFS + 1] = def
-    end
-
-    local function register_framework_def(id, visual)
-      local def = Skills.build_production_skill(id, 'mid', visual)
-      if not def then
-        return
-      end
-      skill_framework.register(def)
-    end
-
-    add({
-      id = 'sf_line_pierce',
-      name = '¿ò¼ÜÑùÀı¡¤Ö±Ïß´©Í¸',
-      desc = 'Í³Ò»¼¼ÄÜĞ­Òé£ºline_pierce£¨¹Ì¶¨³¤¶ÈÖ±Ïß´©Í¸£©¡£',
-      cast = function()
-        local vfx = get_sample_vfx('line_lance')
-        register_framework_def('sf_line_pierce', {
-          cast = vfx.cast,
-          hit = vfx.hit,
-          projectile_key = vfx.projectile_key,
-          projectile_height = vfx.projectile_height,
-        })
-        return skill_framework.cast_by_id('sf_line_pierce')
-      end,
+  local function to_framework_def(row)
+    local def = Skills.build_production_skill(row.base_id, row.tier, row.visual, {
+      id = row.id,
+      name = row.name,
+      pattern = row.pattern,
+      target_mode = row.target_mode,
+      damage_type = row.coeff.damage_type,
+      resource = { cooldown = row.coeff.cd },
+      hit_model = {
+        range = row.coeff.range,
+        width = row.coeff.width,
+        radius = row.coeff.radius,
+        max_hits = 0,
+      },
+      scale = {
+        attack_ratio = row.coeff.attack_ratio,
+      },
     })
-
-    add({
-      id = 'sf_area_burst',
-      name = '¿ò¼ÜÑùÀı¡¤Âäµã±¬·¢',
-      desc = 'Í³Ò»¼¼ÄÜĞ­Òé£ºarea_burst£¨ÑÓ³ÙÂäµãAOE£©¡£',
-      cast = function()
-        local vfx = get_sample_vfx('meteor_grid')
-        register_framework_def('sf_area_burst', {
-          warning = vfx.warning,
-          impact = vfx.impact,
-          hit = vfx.hit,
-        })
-        return skill_framework.cast_by_id('sf_area_burst')
-      end,
-    })
-
-    add({
-      id = 'sf_area_tick',
-      name = '¿ò¼ÜÑùÀı¡¤³ÖĞøÁìÓò',
-      desc = 'Í³Ò»¼¼ÄÜĞ­Òé£ºarea_tick£¨³ÖĞø³¡Ã¿tickÉËº¦£©¡£',
-      cast = function()
-        local vfx = get_sample_vfx('blizzard')
-        register_framework_def('sf_area_tick', {
-          warning = vfx.warning,
-          cast = vfx.cast,
-          hit = vfx.hit,
-        })
-        return skill_framework.cast_by_id('sf_area_tick')
-      end,
-    })
-
-    add({
-      id = 'sf_chain_bounce',
-      name = '¿ò¼ÜÑùÀı¡¤Á¬Ëøµ¯Ìø',
-      desc = 'Í³Ò»¼¼ÄÜĞ­Òé£ºchain_bounce£¨µ¥µãÆğÊÖ£¬¶àÄ¿±êµ¯Ìø£©¡£',
-      cast = function()
-        local vfx = get_sample_vfx('chain_arc')
-        register_framework_def('sf_chain_bounce', {
-          hit = vfx.hit,
-        })
-        return skill_framework.cast_by_id('sf_chain_bounce')
-      end,
-    })
+    return def
   end
 
-  add_framework_samples()
-
-  local function add_framework_tiered_samples()
-    local function add(def)
-      SAMPLE_DEFS[#SAMPLE_DEFS + 1] = def
-    end
-
-    local tier_visual_map = {
-      sf_line_pierce = 'line_lance',
-      sf_area_burst = 'meteor_grid',
-      sf_area_tick = 'blizzard',
-      sf_chain_bounce = 'chain_arc',
-    }
-
-    local tier_labels = {
-      light = 'Çá',
-      mid = 'ÖĞ',
-      heavy = 'ÖØ',
-    }
-
-    for _, base_id in ipairs(Skills.list_framework_skill_ids()) do
-      local visual_ref = tier_visual_map[base_id]
-      for _, tier in ipairs(Skills.list_framework_tiers()) do
-        local runtime_id = string.format('%s_%s', base_id, tier)
-        local label = tier_labels[tier] or tier
-        add({
-          id = runtime_id,
-          name = string.format('¿ò¼Ü¡¤%s¡¤%sµµ', tostring(base_id), label),
-          desc = string.format('³ÉÆ·²ÎÊı·Öµµ¶Ô±È£º%s / %s¡£', tostring(base_id), tostring(tier)),
-          cast = function()
-            local vfx = get_sample_vfx(visual_ref)
-            local def = Skills.build_production_skill(base_id, tier, {
-              cast = vfx.cast,
-              warning = vfx.warning,
-              impact = vfx.impact,
-              hit = vfx.hit,
-              projectile_key = vfx.projectile_key,
-              projectile_height = vfx.projectile_height,
-            })
-            if not def then
-              return false, string.format('¹¹½¨Ê§°Ü£º%s/%s', tostring(base_id), tostring(tier))
-            end
-            local ok, reason = skill_framework.register(def)
-            if not ok then
-              return false, tostring(reason or 'register failed')
-            end
-            return skill_framework.cast_by_id(runtime_id)
-          end,
-        })
-      end
+  for _, row in ipairs(SKILLS) do
+    local def = deepcopy(row)
+    defs[#defs + 1] = def
+    by_id[def.id] = def
+    local framework_def = to_framework_def(def)
+    if framework_def then
+      skill_framework.register(framework_def)
     end
   end
-
-  add_framework_tiered_samples()
-
-  local function add_diablo_like_skill_samples()
-    local function add(def)
-      SAMPLE_DEFS[#SAMPLE_DEFS + 1] = def
-    end
-
-    local function register_and_cast(profile)
-      local vfx = get_sample_vfx(profile.visual_ref)
-      local override = {
-        id = profile.id,
-        name = profile.name,
-        pattern = profile.pattern,
-        damage_type = profile.damage_type,
-        target_mode = profile.target_mode,
-        timeline = profile.timeline,
-        resource = profile.resource,
-        hit_model = profile.hit_model,
-        scale = profile.scale,
-      }
-      local def = Skills.build_production_skill(profile.base_id, profile.tier or 'mid', {
-        cast = vfx.cast,
-        warning = vfx.warning,
-        impact = vfx.impact,
-        hit = vfx.hit,
-        projectile_key = vfx.projectile_key,
-        projectile_height = vfx.projectile_height,
-      }, override)
-      if not def then
-        return false, string.format('¹¹½¨Ê§°Ü£º%s', tostring(profile.id))
-      end
-      local ok, reason = skill_framework.register(def)
-      if not ok then
-        return false, tostring(reason or 'register failed')
-      end
-      return skill_framework.cast_by_id(profile.id)
-    end
-
-    local profiles = {
-      {
-        id = 'ÁÑµØÖØÕ¶',
-        name = 'ÁÑµØÖØÕ¶',
-        desc = 'ÃÍÁ¦ÅüÏòÇ°·½£¬¶Ô·¶Î§µĞÈËÔì³É[¹¥»÷Á¦¡Á220% + Á¦Á¿¡Á6]µãÎïÀíÉËº¦¡£ÀäÈ´[8Ãë]¡£',
-        visual_ref = 'line_lance',
-        base_id = 'sf_line_pierce',
-        tier = 'mid',
-        pattern = 'line_pierce',
-        damage_type = 'ÎïÀí',
-        target_mode = 'unit',
-        resource = { cooldown = 0.80 },
-        timeline = { cast_point = 0.08, impact_delay = 0.16 },
-        hit_model = { range = 950, width = 300, max_hits = 0 },
-        scale = { attack_ratio = 2.20 },
-      },
-      {
-        id = 'ÑªÅ­´¦¾ö',
-        name = 'ÑªÅ­´¦¾ö',
-        desc = 'ËºÁÑÄ¿±êÔì³É[¹¥»÷Á¦¡Á180% + Á¦Á¿¡Á5]µãÎïÀíÉËº¦¡£ÀäÈ´[10Ãë]¡£',
-        visual_ref = 'mark_execute',
-        base_id = 'sf_area_burst',
-        tier = 'mid',
-        pattern = 'area_burst',
-        damage_type = 'ÎïÀí',
-        target_mode = 'unit',
-        resource = { cooldown = 1.00 },
-        timeline = { cast_point = 0.06, impact_delay = 0.12 },
-        hit_model = { radius = 180, max_hits = 1 },
-        scale = { attack_ratio = 1.80 },
-      },
-      {
-        id = 'ÃÍ³å¼ùÌ¤',
-        name = 'ÃÍ³å¼ùÌ¤',
-        desc = 'ÃÍ³å²¢¼ùÌ¤µØÃæ£¬Â·¾¶ÓëÂäµØµãÔì³ÉÎïÀíÉËº¦¡£Ö÷¶ÎÏµÊı[¹¥»÷Á¦¡Á180% + Á¦Á¿¡Á5]¡£ÀäÈ´[12Ãë]¡£',
-        visual_ref = 'phoenix_dive',
-        base_id = 'sf_line_pierce',
-        tier = 'heavy',
-        pattern = 'line_pierce',
-        damage_type = 'ÎïÀí',
-        target_mode = 'unit',
-        resource = { cooldown = 1.20 },
-        timeline = { cast_point = 0.10, impact_delay = 0.18 },
-        hit_model = { range = 1200, width = 240, max_hits = 0 },
-        scale = { attack_ratio = 1.80 },
-      },
-      {
-        id = '´©ĞÄÁ¬Éä',
-        name = '´©ĞÄÁ¬Éä',
-        desc = 'Á¬ĞøÉä³ö¶àÖ§¼ıÊ¸£¬Ã¿´ÎÃüÖĞÔì³É[¹¥»÷Á¦¡Á55% + Ãô½İ¡Á2]µãÎïÀíÉËº¦¡£ÀäÈ´[9Ãë]¡£',
-        visual_ref = 'fan_barrage',
-        base_id = 'sf_chain_bounce',
-        tier = 'light',
-        pattern = 'chain_bounce',
-        damage_type = 'ÎïÀí',
-        target_mode = 'unit',
-        resource = { cooldown = 0.90, charges = 0 },
-        timeline = { cast_point = 0.05 },
-        hit_model = { radius = 420, bounce = 3, max_hits = 0 },
-        scale = { attack_ratio = 0.95, bounce_ratio = 0.90 },
-      },
-      {
-        id = '»ØĞıÈĞÕó',
-        name = '»ØĞıÈĞÕó',
-        desc = 'Í¶³ö»ØĞı·ÉÈĞ£¬Ã¿´ÎÃüÖĞÔì³É[¹¥»÷Á¦¡Á95% + Ãô½İ¡Á3]µãÎïÀíÉËº¦¡£ÀäÈ´[11Ãë]¡£',
-        visual_ref = 'boomerang_blade',
-        base_id = 'sf_line_pierce',
-        tier = 'mid',
-        pattern = 'line_pierce',
-        damage_type = 'ÎïÀí',
-        target_mode = 'unit',
-        resource = { cooldown = 1.10 },
-        timeline = { cast_point = 0.07, impact_delay = 0.14 },
-        hit_model = { range = 980, width = 220, max_hits = 0 },
-        scale = { attack_ratio = 0.95 },
-      },
-      {
-        id = 'Ó°²½¶Ïºí',
-        name = 'Ó°²½¶Ïºí',
-        desc = 'Á¬Õ¶Á½¶ÎÉËº¦£ºÖ÷¶Î[¹¥»÷Á¦¡Á200% + Ãô½İ¡Á6]£¬×·»÷¶Î[¹¥»÷Á¦¡Á80% + Ãô½İ¡Á2]¡£ÀäÈ´[13Ãë]¡£',
-        visual_ref = 'mark_execute',
-        base_id = 'sf_area_burst',
-        tier = 'heavy',
-        pattern = 'area_burst',
-        damage_type = 'ÎïÀí',
-        target_mode = 'unit',
-        resource = { cooldown = 1.30 },
-        timeline = { cast_point = 0.06, impact_delay = 0.10 },
-        hit_model = { radius = 220, max_hits = 1 },
-        scale = { attack_ratio = 2.00 },
-      },
-      {
-        id = '¶¾Îí¼ıÓê',
-        name = '¶¾Îí¼ıÓê',
-        desc = '³ÖĞø¼ıÓêÃ¿ÌøÔì³É[¹¥»÷Á¦¡Á45% + Ãô½İ¡Á1]µãÎïÀíÉËº¦¡£ÀäÈ´[15Ãë]¡£',
-        visual_ref = 'arrow_rain',
-        base_id = 'sf_area_tick',
-        tier = 'mid',
-        pattern = 'area_tick',
-        damage_type = 'ÎïÀí',
-        target_mode = 'point',
-        resource = { cooldown = 1.50 },
-        timeline = { cast_point = 0.08, duration = 4.0, tick_interval = 0.50 },
-        hit_model = { radius = 420, max_hits = 0 },
-        scale = { tick_ratio = 0.45 },
-      },
-      {
-        id = 'ÔÉ»ğÊõ',
-        name = 'ÔÉ»ğÊõ',
-        desc = 'ÔÉ»ğÃüÖĞÔì³É[·¨ÊõÇ¿¶È¡Á280% + ÖÇÁ¦¡Á6]µã·¨ÊõÉËº¦£¬²¢ÁôÏÂÈ¼ÉÕÇø¡£ÀäÈ´[12Ãë]¡£',
-        visual_ref = 'meteor_grid',
-        base_id = 'sf_area_burst',
-        tier = 'heavy',
-        pattern = 'area_burst',
-        damage_type = '·¨Êõ',
-        target_mode = 'point',
-        resource = { cooldown = 1.20 },
-        timeline = { cast_point = 0.10, impact_delay = 0.80 },
-        hit_model = { radius = 380, max_hits = 0 },
-        scale = { attack_ratio = 2.80 },
-      },
-      {
-        id = '±ù»·½ûïÀ',
-        name = '±ù»·½ûïÀ',
-        desc = '¶³½áÖÜÎ§µĞÈË²¢Ôì³É[·¨ÊõÇ¿¶È¡Á170% + ÖÇÁ¦¡Á4]µã·¨ÊõÉËº¦¡£ÀäÈ´[14Ãë]¡£',
-        visual_ref = 'blizzard',
-        base_id = 'sf_area_burst',
-        tier = 'mid',
-        pattern = 'area_burst',
-        damage_type = '·¨Êõ',
-        target_mode = 'point',
-        resource = { cooldown = 1.40 },
-        timeline = { cast_point = 0.10, impact_delay = 0.20 },
-        hit_model = { radius = 360, max_hits = 0 },
-        scale = { attack_ratio = 1.70 },
-      },
-      {
-        id = 'Á¬ËøÀ×Ã¬',
-        name = 'Á¬ËøÀ×Ã¬',
-        desc = 'Ê×¶ÎÔì³É[·¨ÊõÇ¿¶È¡Á190% + ÖÇÁ¦¡Á5]µã·¨ÊõÉËº¦£¬×î¶àµ¯Éä[4]´Î£¬Ã¿Ìø[85%]Ë¥¼õ¡£ÀäÈ´[9Ãë]¡£',
-        visual_ref = 'chain_arc',
-        base_id = 'sf_chain_bounce',
-        tier = 'mid',
-        pattern = 'chain_bounce',
-        damage_type = '·¨Êõ',
-        target_mode = 'unit',
-        resource = { cooldown = 0.90, charges = 1 },
-        timeline = { cast_point = 0.05 },
-        hit_model = { radius = 500, bounce = 4, max_hits = 0 },
-        scale = { attack_ratio = 1.90, bounce_ratio = 0.85 },
-      },
-      {
-        id = '°ÂÊõÕÙ»½Õó',
-        name = '°ÂÊõÕÙ»½Õó',
-        desc = 'ÕÙ»½°ÂÊõÆÍ´Ó×÷Õ½£¨ÑùÀıÒÔ·¨Õó±¬ÁÑÄ£Äâ£©£¬Ôì³É[·¨ÊõÇ¿¶È¡Á120% + (Á¦Á¿+ÖÇÁ¦+Ãô½İ)¡Á1.5]µã·¨ÊõÉËº¦¡£ÀäÈ´[20Ãë]¡£',
-        visual_ref = 'void_pulse',
-        base_id = 'sf_area_tick',
-        tier = 'heavy',
-        pattern = 'area_tick',
-        damage_type = '·¨Êõ',
-        target_mode = 'point',
-        resource = { cooldown = 2.00 },
-        timeline = { cast_point = 0.12, duration = 1.8, tick_interval = 0.45 },
-        hit_model = { radius = 320, max_hits = 0 },
-        scale = { tick_ratio = 1.20 },
-      },
-      {
-        id = '°ÂÊõÆÍ´Ó±¬ÁÑ',
-        name = '°ÂÊõÆÍ´Ó±¬ÁÑ',
-        desc = 'ÕÙ»½ÎïËÀÍö±¬ÁÑ£¨ÑùÀı¶ÀÁ¢Ê©·Å£©£¬Ôì³É[·¨ÊõÇ¿¶È¡Á120% + (Á¦Á¿+ÖÇÁ¦+Ãô½İ)¡Á1.5]µã·¶Î§·¨ÊõÉËº¦¡£ÀäÈ´[20Ãë]¡£',
-        visual_ref = 'void_pulse',
-        base_id = 'sf_area_burst',
-        tier = 'mid',
-        pattern = 'area_burst',
-        damage_type = '·¨Êõ',
-        target_mode = 'point',
-        resource = { cooldown = 2.00 },
-        timeline = { cast_point = 0.10, impact_delay = 0.25 },
-        hit_model = { radius = 340, max_hits = 0 },
-        scale = { attack_ratio = 1.20 },
-      },
-    }
-
-    for _, profile in ipairs(profiles) do
-      add({
-        id = profile.id,
-        name = profile.name,
-        desc = profile.desc,
-        cast = function()
-          return register_and_cast(profile)
-        end,
-      })
-    end
-  end
-
-  add_diablo_like_skill_samples()
-  do
-    local legacy = {
-      arrow_rain = true,
-      blizzard = true,
-      sky_thunder = true,
-      line_lance = true,
-      meteor_grid = true,
-      orbit_blade = true,
-      chain_arc = true,
-      fan_barrage = true,
-      burn_field = true,
-      boomerang_blade = true,
-      mark_execute = true,
-      starfall_corridor = true,
-      thunder_prison = true,
-      phoenix_dive = true,
-      void_pulse = true,
-      sf_line_pierce = true,
-      sf_area_burst = true,
-      sf_area_tick = true,
-      sf_chain_bounce = true,
-    }
-    local filtered = {}
-    for _, def in ipairs(SAMPLE_DEFS) do
-      local id = tostring(def.id or '')
-      if not legacy[id] and not id:find('^sf_') then
-        filtered[#filtered + 1] = def
-      end
-    end
-    SAMPLE_DEFS = filtered
-  end
-  validate_sample_visuals_or_error()
-
-  local samples_by_id = {}
-  for _, def in ipairs(SAMPLE_DEFS) do
-    samples_by_id[def.id] = def
-  end
-
-  local runtime = {
-    index = 1,
-  }
 
   local api = {}
 
   function api.list_samples()
     local lines = {}
-    for i, def in ipairs(SAMPLE_DEFS) do
-      lines[#lines + 1] = string.format('%d) %s | %s | %s', i, def.id, def.name, def.desc)
+    for i, def in ipairs(defs) do
+      lines[#lines + 1] = string.format('%02d. %s (%s) - %s', i, def.id, def.name, def.desc)
     end
     return lines
   end
 
+  function api.get_sample_defs()
+    return defs
+  end
+
   function api.cast_sample(sample_id)
-    local hero = get_hero()
-    if not hero then
-      return false, 'µ±Ç°Ã»ÓĞ¿ÉÓÃÓ¢ĞÛ¡£'
-    end
-    local def = samples_by_id[tostring(sample_id or '')]
+    local query_id = tostring(sample_id or '')
+    local resolved_id = alias_to_id[query_id] or query_id
+    local def = by_id[resolved_id]
     if not def then
-      return false, string.format('Î´Öª sample ¼¼ÄÜ£º%s£¨ÓÃ .esample list ²é¿´£©', tostring(sample_id))
+      return false, string.format('æœªçŸ¥ sample æŠ€èƒ½ï¼š%s', tostring(sample_id))
     end
-    local ok, cast_ok, cast_msg = pcall(def.cast)
-    if not ok then
-      return false, string.format('[%s] Ê©·ÅÒì³££º%s', def.id, tostring(cast_ok))
-    end
-    if cast_ok ~= true then
-      return false, string.format('[%s] %s', def.id, tostring(cast_msg or 'Ê©·ÅÊ§°Ü'))
-    end
-    return true, string.format('[%s] %s', def.id, tostring(cast_msg or 'Ê©·Å³É¹¦'))
+    return skill_framework.cast_by_id(def.id)
   end
 
   function api.cast_next_sample()
-    if #SAMPLE_DEFS <= 0 then
-      return false, 'µ±Ç°Ã»ÓĞ sample ¼¼ÄÜ¡£'
+    if #defs <= 0 then
+      return false, 'å½“å‰æ²¡æœ‰ sample æŠ€èƒ½ã€‚'
     end
-    runtime.index = math.max(1, math.min(#SAMPLE_DEFS, runtime.index or 1))
-    local def = SAMPLE_DEFS[runtime.index]
-    runtime.index = runtime.index + 1
-    if runtime.index > #SAMPLE_DEFS then
-      runtime.index = 1
+    if next_index > #defs then
+      next_index = 1
     end
+    local def = defs[next_index]
+    next_index = next_index + 1
     return api.cast_sample(def.id)
   end
 
   function api.print_sample_list()
-    message('[DEBUG] Sample ¼¼ÄÜÁĞ±í£º')
     for _, line in ipairs(api.list_samples()) do
-      message('[DEBUG] ' .. line)
+      if env.message then
+        env.message(line)
+      else
+        print(line)
+      end
     end
   end
 
-  function api.get_sample_defs()
-    local result = {}
-    for _, def in ipairs(SAMPLE_DEFS) do
-      result[#result + 1] = {
-        id = def.id,
-        name = def.name,
-        desc = def.desc,
-      }
-    end
-    return result
-  end
-
-  function api.get_framework_telemetry(skill_id)
-    if not skill_framework or not skill_framework.get_telemetry then
-      return nil
-    end
-    return skill_framework.get_telemetry(skill_id)
-  end
-
-  function api.reset_framework_telemetry(skill_id)
-    if not skill_framework or not skill_framework.reset_telemetry then
-      return false, '¼¼ÄÜ¿ò¼Ü telemetry Î´³õÊ¼»¯¡£'
-    end
-    skill_framework.reset_telemetry(skill_id)
-    return true, 'telemetry ÒÑÖØÖÃ'
-  end
-
-  function api.get_framework_telemetry_report()
-    if not skill_framework or not skill_framework.get_all_telemetry then
-      return false, '¼¼ÄÜ¿ò¼Ü telemetry Î´³õÊ¼»¯¡£'
-    end
-    local all = skill_framework.get_all_telemetry()
-    if type(all) ~= 'table' or #all == 0 then
-      return true, { '[telemetry] ÔİÎŞÊı¾İ¡£' }
-    end
-
-    table.sort(all, function(a, b)
-      local ar = tonumber(a and a.empty_cast_rate) or 0
-      local br = tonumber(b and b.empty_cast_rate) or 0
-      if ar == br then
-        return (tonumber(a and a.total_damage) or 0) < (tonumber(b and b.total_damage) or 0)
-      end
-      return ar > br
-    end)
-
-    local lines = { '[telemetry] ¼¼ÄÜÑéÊÕ¿ìÕÕ£¨°´¿Õ·ÅÂÊ½µĞò£©' }
-    local weak_list = {}
-    local function infer_pattern(skill_id)
-      local id = tostring(skill_id or '')
-      if id:find('line_pierce', 1, true) then
-        return 'line_pierce'
-      end
-      if id:find('area_burst', 1, true) then
-        return 'area_burst'
-      end
-      if id:find('area_tick', 1, true) then
-        return 'area_tick'
-      end
-      if id:find('chain_bounce', 1, true) then
-        return 'chain_bounce'
-      end
-      return 'unknown'
-    end
-    local function build_tuning_hint(w)
-      local pattern = infer_pattern(w.skill_id)
-      local empty_rate = tonumber(w.empty_rate) or 0
-      local hps = tonumber(w.hits_per_sec) or 0
-      local cps = tonumber(w.casts_per_sec) or 0
-      if empty_rate >= 35 then
-        if pattern == 'line_pierce' then
-          return 'µ÷²Î£ºwidth +20% / range +12% / impact_delay -0.04'
-        end
-        if pattern == 'area_burst' or pattern == 'area_tick' then
-          return 'µ÷²Î£ºradius +18% / impact_delay -0.05 / cast_point -0.03'
-        end
-        if pattern == 'chain_bounce' then
-          return 'µ÷²Î£ºbounce +1 / range +10% / projectile_time -0.08'
-        end
-        return 'µ÷²Î£ºÓÅÏÈÔöÅĞ¶¨·¶Î§£¬´ÎÓÅÏÈ½µÇ°Ò¡ÓëÂäµØÑÓ³Ù'
-      end
-      if hps < 1.2 then
-        if pattern == 'area_tick' then
-          return 'µ÷²Î£ºtick_interval -0.04 / duration +0.3 / max_hits +2'
-        end
-        if pattern == 'chain_bounce' then
-          return 'µ÷²Î£ºbounce +1 / bounce_ratio +0.06'
-        end
-        return 'µ÷²Î£ºÌá¸ßÃüÖĞÃÜ¶È£¨max_hits +2 »ò tick_interval -0.03£©'
-      end
-      if cps < 0.9 then
-        return 'µ÷²Î£ºcooldown -0.20 / projectile_time -0.08 / cast_point -0.02'
-      end
-      return 'µ÷²Î£º±£³Ö½Ú×à£¬Î¢ÔöÉËº¦ÏµÊı attack_ratio +0.08'
-    end
-    for _, t in ipairs(all) do
-      local cast = tonumber(t.cast_count) or 0
-      local hit_avg = tonumber(t.avg_hits_per_cast) or 0
-      local empty_rate = (tonumber(t.empty_cast_rate) or 0) * 100
-      local total_damage = tonumber(t.total_damage) or 0
-      local dmg_per_cast = 0
-      if cast > 0 then
-        dmg_per_cast = total_damage / cast
-      end
-      local hits_per_sec = tonumber(t.hits_per_sec) or 0
-      local casts_per_sec = tonumber(t.casts_per_sec) or 0
-      local drift_ms = tonumber(t.timing_drift_ms_avg) or 0
-      local rhythm_score = math.max(0, math.min(100, (hits_per_sec * 28) + (casts_per_sec * 22) - (empty_rate * 0.9)))
-      if rhythm_score < 60 then
-        weak_list[#weak_list + 1] = {
-          skill_id = tostring(t.skill_id or 'unknown'),
-          rhythm = rhythm_score,
-          empty_rate = empty_rate,
-          hit_avg = hit_avg,
-          casts_per_sec = casts_per_sec,
-          hits_per_sec = hits_per_sec,
-        }
-      end
-      lines[#lines + 1] = string.format(
-        '%s cast=%d hit=%.2f empty=%.1f%% hps=%.2f cps=%.2f drift=%.0fms dmg=%.0f dmg/c=%.0f rhythm=%d last=%s',
-        tostring(t.skill_id or 'unknown'),
-        cast,
-        hit_avg,
-        empty_rate,
-        hits_per_sec,
-        casts_per_sec,
-        drift_ms,
-        total_damage,
-        dmg_per_cast,
-        math.floor(rhythm_score + 0.5),
-        tostring(t.last_reason or '')
-      )
-    end
-    if #weak_list > 0 then
-      table.sort(weak_list, function(a, b)
-        return (tonumber(a.rhythm) or 0) < (tonumber(b.rhythm) or 0)
-      end)
-      lines[#lines + 1] = '[telemetry] ´ıµ÷Çåµ¥£¨rhythm<60£©'
-      for _, w in ipairs(weak_list) do
-        local advice = build_tuning_hint(w)
-        lines[#lines + 1] = string.format(
-          '%s rhythm=%d empty=%.1f%% hps=%.2f cps=%.2f ½¨Òé£º%s',
-          tostring(w.skill_id),
-          math.floor((tonumber(w.rhythm) or 0) + 0.5),
-          tonumber(w.empty_rate) or 0,
-          tonumber(w.hits_per_sec) or 0,
-          tonumber(w.casts_per_sec) or 0,
-          advice
-        )
-      end
-    end
-    return true, lines
-  end
-
-  function api.print_framework_telemetry_report()
-    local ok, payload = api.get_framework_telemetry_report()
-    if not ok then
-      return false, payload
-    end
-    for _, line in ipairs(payload) do
-      message(line)
-    end
-    return true, 'telemetry report printed'
-  end
-
-  function api.run_framework_tier_suite()
-    if not y3 or not y3.ltimer or not y3.ltimer.wait then
-      return false, '¼ÆÊ±Æ÷²»¿ÉÓÃ¡£'
-    end
-    local queue = {}
-    local bases = Skills.list_framework_skill_ids()
-    local tiers = Skills.list_framework_tiers()
-    for _, base_id in ipairs(bases) do
-      for _, tier in ipairs(tiers) do
-        queue[#queue + 1] = string.format('%s_%s', base_id, tier)
-      end
-    end
-    for _, sample_id in ipairs(queue) do
-      api.reset_framework_telemetry(sample_id)
-    end
-    for index, sample_id in ipairs(queue) do
-      y3.ltimer.wait((index - 1) * 0.18, function()
-        pcall(api.cast_sample, sample_id)
-      end)
-    end
-    return true, string.format('·ÖµµÁ¬²âÒÑÆô¶¯£º%d ¸öÑùÀı', #queue)
+  function api.reset_framework_telemetry(_)
+    return true
   end
 
   function api.build_framework_tier_report()
-    local bases = Skills.list_framework_skill_ids()
-    local tiers = Skills.list_framework_tiers()
-    local lines = {}
-    for _, base_id in ipairs(bases) do
-      lines[#lines + 1] = string.format('[%s]', tostring(base_id))
-      for _, tier in ipairs(tiers) do
-        local skill_id = string.format('%s_%s', base_id, tier)
-        local t = api.get_framework_telemetry(skill_id) or {}
-        lines[#lines + 1] = string.format(
-          '%s cast=%d hit=%.1f empty=%.1f%% dmg=%.0f',
-          skill_id,
-          tonumber(t.cast_count) or 0,
-          tonumber(t.avg_hits_per_cast) or 0,
-          (tonumber(t.empty_cast_rate) or 0) * 100,
-          tonumber(t.total_damage) or 0
-        )
-      end
+    local rows = { '[sample_skills] v2 å·²é‡åšï¼šä»…ä¿ç•™å¼¹é“(line_pierce) / ç‚¹çˆ†(area_burst) ä¸¤ç§æ¨¡å¼ã€‚' }
+    rows[#rows + 1] = string.format('[sample_skills] æŠ€èƒ½æ€»æ•°: %d', #defs)
+    return rows
+  end
+
+  function api.run_framework_auto_acceptance()
+    local ids = {}
+    for _, def in ipairs(defs) do
+      ids[#ids + 1] = def.id
     end
-    return lines
+    return true, ids
   end
 
   return api
 end
 
 return M
-
-

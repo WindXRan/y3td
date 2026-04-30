@@ -4,6 +4,13 @@
   "key": 2147483647, 
   "group": [
    {
+    "__tuple__": true, 
+    "items": [
+     "41ea34f6-1327-43b0-a2da-981590174a27", 
+     "Choice_Panel"
+    ]
+   }, 
+   {
     "name": "Archive_panel", 
     "key": "p5fpsEF5EfGvur9IMCbXlp", 
     "group": [
@@ -19,13 +26,6 @@
       "items": [
        "1b62165d-57b8-4ed7-aa73-71b3b8c1bb36", 
        "TipsPanel"
-      ]
-     }, 
-     {
-      "__tuple__": true, 
-      "items": [
-       "b92d1230-3267-459c-8a9a-156bafdebac6", 
-       "panel_1"
       ]
      }
     ]
@@ -49,27 +49,6 @@
     "items": [
      "9fe94099-3651-4bcc-95d6-22aec28b5aaf", 
      "BattleBottomHUD"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "187db796-73e2-4287-9380-fbe9e9b9058d", 
-     "BondChoice2"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "552be7df-c7ef-4e6d-bc31-f7593358a9dc", 
-     "BondChoice3"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "25cc8d77-f329-4560-a9d4-5f351937b494", 
-     "BondChoice4"
     ]
    }, 
    {

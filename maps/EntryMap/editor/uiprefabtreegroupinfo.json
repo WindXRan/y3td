@@ -109,7 +109,14 @@
     "__tuple__": true, 
     "items": [
      "a2082192-b8a2-40f2-a3c7-a47acd74468b", 
-     "ChoiceTest"
+     "ChoiceList"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "5db0740f-bc1a-48ea-a62c-cf71dc1776fe", 
+     "Card"
     ]
    }
   ]

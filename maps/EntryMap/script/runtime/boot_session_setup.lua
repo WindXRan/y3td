@@ -5,17 +5,7 @@ function M.create(ctx)
     return ctx.battlefield_system.validate_config()
   end
 
-  local hero_selection_range_system = ctx.HeroSelectionRangeSystem.create({
-    STATE = ctx.STATE,
-    y3 = ctx.y3,
-    is_battle_active = function()
-      return ctx.STATE.session_phase == 'battle' and ctx.STATE.game_finished ~= true
-    end,
-    get_current_basic_attack_range = function()
-      return ctx.attack_skills_system and ctx.attack_skills_system.get_current_basic_attack_range and
-          ctx.attack_skills_system.get_current_basic_attack_range() or 0
-    end,
-  })
+  local hero_selection_range_system = nil
 
   local session_state_system = ctx.BootSession.create({
     STATE = ctx.STATE,
@@ -66,10 +56,7 @@ function M.create(ctx)
       return ctx.audio_system and ctx.audio_system.enter_battle and ctx.audio_system.enter_battle() or nil
     end,
     disable_local_attack_preview = function()
-      return hero_selection_range_system
-          and hero_selection_range_system.disable_local_preview
-          and hero_selection_range_system.disable_local_preview()
-          or false
+      return false
     end,
     get_outgame_system = function()
       return ctx.get_outgame_system()

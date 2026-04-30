@@ -646,29 +646,14 @@ function M.create(deps)
       end
       return false
     else
-      if bond_name == '冰霜法师' then
-        local aura_interval = math.max(0.10, rule_number(periodic_rule.aura_interval, 0.70))
-        effect_state.__ice_aura_elapsed = (effect_state.__ice_aura_elapsed or 0) + dt
-        if effect_state.__ice_aura_elapsed >= aura_interval then
-          effect_state.__ice_aura_elapsed = effect_state.__ice_aura_elapsed - aura_interval
-          local hero = get_hero(env)
-          if hero then
-            play_particle_on_unit(
-              env,
-              hero,
-              visual_cfg.particle_key,
-              rule_number(periodic_rule.aura_scale, 0.95),
-              rule_number(periodic_rule.aura_time, 1.00)
-            )
-          end
-        end
-      end
       local ice_interval = math.max(0.05, rule_number(periodic_rule.interval, 5))
       if bond_name == '冰霜法师' and effect_state.elapsed >= ice_interval then
       report_cast(1)
       effect_state.elapsed = effect_state.elapsed - ice_interval
       local target = env.get_enemies_in_range and env.get_enemies_in_range(env.STATE.hero, 1200, nil, 1)[1] or nil
       if target then
+        visual_cfg.motion_mode = 'instant'
+        visual_cfg.delivery_mode = 'spawn_on_target'
         play_bond_sound(env, bond_name, 'cast', get_hero(env))
         perform_visual_delivery(env, target, visual_cfg, function() end)
         local storm_point = nil
@@ -686,25 +671,8 @@ function M.create(deps)
         local storm_radius = math.max(80, rule_number(periodic_rule.storm_radius, 420))
         local tick_count = math.max(1, rule_integer(periodic_rule.tick_count, 6, 1))
         local tick_interval = math.max(0.05, rule_number(periodic_rule.tick_interval, 0.5))
-        local storm_scale = calc_area_fx_scale(storm_radius, visual_cfg)
-        if play_particle_on_point and storm_point then
-          play_particle_on_point(env, storm_point, visual_cfg.particle_key, storm_scale, tick_count * tick_interval + 0.40, 16)
-        else
-          play_particle_on_unit(env, target, visual_cfg.particle_key, storm_scale, 0.30)
-        end
-        local fx_pulse_every = math.max(0, rule_integer(periodic_rule.fx_pulse_every, rule_integer(presentation_defaults.default_fx_pulse_every, 0, 0), 0))
         for index = 0, tick_count - 1 do
           wait_seconds(env, index * tick_interval, function()
-            if index % 2 == 0 then
-              play_bond_sound(env, bond_name, 'impact', storm_center)
-            end
-            if fx_pulse_every > 0 and index > 0 and (index % fx_pulse_every == 0) then
-              if play_particle_on_point and storm_point then
-                play_particle_on_point(env, storm_point, visual_cfg.particle_key, storm_scale, 0.18, 16)
-              else
-                play_particle_on_unit(env, target, visual_cfg.particle_key, storm_scale, 0.14)
-              end
-            end
             bond_damage_area(storm_center, storm_radius, tick_damage, periodic_rule.damage_type or '法术')
           end)
         end
@@ -785,7 +753,8 @@ function M.create(deps)
       return hit
     elseif bond_name == '骷髅法师' and effect_state.elapsed >= math.max(0.05, rule_number(periodic_rule.interval, 30)) then
       local skeleton_interval = math.max(0.05, rule_number(periodic_rule.interval, 30))
-      local repeat_count = math.floor(effect_state.elapsed / skeleton_interval)
+      -- 防止长帧/补帧时一次性补发大量召唤，导致主角前视觉与单位堆积
+      local repeat_count = math.min(1, math.floor(effect_state.elapsed / skeleton_interval))
       effect_state.elapsed = effect_state.elapsed - repeat_count * skeleton_interval
       for _ = 1, repeat_count do
         local hero = env and env.STATE and env.STATE.hero

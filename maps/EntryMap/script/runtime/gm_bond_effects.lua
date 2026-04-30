@@ -1,4 +1,4 @@
-local M = {}
+﻿local M = {}
 
 local UiRoot = require 'ui.ui_root'
 local BondModifierPool = require 'data.object_tables.bond_modifier_pool'
@@ -480,7 +480,6 @@ function M.create(env)
       local lines = {
         string.format('羁绊：%s', tostring(selected_bond.title or 'Sample羁绊')),
         string.format(BOND_GM_STATUS_TEMPLATE, '可直接施放'),
-        string.format('SampleID：%s', tostring(selected_bond.sample_id or '')),
         string.format('特殊效果100%%触发：%s', is_force_special_effects_100 and is_force_special_effects_100() and '开启' or '关闭'),
         string.format('投射物覆盖：%s', tostring((debug_get_global_projectile_override and debug_get_global_projectile_override()) or '关闭')),
         '单卡：无（Sample羁绊不使用单卡）',
@@ -1042,7 +1041,7 @@ function M.create(env)
         row_ui.mode = ui.encyclopedia_mode
         if ui.encyclopedia_mode == 'activation' then
           if entry.kind == 'sample_bond' then
-            set_text(row_ui.title, string.format('%s [%s]', tostring(entry.title or ''), tostring(entry.sample_id or '')))
+            set_text(row_ui.title, tostring(entry.title or ''))
             set_text(row_ui.action, '立即施放')
           else
             local effect_id = 'initial_bond_set_' .. tostring(entry.bond_name or '')
@@ -1051,7 +1050,7 @@ function M.create(env)
             set_text(row_ui.action, active and '已激活' or '一键激活')
           end
         elseif ui.encyclopedia_mode == 'sample' then
-          set_text(row_ui.title, string.format('%s [%s]', tostring(entry.title or ''), tostring(entry.sample_id or '')))
+          set_text(row_ui.title, tostring(entry.title or ''))
           set_text(row_ui.action, '立即施放')
         else
           local has_special = runtime and runtime.modifier_card_effect_ids and runtime.modifier_card_effect_ids[entry.card_id] == true
@@ -1300,3 +1299,4 @@ function M.create(env)
 end
 
 return M
+

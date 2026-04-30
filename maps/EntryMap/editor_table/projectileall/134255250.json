@@ -5,7 +5,7 @@
     "description": -476957246, 
     "effect_destroy_way_is_immediately": false, 
     "effect_foes": [
-        106053, 
+        104927, 
         {
             "__tuple__": true, 
             "items": [
@@ -41,7 +41,7 @@
                 0.5
             ], 
             "is_loop": true, 
-            "model": 208143, 
+            "model": 103014, 
             "model_opacity": 1.0, 
             "offset": {
                 "__tuple__": true, 
@@ -71,7 +71,7 @@
         }
     ], 
     "effect_friend": [
-        106053, 
+        104927, 
         {
             "__tuple__": true, 
             "items": [
@@ -107,7 +107,7 @@
                 0.5
             ], 
             "is_loop": true, 
-            "model": 208143, 
+            "model": 103014, 
             "model_opacity": 1.0, 
             "offset": {
                 "__tuple__": true, 

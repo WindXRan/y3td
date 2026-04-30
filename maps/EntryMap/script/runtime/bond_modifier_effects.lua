@@ -128,6 +128,10 @@ for bond_name, visual_entry in pairs(BondVisualEditorIds.visual_by_bond or {}) d
       projectile_line_distance = tonumber(visual_entry.projectile_line_distance),
       projectile_angle_offset = tonumber(visual_entry.projectile_angle_offset),
       projectile_motion_angle_offset = tonumber(visual_entry.projectile_motion_angle_offset),
+      trajectory_style = visual_entry.trajectory_style,
+      projectile_parabola_height = tonumber(visual_entry.projectile_parabola_height),
+      projectile_rotate_time = tonumber(visual_entry.projectile_rotate_time),
+      projectile_init_max_rotate_angle = tonumber(visual_entry.projectile_init_max_rotate_angle),
       area_fx_base_radius = tonumber(visual_entry.area_fx_base_radius),
       area_fx_scale_bias = tonumber(visual_entry.area_fx_scale_bias),
       particle_scale_bias = tonumber(visual_entry.particle_scale_bias),
@@ -144,6 +148,17 @@ local function build_bond_visual(opts)
   opts = opts or {}
   local area_fx_base_radius = math.max(80, tonumber(opts.area_fx_base_radius) or 360)
   local area_fx_scale_bias = (tonumber(opts.area_fx_scale_bias) or 1.0) * GLOBAL_AREA_SCALE_MULTIPLIER
+  local delivery_mode = tostring(opts.delivery_mode or 'projectile')
+  local motion_mode = tostring(opts.motion_mode or 'target')
+  -- 视觉模式强约束：仅保留“点爆”和“弹道”两类
+  if delivery_mode == 'spawn_on_target' then
+    motion_mode = 'instant'
+  else
+    delivery_mode = 'projectile'
+    if motion_mode ~= 'line' and motion_mode ~= 'target' then
+      motion_mode = 'target'
+    end
+  end
   return {
     particle_key = to_positive_number(opts.particle_key) or DEFAULT_VISUAL.particle_key,
     line_particle_key = to_positive_number(opts.line_particle_key) or nil,
@@ -155,11 +170,15 @@ local function build_bond_visual(opts)
     projectile_line_distance = tonumber(opts.projectile_line_distance) or nil,
     projectile_angle_offset = tonumber(opts.projectile_angle_offset) or 0,
     projectile_motion_angle_offset = tonumber(opts.projectile_motion_angle_offset),
+    trajectory_style = tostring(opts.trajectory_style or ''),
+    projectile_parabola_height = tonumber(opts.projectile_parabola_height),
+    projectile_rotate_time = tonumber(opts.projectile_rotate_time),
+    projectile_init_max_rotate_angle = tonumber(opts.projectile_init_max_rotate_angle),
     area_fx_base_radius = area_fx_base_radius,
     area_fx_scale_bias = area_fx_scale_bias,
     particle_scale_bias = tonumber(opts.particle_scale_bias) or 1.0,
-    delivery_mode = tostring(opts.delivery_mode or 'projectile'),
-    motion_mode = tostring(opts.motion_mode or 'target'),
+    delivery_mode = delivery_mode,
+    motion_mode = motion_mode,
   }
 end
 
@@ -396,6 +415,10 @@ local function get_visual_config(bond_name)
       projectile_line_distance = forced.projectile_line_distance or extra.projectile_line_distance,
       projectile_angle_offset = forced.projectile_angle_offset or extra.projectile_angle_offset,
       projectile_motion_angle_offset = forced.projectile_motion_angle_offset or extra.projectile_motion_angle_offset,
+      trajectory_style = forced.trajectory_style or extra.trajectory_style,
+      projectile_parabola_height = forced.projectile_parabola_height or extra.projectile_parabola_height,
+      projectile_rotate_time = forced.projectile_rotate_time or extra.projectile_rotate_time,
+      projectile_init_max_rotate_angle = forced.projectile_init_max_rotate_angle or extra.projectile_init_max_rotate_angle,
       area_fx_base_radius = forced.area_fx_base_radius or extra.area_fx_base_radius,
       area_fx_scale_bias = forced.area_fx_scale_bias or extra.area_fx_scale_bias,
       particle_scale_bias = forced.particle_scale_bias or extra.particle_scale_bias,
@@ -418,6 +441,10 @@ local function get_visual_config(bond_name)
     projectile_line_distance = tonumber(extra.projectile_line_distance) or nil,
     projectile_angle_offset = tonumber(extra.projectile_angle_offset) or 0,
     projectile_motion_angle_offset = tonumber(extra.projectile_motion_angle_offset),
+    trajectory_style = tostring(extra.trajectory_style or ''),
+    projectile_parabola_height = tonumber(extra.projectile_parabola_height),
+    projectile_rotate_time = tonumber(extra.projectile_rotate_time),
+    projectile_init_max_rotate_angle = tonumber(extra.projectile_init_max_rotate_angle),
     area_fx_base_radius = math.max(80, tonumber(extra.area_fx_base_radius) or 320),
     area_fx_scale_bias = tonumber(extra.area_fx_scale_bias) or 1.0,
     particle_scale_bias = tonumber(extra.particle_scale_bias) or 1.0,
@@ -508,6 +535,11 @@ end
 
 local function play_particle_on_unit(env, unit, effect_key, scale, time)
   if is_visual_hidden(env) or not effect_key or not unit or not unit.is_exist or not unit:is_exist() then
+    return nil
+  end
+  local hero = env and env.STATE and env.STATE.hero or nil
+  if hero and unit ~= hero then
+    -- 全局禁用“敌方受击挂特效”，仅允许主角本体演出。
     return nil
   end
   local y3 = env and env.y3
@@ -691,6 +723,12 @@ local function launch_projectile_to_target(env, target, visual_cfg)
   local speed = math.max(200, tonumber(visual_cfg.projectile_speed) or 800)
   local ok_move = false
   local motion_mode = tostring(visual_cfg and visual_cfg.motion_mode or 'target')
+  local trajectory_style = tostring(visual_cfg and visual_cfg.trajectory_style or '')
+  if motion_mode == 'instant' then
+    -- instant: 只生成原地投射物表现，不启动飞行 mover，不额外移除
+    -- 由投射物自身 life_time 控制持续时长
+    return true
+  end
   local use_line_fallback = motion_mode == 'line' or (target_distance_now ~= nil and target_distance_now < 80)
 
   if use_line_fallback then
@@ -724,6 +762,16 @@ local function launch_projectile_to_target(env, target, visual_cfg)
       })
     end)
   else
+    local parabola_height = tonumber(visual_cfg and visual_cfg.projectile_parabola_height)
+    local rotate_time = tonumber(visual_cfg and visual_cfg.projectile_rotate_time)
+    local init_max_rotate_angle = tonumber(visual_cfg and visual_cfg.projectile_init_max_rotate_angle)
+    if trajectory_style == 'lob' then
+      parabola_height = parabola_height or 220
+      rotate_time = rotate_time or 0.0
+    elseif trajectory_style == 'missile' then
+      rotate_time = rotate_time or 0.12
+      init_max_rotate_angle = init_max_rotate_angle or 45.0
+    end
     ok_move = pcall(function()
       projectile:mover_target({
         target = target,
@@ -731,7 +779,9 @@ local function launch_projectile_to_target(env, target, visual_cfg)
         target_distance = visual_cfg.projectile_target_distance,
         height = visual_cfg.projectile_height,
         init_angle = launch_angle,
-        rotate_time = 0.0,
+        rotate_time = rotate_time or 0.0,
+        parabola_height = parabola_height,
+        init_max_rotate_angle = init_max_rotate_angle,
         face_angle = true,
         miss_when_target_destroy = false,
         on_finish = remove_projectile_safe,
@@ -830,10 +880,8 @@ local function play_line_trail(env, start_point, angle, distance, effect_key, st
 end
 
 local function play_impact_burst(env, target, effect_key, base_scale)
-  if not target then
-    return
-  end
-  play_particle_on_unit(env, target, effect_key, base_scale or 1.0, 0.26)
+  -- 全局禁用受击爆发特效。
+  return
 end
 
 local function play_lightning_strike(env, target, visual_cfg)
@@ -988,6 +1036,10 @@ local function drive_summon_attack(env, summon)
 end
 
 local function schedule_summon_lifecycle_fx(env, hero, visual_cfg, duration_sec, summon_kind)
+  local auto_acceptance = env and env.STATE and env.STATE.battle_auto_acceptance or nil
+  if auto_acceptance and auto_acceptance.phase_started == true then
+    return false
+  end
   if not hero or not hero.is_exist or not hero:is_exist() then
     return false
   end

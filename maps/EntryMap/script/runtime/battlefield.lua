@@ -245,6 +245,19 @@ function M.create(env)
     return CONFIG.waves[STATE.current_wave_index]
   end
 
+  local function is_n0_stage_active()
+    local stage_def = STATE and STATE.current_stage_def or nil
+    local stage_id = tostring(stage_def and stage_def.stage_id or '')
+    if stage_id:match('%-0$') then
+      return true
+    end
+    local display_name = tostring(stage_def and stage_def.display_name or '')
+    if display_name:find('N0', 1, true) then
+      return true
+    end
+    return false
+  end
+
   local function get_boss_name(wave)
     return string.format('第%d波Boss', wave.index)
   end
@@ -1109,6 +1122,9 @@ function M.create(env)
     if STATE.game_finished or STATE.session_phase ~= 'battle' then
       return
     end
+    if is_n0_stage_active() then
+      return
+    end
     local def = CONFIG.challenges[challenge_id]
     if not def then
       return
@@ -1136,6 +1152,9 @@ function M.create(env)
 
   function api.start_mainline_task_challenge(task)
     if STATE.game_finished or STATE.session_phase ~= 'battle' then
+      return nil
+    end
+    if is_n0_stage_active() then
       return nil
     end
     if not task or not task.id then
@@ -1179,6 +1198,9 @@ function M.create(env)
     if not runner or not runner.active or STATE.game_finished or STATE.session_phase ~= 'battle' then
       return
     end
+    if is_n0_stage_active() then
+      return
+    end
 
     runner.elapsed = runner.elapsed + dt
 
@@ -1217,6 +1239,9 @@ function M.create(env)
 
   function api.update_challenges(dt)
     if STATE.session_phase ~= 'battle' then
+      return
+    end
+    if is_n0_stage_active() then
       return
     end
 
@@ -1269,6 +1294,9 @@ function M.create(env)
   end
 
   function api.force_spawn_boss()
+    if is_n0_stage_active() then
+      return false, 'N0 阶段已禁用主线刷怪链路。'
+    end
     local runner = STATE.active_wave
     if not runner or not runner.active then
       return false, '当前没有进行中的主线波次。'

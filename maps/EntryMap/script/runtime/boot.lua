@@ -535,10 +535,14 @@ local function install_projectile_override_hook()
     if forced_key > 0 and type(args) == 'table' then
       local copied = {}
       for k, v in pairs(args) do
-        copied[k] = v
+        if k ~= 'skip_projectile_override' then
+          copied[k] = v
+        end
+      end
+      if args.skip_projectile_override ~= true then
+        copied.key = math.floor(forced_key)
       end
       args = copied
-      args.key = math.floor(forced_key)
     end
     return projectile_create_original(args, ...)
   end
@@ -3014,6 +3018,7 @@ battle_auto_acceptance_system = BattleAutoAcceptanceSystem.create({
   CONFIG = CONFIG,
   y3 = y3,
   message = message,
+  auto_start_in_n0 = true,
   is_battle_active = function()
     return STATE.session_phase == 'battle' and STATE.game_finished ~= true
   end,

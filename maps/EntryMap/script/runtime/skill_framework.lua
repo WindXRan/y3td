@@ -1,4 +1,4 @@
-local M = {}
+﻿local M = {}
 local Registry = require 'runtime.skill_framework_registry'
 
 local VALID_DAMAGE_TYPE = { ['物理'] = true, ['法术'] = true, ['真实'] = true }
@@ -381,10 +381,12 @@ function M.create(env)
     local impact_point = cast_ctx.impact_point
 
     if skill.pattern == 'line_pierce' then
-      if not target then
-        return false, '附近没有可攻击目标。'
+      local angle = 0
+      if target then
+        angle = get_hero_facing_towards and get_hero_facing_towards(target) or 0
+      elseif cast_ctx.caster and cast_ctx.caster.get_facing then
+        angle = tonumber(cast_ctx.caster:get_facing()) or 0
       end
-      local angle = get_hero_facing_towards and get_hero_facing_towards(target) or 0
       local end_point = create_offset_point and create_offset_point(y3, hero_point, angle, skill.hit_model.range, 0) or impact_point
       if not end_point then
         return false, '直线终点创建失败。'
@@ -603,7 +605,7 @@ function M.create(env)
     end
 
     local target, impact_point = resolve_target(skill, caster, hero_point, cast_params)
-    if skill.behavior.unit_target and not target then
+    if skill.behavior.unit_target and skill.pattern ~= 'line_pierce' and not target then
       telemetry.fail_count = telemetry.fail_count + 1
       telemetry.last_reason = 'no_target'
       return false, string.format('[%s] 没有可用目标', skill.id)
@@ -756,3 +758,4 @@ function M.create(env)
 end
 
 return M
+

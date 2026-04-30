@@ -18,6 +18,8 @@ function M.create(env)
   local get_game_time = env.get_game_time
   -- N0 默认按真实触发率运行；如需强制 100% 触发，仅在构造时显式传入 true。
   local force_special_effects_100_in_n0 = env.force_special_effects_100_in_n0 == true
+  -- 默认关闭 N0 自动验收，避免开局自动生成验收靶子/锚定主角影响实机。
+  local auto_start_in_n0 = env.auto_start_in_n0 == true
   local DEFAULT_N0_ACTIVATION_MODE = 'all'
 
   local function parse_bool(value, default_value)
@@ -688,6 +690,22 @@ function M.create(env)
 
   local function update(dt)
     local runtime = ensure_runtime()
+    if auto_start_in_n0 ~= true then
+      if runtime.phase_started then
+        emit_skill_audit(runtime, true)
+        flush_report_to_message(runtime)
+        clear_runtime_units(runtime)
+      end
+      if set_force_special_effects_100 and runtime.force_special_effects_owned then
+        set_force_special_effects_100(false)
+        runtime.force_special_effects_owned = false
+      end
+      runtime.phase_started = false
+      runtime.initialized = false
+      runtime.phase_start_time = nil
+      runtime.hero_anchor = nil
+      return
+    end
     if not is_battle_active or not is_battle_active() then
       if runtime.phase_started then
         emit_skill_audit(runtime, true)

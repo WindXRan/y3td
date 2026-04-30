@@ -91,13 +91,16 @@ function M.create(env)
       return
     end
     local scale = math.max(0.6, (tonumber(radius) or 0) / DAMAGE_AREA_DEBUG_SCALE_BASE)
-    pcall(y3.particle.create, {
-      type = DAMAGE_AREA_DEBUG_EFFECT_ID,
+    local forced = tonumber(STATE and STATE.debug_force_projectile_key) or 0
+    local key = forced > 0 and math.floor(forced) or 201392033
+    pcall(y3.projectile.create, {
+      key = key,
       target = center,
-      scale = scale,
+      socket = 'origin',
+      owner = STATE and STATE.hero or nil,
+      angle = 0,
       time = duration or 0.35,
-      height = DAMAGE_AREA_DEBUG_HEIGHT,
-      immediate = true,
+      remove_immediately = true,
     })
   end
 
@@ -828,13 +831,16 @@ function M.create(env)
       return nil
     end
   
-    local ok, particle = pcall(y3.particle.create, {
-      type = effect_key,
+    local forced = tonumber(STATE and STATE.debug_force_projectile_key) or 0
+    local key = forced > 0 and math.floor(forced) or 201392033
+    local ok, particle = pcall(y3.projectile.create, {
+      key = key,
       target = unit,
       socket = socket or 'origin',
-      scale = scale or 1.0,
+      owner = STATE and STATE.hero or nil,
+      angle = 0,
       time = scale_visual_duration(time),
-      immediate = true,
+      remove_immediately = true,
     })
     if ok and particle then
       apply_visual_animation_speed(particle)
@@ -848,13 +854,16 @@ function M.create(env)
       return nil
     end
   
-    local ok, particle = pcall(y3.particle.create, {
-      type = effect_key,
+    local forced = tonumber(STATE and STATE.debug_force_projectile_key) or 0
+    local key = forced > 0 and math.floor(forced) or 201392033
+    local ok, particle = pcall(y3.projectile.create, {
+      key = key,
       target = point,
-      scale = scale or 1.0,
+      socket = 'origin',
+      owner = STATE and STATE.hero or nil,
+      angle = 0,
       time = scale_visual_duration(time),
-      height = height or 0,
-      immediate = true,
+      remove_immediately = true,
     })
     if ok and particle then
       apply_visual_animation_speed(particle)
@@ -897,19 +906,18 @@ function M.create(env)
     if stage == 'cast' then
       effect_key, scale, time = vfx.cast_particle, vfx.cast_scale, vfx.cast_time
     elseif stage == 'impact' then
-      effect_key, scale, time = vfx.impact_particle, vfx.impact_scale, vfx.impact_time
+      -- 全局禁用受击阶段特效（命中点）
+      effect_key, scale, time = nil, nil, nil
     elseif stage == 'burst' or stage == 'terminal' then
-      effect_key = vfx.explosion_particle or vfx.impact_particle
-      scale = vfx.explosion_scale or vfx.impact_scale
-      time = vfx.explosion_time or vfx.impact_time
+      -- 全局禁用受击阶段特效（爆发/终结）
+      effect_key, scale, time = nil, nil, nil
     elseif stage == 'charge' then
       effect_key = vfx.charge_particle or vfx.cast_particle or vfx.chain_particle
       scale = vfx.charge_scale or vfx.cast_scale or vfx.chain_scale
       time = vfx.charge_time or vfx.cast_time or vfx.chain_time
     elseif stage == 'chain' then
-      effect_key = vfx.chain_particle or vfx.impact_particle or vfx.explosion_particle
-      scale = vfx.chain_scale or vfx.impact_scale or vfx.explosion_scale
-      time = vfx.chain_time or vfx.impact_time or vfx.explosion_time
+      -- 全局禁用受击阶段特效（连锁命中）
+      effect_key, scale, time = nil, nil, nil
     elseif stage == 'sustain' or stage == 'tick' then
       effect_key = vfx.chain_particle or vfx.charge_particle or vfx.impact_particle or vfx.cast_particle
       scale = vfx.chain_scale or vfx.charge_scale or vfx.impact_scale or vfx.cast_scale or 1.0
@@ -964,7 +972,14 @@ function M.create(env)
   local PROJECTILE_DEFAULT_TARGET_DISTANCE = tonumber(PROJECTILE_TUNING.default_target_distance) or 60
   local PROJECTILE_DEFAULT_TIME = tonumber(PROJECTILE_TUNING.default_time) or 3.0
   local PROJECTILE_LOCAL_DEFAULT_TIME = tonumber(PROJECTILE_TUNING.local_default_time) or 0.25
-  local function resolve_projectile_key(projectile_key)
+  local function is_basic_attack_ability(ability)
+    return type(ability) == 'table' and tostring(ability.id or '') == 'basic_attack'
+  end
+
+  local function resolve_projectile_key(projectile_key, ability)
+    if is_basic_attack_ability(ability) then
+      return projectile_key
+    end
     local forced = tonumber(STATE and STATE.debug_force_projectile_key) or 0
     if forced > 0 then
       return forced
@@ -1002,11 +1017,12 @@ function M.create(env)
     end
   
     local ok_create, projectile = pcall(y3.projectile.create, {
-      key = resolve_projectile_key(vfx.projectile_key),
+      key = resolve_projectile_key(vfx.projectile_key, ability),
       target = STATE.hero,
       socket = 'origin',
       owner = STATE.hero,
       ability = ability,
+      skip_projectile_override = is_basic_attack_ability(ability),
       angle = launch_angle,
       time = vfx.projectile_time or PROJECTILE_DEFAULT_TIME,
       remove_immediately = true,
@@ -1103,10 +1119,11 @@ function M.create(env)
     end
 
     local ok_create, projectile = pcall(y3.projectile.create, {
-      key = resolve_projectile_key(vfx.projectile_key),
+      key = resolve_projectile_key(vfx.projectile_key, ability),
       target = origin_point,
       owner = STATE.hero,
       ability = ability,
+      skip_projectile_override = is_basic_attack_ability(ability),
       angle = launch_angle,
       height = PROJECTILE_FLIGHT_HEIGHT,
       time = vfx.projectile_time or PROJECTILE_DEFAULT_TIME,
@@ -1192,11 +1209,12 @@ function M.create(env)
     end
 
     local ok_create, projectile = pcall(y3.projectile.create, {
-      key = resolve_projectile_key(vfx.projectile_key),
+      key = resolve_projectile_key(vfx.projectile_key, ability),
       target = STATE.hero,
       socket = 'origin',
       owner = STATE.hero,
       ability = ability,
+      skip_projectile_override = is_basic_attack_ability(ability),
       time = vfx.projectile_time or PROJECTILE_LOCAL_DEFAULT_TIME,
       remove_immediately = true,
     })
@@ -1411,10 +1429,8 @@ function M.create(env)
       return
     end
 
-    local hit_effect_enabled = CONFIG.damage_hit_effect_enabled ~= false and not is_hit_effect_hidden()
-    if options and options.force_hit_effect == true and not is_hit_effect_hidden() then
-      hit_effect_enabled = true
-    end
+    -- 受击特效全局禁用：普攻/技能仅保留伤害，不挂命中特效。
+    local hit_effect_enabled = false
     local final_damage = compute_basic_attack_final_damage(skill, target, amount)
     if final_damage <= 0 then
       return
@@ -1479,9 +1495,6 @@ function M.create(env)
     end
 
     local hit_center = get_secondary_hit_center(unit)
-    if hit_center then
-      play_skill_particle_on_point(skill, hit_center, options and options.stage or 'chain', options and options.height or 16)
-    end
     if options and options.audio_stage then
       play_skill_audio(skill, options.audio_stage, unit or hit_center)
     end
@@ -1706,7 +1719,7 @@ function M.create(env)
         play_skill_audio(skill, 'chain', unit)
       end
       deal_single_skill_damage(unit, skill, get_skill_damage(skill) * ratio, {
-        particle = vfx.chain_particle or vfx.impact_particle,
+        particle = nil,
       })
       apply_generic_skill_statuses(skill, unit)
       hit_count = hit_count + 1
@@ -1769,7 +1782,7 @@ function M.create(env)
       if is_active_enemy(target) then
         play_skill_audio(skill, 'impact', target)
         deal_single_skill_damage(target, skill, damage, {
-          particle = vfx.impact_particle,
+          particle = nil,
         })
         apply_generic_skill_statuses(skill, target)
       end
@@ -1790,7 +1803,7 @@ function M.create(env)
           skill,
           damage,
           {
-            particle = vfx.chain_particle or vfx.impact_particle,
+            particle = nil,
           }
         )) do
           play_skill_audio(skill, 'chain', unit)
@@ -1807,7 +1820,7 @@ function M.create(env)
             skill,
             damage * (opts and opts.return_ratio or skill.return_pass_ratio or 0.75),
             {
-              particle = vfx.chain_particle or vfx.impact_particle,
+              particle = nil,
             }
           )) do
             apply_generic_skill_statuses(skill, unit)
@@ -1945,7 +1958,7 @@ function M.create(env)
       deal_chain_skill_damage(visited, skill, damage, {
         visual = function()
           return {
-            particle = vfx.chain_particle or vfx.impact_particle,
+            particle = nil,
           }
         end,
         before_hit = function(context)
@@ -1982,7 +1995,7 @@ function M.create(env)
         deal_chain_skill_damage(return_targets, skill, damage * (skill.return_pass_ratio or 0.65), {
           visual = function()
             return {
-              particle = vfx.chain_particle or vfx.impact_particle,
+              particle = nil,
             }
           end,
           before_hit = function(context)
@@ -2260,7 +2273,7 @@ function M.create(env)
         local was_alive = is_unit_alive_now(victim)
         play_skill_audio(skill, 'impact', victim)
         deal_single_skill_damage(victim, skill, amount, {
-          particle = vfx.impact_particle,
+          particle = nil,
         })
         apply_generic_skill_statuses(skill, victim)
 
@@ -2328,12 +2341,12 @@ function M.create(env)
     local split_ratio = get_effective_skill_value(skill, 'split_ratio')
     local hero_point = get_hero_point()
     local secondary_search_radius = get_basic_attack_secondary_search_radius()
-    local extra_hit_particle = vfx.chain_particle or vfx.impact_particle
-    local primary_hit_particle = vfx.impact_particle or extra_hit_particle
+    local extra_hit_particle = nil
+    local primary_hit_particle = nil
     local style_flags = get_weapon_arrow_style_flags()
-    local sniper_hit_particle = vfx.impact_particle or primary_hit_particle
-    local gale_hit_particle = vfx.chain_particle or vfx.cast_particle or extra_hit_particle
-    local multishot_hit_particle = vfx.cast_particle or vfx.chain_particle or extra_hit_particle
+    local sniper_hit_particle = nil
+    local gale_hit_particle = nil
+    local multishot_hit_particle = nil
     if style_flags.sniper <= 0 then
       sniper_hit_particle = primary_hit_particle
     end
@@ -2417,8 +2430,8 @@ function M.create(env)
       if is_active_enemy(target) then
         deal_basic_attack_damage(skill, target, damage, {
           common_attack = false,
-          particle = sniper_hit_particle,
-          force_hit_effect = true,
+          particle = nil,
+          force_hit_effect = false,
         })
         if (runtime.normal_attack_bonus_ratio or 0) > 0 then
           deal_single_skill_damage(target, '物理', damage * runtime.normal_attack_bonus_ratio, {
@@ -2438,7 +2451,7 @@ function M.create(env)
           play_skill_audio(skill, 'burst', impact_center or splash_center)
           for _, unit in ipairs(splash_units) do
             deal_basic_attack_secondary_damage(skill, unit, damage * explosion_ratio, {
-              particle = extra_hit_particle,
+              particle = nil,
               stage = 'chain',
             })
           end
@@ -2454,7 +2467,7 @@ function M.create(env)
           split_count
         )) do
           if deal_basic_attack_secondary_damage(skill, unit, damage * split_ratio, {
-            particle = extra_hit_particle,
+            particle = nil,
             audio_stage = split_hits == 0 and 'chain' or nil,
           }) then
             split_hits = split_hits + 1
@@ -2477,7 +2490,7 @@ function M.create(env)
               use_skill_damage = true,
               damage_meta = '物理',
               text_type = 'physics',
-              particle = extra_hit_particle,
+              particle = nil,
               stage = 'chain',
             })
           end
@@ -2491,7 +2504,7 @@ function M.create(env)
             use_skill_damage = true,
             damage_meta = basic_attack_def,
             text_type = 'physics',
-            particle = extra_hit_particle,
+            particle = nil,
             audio_stage = bounced == 0 and 'chain' or nil,
           }) then
             bounced = bounced + 1
@@ -2514,7 +2527,7 @@ function M.create(env)
             use_skill_damage = true,
             damage_meta = basic_attack_def,
             text_type = 'physics',
-            particle = extra_hit_particle,
+            particle = nil,
             audio_stage = bounced == 0 and 'chain' or nil,
             skip_hunter_first_hit = true,
           }) then
@@ -2549,8 +2562,8 @@ function M.create(env)
 
           deal_basic_attack_damage(skill, unit, damage * multishot_ratio, {
             text_type = 'physics',
-            particle = multishot_hit_particle,
-            force_hit_effect = true,
+            particle = nil,
+            force_hit_effect = false,
             common_attack = false,
           })
           apply_armor_break_on_hit(unit)
@@ -2671,6 +2684,9 @@ function M.create(env)
     if not skill or not STATE.hero or not STATE.hero:is_exist() then
       return
     end
+    if STATE.basic_attack_enabled == false then
+      return
+    end
   
     skill.cooldown_remaining = math.max(0, (skill.cooldown_remaining or 0) - dt)
     if skill.cooldown_remaining > 0 then
@@ -2694,6 +2710,23 @@ function M.create(env)
     update_basic_attack(dt)
   end
 
+  local function debug_cast_basic_attack_once()
+    local skill = get_basic_attack_skill()
+    if not skill or not STATE.hero or not STATE.hero:is_exist() then
+      return false, '普攻能力未就绪'
+    end
+    if STATE.basic_attack_enabled == false then
+      return false, '普攻已被禁止'
+    end
+    local target = pick_skill_target(skill)
+    if not target then
+      return false, '未找到普攻目标'
+    end
+    cast_attack_skill_once(skill, target)
+    skill.cooldown_remaining = get_basic_attack_interval(skill)
+    return true, '已施放普攻能力'
+  end
+
   return {
     get_basic_attack_skill = get_basic_attack_skill,
     get_current_basic_attack_range = get_current_basic_attack_range,
@@ -2707,6 +2740,7 @@ function M.create(env)
     show_attack_skill_loadout = show_attack_skill_loadout,
     unlock_attack_skill = unlock_attack_skill,
     get_skill_damage_template_id = get_skill_damage_template_id,
+    debug_cast_basic_attack_once = debug_cast_basic_attack_once,
     update_enemy_statuses = update_enemy_statuses,
     update_attack_skills = update_attack_skills,
   }

@@ -1,10 +1,6 @@
 local M = {}
 
-local RANGE_EFFECT_ID = 101492
-local RANGE_EFFECT_HEIGHT = 6
 local RANGE_EFFECT_UPDATE_INTERVAL = 0.10
-local RANGE_EFFECT_SCALE_BASE = 110
-local RANGE_EFFECT_MIN_SCALE = 0.8
 
 function M.create(env)
   local STATE = env.STATE
@@ -17,18 +13,7 @@ function M.create(env)
   end
 
   local events_registered = false
-  local preview_particle = nil
   local preview_timer = nil
-
-  local function remove_preview_particle()
-    if not preview_particle then
-      return
-    end
-    pcall(function()
-      preview_particle:remove()
-    end)
-    preview_particle = nil
-  end
 
   local function stop_preview_timer()
     if not preview_timer then
@@ -60,7 +45,6 @@ function M.create(env)
 
   local function clear_preview()
     stop_preview_timer()
-    remove_preview_particle()
     disable_builtin_preview()
   end
 
@@ -71,59 +55,6 @@ function M.create(env)
       and STATE.hero:is_exist()
       and selected_unit ~= nil
       and selected_unit == STATE.hero
-  end
-
-  local function get_preview_scale(range)
-    local numeric = y3.helper.tonumber(range) or 0
-    if numeric <= 0 then
-      numeric = 1
-    end
-    return math.max(RANGE_EFFECT_MIN_SCALE, numeric / RANGE_EFFECT_SCALE_BASE)
-  end
-
-  local function clone_unit_point(unit)
-    if not unit or not unit.get_point then
-      return nil
-    end
-    local point = unit:get_point()
-    if not point or not point.move then
-      return nil
-    end
-    return point:move()
-  end
-
-  local function update_preview_particle(unit)
-    local point = clone_unit_point(unit)
-    if not point then
-      return false
-    end
-
-    local scale = get_preview_scale(get_current_basic_attack_range())
-    if not preview_particle then
-      local ok, particle = pcall(y3.particle.create, {
-        type = RANGE_EFFECT_ID,
-        target = point,
-        scale = scale,
-        time = -1,
-        height = RANGE_EFFECT_HEIGHT,
-      })
-      if not ok or not particle then
-        return false
-      end
-      preview_particle = particle
-      return true
-    end
-
-    pcall(function()
-      preview_particle:set_point(point)
-    end)
-    pcall(function()
-      preview_particle:set_scale(scale, scale, scale)
-    end)
-    pcall(function()
-      preview_particle:set_height(RANGE_EFFECT_HEIGHT)
-    end)
-    return true
   end
 
   local function get_current_local_selected_unit()
@@ -145,8 +76,7 @@ function M.create(env)
       clear_preview()
       return false
     end
-
-    update_preview_particle(selected_unit)
+    disable_builtin_preview()
 
     if preview_timer then
       return true
@@ -157,11 +87,10 @@ function M.create(env)
       if not should_show_preview(current_selected_unit) then
         timer:remove()
         preview_timer = nil
-        remove_preview_particle()
         disable_builtin_preview()
         return
       end
-      update_preview_particle(current_selected_unit)
+      disable_builtin_preview()
     end)
     return true
   end

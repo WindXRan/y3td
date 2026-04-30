@@ -25,13 +25,13 @@ local FRAMEWORK_SKILLS = {
   sf_area_tick = {
     id = 'sf_area_tick',
     name = '框架持续领域',
-    pattern = 'area_tick',
+    pattern = 'area_burst',
     target_mode = 'point',
     damage_type = '法术',
-    timeline = { duration = 3.6, tick_interval = 0.30, cast_point = 0.08 },
+    timeline = { impact_delay = 0.26, cast_point = 0.08 },
     resource = { cooldown = 1.6 },
     hit_model = { radius = 420, max_hits = 0 },
-    scale = { tick_ratio = 0.58 },
+    scale = { attack_ratio = 1.20 },
   },
   sf_chain_bounce = {
     id = 'sf_chain_bounce',
@@ -110,10 +110,6 @@ local PATTERN_PRODUCTION_PATCH = {
     hit_model = { radius = 340, max_hits = 0 },
     timeline = { impact_delay = 0.24 },
   },
-  area_tick = {
-    timeline = { duration = 3.0, tick_interval = 0.24 },
-    hit_model = { radius = 380, max_hits = 0 },
-  },
   chain_bounce = {
     hit_model = { bounce = 4, radius = 500 },
     scale = { bounce_ratio = 0.82 },
@@ -158,8 +154,6 @@ function M.list_framework_skill_ids()
   return {
     'sf_line_pierce',
     'sf_area_burst',
-    'sf_area_tick',
-    'sf_chain_bounce',
   }
 end
 
@@ -181,6 +175,9 @@ function M.build_framework_skill_tier(id, tier, visual)
 end
 
 function M.build_production_skill(id, tier, visual, override)
+  if id == 'sf_area_tick' or id == 'sf_chain_bounce' then
+    id = 'sf_area_burst'
+  end
   local def = M.build_framework_skill_tier(id, tier, visual)
   if not def then
     return nil

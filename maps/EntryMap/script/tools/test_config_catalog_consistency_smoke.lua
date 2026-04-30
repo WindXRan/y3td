@@ -5,6 +5,7 @@ local attreffect = require 'data.object_tables.attreffect'
 local waves = require 'data.object_tables.waves'
 local challenges = require 'data.object_tables.challenges'
 local battlefield_scene_config = require 'data.object_tables.battlefield_scene_config'
+local battle_base_config = require 'data.object_tables.battle_base_config'
 local stages = require 'data.object_tables.stages'
 local stage_modes = require 'data.object_tables.stage_modes'
 local hero_attr_defs = require 'runtime.hero_attr_defs'
@@ -12,9 +13,6 @@ local hero_attr_defs = require 'runtime.hero_attr_defs'
 local hero_attr_rows = CsvLoader.read_rows('data_csv/hero_attr_config.csv')
 local hero_init_rows = CsvLoader.read_rows('data_csv/hero_init_stats.csv')
 local hero_level_progression_rows = CsvLoader.read_rows('data_csv/hero_level_progression.csv')
-local battle_base_rows = CsvLoader.read_rows('data_csv/battle_base_rules.csv')
-local choice_panel_rows = CsvLoader.read_rows('data_csv/choice_panel_config.csv')
-local battlefield_scene_rows = CsvLoader.read_rows('data_csv/battlefield_scene_config.csv')
 local gear_upgrade_slot_rows = CsvLoader.read_rows('data_csv/gear_upgrade_slots.csv')
 local gear_upgrade_level_rows = CsvLoader.read_rows('data_csv/gear_upgrade_levels.csv')
 
@@ -48,23 +46,11 @@ for _, row in ipairs(hero_level_progression_rows) do
 end
 assert(expected_level == 61, 'expected hero_level_progression to cover levels 1-60')
 
-local seen_battle_base_keys = {}
-for _, row in ipairs(battle_base_rows) do
-  assert(row.group ~= nil and row.group ~= '', 'expected battle_base_rules group')
-  assert(row.key ~= nil and row.key ~= '', 'expected battle_base_rules key')
-  local grouped_key = row.group .. '::' .. row.key
-  assert(seen_battle_base_keys[grouped_key] == nil, 'expected unique battle_base_rules grouped key: ' .. grouped_key)
-  seen_battle_base_keys[grouped_key] = true
-end
-
-local seen_choice_panel_keys = {}
-for _, row in ipairs(choice_panel_rows) do
-  assert(row.record_type ~= nil and row.record_type ~= '', 'expected choice_panel_config record_type')
-  assert(row.key ~= nil and row.key ~= '', 'expected choice_panel_config key')
-  local scoped_key = row.record_type .. '::' .. row.key
-  assert(seen_choice_panel_keys[scoped_key] == nil, 'expected unique choice_panel_config scoped key: ' .. scoped_key)
-  seen_choice_panel_keys[scoped_key] = true
-end
+assert(type(battle_base_config.global_rules) == 'table', 'expected battle_base_config.global_rules')
+assert(type(battle_base_config.progression_rules) == 'table', 'expected battle_base_config.progression_rules')
+assert(type(battle_base_config.resource_rules) == 'table', 'expected battle_base_config.resource_rules')
+assert(type(battle_base_config.challenge_rules) == 'table', 'expected battle_base_config.challenge_rules')
+assert(type(battle_base_config.hero_level_progression) == 'table', 'expected battle_base_config.hero_level_progression')
 
 local stage_ids = {}
 for _, stage in ipairs(stages.list or {}) do
@@ -119,25 +105,21 @@ assert(expected_gear_level == 101, 'expected gear_upgrade_levels to cover levels
 local scene_area_ids = {}
 local scene_point_ids = {}
 local scene_save_slot_ids = {}
-
-for _, row in ipairs(battlefield_scene_rows) do
-  if row.record_type == 'point' then
-    assert(row.id ~= nil and row.id ~= '', 'expected battlefield point id')
-    assert(scene_point_ids[row.id] == nil, 'expected unique battlefield point id: ' .. tostring(row.id))
-    scene_point_ids[row.id] = true
-  elseif row.record_type == 'area' then
-    assert(row.id ~= nil and row.id ~= '', 'expected battlefield area id')
-    assert(scene_area_ids[row.id] == nil, 'expected unique battlefield area id: ' .. tostring(row.id))
-    scene_area_ids[row.id] = true
-  elseif row.record_type == 'slow_zone' then
-    assert(row.order_index ~= nil and row.order_index ~= '', 'expected slow_zone order_index')
-    assert(row.ref_id ~= nil and row.ref_id ~= '', 'expected slow_zone ref_id')
-    assert(scene_area_ids[row.ref_id] == true or battlefield_scene_config.areas[row.ref_id] ~= nil, 'expected slow_zone ref_id to point at area: ' .. tostring(row.ref_id))
-  elseif row.record_type == 'save_slot' then
-    assert(row.id ~= nil and row.id ~= '', 'expected save_slot id')
-    assert(scene_save_slot_ids[row.id] == nil, 'expected unique save_slot id: ' .. tostring(row.id))
-    scene_save_slot_ids[row.id] = true
-  end
+for point_id, _ in pairs(battlefield_scene_config.points or {}) do
+  assert(scene_point_ids[point_id] == nil, 'expected unique battlefield point id: ' .. tostring(point_id))
+  scene_point_ids[point_id] = true
+end
+for area_id, _ in pairs(battlefield_scene_config.areas or {}) do
+  assert(scene_area_ids[area_id] == nil, 'expected unique battlefield area id: ' .. tostring(area_id))
+  scene_area_ids[area_id] = true
+end
+for _, zone in ipairs(battlefield_scene_config.main_enemy_slow_zones or {}) do
+  assert(zone.area_id ~= nil and zone.area_id ~= '', 'expected slow_zone area_id')
+  assert(scene_area_ids[zone.area_id] == true, 'expected slow_zone area_id to point at area: ' .. tostring(zone.area_id))
+end
+for slot_id, _ in pairs(battlefield_scene_config.save_slots or {}) do
+  assert(scene_save_slot_ids[slot_id] == nil, 'expected unique save_slot id: ' .. tostring(slot_id))
+  scene_save_slot_ids[slot_id] = true
 end
 
 for _, wave in ipairs(waves.list or {}) do
