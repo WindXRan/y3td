@@ -119,8 +119,10 @@ local M = {
 }
 
 for _, wave in ipairs(M.waves) do
-  M.unit_ids.main_monsters[wave.id] = wave.main_unit_id
-  M.unit_ids.bosses[wave.id] = wave.boss_unit_id
+  if wave and wave.id ~= nil and wave.id ~= '' then
+    M.unit_ids.main_monsters[wave.id] = wave.main_unit_id
+    M.unit_ids.bosses[wave.id] = wave.boss_unit_id
+  end
 end
 
 return M
