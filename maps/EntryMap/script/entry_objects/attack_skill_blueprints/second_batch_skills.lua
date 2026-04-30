@@ -1,1 +1,0 @@
-return require 'data.object_tables.attack_skill_second_batch_blueprints'

@@ -1,6 +1,6 @@
 local CsvLoader = require 'data.csv_loader'
 local helpers = require 'entry_objects.helpers'
-local SecondBatchBlueprints = require 'entry_objects.attack_skill_blueprints.second_batch_skills'
+local SecondBatchBlueprints = require 'data.object_tables.attack_skill_second_batch_blueprints'
 local SkillTaxonomy = require 'data.object_tables.attack_skill_taxonomy'
 local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
 local Json = require 'y3.tools.json'
