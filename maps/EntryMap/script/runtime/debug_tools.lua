@@ -598,7 +598,7 @@ function M.create(env)
   end
 
   local function create_button(parent, text, x, y, width, height, callback, color)
-    create_rect(parent, x, y, width, height, color or { 42, 72, 108, 230 })
+    create_rect(parent, x, y, width, height, color or { 120, 128, 140, 110 })
     local button = parent:create_child('按钮')
     button:set_ui_size(width, height)
     button:set_pos(x + width / 2, y + height / 2)
@@ -735,21 +735,21 @@ function M.create(env)
     }
     STATE.gm_ui.sample_showcase = sample_ui
 
-    sample_ui.panel = create_rect(panel, 24, 22, 340, 240, { 14, 26, 40, 232 })
-    create_text(panel, '技能展台模式', 36, 236, 150, 24, 18, { 245, 248, 255, 255 })
-    create_text(panel, '点击条目：切换并施放（固定中区）', 36, 216, 300, 18, 12, { 168, 192, 220, 255 })
-    sample_ui.page_text = create_text(panel, '', 258, 236, 96, 20, 12, { 205, 220, 236, 255 })
-    sample_ui.status_text = create_text(panel, '', 36, 32, 314, 18, 12, { 184, 206, 230, 255 })
+    sample_ui.panel = create_rect(panel, 18, 22, 380, 370, { 14, 26, 40, 232 })
+    create_text(panel, '技能列表', 30, 362, 120, 24, 18, { 245, 248, 255, 255 })
+    create_text(panel, '点击技能名施放  |  CSV 配表驱动', 30, 342, 360, 18, 12, { 168, 192, 220, 255 })
+    sample_ui.page_text = create_text(panel, '', 280, 362, 110, 20, 12, { 205, 220, 236, 255 })
+    sample_ui.status_text = create_text(panel, '', 30, 32, 350, 18, 12, { 184, 206, 230, 255 })
 
-    for i = 1, 6 do
-      local y = 184 - (i - 1) * 28
-      sample_ui.list_buttons[i] = create_button(panel, '', 36, y, 286, 24, function()
+    for i = 1, 10 do
+      local y = 310 - (i - 1) * 28
+      sample_ui.list_buttons[i] = create_button(panel, '', 30, y, 326, 24, function()
         if not sample_skill_system or not sample_skill_system.get_sample_defs then
           debug_message('样例技能系统未初始化。')
           return
         end
         local defs = sample_skill_system.get_sample_defs() or {}
-        local base = (sample_ui.page - 1) * 6
+        local base = (sample_ui.page - 1) * 10
         local def = defs[base + i]
         if not def then
           return
@@ -763,25 +763,25 @@ function M.create(env)
           env.debug_cast_sample_skill(def.id)
           set_text(sample_ui.status_text, string.format('已施放：%s @ %s', tostring(def.id), center_text))
         end
-      end, { 30, 56, 84, 235 })
+      end, { 90, 98, 110, 130 })
     end
 
-    create_button(panel, '上一页', 36, 54, 90, 24, function()
+    create_button(panel, '上一页', 30, 54, 84, 24, function()
       local defs = sample_skill_system and sample_skill_system.get_sample_defs and sample_skill_system.get_sample_defs() or {}
-      local pages = math.max(1, math.ceil((#defs) / 6))
+      local pages = math.max(1, math.ceil((#defs) / 10))
       sample_ui.page = math.max(1, sample_ui.page - 1)
       if sample_ui.page > pages then
         sample_ui.page = pages
       end
     end, { 66, 90, 120, 235 })
 
-    create_button(panel, '下一页', 136, 54, 90, 24, function()
+    create_button(panel, '下一页', 124, 54, 84, 24, function()
       local defs = sample_skill_system and sample_skill_system.get_sample_defs and sample_skill_system.get_sample_defs() or {}
-      local pages = math.max(1, math.ceil((#defs) / 6))
+      local pages = math.max(1, math.ceil((#defs) / 10))
       sample_ui.page = math.min(pages, sample_ui.page + 1)
     end, { 66, 90, 120, 235 })
 
-    create_button(panel, '中区连播', 236, 54, 86, 24, function()
+    create_button(panel, '中区连播', 218, 54, 138, 24, function()
       local center = get_showcase_center_point()
       if center and STATE and STATE.hero and STATE.hero.blink then
         pcall(STATE.hero.blink, STATE.hero, center)
@@ -808,7 +808,7 @@ function M.create(env)
       return
     end
     local defs = sample_skill_system and sample_skill_system.get_sample_defs and sample_skill_system.get_sample_defs() or {}
-    local pages = math.max(1, math.ceil((#defs) / 6))
+    local pages = math.max(1, math.ceil((#defs) / 10))
     if sample_ui.page > pages then
       sample_ui.page = pages
     end
@@ -816,8 +816,8 @@ function M.create(env)
       sample_ui.page = 1
     end
     set_text(sample_ui.page_text, string.format('第 %d/%d 页', sample_ui.page, pages))
-    local base = (sample_ui.page - 1) * 6
-    for i = 1, 6 do
+    local base = (sample_ui.page - 1) * 10
+    for i = 1, 10 do
       local idx = base + i
       local def = defs[idx]
       local btn = sample_ui.list_buttons[i]

@@ -147,7 +147,16 @@
                         false
                     ]
                 }, 
-                "event_list": [], 
+                "event_list": [
+                    {
+                        "action_list": [], 
+                        "enabled": true, 
+                        "name": "button_1_0", 
+                        "not_wait_network": false, 
+                        "sound_id": null, 
+                        "type": 30
+                    }
+                ], 
                 "font": {
                     "__tuple__": true, 
                     "items": [
@@ -265,14 +274,14 @@
                 }, 
                 "hover_status_added": false, 
                 "is_scale9_enable": false, 
-                "name": "button", 
+                "name": "button_1", 
                 "normal_cap_insets": {
                     "__tuple__": true, 
                     "items": [
-                        86.0, 
-                        28.0, 
-                        86.0, 
-                        28.0
+                        376.0, 
+                        277.0, 
+                        376.0, 
+                        277.0
                     ]
                 }, 
                 "normal_color": {
@@ -293,7 +302,7 @@
                         255
                     ]
                 }, 
-                "normal_picture": 131160, 
+                "normal_picture": 907253, 
                 "normal_text": {
                     "__tuple__": true, 
                     "items": [
@@ -318,19 +327,19 @@
                 "press_cap_insets": {
                     "__tuple__": true, 
                     "items": [
-                        24, 
-                        8, 
-                        24, 
-                        8
+                        376.0, 
+                        277.0, 
+                        376.0, 
+                        277.0
                     ]
                 }, 
                 "press_color": {
                     "__tuple__": true, 
                     "items": [
-                        255, 
-                        255, 
-                        255, 
-                        255
+                        112, 
+                        72, 
+                        72, 
+                        254
                     ]
                 }, 
                 "press_font_color": {
@@ -342,7 +351,7 @@
                         255
                     ]
                 }, 
-                "press_picture": 106390, 
+                "press_picture": 907253, 
                 "press_text": {
                     "__tuple__": true, 
                     "items": [
@@ -420,7 +429,7 @@
                         "type": 45
                     }
                 }, 
-                "pressed_status_added": false, 
+                "pressed_status_added": true, 
                 "rotation": 0, 
                 "scale": {
                     "__tuple__": true, 
@@ -527,8 +536,8 @@
                     "__tuple__": true, 
                     "items": [
                         254, 
-                        254, 
-                        254, 
+                        211, 
+                        56, 
                         254
                     ]
                 }, 
@@ -590,7 +599,7 @@
                         0
                     ]
                 }, 
-                "name": "label", 
+                "name": "label_1", 
                 "opacity": 1.0, 
                 "open_adapter": false, 
                 "over_pattern": false, 
@@ -598,9 +607,9 @@
                     "__tuple__": true, 
                     "items": [
                         50.0, 
+                        23.6667, 
                         50.0, 
-                        50.0, 
-                        50.0, 
+                        23.6667, 
                         1, 
                         0
                     ]

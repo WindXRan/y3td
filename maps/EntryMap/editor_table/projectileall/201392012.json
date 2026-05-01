@@ -5,108 +5,138 @@
     "desc": "lib_fire_mid", 
     "description": "lib_fire_mid", 
     "effect_destroy_way_is_immediately": false, 
-    "effect_foes": {
-        "__tuple__": true, 
-        "items": [
-            102877, 
-            [
+    "effect_foes": [
+        104727, 
+        {
+            "__tuple__": true, 
+            "items": [
                 0.0, 
                 0.0, 
                 0.0
-            ], 
-            [
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
                 0.0, 
                 0.0, 
                 0.0
-            ], 
-            [
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
                 1.0, 
                 1.0, 
                 1.0
+            ]
+        }, 
+        1.0, 
+        {
+            "anim": "idle1", 
+            "base_color_mod": 1, 
+            "base_tint_color": [
+                255, 
+                255, 
+                255, 
+                0.5
             ], 
-            1.0, 
-            {
-                "anim": "idle1", 
-                "base_color_mod": 1, 
-                "base_tint_color": [
-                    255, 
-                    255, 
-                    255, 
-                    0.5
-                ], 
-                "is_loop": true, 
-                "model": 100015, 
-                "model_opacity": 1, 
-                "offset": [
-                    0, 
-                    0, 
-                    0
-                ], 
-                "rotate": [
-                    0, 
-                    0, 
-                    0
-                ], 
-                "scale": [
+            "is_loop": true, 
+            "model": 103014, 
+            "model_opacity": 1.0, 
+            "offset": {
+                "__tuple__": true, 
+                "items": [
+                    0.0, 
+                    0.0, 
+                    0.0
+                ]
+            }, 
+            "rotate": {
+                "__tuple__": true, 
+                "items": [
+                    0.0, 
+                    0.0, 
+                    0.0
+                ]
+            }, 
+            "scale": {
+                "__tuple__": true, 
+                "items": [
                     1.05, 
                     1.05, 
                     1.05
-                ], 
-                "use_base_tint_color": false
-            }
-        ]
-    }, 
-    "effect_friend": {
-        "__tuple__": true, 
-        "items": [
-            102877, 
-            [
+                ]
+            }, 
+            "use_base_tint_color": false
+        }
+    ], 
+    "effect_friend": [
+        104727, 
+        {
+            "__tuple__": true, 
+            "items": [
                 0.0, 
                 0.0, 
                 0.0
-            ], 
-            [
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
                 0.0, 
                 0.0, 
                 0.0
-            ], 
-            [
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
                 1.0, 
                 1.0, 
                 1.0
+            ]
+        }, 
+        1.0, 
+        {
+            "anim": "idle1", 
+            "base_color_mod": 1, 
+            "base_tint_color": [
+                255, 
+                255, 
+                255, 
+                0.5
             ], 
-            1.0, 
-            {
-                "anim": "idle1", 
-                "base_color_mod": 1, 
-                "base_tint_color": [
-                    255, 
-                    255, 
-                    255, 
-                    0.5
-                ], 
-                "is_loop": true, 
-                "model": 100015, 
-                "model_opacity": 1, 
-                "offset": [
-                    0, 
-                    0, 
-                    0
-                ], 
-                "rotate": [
-                    0, 
-                    0, 
-                    0
-                ], 
-                "scale": [
+            "is_loop": true, 
+            "model": 103014, 
+            "model_opacity": 1.0, 
+            "offset": {
+                "__tuple__": true, 
+                "items": [
+                    0.0, 
+                    0.0, 
+                    0.0
+                ]
+            }, 
+            "rotate": {
+                "__tuple__": true, 
+                "items": [
+                    0.0, 
+                    0.0, 
+                    0.0
+                ]
+            }, 
+            "scale": {
+                "__tuple__": true, 
+                "items": [
                     1.05, 
                     1.05, 
                     1.05
-                ], 
-                "use_base_tint_color": false
-            }
-        ]
-    }, 
+                ]
+            }, 
+            "use_base_tint_color": false
+        }
+    ], 
     "icon": 100000, 
     "key": 201392012, 
     "kv": {

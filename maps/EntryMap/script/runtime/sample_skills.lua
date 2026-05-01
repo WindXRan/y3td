@@ -1,4 +1,3 @@
-local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
 local SkillFramework = require 'runtime.skill_framework'
 local Skills = require 'runtime.skills'
 local GeneratedSkills = require 'runtime.generated_skills'
@@ -17,7 +16,7 @@ local function deepcopy(src)
 end
 
 local function make_vfx(pattern, element)
-  local projectile = RuntimeEditorIds.projectile or {}
+  local element_vfx = Skills.get_element_vfx(element) or Skills.get_element_vfx('physical')
   local element_fx = {
     phys = { cast = 106060, warning = 106060, impact = 106069, hit = 106069 },
     fire = { cast = 104727, warning = 104727, impact = 103953, hit = 103953 },
@@ -32,10 +31,9 @@ local function make_vfx(pattern, element)
     warning = fx.warning,
     impact = fx.impact,
     hit = fx.hit,
-    projectile_key = is_burst and (projectile.meteor or projectile.basic_attack or 201392013)
-      or (projectile.basic_attack or 201391110),
-    projectile_height = is_burst and 30 or 20,
-    projectile_time = is_burst and 0.72 or 0.62,
+    projectile_key = element_vfx.projectile_key,
+    projectile_height = element_vfx.projectile_height or (is_burst and 30 or 20),
+    projectile_time = element_vfx.projectile_time or (is_burst and 0.72 or 0.62),
   }
 end
 

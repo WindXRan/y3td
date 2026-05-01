@@ -36,6 +36,9 @@ function M.create(env)
   local debug_toggle_global_projectile_override = env.debug_toggle_global_projectile_override
   local debug_get_global_projectile_override = env.debug_get_global_projectile_override
   local DEFAULT_DEBUG_PROJECTILE_KEY = 134255250
+  local get_sample_skill_defs = env.get_sample_skill_defs
+  local cast_sample_skill = env.cast_sample_skill
+  local cast_next_sample_skill = env.cast_next_sample_skill
 
   local function trim(text)
     return tostring(text or ''):gsub('^%s+', ''):gsub('%s+$', '')
@@ -573,7 +576,14 @@ function M.create(env)
     create_rect(panel, 16, 504, 948, 42, { 20, 38, 58, 230 })
     create_text(panel, '技能 / 特殊效果 GM', 30, 512, 250, 28, 23, { 245, 248, 255, 255 })
     create_text(panel, BOND_GM_PANEL_INTRO, 300, 514, 640, 22, 14, { 160, 186, 214, 255 })
+    create_button(panel, '主动技能', 672, 508, 134, 30, function()
+      ui.encyclopedia_visible = false
+      ui.active_skills_visible = true
+      ui.active_skills_page = 1
+      refresh_active_skills_overlay()
+    end, { 56, 86, 126, 235 })
     create_button(panel, '技能大全', 816, 508, 134, 30, function()
+      ui.active_skills_visible = false
       ui.encyclopedia_mode = 'activation'
       ui.encyclopedia_visible = true
       ui.encyclopedia_page = 1
@@ -775,6 +785,92 @@ function M.create(env)
       ui.encyclopedia_detail_text:set_text_alignment('左', '上')
     end
 
+    -- Active skills overlay
+    local active_skills_mask = parent:create_child('图片')
+    active_skills_mask:set_image(999)
+    active_skills_mask:set_ui_size(2000, 1200)
+    active_skills_mask:set_pos(960, 540)
+    active_skills_mask:set_image_color(0, 0, 0, 150)
+    active_skills_mask:set_z_order(9614)
+    active_skills_mask:set_intercepts_operations(true)
+    ui.active_skills_mask = active_skills_mask
+
+    local active_skills_panel = parent:create_child('图片')
+    active_skills_panel:set_image(999)
+    active_skills_panel:set_ui_size(720, 460)
+    active_skills_panel:set_pos(960, 540)
+    active_skills_panel:set_image_color(6, 10, 18, 238)
+    active_skills_panel:set_z_order(9615)
+    active_skills_panel:set_intercepts_operations(true)
+    ui.active_skills_panel = active_skills_panel
+
+    create_rect(active_skills_panel, 16, 406, 688, 36, { 20, 38, 58, 235 })
+    create_text(active_skills_panel, '主动技能触发（样例技能）', 30, 412, 280, 28, 19, { 245, 248, 255, 255 })
+    ui.active_skills_info_text = create_text(active_skills_panel, '', 320, 412, 380, 28, 13, { 170, 198, 228, 255 })
+
+    ui.active_skill_rows = {}
+    for i = 1, 10 do
+      local y = 368 - (i - 1) * 36
+      local row_bg = create_rect(active_skills_panel, 20, y, 680, 30, { 18, 30, 46, 220 })
+      local name_text = create_text(active_skills_panel, '', 30, y + 8, 280, 18, 13, { 246, 234, 176, 255 })
+      local desc_text = create_text(active_skills_panel, '', 310, y + 8, 230, 18, 12, { 190, 210, 230, 255 })
+      create_rect(active_skills_panel, 550, y + 2, 140, 26, { 66, 118, 88, 235 })
+      local cast_btn = active_skills_panel:create_child('按钮')
+      cast_btn:set_ui_size(140, 26)
+      cast_btn:set_pos(620, y + 15)
+      cast_btn:set_text('施放')
+      cast_btn:set_font_size(13)
+      if cast_btn.set_image then
+        cast_btn:set_image(999)
+      end
+      if cast_btn.set_image_color then
+        cast_btn:set_image_color(20, 40, 56, 210)
+      end
+      cast_btn:set_text_color(236, 246, 255, 255)
+      local row_index = i
+      ui.active_skill_rows[i] = {
+        bg = row_bg,
+        name_text = name_text,
+        desc_text = desc_text,
+        cast_btn = cast_btn,
+      }
+      cast_btn:add_fast_event('左键-点击', function()
+        local row = ui.active_skill_rows[row_index]
+        if not row or not row.skill_def then
+          return
+        end
+        if cast_sample_skill then
+          local ok, result = cast_sample_skill(row.skill_def.id)
+          debug_message(ok and result or result)
+        end
+        if refresh_active_skills_overlay then
+          refresh_active_skills_overlay()
+        end
+      end)
+    end
+
+    create_button(active_skills_panel, '上一页', 20, 8, 100, 30, function()
+      ui.active_skills_page = math.max(1, (ui.active_skills_page or 1) - 1)
+      refresh_active_skills_overlay()
+    end, { 72, 86, 120, 235 })
+    create_button(active_skills_panel, '下一页', 128, 8, 100, 30, function()
+      local defs = get_sample_skill_defs and get_sample_skill_defs() or {}
+      local page_size = #(ui.active_skill_rows or {})
+      local total_pages = math.max(1, math.ceil(#defs / math.max(1, page_size)))
+      ui.active_skills_page = math.min(total_pages, (ui.active_skills_page or 1) + 1)
+      refresh_active_skills_overlay()
+    end, { 72, 86, 120, 235 })
+    create_button(active_skills_panel, '连播下一个', 238, 8, 130, 30, function()
+      if cast_next_sample_skill then
+        local ok, result = cast_next_sample_skill()
+        debug_message(ok and result or result)
+      end
+    end, { 82, 106, 72, 235 })
+    create_button(active_skills_panel, '关闭', 620, 8, 80, 30, function()
+      ui.active_skills_visible = false
+      refresh_board()
+    end, { 96, 76, 88, 235 })
+
     return ui
   end
 
@@ -855,7 +951,7 @@ function M.create(env)
       in_battle = is_battle_active() == true
     end
     set_visible(ui.toggle_button, true)
-    local show_main = ui.visible == true and ui.encyclopedia_visible ~= true
+    local show_main = ui.visible == true and ui.encyclopedia_visible ~= true and ui.active_skills_visible ~= true
     set_visible(ui.panel, show_main)
     set_intercepts(ui.panel, show_main)
 
@@ -905,6 +1001,49 @@ function M.create(env)
     end
     if refresh_encyclopedia then
       refresh_encyclopedia()
+    end
+    if refresh_active_skills_overlay then
+      refresh_active_skills_overlay()
+    end
+  end
+
+  refresh_active_skills_overlay = function()
+    local ui = STATE.gm_bond_ui
+    if not ui or not is_alive(ui.active_skills_panel) then
+      return
+    end
+
+    local show = ui.visible == true and ui.active_skills_visible == true
+    set_visible(ui.active_skills_mask, show)
+    set_intercepts(ui.active_skills_mask, show)
+    set_visible(ui.active_skills_panel, show)
+    set_intercepts(ui.active_skills_panel, show)
+    if not show then
+      return
+    end
+
+    local defs = {}
+    if get_sample_skill_defs then
+      defs = get_sample_skill_defs() or {}
+    end
+    local page_size = #(ui.active_skill_rows or {})
+    local total_pages = math.max(1, math.ceil(#defs / math.max(1, page_size)))
+    ui.active_skills_page = math.max(1, math.min(total_pages, ui.active_skills_page or 1))
+    local start_index = (ui.active_skills_page - 1) * page_size
+    set_text(ui.active_skills_info_text, string.format('第 %d/%d 页 | 共 %d 个技能', ui.active_skills_page, total_pages, #defs))
+
+    for i, row in ipairs(ui.active_skill_rows or {}) do
+      local idx = start_index + i
+      local def = defs[idx]
+      row.skill_def = def
+      set_visible(row.bg, def ~= nil)
+      set_visible(row.name_text, def ~= nil)
+      set_visible(row.desc_text, def ~= nil)
+      set_visible(row.cast_btn, def ~= nil)
+      if def then
+        set_text(row.name_text, string.format('%d. %s [%s]', idx, tostring(def.name or def.id), tostring(def.id)))
+        set_text(row.desc_text, tostring(def.desc or ''))
+      end
     end
   end
 

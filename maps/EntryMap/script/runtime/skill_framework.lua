@@ -431,12 +431,15 @@ function M.create(env)
     if skill.pattern == 'area_burst' then
       local center = impact_point or hero_point
       local fx_scale = impact_fx_scale(skill)
-      spawn_particle(y3, center, visual_key(skill, 'warning') or visual_key(skill, 'cast'), fx_scale, skill.timeline.impact_delay, 24)
+      local proj_time = tonumber(skill.visual and skill.visual.projectile_time) or skill.timeline.impact_delay
+      -- 施法特效在英雄身上
+      spawn_particle(y3, cast_ctx.caster, visual_key(skill, 'cast'), fx_scale, 0.25, nil)
       fire_hook(skill, 'OnSpellStart', cast_ctx)
-      y3.ltimer.wait(skill.timeline.impact_delay, function()
+      local function do_impact(impact_point)
+        local pt = impact_point or center
         mark_visual_impact(cast_ctx)
-        spawn_particle(y3, center, visual_key(skill, 'impact'), fx_scale * 1.08, 0.18, 28)
-        cast_ctx.hits = skill_damage_api.area(center, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
+        spawn_particle(y3, pt, visual_key(skill, 'impact'), fx_scale * 1.08, 0.18, 28)
+        cast_ctx.hits = skill_damage_api.area(pt, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
           max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
           visual = {
             particle = visual_key(skill, 'hit'),
@@ -449,7 +452,14 @@ function M.create(env)
         mark_damage_impact(cast_ctx)
         fire_hook(skill, 'OnProjectileHit', cast_ctx)
         fire_hook(skill, 'OnFinish', cast_ctx)
-      end)
+      end
+      -- 投射物飞行：用投射物自身飞行时间，到达时触发爆炸
+      local proj_key = visual_key(skill, 'projectile_key')
+      if proj_key and launch_projectile_from_hero then
+        launch_projectile_from_hero(proj_key, target, center, nil, proj_time, visual_key(skill, 'projectile_height'), do_impact)
+      else
+        y3.ltimer.wait(proj_time, function() do_impact(nil) end)
+      end
       return true, string.format('[%s] area_burst 触发', skill.id)
     end
 
