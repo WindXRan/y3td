@@ -1,8 +1,8 @@
 ﻿local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
-local BondModifierPool = require 'data.tables.bond_modifier_pool'
-local SkillVisuals = require 'data.tables.skill_visuals'
-local BondEffectRuntimeRules = require 'data.tables.bond_effect_runtime_rules'
-local AttackSkillObjects = require 'data.tables.attack_skills'
+local BondModifierPool = require 'data.tables.bond.bond_modifier_pool'
+local SkillVisuals = require 'data.tables.skill.skill_visuals'
+local BondEffectRuntimeRules = require 'data.tables.bond.bond_effect_runtime_rules'
+local AttackSkillObjects = require 'data.tables.skill.attack_skills'
 local BondModifierSpecialEffectsFactory = require 'runtime.bond_modifier_special_effects'
 local BondModifierCoreEffectsFactory = require 'runtime.bond_modifier_core_effects'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
@@ -49,18 +49,6 @@ if type(_G.get_hero_attr) ~= 'function' then
     return tonumber(hero:get_attr(name)) or 0
   end
 end
-
-local BOND_NAME_ALIASES = {
-  ['冰法'] = '冰霜法师',
-  ['冰法师'] = '冰霜法师',
-  ['冰霜法'] = '冰霜法师',
-  ['寒冰法师'] = '冰霜法师',
-  ['寒冰法'] = '冰霜法师',
-  ['寒冰法师 '] = '冰霜法师',
-  [' 寒冰法师'] = '冰霜法师',
-  ['电法'] = '雷电法王',
-  ['雷法'] = '雷电法王',
-}
 
 -- 激活后直接生效的静态属性加成（按羁绊名）
 M.SET_ATTR_BONUSES = {
@@ -189,7 +177,7 @@ local function normalize_bond_name(bond_name)
   if key == '' then
     return key
   end
-  return BOND_NAME_ALIASES[key] or key
+  return key
 end
 
 local BOND_VISUALS = {}
@@ -218,13 +206,6 @@ for _, effect in ipairs(BondModifierPool.activation_effects or {}) do
 end
 
 local VISUAL_OVERRIDES = {}
-
--- 历史命名兼容（别名映射到标准名）
-for alias, canonical in pairs(BOND_NAME_ALIASES) do
-  if BOND_VISUALS[canonical] and not BOND_VISUALS[alias] then
-    BOND_VISUALS[alias] = build_bond_visual(BOND_VISUALS[canonical])
-  end
-end
 
 local PROJECTILE_EDITOR_PATHS = {
   'maps/EntryMap/editor_table/projectileall/%d.json',
@@ -1647,27 +1628,13 @@ do
   end
 end
 
-local CARD_NAME_ALIASES = {
-  ['嗜剑剑气'] = '赐剑剑气',
-  ['赐剑剑气'] = '赐剑剑气',
-}
-
 local function normalize_card_name(card_name)
   local key = tostring(card_name or ''):gsub('^%s+', ''):gsub('%s+$', '')
   key = key:gsub('　', '')
   if key == '' then
     return key
   end
-  local canonical = CARD_NAME_ALIASES[key] or key
-  return canonical
-end
-
-do
-  for alias, canonical in pairs(CARD_NAME_ALIASES) do
-    if CARD_ID_BY_NAME[alias] == nil and CARD_ID_BY_NAME[canonical] ~= nil then
-      CARD_ID_BY_NAME[alias] = CARD_ID_BY_NAME[canonical]
-    end
-  end
+  return key
 end
 
 local function has_card_effect(runtime, card_name)
@@ -2204,4 +2171,5 @@ function M.get_visual_registry_snapshot()
 end
 
 return M
+
 
