@@ -1,6 +1,7 @@
-﻿local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
+local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
 local SkillFramework = require 'runtime.skill_framework'
 local Skills = require 'runtime.skills'
+local GeneratedSkills = require 'runtime.generated_skills'
 
 local M = {}
 
@@ -19,7 +20,7 @@ local function make_vfx(pattern, element)
   local projectile = RuntimeEditorIds.projectile or {}
   local element_fx = {
     phys = { cast = 106060, warning = 106060, impact = 106069, hit = 106069 },
-    fire = { cast = 106053, warning = 106082, impact = 106089, hit = 106053 },
+    fire = { cast = 104727, warning = 104727, impact = 103953, hit = 103953 },
     ice = { cast = 106070, warning = 106067, impact = 106067, hit = 106070 },
     lightning = { cast = 106074, warning = 106074, impact = 106112, hit = 106074 },
     arcane = { cast = 106065, warning = 106065, impact = 106065, hit = 106065 },
@@ -38,8 +39,48 @@ local function make_vfx(pattern, element)
   }
 end
 
+local PATTERN_TO_BASE = {
+  line_pierce = 'sf_line_pierce',
+  area_burst = 'sf_area_burst',
+  area_tick = 'sf_area_tick',
+  chain_bounce = 'sf_chain_bounce',
+}
+
+local PATTERN_TARGET_MODE = {
+  line_pierce = 'unit',
+  area_burst = 'point',
+  area_tick = 'point',
+  chain_bounce = 'unit',
+}
+
+-- 从 CSV 批量构建技能行，补全同事的 build_rows() 骨架
 local function build_rows()
-  return {}
+  local csv_defs = GeneratedSkills.load_defs()
+  local rows = {}
+  for _, def in ipairs(csv_defs) do
+    local pattern = def.pattern or 'area_burst'
+    local element = def.element or 'physical'
+    local hit_model = def.hit_model or {}
+    local scale = def.scale or {}
+    local resource = def.resource or {}
+
+    rows[#rows + 1] = {
+      id = def.id,
+      name = def.name or def.id,
+      desc = def.desc or '',
+      base_id = PATTERN_TO_BASE[pattern] or 'sf_area_burst',
+      pattern = pattern,
+      target_mode = def.target_mode or PATTERN_TARGET_MODE[pattern] or 'point',
+      damage_type = def.damage_type or '法术',
+      cooldown = resource.cooldown or 0.95,
+      range = hit_model.range or 1200,
+      width = hit_model.width or 210,
+      radius = hit_model.radius or 360,
+      attack_ratio = scale.attack_ratio or 1.95,
+      visual = def.visual or make_vfx(pattern, element),
+    }
+  end
+  return rows
 end
 
 function M.create(env)
@@ -139,13 +180,24 @@ function M.create(env)
     end
   end
 
-  function api.reset_framework_telemetry(_)
+  function api.get_framework_telemetry(skill_id)
+    if not framework or not framework.get_telemetry then
+      return nil
+    end
+    return framework.get_telemetry(skill_id)
+  end
+
+  function api.reset_framework_telemetry(skill_id)
+    if not framework or not framework.reset_telemetry then
+      return false
+    end
+    framework.reset_telemetry(skill_id)
     return true
   end
 
   function api.build_framework_tier_report()
     local rows = {
-      '[sample_skills] mass factory active: line_pierce + area_burst',
+      '[sample_skills] CSV-driven skill factory active',
       string.format('[sample_skills] total generated skills: %d', #defs),
     }
     return rows
@@ -163,4 +215,3 @@ function M.create(env)
 end
 
 return M
-

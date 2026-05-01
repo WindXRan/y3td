@@ -497,49 +497,47 @@ function M.create(env)
       end
       chain_targets = dedupe_units(chain_targets)
       local base = damage_amount(skill, 'attack_ratio')
-      local impact_delay = resolve_impact_delay(skill)
-      fire_hook(skill, 'OnSpellStart', cast_ctx)
       local fx_scale = impact_fx_scale(skill)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
       spawn_particle(y3, target, visual_key(skill, 'cast'), fx_scale, 0.20, 28)
+      -- 投射物仅作视觉装饰，伤害立即结算，避免目标在飞行期间被击杀导致落空。
       launch_projectile_from_hero(
         visual_key(skill, 'projectile_key'),
         target,
         nil,
         nil,
-        impact_delay > 0 and impact_delay or 0.20,
+        resolve_impact_delay(skill),
         visual_key(skill, 'projectile_height')
       )
+      mark_visual_impact(cast_ctx)
       local total_damage = 0
-      y3.ltimer.wait(impact_delay > 0 and impact_delay or 0.20, function()
-        mark_visual_impact(cast_ctx)
-        cast_ctx.hits = skill_damage_api.chain(chain_targets, base, skill.damage_type, {
-          amount = function(context)
-            local idx = context.index or 1
-            local amount = base * math.pow(skill.scale.bounce_ratio, math.max(0, idx - 1))
-            total_damage = total_damage + math.max(0, tonumber(amount) or 0)
-            return amount
-          end,
-          visual = function()
-            return {
-              particle = visual_key(skill, 'hit'),
-              metric_scope = 'skill_framework',
-              metric_key = skill.id,
-            }
-          end,
-          on_hit = function(context)
-            cast_ctx.bounce_index = context.index
-            cast_ctx.hit_unit = context.target
-            if context.target then
-              spawn_particle(y3, context.target, visual_key(skill, 'impact') or visual_key(skill, 'hit'), fx_scale, 0.16, 26)
-            end
-            fire_hook(skill, 'OnProjectileHit', cast_ctx)
-          end,
-        })
-        cast_ctx.hit_count = #(cast_ctx.hits or {})
-        cast_ctx.total_damage = total_damage
-        mark_damage_impact(cast_ctx)
-        fire_hook(skill, 'OnFinish', cast_ctx)
-      end)
+      cast_ctx.hits = skill_damage_api.chain(chain_targets, base, skill.damage_type, {
+        amount = function(context)
+          local idx = context.index or 1
+          local amount = base * math.pow(skill.scale.bounce_ratio, math.max(0, idx - 1))
+          total_damage = total_damage + math.max(0, tonumber(amount) or 0)
+          return amount
+        end,
+        visual = function()
+          return {
+            particle = visual_key(skill, 'hit'),
+            metric_scope = 'skill_framework',
+            metric_key = skill.id,
+          }
+        end,
+        on_hit = function(context)
+          cast_ctx.bounce_index = context.index
+          cast_ctx.hit_unit = context.target
+          if context.target then
+            spawn_particle(y3, context.target, visual_key(skill, 'impact') or visual_key(skill, 'hit'), fx_scale, 0.16, 26)
+          end
+          fire_hook(skill, 'OnProjectileHit', cast_ctx)
+        end,
+      })
+      cast_ctx.hit_count = #(cast_ctx.hits or {})
+      cast_ctx.total_damage = total_damage
+      mark_damage_impact(cast_ctx)
+      fire_hook(skill, 'OnFinish', cast_ctx)
       return true, string.format('[%s] chain_bounce 触发', skill.id)
     end
 
