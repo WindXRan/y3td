@@ -1,4 +1,5 @@
 local M = {}
+local MagicEffects = require 'data.tables.magic_effects'
 
 function M.create(deps)
   deps = deps or {}
@@ -65,6 +66,12 @@ function M.create(deps)
     return type(card_periodic_rules[card_name]) == 'table' and card_periodic_rules[card_name] or {}
   end
 
+  local function get_card_stack_magic_rule(card_name)
+    local by_scope = MagicEffects and MagicEffects.by_scope or nil
+    local scoped = by_scope and by_scope.card_stack or nil
+    return type(scoped and scoped[card_name]) == 'table' and scoped[card_name] or {}
+  end
+
   local function calc_area_fx_scale(radius, visual_cfg)
     local base_radius = math.max(80, tonumber(visual_cfg and visual_cfg.area_fx_base_radius) or 320)
     local bias = tonumber(visual_cfg and visual_cfg.area_fx_scale_bias) or 1.0
@@ -101,8 +108,10 @@ function M.create(deps)
     end
   end
 
-  local function deal_area_damage(env, center, radius, amount, damage_type, visual_cfg)
-    play_area_hit_fx(env, center, visual_cfg, radius, 0.24)
+  local function deal_area_damage(env, center, radius, amount, damage_type, visual_cfg, emit_hit_fx)
+    if emit_hit_fx ~= false then
+      play_area_hit_fx(env, center, visual_cfg, radius, 0.24)
+    end
     return damage_area(env, center, radius, amount, damage_type)
   end
 
@@ -168,6 +177,8 @@ function M.create(deps)
     local tick_count = math.max(1, rule_integer(rain_rule.tick_count, rule_integer(card_arrow_rain_rule.tick_count, 3, 1), 1))
     local tick_interval = math.max(0.05, rule_number(rain_rule.tick_interval, rule_number(card_arrow_rain_rule.tick_interval, 1.00)))
     local storm_scale = calc_area_fx_scale(storm_radius, visual_cfg)
+    local hit_fx_mode = string.lower(tostring(visual_cfg and visual_cfg.hit_fx_mode or 'once'))
+    local tick_emit_hit_fx = (hit_fx_mode == 'tick' or hit_fx_mode == 'per_tick' or hit_fx_mode == 'on_tick')
 
     if play_particle_on_point and storm_point then
       play_particle_on_point(env, storm_point, visual_cfg.particle_key, storm_scale, tick_count * tick_interval + 0.25, 16)
@@ -175,24 +186,10 @@ function M.create(deps)
       play_particle_on_unit(env, target, visual_cfg.particle_key, storm_scale, 0.30)
     end
 
-    local fx_pulse_every = math.max(
-      0,
-      rule_integer(
-        rain_rule.fx_pulse_every,
-        rule_integer(card_arrow_rain_rule.fx_pulse_every, rule_integer(presentation_defaults.default_fx_pulse_every, 0, 0), 0),
-        0
-      )
-    )
     for index = 0, tick_count - 1 do
       schedule_wait(env, index * tick_interval, function()
-        if fx_pulse_every > 0 and index > 0 and (index % fx_pulse_every == 0) then
-          if play_particle_on_point and storm_point then
-            play_particle_on_point(env, storm_point, visual_cfg.particle_key, storm_scale, 0.18, 16)
-          else
-            play_particle_on_unit(env, target, visual_cfg.particle_key, storm_scale, 0.14)
-          end
-        end
-        deal_area_damage(env, storm_center, storm_radius, tick_damage, '物理', visual_cfg)
+        -- Tick 是否播放受击特效由 visual.hit_fx_mode 控制。
+        deal_area_damage(env, storm_center, storm_radius, tick_damage, '物理', visual_cfg, tick_emit_hit_fx)
       end)
     end
     return true
@@ -285,31 +282,33 @@ function M.create(deps)
 
     if has_card_effect(runtime, '疾风弓') then
       local gale_rule = get_card_basic_rule('疾风弓')
+      local gale_magic = get_card_stack_magic_rule('疾风弓')
       local state = ensure_card_effect_state(runtime, '疾风弓')
       if state then
-        push_stack_expire(state, now + rule_number(gale_rule.stack_duration, 5))
-        cleanup_stack_expire(state, now, rule_integer(gale_rule.max_stacks, 10, 1))
+        push_stack_expire(state, now + rule_number(gale_magic.stack_duration, 5))
+        cleanup_stack_expire(state, now, rule_integer(gale_magic.max_stacks, 10, 1))
         update_card_stack_attr(
           env,
           state,
-          rule_number(gale_rule.attack_per_stack, 0),
-          rule_number(gale_rule.attack_speed_per_stack, 5)
+          rule_number(gale_magic.attack_per_stack, 0),
+          rule_number(gale_magic.attack_speed_per_stack, 5)
         )
         triggered = true
       end
     end
 
     local sword_dance_rule = get_card_basic_rule('幻影剑舞')
+    local sword_dance_magic = get_card_stack_magic_rule('幻影剑舞')
     if has_card_effect(runtime, '幻影剑舞') and try_chance(rule_number(sword_dance_rule.chance, 0.30)) then
       local state = ensure_card_effect_state(runtime, '幻影剑舞')
       if state then
-        push_stack_expire(state, now + rule_number(sword_dance_rule.stack_duration, 5))
-        cleanup_stack_expire(state, now, rule_integer(sword_dance_rule.max_stacks, 10, 1))
+        push_stack_expire(state, now + rule_number(sword_dance_magic.stack_duration, 5))
+        cleanup_stack_expire(state, now, rule_integer(sword_dance_magic.max_stacks, 10, 1))
         update_card_stack_attr(
           env,
           state,
-          rule_number(sword_dance_rule.attack_per_stack, 20),
-          rule_number(sword_dance_rule.attack_speed_per_stack, 2)
+          rule_number(sword_dance_magic.attack_per_stack, 20),
+          rule_number(sword_dance_magic.attack_speed_per_stack, 2)
         )
         triggered = true
       end
@@ -513,28 +512,28 @@ function M.create(deps)
     end
 
     if has_card_effect(runtime, '疾风弓') then
-      local gale_rule = get_card_basic_rule('疾风弓')
+      local gale_magic = get_card_stack_magic_rule('疾风弓')
       local state = ensure_card_effect_state(runtime, '疾风弓')
       if state then
-        cleanup_stack_expire(state, now, rule_integer(gale_rule.max_stacks, 10, 1))
+        cleanup_stack_expire(state, now, rule_integer(gale_magic.max_stacks, 10, 1))
         update_card_stack_attr(
           env,
           state,
-          rule_number(gale_rule.attack_per_stack, 0),
-          rule_number(gale_rule.attack_speed_per_stack, 5)
+          rule_number(gale_magic.attack_per_stack, 0),
+          rule_number(gale_magic.attack_speed_per_stack, 5)
         )
       end
     end
     if has_card_effect(runtime, '幻影剑舞') then
-      local sword_dance_rule = get_card_basic_rule('幻影剑舞')
+      local sword_dance_magic = get_card_stack_magic_rule('幻影剑舞')
       local state = ensure_card_effect_state(runtime, '幻影剑舞')
       if state then
-        cleanup_stack_expire(state, now, rule_integer(sword_dance_rule.max_stacks, 10, 1))
+        cleanup_stack_expire(state, now, rule_integer(sword_dance_magic.max_stacks, 10, 1))
         update_card_stack_attr(
           env,
           state,
-          rule_number(sword_dance_rule.attack_per_stack, 20),
-          rule_number(sword_dance_rule.attack_speed_per_stack, 2)
+          rule_number(sword_dance_magic.attack_per_stack, 20),
+          rule_number(sword_dance_magic.attack_speed_per_stack, 2)
         )
       end
     end

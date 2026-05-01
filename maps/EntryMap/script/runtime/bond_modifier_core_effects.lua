@@ -222,6 +222,8 @@ function M.create(deps)
     local tick_count = math.max(1, rule_integer(rain_rule.tick_count, 3, 1))
     local tick_interval = math.max(0.05, rule_number(rain_rule.tick_interval, 1.00))
     local storm_scale = calc_area_fx_scale(storm_radius, visual_cfg)
+    local hit_fx_mode = string.lower(tostring(visual_cfg and visual_cfg.hit_fx_mode or 'once'))
+    local tick_emit_hit_fx = (hit_fx_mode == 'tick' or hit_fx_mode == 'per_tick' or hit_fx_mode == 'on_tick')
 
     if play_particle_on_point and storm_point then
       play_particle_on_point(env, storm_point, visual_cfg.particle_key, storm_scale, tick_count * tick_interval + 0.25, 16)
@@ -229,22 +231,13 @@ function M.create(deps)
       play_particle_on_unit(env, target, visual_cfg.particle_key, storm_scale, 0.30)
     end
 
-    local fx_pulse_every = math.max(0, rule_integer(rain_rule.fx_pulse_every, rule_integer(presentation_defaults.default_fx_pulse_every, 0, 0), 0))
     for index = 0, tick_count - 1 do
       wait_seconds(env, index * tick_interval, function()
         if index % 2 == 0 then
           play_bond_sound(env, '游侠', 'impact', storm_center)
         end
-        -- 持续区域技能默认走“常驻特效 + 伤害Tick”模型：
-        -- 不在每次Tick重复刷新同一特效，避免视觉抖动与逻辑误导。
-        if fx_pulse_every > 0 and index > 0 and (index % fx_pulse_every == 0) then
-          if play_particle_on_point and storm_point then
-            play_particle_on_point(env, storm_point, visual_cfg.particle_key, storm_scale, 0.18, 16)
-          else
-            play_particle_on_unit(env, target, visual_cfg.particle_key, storm_scale, 0.14)
-          end
-        end
-        bond_damage_area(storm_center, storm_radius, tick_damage, '物理')
+        -- Tick 是否播放受击特效由 visual.hit_fx_mode 控制。
+        bond_damage_area(storm_center, storm_radius, tick_damage, '物理', nil, nil, tick_emit_hit_fx)
       end)
     end
     return true
@@ -267,8 +260,10 @@ function M.create(deps)
     local function bond_damage_target(unit, amount, damage_type)
       return damage_target(env, unit, amount, damage_type, { scope = 'bond', key = bond_name })
     end
-    local function bond_damage_area(center, radius, amount, damage_type, except_unit, max_count)
-      play_area_hit_fx(env, center, visual_cfg, radius, 0.22)
+    local function bond_damage_area(center, radius, amount, damage_type, except_unit, max_count, emit_hit_fx)
+      if emit_hit_fx ~= false then
+        play_area_hit_fx(env, center, visual_cfg, radius, 0.22)
+      end
       return damage_area(env, center, radius, amount, damage_type, except_unit, max_count, { scope = 'bond', key = bond_name })
     end
     local attack = get_attack_value(env)
@@ -492,9 +487,10 @@ function M.create(deps)
             if index % 4 == 3 then
               play_impact_burst(env, target, visual_cfg.particle_key, 0.90)
             end
-            bond_damage_area(storm_center, storm_radius, tick_damage, '物理')
-          end)
-        end
+        -- 箭雨是持续区域表现：Tick 只结算伤害，不重复触发受击爆点特效。
+        bond_damage_area(storm_center, storm_radius, tick_damage, '物理', nil, nil, false)
+      end)
+    end
         return true
       end
     elseif bond_name == '龙骑士' then

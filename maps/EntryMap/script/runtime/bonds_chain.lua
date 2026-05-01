@@ -1,15 +1,16 @@
-local M = {}
+﻿local M = {}
 
-local BondNodes = require 'data.object_tables.bond_nodes'
+local BondNodes = require 'data.tables.bond_nodes'
 local BondTipModelBuilder = require 'runtime.bond_tip_model_builder'
 local BondTemplates = require 'runtime.bond_templates.init'
 local BondBonusPack = require 'runtime.bond_bonus_pack'
-local BondDrawConfig = require 'data.object_tables.bond_draw_config'
-local BondMiscConfig = require 'data.object_tables.bond_misc_config'
-local BondPickConfig = require 'data.object_tables.bond_pick_config'
-local BondModifierPool = require 'data.object_tables.bond_modifier_pool'
+local BondDrawConfig = require 'data.tables.bond_draw_config'
+local BondMiscConfig = require 'data.tables.bond_misc_config'
+local BondPickConfig = require 'data.tables.bond_pick_config'
+local BondModifierPool = require 'data.tables.bond_modifier_pool'
 local BondModifierEffects = require 'runtime.bond_modifier_effects'
-local SkillRuntimeTuning = require 'data.object_tables.skill_runtime_tuning'
+local SkillRuntimeTuning = require 'data.tables.skill_runtime_tuning'
+local SkillVisuals = require 'data.tables.skill_visuals'
 
 local NODE_LIST = BondNodes.list
 local NODE_BY_ID = BondNodes.by_id
@@ -1741,7 +1742,17 @@ function M.get_slot_icon(state, slot)
 
   local modifier_card = get_modifier_card(node_id)
   if modifier_card then
-    return modifier_card.icon
+    if modifier_card.icon then
+      return modifier_card.icon
+    end
+    local visual = SkillVisuals and SkillVisuals.get_by_bond_name and SkillVisuals.get_by_bond_name(modifier_card.bond_name or '')
+      or (SkillVisuals and SkillVisuals.visual_by_bond and SkillVisuals.visual_by_bond[modifier_card.bond_name or ''])
+    if visual and tonumber(visual.icon_key) and tonumber(visual.icon_key) > 0 then
+      return tonumber(visual.icon_key)
+    end
+    if visual and tonumber(visual.particle_key) and tonumber(visual.particle_key) > 0 then
+      return tonumber(visual.particle_key)
+    end
   end
 
   return nil
@@ -2964,4 +2975,5 @@ M.debug_activate_single_modifier_skill = M.debug_activate_single_modifier_bond
 M.debug_clear_active_modifier_skills = M.debug_clear_active_modifier_bonds
 
 return M
+
 

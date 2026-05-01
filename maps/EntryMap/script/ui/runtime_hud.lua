@@ -1,7 +1,7 @@
 ﻿local a=require'ui.ui_root'
-local b=require'data.object_tables.marks'
-local c=require'data.object_tables.hero_roster'
-local d=require'data.object_tables.hero_form_skills'
+local b=require'data.tables.marks'
+local c=(require'data.game_tables').hero_roster
+local d=require'data.tables.hero_form_skills'
 local e={}
 local f=8;
 local g=8;
@@ -112,7 +112,13 @@ big_cursor=nil,
 hero_model_ui=nil,
 hero_tujian_prefab=nil,
 hero_tujian_root=nil,
-hero_tujian_visible=false}return w.runtime_hud end;
+hero_tujian_visible=false,
+skill_prefab=nil,
+skill_prefab_root=nil,
+skill_btn_comp=nil,
+buff_prefab=nil,
+buff_prefab_root=nil,
+buff_list_comp=nil}return w.runtime_hud end;
 
 local function Z(_)
 local a0=Y()
@@ -1037,9 +1043,78 @@ local ed=a.resolve_child(ec,'exit')
 cS('hero_tujian_exit',ed,function()
 local ee=Y()ee.hero_tujian_visible=false;a9(ee.hero_tujian_root,false)end)end;
 
+local function dY1()
+local a0=Y()
+local a2=V()
+if not a2 or not y or not y.ui_prefab or type(y.ui_prefab.create)~='function' then return end;
+local skill_parent=cN('skill_bar') or Z('BattleBottomHUD.layout.center_hub.combat_module')
+local buff_parent=cN('buff_row') or Z('BattleBottomHUD.layout.center_hub.combat_module')
+
+if not t(a0.skill_prefab_root) then
+local ok,prefab=pcall(y.ui_prefab.create,a2,'skill_btn',skill_parent)
+if ok and prefab then
+local root=prefab.get_child and prefab:get_child()or nil
+if t(root) then
+a0.skill_prefab=prefab
+a0.skill_prefab_root=root
+a0.skill_btn_comp=a.resolve_child(root,'skill_btn_1')or a.resolve_child(root,'skill_btn')
+a6(root,'set_z_order',9570)
+a6(root,'set_intercepts_operations',false)
+a9(root,a0.visible~=false)
+end
+end
+end
+
+if not t(a0.buff_prefab_root) then
+local ok,prefab=pcall(y.ui_prefab.create,a2,'bufflist',buff_parent)
+if ok and prefab then
+local root=prefab.get_child and prefab:get_child()or nil
+if t(root) then
+a0.buff_prefab=prefab
+a0.buff_prefab_root=root
+a0.buff_list_comp=a.resolve_child(root,'buff_list')or a.resolve_child(root,'bufflist')
+a6(root,'set_z_order',9570)
+a6(root,'set_intercepts_operations',false)
+a9(root,a0.visible~=false)
+end
+end
+end
+end;
+
+local function dY2()
+local a0=Y()
+local hero=b9()
+if t(a0.skill_btn_comp)then
+local ability=nil
+if hero and hero.get_ability_by_slot and y and y.const and y.const.AbilityType then
+local ok,res=pcall(hero.get_ability_by_slot,hero,y.const.AbilityType.HERO,1)
+if ok then ability=res end
+if (not ability)and y.const.AbilityType.NORMAL then
+local ok2,res2=pcall(hero.get_ability_by_slot,hero,y.const.AbilityType.NORMAL,1)
+if ok2 then ability=res2 end
+end
+end
+if ability and a0.skill_btn_comp.bind_ability then
+pcall(a0.skill_btn_comp.bind_ability,a0.skill_btn_comp,ability)
+a9(a0.skill_prefab_root,a0.visible~=false)
+else
+a9(a0.skill_prefab_root,false)
+end
+end
+if t(a0.buff_list_comp)then
+if hero and a0.buff_list_comp.set_buff_on_ui then
+pcall(a0.buff_list_comp.set_buff_on_ui,a0.buff_list_comp,hero)
+a9(a0.buff_prefab_root,a0.visible~=false)
+else
+a9(a0.buff_prefab_root,false)
+end
+end
+end;
+
 T=function()
 W()
 cD()
+dY1()
 cS('top_pause',Z('top.top.left_buttons.btn_pause'),function()
 d7()
 U()end)
@@ -1277,6 +1352,8 @@ ak(dr,nil)end end end;
 U=function()
 T()
 local a0=Y()
+dY1()
+dY2()
 da()
 ds()
 dU()
@@ -1289,6 +1366,8 @@ dW()
 dn()
 a9(a0.big_cursor,a0.visible~=false and W().big_cursor)
 a9(a0.attr_panel,a0.visible~=false and a0.attr_panel_visible)
+a9(a0.skill_prefab_root,a0.visible~=false)
+a9(a0.buff_prefab_root,a0.visible~=false)
 d1()
 d3()return a0 end;
 
@@ -1309,7 +1388,9 @@ cL0(aa==true and a0.bond_tip_visible==true)
 a9(a0.big_cursor,
 aa==true and W().big_cursor)
 a9(a0.hero_tujian_root,
-aa==true and a0.hero_tujian_visible==true)end;
+aa==true and a0.hero_tujian_visible==true)
+a9(a0.skill_prefab_root,aa==true)
+a9(a0.buff_prefab_root,aa==true)end;
 
 return{ensure_hud=T,
 refresh_hud=U,
@@ -1318,6 +1399,9 @@ show_tip_panel=cZ,
 toggle_attr_panel=d8}end;
 
 return e
+
+
+
 
 
 
