@@ -4,6 +4,26 @@
   "key": 2147483647, 
   "group": [
    {
+    "name": "SkillPrefab", 
+    "key": "2sVqUkUZEfG47emopOS-H0", 
+    "group": [
+     {
+      "__tuple__": true, 
+      "items": [
+       "be45132f-cfca-472a-acb9-5ea26ce7e22f", 
+       "bufflist"
+      ]
+     }, 
+     {
+      "__tuple__": true, 
+      "items": [
+       "c7542150-049d-4a6d-aa97-ed40ab30b8ba", 
+       "skill_btn"
+      ]
+     }
+    ]
+   }, 
+   {
     "name": "TuJian", 
     "key": "zJkYcUHlEfGdhWVXOOvKDO", 
     "group": [

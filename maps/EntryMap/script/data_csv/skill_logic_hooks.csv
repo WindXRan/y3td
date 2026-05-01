@@ -7,3 +7,7 @@ card_demonize,card,入魔,1,击杀入魔逻辑
 card_china_pride,card,中华傲决,1,击杀剑意逻辑
 bond_magicswordsman,bond,魔剑士,1,主羁绊入魔状态逻辑
 bond_skeletonmage,bond,骷髅法师,1,主羁绊骷髅逻辑
+bond_dragoon,bond,龙骑士,1,龙骑士主羁绊
+bond_cryomancer,bond,冰霜法师,1,冰霜法师主羁绊
+bond_stormlord,bond,雷电法王,1,雷电法王主羁绊
+bond_gunner,bond,枪炮师,1,枪炮师主羁绊
