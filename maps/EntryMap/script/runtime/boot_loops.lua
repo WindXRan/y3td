@@ -15,7 +15,6 @@ function M.create(args)
     update_effect_debug = args.update_effect_debug,
     update_enemy_statuses = args.update_enemy_statuses,
     update_attack_skills = args.update_attack_skills,
-    update_temporary_treasures = args.update_temporary_treasures,
     update_mainline_task = args.update_mainline_task,
     update_battle_auto_acceptance = args.update_battle_auto_acceptance,
     ensure_runtime_hud = args.ensure_runtime_hud,

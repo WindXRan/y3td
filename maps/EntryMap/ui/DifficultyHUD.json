@@ -3358,82 +3358,6 @@
                                                     ], 
                                                     "type": 7, 
                                                     "uid": "a4cf20ff-a098-4acd-8f92-3ceedf364890"
-                                                }, 
-                                                {
-                                                    "children": [
-                                                        {
-                                                            "children": [], 
-                                                            "event_list": [], 
-                                                            "font": {
-                                                                "__tuple__": true, 
-                                                                "items": [
-                                                                    "MSYH", 
-                                                                    18
-                                                                ]
-                                                            }, 
-                                                            "name": "label_3", 
-                                                            "over_pattern": true, 
-                                                            "pos_data": {
-                                                                "__tuple__": true, 
-                                                                "items": [
-                                                                    145.0, 
-                                                                    33.0, 
-                                                                    50.6993, 
-                                                                    53.2258, 
-                                                                    1, 
-                                                                    1
-                                                                ]
-                                                            }, 
-                                                            "prefab_sub_key": null, 
-                                                            "scene_ui_name": null, 
-                                                            "size": {
-                                                                "__tuple__": true, 
-                                                                "items": [
-                                                                    268, 
-                                                                    25.0
-                                                                ]
-                                                            }, 
-                                                            "text": {
-                                                                "__tuple__": true, 
-                                                                "items": [
-                                                                    "\u5f53\u524d\u6a21\u5f0f\u4e3a\u6302\u673a\u6a21\u5f0f", 
-                                                                    false
-                                                                ]
-                                                            }, 
-                                                            "type": 3, 
-                                                            "uid": "d3c2a874-4c58-4e6c-a355-f28b8da142b8"
-                                                        }
-                                                    ], 
-                                                    "color": {
-                                                        "__tuple__": true, 
-                                                        "items": [
-                                                            47, 
-                                                            39, 
-                                                            24, 
-                                                            212
-                                                        ]
-                                                    }, 
-                                                    "event_list": [], 
-                                                    "name": "layout_2", 
-                                                    "pos_data": {
-                                                        "__tuple__": true, 
-                                                        "items": [
-                                                            145.0, 
-                                                            33.0, 
-                                                            50.0, 
-                                                            50.0, 
-                                                            1, 
-                                                            1
-                                                        ]
-                                                    }, 
-                                                    "prefab_sub_key": null, 
-                                                    "scene_ui_name": null, 
-                                                    "size": [
-                                                        286, 
-                                                        62
-                                                    ], 
-                                                    "type": 7, 
-                                                    "uid": "2a90bbdb-1134-40ba-8c6d-16bc83b65234"
                                                 }
                                             ], 
                                             "event_list": [], 
@@ -7280,7 +7204,7 @@
             "uid": "b526ef36-6388-4bea-b850-125056360998"
         }
     ], 
-    "name": "outgame", 
+    "name": "DifficultyHUD", 
     "opacity": 1.0, 
     "script_name": "", 
     "type": 2, 

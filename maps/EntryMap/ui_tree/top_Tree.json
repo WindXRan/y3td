@@ -1,707 +1,776 @@
-{
-  "name": "top",
-  "uid": "c938f958-3d06-4081-8877-687b467e135a",
-  "type": 2,
-  "children": [
-    {
-      "name": "top",
-      "uid": "9d861762-c674-420d-bcb1-963a3a6c9a9d",
-      "type": 7,
-      "children": [
-        {
-          "name": "top_bg",
-          "uid": "fc1e54a6-d2f3-4c2a-8fd7-46581fab5335",
-          "type": 4
-        },
-        {
-          "name": "left_strip",
-          "uid": "96351915-69dd-47d6-8584-ae193df7ac9a",
-          "type": 4
-        },
-        {
-          "name": "rail_glow",
-          "uid": "5ab22ddb-7ca7-408d-afed-2018603a6db8",
-          "type": 4
-        },
-        {
-          "name": "rail_glow_gold",
-          "uid": "052e896e-a60e-4d0a-99c1-0f5a25a31359",
-          "type": 4
-        },
-        {
-          "name": "top_line",
-          "uid": "9364945b-a0a9-410e-ba9a-c3b0bea70742",
-          "type": 4
-        },
-        {
-          "name": "scoreboard",
-          "uid": "a440c530-e06f-4d38-aa49-bec3808a6cd2",
-          "type": 7,
-          "children": [
-            {
-              "name": "scoreboard_bg",
-              "uid": "59391de5-75e2-4408-969b-f82e76c7dd0e",
-              "type": 4
-            },
-            {
-              "name": "avatar",
-              "uid": "e6b1352e-a51d-40c4-bc56-3f92a127a3dc",
-              "type": 4
-            },
-            {
-              "name": "avatar_2",
-              "uid": "ea7f079b-9a8e-4a34-a033-719e1447edab",
-              "type": 4
-            },
-            {
-              "name": "avatar_3",
-              "uid": "5267dcbd-15a2-44e7-a3dc-b0e501d9756c",
-              "type": 4
-            },
-            {
-              "name": "avatar_4",
-              "uid": "50a4378e-4944-4647-a214-c0b5bed1324d",
-              "type": 4
-            },
-            {
-              "name": "shadow",
-              "uid": "fc03ecaa-3911-4d46-be4f-9756d8f09f0e",
-              "type": 7,
-              "children": [
-                {
-                  "name": "shadow_bg",
-                  "uid": "c81db2d7-f8de-4497-91d2-f110cc8e3ad8",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "bg",
-              "uid": "ccfc0bcc-303c-4930-9619-1480c372ce92",
-              "type": 7,
-              "children": [
-                {
-                  "name": "bg_bg",
-                  "uid": "84b65252-d7a5-4bbd-91ab-a80db874bad4",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "header_bar",
-              "uid": "d3db5ce7-f6a9-493c-afa0-52fcec47534a",
-              "type": 7,
-              "children": [
-                {
-                  "name": "header_bar_bg",
-                  "uid": "1cd4a025-fb2c-4575-821d-54be643c3b6e",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "title",
-              "uid": "7701da0b-e762-4c91-b0f0-2115726d2c4b",
-              "type": 3
-            },
-            {
-              "name": "player_name",
-              "uid": "59fca7e8-7f4b-41fe-ac9b-ffecb047ac73",
-              "type": 3
-            },
-            {
-              "name": "player_name_2",
-              "uid": "c2146cdb-c5f7-4823-9579-1ba1328ddbce",
-              "type": 3
-            },
-            {
-              "name": "player_name_3",
-              "uid": "a7d86eb4-8bea-414e-8ecc-2836bda6fdd4",
-              "type": 3
-            },
-            {
-              "name": "player_name_4",
-              "uid": "3b9a76b5-9d7e-4f4d-8216-28436371023a",
-              "type": 3
-            },
-            {
-              "name": "scoreboard_col_name",
-              "uid": "6c482393-0406-42f0-bf3f-4e0214117428",
-              "type": 3
-            },
-            {
-              "name": "player_power",
-              "uid": "9409a9c2-2283-4f2e-ab83-c7a3bf4d9851",
-              "type": 3
-            },
-            {
-              "name": "player_power_2",
-              "uid": "467a97f3-cc7a-45f4-b025-6f9442f2e500",
-              "type": 3
-            },
-            {
-              "name": "player_power_3",
-              "uid": "b280c31b-94eb-4ed4-8986-70dd65586e03",
-              "type": 3
-            },
-            {
-              "name": "player_power_4",
-              "uid": "5e94c9b0-b44c-41de-81ba-4c89fed02775",
-              "type": 3
-            },
-            {
-              "name": "scoreboard_col_power",
-              "uid": "6a46f0ae-782d-4f3a-80de-ed70dd1ff8de",
-              "type": 3
-            },
-            {
-              "name": "player_state",
-              "uid": "51fca646-75d4-419a-ba7d-67334afb8a03",
-              "type": 3
-            },
-            {
-              "name": "player_level",
-              "uid": "70e85b0b-fffe-467c-8ff1-f34fe93d63a2",
-              "type": 3
-            },
-            {
-              "name": "player_equip",
-              "uid": "4e6cb94b-5301-467b-baca-d9c7ee4326dc",
-              "type": 3
-            },
-            {
-              "name": "player_swallow",
-              "uid": "566e929c-7fa5-4a71-b045-b86e236d4061",
-              "type": 3
-            },
-            {
-              "name": "player_state_2",
-              "uid": "9a4d6ac2-426d-4c7c-bf1d-86eb411002eb",
-              "type": 3
-            },
-            {
-              "name": "player_level_2",
-              "uid": "86e2ac5e-93d4-46dc-ad4b-def6a24fd9cb",
-              "type": 3
-            },
-            {
-              "name": "player_equip_2",
-              "uid": "27ceb287-8cfb-49a9-a031-d2d49ea166ab",
-              "type": 3
-            },
-            {
-              "name": "player_swallow_2",
-              "uid": "ea33c4ef-9868-4f32-8566-c6385e231b00",
-              "type": 3
-            },
-            {
-              "name": "player_state_3",
-              "uid": "0c91e4ae-afc5-406e-aa74-b0a04330d719",
-              "type": 3
-            },
-            {
-              "name": "player_level_3",
-              "uid": "a98c594a-9e67-4c70-8d65-75ec26a11715",
-              "type": 3
-            },
-            {
-              "name": "player_equip_3",
-              "uid": "ff209ed3-2dc1-45ef-a729-83af998ad928",
-              "type": 3
-            },
-            {
-              "name": "player_swallow_3",
-              "uid": "82e5c7c0-cf1d-4a2f-874c-3cc5f4ec90f8",
-              "type": 3
-            },
-            {
-              "name": "player_state_4",
-              "uid": "4935733f-bf8f-477a-ba4a-95d28f490fef",
-              "type": 3
-            },
-            {
-              "name": "player_level_4",
-              "uid": "685cb4ca-cfa2-4db1-8de5-0654d2f13785",
-              "type": 3
-            },
-            {
-              "name": "player_equip_4",
-              "uid": "d18117d6-6b10-4c8a-8829-f828f6812871",
-              "type": 3
-            },
-            {
-              "name": "player_swallow_4",
-              "uid": "f00afd59-41f3-419e-ba11-067f11f97d18",
-              "type": 3
-            },
-            {
-              "name": "scoreboard_col_state",
-              "uid": "3bb0c18e-85d5-4996-a10b-976d76e5d5dd",
-              "type": 3
-            },
-            {
-              "name": "scoreboard_col_level",
-              "uid": "91985501-fa8b-484c-910d-ff7e89cf18c1",
-              "type": 3
-            },
-            {
-              "name": "scoreboard_col_equip",
-              "uid": "0bb71b15-b0f6-4ebe-a920-49482a016886",
-              "type": 3
-            },
-            {
-              "name": "scoreboard_col_swallow",
-              "uid": "3d8fd30a-6932-499d-8272-bafbf5fea60f",
-              "type": 3
-            },
-            {
-              "name": "scoreboard_col_avatar",
-              "uid": "defa03ec-3d13-4eea-ba57-7803db5971e2",
-              "type": 3
-            }
-          ]
-        },
-        {
-          "name": "left_buttons",
-          "uid": "b242801d-f03c-4ba5-8b48-5fd3f5f2d3a7",
-          "type": 7,
-          "children": [
-            {
-              "name": "left_buttons_bg",
-              "uid": "501294ac-1d58-495f-83dd-aacc388679dc",
-              "type": 4
-            },
-            {
-              "name": "brand_mark",
-              "uid": "3ea35d14-1b9e-46b7-ba45-29900f97b9c3",
-              "type": 7,
-              "children": [
-                {
-                  "name": "brand_mark_bg",
-                  "uid": "b4af7a18-6629-46ad-aebf-4ae194aebbec",
-                  "type": 4
-                },
-                {
-                  "name": "brand_mark_glow",
-                  "uid": "d7a6aae9-977e-479a-967f-e1b209426392",
-                  "type": 4
-                },
-                {
-                  "name": "brand_mark_text",
-                  "uid": "031536e1-1795-44e6-ab33-1b151623d8e0",
-                  "type": 3
-                }
-              ]
-            },
-            {
-              "name": "btn_exit",
-              "uid": "c3639158-88af-47dc-b793-fc405bb3fe6a",
-              "type": 1,
-              "children": [
-                {
-                  "name": "icon",
-                  "uid": "859cb5e1-6b76-4fb3-9ba1-290099bae30c",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "btn_pause",
-              "uid": "9c62adf6-a2aa-4eec-875f-66951c907dbd",
-              "type": 1,
-              "children": [
-                {
-                  "name": "icon",
-                  "uid": "cf14b691-7750-4e05-82cb-ccf8ea71b7f3",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "btn_setting",
-              "uid": "76af20f3-bd44-48e6-ab36-4a90a71594dd",
-              "type": 1,
-              "children": [
-                {
-                  "name": "icon",
-                  "uid": "07aa61b6-5b39-45da-b5ce-0ab01843561a",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "btn_save",
-              "uid": "bf07b747-64ac-46a6-933a-728fae8b5fb5",
-              "type": 1,
-              "children": [
-                {
-                  "name": "icon",
-                  "uid": "43996778-d020-4523-803a-edc481883f81",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "btn_powerup",
-              "uid": "75a5aec4-3c66-489a-be96-f8f661af3684",
-              "type": 1,
-              "children": [
-                {
-                  "name": "icon",
-                  "uid": "a7e4f164-5d4c-4844-8e98-80a077f86678",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "btn_hotkey",
-              "uid": "528e9c41-b17a-4500-833a-2d11f0ac2704",
-              "type": 1,
-              "children": [
-                {
-                  "name": "icon",
-                  "uid": "0befaa42-a343-4981-8884-60f7ea935f0f",
-                  "type": 4
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "system_notice",
-          "uid": "ab1e95fa-e1ac-4b57-8ac8-e3da8b7c88d9",
-          "type": 7,
-          "children": [
-            {
-              "name": "system_notice_bg",
-              "uid": "f79e8e09-ee43-4b34-b728-bee904f7f4aa",
-              "type": 4
-            },
-            {
-              "name": "main_bar",
-              "uid": "5d3af3e0-0600-4c25-89bb-5d2bb75123ef",
-              "type": 7,
-              "children": [
-                {
-                  "name": "main_bar_bg",
-                  "uid": "8c747f3b-9dd1-4bed-aaaf-47ed59f84654",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "reward_bar",
-              "uid": "ad6dba1d-055c-4f31-ad19-00e6947bd3c4",
-              "type": 7,
-              "children": [
-                {
-                  "name": "reward_bar_bg",
-                  "uid": "1ebc93f3-0299-494a-b2f9-72859655f437",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "title_chip",
-              "uid": "f1a73c9c-cb6b-4323-a453-133de58227a2",
-              "type": 7,
-              "children": [
-                {
-                  "name": "title_chip_bg",
-                  "uid": "d34ff0c2-ffd3-4f56-8120-27b01409fe66",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "right_edge",
-              "uid": "af116841-cc35-488e-bbbf-8fed99f45bc0",
-              "type": 7,
-              "children": [
-                {
-                  "name": "right_edge_bg",
-                  "uid": "5fbf55ed-75ba-4bef-9a79-4648c8acb6e5",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "notice_text",
-              "uid": "73acb904-90ad-47e7-af40-bffd34be3bf2",
-              "type": 3
-            },
-            {
-              "name": "notice_title",
-              "uid": "0b423337-c8bc-4f06-b366-125769fba435",
-              "type": 3
-            }
-          ]
-        },
-        {
-          "name": "金币",
-          "uid": "dab3b1ad-76f5-4e06-b653-ed991da97868",
-          "type": 7,
-          "children": [
-            {
-              "name": "card_bg",
-              "uid": "c65f37ed-72bc-41dd-83d6-2acab8f53697",
-              "type": 4
-            },
-            {
-              "name": "image_3",
-              "uid": "d2c5ab2d-9c1f-47a3-96f1-e55ac62e1422",
-              "type": 7,
-              "children": [
-                {
-                  "name": "image_3_bg",
-                  "uid": "dbe44ce4-72b3-4a9f-aab3-e19a6fc320ec",
-                  "type": 4
-                },
-                {
-                  "name": "icon",
-                  "uid": "93e4876c-d0b6-4227-9374-a5d830b4049b",
-                  "type": 4
-                },
-                {
-                  "name": "label_2",
-                  "uid": "065dd185-6e2d-437f-a05d-f73edef04082",
-                  "type": 3
-                },
-                {
-                  "name": "delta",
-                  "uid": "2fd51d57-5fae-485f-ac4b-0ac357e10b31",
-                  "type": 3
-                }
-              ]
-            },
-            {
-              "name": "accent",
-              "uid": "ab33c502-8f40-4bf4-839c-f98d1b819c39",
-              "type": 7,
-              "children": [
-                {
-                  "name": "accent_bg",
-                  "uid": "84e75b91-2fa7-48aa-836c-53f5b19ebe79",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "title",
-              "uid": "33fefa64-9569-402d-993a-6922b686e0cb",
-              "type": 3
-            }
-          ]
-        },
-        {
-          "name": "木材",
-          "uid": "32846131-e0c7-4688-8478-c3f4855015a4",
-          "type": 7,
-          "children": [
-            {
-              "name": "card_bg",
-              "uid": "296f15e4-13fa-41e3-adf2-6408fc052df4",
-              "type": 4
-            },
-            {
-              "name": "image_3",
-              "uid": "3862232f-88f9-4cff-a533-2606e6847bf4",
-              "type": 7,
-              "children": [
-                {
-                  "name": "image_3_bg",
-                  "uid": "13bcb6dc-e5c3-4540-9071-292d09aac1d7",
-                  "type": 4
-                },
-                {
-                  "name": "icon",
-                  "uid": "527fbcf1-d5e7-4e9a-bdea-10039f89dcd4",
-                  "type": 4
-                },
-                {
-                  "name": "label_2",
-                  "uid": "94df8d88-7c60-48ef-8a9a-ce81763c60d2",
-                  "type": 3
-                },
-                {
-                  "name": "delta",
-                  "uid": "01b46c87-5886-403b-8955-6e45e74a1e87",
-                  "type": 3
-                }
-              ]
-            },
-            {
-              "name": "accent",
-              "uid": "f1125a43-5dd3-4f6e-b37d-4aa2bd153f93",
-              "type": 7,
-              "children": [
-                {
-                  "name": "accent_bg",
-                  "uid": "9ccd019b-6447-4d38-b142-1850e38b6394",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "title",
-              "uid": "30a5a4af-e0fc-41ba-bf1c-1cb5f6335156",
-              "type": 3
-            }
-          ]
-        },
-        {
-          "name": "人口",
-          "uid": "e28a42b4-0c13-4536-b12c-11c3827814dd",
-          "type": 7,
-          "children": [
-            {
-              "name": "card_bg",
-              "uid": "79e048f7-e407-4967-9772-40ea039305e2",
-              "type": 4
-            },
-            {
-              "name": "image_3",
-              "uid": "29372356-970f-4b00-a495-64e86630f338",
-              "type": 7,
-              "children": [
-                {
-                  "name": "image_3_bg",
-                  "uid": "e83cdf9a-7973-4c1b-abeb-6171a770bdd0",
-                  "type": 4
-                },
-                {
-                  "name": "icon",
-                  "uid": "206dee5c-a737-43dc-9b82-66b22deb82ae",
-                  "type": 4
-                },
-                {
-                  "name": "label_2",
-                  "uid": "db74f9da-e7a8-4996-8b4f-86447b95c1e3",
-                  "type": 3
-                },
-                {
-                  "name": "delta",
-                  "uid": "ce6e350c-1a47-43c1-8327-20683d85165b",
-                  "type": 3
-                }
-              ]
-            },
-            {
-              "name": "accent",
-              "uid": "3c8c414e-aecb-4a15-b0ec-af6309f50e9f",
-              "type": 7,
-              "children": [
-                {
-                  "name": "accent_bg",
-                  "uid": "f5bd1f03-d909-40b0-834f-6179c6eeee50",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "title",
-              "uid": "ece34b91-787e-4a70-9c33-59248059ced8",
-              "type": 3
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "tophud",
-      "uid": "a8873e94-041c-4d9c-8b88-33131f743dba",
-      "type": 7,
-      "children": [
-        {
-          "name": "tophud_bg",
-          "uid": "9c2714a2-c3bd-4e66-b7fd-0a1694003274",
-          "type": 4
-        },
-        {
-          "name": "layout_2",
-          "uid": "6967f7f8-9dab-4069-8019-ab3beb298974",
-          "type": 7,
-          "children": [
-            {
-              "name": "layout_2_bg",
-              "uid": "68c82306-4b29-4ef4-88d1-2674a7a00fc9",
-              "type": 4
-            },
-            {
-              "name": "center_shadow",
-              "uid": "5f24c17c-0d35-4425-9263-e24a8a5719bd",
-              "type": 4
-            },
-            {
-              "name": "timer_core_bg",
-              "uid": "d9528b98-1e0f-44b0-9671-dca362e41ed1",
-              "type": 4
-            },
-            {
-              "name": "phase_bg",
-              "uid": "4c514ed5-cf77-461d-9643-7f6fdb007ba5",
-              "type": 4
-            },
-            {
-              "name": "wave_chip_bg",
-              "uid": "4ca5e5a9-e6dd-46bc-ba10-aec4f7c9c3dc",
-              "type": 4
-            },
-            {
-              "name": "threat_chip_bg",
-              "uid": "e8e3eae5-dc67-4738-a814-ce4f7b483f5a",
-              "type": 4
-            },
-            {
-              "name": "mode_icon",
-              "uid": "4a684d25-4660-4abf-a25d-1a3cf9d282c3",
-              "type": 4
-            },
-            {
-              "name": "center_rim",
-              "uid": "de128558-243f-4349-b92c-8c869d1bcfc1",
-              "type": 7,
-              "children": [
-                {
-                  "name": "center_rim_bg",
-                  "uid": "23e58af6-92a0-451a-8778-99bc40cef12d",
-                  "type": 4
-                }
-              ]
-            },
-            {
-              "name": "curlevel",
-              "uid": "beb3d517-2fd7-4ca4-87db-fbaeb93ce6a5",
-              "type": 3
-            },
-            {
-              "name": "phase_text",
-              "uid": "f90989bc-d945-4daa-9493-1c6829a64a80",
-              "type": 3
-            },
-            {
-              "name": "gametime",
-              "uid": "c7e9d38b-d5c2-4a66-a7dd-7dc6fb5b08cd",
-              "type": 3
-            },
-            {
-              "name": "curlevel_sub",
-              "uid": "4209c6b9-ca8e-42e9-8bda-7b79f6ea64ea",
-              "type": 3
-            },
-            {
-              "name": "wave",
-              "uid": "35042581-b593-4ec9-9d33-8a833e75b746",
-              "type": 3
-            },
-            {
-              "name": "threat_text",
-              "uid": "0739a47e-edb5-4d88-a8a9-6260f9af4f3d",
-              "type": 3
-            }
-          ]
-        }
-      ]
-    }
-  ]
+﻿{
+    "name":  "top",
+    "uid":  "525485f2-959b-406e-a1ce-65dae4b7e556",
+    "type":  2,
+    "children":  [
+                     {
+                         "name":  "top",
+                         "uid":  "e3d780a4-e4d0-4868-8802-bcff979c860f",
+                         "type":  7,
+                         "children":  [
+                                          {
+                                              "name":  "left_strip",
+                                              "uid":  "aec5e39f-984a-4af7-b9e6-1e4b080b9fd6",
+                                              "type":  4
+                                          },
+                                          {
+                                              "name":  "rail_glow",
+                                              "uid":  "f8b4a7ff-4394-46b4-9d57-dd18e56afbf6",
+                                              "type":  4
+                                          },
+                                          {
+                                              "name":  "top_line",
+                                              "uid":  "cd24c9a3-8ff4-4b89-b774-328f5a650ea6",
+                                              "type":  4
+                                          },
+                                          {
+                                              "name":  "scoreboard",
+                                              "uid":  "baff3d1a-b7c7-41e1-846b-d76c33329bef",
+                                              "type":  7,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "scoreboard_bg",
+                                                                   "uid":  "8e7d507b-feeb-449f-818c-9faaf53bd549",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "avatar",
+                                                                   "uid":  "8a9ef133-9f2b-4593-bee1-eaa65ea60872",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "avatar_2",
+                                                                   "uid":  "ff0ded49-158d-4e71-9da9-ca66f90bf975",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "avatar_3",
+                                                                   "uid":  "e0341ae3-1ec0-4c3d-8dfa-28bc083b706e",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "avatar_4",
+                                                                   "uid":  "7f1927a5-a1d5-4959-9172-b40bed3a2652",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "shadow",
+                                                                   "uid":  "f89c52df-2f88-4ece-83ba-bfe402347045",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "shadow_bg",
+                                                                                        "uid":  "2c4cac99-3bf6-418c-b8b4-fb40c8daaf03",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "bg",
+                                                                   "uid":  "99b82b2e-4c92-451f-926b-fac575cdf400",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "bg_bg",
+                                                                                        "uid":  "18bcbbeb-11fe-4de1-8568-aca7fe9fc1ce",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "header_bar",
+                                                                   "uid":  "77744811-082d-4869-a44e-7fc8c3793e99",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "header_bar_bg",
+                                                                                        "uid":  "b446106f-ce08-4170-b1bf-3fc6bf37550b",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "title",
+                                                                   "uid":  "26bfadbf-3ad6-46a1-a3d4-08124f776fba",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_name",
+                                                                   "uid":  "08f42088-d5c2-4395-b202-2cb686f976c4",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_name_2",
+                                                                   "uid":  "071f655f-10be-4188-939f-53781edfa428",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_name_3",
+                                                                   "uid":  "0329ef2e-9aa7-4534-b381-393c1f1748e3",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_name_4",
+                                                                   "uid":  "f2b5d688-3a70-4616-a4a6-9e736aa728da",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "scoreboard_col_name",
+                                                                   "uid":  "37143dbd-b856-4e43-80c9-3994cafb21be",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_power",
+                                                                   "uid":  "38d83b5a-95a7-443a-a4a5-d7fb8d0fd851",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_power_2",
+                                                                   "uid":  "d398bdda-ae9c-484a-bd4b-85c9d0f016c2",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_power_3",
+                                                                   "uid":  "a92a96d1-79e2-43ca-8497-c0889b259d15",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_power_4",
+                                                                   "uid":  "7d81cef7-78ae-4d84-a783-b3a1e5d4626f",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "scoreboard_col_power",
+                                                                   "uid":  "737f2b45-2e56-405f-bb1b-a313ad59ec9f",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_state",
+                                                                   "uid":  "ca894bbe-b4b4-464b-aa45-f7e83a027b2a",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_level",
+                                                                   "uid":  "15e56a40-e2fc-4d69-897c-f33933e5ce5e",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_equip",
+                                                                   "uid":  "15bfcb72-77e6-412e-b24b-09a8475eb24c",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_swallow",
+                                                                   "uid":  "fbf82c13-3f47-4d67-a03b-c6664bed2a7b",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_state_2",
+                                                                   "uid":  "02977f5a-86f7-4690-9874-adce5f01f670",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_level_2",
+                                                                   "uid":  "0315394a-e365-4a30-adde-8222ee9df62e",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_equip_2",
+                                                                   "uid":  "17ad2525-7f44-48be-94f3-4c849a384766",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_swallow_2",
+                                                                   "uid":  "937f9159-deb6-4532-bb90-f6fd250b1545",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_state_3",
+                                                                   "uid":  "f31b57d0-e1e0-40ba-b9ee-513da59ff28f",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_level_3",
+                                                                   "uid":  "eaff474b-699e-4962-9db2-695e2a7a47e7",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_equip_3",
+                                                                   "uid":  "6e766d12-a64b-42c0-bebe-c88a9e6633fe",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_swallow_3",
+                                                                   "uid":  "5e833499-c7f6-4f8e-afe0-232ca2c7af84",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_state_4",
+                                                                   "uid":  "bcc8cfe7-845a-44e5-8c2b-fec1648b06c6",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_level_4",
+                                                                   "uid":  "f9cc628a-620f-4e1f-a1d0-a2e996994feb",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_equip_4",
+                                                                   "uid":  "43d74918-9864-43c0-8ddd-c69b980c3521",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "player_swallow_4",
+                                                                   "uid":  "463573ca-4771-41bf-8354-2bcff515d21a",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "scoreboard_col_state",
+                                                                   "uid":  "16d8a7e6-8c86-4047-a3ff-5bea64927a68",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "scoreboard_col_level",
+                                                                   "uid":  "306c45d2-f2dd-45bd-9f64-32a5ddd14b7c",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "scoreboard_col_equip",
+                                                                   "uid":  "bbb37e07-5088-4f79-b30b-715b973bc5ad",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "scoreboard_col_swallow",
+                                                                   "uid":  "b4da5ebe-1afd-45ce-9381-701c3ba0c8a8",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "scoreboard_col_avatar",
+                                                                   "uid":  "2e7f241c-98ba-47cf-bc31-220e5ee07d74",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "name":  "left_buttons",
+                                              "uid":  "50c7f882-8223-4d6f-afd7-bb2e0b5e64fd",
+                                              "type":  7,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "left_buttons_bg",
+                                                                   "uid":  "e1a9c7df-eb2f-481f-86fc-88425494eb3a",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "brand_mark",
+                                                                   "uid":  "efc02b7d-b9ad-42b4-b393-4e4f03d076d2",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "brand_mark_bg",
+                                                                                        "uid":  "16523f76-9cbe-4779-ac5e-0a0f8f2d27e0",
+                                                                                        "type":  4
+                                                                                    },
+                                                                                    {
+                                                                                        "name":  "brand_mark_glow",
+                                                                                        "uid":  "5c08ee37-ef9b-47c4-a08d-9440c1286e41",
+                                                                                        "type":  4
+                                                                                    },
+                                                                                    {
+                                                                                        "name":  "brand_mark_text",
+                                                                                        "uid":  "01dd1cd9-af42-4f33-945a-7810221eb5a5",
+                                                                                        "type":  3
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "btn_exit",
+                                                                   "uid":  "e15fec96-b73b-4264-8f72-8fd6dddafa2c",
+                                                                   "type":  1,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "icon",
+                                                                                        "uid":  "b7657a5e-faa9-4df8-b2d7-b6a899ce3c48",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "btn_pause",
+                                                                   "uid":  "808616f8-9dca-46d1-a145-7fc1be59453c",
+                                                                   "type":  1,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "icon",
+                                                                                        "uid":  "445defe6-acc3-4446-8f47-02c4a966e36e",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "btn_setting",
+                                                                   "uid":  "2427d8de-3a63-4c92-bd36-1749db5934f4",
+                                                                   "type":  1,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "icon",
+                                                                                        "uid":  "7e338527-e5f4-443d-8861-e94de03d916a",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "btn_powerup",
+                                                                   "uid":  "cdf42425-deef-4d6e-99f2-a6a6845b43f3",
+                                                                   "type":  1,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "icon",
+                                                                                        "uid":  "04a3e381-7522-4c5c-a965-495e395aa432",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "btn_hotkey",
+                                                                   "uid":  "52026a77-f768-406f-a6b1-d691ca0b2d8e",
+                                                                   "type":  1,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "icon",
+                                                                                        "uid":  "a72bffb6-9775-4b51-af07-a55f4821ba28",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "name":  "system_notice",
+                                              "uid":  "bb3231c4-66f9-43d0-9939-b007e85c1295",
+                                              "type":  7,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "system_notice_bg",
+                                                                   "uid":  "1da371dd-e585-4ddc-bcd4-04f01a2943d9",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "main_bar",
+                                                                   "uid":  "1ad8946d-77bc-469d-96d0-5d0b210508a7",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "main_bar_bg",
+                                                                                        "uid":  "9b284bc4-0711-4202-a45b-ba276e3a8de6",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "reward_bar",
+                                                                   "uid":  "c2401f7d-7584-407a-8336-469aece0e7a4",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "reward_bar_bg",
+                                                                                        "uid":  "8d84be9f-2767-4896-b7fa-2f9805fcc93a",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "title_chip",
+                                                                   "uid":  "6ac9e980-19c1-4867-b85a-b40dba98604b",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "title_chip_bg",
+                                                                                        "uid":  "6b43a989-3a75-454a-b1a4-d911d44bcf01",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "right_edge",
+                                                                   "uid":  "fa30f51b-88af-483a-865d-3d5e4307a645",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "right_edge_bg",
+                                                                                        "uid":  "457b7a12-6c5b-49af-896b-36356e775137",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "notice_text",
+                                                                   "uid":  "2bbc7b7a-19a7-4ee1-8ab5-68933f36b1f0",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "notice_title",
+                                                                   "uid":  "1fee8f9d-94d3-4e1b-84c0-7a49b7ccf0d7",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "name":  "金币",
+                                              "uid":  "03adf12c-56ef-4fb3-843e-9d17c3a8f166",
+                                              "type":  7,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "card_bg",
+                                                                   "uid":  "a7da0148-d729-4b43-b2da-60b84ed9b8b6",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "image_3",
+                                                                   "uid":  "f0ecb266-f810-4ce9-8ac4-60ab99d7f1b4",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "image_3_bg",
+                                                                                        "uid":  "0fe04414-485c-4a54-8274-5d4ed684dd26",
+                                                                                        "type":  4
+                                                                                    },
+                                                                                    {
+                                                                                        "name":  "icon",
+                                                                                        "uid":  "99d117c4-bf45-4c79-b785-035a98e3d45a",
+                                                                                        "type":  4
+                                                                                    },
+                                                                                    {
+                                                                                        "name":  "label_2",
+                                                                                        "uid":  "40150450-3262-4393-b868-e9e6a1f804d2",
+                                                                                        "type":  3
+                                                                                    },
+                                                                                    {
+                                                                                        "name":  "delta",
+                                                                                        "uid":  "a945ac61-10b6-4d48-90ea-ea6939931e6a",
+                                                                                        "type":  3
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "accent",
+                                                                   "uid":  "fc0fa088-ba3f-4308-9427-d6d783b1e6c9",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "accent_bg",
+                                                                                        "uid":  "1e95197e-ccad-45df-a434-1df14273bdca",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "title",
+                                                                   "uid":  "26212ba5-730c-40d3-bb68-032e2e495a1e",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "name":  "木材",
+                                              "uid":  "3cd0a8af-62ed-49f6-bb5b-f7098b7ede4a",
+                                              "type":  7,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "card_bg",
+                                                                   "uid":  "962f58f9-23b1-4110-bd1f-78b1862dcf5c",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "image_3",
+                                                                   "uid":  "5275ea63-cc1a-4d1a-8715-8a19632af4d1",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "image_3_bg",
+                                                                                        "uid":  "54db7926-349d-4a1e-bf2e-efa2a08e592f",
+                                                                                        "type":  4
+                                                                                    },
+                                                                                    {
+                                                                                        "name":  "icon",
+                                                                                        "uid":  "0208ab45-0971-42f4-979b-898ea18e6c19",
+                                                                                        "type":  4
+                                                                                    },
+                                                                                    {
+                                                                                        "name":  "label_2",
+                                                                                        "uid":  "aae57696-33a3-4197-b5fc-fc1b1d4634b8",
+                                                                                        "type":  3
+                                                                                    },
+                                                                                    {
+                                                                                        "name":  "delta",
+                                                                                        "uid":  "4ac6f569-d6a8-4791-bd44-2a3d2fe9fd49",
+                                                                                        "type":  3
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "accent",
+                                                                   "uid":  "b3b117c1-8c4b-43b3-87f6-9841e0a73885",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "accent_bg",
+                                                                                        "uid":  "ee162e0f-188c-45b7-8d63-baf9217e0081",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "title",
+                                                                   "uid":  "a2a401d2-c274-493a-ba51-2bf0eb90660c",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "name":  "人口",
+                                              "uid":  "5214fab8-a12a-485d-9ccb-0bcfdec865aa",
+                                              "type":  7,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "card_bg",
+                                                                   "uid":  "ee6e846d-95c1-4ee0-bffb-91fe898727c0",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "image_3",
+                                                                   "uid":  "8422b513-6f84-47e6-bf1c-88d4cddb78e3",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "image_3_bg",
+                                                                                        "uid":  "28a21764-a7e3-4a98-9248-0826d3a977be",
+                                                                                        "type":  4
+                                                                                    },
+                                                                                    {
+                                                                                        "name":  "icon",
+                                                                                        "uid":  "d7ae8bd2-955e-45da-aa7b-df474f431d4c",
+                                                                                        "type":  4
+                                                                                    },
+                                                                                    {
+                                                                                        "name":  "label_2",
+                                                                                        "uid":  "15d146a6-7f8a-44b4-9bf3-c4156ded9c0d",
+                                                                                        "type":  3
+                                                                                    },
+                                                                                    {
+                                                                                        "name":  "delta",
+                                                                                        "uid":  "6515db18-c120-40bb-9801-8e807ee8c89a",
+                                                                                        "type":  3
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "accent",
+                                                                   "uid":  "9299ddca-8fbe-4cb9-8c52-95510a38e9a6",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "accent_bg",
+                                                                                        "uid":  "1e1ccb54-a238-4211-bf4d-72b782c9185c",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "title",
+                                                                   "uid":  "473a35f1-2631-4150-a6ff-e973667d61b3",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          }
+                                      ]
+                     },
+                     {
+                         "name":  "tophud",
+                         "uid":  "5fd4c7c2-760b-44ad-9e1c-f26af1967969",
+                         "type":  7,
+                         "children":  [
+                                          {
+                                              "name":  "tophud_bg",
+                                              "uid":  "7ec79ae8-8bb3-4f11-8f7e-16db8140013d",
+                                              "type":  4
+                                          },
+                                          {
+                                              "name":  "layout_2",
+                                              "uid":  "b5727120-b438-4139-b103-5073aa189059",
+                                              "type":  7,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "layout_2_bg",
+                                                                   "uid":  "d2818b50-8485-4287-8cd3-14e3134eb57c",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "center_shadow",
+                                                                   "uid":  "c30b7349-a85b-47ba-a62c-aa630dd6751a",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "timer_core_bg",
+                                                                   "uid":  "19c7c9e3-c9d1-4e50-9bec-26858cb85e33",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "phase_bg",
+                                                                   "uid":  "ee5ea439-f78d-4b11-8cae-19522ddacf9d",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "wave_chip_bg",
+                                                                   "uid":  "8925ab61-04bc-405d-9bd1-e28b2e4e8524",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "threat_chip_bg",
+                                                                   "uid":  "20cc1970-fc49-441f-8d26-ea634c50066e",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "mode_icon",
+                                                                   "uid":  "2b02d523-4b05-40aa-bd3d-8f129a235e51",
+                                                                   "type":  4
+                                                               },
+                                                               {
+                                                                   "name":  "center_rim",
+                                                                   "uid":  "23a5f61a-c5f7-43c2-862c-6e2178913601",
+                                                                   "type":  7,
+                                                                   "children":  [
+                                                                                    {
+                                                                                        "name":  "center_rim_bg",
+                                                                                        "uid":  "99cc68e6-6294-4172-a585-183c7baffdf4",
+                                                                                        "type":  4
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "name":  "curlevel",
+                                                                   "uid":  "254242af-f52f-4a51-b8ea-8088a94fda44",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "phase_text",
+                                                                   "uid":  "258d0d94-b6ff-417e-8459-39d4cb94ce1d",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "gametime",
+                                                                   "uid":  "18dd68b1-09de-4a70-ac83-479878016ddd",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "curlevel_sub",
+                                                                   "uid":  "862f4289-61a0-4668-a717-ddd490f97d3f",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "wave",
+                                                                   "uid":  "f94f8f3a-81b5-4574-9499-9b2f5e09ffdc",
+                                                                   "type":  3
+                                                               },
+                                                               {
+                                                                   "name":  "threat_text",
+                                                                   "uid":  "3330aa8b-b40b-4811-abd1-2e5dbc6e21b9",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          }
+                                      ]
+                     },
+                     {
+                         "name":  "list",
+                         "uid":  "53dde080-9613-4a63-92e5-038cbff578eb",
+                         "type":  10,
+                         "children":  [
+                                          {
+                                              "name":  "button",
+                                              "uid":  "2a9c1b3b-9e67-4266-af8b-5a7dbc6d7cc3",
+                                              "type":  1,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "label",
+                                                                   "uid":  "e9efc284-9f59-4674-96e9-3afa5f9bc856",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "name":  "button_1",
+                                              "uid":  "93f9337a-3c61-45b6-89df-1fa76a06f4f8",
+                                              "type":  1,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "label",
+                                                                   "uid":  "88f8b7ee-0e57-42e3-a303-279955cef236",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "name":  "button_2",
+                                              "uid":  "5f9ad852-c60e-4b8d-af8e-fdae558fec60",
+                                              "type":  1,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "label",
+                                                                   "uid":  "9084aebb-29de-438d-83fd-1a7c976be583",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "name":  "button_3",
+                                              "uid":  "827498a4-316b-4733-a2f1-909b19331987",
+                                              "type":  1,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "label",
+                                                                   "uid":  "b0f9c798-3b68-4d60-8551-1142601f9540",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "name":  "button_4",
+                                              "uid":  "bde095e7-a29c-4add-bae4-5f1ed8a2f9c2",
+                                              "type":  1,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "label",
+                                                                   "uid":  "0b08b3a2-495c-41b7-8f73-4ef485cf05e1",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "name":  "button_5",
+                                              "uid":  "1b8198d0-e567-470d-aa8e-75f0d0e53d52",
+                                              "type":  1,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "label",
+                                                                   "uid":  "225486bc-fd04-490f-bfcf-fd7c1d2c080b",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "name":  "button_7",
+                                              "uid":  "9a1d0686-ca05-4d72-bf6e-55e8330b8787",
+                                              "type":  1,
+                                              "children":  [
+                                                               {
+                                                                   "name":  "label",
+                                                                   "uid":  "2f9e04ea-cdb8-4c5a-bdab-65a346653483",
+                                                                   "type":  3
+                                                               }
+                                                           ]
+                                          }
+                                      ]
+                     }
+                 ]
 }

@@ -4,6 +4,26 @@
   "key": 2147483647, 
   "group": [
    {
+    "name": "Choice", 
+    "key": "V0W8AkU1EfGyexsvhH0wGo", 
+    "group": [
+     {
+      "__tuple__": true, 
+      "items": [
+       "5db0740f-bc1a-48ea-a62c-cf71dc1776fe", 
+       "Card"
+      ]
+     }, 
+     {
+      "__tuple__": true, 
+      "items": [
+       "a2082192-b8a2-40f2-a3c7-a47acd74468b", 
+       "ChoiceList"
+      ]
+     }
+    ]
+   }, 
+   {
     "name": "SkillPrefab", 
     "key": "2sVqUkUZEfG47emopOS-H0", 
     "group": [
@@ -19,6 +39,26 @@
       "items": [
        "c7542150-049d-4a6d-aa97-ed40ab30b8ba", 
        "skill_btn"
+      ]
+     }
+    ]
+   }, 
+   {
+    "name": "Start", 
+    "key": "cYPjkUU1EfGI-RsvhH0wGs", 
+    "group": [
+     {
+      "__tuple__": true, 
+      "items": [
+       "acdea87a-588a-479b-8b12-b6b45dd900c3", 
+       "mode"
+      ]
+     }, 
+     {
+      "__tuple__": true, 
+      "items": [
+       "cf7c8fc6-5af7-4cf1-870f-02cb315bc8eb", 
+       "level"
       ]
      }
     ]
@@ -67,13 +107,6 @@
        "5de61ab1-67fb-431f-982e-aefdba5c6c4b", 
        "AttrTips"
       ]
-     }, 
-     {
-      "__tuple__": true, 
-      "items": [
-       "6302d747-e9d2-48fa-b5b1-e6206d3392bd", 
-       "\u65b0\u5efa\u81ea\u5b9a\u4e49\u6a21\u5757_1"
-      ]
      }
     ]
    }, 
@@ -81,6 +114,11 @@
     "name": "ArchivePrefab", 
     "key": "2e7DNUGCEfGhOr9IMCbXlh", 
     "group": [
+     {
+      "name": "TuJianYuanSuChengHao", 
+      "key": "kMlwo0VAEfGwm3l47I24DF", 
+      "group": []
+     }, 
      {
       "__tuple__": true, 
       "items": [
@@ -123,20 +161,6 @@
        "YangChengIcon"
       ]
      }
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "a2082192-b8a2-40f2-a3c7-a47acd74468b", 
-     "ChoiceList"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "5db0740f-bc1a-48ea-a62c-cf71dc1776fe", 
-     "Card"
     ]
    }
   ]

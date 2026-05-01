@@ -23,6 +23,8 @@ function M.create(env)
     and CONFIG.outgame_attr_bonus_config.by_stage_mode
     or {}
   local OUTGAME_DEFS = outgame_defs.create(CONFIG)
+  local OUTGAME_TOP_ENTRY_LIST = CONFIG.outgame_top_entry_list and CONFIG.outgame_top_entry_list.list or {}
+  local OUTGAME_DETAIL_CONFIG = OUTGAME_DEFS.outgame_detail_config or {}
   local HONOR_LEVEL_SPECS = OUTGAME_DEFS.honor_level_specs or {}
   local STAGE_PAGE_SIZE = 7
   local CHAPTER_LIST = {}
@@ -90,6 +92,7 @@ function M.create(env)
   local refresh_ui
   local ensure_archive_panel_ui
   local refresh_archive_panel_ui
+  local is_outgame_ui_alive
   local ui_retry_timer = nil
   local ui_retry_remaining = 0
 
@@ -129,6 +132,8 @@ function M.create(env)
       end
     end)
   end
+  local is_ui_alive
+
   local function resolve_ui(path)
     local ok, ui = pcall(y3.ui.get_ui, env.get_player(), path)
     if not ok or not ui then
@@ -137,7 +142,27 @@ function M.create(env)
     return ui
   end
 
-  local function is_ui_alive(ui)
+  local function resolve_ui_first(paths)
+    if type(paths) ~= 'table' then
+      return nil
+    end
+    for _, path in ipairs(paths) do
+      local ui = resolve_ui(path)
+      if is_ui_alive(ui) then
+        return ui
+      end
+    end
+    return nil
+  end
+
+  local function resolve_outgame_ui(path)
+    return resolve_ui_first({
+      'DifficultyHUD' .. path,
+      'outgame' .. path,
+    })
+  end
+
+  function is_ui_alive(ui)
     return ui and (not ui.is_removed or not ui:is_removed())
   end
 
@@ -899,6 +924,77 @@ function M.create(env)
     return '当前关卡已准备完成，点击开始即可进入战斗。'
   end
 
+  local function get_detail_state_key(profile, stage_def, stage_id, mode_id)
+    if get_selected_view_mode(profile) == VIEW_MODE_CULTIVATION then
+      return 'cultivation'
+    end
+    if mode_id ~= SINGLE_MODE_ID then
+      return 'mode_locked'
+    end
+    if not is_standard_unlocked(profile, stage_id) then
+      return 'locked'
+    end
+    if stage_def and stage_def.content_source_stage_id ~= stage_def.stage_id then
+      return 'reused'
+    end
+    local progress = stage_def and get_stage_progress(profile, stage_def.stage_id) or nil
+    if progress and progress.standard_cleared == true then
+      return 'cleared'
+    end
+    return 'open'
+  end
+
+  local function pick_detail_value(spec, key, state_key)
+    if type(spec) ~= 'table' then
+      return nil
+    end
+    local direct = spec[key]
+    if type(direct) == 'string' and direct ~= '' then
+      return direct
+    end
+    local by_state = spec[key .. '_by_state']
+    if type(by_state) == 'table' then
+      local value = by_state[state_key]
+      if type(value) == 'string' and value ~= '' then
+        return value
+      end
+      local fallback = by_state.default
+      if type(fallback) == 'string' and fallback ~= '' then
+        return fallback
+      end
+    end
+    return nil
+  end
+
+  local function resolve_outgame_detail_texts(profile, stage_id, mode_id)
+    local stage_def = STAGES_BY_ID[stage_id]
+    local selected_view_mode = get_selected_view_mode(profile)
+    local state_key = get_detail_state_key(profile, stage_def, stage_id, mode_id)
+
+    local base_title = selected_view_mode == VIEW_MODE_CULTIVATION
+      and '打鱼模式'
+      or get_stage_display_text(stage_def, stage_id)
+    local base_status = selected_view_mode == VIEW_MODE_CULTIVATION
+      and ''
+      or get_stage_status_text(profile, stage_def)
+    local base_hint = build_start_hint(profile, stage_id, mode_id)
+
+    local mode_key = selected_view_mode == VIEW_MODE_CULTIVATION and VIEW_MODE_CULTIVATION or VIEW_MODE_MAINLINE
+    local mode_spec = OUTGAME_DETAIL_CONFIG.mode_details and OUTGAME_DETAIL_CONFIG.mode_details[mode_key] or nil
+    local stage_spec = OUTGAME_DETAIL_CONFIG.stage_details and OUTGAME_DETAIL_CONFIG.stage_details[stage_id] or nil
+
+    local title = pick_detail_value(mode_spec, 'title', state_key) or base_title
+    title = pick_detail_value(stage_spec, 'title', state_key) or title
+
+    local status = pick_detail_value(mode_spec, 'status', state_key) or base_status
+    status = pick_detail_value(stage_spec, 'status', state_key) or status
+
+    local hint = pick_detail_value(mode_spec, 'hint', state_key) or base_hint
+    hint = pick_detail_value(stage_spec, 'hint', state_key) or hint
+
+    return title, status, hint
+  end
+
   local function format_last_result(profile)
     local result = profile and profile.last_result or nil
     if type(result) ~= 'table' or not result.stage_id then
@@ -1140,7 +1236,7 @@ function M.create(env)
     return unlocked_count, cleared_count
   end
 
-  local function is_outgame_ui_alive(ui)
+  function is_outgame_ui_alive(ui)
     return ui
       and is_ui_alive(ui.root)
       and is_ui_alive(ui.hall_root)
@@ -1230,6 +1326,109 @@ function M.create(env)
     end)
   end
 
+  local function resolve_top_entry_button(index)
+    local idx = tonumber(index) or 0
+    if idx <= 0 then
+      return nil
+    end
+    local name = (idx == 1) and 'button' or string.format('button_%d', idx - 1)
+    return resolve_ui_first({
+      'top.list.' .. name,
+      'top.top.list.' .. name,
+    })
+  end
+
+  local function resolve_top_entry_label(index)
+    local idx = tonumber(index) or 0
+    if idx <= 0 then
+      return nil
+    end
+    local name = (idx == 1) and 'button' or string.format('button_%d', idx - 1)
+    return resolve_ui_first({
+      'top.list.' .. name .. '.label',
+      'top.top.list.' .. name .. '.label',
+    })
+  end
+
+  local function dispatch_top_entry_action(entry)
+    if type(entry) ~= 'table' then
+      return
+    end
+    local action = tostring(entry.action or '')
+    if action == 'open_archive' then
+      api.open_save_panel()
+      return
+    end
+    if action == 'start_stage' then
+      api.start_selected_stage()
+      return
+    end
+    if action == 'show_hero_growth_tip' then
+      message('英雄养成入口已迁移到“如何变强 / H”。')
+      return
+    end
+    if action == 'show_hero_tujian_tip' then
+      message('英雄图鉴入口已迁移到“如何变强 / H”。')
+      return
+    end
+    if action == 'refresh' then
+      api.refresh_ui()
+      return
+    end
+  end
+
+  local function ensure_top_entry_list_ui(ui)
+    if not ui then
+      return nil
+    end
+    ui.top_entry_list_root = ui.top_entry_list_root or resolve_ui_first({ 'top.list', 'top.top.list' })
+    ui.top_entry_items = ui.top_entry_items or {}
+    for _, entry in ipairs(OUTGAME_TOP_ENTRY_LIST) do
+      local slot = tonumber(entry.slot) or 0
+      if slot > 0 then
+        ui.top_entry_items[slot] = ui.top_entry_items[slot] or {}
+        ui.top_entry_items[slot].entry = entry
+        ui.top_entry_items[slot].button = ui.top_entry_items[slot].button or resolve_top_entry_button(slot)
+        ui.top_entry_items[slot].label = ui.top_entry_items[slot].label or resolve_top_entry_label(slot)
+      end
+    end
+    return ui.top_entry_items
+  end
+
+  local function refresh_top_entry_list_ui(ui)
+    local items = ensure_top_entry_list_ui(ui)
+    if not items then
+      return
+    end
+    local should_show = STATE.session_phase == 'outgame'
+    set_visible_if_alive(ui.top_entry_list_root, should_show)
+    for _, slot_ui in pairs(items) do
+      local entry = slot_ui.entry
+      local visible = should_show and (entry.visible_in_outgame ~= false)
+      set_visible_if_alive(slot_ui.button, visible)
+      set_text_if_alive(slot_ui.label, entry.label or '')
+    end
+  end
+
+  local function bind_top_entry_list(ui)
+    local items = ensure_top_entry_list_ui(ui)
+    if not items then
+      return
+    end
+    for _, slot_ui in pairs(items) do
+      local button = slot_ui.button
+      if is_ui_alive(button) and slot_ui.bound ~= true then
+        slot_ui.bound = true
+        button:add_fast_event('左键-按下', function()
+          if play_ui_click then
+            play_ui_click()
+          end
+          dispatch_top_entry_action(slot_ui.entry or {})
+        end)
+      end
+    end
+  end
+
   local function bind_ui_events(ui)
     for _, slot in ipairs(ui.mode_slots or {}) do
       bind_mode_slot(slot)
@@ -1239,6 +1438,7 @@ function M.create(env)
     end
 
     bind_save_entry(ui)
+    bind_top_entry_list(ui)
 
     if ui.start_bound ~= true then
       local click_targets = {}
@@ -1317,7 +1517,6 @@ function M.create(env)
       and is_ui_alive(ui.root)
       and is_ui_alive(ui.overlay)
       and is_ui_alive(ui.window)
-      and is_ui_alive(ui.close_button)
   end
 
   local function resolve_archive_chip(path, bg_name)
@@ -1718,10 +1917,17 @@ function M.create(env)
       return STATE.archive_panel_ui
     end
 
-    local archive_main_root = resolve_ui('ArchiveMain')
-    local archive_main_overlay = resolve_ui('ArchiveMain.layout_1')
-    local archive_main_close = resolve_ui('ArchiveMain.layout_1.exit')
-    if is_ui_alive(archive_main_root) and is_ui_alive(archive_main_overlay) and is_ui_alive(archive_main_close) then
+    local archive_main_root = resolve_ui_first({ 'ArchiveMain', 'ArchivePanel' })
+    local archive_main_overlay = resolve_ui_first({ 'ArchiveMain.layout_1', 'ArchiveMain.layout', 'ArchivePanel.layout_1', 'ArchivePanel.layout' })
+    local archive_main_close = resolve_ui_first({
+      'ArchiveMain.layout_1.exit',
+      'ArchiveMain.layout.exit',
+      'ArchiveMain.layout.close',
+      'ArchiveMain.layout.button',
+      'ArchivePanel.layout_1.exit',
+      'ArchivePanel.layout.exit',
+    })
+    if is_ui_alive(archive_main_root) and is_ui_alive(archive_main_overlay) then
       local ui = {
         variant = 'archive_main_v2',
         root = archive_main_root,
@@ -1732,10 +1938,10 @@ function M.create(env)
           root = archive_main_close,
           bg = archive_main_close,
         },
-        enter_panel_root = resolve_ui('EnterPanel'),
-        enter_panel_icon = resolve_ui('EnterPanel.YangChengIcon'),
-        enter_panel_bg = resolve_ui('EnterPanel.YangChengIcon.bg'),
-        enter_panel_name = resolve_ui('EnterPanel.YangChengIcon.name'),
+        enter_panel_root = resolve_ui_first({ 'EnterPanel', 'ArchiveMain.EnterPanel' }),
+        enter_panel_icon = resolve_ui_first({ 'EnterPanel.YangChengIcon', 'ArchiveMain.EnterPanel.YangChengIcon' }),
+        enter_panel_bg = resolve_ui_first({ 'EnterPanel.YangChengIcon.bg', 'ArchiveMain.EnterPanel.YangChengIcon.bg' }),
+        enter_panel_name = resolve_ui_first({ 'EnterPanel.YangChengIcon.name', 'ArchiveMain.EnterPanel.YangChengIcon.name' }),
         enter_panel_bound = false,
         bound = false,
       }
@@ -1748,7 +1954,7 @@ function M.create(env)
 
     if not STATE.archive_panel_ui_warned then
       STATE.archive_panel_ui_warned = true
-      message('未找到 ArchiveMain/EnterPanel 节点，请先热更新版存档 UI 后再测试。')
+      message('未找到 ArchiveMain 节点，请先热更新版存档 UI 后再测试。')
     end
     return nil
   end
@@ -1859,19 +2065,25 @@ function M.create(env)
       sync_outgame_backdrop(STATE.outgame_ui)
       refresh_save_entry_ui(STATE.outgame_ui, STATE.outgame_profile)
       bind_ui_events(STATE.outgame_ui)
+      refresh_top_entry_list_ui(STATE.outgame_ui)
       return STATE.outgame_ui
     end
 
-    local root = resolve_ui('outgame')
-    local hall_root = resolve_ui('outgame.大厅')
-    local backdrop = resolve_ui('outgame.大厅.layout.底板')
-    local title = resolve_ui('outgame.大厅.layout.right.mode_name')
-    local tip_root = resolve_ui('outgame.大厅.layout.right.mode_name.猎场模式tips')
-    local tip = resolve_ui('outgame.大厅.layout.right.mode_name.猎场模式tips.layout_2.label_3')
-    local page_container = resolve_ui('outgame.大厅.layout.right.难度列表')
-    local mode_panel = resolve_ui('outgame.大厅.layout.left_2')
-    local stage_slot_container = resolve_ui('outgame.大厅.layout.right_2.list')
-    local start_button = resolve_ui('outgame.大厅.layout.start')
+    local root = resolve_ui_first({ 'DifficultyHUD', 'outgame' })
+    local hall_root = resolve_ui_first({ 'DifficultyHUD.大厅', 'outgame.大厅' })
+    local backdrop = resolve_ui_first({
+      'DifficultyHUD.大厅.layout.底板',
+      'DifficultyHUD.大厅.layout.shade',
+      'outgame.大厅.layout.底板',
+      'outgame.大厅.layout.shade',
+    })
+    local title = resolve_outgame_ui('.大厅.layout.right.mode_name')
+    local tip_root = resolve_outgame_ui('.大厅.layout.right.mode_name.猎场模式tips')
+    local tip = resolve_outgame_ui('.大厅.layout.right.mode_name.猎场模式tips.layout_2.label_3')
+    local page_container = resolve_outgame_ui('.大厅.layout.right.难度列表')
+    local mode_panel = resolve_outgame_ui('.大厅.layout.left_2')
+    local stage_slot_container = resolve_outgame_ui('.大厅.layout.right_2.list')
+    local start_button = resolve_outgame_ui('.大厅.layout.start')
 
     if not (is_ui_alive(root) and is_ui_alive(hall_root)) then
       if not STATE.outgame_ui_bind_warned then
@@ -1925,8 +2137,14 @@ function M.create(env)
       end
 
       local mode_slots = {}
-      local mainline_slot = build_static_mode_slot('outgame.大厅.layout.left_2.list.主线模式', VIEW_MODE_MAINLINE, '正常模式')
-      local cultivation_slot = build_static_mode_slot('outgame.大厅.layout.left_2.list.猎场模式', VIEW_MODE_CULTIVATION, '猎场模式')
+      local mainline_slot = build_static_mode_slot('DifficultyHUD.大厅.layout.left_2.list.主线模式', VIEW_MODE_MAINLINE, '正常模式')
+      local cultivation_slot = build_static_mode_slot('DifficultyHUD.大厅.layout.left_2.list.猎场模式', VIEW_MODE_CULTIVATION, '猎场模式')
+      if not mainline_slot then
+        mainline_slot = build_static_mode_slot('outgame.大厅.layout.left_2.list.主线模式', VIEW_MODE_MAINLINE, '正常模式')
+      end
+      if not cultivation_slot then
+        cultivation_slot = build_static_mode_slot('outgame.大厅.layout.left_2.list.猎场模式', VIEW_MODE_CULTIVATION, '猎场模式')
+      end
       if mainline_slot then
         mode_slots[#mode_slots + 1] = mainline_slot
       end
@@ -1937,7 +2155,10 @@ function M.create(env)
       local stage_slots = {}
       for index = 1, STAGE_PAGE_SIZE do
         local slot_name = string.format('mode%d', index)
-        local slot = build_static_stage_slot('outgame.大厅.layout.right_2.list.' .. slot_name)
+        local slot = build_static_stage_slot('DifficultyHUD.大厅.layout.right_2.list.' .. slot_name)
+        if not slot then
+          slot = build_static_stage_slot('outgame.大厅.layout.right_2.list.' .. slot_name)
+        end
         if slot then
           stage_slots[#stage_slots + 1] = slot
         end
@@ -1945,32 +2166,32 @@ function M.create(env)
 
       local daily_rows = {}
       for index = 1, 5 do
-        local base_path = string.format('outgame.大厅.layout.left.task_%d', index)
-        local row_root = resolve_ui(base_path)
+        local base_path = string.format('.大厅.layout.left.task_%d', index)
+        local row_root = resolve_outgame_ui(base_path)
         if is_ui_alive(row_root) then
           daily_rows[#daily_rows + 1] = {
             root = row_root,
-            bg = resolve_ui(base_path .. '.bg'),
-            title = resolve_ui(base_path .. '.title'),
-            reward = resolve_ui(base_path .. '.reward'),
-            progress = resolve_ui(base_path .. '.progress'),
-            status_bg = resolve_ui(base_path .. '.status_bg'),
-            status = resolve_ui(base_path .. '.status'),
+            bg = resolve_outgame_ui(base_path .. '.bg'),
+            title = resolve_outgame_ui(base_path .. '.title'),
+            reward = resolve_outgame_ui(base_path .. '.reward'),
+            progress = resolve_outgame_ui(base_path .. '.progress'),
+            status_bg = resolve_outgame_ui(base_path .. '.status_bg'),
+            status = resolve_outgame_ui(base_path .. '.status'),
           }
         end
       end
 
       local player_slots = {}
       for index = 1, 4 do
-        local base_path = string.format('outgame.大厅.layout.footer.slot_%d', index)
-        local slot_root = resolve_ui(base_path)
+        local base_path = string.format('.大厅.layout.footer.slot_%d', index)
+        local slot_root = resolve_outgame_ui(base_path)
         if is_ui_alive(slot_root) then
           player_slots[#player_slots + 1] = {
             root = slot_root,
-            bg = resolve_ui(base_path .. '.frame') or slot_root,
-            inner = resolve_ui(base_path .. '.inner'),
-            avatar = resolve_ui(base_path .. '.avatar'),
-            label = resolve_ui(base_path .. '.label'),
+            bg = resolve_outgame_ui(base_path .. '.frame') or slot_root,
+            inner = resolve_outgame_ui(base_path .. '.inner'),
+            avatar = resolve_outgame_ui(base_path .. '.avatar'),
+            label = resolve_outgame_ui(base_path .. '.label'),
             avatar_key = nil,
           }
         end
@@ -1981,49 +2202,52 @@ function M.create(env)
         hall_root = hall_root,
         backdrop = backdrop,
         title = title,
-        header_tip = resolve_ui('outgame.大厅.layout.header_tip'),
+        header_tip = resolve_outgame_ui('.大厅.layout.header_tip'),
         tip_root = tip_root,
         tip = tip,
         mode_panel = mode_panel,
         mode_slots = mode_slots,
-        left_panel = resolve_ui('outgame.大厅.layout.left'),
-        left_title = resolve_ui('outgame.大厅.layout.left.task_title'),
-        left_rule = resolve_ui('outgame.大厅.layout.left.task_line'),
+        left_panel = resolve_outgame_ui('.大厅.layout.left'),
+        left_title = resolve_outgame_ui('.大厅.layout.left.task_title'),
+        left_rule = resolve_outgame_ui('.大厅.layout.left.task_line'),
         daily_rows = daily_rows,
-        reward_card = resolve_ui('outgame.大厅.layout.left.reward_group.reward_card_bg'),
-        reward_title = resolve_ui('outgame.大厅.layout.left.reward_group.reward_title'),
-        reward_code = resolve_ui('outgame.大厅.layout.left.reward_group.reward_code'),
-        reward_hint = resolve_ui('outgame.大厅.layout.left.reward_group.reward_hint'),
+        reward_card = resolve_outgame_ui('.大厅.layout.left.reward_group.reward_card_bg'),
+        reward_title = resolve_outgame_ui('.大厅.layout.left.reward_group.reward_title'),
+        reward_code = resolve_outgame_ui('.大厅.layout.left.reward_group.reward_code'),
+        reward_hint = resolve_outgame_ui('.大厅.layout.left.reward_group.reward_hint'),
         page_container = page_container,
         stage_slots = stage_slots,
         stage_slot_container = stage_slot_container,
-        start_button_bg = resolve_ui('outgame.大厅.layout.start_bg') or start_button,
+        start_button_bg = resolve_outgame_ui('.大厅.layout.start_bg') or start_button,
         start_button = start_button,
-        start_anchor = resolve_ui('outgame.大厅.layout.start_anchor') or resolve_ui('outgame.大厅.layout.start_root') or nil,
+        start_anchor = resolve_outgame_ui('.大厅.layout.start_anchor') or resolve_outgame_ui('.大厅.layout.start_root') or nil,
         start_bound = false,
         save_entry = {
-          root = resolve_ui('outgame.大厅.layout.save_anchor.save_root'),
-          line = resolve_ui('outgame.大厅.layout.save_anchor.line'),
-          title = resolve_ui('outgame.大厅.layout.save_anchor.title'),
-          status = resolve_ui('outgame.大厅.layout.save_anchor.status'),
-          button_bg = resolve_ui('outgame.大厅.layout.save_anchor.button_bg'),
-          button = resolve_ui('outgame.大厅.layout.save_anchor.button'),
+          root = resolve_outgame_ui('.大厅.layout.save_anchor.save_root'),
+          line = resolve_outgame_ui('.大厅.layout.save_anchor.line'),
+          title = resolve_outgame_ui('.大厅.layout.save_anchor.title'),
+          status = resolve_outgame_ui('.大厅.layout.save_anchor.status'),
+          button_bg = resolve_outgame_ui('.大厅.layout.save_anchor.button_bg'),
+          button = resolve_outgame_ui('.大厅.layout.save_anchor.button'),
         },
         save_entry_bound = false,
-        right_panel = resolve_ui('outgame.大厅.layout.right'),
+        right_panel = resolve_outgame_ui('.大厅.layout.right'),
         difficulty_title = title,
-        difficulty_hint = resolve_ui('outgame.大厅.layout.right.difficulty_hint'),
+        difficulty_hint = resolve_outgame_ui('.大厅.layout.right.difficulty_hint'),
         cultivation_note = tip,
-        detail_title = resolve_ui('outgame.大厅.layout.detail_title'),
-        detail_status = resolve_ui('outgame.大厅.layout.detail_status'),
-        detail_hint = resolve_ui('outgame.大厅.layout.detail_hint'),
-        quit_tip = resolve_ui('outgame.大厅.layout.quit_tip'),
-        player_name = resolve_ui('outgame.大厅.layout.footer.player_name'),
+        detail_title = resolve_outgame_ui('.大厅.layout.detail_title'),
+        detail_status = resolve_outgame_ui('.大厅.layout.detail_status'),
+        detail_hint = resolve_outgame_ui('.大厅.layout.detail_hint'),
+        quit_tip = resolve_outgame_ui('.大厅.layout.quit_tip'),
+        player_name = resolve_outgame_ui('.大厅.layout.footer.player_name'),
         player_slots = player_slots,
-        save_anchor = resolve_ui('outgame.大厅.layout.save_anchor'),
+        save_anchor = resolve_outgame_ui('.大厅.layout.save_anchor'),
+        top_entry_list_root = resolve_ui_first({ 'top.list', 'top.top.list' }),
+        top_entry_items = {},
       }
 
       bind_ui_events(STATE.outgame_ui)
+      refresh_top_entry_list_ui(STATE.outgame_ui)
       return STATE.outgame_ui
     end
     if not STATE.outgame_ui_bind_warned then
@@ -2134,12 +2358,13 @@ function M.create(env)
     set_visible_if_alive(ui.cultivation_note, is_cultivation_mode)
     set_text_if_alive(ui.difficulty_hint, is_cultivation_mode and '' or '选择难度后即可开始游戏')
 
-    set_visible_if_alive(ui.detail_title, not is_cultivation_mode)
-    set_visible_if_alive(ui.detail_status, not is_cultivation_mode)
+    local detail_title, detail_status, detail_hint = resolve_outgame_detail_texts(profile, selected_stage_id, selected_mode_id)
+    set_visible_if_alive(ui.detail_title, true)
+    set_visible_if_alive(ui.detail_status, detail_status ~= '')
     set_visible_if_alive(ui.detail_hint, true)
-    set_text_if_alive(ui.detail_title, is_cultivation_mode and '' or get_stage_display_text(selected_stage_def, selected_stage_id))
-    set_text_if_alive(ui.detail_status, is_cultivation_mode and '' or get_stage_status_text(profile, selected_stage_def))
-    set_text_if_alive(ui.detail_hint, build_start_hint(profile, selected_stage_id, selected_mode_id))
+    set_text_if_alive(ui.detail_title, detail_title)
+    set_text_if_alive(ui.detail_status, detail_status)
+    set_text_if_alive(ui.detail_hint, detail_hint)
     set_text_if_alive(ui.left_title, '每日任务（周末双倍）')
     set_text_if_alive(ui.left_rule, '（每日任务获得的资源，不计算每日上限）')
     refresh_daily_rows(ui, profile, selected_stage_id)
@@ -2186,6 +2411,7 @@ function M.create(env)
       ensure_ui()
     end
     refresh_ui()
+    refresh_top_entry_list_ui(STATE.outgame_ui)
   end
 
   function api.set_ui_visible(visible)
@@ -2209,6 +2435,7 @@ function M.create(env)
     end
     set_visible_if_alive(ui.root, visible == true)
     set_visible_if_alive(ui.hall_root, visible == true)
+    refresh_top_entry_list_ui(ui)
     if is_archive_panel_ui_alive(archive_ui) then
       refresh_archive_enter_panel_visible(archive_ui)
     end

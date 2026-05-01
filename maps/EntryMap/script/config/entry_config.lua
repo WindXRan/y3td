@@ -52,6 +52,8 @@ if not ok_treasure_compat or type(TreasureCatalogCompatObjects) ~= 'table' then
   TreasureCatalogCompatObjects = {}
 end
 local OutgameAttrBonusConfig = require 'data.tables.outgame_attr_bonus_config'
+local OutgameTopEntryList = require 'data.tables.outgame_top_entry_list'
+local OutgameDetailConfig = require 'data.tables.outgame_detail_config'
 local GearUpgradeConfig = require 'data.tables.gear_upgrade_config'
 local SkillRuntimeTuning = require 'data.tables.skill_runtime_tuning'
 local ATTACK_SKILL_DEPRECATED = true
@@ -109,6 +111,8 @@ local M = {
   treasure_catalog = TreasureCatalogObjects,
   treasure_catalog_compat = TreasureCatalogCompatObjects,
   outgame_attr_bonus_config = OutgameAttrBonusConfig,
+  outgame_top_entry_list = OutgameTopEntryList,
+  outgame_detail_config = OutgameDetailConfig,
   gear_upgrade_config = GearUpgradeConfig,
   skill_runtime_tuning = SkillRuntimeTuning,
   attack_skill_runtime_tuning = SkillRuntimeTuning.attack or {},

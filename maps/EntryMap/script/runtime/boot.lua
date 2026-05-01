@@ -30,7 +30,7 @@ local BondEffectsTestFramework = require 'runtime.bond_effects_test_framework'
 local BattleAutoAcceptanceSystem = require 'runtime.battle_auto_acceptance'
 local EffectDebugSystem = require 'runtime.effect_debug'
 local BattleEventFeedSystem = require 'runtime.battle_event_feed'
-local RewardSystem = require 'runtime.rewards'
+local RewardSystem = require 'runtime.rewards_disabled'
 local GearUpgrades = require 'runtime.gear_upgrades'
 local AttrChoices = require 'runtime.attr_choices'
 local HeroSelectionRangeSystem = require 'runtime.hero_selection_range'
@@ -2536,12 +2536,6 @@ debug_actions_system = DebugActionsSystem.create({
   grant_bond_card = function(card_id)
     return BondSystem.debug_grant_card(create_bond_env(), card_id)
   end,
-  grant_treasure = function(treasure_id, replace_slot)
-    return reward_system.debug_grant_treasure(treasure_id, replace_slot)
-  end,
-  dump_temporary_treasures = function()
-    return reward_system.debug_dump_temporary_treasures()
-  end,
   effect_debug_system = effect_debug_system,
   force_trigger_effect = function(effect_id)
     return auto_active_effects_system.force_trigger_effect(effect_id)
@@ -2606,12 +2600,6 @@ debug_tools_system = DebugToolsSystem.create({
   end,
   debug_grant_bond_card = function(card_id)
     return debug_actions_system.debug_grant_bond_card(card_id)
-  end,
-  debug_grant_treasure = function(treasure_id, replace_slot)
-    return debug_actions_system.debug_grant_treasure(treasure_id, replace_slot)
-  end,
-  debug_print_temporary_treasures = function()
-    return debug_actions_system.debug_print_temporary_treasures()
   end,
   effect_debug_system = effect_debug_system,
   debug_open_effect_debug_panel = function()
@@ -2718,44 +2706,6 @@ local function try_start_challenge(challenge_id)
   return battlefield_system.try_start_challenge(challenge_id)
 end
 
-local function has_pending_treasure_choice()
-  return reward_system.has_pending_treasure_choice()
-end
-
-local function has_pending_evolution_choice()
-  local runtime = reward_system.get_evolution_runtime()
-  return runtime
-      and runtime.awaiting_choice == true
-      and runtime.current_choices
-      and #runtime.current_choices > 0
-end
-
-local function try_evolution_entry()
-  if has_pending_evolution_choice() then
-    STATE.choice_panel_hidden = false
-    show_pending_round_choice('evolution')
-    return true
-  end
-
-  try_open_queued_treasure_round()
-  if not ensure_round_choice_available('evolution') then
-    return false
-  end
-  if has_pending_evolution_choice() then
-    STATE.choice_panel_hidden = false
-    show_pending_round_choice('evolution')
-    return true
-  end
-
-  message('当前没有待领取的猎手专精选择。')
-  return false
-end
-
-local function try_treasure_entry()
-  message('宝物功能已下线。')
-  return false
-end
-
 local function use_attr_diamond()
   if not ensure_round_choice_available('attr') then
     return false
@@ -2804,8 +2754,6 @@ runtime_hud_system = RuntimeHudSystem.create({
   message = message,
   try_bond_draw = try_bond_draw,
   try_skill_draw = try_skill_draw,
-  try_evolution_entry = try_evolution_entry,
-  try_treasure_entry = try_treasure_entry,
   try_start_challenge = try_start_challenge,
   open_save_panel = function()
     return open_runtime_save_panel()
@@ -3408,8 +3356,6 @@ RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({
   open_skill_card_album = open_skill_card_album,
   show_runtime_attr_dialog = show_runtime_attr_dialog,
   try_start_challenge = try_start_challenge,
-  try_evolution_entry = try_evolution_entry,
-  try_treasure_entry = try_treasure_entry,
   apply_round_choice = apply_round_choice,
   show_runtime_status = show_runtime_status,
   open_runtime_save_panel = open_runtime_save_panel,
