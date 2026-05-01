@@ -12,11 +12,9 @@
 ## 真实入口
 
 - 启动入口：`main.lua`
-- 运行时总协调：`entry_runtime.lua`
-- 配置汇总：`entry_config.lua`
-- 奖励运行时：`entry_runtime_rewards.lua`
-- 静态对象定义：`entry_objects/`
-- 新拆分运行时模块：`runtime/`
+- 运行时总协调：`runtime/boot.lua`
+- 配置汇总：`config/entry_config.lua`
+- 运行时模块：`runtime/`
 - UI 交互代码：`ui/`
 
 ## 不要误判
@@ -28,7 +26,7 @@
 
 ## 修改优先级
 
-1. 先判断需求属于配置、静态对象、战场、成长、攻击技能、羁绊、奖励队列、HUD、调试中的哪一层。
+1. 先判断需求属于配置、战场、成长、攻击技能、羁绊、HUD、调试中的哪一层。
 2. 优先复用已有模块，不要把已拆分的逻辑回退成单文件堆积。
 3. 写 Lua 前必须先确认 y3 API 存在，优先查 `.codex/skills/y3-lua-pipeline/references/` 和 `y3/` 源码。
 4. UI 需求优先走项目 UI 生成流程，避免手写大型 UI JSON。
@@ -44,4 +42,8 @@
 4. `docs/项目模块/01-启动与入口/启动入口链路.md`
 5. `docs/项目模块/02-运行时主循环/主循环与状态机.md`
 6. 按任务读取对应模块文档或 `entry_objects/README.md`
+
+## 当前状态说明
+
+- 宝物/烙印系统已下线，运行时使用 `runtime/rewards_disabled.lua` 空实现。
 

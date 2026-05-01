@@ -68,6 +68,17 @@ local function build_pool_specs()
   return specs
 end
 
+local function build_outgame_detail_config(config)
+  local table_config = config.outgame_detail_config or {}
+  local stage_details = table_config.stage_details or {}
+  local mode_details = table_config.mode_details or {}
+
+  return {
+    mode_details = mode_details,
+    stage_details = stage_details,
+  }
+end
+
 function M.create(config)
   return {
     stage_list = config.stages and config.stages.list or {},
@@ -138,6 +149,7 @@ function M.create(config)
     archive_shop_categories = ShopItems.categories,
     archive_shop_categories_by_primary = ShopItems.categories_by_primary or {},
     archive_shop_default_icon = ShopItems.default_icon,
+    outgame_detail_config = build_outgame_detail_config(config),
   }
 end
 

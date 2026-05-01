@@ -1,0 +1,7 @@
+id,scope,view_mode,stage_id,state_key,title,status,hint,enabled,order_index
+__字段说明__,作用域(mode/stage),视图模式(mainline/cultivation),关卡ID(stage时必填),状态键(default/locked/open/cleared/reused/cultivation),详情标题,详情状态,详情描述,是否启用(1/0),排序
+mainline_locked_hint,mode,mainline,,locked,,,当前关卡尚未开放，请先推进上一关。,1,10
+mainline_reused_hint,mode,mainline,,reused,,,本关当前复用前置关卡战斗内容做流程验证。,1,20
+mainline_open_hint,mode,mainline,,open,,,当前关卡已准备完成，点击开始即可进入战斗。,1,30
+mainline_cleared_hint,mode,mainline,,cleared,,,当前关卡已通关，可重复挑战刷新成绩。,1,40
+cultivation_default,mode,cultivation,,default,打鱼模式,展示模式,打鱼模式当前先保留为局外入口展示，暂不开放进入战斗。,1,50

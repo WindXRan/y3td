@@ -88,20 +88,6 @@ function M.create(env)
         and #STATE.bond_runtime.current_choices > 0 then
       return true
     end
-    local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
-    if evolution_runtime and evolution_runtime.awaiting_choice and evolution_runtime.current_choices
-        and #evolution_runtime.current_choices > 0 then
-      return true
-    end
-    if STATE.treasure_runtime then
-      if STATE.treasure_runtime.awaiting_choice and STATE.treasure_runtime.current_choices
-          and #STATE.treasure_runtime.current_choices > 0 then
-        return true
-      end
-      if STATE.treasure_runtime.awaiting_replace and STATE.treasure_runtime.pending_replace_choice then
-        return true
-      end
-    end
     return false
   end
 
@@ -396,20 +382,6 @@ function M.create(env)
           return
         end
         env.debug_grant_bond_card(card_id)
-      end,
-    })
-
-    develop_command.register('ETREASURE', {
-      desc = '宝物功能已下线。',
-      onCommand = function()
-        message('宝物功能已下线。')
-      end,
-    })
-
-    develop_command.register('ETEMP', {
-      desc = '宝物功能已下线。',
-      onCommand = function()
-        message('宝物功能已下线。')
       end,
     })
 

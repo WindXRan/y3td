@@ -15,8 +15,6 @@ function M.create(env)
   local execute_enemy = env.execute_enemy
   local is_battle_active = env.is_battle_active
   local grant_bond_card = env.grant_bond_card
-  local grant_treasure = env.grant_treasure
-  local dump_temporary_treasures = env.dump_temporary_treasures
   local effect_debug_system = env.effect_debug_system
   local force_trigger_effect = env.force_trigger_effect
   local open_effect_debug_panel_ui = env.open_effect_debug_panel_ui
@@ -176,28 +174,6 @@ function M.create(env)
     end
     local ok, result = grant_bond_card(card_id)
     debug_message(ok and result or result)
-  end
-
-  function api.debug_grant_treasure(treasure_id, replace_slot)
-    if not guard_battle() then
-      return
-    end
-    local ok, result = grant_treasure(treasure_id, replace_slot)
-    debug_message(ok and result or result)
-  end
-
-  function api.debug_print_temporary_treasures()
-    if not guard_battle() then
-      return
-    end
-    local lines = dump_temporary_treasures()
-    if #lines == 0 then
-      debug_message('当前没有临时宝物。')
-      return
-    end
-    for _, line in ipairs(lines) do
-      debug_message(line)
-    end
   end
 
   function api.debug_open_effect_debug_panel()

@@ -18,11 +18,10 @@
 
 - 当前玩法主目录：`maps/EntryMap/script`
 - 真实启动入口：`maps/EntryMap/script/main.lua`
-- 运行时总协调：`maps/EntryMap/script/entry_runtime.lua`
-- 奖励运行时拆分：`maps/EntryMap/script/entry_runtime_rewards.lua`
-- 配置汇总入口：`maps/EntryMap/script/entry_config.lua`
-- 静态对象定义：`maps/EntryMap/script/entry_objects`
-- 羁绊主实现：`maps/EntryMap/script/runtime_bonds.lua`
+- 运行时总协调：`maps/EntryMap/script/runtime/boot.lua`
+- 配置汇总入口：`maps/EntryMap/script/config/entry_config.lua`
+- 羁绊主实现：`maps/EntryMap/script/runtime/bonds.lua`
+- 宝物/烙印：已下线（运行时空实现 `runtime/rewards_disabled.lua`）
 
 ## 不要误判为主入口
 
@@ -53,31 +52,25 @@
 
 - 启动与总协调：
   - `maps/EntryMap/script/main.lua`
-  - `maps/EntryMap/script/entry_runtime.lua`
-  - `maps/EntryMap/script/entry_runtime_outgame.lua`
+  - `maps/EntryMap/script/runtime/boot.lua`
 - 战斗与波次：
-  - `maps/EntryMap/script/entry_runtime_battlefield.lua`
+  - `maps/EntryMap/script/runtime/battlefield.lua`
 - 成长：
-  - `maps/EntryMap/script/entry_runtime_progression.lua`
+  - `maps/EntryMap/script/runtime/progression.lua`
 - 攻击技能：
-  - `maps/EntryMap/script/entry_runtime_attack_skills.lua`
-  - `maps/EntryMap/script/entry_objects/attack_skills`
+  - `maps/EntryMap/script/runtime/attack_skills.lua`
 - 羁绊：
   - `maps/EntryMap/script/runtime/bonds.lua`
   - `maps/EntryMap/script/runtime/bonds_chain.lua`
   - `maps/EntryMap/script/runtime/bond_nodes.lua`
 - 宝物 / 烙印 / 奖励队列：
-  - `maps/EntryMap/script/entry_runtime.lua`
-  - `maps/EntryMap/script/entry_runtime_rewards.lua`
-  - `maps/EntryMap/script/entry_objects/treasures`
-  - `maps/EntryMap/script/entry_objects/marks`
-  - `maps/EntryMap/script/entry_objects/mark_nodes`
+  - 已下线；当前由 `maps/EntryMap/script/runtime/rewards_disabled.lua` 提供空实现兼容
 - 配置：
-  - `maps/EntryMap/script/entry_config.lua`
+  - `maps/EntryMap/script/config/entry_config.lua`
 - HUD / 调试：
-  - `maps/EntryMap/script/entry_runtime_hud.lua`
-  - `maps/EntryMap/script/entry_runtime_debug_tools.lua`
-  - `maps/EntryMap/script/entry_runtime_debug_actions.lua`
+  - `maps/EntryMap/script/ui/runtime_hud.lua`
+  - `maps/EntryMap/script/runtime/debug_tools.lua`
+  - `maps/EntryMap/script/runtime/debug_actions.lua`
   - `maps/EntryMap/ui`
   - `maps/EntryMap/global_trigger`
 
@@ -87,7 +80,7 @@
 - 5 波推进、Boss 切波与挑战
 - 英雄自动战斗与攻击技能运行时
 - `F` 羁绊抽卡与羁绊效果
-- 宝物、烙印、奖励队列与 HUD / GM 调试链路
+- HUD / GM 调试链路
 
 ## 目录边界
 
@@ -99,16 +92,15 @@
 ## 修改原则
 
 - 先判断需求属于哪层：，,，
-  - 规则配置：`entry_config.lua`
-  - 静态对象：`entry_objects/*`
-  - 战场：`entry_runtime_battlefield.lua`
-  - 成长：`entry_runtime_progression.lua`
-  - 攻击技能：`entry_runtime_attack_skills.lua`
+  - 规则配置：`config/entry_config.lua`
+  - 战场：`runtime/battlefield.lua`
+  - 成长：`runtime/progression.lua`
+  - 攻击技能：`runtime/attack_skills.lua`
   - 羁绊：`runtime/bonds.lua` / `runtime/bonds_chain.lua`
-  - 总协调：`entry_runtime.lua`
+  - 总协调：`runtime/boot.lua`
 
-  - HUD：`entry_runtime_hud.lua`
-  - 调试：`entry_runtime_debug_tools.lua` / `entry_runtime_debug_actions.lua`
+  - HUD：`ui/runtime_hud.lua`
+  - 调试：`runtime/debug_tools.lua` / `runtime/debug_actions.lua`
 - 新系统进入实现前，先明确：
   - 状态放哪
   - 是否进入奖励队列 / 待选轮次互斥

@@ -12,7 +12,6 @@ function M.create(env)
   local update_effect_debug = env.update_effect_debug
   local update_enemy_statuses = env.update_enemy_statuses
   local update_attack_skills = env.update_attack_skills
-  local update_temporary_treasures = env.update_temporary_treasures
   local update_mainline_task = env.update_mainline_task
   local update_battle_auto_acceptance = env.update_battle_auto_acceptance
   local ensure_runtime_hud = env.ensure_runtime_hud
@@ -118,7 +117,6 @@ function M.create(env)
         end
         update_enemy_statuses(0.25)
         update_attack_skills(0.25)
-        update_temporary_treasures(0.25)
         try_refresh_battle_ui()
         return
       end

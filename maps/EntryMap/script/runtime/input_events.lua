@@ -6,14 +6,12 @@ function M.create(env)
   local is_battle_active = env.is_battle_active
   local get_hero_max_level = env.get_hero_max_level
   local sync_hero_progress_from_engine = env.sync_hero_progress_from_engine
-  local try_queue_mark_node_for_level = env.try_queue_mark_node_for_level
   local grant_attr_diamond = env.grant_attr_diamond
   local try_bond_draw = env.try_bond_draw
   local show_runtime_attr_tip_panel = env.show_runtime_attr_tip_panel
   local show_runtime_attr_dialog = env.show_runtime_attr_dialog
   local start_current_task_challenge = env.start_current_task_challenge
   local try_start_challenge = env.try_start_challenge
-  local try_evolution_entry = env.try_evolution_entry
   local apply_round_choice = env.apply_round_choice
   local show_runtime_status = env.show_runtime_status
   local show_debug_hotkey_help = env.show_debug_hotkey_help
@@ -44,9 +42,6 @@ function M.create(env)
       local current_level = tonumber(STATE.hero_progress.level) or engine_level
       if grant_attr_diamond and current_level % 5 == 0 then
         grant_attr_diamond(1, current_level)
-      end
-      if try_queue_mark_node_for_level then
-        try_queue_mark_node_for_level(current_level)
       end
     end)
   end
@@ -103,11 +98,6 @@ function M.create(env)
     end)
     register_battle_hotkey('E', function()
       try_start_challenge('exp_trial')
-    end)
-    register_battle_hotkey('H', function()
-      if try_evolution_entry then
-        try_evolution_entry()
-      end
     end)
     register_battle_hotkey('ENTER', function()
       if toggle_talk_input then

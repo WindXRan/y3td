@@ -11,7 +11,6 @@ function M.create(ctx)
       end,
       get_hero_max_level = ctx.progression_system.get_hero_max_level,
       sync_hero_progress_from_engine = ctx.progression_system.sync_hero_progress_from_engine,
-      try_queue_mark_node_for_level = ctx.reward_system.try_queue_evolution_node_for_level,
       grant_attr_diamond = function(count, level)
         return ctx.attr_choice_system and ctx.attr_choice_system.grant_diamond and ctx.attr_choice_system.grant_diamond(count, level) or
             nil
@@ -30,8 +29,6 @@ function M.create(ctx)
             ctx.mainline_task_system.start_current_task_challenge() or nil
       end,
       try_start_challenge = ctx.try_start_challenge,
-      try_evolution_entry = ctx.try_evolution_entry,
-      try_treasure_entry = ctx.try_treasure_entry,
       apply_round_choice = ctx.apply_round_choice,
       show_runtime_status = ctx.show_runtime_status,
       toggle_talk_input = ctx.runtime_ui_helpers.toggle_talk_input,
@@ -86,7 +83,6 @@ function M.create(ctx)
       update_effect_debug = ctx.update_effect_debug,
       update_enemy_statuses = ctx.update_enemy_statuses,
       update_attack_skills = ctx.update_attack_skills,
-      update_temporary_treasures = ctx.reward_system.update_temporary_treasures,
       update_mainline_task = function(dt)
         return ctx.mainline_task_system and ctx.mainline_task_system.update and ctx.mainline_task_system.update(dt) or nil
       end,
