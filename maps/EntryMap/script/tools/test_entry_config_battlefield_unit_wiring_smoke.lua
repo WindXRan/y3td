@@ -10,8 +10,7 @@ y3 = {
 
 local cfg = require 'config.entry_config'
 
-assert(cfg.unit_ids.hero == 134248910, 'entry_config should expose csv-backed hero unit id')
-assert(cfg.temp_unit_labels.wave_3_boss == '黄月英', 'entry_config should expose csv-backed temp unit labels')
-assert(cfg.temp_unit_labels.treasure_trial_guard == nil, 'entry_config should no longer expose treasure trial guard label')
+assert(cfg.unit_ids.hero == 134245850, 'entry_config should expose fixed hero unit id')
+assert(cfg.temp_unit_labels == nil, 'entry_config should not expose temp unit labels')
 
 print('entry_config battlefield unit wiring ok')

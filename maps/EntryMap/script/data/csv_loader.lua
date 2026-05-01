@@ -58,6 +58,13 @@ local function split_csv_line(line)
   return result
 end
 
+local function strip_utf8_bom(value)
+  if type(value) ~= 'string' then
+    return value
+  end
+  return (value:gsub('^\239\187\191', ''))
+end
+
 local function warn_once(registry, key, message)
   if registry[key] then
     return
@@ -93,13 +100,20 @@ local function read_rows_safe(path, optional)
     if line ~= '' then
       if not headers then
         headers = split_csv_line(line)
+        if headers and headers[1] then
+          headers[1] = strip_utf8_bom(headers[1])
+        end
       else
         local values = split_csv_line(line)
         local row = {}
         for index, header in ipairs(headers) do
           row[header] = values[index] or ''
         end
-        rows[#rows + 1] = row
+        local first_header = headers[1]
+        local first_value = first_header and tostring(row[first_header] or '') or ''
+        if first_value ~= '__字段说明__' then
+          rows[#rows + 1] = row
+        end
       end
     end
   end

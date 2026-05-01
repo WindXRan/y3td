@@ -1,11 +1,11 @@
 ﻿local CONFIG = require 'config.entry_config'
 local BondSystem = require 'runtime.bonds_chain'
-local AttackSkillObjects = require 'data.object_tables.attack_skills'
+local AttackSkillObjects = require 'data.tables.attack_skills'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
-local BondDrawConfig = require 'data.object_tables.bond_draw_config'
-local BondNodeObjects = require 'data.object_tables.bond_nodes'
-local QualityImageTable = require 'data.object_tables.quality_image_table'
-local EvolutionObjects = require 'data.object_tables.marks'
+local BondDrawConfig = require 'data.tables.bond_draw_config'
+local BondNodeObjects = require 'data.tables.bond_nodes'
+local QualityImageTable = require 'data.tables.quality_image_table'
+local EvolutionObjects = require 'data.tables.marks'
 local ProgressionSystem = require 'runtime.progression'
 local BattlefieldSystem = require 'runtime.battlefield'
 local DebugToolsSystem = require 'runtime.debug_tools'
@@ -648,7 +648,6 @@ local function enforce_runtime_ui_phase(is_battle)
       'ArchivePanel',
       'ArchivePageProfile',
       'ArchivePageEquipment',
-      'ArchivePageTalent',
       'ArchivePageUniversal',
       'ArchivePageChest',
       'ArchivePagePool',
@@ -3451,3 +3450,4 @@ function RuntimeEntry.bootstrap()
 end
 
 return RuntimeEntry
+

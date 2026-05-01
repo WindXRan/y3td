@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from pathlib import Path
@@ -43,12 +43,11 @@ def main() -> None:
     assert_contains(defs_content, "ArchivePageChest", 'outgame 应绑定拆分后的夺宝宝箱分页面板')
     assert_contains(defs_content, "ArchivePagePool", 'outgame 应绑定拆分后的奖池分页面板')
     assert_contains(content, "ArchiveBadgeItem", '通用存档奖励格子应优先使用 prefab 实例')
-    assert_contains(defs_content, "require 'data.object_tables.honor_levels'", '通用存档应接入商城道具-荣誉等级表')
+    assert_contains(defs_content, "require 'data.tables.honor_levels'", '通用存档应接入商城道具-荣誉等级表')
     assert_contains(defs_content, "map = #HonorLevels.list > 0 and '荣誉' or '地图'", '通用存档应把任选页签替换为荣誉等级页签')
     assert_contains(content, 'profile.archive_rewards.honor_levels', '荣誉等级解锁状态应写入通用存档')
     assert_contains(content, "spec.source == 'honor_level'", '荣誉等级条目应使用表格来源标记刷新存档详情')
     assert_contains(content, "ArchivePoolItem", '夺宝奖池物品格子应优先使用 prefab 实例')
-    assert_contains(content, "ArchiveTalentNode", '存档天赋节点应优先使用 prefab 实例')
     assert_contains(content, 'create_archive_prefab_instance', 'outgame 应通过统一封装创建存档 prefab 并保留静态回退')
     assert_contains(content, "set_archive_panel_page('pool')", 'outgame 奖池入口应切到奖池页')
     assert_contains(content, "set_archive_panel_page('chest')", 'outgame 奖池页返回应回到宝箱页')
@@ -77,3 +76,4 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+

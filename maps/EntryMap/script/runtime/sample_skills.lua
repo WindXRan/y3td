@@ -1,4 +1,4 @@
-﻿local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
+﻿local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
 local SkillFramework = require 'runtime.skill_framework'
 local Skills = require 'runtime.skills'
 
@@ -163,3 +163,4 @@ function M.create(env)
 end
 
 return M
+

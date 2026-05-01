@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import subprocess
@@ -41,7 +41,7 @@ def main() -> None:
         "local api = factory.create({ "
         "  STATE = state, "
         "  GearUpgrades = gear, "
-        "  CONFIG = { gear_upgrade_config = require('data.object_tables.gear_upgrade_config') }, "
+        "  CONFIG = { gear_upgrade_config = require('data.tables.gear_upgrade_config') }, "
         "  message = function(text) messages[#messages + 1] = tostring(text) end, "
         "  ensure_round_choice_available = function() return true end, "
         "  sync_gear_runtime_effects = function() end, "
@@ -82,3 +82,4 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+

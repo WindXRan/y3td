@@ -1,0 +1,9 @@
+hook_key,target_kind,target_name,enabled,notes
+__字段说明__,逻辑钩子键(card_*/bond_*),目标类型(card/bond),目标名称(技能名或羁绊名),是否启用(1/0),备注
+card_gale_bow,card,疾风弓,1,叠层攻速逻辑
+card_shadow_dance,card,幻影剑舞,1,叠层攻击逻辑
+card_frenzy,card,狂化,1,狂化周期逻辑
+card_demonize,card,入魔,1,击杀入魔逻辑
+card_china_pride,card,中华傲决,1,击杀剑意逻辑
+bond_magicswordsman,bond,魔剑士,1,主羁绊入魔状态逻辑
+bond_skeletonmage,bond,骷髅法师,1,主羁绊骷髅逻辑

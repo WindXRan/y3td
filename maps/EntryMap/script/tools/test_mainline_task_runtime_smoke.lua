@@ -1,4 +1,4 @@
-package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
+﻿package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
 local MainlineTaskRuntime = require 'runtime.mainline_tasks'
 
@@ -33,7 +33,7 @@ local started_instances = {}
 local api = MainlineTaskRuntime.create({
   STATE = state,
   CONFIG = {
-    mainline_task_rewards = require 'data.object_tables.mainline_task_rewards',
+    mainline_task_rewards = (require 'data.game_tables').mainline_task_rewards,
   },
   round_number = function(value)
     return math.floor((value or 0) + 0.5)
@@ -188,7 +188,7 @@ local final_task_api = MainlineTaskRuntime.create({
     hero = {},
   },
   CONFIG = {
-    mainline_task_rewards = require 'data.object_tables.mainline_task_rewards',
+    mainline_task_rewards = (require 'data.game_tables').mainline_task_rewards,
   },
   round_number = function(value)
     return math.floor((value or 0) + 0.5)
@@ -226,3 +226,5 @@ assert(rewards.resource.wood == 50, 'expected resource reward to map to reward p
 assert(treasures == 1, 'expected treasure special reward to queue treasure round')
 
 print('[OK] mainline task runtime smoke passed')
+
+

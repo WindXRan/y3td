@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,7 +21,7 @@ def test_monster_maintask_object_table_exports_spawn_fields() -> None:
 
 def test_mainline_task_object_table_uses_monster_maintask_spawn_fields() -> None:
     content = read_text(OBJECT_TABLE_PATH)
-    assert "local MonsterMaintask = require 'data.object_tables.monster_maintask'" in content
+    assert "local MonsterMaintask = require 'data.tables.monster_maintask'" in content
     assert "local source_rows = #MonsterMaintask.list > 0 and MonsterMaintask.list or rows" in content
     assert "local monster_row = source_row.source == 'monster_maintask' and source_row or MonsterMaintask.by_id[source_row.id]" in content
     assert "time_limit = tonumber(row.time_limit) or 60" in content
@@ -46,3 +46,4 @@ if __name__ == "__main__":
     test_mainline_task_object_table_uses_monster_maintask_spawn_fields()
     test_battlefield_mainline_spawn_reads_task_config_instead_of_waves()
     print("mainline task spawn config static ok")
+

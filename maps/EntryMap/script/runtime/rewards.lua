@@ -1,11 +1,8 @@
-local ok_treasure_objects, TreasureObjects = pcall(require, 'entry_objects.treasures')
-if not ok_treasure_objects or type(TreasureObjects) ~= 'table' then
-  TreasureObjects = { list = {}, by_id = {} }
-end
-local EvolutionObjects = require 'data.object_tables.marks'
-local EvolutionNodeObjects = require 'data.object_tables.evolution_nodes'
-local HeroRoster = require 'data.object_tables.hero_roster'
-local HeroFormSkills = require 'data.object_tables.hero_form_skills'
+﻿local TreasureObjects = { list = {}, by_id = {} }
+local EvolutionObjects = require 'data.tables.marks'
+local EvolutionNodeObjects = require 'data.tables.evolution_nodes'
+local HeroRoster = (require 'data.game_tables').hero_roster
+local HeroFormSkills = require 'data.tables.hero_form_skills'
 
 local M = {}
 
@@ -1874,3 +1871,5 @@ function M.create(env)
 end
 
 return M
+
+

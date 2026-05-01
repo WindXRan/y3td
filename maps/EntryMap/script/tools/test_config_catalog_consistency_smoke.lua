@@ -1,13 +1,13 @@
-package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
+﻿package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
 local CsvLoader = require 'data.csv_loader'
-local attreffect = require 'data.object_tables.attreffect'
-local waves = require 'data.object_tables.waves'
-local challenges = require 'data.object_tables.challenges'
-local battlefield_scene_config = require 'data.object_tables.battlefield_scene_config'
-local battle_base_config = require 'data.object_tables.battle_base_config'
-local stages = require 'data.object_tables.stages'
-local stage_modes = require 'data.object_tables.stage_modes'
+local attreffect = require 'data.tables.attreffect'
+local waves = (require 'data.game_tables').waves
+local challenges = (require 'data.game_tables').challenges
+local battlefield_scene_config = (require 'data.game_tables').battlefield_scene_config
+local battle_base_config = (require 'data.game_tables').battle_base_config
+local stages = (require 'data.game_tables').stages
+local stage_modes = (require 'data.game_tables').stage_modes
 local hero_attr_defs = require 'runtime.hero_attr_defs'
 
 local hero_attr_rows = CsvLoader.read_rows('data_csv/hero_attr_config.csv')
@@ -135,3 +135,5 @@ for _, challenge in ipairs(challenges.list or {}) do
 end
 
 print('[OK] config catalog consistency smoke passed')
+
+

@@ -1,5 +1,6 @@
 local M = {}
 local MagicEffects = require 'data.tables.magic_effects'
+local SkillLogicHooks = require 'data.tables.skill_logic_hooks'
 
 function M.create(deps)
   deps = deps or {}
@@ -37,6 +38,13 @@ function M.create(deps)
   local presentation_defaults = runtime_rules.presentation_defaults or {}
 
   local api = {}
+  local CARD_GALE_BOW = SkillLogicHooks.get_target_name('card_gale_bow', '疾风弓')
+  local CARD_SHADOW_DANCE = SkillLogicHooks.get_target_name('card_shadow_dance', '幻影剑舞')
+  local CARD_FRENZY = SkillLogicHooks.get_target_name('card_frenzy', '狂化')
+  local CARD_DEMONIZE = SkillLogicHooks.get_target_name('card_demonize', '入魔')
+  local CARD_CHINA_PRIDE = SkillLogicHooks.get_target_name('card_china_pride', '中华傲决')
+  local BOND_MAGIC_SWORDSMAN = SkillLogicHooks.get_target_name('bond_magicswordsman', '魔剑士')
+  local BOND_SKELETON_MAGE = SkillLogicHooks.get_target_name('bond_skeletonmage', '骷髅法师')
 
   local function rule_number(value, fallback)
     local number_value = tonumber(value)
@@ -280,10 +288,10 @@ function M.create(deps)
       end
     end
 
-    if has_card_effect(runtime, '疾风弓') then
-      local gale_rule = get_card_basic_rule('疾风弓')
-      local gale_magic = get_card_stack_magic_rule('疾风弓')
-      local state = ensure_card_effect_state(runtime, '疾风弓')
+    if has_card_effect(runtime, CARD_GALE_BOW) then
+      local gale_rule = get_card_basic_rule(CARD_GALE_BOW)
+      local gale_magic = get_card_stack_magic_rule(CARD_GALE_BOW)
+      local state = ensure_card_effect_state(runtime, CARD_GALE_BOW)
       if state then
         push_stack_expire(state, now + rule_number(gale_magic.stack_duration, 5))
         cleanup_stack_expire(state, now, rule_integer(gale_magic.max_stacks, 10, 1))
@@ -297,10 +305,10 @@ function M.create(deps)
       end
     end
 
-    local sword_dance_rule = get_card_basic_rule('幻影剑舞')
-    local sword_dance_magic = get_card_stack_magic_rule('幻影剑舞')
-    if has_card_effect(runtime, '幻影剑舞') and try_chance(rule_number(sword_dance_rule.chance, 0.30)) then
-      local state = ensure_card_effect_state(runtime, '幻影剑舞')
+    local sword_dance_rule = get_card_basic_rule(CARD_SHADOW_DANCE)
+    local sword_dance_magic = get_card_stack_magic_rule(CARD_SHADOW_DANCE)
+    if has_card_effect(runtime, CARD_SHADOW_DANCE) and try_chance(rule_number(sword_dance_rule.chance, 0.30)) then
+      local state = ensure_card_effect_state(runtime, CARD_SHADOW_DANCE)
       if state then
         push_stack_expire(state, now + rule_number(sword_dance_magic.stack_duration, 5))
         cleanup_stack_expire(state, now, rule_integer(sword_dance_magic.max_stacks, 10, 1))
@@ -488,7 +496,7 @@ function M.create(deps)
         schedule_summon_lifecycle_fx(
           env,
           hero,
-          get_visual_config(rule.visual_bond or '骷髅法师'),
+          get_visual_config(rule.visual_bond or BOND_SKELETON_MAGE),
           rule_number(rule.summon_duration, 25),
           rule.summon_kind or 'skeleton'
         )
@@ -511,9 +519,9 @@ function M.create(deps)
       update_skeleton_card('骷髅审判')
     end
 
-    if has_card_effect(runtime, '疾风弓') then
-      local gale_magic = get_card_stack_magic_rule('疾风弓')
-      local state = ensure_card_effect_state(runtime, '疾风弓')
+    if has_card_effect(runtime, CARD_GALE_BOW) then
+      local gale_magic = get_card_stack_magic_rule(CARD_GALE_BOW)
+      local state = ensure_card_effect_state(runtime, CARD_GALE_BOW)
       if state then
         cleanup_stack_expire(state, now, rule_integer(gale_magic.max_stacks, 10, 1))
         update_card_stack_attr(
@@ -524,9 +532,9 @@ function M.create(deps)
         )
       end
     end
-    if has_card_effect(runtime, '幻影剑舞') then
-      local sword_dance_magic = get_card_stack_magic_rule('幻影剑舞')
-      local state = ensure_card_effect_state(runtime, '幻影剑舞')
+    if has_card_effect(runtime, CARD_SHADOW_DANCE) then
+      local sword_dance_magic = get_card_stack_magic_rule(CARD_SHADOW_DANCE)
+      local state = ensure_card_effect_state(runtime, CARD_SHADOW_DANCE)
       if state then
         cleanup_stack_expire(state, now, rule_integer(sword_dance_magic.max_stacks, 10, 1))
         update_card_stack_attr(
@@ -538,9 +546,9 @@ function M.create(deps)
       end
     end
 
-    if has_card_effect(runtime, '狂化') then
-      local frenzy_rule = get_card_periodic_rule('狂化')
-      local state = ensure_card_effect_state(runtime, '狂化')
+    if has_card_effect(runtime, CARD_FRENZY) then
+      local frenzy_rule = get_card_periodic_rule(CARD_FRENZY)
+      local state = ensure_card_effect_state(runtime, CARD_FRENZY)
       if state then
         state.elapsed = (state.elapsed or 0) + (dt or 0)
         local cycle_interval = math.max(0.05, rule_number(frenzy_rule.cycle_interval, 2))
@@ -552,7 +560,7 @@ function M.create(deps)
         local target_bonus = frenzy_active and rule_number(frenzy_rule.all_damage_bonus, 1.0) or 0.0
         local applied_bonus = state.applied_all_damage_bonus or 0.0
         if target_bonus ~= applied_bonus then
-          local effect_id = '__card_runtime_狂化'
+          local effect_id = '__card_runtime_' .. tostring(CARD_FRENZY)
           runtime.modifier_pool_active_runtime_bonuses = runtime.modifier_pool_active_runtime_bonuses or {}
           runtime.modifier_pool_active_runtime_bonuses[effect_id] = runtime.modifier_pool_active_runtime_bonuses[effect_id] or {}
           runtime.modifier_pool_active_runtime_bonuses[effect_id].all_damage_bonus = target_bonus > 0 and target_bonus or nil
@@ -573,11 +581,11 @@ function M.create(deps)
     if not runtime or type(data) ~= 'table' then
       return false
     end
-    if not has_card_effect(runtime, '狂化') then
+    if not has_card_effect(runtime, CARD_FRENZY) then
       return false
     end
 
-    local state = ensure_card_effect_state(runtime, '狂化')
+    local state = ensure_card_effect_state(runtime, CARD_FRENZY)
     if not state then
       return false
     end
@@ -608,12 +616,12 @@ function M.create(deps)
     for _, effect_state in pairs(runtime.modifier_pool_effect_state or {}) do
       local bond_name = effect_state and effect_state.bond_name
       if bond_name and has_active_modifier_bond(runtime, bond_name, get_cards_by_bond) then
-        if bond_name == '魔剑士' then
-          local effect_id = 'initial_bond_set_魔剑士'
-          local can_enter_demon = has_card_effect(runtime, '入魔')
+        if bond_name == BOND_MAGIC_SWORDSMAN then
+          local effect_id = 'initial_bond_set_' .. tostring(BOND_MAGIC_SWORDSMAN)
+          local can_enter_demon = has_card_effect(runtime, CARD_DEMONIZE)
             or (runtime.modifier_pool_active_effects and runtime.modifier_pool_active_effects[effect_id] == true)
           if can_enter_demon then
-            local demon_rule = card_kill_rules['入魔'] or {}
+            local demon_rule = card_kill_rules[CARD_DEMONIZE] or {}
             effect_state.kill_counter = (effect_state.kill_counter or 0) + 1
             if effect_state.kill_counter >= rule_integer(demon_rule.kill_threshold, 5, 1) then
               effect_state.kill_counter = 0
@@ -623,7 +631,7 @@ function M.create(deps)
                 play_particle_on_unit(
                   env,
                   env and env.STATE and env.STATE.hero,
-                  get_visual_config(demon_rule.visual_bond or '魔剑士').particle_key,
+                  get_visual_config(demon_rule.visual_bond or BOND_MAGIC_SWORDSMAN).particle_key,
                   1.0,
                   0.30
                 )
@@ -631,15 +639,15 @@ function M.create(deps)
               end
             end
           end
-        elseif bond_name == '骷髅法师' then
+        elseif bond_name == BOND_SKELETON_MAGE then
           local _ = info
         end
       end
     end
 
-    if has_card_effect(runtime, '中华傲决') then
-      local pride_rule = card_kill_rules['中华傲决'] or {}
-      local state = ensure_card_effect_state(runtime, '中华傲决')
+    if has_card_effect(runtime, CARD_CHINA_PRIDE) then
+      local pride_rule = card_kill_rules[CARD_CHINA_PRIDE] or {}
+      local state = ensure_card_effect_state(runtime, CARD_CHINA_PRIDE)
       if state then
         state.counter = (state.counter or 0) + 1
         local threshold = rule_integer(pride_rule.kill_threshold, 100, 1)

@@ -1,7 +1,7 @@
 ﻿# 羁绊战斗爽感重构设计（混合型双层触发）
 
 日期：2026-04-30
-范围：`runtime/bonds_chain.lua`、`runtime/bond_modifier_core_effects.lua`、`runtime/bond_modifier_special_effects.lua`、`data/object_tables/bond_effect_runtime_rules.lua`
+范围：`runtime/bonds_chain.lua`、`runtime/bond_modifier_core_effects.lua`、`runtime/bond_modifier_special_effects.lua`、`data/tables/bond_effect_runtime_rules.lua`
 目标：在不改动羁绊抽卡主流程的前提下，把羁绊战斗体验重构为“高频小反馈 + 中频大爆发”。
 
 ## 1. 设计目标
@@ -114,3 +114,4 @@
 2. 再改 `bond_modifier_core_effects.lua`（实现 6 个羁绊双层触发）。
 3. 然后在 `bonds_chain.lua` 收敛状态推进和日志埋点。
 4. 最后做平衡回归与特效压测。
+

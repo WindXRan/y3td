@@ -6,7 +6,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FILES = [
-    ROOT / "entry_objects" / "attack_skills" / "basic_attack.lua",
     ROOT / "data_csv" / "attack_skills.csv",
 ]
 

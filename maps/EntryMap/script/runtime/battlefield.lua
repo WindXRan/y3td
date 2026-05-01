@@ -15,8 +15,8 @@ function M.create(env)
 
   local api = {}
   local VISUAL_ANIMATION_SPEED = 0.5
-  local HERO_RUNTIME_FALLBACK_UNIT_ID = 134274912
-  local ENEMY_RUNTIME_FALLBACK_UNIT_ID = 100005
+  local HERO_RUNTIME_FALLBACK_UNIT_ID = tonumber(CONFIG.hero_fallback_unit_id) or 134245850
+  local ENEMY_RUNTIME_FALLBACK_UNIT_ID = tonumber(CONFIG.fixed_enemy_spawn_unit_id) or 134278989
   local ENEMY_BASE_SPEED_FACTORS = {
     main = 0.76,
     boss = 0.82,
@@ -123,6 +123,96 @@ function M.create(env)
       return ENEMY_RUNTIME_FALLBACK_UNIT_ID
     end
     return unit_id
+  end
+
+  local MODEL_DRIVEN_ATTR_KEYS = {
+    '生命',
+    '最大生命',
+    '攻击',
+    '物理攻击',
+    '护甲',
+    '移动速度',
+    '攻击速度',
+  }
+
+  local MODEL_DRIVEN_ABILITY_TYPES = {
+    y3.const.AbilityType.HIDE,
+    y3.const.AbilityType.NORMAL,
+    y3.const.AbilityType.COMMON,
+    y3.const.AbilityType.HERO,
+  }
+
+  local function build_enemy_spawn_spec(unit_id, info)
+    local spec = {
+      create_unit_id = nil,
+      model_id = info and tonumber(info.model_id) or nil,
+      extra_ability_ids = info and info.extra_ability_ids or nil,
+    }
+
+    -- 统一只刷固定生物模板，怪物差异通过 model_id 替换呈现。
+    spec.create_unit_id = resolve_runtime_enemy_unit_id(ENEMY_RUNTIME_FALLBACK_UNIT_ID)
+    spec.profile_unit_id = spec.create_unit_id
+
+    return spec
+  end
+
+  local function apply_enemy_model_profile(unit, spec)
+    if not unit or not spec then
+      return
+    end
+
+    if spec.model_id and unit.replace_model then
+      pcall(unit.replace_model, unit, spec.model_id)
+    end
+
+    local profile_unit_id = spec.profile_unit_id
+    if not profile_unit_id or not has_unit_data(profile_unit_id) then
+      return
+    end
+
+    local unit_point = unit.get_point and unit:get_point() or STATE.defense_point
+    local ok_proxy, proxy_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), profile_unit_id, unit_point, 180.0)
+    if not ok_proxy or not proxy_or_err then
+      return
+    end
+    local proxy = proxy_or_err
+
+    for _, attr_key in ipairs(MODEL_DRIVEN_ATTR_KEYS) do
+      local value = tonumber(proxy:get_attr(attr_key))
+      if value and value > 0 then
+        unit:set_attr(attr_key, value)
+      end
+    end
+
+    local max_hp = tonumber(unit:get_attr('生命')) or tonumber(unit:get_attr('最大生命'))
+    if max_hp and max_hp > 0 then
+      unit:set_hp(max_hp)
+    end
+
+    for _, ability_type in ipairs(MODEL_DRIVEN_ABILITY_TYPES) do
+      for slot = 0, 24 do
+        local ability_key = GameAPI.api_get_abilityKey_by_unitkey(profile_unit_id, ability_type, slot)
+        if ability_key and ability_key > 0 and unit.find_ability and unit.add_ability then
+          local exists = unit:find_ability(ability_type, ability_key)
+          if not exists then
+            unit:add_ability(ability_type, ability_key, slot, 1)
+          end
+        end
+      end
+    end
+
+    for _, ability_id in ipairs(spec.extra_ability_ids or {}) do
+      if ability_id and ability_id > 0 and unit.find_ability and unit.add_ability then
+        local exists = unit:find_ability(y3.const.AbilityType.HERO, ability_id)
+        if not exists then
+          unit:add_ability(y3.const.AbilityType.HERO, ability_id, -1, 1)
+        end
+      end
+    end
+
+    if proxy and proxy.is_exist and proxy:is_exist() then
+      proxy:remove()
+    end
   end
 
   local function is_active_enemy(unit)
@@ -256,6 +346,19 @@ function M.create(env)
       return true
     end
     return false
+  end
+
+  local function is_n0_mainline_spawn_disabled()
+    if not is_n0_stage_active() then
+      return false
+    end
+    local stage_def = STATE and STATE.current_stage_def or nil
+    local raw = tostring(stage_def and stage_def.n0_disable_mainline_spawn or '')
+    local value = string.lower(raw)
+    if value == '' then
+      return true
+    end
+    return value == '1' or value == 'true' or value == 'yes'
   end
 
   local function get_boss_name(wave)
@@ -866,7 +969,8 @@ function M.create(env)
 
   local function spawn_enemy(unit_id, area_id, facing, info)
     info = info or {}
-    local runtime_unit_id = resolve_runtime_enemy_unit_id(unit_id)
+    local spawn_spec = build_enemy_spawn_spec(unit_id, info)
+    local runtime_unit_id = spawn_spec.create_unit_id
     local spawn_point = random_point_in_area(area_id)
     local hero = STATE.hero
     if hero and hero.is_exist and hero:is_exist() and hero.get_point and spawn_point then
@@ -912,6 +1016,7 @@ function M.create(env)
       return nil
     end
     local unit = unit_or_err
+    apply_enemy_model_profile(unit, spawn_spec)
     if info and info.attr_overrides then
       set_attr_pack(unit, info.attr_overrides)
     end
@@ -969,10 +1074,13 @@ function M.create(env)
     batch_count = math.min(batch_count, soft_cap_left, wave_cap_left)
 
     for _ = 1, batch_count, 1 do
-      local info = spawn_enemy(wave.main_unit_id, wave.spawn_area_id, 180.0, {
+      local info = spawn_enemy(nil, wave.spawn_area_id, 180.0, {
         kind = 'main',
         owner = runner,
         wave = wave,
+        model_id = wave.main_model_id,
+        template_unit_id = wave.main_template_unit_id,
+        extra_ability_ids = wave.main_extra_ability_ids,
         attr_overrides = wave.main_attr_overrides,
         spawn_hp = wave.main_spawn_hp,
         reward = wave.main_kill_reward,
@@ -989,10 +1097,14 @@ function M.create(env)
     end
 
     runner.boss_spawned = true
-    runner.boss_info = spawn_enemy(runner.wave.boss_unit_id, runner.wave.boss_spawn_area_id, 180.0, {
+    runner.boss_info = spawn_enemy(nil, runner.wave.boss_spawn_area_id, 180.0, {
       kind = 'boss',
       owner = runner,
       wave = runner.wave,
+      model_id = runner.wave.boss_model_id,
+      template_unit_id = runner.wave.boss_template_unit_id,
+      extra_ability_ids = runner.wave.boss_extra_ability_ids,
+      attr_overrides = runner.wave.boss_attr_overrides,
       reward = runner.wave.boss_kill_reward,
     })
     if not runner.boss_info then
@@ -1122,7 +1234,7 @@ function M.create(env)
     if STATE.game_finished or STATE.session_phase ~= 'battle' then
       return
     end
-    if is_n0_stage_active() then
+    if is_n0_mainline_spawn_disabled() then
       return
     end
     local def = CONFIG.challenges[challenge_id]
@@ -1154,7 +1266,7 @@ function M.create(env)
     if STATE.game_finished or STATE.session_phase ~= 'battle' then
       return nil
     end
-    if is_n0_stage_active() then
+    if is_n0_mainline_spawn_disabled() then
       return nil
     end
     if not task or not task.id then
@@ -1198,7 +1310,7 @@ function M.create(env)
     if not runner or not runner.active or STATE.game_finished or STATE.session_phase ~= 'battle' then
       return
     end
-    if is_n0_stage_active() then
+    if is_n0_mainline_spawn_disabled() then
       return
     end
 
@@ -1241,7 +1353,7 @@ function M.create(env)
     if STATE.session_phase ~= 'battle' then
       return
     end
-    if is_n0_stage_active() then
+    if is_n0_mainline_spawn_disabled() then
       return
     end
 
@@ -1294,8 +1406,8 @@ function M.create(env)
   end
 
   function api.force_spawn_boss()
-    if is_n0_stage_active() then
-      return false, 'N0 阶段已禁用主线刷怪链路。'
+    if is_n0_mainline_spawn_disabled() then
+      return false, '当前关卡配置禁用主线刷怪链路。'
     end
     local runner = STATE.active_wave
     if not runner or not runner.active then
@@ -1516,8 +1628,8 @@ function M.create(env)
 
     check_unit('hero', CONFIG.unit_ids.hero)
     for id, wave in ipairs(CONFIG.waves) do
-      check_unit('wave[' .. tostring(id) .. '].main_unit_id', wave.main_unit_id)
-      check_unit('wave[' .. tostring(id) .. '].boss_unit_id', wave.boss_unit_id)
+      check_unit('wave[' .. tostring(id) .. '].main_template_unit_id', wave.main_template_unit_id)
+      check_unit('wave[' .. tostring(id) .. '].boss_template_unit_id', wave.boss_template_unit_id)
     end
     for key, challenge in pairs(CONFIG.challenges) do
       if challenge.unit_id then

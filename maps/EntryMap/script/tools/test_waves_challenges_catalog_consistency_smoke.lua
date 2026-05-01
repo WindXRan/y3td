@@ -1,7 +1,7 @@
-package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
+﻿package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
-local waves = require 'data.object_tables.waves'
-local challenges = require 'data.object_tables.challenges'
+local waves = (require 'data.game_tables').waves
+local challenges = (require 'data.game_tables').challenges
 
 local wave_ids = {}
 for _, wave in ipairs(waves.list or {}) do
@@ -39,3 +39,5 @@ for challenge_id, challenge in pairs(challenge_ids) do
 end
 
 print('[OK] waves challenges catalog consistency smoke passed')
+
+

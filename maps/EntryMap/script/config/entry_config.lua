@@ -1,6 +1,7 @@
-local battle_base = require 'data.object_tables.battle_base_config'
-local battlefield_scene = require 'data.object_tables.battlefield_scene_config'
-local battlefield_unit_config = require 'data.object_tables.battlefield_unit_config'
+﻿local GameTables = require 'data.game_tables'
+local battle_base = GameTables.battle_base_config
+local battlefield_scene = GameTables.battlefield_scene_config
+local battlefield_unit_config = GameTables.battlefield_unit_config
 local global_rules = battle_base.global_rules
 local hero_init_stats = battle_base.hero_init_stats
 local debug_hero_bonus_stats = battle_base.debug_hero_bonus_stats
@@ -39,22 +40,20 @@ local ENEMY_SPAWN_BATCH_SCALE = clamp_scale(global_rules.enemy_spawn_batch_scale
 local ENEMY_ALIVE_CAP_SCALE = clamp_scale(global_rules.enemy_alive_cap_scale, 1.0)
 local TOTAL_ENEMY_SOFT_CAP_SCALE = clamp_scale(global_rules.total_enemy_soft_cap_scale, 1.0)
 
-local WaveObjects = require 'data.object_tables.waves'
-local ChallengeObjects = require 'data.object_tables.challenges'
-local StageObjects = require 'data.object_tables.stages'
-local StageModeObjects = require 'data.object_tables.stage_modes'
-local MainlineTaskRewardObjects = require 'data.object_tables.mainline_task_rewards'
-local ok_treasure_catalog, TreasureCatalogObjects = pcall(require, 'entry_objects.treasure_catalog')
-if not ok_treasure_catalog or type(TreasureCatalogObjects) ~= 'table' then
-  TreasureCatalogObjects = { list = {}, by_id = {} }
-end
-local ok_treasure_compat, TreasureCatalogCompatObjects = pcall(require, 'data.object_tables.treasure_catalog_compat')
+local WaveObjects = GameTables.waves
+local ChallengeObjects = GameTables.challenges
+local StageObjects = GameTables.stages
+local StageModeObjects = GameTables.stage_modes
+local MainlineTaskRewardObjects = GameTables.mainline_task_rewards
+local HeroRoster = GameTables.hero_roster
+local TreasureCatalogObjects = { list = {}, by_id = {} }
+local ok_treasure_compat, TreasureCatalogCompatObjects = pcall(require, 'data.tables.treasure_catalog_compat')
 if not ok_treasure_compat or type(TreasureCatalogCompatObjects) ~= 'table' then
   TreasureCatalogCompatObjects = {}
 end
-local OutgameAttrBonusConfig = require 'data.object_tables.outgame_attr_bonus_config'
-local GearUpgradeConfig = require 'data.object_tables.gear_upgrade_config'
-local SkillRuntimeTuning = require 'data.object_tables.skill_runtime_tuning'
+local OutgameAttrBonusConfig = require 'data.tables.outgame_attr_bonus_config'
+local GearUpgradeConfig = require 'data.tables.gear_upgrade_config'
+local SkillRuntimeTuning = require 'data.tables.skill_runtime_tuning'
 local ATTACK_SKILL_DEPRECATED = true
 
 local M = {
@@ -79,15 +78,13 @@ local M = {
   hero_level_progression = hero_level_progression,
   resource_rules = resource_rules,
 
-  -- 当前地图里尚未发现专门的主线怪/Boss物编，这里先用现成英雄单位做临时替身，
-  -- 目的是先把 5 波主线、Boss 和挑战流程跑通，后续再替换成正式怪物资源。
-  temp_unit_labels = battlefield_unit_config.temp_unit_labels,
-
   unit_ids = {
     hero = battlefield_unit_config.fixed_unit_ids.hero,
     main_monsters = {},
     bosses = {},
   },
+  hero_fallback_unit_id = battlefield_unit_config.fixed_unit_ids.hero,
+  fixed_enemy_spawn_unit_id = battlefield_unit_config.fixed_unit_ids.enemy,
 
   points = battlefield_scene.points,
 
@@ -120,9 +117,11 @@ local M = {
 
 for _, wave in ipairs(M.waves) do
   if wave and wave.id ~= nil and wave.id ~= '' then
-    M.unit_ids.main_monsters[wave.id] = wave.main_unit_id
-    M.unit_ids.bosses[wave.id] = wave.boss_unit_id
+    M.unit_ids.main_monsters[wave.id] = wave.main_template_unit_id
+    M.unit_ids.bosses[wave.id] = wave.boss_template_unit_id
   end
 end
 
 return M
+
+

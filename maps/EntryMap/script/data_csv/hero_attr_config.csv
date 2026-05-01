@@ -1,4 +1,5 @@
-scope,key,value
+﻿scope,key,value
+__字段说明__,字段：key,字段：value
 panel_default,伤害减免,0
 panel_default,冻结伤害,0
 panel_default,力量增幅,0

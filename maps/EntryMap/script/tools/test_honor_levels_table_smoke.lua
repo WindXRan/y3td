@@ -1,6 +1,6 @@
-package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
+﻿package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
-local honor_levels = require 'data.object_tables.honor_levels'
+local honor_levels = require 'data.tables.honor_levels'
 
 assert(type(honor_levels.list) == 'table', 'honor_levels.list should be a table')
 assert(#honor_levels.list >= 20, 'expected honor level table to expose at least 20 rows')
@@ -15,3 +15,4 @@ assert(first.attr_lines[2] == '生命成长 +10', 'expected second attr line to 
 assert(honor_levels.by_key.honor_level_20 ~= nil, 'expected by_key lookup for honor level 20')
 
 print('honor levels table smoke ok')
+

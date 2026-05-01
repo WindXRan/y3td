@@ -1,7 +1,7 @@
-package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
+﻿package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
-local stages = require 'data.object_tables.stages'
-local stage_modes = require 'data.object_tables.stage_modes'
+local stages = (require 'data.game_tables').stages
+local stage_modes = (require 'data.game_tables').stage_modes
 
 assert(type(stages.list) == 'table', 'stages.list should be a table')
 assert(type(stage_modes.list) == 'table', 'stage_modes.list should be a table')
@@ -37,3 +37,5 @@ for _, stage in ipairs(stages.list) do
 end
 
 print('[OK] stages catalog consistency smoke passed')
+
+

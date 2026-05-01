@@ -1,2 +1,0 @@
-id,name,default_slot,summary,damage_type,damage_form,element,damage_label,base_damage_ratio,base_cooldown,base_range,base_pierce,base_pierce_width,base_control_lock_time,base_knockback_distance,base_knockback_speed,base_explosion_ratio,base_explosion_radius,base_extra_targets,base_repeat_count,ui_icon,icon,archetype
-basic_attack,普攻,1,射出 1 支破空箭矢直取敌人，造成 125% 攻击的箭矢伤害。,物理,weapon,none,箭矢,1.25,1.05,820,0,96,0,0,0,0,0,0,1,100508,100508,基础攻击

@@ -1,4 +1,4 @@
-local BondModifierPool = require 'data.object_tables.bond_modifier_pool'
+﻿local BondModifierPool = require 'data.tables.bond_modifier_pool'
 
 local M = {}
 
@@ -864,3 +864,4 @@ function M.create(env)
 end
 
 return M
+

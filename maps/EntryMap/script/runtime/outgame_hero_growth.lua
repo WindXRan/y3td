@@ -1,5 +1,5 @@
-local HeroRoster = require 'data.object_tables.hero_roster'
-local HeroList = require 'data.object_tables.herolist'
+﻿local HeroRoster = (require 'data.game_tables').hero_roster
+local HeroList = require 'data.tables.herolist'
 
 local M = {}
 
@@ -38,7 +38,7 @@ local function build_growth_defs()
         talent_skill = extra.talent_skill or roster.summary or '',
         star_effect = normalize_text(extra.star_effect or ''),
         awaken_effect = normalize_text(extra.awaken_effect or ''),
-        hero_model = extra.hero_model,
+        hero_model = roster.model_id or extra.hero_model,
       }
       list[#list + 1] = def
       by_hero_id[hero_id] = def
@@ -262,3 +262,5 @@ function M.create()
 end
 
 return M
+
+

@@ -1,4 +1,4 @@
-import json
+﻿import json
 from pathlib import Path
 
 
@@ -75,10 +75,11 @@ def test_attack_skill_runtime_uses_presentation_profiles() -> None:
     attack_runtime = ATTACK_RUNTIME.read_text(encoding="utf-8")
     presentation_table = PRESENTATION_TABLE.read_text(encoding="utf-8")
 
-    assert "local PresentationProfiles = require 'data.object_tables.attack_skill_presentation_profiles'" in attack_runtime
+    assert "local PresentationProfiles = require 'data.tables.attack_skill_presentation_profiles'" in attack_runtime
     assert "local function get_skill_presentation_family(skill)" in attack_runtime
     assert "local function get_skill_stage_profile(skill, stage)" in attack_runtime
     assert "play_skill_particle_on_unit(skill, STATE.hero, 'cast')" in attack_runtime
     assert "play_skill_particle_on_point(skill, center, 'burst'" in attack_runtime
     assert "eca_projectile_hit" in presentation_table
     assert "eca_charge_burst" in presentation_table
+

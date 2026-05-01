@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import subprocess
@@ -33,7 +33,7 @@ def main() -> None:
         "package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path "
         "local session_state_mod = require('runtime.session_state') "
         "local gear = require('runtime.gear_upgrades') "
-        "local equipment_catalog = require('data.object_tables.equipment_catalog') "
+        "local equipment_catalog = require('data.tables.equipment_catalog') "
         "local state = {} "
         "local granted_items = {} "
         "local bar_counts = {} "
@@ -45,7 +45,7 @@ def main() -> None:
         "    points = { hero_spawn = { x = 0, y = 0, z = 0 }, defense_point = { x = 0, y = 0, z = 0 } }, "
         "    stages = { by_id = { ['1-1'] = { stage_id = '1-1', content_source_stage_id = '1-1', mode_ids = { 'standard' } } } }, "
         "    stage_modes = { by_id = { standard = { mode_id = 'standard' } } }, "
-        "    gear_upgrade_config = require('data.object_tables.gear_upgrade_config'), "
+        "    gear_upgrade_config = require('data.tables.gear_upgrade_config'), "
         "  }, "
         "  y3 = { unit_group = { create = function() return {} end } }, "
         "  message = function() end, "
@@ -128,3 +128,4 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+

@@ -1,4 +1,4 @@
-local EquipmentCatalog = require 'data.object_tables.equipment_catalog'
+﻿local EquipmentCatalog = require 'data.tables.equipment_catalog'
 
 local M = {}
 
@@ -318,3 +318,4 @@ function M.create(env)
 end
 
 return M
+

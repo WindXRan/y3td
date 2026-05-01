@@ -1,6 +1,6 @@
-local BondModifierEffects = require 'runtime.bond_modifier_effects'
-local BondModifierPool = require 'data.object_tables.bond_modifier_pool'
-local BondVisualEditorIds = require 'data.object_tables.bond_visual_editor_ids'
+﻿local BondModifierEffects = require 'runtime.bond_modifier_effects'
+local BondModifierPool = require 'data.tables.bond_modifier_pool'
+local SkillVisuals = require 'data.tables.skill_visuals'
 
 local M = {}
 
@@ -59,7 +59,7 @@ function M.run(env)
   add_case('pool: 冰霜法师存在', has_ice_mage, 'activation_effects 应包含 冰霜法师', 'critical')
 
   -- 3) 关键视觉资源配置
-  local visual_map = BondVisualEditorIds.visual_by_bond or {}
+  local visual_map = SkillVisuals.visual_by_bond or {}
   local dragon_visual = visual_map['龙骑士']
   local ice_visual = visual_map['冰霜法师']
   add_case(
@@ -108,3 +108,4 @@ function M.run(env)
 end
 
 return M
+

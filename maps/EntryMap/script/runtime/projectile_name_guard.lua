@@ -1,5 +1,5 @@
-local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
-local BondVisualEditorIds = require 'data.object_tables.bond_visual_editor_ids'
+﻿local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
+local SkillVisuals = require 'data.tables.skill_visuals'
 
 local M = {}
 
@@ -29,7 +29,7 @@ local function collect_projectile_ids(extra_ids)
     push_unique(result, set, value)
   end
 
-  for _, cfg in pairs((BondVisualEditorIds and BondVisualEditorIds.visual_by_bond) or {}) do
+  for _, cfg in pairs((SkillVisuals and SkillVisuals.visual_by_bond) or {}) do
     if type(cfg) == 'table' then
       push_unique(result, set, cfg.projectile_key)
     end
@@ -65,4 +65,5 @@ function M.validate(env, extra_ids)
 end
 
 return M
+
 

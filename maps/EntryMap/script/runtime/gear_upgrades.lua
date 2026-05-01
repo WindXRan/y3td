@@ -1,5 +1,5 @@
-local a={}
-local b=require'data.object_tables.gear_upgrade_config'
+﻿local a={}
+local b=require'data.tables.gear_upgrade_config'
 local c={'weapon'}
 local d={weapon='成长武器'}
 local e={
@@ -206,4 +206,5 @@ local aQ=ar.has_item_by_key and ar:has_item_by_key(Q)or false;
 if not aQ and ar.add_item then ar:add_item(Q,'物品栏')aO=true end end end;
 return aO end;
 return a
+
 

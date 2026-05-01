@@ -1,8 +1,8 @@
-local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
-local BondModifierPool = require 'data.object_tables.bond_modifier_pool'
-local BondVisualEditorIds = require 'data.object_tables.bond_visual_editor_ids'
-local BondEffectRuntimeRules = require 'data.object_tables.bond_effect_runtime_rules'
-local AttackSkillObjects = require 'data.object_tables.attack_skills'
+﻿local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
+local BondModifierPool = require 'data.tables.bond_modifier_pool'
+local SkillVisuals = require 'data.tables.skill_visuals'
+local BondEffectRuntimeRules = require 'data.tables.bond_effect_runtime_rules'
+local AttackSkillObjects = require 'data.tables.attack_skills'
 local BondModifierSpecialEffectsFactory = require 'runtime.bond_modifier_special_effects'
 local BondModifierCoreEffectsFactory = require 'runtime.bond_modifier_core_effects'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
@@ -109,7 +109,7 @@ local BASIC_PROJECTILE_KEY = to_positive_number(BASIC_ATTACK_VFX.projectile_key)
   or nil
 local DEFAULT_VISUAL = {
   -- 对齐 06-技能：统一采用“投射物 + 命中特效”标准流。
-  particle_key = BASIC_PARTICLE_KEY or BondVisualEditorIds.default_particle_key or 101175,
+  particle_key = BASIC_PARTICLE_KEY or SkillVisuals.default_particle_key or 101175,
   projectile_key = BASIC_PROJECTILE_KEY or 201392033,
   projectile_speed = 800,
   projectile_time = 1.0,
@@ -117,7 +117,7 @@ local DEFAULT_VISUAL = {
   projectile_target_distance = 0,
 }
 local VISUAL_FORCE_BY_BOND = {}
-for bond_name, visual_entry in pairs(BondVisualEditorIds.visual_by_bond or {}) do
+for bond_name, visual_entry in pairs(SkillVisuals.visual_by_bond or {}) do
   if type(visual_entry) == 'table' then
     VISUAL_FORCE_BY_BOND[bond_name] = {
       projectile_key = to_positive_number(visual_entry.projectile_key),
@@ -141,7 +141,7 @@ for bond_name, visual_entry in pairs(BondVisualEditorIds.visual_by_bond or {}) d
   end
 end
 
--- 不再在运行时硬覆盖单个羁绊视觉参数，统一以 bond_visual_editor_ids.lua 为唯一来源，
+-- 不再在运行时硬覆盖单个羁绊视觉参数，统一以 skill_visuals.csv 为唯一来源，
 -- 避免“视觉配置与伤害规则调参不同步”。
 
 local function build_bond_visual(opts)
@@ -196,7 +196,8 @@ local BOND_VISUALS = {}
 for _, effect in ipairs(BondModifierPool.activation_effects or {}) do
   local bond_name = normalize_bond_name(effect and effect.bond_name or '')
   if bond_name ~= '' then
-    local visual_entry = BondVisualEditorIds.visual_by_bond and BondVisualEditorIds.visual_by_bond[bond_name] or nil
+    local visual_entry = SkillVisuals.get_by_bond_name and SkillVisuals.get_by_bond_name(bond_name)
+      or (SkillVisuals.visual_by_bond and SkillVisuals.visual_by_bond[bond_name])
     local dedicated_projectile_key = visual_entry and visual_entry.projectile_key or nil
     local dedicated_particle_key = visual_entry and visual_entry.particle_key or nil
     BOND_VISUALS[bond_name] = build_bond_visual({
@@ -2203,3 +2204,4 @@ function M.get_visual_registry_snapshot()
 end
 
 return M
+

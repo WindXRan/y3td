@@ -1,4 +1,4 @@
-﻿local a=require'data.object_tables.auto_active_effects'local b=require'data.object_tables.runtime_editor_ids'local c={}local function d(e)local f={}for g,h in pairs(e or{})do f[g]=h end;
+﻿local a=require'data.tables.auto_active_effects'local b=require'data.tables.runtime_editor_ids'local c={}local function d(e)local f={}for g,h in pairs(e or{})do f[g]=h end;
 return f end;
 function c.create(i)local j=i.STATE;
 local k=i.y3;
@@ -243,6 +243,7 @@ for aI,S in ipairs(u)do if S.trigger_type=='on_attack_skill_cast'then bx(S,{skil
 return{update=bK,handle_enemy_kill=bL,handle_basic_attack_cast=bN,handle_attack_skill_cast=bO,get_effect_defs=function()return u end,get_effect_runtime_snapshot=bA,force_trigger_effect=bG,clear_effect_runtime=bE}end;
 return c
 -- record_modifier_apply: compatibility marker for static effect-debug wiring checks; the minified recorder is local G below.
+
 
 
 

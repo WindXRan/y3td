@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 
@@ -337,7 +337,7 @@ def main():
     assert_contains(runtime_attack_skills, "ATTACK_STATUS_MODIFIER_KEYS", "runtime attack skills should consume status modifier ids")
     assert_contains(runtime_auto_effects, "MODIFIER_KEYS.rapid_overdrive", "runtime auto effects should consume rapid overdrive modifier id")
     assert_contains(runtime_auto_effects, "MODIFIER_KEYS.charge_breaker_rally", "runtime auto effects should consume charge breaker rally modifier id")
-    assert_contains(treasure_compat, "local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'", "treasure compat should load runtime editor ids")
+    assert_contains(treasure_compat, "local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'", "treasure compat should load runtime editor ids")
     assert_contains(treasure_compat, "editor_item_key = RuntimeEditorIds.treasure and RuntimeEditorIds.treasure[item.id] or nil", "treasure compat should expose editor item key")
 
     print("runtime editor object sync checks passed")
@@ -349,3 +349,4 @@ def test_runtime_editor_object_sync_main():
 
 if __name__ == "__main__":
     main()
+

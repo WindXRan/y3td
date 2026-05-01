@@ -1,8 +1,8 @@
-package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
+﻿package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
 local CsvLoader = require 'data.csv_loader'
-local attreffect = require 'data.object_tables.attreffect'
-local marks = require 'data.object_tables.marks'
+local attreffect = require 'data.tables.attreffect'
+local marks = require 'data.tables.marks'
 
 assert(type(marks) == 'table', 'marks should return a table')
 assert(type(marks.list) == 'table', 'marks.list should be a table')
@@ -62,3 +62,4 @@ for _, mark in ipairs(marks.list) do
 end
 
 print('[OK] marks catalog consistency smoke passed')
+

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import subprocess
@@ -38,7 +38,7 @@ def main() -> None:
         "package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path "
         "local gear = require('runtime.gear_upgrades') "
         "local hero_attr_system = require('runtime.hero_attr_system').create() "
-        "local config = { gear_upgrade_config = require('data.object_tables.gear_upgrade_config') } "
+        "local config = { gear_upgrade_config = require('data.tables.gear_upgrade_config') } "
         "local messages = {} "
         "local function capture_message(text) messages[#messages + 1] = tostring(text) end "
         "local state = { resources = { gold = 50000 } } "
@@ -139,3 +139,4 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+

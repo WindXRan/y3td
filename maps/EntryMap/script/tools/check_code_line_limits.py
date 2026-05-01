@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Check project-owned code files against basic size and nesting limits."""
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ DEFAULT_EXCLUDED_PARTS = {
     ".pytest_cache",
     ".y3maker",
     "script/docs",
-    "script/data/object_tables",
+    "script/data/tables",
     "script/y3",
     "script/y3-helper",
 }
@@ -178,3 +178,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

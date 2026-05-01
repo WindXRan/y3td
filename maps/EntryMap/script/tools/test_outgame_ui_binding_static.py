@@ -59,7 +59,6 @@ def main() -> None:
         'ArchivePageEquipment',
         'ArchivePagePool',
         'ArchivePageProfile',
-        'ArchivePageTalent',
         'ArchivePageUniversal',
         'LoadingPanel',
     ):

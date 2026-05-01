@@ -1,6 +1,6 @@
 ﻿local theme = require 'ui.theme'
 local outgame_defs = require 'ui.outgame_defs'
-local QualityImageTable = require 'data.object_tables.quality_image_table'
+local QualityImageTable = require 'data.tables.quality_image_table'
 local ArchiveShop = require 'ui.outgame_archive_shop'
 local OutgameHeroGrowth = require 'runtime.outgame_hero_growth'
 
@@ -23,9 +23,6 @@ function M.create(env)
     and CONFIG.outgame_attr_bonus_config.by_stage_mode
     or {}
   local OUTGAME_DEFS = outgame_defs.create(CONFIG)
-  local TALENT_COLUMNS = OUTGAME_DEFS.talent_columns or {}
-  local TALENT_NODE_SPECS = OUTGAME_DEFS.talent_nodes or {}
-  local TALENT_BY_KEY = OUTGAME_DEFS.talent_by_key or {}
   local HONOR_LEVEL_SPECS = OUTGAME_DEFS.honor_level_specs or {}
   local STAGE_PAGE_SIZE = 7
   local CHAPTER_LIST = {}
@@ -47,7 +44,7 @@ function M.create(env)
     {
       key = 'clear_any_1',
       title = '首次通关任意难度',
-      reward = '奖励：天赋点+500',
+      reward = '奖励：金币+500',
       target = 1,
     },
     {
@@ -624,22 +621,6 @@ function M.create(env)
         end
       end
     end
-    local archive_rewards = profile and profile.archive_rewards or nil
-    local talents = archive_rewards and archive_rewards.talents or nil
-    if type(talents) == 'table' then
-      for _, spec in ipairs(TALENT_NODE_SPECS) do
-        local level = math.max(0, math.floor(tonumber(talents[spec.key]) or 0))
-        if level > 0 then
-          local per_level = spec.attr_bonus_per_level or {}
-          for attr_name, value in pairs(per_level) do
-            local number = tonumber(value)
-            if attr_name ~= nil and number ~= nil and number ~= 0 then
-              rebuilt[attr_name] = (rebuilt[attr_name] or 0) + number * level
-            end
-          end
-        end
-      end
-    end
     if are_same_bonus_stats(profile.hero_attr_bonus_stats, rebuilt) then
       return false
     end
@@ -702,14 +683,6 @@ function M.create(env)
         profile.archive_rewards.honor_levels[spec.key] = spec.initial_unlocked == true
         dirty = true
       end
-    end
-    if math.type(profile.archive_rewards.talent_points) ~= 'integer' then
-      profile.archive_rewards.talent_points = 0
-      dirty = true
-    end
-    if type(profile.archive_rewards.talents) ~= 'table' then
-      profile.archive_rewards.talents = {}
-      dirty = true
     end
     if hero_growth_api and hero_growth_api.ensure_profile_defaults and hero_growth_api.ensure_profile_defaults(profile) then
       dirty = true
@@ -808,12 +781,18 @@ function M.create(env)
 
   local function get_difficulty_display_text(stage_def, fallback_index)
     local difficulty_index = stage_def and select(2, parse_stage_id(stage_def.stage_id)) or fallback_index or 1
-    return string.format('N%d', difficulty_index or fallback_index or 1)
+    if tonumber(difficulty_index) == 1 then
+      return 'N'
+    end
+    return 'R'
   end
 
   local function get_page_display_text(page_def)
     local difficulty_index = page_def and tonumber(page_def.chapter_page_index) or 1
-    return string.format('N%d', difficulty_index or 1)
+    if tonumber(difficulty_index) == 1 then
+      return 'N'
+    end
+    return 'R'
   end
 
   local function get_page_target_stage_id(profile, page_def, preferred_stage_id)
@@ -1435,10 +1414,6 @@ function M.create(env)
         profile.archive_rewards.honor_levels[spec.key] = spec.initial_unlocked == true
       end
     end
-    profile.archive_rewards.talent_points = to_non_negative_integer(profile.archive_rewards.talent_points)
-    if type(profile.archive_rewards.talents) ~= 'table' then
-      profile.archive_rewards.talents = {}
-    end
     return profile.archive_rewards
   end
 
@@ -1518,95 +1493,12 @@ function M.create(env)
     return true, rewards.pool_score
   end
 
-  local function get_archive_talent_points(profile)
-    return to_non_negative_integer(get_archive_rewards(profile).talent_points)
-  end
-
-  local function add_archive_talent_points(profile, amount)
-    amount = to_non_negative_integer(amount)
-    local rewards = get_archive_rewards(profile)
-    if amount > 0 then
-      rewards.talent_points = get_archive_talent_points(profile) + amount
-    end
-    return rewards.talent_points
-  end
-
-  local function spend_archive_talent_points(profile, amount)
-    amount = math.max(0, to_non_negative_integer(amount))
-    local rewards = get_archive_rewards(profile)
-    local current = get_archive_talent_points(profile)
-    if current < amount then
-      return false, current
-    end
-    rewards.talent_points = current - amount
-    return true, rewards.talent_points
-  end
-
-  local function get_archive_talent_level(profile, talent_key)
-    local rewards = get_archive_rewards(profile)
-    return to_non_negative_integer(rewards.talents and rewards.talents[talent_key] or 0)
-  end
-
   local function is_archive_honor_level_unlocked(profile, spec)
     if not spec or not spec.key then
       return false
     end
     local rewards = get_archive_rewards(profile)
     return rewards.honor_levels and rewards.honor_levels[spec.key] == true or false
-  end
-
-  local function get_archive_talent_column_points(profile, column_key)
-    local total = 0
-    for _, spec in ipairs(TALENT_NODE_SPECS) do
-      if spec.column == column_key then
-        total = total + get_archive_talent_level(profile, spec.key)
-      end
-    end
-    return total
-  end
-
-  local function is_archive_talent_unlocked(profile, spec)
-    return spec ~= nil and get_archive_talent_column_points(profile, spec.column) >= (spec.require_points or 0)
-  end
-
-  local function get_archive_talent_status_text(profile, spec)
-    if not spec then
-      return '请选择一个天赋'
-    end
-    local level = get_archive_talent_level(profile, spec.key)
-    if level >= (spec.max_level or 1) then
-      return '已满级'
-    end
-    if not is_archive_talent_unlocked(profile, spec) then
-      local column = TALENT_COLUMNS[spec.column]
-      return string.format('未解锁：%s投入 %d 点', column and column.title or '本系', spec.require_points or 0)
-    end
-    return string.format('升级消耗 %d 天赋点', spec.cost or 1)
-  end
-
-  local function upgrade_archive_talent(profile, talent_key)
-    profile = profile or load_profile()
-    local spec = TALENT_BY_KEY[talent_key]
-    if not spec then
-      return false, '未找到该天赋。'
-    end
-    local level = get_archive_talent_level(profile, talent_key)
-    if level >= (spec.max_level or 1) then
-      return false, string.format('%s 已达到最高等级。', spec.title)
-    end
-    if not is_archive_talent_unlocked(profile, spec) then
-      local column = TALENT_COLUMNS[spec.column]
-      return false, string.format('%s尚未解锁：需要%s投入 %d 点。', spec.title, column and column.title or '本系', spec.require_points or 0)
-    end
-    local ok, remain = spend_archive_talent_points(profile, spec.cost or 1)
-    if not ok then
-      return false, string.format('天赋点不足：当前 %d，需要 %d。', remain or 0, spec.cost or 1)
-    end
-    local rewards = get_archive_rewards(profile)
-    rewards.talents[spec.key] = level + 1
-    rebuild_hero_attr_bonus_stats(profile)
-    mark_profile_dirty()
-    return true, string.format('%s 已升至 %d/%d。', spec.title, level + 1, spec.max_level or 1)
   end
 
   local function get_archive_universal_claim_key(tab_key, spec)
@@ -1629,10 +1521,11 @@ function M.create(env)
     if spec.source == 'honor_level' then
       return nil
     elseif tab_key == 'pass' then
-      local difficulty = tonumber(node:match('pass_badge_(%d+)')) or 1
-      current = clear_counts[difficulty] or 0
-      reward_score = 40 + difficulty * 10
-      condition_text = string.format('难度 %d 通关 %d/%d', difficulty, current, target)
+      local badge_index = tonumber(node:match('pass_badge_(%d+)')) or 1
+      local difficulty_label = badge_index == 1 and 'N' or 'R'
+      current = clear_counts[difficulty_label] or 0
+      reward_score = 40 + (badge_index == 1 and 10 or 20)
+      condition_text = string.format('%s难度通关 %d/%d', difficulty_label, current, target)
     elseif tab_key == 'map' then
       local level = tonumber(node:match('map_badge_(%d+)')) or 1
       current = get_archive_player_integer('get_map_level')
@@ -1796,7 +1689,8 @@ function M.create(env)
       local progress = get_stage_progress(profile, stage_def.stage_id)
       if progress and progress.standard_cleared == true then
         local difficulty_index = select(2, parse_stage_id(stage_def.stage_id)) or 1
-        counts[difficulty_index] = (counts[difficulty_index] or 0) + 1
+        local difficulty_label = tonumber(difficulty_index) == 1 and 'N' or 'R'
+        counts[difficulty_label] = (counts[difficulty_label] or 0) + 1
         total = total + 1
       end
     end
@@ -2361,12 +2255,8 @@ function M.create(env)
     profile.last_result.is_win = result.is_win == true
     profile.last_result.reached_wave_index = math.max(0, result.reached_wave_index or 0)
 
-    local was_standard_cleared = progress.standard_cleared == true
     if result.is_win then
       progress.standard_cleared = true
-      if not was_standard_cleared then
-        add_archive_talent_points(profile, 1)
-      end
 
       local next_stage_id = get_next_stage_id(stage_id)
       if next_stage_id then
@@ -2494,19 +2384,6 @@ function M.create(env)
     return ok, msg, value
   end
 
-  function api.debug_get_archive_talent_points()
-    return get_archive_talent_points(load_profile())
-  end
-
-  function api.debug_get_archive_talent_level(talent_key)
-    return get_archive_talent_level(load_profile(), talent_key)
-  end
-
-  function api.debug_upgrade_archive_talent(talent_key)
-    local ok, msg = upgrade_archive_talent(load_profile(), talent_key)
-    return ok, msg
-  end
-
   function api.debug_claim_archive_universal_reward(tab_key, node)
     local specs = ARCHIVE_UNIVERSAL_ITEM_SPECS[tab_key]
     local selected_spec = nil
@@ -2525,3 +2402,4 @@ function M.create(env)
 end
 
 return M
+

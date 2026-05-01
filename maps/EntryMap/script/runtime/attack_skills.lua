@@ -1,8 +1,8 @@
-local PresentationProfiles = require 'data.object_tables.attack_skill_presentation_profiles'
-local RuntimeEditorIds = require 'data.object_tables.runtime_editor_ids'
-local SkillRuntimeTuning = require 'data.object_tables.skill_runtime_tuning'
+﻿local PresentationProfiles = require 'data.tables.attack_skill_presentation_profiles'
+local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
+local SkillRuntimeTuning = require 'data.tables.skill_runtime_tuning'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
-local SkillDamageTemplateConfig = require 'data.object_tables.skill_damage_templates'
+local SkillDamageTemplateConfig = require 'data.tables.skill_damage_templates'
 
 local M = {}
 
@@ -1347,6 +1347,17 @@ function M.create(env)
     for _, unit in ipairs(picked) do
       if is_valid_skill_target(skill, unit) then
         return unit
+      end
+    end
+
+    -- 兜底：部分调试场景/临时模板下阵营关系可能未正确同步，
+    -- selector:is_enemy 可能拿不到目标，此时回退到运行时敌人分组检索。
+    if get_enemies_in_range then
+      local fallback = get_enemies_in_range(STATE.hero, range, nil, 8) or {}
+      for _, unit in ipairs(fallback) do
+        if is_valid_skill_target(skill, unit) then
+          return unit
+        end
       end
     end
   
@@ -2753,3 +2764,4 @@ function M.create(env)
 end
 
 return M
+

@@ -1,4 +1,4 @@
-local a=require'ui.ui_root'local bt=require'runtime.bond_tip_model_builder'local QualityImageTable=require'data.object_tables.quality_image_table'local SkillRuntimeTuning=require'data.object_tables.skill_runtime_tuning'local BondUiText=SkillRuntimeTuning and SkillRuntimeTuning.bond and SkillRuntimeTuning.bond.ui or{}local BondUiSkillBlockTitle=tostring(BondUiText.skill_block_title or'[技能系统]')local BondUiSkillSectionTemplate=tostring(BondUiText.skill_section_template or'【%s】技能系统：')local BondUiSkillSectionFallback=tostring(BondUiText.skill_section_fallback or'【技能】技能系统：')local b={}function b.create(c)local d=c.STATE;
+﻿local a=require'ui.ui_root'local bt=require'runtime.bond_tip_model_builder'local QualityImageTable=require'data.tables.quality_image_table'local SkillRuntimeTuning=require'data.tables.skill_runtime_tuning'local BondUiText=SkillRuntimeTuning and SkillRuntimeTuning.bond and SkillRuntimeTuning.bond.ui or{}local BondUiSkillBlockTitle=tostring(BondUiText.skill_block_title or'[技能系统]')local BondUiSkillSectionTemplate=tostring(BondUiText.skill_section_template or'【%s】技能系统：')local BondUiSkillSectionFallback=tostring(BondUiText.skill_section_fallback or'【技能】技能系统：')local b={}function b.create(c)local d=c.STATE;
 local e=c.y3;
 local f=c.get_player;
 local g=c.get_runtime_hud_system;
@@ -373,6 +373,7 @@ toggle_talk_input=bB
 }
 end;
 return b
+
 
 
 
