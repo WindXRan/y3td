@@ -191,8 +191,11 @@ function M.create(env)
 
     for _, ability_type in ipairs(MODEL_DRIVEN_ABILITY_TYPES) do
       for slot = 0, 24 do
-        local ability_key = GameAPI.api_get_abilityKey_by_unitkey(profile_unit_id, ability_type, slot)
-        if ability_key and ability_key > 0 and unit.find_ability and unit.add_ability then
+        local ok_ability, ability_key = pcall(GameAPI.api_get_abilityKey_by_unitkey, profile_unit_id, ability_type, slot)
+        if not ok_ability or type(ability_key) ~= 'number' or ability_key <= 0 then
+          break
+        end
+        if unit.find_ability and unit.add_ability then
           local exists = unit:find_ability(ability_type, ability_key)
           if not exists then
             unit:add_ability(ability_type, ability_key, slot, 1)

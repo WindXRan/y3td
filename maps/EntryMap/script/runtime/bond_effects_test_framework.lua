@@ -1,6 +1,6 @@
 ﻿local BondModifierEffects = require 'runtime.bond_modifier_effects'
-local BondModifierPool = require 'data.tables.bond.bond_modifier_pool'
-local SkillVisuals = require 'data.tables.skill.skill_visuals'
+local BondModifierPool = require 'data.tables.bond_modifier_pool'
+local SkillVisuals = require 'data.tables.skill_visuals'
 
 local M = {}
 
@@ -31,7 +31,21 @@ function M.run(env)
     }
   end
 
-  -- 1) 关键羁绊存在性
+  -- 1) 羁绊别名归一化
+  add_case(
+    'alias: 寒冰法师 -> 冰霜法师',
+    BondModifierEffects.normalize_bond_name('寒冰法师') == '冰霜法师',
+    'normalize_bond_name("寒冰法师") 应映射为 冰霜法师',
+    'critical'
+  )
+  add_case(
+    'alias: 寒冰法 -> 冰霜法师',
+    BondModifierEffects.normalize_bond_name('寒冰法') == '冰霜法师',
+    'normalize_bond_name("寒冰法") 应映射为 冰霜法师',
+    'high'
+  )
+
+  -- 2) 关键羁绊存在性
   local has_fire_dragon = false
   local has_ice_mage = false
   for _, effect in ipairs(BondModifierPool.activation_effects or {}) do
@@ -44,7 +58,7 @@ function M.run(env)
   add_case('pool: 龙骑士存在', has_fire_dragon, 'activation_effects 应包含 龙骑士', 'critical')
   add_case('pool: 冰霜法师存在', has_ice_mage, 'activation_effects 应包含 冰霜法师', 'critical')
 
-  -- 2) 关键视觉资源配置
+  -- 3) 关键视觉资源配置
   local visual_map = SkillVisuals.visual_by_bond or {}
   local dragon_visual = visual_map['龙骑士']
   local ice_visual = visual_map['冰霜法师']
@@ -61,7 +75,7 @@ function M.run(env)
     'high'
   )
 
-  -- 3) 运行时接口可用性
+  -- 4) 运行时接口可用性
   add_case(
     'api: trigger_modifier_basic_attack_effect',
     type(BondModifierEffects.trigger_modifier_basic_attack_effect) == 'function',
@@ -94,5 +108,4 @@ function M.run(env)
 end
 
 return M
-
 

@@ -1677,6 +1677,82 @@ sample_skills_system = SampleSkillsSystem.create({
   skill_damage_api = td_damage_api,
   get_enemies_in_range = get_enemies_in_range,
   is_active_enemy = is_active_enemy,
+  get_hero = function()
+    if STATE.hero and STATE.hero:is_exist() then
+      return STATE.hero
+    end
+    return nil
+  end,
+  get_hero_point = get_hero_point,
+  get_hero_attack = function()
+    if not STATE.hero or not STATE.hero:is_exist() then
+      return 0
+    end
+    return hero_attr_system.get_attr(STATE.hero, '攻击') or STATE.hero:get_attr('攻击') or 0
+  end,
+  get_primary_target = function(range)
+    local units = get_enemies_in_range(STATE.hero, range or 1200, nil, 1)
+    return units and units[1] or nil
+  end,
+  spawn_particle = function(_, point, effect_id, scale, duration, height)
+    if not effect_id or not point then
+      return nil
+    end
+    local ok, particle = pcall(y3.particle.create, {
+      type = effect_id,
+      target = point,
+      angle = 0,
+      scale = scale or 1.0,
+      time = duration or 0.3,
+      height = height or 0,
+    })
+    if ok and particle then
+      return particle
+    end
+    return nil
+  end,
+  launch_projectile_from_hero = function(projectile_key, target, end_point, angle, time, height, on_finish)
+    if not projectile_key or not STATE.hero or not STATE.hero:is_exist() then
+      if on_finish then on_finish(nil) end
+      return nil
+    end
+    local ok, proj = pcall(y3.projectile.create, {
+      key = projectile_key,
+      target = STATE.hero,
+      socket = 'origin',
+      owner = STATE.hero,
+      angle = angle or 0,
+      time = time or 0.92,
+      remove_immediately = true,
+    })
+    if not ok or not proj then
+      if on_finish then on_finish(nil) end
+      return nil
+    end
+    if height then
+      pcall(proj.set_height, proj, height)
+    end
+    local dest = (target and target:is_exist() and target) or end_point
+    if dest then
+      pcall(proj.mover_target, proj, {
+        target = dest,
+        speed = 1500,
+        target_distance = 36,
+        height = height or 100,
+        face_angle = true,
+        on_finish = function()
+          local impact_pt = proj and proj:is_exist() and proj:get_point()
+          if proj and proj:is_exist() then
+            proj:remove()
+          end
+          if on_finish then on_finish(impact_pt) end
+        end,
+      })
+    elseif on_finish then
+      on_finish(nil)
+    end
+    return proj
+  end,
 })
 
 heal_hero = function(amount)
