@@ -516,6 +516,128 @@ function M.create(env)
       local fx_scale = impact_fx_scale(skill)
       fire_hook(skill, 'OnSpellStart', cast_ctx)
       spawn_particle(y3, target, visual_key(skill, 'cast'), fx_scale, 0.20, 28)
+      launch_projectile_from_hero(
+        visual_key(skill, 'projectile_key'),
+        target,
+        nil,
+        nil,
+        resolve_impact_delay(skill),
+        visual_key(skill, 'projectile_height')
+      )
+      mark_visual_impact(cast_ctx)
+      local total_damage = 0
+      cast_ctx.hits = skill_damage_api.chain(chain_targets, base, skill.damage_type, {
+        amount = function(context)
+          local idx = context.index or 1
+          local amount = base * math.pow(skill.scale.bounce_ratio, math.max(0, idx - 1))
+          total_damage = total_damage + math.max(0, tonumber(amount) or 0)
+          return amount
+        end,
+        visual = function()
+          return {
+            particle = visual_key(skill, 'hit'),
+            metric_scope = 'skill_framework',
+            metric_key = skill.id,
+          }
+        end,
+        on_hit = function(context)
+          cast_ctx.bounce_index = context.index
+          cast_ctx.hit_unit = context.target
+          if context.target then
+            spawn_particle(y3, context.target, visual_key(skill, 'impact') or visual_key(skill, 'hit'), fx_scale, 0.16, 26)
+          end
+          fire_hook(skill, 'OnProjectileHit', cast_ctx)
+        end,
+      })
+      cast_ctx.hit_count = #(cast_ctx.hits or {})
+      cast_ctx.total_damage = total_damage
+      mark_damage_impact(cast_ctx)
+      fire_hook(skill, 'OnFinish', cast_ctx)
+      return true, string.format('[%s] projectile.chain 触发', skill.id)
+    end
+
+    if skill.pattern == 'area_burst' then
+      local center = impact_point or hero_point
+      local fx_scale = impact_fx_scale(skill)
+      local proj_time = tonumber(skill.visual and skill.visual.projectile_time) or skill.timeline.impact_delay
+      -- 施法特效在英雄身上
+      spawn_particle(y3, cast_ctx.caster, visual_key(skill, 'cast'), fx_scale, 0.25, nil)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      local function do_impact(impact_point)
+        local pt = impact_point or center
+        mark_visual_impact(cast_ctx)
+        spawn_particle(y3, pt, visual_key(skill, 'impact'), fx_scale * 1.08, 0.18, 28)
+        cast_ctx.hits = skill_damage_api.area(pt, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
+          max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
+          visual = {
+            particle = visual_key(skill, 'hit'),
+            metric_scope = 'skill_framework',
+            metric_key = skill.id,
+          },
+        })
+        cast_ctx.hit_count = #(cast_ctx.hits or {})
+        cast_ctx.total_damage = (damage_amount(skill, 'attack_ratio') or 0) * cast_ctx.hit_count
+        mark_damage_impact(cast_ctx)
+        fire_hook(skill, 'OnProjectileHit', cast_ctx)
+        fire_hook(skill, 'OnFinish', cast_ctx)
+      end
+      -- 投射物飞行：用投射物自身飞行时间，到达时触发爆炸
+      local proj_key = visual_key(skill, 'projectile_key')
+      if proj_key and launch_projectile_from_hero then
+        launch_projectile_from_hero(proj_key, target, center, nil, proj_time, visual_key(skill, 'projectile_height'), do_impact)
+      else
+        y3.ltimer.wait(proj_time, function() do_impact(nil) end)
+      end
+      return true, string.format('[%s] area_burst 触发', skill.id)
+    end
+
+    if skill.pattern == 'area_tick' then
+      local center = impact_point or hero_point
+      local tick_count = math.max(1, math.floor(skill.timeline.duration / skill.timeline.tick_interval + 0.5))
+      local fx_scale = impact_fx_scale(skill)
+      spawn_particle(y3, center, visual_key(skill, 'warning') or visual_key(skill, 'cast'), fx_scale, skill.timeline.duration, 20)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      cast_ctx.hit_count = 0
+      cast_ctx.total_damage = 0
+      skill_damage_api.area_ticks(skill.timeline.tick_interval, tick_count, skill.damage_type, {
+        center = center,
+        radius = skill.hit_model.radius,
+        amount = damage_amount(skill, 'tick_ratio'),
+        max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
+        visual = {
+          particle = visual_key(skill, 'hit'),
+          metric_scope = 'skill_framework',
+          metric_key = skill.id,
+        },
+        after_tick = function(ctx)
+          cast_ctx.tick = ctx.current
+          cast_ctx.hits = ctx.hits
+          local one_tick_hits = #(ctx.hits or {})
+          cast_ctx.hit_count = cast_ctx.hit_count + one_tick_hits
+          cast_ctx.total_damage = cast_ctx.total_damage + ((damage_amount(skill, 'tick_ratio') or 0) * one_tick_hits)
+          fire_hook(skill, 'OnTick', cast_ctx)
+        end,
+      })
+      y3.ltimer.wait(skill.timeline.duration, function()
+        fire_hook(skill, 'OnFinish', cast_ctx)
+      end)
+      return true, string.format('[%s] area_tick %d tick', skill.id, tick_count)
+    end
+
+    if skill.pattern == 'chain_bounce' then
+      if not target then
+        return false, '附近没有可攻击目标。'
+      end
+      local chain_targets = { target }
+      local extra = get_enemies_in_range and get_enemies_in_range(target, skill.hit_model.radius, target, skill.hit_model.bounce) or {}
+      for _, unit in ipairs(extra) do
+        chain_targets[#chain_targets + 1] = unit
+      end
+      chain_targets = dedupe_units(chain_targets)
+      local base = damage_amount(skill, 'attack_ratio')
+      local fx_scale = impact_fx_scale(skill)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      spawn_particle(y3, target, visual_key(skill, 'cast'), fx_scale, 0.20, 28)
       -- 投射物仅作视觉装饰，伤害立即结算，避免目标在飞行期间被击杀导致落空。
       launch_projectile_from_hero(
         visual_key(skill, 'projectile_key'),
