@@ -368,20 +368,59 @@ function M.create(env)
         set_visible_if_alive(list_root, is_active)
         if is_active then
           local rows = get_ranking_rows_for_tab(tab)
-          local row_names = { 'bg', 'bg_7', 'bg_8', 'bg_9', 'bg_10' }
-          for idx, row_name in ipairs(row_names) do
+          local function resolve_ranking_row_path(list_node, row_index)
+            local candidates = {}
+            if row_index == 1 then
+              candidates[#candidates + 1] = 'bg'
+            else
+              candidates[#candidates + 1] = 'bg_' .. tostring(row_index - 1)
+            end
+            candidates[#candidates + 1] = 'bg_' .. tostring(row_index + 6)
+            for _, row_name in ipairs(candidates) do
+              local row_root = resolve_ui_first({
+                'ArchiveMain.排行榜.排行.' .. tostring(list_node) .. '.' .. row_name,
+                'ArchivePanel.排行榜.排行.' .. tostring(list_node) .. '.' .. row_name,
+              })
+              local name_label = resolve_ui_first({
+                'ArchiveMain.排行榜.排行.' .. tostring(list_node) .. '.' .. row_name .. '.label_1',
+                'ArchivePanel.排行榜.排行.' .. tostring(list_node) .. '.' .. row_name .. '.label_1',
+              })
+              local score_label = resolve_ui_first({
+                'ArchiveMain.排行榜.排行.' .. tostring(list_node) .. '.' .. row_name .. '.label_2',
+                'ArchivePanel.排行榜.排行.' .. tostring(list_node) .. '.' .. row_name .. '.label_2',
+              })
+              if is_ui_alive(row_root) and (is_ui_alive(name_label) or is_ui_alive(score_label)) then
+                return row_name
+              end
+            end
+            return candidates[1]
+          end
+
+          for idx = 1, 5 do
+            local row_name = resolve_ranking_row_path(def.list_node, idx)
             local row_root = resolve_ui_first({
               'ArchiveMain.排行榜.排行.' .. tostring(def.list_node) .. '.' .. row_name,
               'ArchivePanel.排行榜.排行.' .. tostring(def.list_node) .. '.' .. row_name,
             })
-            local num = resolve_ui_first({
+            local rank_label = resolve_ui_first({
               'ArchiveMain.排行榜.排行.' .. tostring(def.list_node) .. '.' .. row_name .. '.num',
               'ArchivePanel.排行榜.排行.' .. tostring(def.list_node) .. '.' .. row_name .. '.num',
             })
+            local name_label = resolve_ui_first({
+              'ArchiveMain.排行榜.排行.' .. tostring(def.list_node) .. '.' .. row_name .. '.label_1',
+              'ArchivePanel.排行榜.排行.' .. tostring(def.list_node) .. '.' .. row_name .. '.label_1',
+            })
+            local score_label = resolve_ui_first({
+              'ArchiveMain.排行榜.排行.' .. tostring(def.list_node) .. '.' .. row_name .. '.label_2',
+              'ArchivePanel.排行榜.排行.' .. tostring(def.list_node) .. '.' .. row_name .. '.label_2',
+            })
+
             local row = rows[idx]
             set_visible_if_alive(row_root, row ~= nil)
             if row then
-              set_text_if_alive(num, string.format('%d. %s  %d', idx, tostring(row.name or '玩家'), tonumber(row.score or 0) or 0))
+              set_text_if_alive(rank_label, tostring(idx))
+              set_text_if_alive(name_label, tostring(row.name or '玩家'))
+              set_text_if_alive(score_label, tostring(tonumber(row.score or 0) or 0))
             end
           end
         end
@@ -1794,6 +1833,7 @@ function M.create(env)
     all_category_label = '全部',
     categories_by_primary = OUTGAME_DEFS.archive_shop_categories_by_primary or {},
     group_templates = {
+      ['仓库'] = { icon = true, num = true, label = 'title' },
       ['商品'] = { icon = true, label = 'title' },
       ['皮肤'] = { icon = true, label = 'title' },
       ['翅膀'] = { icon = true, label = 'title' },

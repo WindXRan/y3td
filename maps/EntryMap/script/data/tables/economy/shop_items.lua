@@ -185,13 +185,13 @@ local function normalize_tab1(raw)
   return alias[value] or value
 end
 
-local function normalize_tab2(raw, quality)
+local function normalize_tab2(raw)
   local value = trim(raw)
   if value == '' then
-    return quality ~= '' and quality or '全部'
+    return ''
   end
   if value == '商城道具' or value == '商品' then
-    return quality ~= '' and quality or '全部'
+    return ''
   end
   return value
 end
@@ -210,6 +210,24 @@ local function normalize_partition(raw_partition, tab1)
   return '商城'
 end
 
+local function normalize_render_mode(raw)
+  local value = trim(raw)
+  if value == '' then
+    return ''
+  end
+  local alias = {
+    ['icon'] = 'icon',
+    ['图标'] = 'icon',
+    ['icon_num'] = 'icon_num',
+    ['图标+数量'] = 'icon_num',
+    ['num'] = 'num',
+    ['数量'] = 'num',
+    ['lv'] = 'lv',
+    ['等级'] = 'lv',
+  }
+  return alias[value] or ''
+end
+
 local function resolve_shop_tab1(row)
   local raw = resolve_primary_tab(row)
   if raw == '' or is_placeholder_text(raw) then
@@ -218,12 +236,12 @@ local function resolve_shop_tab1(row)
   return normalize_tab1(raw)
 end
 
-local function split_tab2_list_from_row(row, quality)
+local function split_tab2_list_from_row(row)
   local result = {}
   local seen = {}
   local source_tabs = collect_secondary_tabs(row)
   for _, raw in ipairs(source_tabs) do
-    local one = normalize_tab2(raw, quality)
+    local one = normalize_tab2(raw)
     if one ~= '' and seen[one] ~= true then
       seen[one] = true
       result[#result + 1] = one
@@ -231,7 +249,7 @@ local function split_tab2_list_from_row(row, quality)
   end
   -- 历史兼容：旧表把“实际二级分类”写在三级页签
   if #result == 0 then
-    local legacy = normalize_tab2(resolve_legacy_third_tab(row), quality)
+    local legacy = normalize_tab2(resolve_legacy_third_tab(row))
     if legacy ~= '' then
       result[1] = legacy
     end
@@ -294,7 +312,7 @@ for index, source in ipairs(source_rows) do
       quality = ''
     end
     local tab1 = resolve_shop_tab1(row)
-    local tab2_list = split_tab2_list_from_row(row, quality)
+    local tab2_list = split_tab2_list_from_row(row)
     local tab2 = tab2_list[1]
     local special_effect = trim(row.special_effect or row['特殊效果'] or row['额外效果字符串'])
     special_effect = special_effect:gsub('[\r\n]+', ' ')
@@ -333,6 +351,7 @@ for index, source in ipairs(source_rows) do
       or image_bg
       or DEFAULT_BG
     local partition = normalize_partition(row.partition or row['分区'] or row['区域'] or '', tab1)
+    local render_mode = normalize_render_mode(row.render_mode or row['render_mode'] or row['渲染模式'])
 
     local spec = {
       key = key,
@@ -356,6 +375,7 @@ for index, source in ipairs(source_rows) do
       l2_tab = tab2,
       l2_tabs = tab2_list,
       partition = partition,
+      render_mode = render_mode,
       primary = tab1,
       category = tab2,
       categories = tab2_list,

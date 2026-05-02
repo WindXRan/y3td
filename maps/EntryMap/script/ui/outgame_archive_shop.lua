@@ -80,10 +80,6 @@ local CAREER_TAB_DETAILS = {
     obtain = '通过成就节点、活动和挑战任务解锁称号。',
   },
 }
-local SHOP_PRIMARY_BLOCKLIST = {
-  ['仓库'] = true,
-  ['存档'] = true,
-}
 local SLOT_BOUND = setmetatable({}, { __mode = 'k' })
 local SLOT_SPEC_KEY = setmetatable({}, { __mode = 'k' })
 
@@ -310,7 +306,8 @@ local function create_runtime_secondary_tab(ui, options, category)
   if is_ui_alive(bg) then
     set_intercepts(bg, true)
     bg:add_fast_event('左键-按下', function()
-      if tostring(options.state.archive_panel_section or '') ~= 'shop' then
+      local section = tostring(options.state.archive_panel_section or '')
+      if section ~= 'shop' and section ~= 'archive' then
         return
       end
       if not entry.category then
@@ -336,32 +333,63 @@ local function get_all_category_label(options)
   return tostring((options and options.all_category_label) or '全部')
 end
 
-local function get_primary_tabs(options, specs)
+local function resolve_partition_from_section(state)
+  local section = tostring(state and state.archive_panel_section or '')
+  if section == 'shop' then
+    return '商城'
+  elseif section == 'archive' then
+    return '存档'
+  elseif section == 'career' then
+    return '生涯'
+  end
+  return nil
+end
+
+local function get_primary_tabs(state, options, specs)
   local tabs = {}
   local seen = {}
-  for _, primary in ipairs(options.primary_tabs or {}) do
-    if primary and primary ~= '' and seen[primary] ~= true and SHOP_PRIMARY_BLOCKLIST[tostring(primary)] ~= true then
-      seen[primary] = true
-      tabs[#tabs + 1] = primary
+  local partition_expect = resolve_partition_from_section(state)
+
+  local function try_add(primary)
+    if not primary or primary == '' or seen[primary] == true then
+      return
     end
+    if partition_expect and partition_expect ~= '' then
+      local has_match = false
+      for _, spec in ipairs(specs or {}) do
+        if spec.primary == primary and tostring(spec.partition or '') == partition_expect then
+          has_match = true
+          break
+        end
+      end
+      if not has_match then
+        return
+      end
+    end
+    seen[primary] = true
+    tabs[#tabs + 1] = primary
+  end
+
+  for _, primary in ipairs(options.primary_tabs or {}) do
+    try_add(primary)
   end
   for _, spec in ipairs(specs or {}) do
-    local primary = spec.primary
-    if primary and primary ~= '' and seen[primary] ~= true and SHOP_PRIMARY_BLOCKLIST[tostring(primary)] ~= true then
-      seen[primary] = true
-      tabs[#tabs + 1] = primary
+    if partition_expect and partition_expect ~= '' then
+      if tostring(spec.partition or '') == partition_expect then
+        try_add(spec.primary)
+      end
+    else
+      try_add(spec.primary)
     end
-  end
-  if #tabs == 0 and options.primary_tab_label then
-    tabs[1] = options.primary_tab_label
   end
   return tabs
 end
 
-local function get_categories_for_primary(options, specs, primary)
+local function get_categories_for_primary(state, options, specs, primary)
   local categories = {}
   local seen = {}
   local all_category = get_all_category_label(options)
+  local partition_expect = resolve_partition_from_section(state)
   local by_primary = options.categories_by_primary or {}
   for _, category in ipairs(by_primary[primary] or {}) do
     if category and category ~= '' and seen[category] ~= true then
@@ -371,7 +399,11 @@ local function get_categories_for_primary(options, specs, primary)
   end
   -- 始终合并 specs 里的真实分类，避免仅显示“全部”。
   for _, spec in ipairs(specs or {}) do
-    if spec.primary == primary then
+    local partition_ok = true
+    if partition_expect and partition_expect ~= '' then
+      partition_ok = tostring(spec.partition or '') == partition_expect
+    end
+    if partition_ok and spec.primary == primary then
       local list = spec.categories or { spec.category }
       for _, category in ipairs(list or {}) do
         if category and category ~= '' and seen[category] ~= true then
@@ -397,14 +429,11 @@ local function get_categories_for_primary(options, specs, primary)
 end
 
 local function ensure_selection(state, options, specs)
-  local primary_tabs = get_primary_tabs(options, specs)
-  if SHOP_PRIMARY_BLOCKLIST[tostring(state.archive_panel_shop_primary or '')] == true then
-    state.archive_panel_shop_primary = nil
-  end
+  local primary_tabs = get_primary_tabs(state, options, specs)
   if (not state.archive_panel_shop_primary) or state.archive_panel_shop_primary == '' then
     state.archive_panel_shop_primary = primary_tabs[1]
   end
-  local categories = get_categories_for_primary(options, specs, state.archive_panel_shop_primary)
+  local categories = get_categories_for_primary(state, options, specs, state.archive_panel_shop_primary)
   local current_category = state.archive_panel_shop_category
   local exists = false
   for _, category in ipairs(categories) do
@@ -432,6 +461,9 @@ local function get_visible_items(state, specs)
   end
 
   local primary = get_primary(state)
+  if section == 'career' then
+    primary = tostring(state and state.archive_panel_career_tab or CAREER_TAB_LABELS[1])
+  end
   local category = get_category(state)
   local all_category = get_all_category_label(state and state.archive_shop_options)
   local items = {}
@@ -538,7 +570,58 @@ local function normalize_key(text)
   return tostring(text or ''):gsub('%s+', ''):gsub('商城', '')
 end
 
-local function get_group_template(options, group_name)
+local function get_spec_owned_display(spec, fallback)
+  local text = tostring((spec and spec.owned_text) or ''):gsub('^%s+', ''):gsub('%s+$', '')
+  if text ~= '' then
+    return text
+  end
+  return tostring(fallback or '')
+end
+
+local function resolve_active_group_key(shop, state, all_category)
+  local section = tostring(state and state.archive_panel_section or '')
+  local active_group_key = normalize_key(get_category(state))
+  if section == 'career' then
+    active_group_key = normalize_key(tostring(state and state.archive_panel_career_tab or CAREER_TAB_LABELS[1]))
+  end
+  if active_group_key == '' or active_group_key == normalize_key(all_category) then
+    if section == 'career' then
+      active_group_key = normalize_key(tostring(state and state.archive_panel_career_tab or CAREER_TAB_LABELS[1]))
+    else
+      active_group_key = normalize_key(get_primary(state))
+    end
+  end
+  if active_group_key == '' then
+    active_group_key = normalize_key((shop.middle_groups and shop.middle_groups[1] and shop.middle_groups[1].name) or '')
+  end
+  local group_exists = false
+  for _, group in ipairs(shop.middle_groups or {}) do
+    if normalize_key(group.name) == active_group_key then
+      group_exists = true
+      break
+    end
+  end
+  if not group_exists then
+    active_group_key = normalize_key((shop.middle_groups and shop.middle_groups[1] and shop.middle_groups[1].name) or '')
+  end
+  return active_group_key
+end
+
+local function get_group_template(options, group_name, visible_items)
+  local mode = ''
+  local first = type(visible_items) == 'table' and visible_items[1] or nil
+  if first then
+    mode = tostring(first.render_mode or '')
+  end
+  if mode == 'icon_num' then
+    return { icon = true, num = true, label = 'title' }
+  elseif mode == 'num' then
+    return { num = true, label = 'title' }
+  elseif mode == 'lv' then
+    return { lv = true, label = 'quality' }
+  elseif mode == 'icon' then
+    return { icon = true, label = 'title' }
+  end
   local templates = options and options.group_templates or nil
   local tpl = templates and templates[group_name] or nil
   if type(tpl) ~= 'table' then
@@ -619,30 +702,14 @@ local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_
   local in_shop_like_section = in_shop_section or section == 'archive'
   local groups = shop.middle_groups or {}
   local all_category = get_all_category_label(options)
-  local active_group_key = normalize_key(get_category(state))
-  if active_group_key == '' or active_group_key == normalize_key(all_category) then
-    active_group_key = normalize_key(get_primary(state))
-  end
-  if active_group_key == '' or active_group_key == normalize_key(all_category) then
-    active_group_key = normalize_key('商品')
-  end
-  local group_exists = false
-  for _, group in ipairs(groups) do
-    if normalize_key(group.name) == active_group_key then
-      group_exists = true
-      break
-    end
-  end
-  if not group_exists then
-    active_group_key = normalize_key('商品')
-  end
+  local active_group_key = resolve_active_group_key(shop, state, all_category)
   for _, group in ipairs(groups) do
     local group_key = normalize_key(group.name)
     local is_active_group = active_group_key ~= '' and group_key == active_group_key
     set_visible(group.root, in_shop_like_section and is_active_group)
     if in_shop_like_section and is_active_group then
       local spec = pick_group_spec(visible_items, group.name)
-      local tpl = get_group_template(options, group.name)
+      local tpl = get_group_template(options, group.name, visible_items)
       local show_icon = tpl.icon == true
       local show_lv = tpl.lv == true
       local show_num = tpl.num == true
@@ -663,7 +730,7 @@ local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_
           local quality = spec and tostring(spec.quality or '') or ''
           set_text(group.label, quality ~= '' and ('品质 ' .. quality) or '地图等级')
         elseif show_num then
-          set_text(group.label, '当前筛选')
+          set_text(group.label, spec and tostring(spec.title or group.name) or group.name)
         else
           set_text(group.label, group.name)
         end
@@ -675,7 +742,7 @@ local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_
       end
 
       if show_num and is_ui_alive(group.num) then
-        set_text(group.num, tostring(#(visible_items or {})))
+        set_text(group.num, get_spec_owned_display(spec, #(visible_items or {})))
       end
     else
       set_visible(group.icon, false)
@@ -686,28 +753,44 @@ local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_
 end
 
 local function resolve_group_slot(player, base, index)
-  local suffix = index == 1 and '' or ('_' .. tostring(index - 1))
-  local root = resolve_ui(player, base .. '.bg' .. suffix)
-  if not is_ui_alive(root) then
-    root = resolve_ui(player, base .. '.bg_' .. tostring(index))
+  local candidates = {}
+  if index == 1 then
+    -- 首格优先使用编号格子，避免命中分组容器 bg 导致“首个商品变大”。
+    candidates = { 'bg_7', 'bg_1', 'bg' }
+  else
+    candidates = {
+      'bg_' .. tostring(index + 6),
+      'bg_' .. tostring(index - 1),
+      'bg_' .. tostring(index),
+    }
   end
-  if not is_ui_alive(root) then
-    return nil
+
+  for _, node in ipairs(candidates) do
+    local root = resolve_ui(player, base .. '.' .. node)
+    if is_ui_alive(root) then
+      local icon = resolve_ui(player, base .. '.' .. node .. '.image')
+      local label = resolve_ui(player, base .. '.' .. node .. '.label')
+      local lv = resolve_ui(player, base .. '.' .. node .. '.lv')
+      local num = resolve_ui(player, base .. '.' .. node .. '.num')
+      if is_ui_alive(icon) or is_ui_alive(label) or is_ui_alive(lv) or is_ui_alive(num) then
+        return {
+          root = root,
+          icon = icon,
+          label = label,
+          lv = lv,
+          num = num,
+        }
+      end
+    end
   end
-  return {
-    root = root,
-    icon = resolve_ui(player, base .. '.bg' .. suffix .. '.image') or resolve_ui(player, base .. '.bg_' .. tostring(index) .. '.image'),
-    label = resolve_ui(player, base .. '.bg' .. suffix .. '.label') or resolve_ui(player, base .. '.bg_' .. tostring(index) .. '.label'),
-    lv = resolve_ui(player, base .. '.bg' .. suffix .. '.lv') or resolve_ui(player, base .. '.bg_' .. tostring(index) .. '.lv'),
-    num = resolve_ui(player, base .. '.bg' .. suffix .. '.num') or resolve_ui(player, base .. '.bg_' .. tostring(index) .. '.num'),
-  }
+  return nil
 end
 
 local function apply_group_slot(slot, group_name, spec, index, total)
   if not is_ui_alive(slot and slot.root) then
     return
   end
-  local tpl = get_group_template(slot.options, group_name)
+  local tpl = get_group_template(slot.options, group_name, { spec })
   set_visible(slot.root, true)
   local show_icon = tpl.icon == true
   local show_lv = tpl.lv == true
@@ -722,7 +805,8 @@ local function apply_group_slot(slot, group_name, spec, index, total)
   if show_icon then
     set_image(slot.icon, spec and (spec.icon or spec.default_icon) or DEFAULT_ICON)
     set_text(slot.label, spec and tostring(spec.title or group_name) or group_name)
-  elseif show_lv then
+  end
+  if show_lv then
     local quality = spec and tostring(spec.quality or '') or ''
     if tpl.label == 'quality' then
       set_text(slot.label, quality ~= '' and ('品质 ' .. quality) or '地图等级')
@@ -730,9 +814,10 @@ local function apply_group_slot(slot, group_name, spec, index, total)
       set_text(slot.label, spec and tostring(spec.title or group_name) or group_name)
     end
     set_text(slot.lv, 'LV.' .. tostring(index))
-  elseif show_num then
+  end
+  if show_num then
     set_text(slot.label, spec and tostring(spec.title or '当前筛选') or '当前筛选')
-    set_text(slot.num, tostring(total))
+    set_text(slot.num, get_spec_owned_display(spec, total))
   end
 end
 
@@ -753,7 +838,7 @@ local function create_runtime_group_item(group, spec, index, options, total)
   if not (is_ui_alive(group.root) and group.root.create_child) then
     return nil
   end
-  local tpl = get_group_template(options, group.name)
+  local tpl = get_group_template(options, group.name, { spec })
   local cell = group.root:create_child('布局')
   if not is_ui_alive(cell) then
     return nil
@@ -812,7 +897,8 @@ local function create_runtime_group_item(group, spec, index, options, total)
         label:set_pos(42, 12)
       end
     end
-  elseif tpl.lv == true then
+  end
+  if tpl.lv == true then
     label = cell:create_child('文本')
     if is_ui_alive(label) then
       if label.set_text then
@@ -849,11 +935,12 @@ local function create_runtime_group_item(group, spec, index, options, total)
         lv:set_pos(42, 24)
       end
     end
-  elseif tpl.num == true then
+  end
+  if tpl.num == true then
     label = cell:create_child('文本')
     if is_ui_alive(label) then
       if label.set_text then
-        label:set_text(tostring(spec.title or '当前筛选'))
+        label:set_text(tostring(spec.title or group.name or '当前筛选'))
       end
       if label.set_font_size then
         label:set_font_size(14)
@@ -871,7 +958,7 @@ local function create_runtime_group_item(group, spec, index, options, total)
     num = cell:create_child('文本')
     if is_ui_alive(num) then
       if num.set_text then
-        num:set_text(tostring(total or index))
+        num:set_text(get_spec_owned_display(spec, total or index))
       end
       if num.set_font_size then
         num:set_font_size(18)
@@ -893,6 +980,19 @@ local function create_runtime_group_item(group, spec, index, options, total)
   return { root = cell, spec = spec, icon = icon, label = label, lv = lv, num = num }
 end
 
+local function count_static_slots(player, group, max_probe)
+  local limit = math.max(1, tonumber(max_probe) or 256)
+  local count = 0
+  for i = 1, limit do
+    local slot = resolve_group_slot(player, group.base, i)
+    if not is_ui_alive(slot and slot.root) then
+      break
+    end
+    count = i
+  end
+  return count
+end
+
 local function bind_slot_click(slot, ui, options)
   if not is_ui_alive(slot and slot.root) then
     return
@@ -904,7 +1004,7 @@ local function bind_slot_click(slot, ui, options)
   set_intercepts(slot.root, true)
   slot.root:add_fast_event('左键-按下', function()
     local section = tostring(options.state.archive_panel_section or '')
-    if section ~= 'shop' and section ~= 'archive' then
+    if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
       return
     end
     local spec_key = SLOT_SPEC_KEY[slot.root]
@@ -922,7 +1022,7 @@ local function bind_slot_click(slot, ui, options)
     if options.play_ui_click then
       options.play_ui_click()
     end
-    -- 点击商品只刷新右侧详情，避免触发列表重算导致其它商品被误隐藏。
+    -- 点击条目只刷新右侧详情，避免触发列表重算导致其它条目被误隐藏。
     if selected_spec then
       refresh_tip(options.state, ui.shop, selected_spec)
     end
@@ -936,43 +1036,31 @@ local function refresh_group_dynamic_items(ui, shop, options, visible_items)
   if not player then
     return
   end
-  local active_group_key = normalize_key(get_category(state))
-  if active_group_key == '' or active_group_key == normalize_key(all_category) then
-    active_group_key = normalize_key(get_primary(state))
-  end
-  if active_group_key == '' or active_group_key == normalize_key(all_category) then
-    active_group_key = normalize_key('商品')
-  end
-  local group_exists = false
-  for _, group in ipairs(shop.middle_groups or {}) do
-    if normalize_key(group.name) == active_group_key then
-      group_exists = true
-      break
-    end
-  end
-  if not group_exists then
-    active_group_key = normalize_key('商品')
-  end
+  local active_group_key = resolve_active_group_key(shop, state, all_category)
   for _, group in ipairs(shop.middle_groups or {}) do
     local active = normalize_key(group.name) == active_group_key
     -- 列表项只受“分区+一级页签+二级页签”控制，不再按分组名二次过滤，
     -- 否则点击刷新后会出现同页签内商品被误隐藏的问题。
     local group_items = visible_items or {}
 
-    local template_slot_2 = resolve_group_slot(player, group.base, 2)
-    local use_runtime_creation = not is_ui_alive(template_slot_2 and template_slot_2.root)
+    local static_slot_count = count_static_slots(player, group, math.max(32, #group_items + 4))
+    local use_runtime_only = static_slot_count <= 1
+    local effective_static_slot_count = use_runtime_only and 0 or static_slot_count
+    local overflow_count = math.max(0, #group_items - effective_static_slot_count)
+    local need_runtime_creation = overflow_count > 0
 
     if active and is_ui_alive(group.root) then
       if group.root.set_ui_gridview_scroll then
         pcall(group.root.set_ui_gridview_scroll, group.root, true)
       end
-      if use_runtime_creation then
-        local signature = tostring(get_primary(state) or '') .. '|' .. tostring(get_category(state) or '') .. '|' .. tostring(#group_items)
+      if need_runtime_creation then
+        local signature = tostring(get_primary(state) or '') .. '|' .. tostring(get_category(state) or '') .. '|' .. tostring(#group_items) .. '|' .. tostring(effective_static_slot_count)
         if group.runtime_signature ~= signature then
           group.runtime_signature = signature
           clear_runtime_group_items(group)
-          for i = 1, #group_items do
-            local item = create_runtime_group_item(group, group_items[i], i, options, #group_items)
+          for i = 1, overflow_count do
+            local spec_index = effective_static_slot_count + i
+            local item = create_runtime_group_item(group, group_items[spec_index], spec_index, options, #group_items)
             if item then
               SLOT_SPEC_KEY[item.root] = item.spec and item.spec.key or nil
               bind_slot_click(item, ui, options)
@@ -986,11 +1074,16 @@ local function refresh_group_dynamic_items(ui, shop, options, visible_items)
       clear_runtime_group_items(group)
     end
 
-    local max_slots = math.max(12, #group_items)
+    local max_slots = math.max(12, effective_static_slot_count)
     for i = 1, max_slots do
       local slot = resolve_group_slot(player, group.base, i)
       if is_ui_alive(slot and slot.root) then
-        if (not use_runtime_creation) and active and i <= #group_items then
+        if use_runtime_only and i == 1 then
+          SLOT_SPEC_KEY[slot.root] = nil
+          set_visible(slot.root, false)
+          goto continue_slot
+        end
+        if active and (not use_runtime_only) and i <= effective_static_slot_count and i <= #group_items then
           local spec = group_items[i]
           slot.options = options
           apply_group_slot(slot, group.name, spec, i, #group_items)
@@ -1001,6 +1094,7 @@ local function refresh_group_dynamic_items(ui, shop, options, visible_items)
           set_visible(slot.root, false)
         end
       end
+      ::continue_slot::
     end
   end
 end
@@ -1024,7 +1118,8 @@ local function schedule_next_tick_shop_refresh(ui, options, signature)
       return
     end
     s.deferred_refresh_pending = false
-    if tostring((options.state and options.state.archive_panel_section) or '') ~= 'shop' then
+    local section = tostring((options.state and options.state.archive_panel_section) or '')
+    if section ~= 'shop' and section ~= 'archive' then
       return
     end
     M.refresh(ui, options)
@@ -1041,12 +1136,12 @@ function M.refresh(ui, options)
   local section = tostring(state and state.archive_panel_section or '')
   local in_main_section = section == 'main' or section == 'archive' or section == 'career' or section == 'shop'
   local in_shop_section = section == 'shop'
-  local in_shop_like_section = in_shop_section or section == 'archive'
+  local in_shop_like_section = in_shop_section or section == 'archive' or section == 'career'
   local in_career_section = section == 'career'
   local in_archive_section = section == 'archive'
   local specs = options.specs or {}
   local primary_tabs, categories = ensure_selection(state, options, specs)
-  if in_shop_section then
+  if in_shop_like_section then
     local primary_valid = false
     for _, p in ipairs(primary_tabs or {}) do
       if p == state.archive_panel_shop_primary then
@@ -1056,19 +1151,13 @@ function M.refresh(ui, options)
     end
     if not primary_valid then
       state.archive_panel_shop_primary = primary_tabs and primary_tabs[1] or state.archive_panel_shop_primary
-      categories = get_categories_for_primary(options, specs, state.archive_panel_shop_primary)
+      categories = get_categories_for_primary(state, options, specs, state.archive_panel_shop_primary)
       state.archive_panel_shop_category = categories[1]
       state.archive_panel_shop_item = nil
     end
   end
-  if in_archive_section then
-    state.archive_panel_shop_primary = '仓库'
-    local archive_categories = get_categories_for_primary(options, specs, '仓库')
-    state.archive_panel_shop_category = archive_categories[1]
-    categories = archive_categories
-  end
   local visible_items = get_visible_items(state, specs)
-  if not in_shop_section then
+  if not in_shop_like_section then
     state.archive_panel_shop_item = nil
   end
 
@@ -1077,21 +1166,16 @@ function M.refresh(ui, options)
     set_visible(entry.root, false)
   end
 
-  for _, entry in ipairs(shop.primary_tabs or {}) do
+  for index, entry in ipairs(shop.primary_tabs or {}) do
+    local current_primary = primary_tabs[index]
+    entry.primary = current_primary
     set_visible(entry.root, in_main_section)
-    if in_shop_section then
-      set_text(entry.label, entry.primary or entry.raw_label or '')
-      local selected = entry.primary == get_primary(state)
+    if in_shop_like_section then
+      set_visible(entry.root, current_primary ~= nil)
+      set_text(entry.label, current_primary or entry.raw_label or '')
+      local selected = current_primary ~= nil and current_primary == get_primary(state)
       set_image_color(entry.bg, selected and { 183, 137, 48, 244 } or { 64, 68, 80, 230 })
       set_text_color(entry.label, selected and { 255, 247, 232, 255 } or { 218, 222, 232, 255 })
-    elseif in_archive_section then
-      local is_archive_tab = entry.primary == '仓库'
-      set_visible(entry.root, is_archive_tab)
-      if is_archive_tab then
-        set_text(entry.label, '仓库')
-      end
-      set_image_color(entry.bg, is_archive_tab and { 183, 137, 48, 244 } or { 64, 68, 80, 230 })
-      set_text_color(entry.label, is_archive_tab and { 255, 247, 232, 255 } or { 218, 222, 232, 255 })
     elseif in_career_section then
       local index = entry.index or 0
       local tab_label = CAREER_TAB_LABELS[index]
@@ -1110,7 +1194,6 @@ function M.refresh(ui, options)
       set_text_color(entry.label, { 218, 222, 232, 255 })
     end
   end
-
   -- 二级页签槽位不足时，动态补齐，确保 UB/UR/全部都可见。
   local static_count = shop.secondary_static_count or #(shop.secondary_tabs or {})
   local total_needed = #categories
@@ -1129,21 +1212,19 @@ function M.refresh(ui, options)
   for index, entry in ipairs(shop.secondary_tabs or {}) do
     local category = categories[index]
     entry.category = category
-    set_visible(entry.root, in_main_section and (in_shop_section and category ~= nil or (not in_shop_section and not in_career_section and not in_archive_section)))
-    if in_shop_section and category then
+    set_visible(entry.root, in_main_section and ((in_shop_like_section and category ~= nil) or (not in_shop_like_section and not in_career_section)))
+    if in_shop_like_section and category then
       set_text(entry.label, category)
-    elseif (not in_shop_section) and entry.raw_label and entry.raw_label ~= '' then
+    elseif (not in_shop_like_section) and entry.raw_label and entry.raw_label ~= '' then
       set_text(entry.label, entry.raw_label)
     end
   end
 
   for _, entry in ipairs(shop.secondary_tabs or {}) do
-    if in_shop_section then
+    if in_shop_like_section then
       local selected = entry.category == get_category(state)
       set_image_color(entry.bg, selected and { 183, 137, 48, 244 } or { 64, 68, 80, 230 })
       set_text_color(entry.label, selected and { 255, 247, 232, 255 } or { 218, 222, 232, 255 })
-    elseif in_archive_section then
-      set_visible(entry.root, false)
     elseif not in_career_section then
       set_image_color(entry.bg, { 64, 68, 80, 230 })
       set_text_color(entry.label, { 218, 222, 232, 255 })
@@ -1152,7 +1233,7 @@ function M.refresh(ui, options)
     end
   end
 
-  refresh_middle_shop_groups(shop, state, in_shop_section, visible_items, options)
+  refresh_middle_shop_groups(shop, state, in_shop_like_section, visible_items, options)
   if in_shop_like_section then
     refresh_group_dynamic_items(ui, shop, options, visible_items)
   end
@@ -1160,7 +1241,7 @@ function M.refresh(ui, options)
   if shop.tip then
     local tip = shop.tip
     set_visible(tip.root, in_shop_section or in_career_section)
-    if in_shop_section then
+    if in_shop_section or in_archive_section then
       local selected_spec = find_best_spec(visible_items, state.archive_panel_shop_item)
       if selected_spec then
         refresh_tip(state, shop, selected_spec)
@@ -1178,7 +1259,12 @@ function M.refresh(ui, options)
         set_text(tip.obtain, '')
       end
     elseif in_career_section then
-      refresh_career_tip(state, shop)
+      local selected_spec = find_best_spec(visible_items, state.archive_panel_shop_item)
+      if selected_spec then
+        refresh_tip(state, shop, selected_spec)
+      else
+        refresh_career_tip(state, shop)
+      end
     else
       set_text(tip.title, '')
       set_text(tip.owned, '')
@@ -1191,7 +1277,7 @@ function M.refresh(ui, options)
     end
   end
 
-  if in_shop_section then
+  if in_shop_like_section then
     local current_signature = table.concat({
       tostring(state.archive_panel_shop_primary or ''),
       tostring(state.archive_panel_shop_category or ''),
@@ -1240,8 +1326,12 @@ function M.ensure(ui, options)
     ['翅膀'] = { '翅膀' },
     ['地图等级'] = { '地图等级' },
     ['荣誉等级'] = { '荣誉等级', '典藏积分' },
+    ['成就'] = { '成就' },
+    ['英雄图鉴'] = { '英雄图鉴' },
+    ['羁绊图鉴'] = { '羁绊图鉴' },
+    ['称号'] = { '称号' },
   }
-  for _, name in ipairs({ '仓库', '商品', '皮肤', '翅膀', '地图等级', '荣誉等级' }) do
+  for _, name in ipairs({ '仓库', '商品', '皮肤', '翅膀', '地图等级', '荣誉等级', '成就', '英雄图鉴', '羁绊图鉴', '称号' }) do
     local aliases = group_name_aliases[name] or { name }
     local base = nil
     local root = nil
@@ -1249,8 +1339,10 @@ function M.ensure(ui, options)
       local base_candidates = {
         'ArchiveMain.存档生涯商城.中间内容.商城.' .. alias,
         'ArchiveMain.存档生涯商城.中间内容.存档.' .. alias,
+        'ArchiveMain.存档生涯商城.中间内容.生涯.' .. alias,
         'ArchivePanel.存档生涯商城.中间内容.商城.' .. alias,
         'ArchivePanel.存档生涯商城.中间内容.存档.' .. alias,
+        'ArchivePanel.存档生涯商城.中间内容.生涯.' .. alias,
       }
       for _, one_base in ipairs(base_candidates) do
         base = one_base
@@ -1340,15 +1432,10 @@ function M.ensure(ui, options)
     end
   end
 
-  local primary_tabs = get_primary_tabs(options, specs)
   local primary_root_seen = {}
-  if (not options.state.archive_panel_shop_primary) or options.state.archive_panel_shop_primary == '' then
-    options.state.archive_panel_shop_primary = primary_tabs[1]
-  end
   for _, base in ipairs(PRIMARY_TAB_BASE_PATHS) do
     local primary_paths = collect_tab_paths(base, 8)
     for index, path in ipairs(primary_paths) do
-      local primary = primary_tabs[index]
       local root = resolve_ui(player, path)
       if is_ui_alive(root) then
         local root_key = tostring(root.handle or path)
@@ -1359,49 +1446,49 @@ function M.ensure(ui, options)
         local bg = resolve_ui(player, path .. '.button_1') or resolve_ui(player, path .. '.button') or root
         local label = resolve_ui(player, path .. '.label_1') or resolve_ui(player, path .. '.label')
         local raw_label = get_text(label)
-        set_visible(root, primary ~= nil)
-        if primary then
-          set_text(label, primary)
-          local entry = {
-            primary = primary,
-            index = index,
-            root = root,
-            bg = bg,
-            label = label,
-            raw_label = raw_label,
-          }
-          ui.shop.primary_tabs[#ui.shop.primary_tabs + 1] = entry
-          if is_ui_alive(bg) then
-            set_intercepts(bg, true)
-            bg:add_fast_event('左键-按下', function()
-              local current_section = tostring(options.state.archive_panel_section or '')
-              if current_section ~= 'shop' and current_section ~= 'career' then
-                return
-              end
-              if current_section == 'career' then
-                local target_tab = CAREER_TAB_LABELS[index] or CAREER_TAB_LABELS[1]
-                if tostring(options.state.archive_panel_career_tab or '') == tostring(target_tab or '') then
-                  return
-                end
-                if options.play_ui_click then
-                  options.play_ui_click()
-                end
-                options.state.archive_panel_career_tab = target_tab
-                M.refresh(ui, options)
-                return
-              end
-              if tostring(options.state.archive_panel_shop_primary or '') == tostring(primary or '') then
+        local entry = {
+          primary = nil,
+          index = index,
+          root = root,
+          bg = bg,
+          label = label,
+          raw_label = raw_label,
+        }
+        ui.shop.primary_tabs[#ui.shop.primary_tabs + 1] = entry
+        if is_ui_alive(bg) then
+          set_intercepts(bg, true)
+          bg:add_fast_event('左键-按下', function()
+            local current_section = tostring(options.state.archive_panel_section or '')
+            if current_section ~= 'shop' and current_section ~= 'career' and current_section ~= 'archive' then
+              return
+            end
+            if current_section == 'career' then
+              local target_tab = CAREER_TAB_LABELS[index] or CAREER_TAB_LABELS[1]
+              if tostring(options.state.archive_panel_career_tab or '') == tostring(target_tab or '') then
                 return
               end
               if options.play_ui_click then
                 options.play_ui_click()
               end
-              options.state.archive_panel_shop_primary = primary
-              options.state.archive_panel_shop_category = nil
-              options.state.archive_panel_shop_item = nil
+              options.state.archive_panel_career_tab = target_tab
               M.refresh(ui, options)
-            end)
-          end
+              return
+            end
+            local target_primary = entry.primary
+            if not target_primary or target_primary == '' then
+              return
+            end
+            if tostring(options.state.archive_panel_shop_primary or '') == tostring(target_primary or '') then
+              return
+            end
+            if options.play_ui_click then
+              options.play_ui_click()
+            end
+            options.state.archive_panel_shop_primary = target_primary
+            options.state.archive_panel_shop_category = nil
+            options.state.archive_panel_shop_item = nil
+            M.refresh(ui, options)
+          end)
         end
       end
       ::continue_primary_path::
@@ -1426,7 +1513,8 @@ function M.ensure(ui, options)
         if is_ui_alive(bg) then
           set_intercepts(bg, true)
           bg:add_fast_event('左键-按下', function()
-            if tostring(options.state.archive_panel_section or '') ~= 'shop' then
+            local section = tostring(options.state.archive_panel_section or '')
+            if section ~= 'shop' and section ~= 'archive' then
               return
             end
             if not entry.category then
