@@ -1,7 +1,5 @@
-local AttrDefs = require 'runtime.hero_attr_defs'
-local AttrLog = require 'runtime.hero_attr_log'
-
 local M = {}
+local AttrLog = { enabled = false }
 
 local KV_PREFIX = '__hero_attr__:'
 local MAIN_STAT_ATTACK_RATIO = 0.5
@@ -9,6 +7,188 @@ local STRENGTH_HP_RATIO = 0.001
 local AGILITY_PHYSICAL_DAMAGE_RATIO = 0.001
 local INTELLIGENCE_MAGIC_DAMAGE_RATIO = 0.001
 local ENGINE_ATTACK_ATTRS = { '攻击力', '物理攻击力', '物理攻击', '法术攻击力', '法术攻击' }
+
+local function define_attr(name, category, order, format, extra)
+  extra = extra or {}
+  extra.name = name
+  extra.category = category
+  extra.order = order
+  extra.format = format
+  if extra.persist == nil then
+    extra.persist = true
+  end
+  return extra
+end
+
+local AttrDefs = {
+  categories = {
+    DAMAGE = '伤害属性',
+    DEFENSE = '防守属性',
+    RESOURCE = '资源属性',
+    AMPLIFY = '增幅属性',
+    OTHER = '其他属性',
+  },
+  aliases = {
+    ['攻击力'] = '攻击',
+    ['物理攻击'] = '攻击',
+    ['物理攻击力'] = '攻击',
+    ['法术攻击'] = '攻击',
+    ['法术攻击力'] = '攻击',
+    ['最大生命'] = '生命',
+    ['暴击率'] = '物理暴击',
+    ['暴击伤害'] = '物理暴伤',
+    ['命中率'] = '命中',
+    ['护甲穿透'] = '护甲穿透',
+    ['物理吸血'] = '物理吸血',
+    ['BOSS伤害'] = '挑战伤害',
+    ['精英伤害'] = '精控伤害',
+    ['冻伤伤害'] = '冻结伤害',
+    ['最终攻击增幅'] = '最终攻击',
+    ['最终生命增幅'] = '最终生命',
+    ['最终护甲增幅'] = '最终护甲',
+  },
+}
+
+AttrDefs.list = {
+  define_attr('攻击', AttrDefs.categories.DAMAGE, 10, 'integer', { derived_output = true, persist = false }),
+  define_attr('攻击白字', AttrDefs.categories.DAMAGE, 11, 'integer'),
+  define_attr('攻击绿字', AttrDefs.categories.DAMAGE, 12, 'integer'),
+  define_attr('攻击范围', AttrDefs.categories.DAMAGE, 20, 'integer'),
+  define_attr('攻击速度', AttrDefs.categories.DAMAGE, 25, 'integer'),
+  define_attr('攻击间隔', AttrDefs.categories.DAMAGE, 30, 'fixed2'),
+  define_attr('命中', AttrDefs.categories.DAMAGE, 40, 'percent', { is_ratio = true }),
+  define_attr('物理暴击', AttrDefs.categories.DAMAGE, 50, 'percent', { is_ratio = true }),
+  define_attr('物理暴伤', AttrDefs.categories.DAMAGE, 60, 'percent', { is_ratio = true }),
+  define_attr('魔法暴击', AttrDefs.categories.DAMAGE, 70, 'percent', { is_ratio = true }),
+  define_attr('魔法暴伤', AttrDefs.categories.DAMAGE, 80, 'percent', { is_ratio = true }),
+  define_attr('物理伤害', AttrDefs.categories.DAMAGE, 90, 'percent', { is_ratio = true }),
+  define_attr('魔法伤害', AttrDefs.categories.DAMAGE, 100, 'percent', { is_ratio = true }),
+  define_attr('物理吸血', AttrDefs.categories.DAMAGE, 110, 'percent', { is_ratio = true }),
+  define_attr('普攻伤害', AttrDefs.categories.DAMAGE, 120, 'percent', { is_ratio = true }),
+  define_attr('技能伤害', AttrDefs.categories.DAMAGE, 130, 'percent_or_zero', { is_ratio = true }),
+  define_attr('所有伤害', AttrDefs.categories.DAMAGE, 140, 'percent', { is_ratio = true }),
+  define_attr('最终伤害', AttrDefs.categories.DAMAGE, 150, 'percent', { is_ratio = true }),
+  define_attr('无视护甲', AttrDefs.categories.DAMAGE, 160, 'percent', { is_ratio = true }),
+  define_attr('护甲穿透', AttrDefs.categories.DAMAGE, 170, 'integer'),
+  define_attr('多重数量', AttrDefs.categories.DAMAGE, 180, 'integer'),
+  define_attr('多重伤害', AttrDefs.categories.DAMAGE, 190, 'percent', { is_ratio = true }),
+  define_attr('弹射次数', AttrDefs.categories.DAMAGE, 200, 'integer'),
+  define_attr('弹射伤害', AttrDefs.categories.DAMAGE, 210, 'percent', { is_ratio = true }),
+  define_attr('生命', AttrDefs.categories.DEFENSE, 10, 'integer', { derived_output = true, persist = false }),
+  define_attr('生命白字', AttrDefs.categories.DEFENSE, 11, 'integer'),
+  define_attr('生命绿字', AttrDefs.categories.DEFENSE, 12, 'integer'),
+  define_attr('护甲', AttrDefs.categories.DEFENSE, 20, 'integer', { derived_output = true, persist = false }),
+  define_attr('护甲白字', AttrDefs.categories.DEFENSE, 21, 'integer'),
+  define_attr('护甲绿字', AttrDefs.categories.DEFENSE, 22, 'integer'),
+  define_attr('格挡', AttrDefs.categories.DEFENSE, 30, 'integer'),
+  define_attr('闪避', AttrDefs.categories.DEFENSE, 40, 'percent', { is_ratio = true }),
+  define_attr('生命恢复', AttrDefs.categories.DEFENSE, 50, 'fixed1'),
+  define_attr('伤害减免', AttrDefs.categories.DEFENSE, 60, 'percent', { is_ratio = true }),
+  define_attr('闪避恢复', AttrDefs.categories.DEFENSE, 70, 'fixed1'),
+  define_attr('杀敌恢复', AttrDefs.categories.DEFENSE, 80, 'fixed1'),
+  define_attr('控制时长', AttrDefs.categories.DEFENSE, 90, 'percent', { is_ratio = true }),
+  define_attr('杀敌经验', AttrDefs.categories.RESOURCE, 10, 'percent', { is_ratio = true }),
+  define_attr('杀敌加成', AttrDefs.categories.RESOURCE, 20, 'percent', { is_ratio = true }),
+  define_attr('杀敌木材', AttrDefs.categories.RESOURCE, 30, 'percent', { is_ratio = true }),
+  define_attr('杀敌金币', AttrDefs.categories.RESOURCE, 40, 'percent', { is_ratio = true }),
+  define_attr('每秒经验', AttrDefs.categories.RESOURCE, 50, 'fixed1', { growth_kind = 'per_second' }),
+  define_attr('每秒木材', AttrDefs.categories.RESOURCE, 60, 'fixed1', { growth_kind = 'per_second' }),
+  define_attr('每秒金币', AttrDefs.categories.RESOURCE, 70, 'fixed1', { growth_kind = 'per_second' }),
+  define_attr('每秒杀敌', AttrDefs.categories.RESOURCE, 80, 'fixed1', { growth_kind = 'per_second' }),
+  define_attr('力量', AttrDefs.categories.AMPLIFY, 10, 'integer', { derived_output = true, persist = false }),
+  define_attr('力量白字', AttrDefs.categories.AMPLIFY, 11, 'integer'),
+  define_attr('力量绿字', AttrDefs.categories.AMPLIFY, 12, 'integer'),
+  define_attr('敏捷', AttrDefs.categories.AMPLIFY, 20, 'integer', { derived_output = true, persist = false }),
+  define_attr('敏捷白字', AttrDefs.categories.AMPLIFY, 21, 'integer'),
+  define_attr('敏捷绿字', AttrDefs.categories.AMPLIFY, 22, 'integer'),
+  define_attr('智力', AttrDefs.categories.AMPLIFY, 30, 'integer', { derived_output = true, persist = false }),
+  define_attr('智力白字', AttrDefs.categories.AMPLIFY, 31, 'integer'),
+  define_attr('智力绿字', AttrDefs.categories.AMPLIFY, 32, 'integer'),
+  define_attr('力量增幅', AttrDefs.categories.AMPLIFY, 40, 'percent', { is_ratio = true }),
+  define_attr('敏捷增幅', AttrDefs.categories.AMPLIFY, 50, 'percent', { is_ratio = true }),
+  define_attr('智力增幅', AttrDefs.categories.AMPLIFY, 60, 'percent', { is_ratio = true }),
+  define_attr('攻击增幅', AttrDefs.categories.AMPLIFY, 70, 'percent', { is_ratio = true }),
+  define_attr('生命增幅', AttrDefs.categories.AMPLIFY, 80, 'percent', { is_ratio = true }),
+  define_attr('护甲增幅', AttrDefs.categories.AMPLIFY, 90, 'percent', { is_ratio = true }),
+  define_attr('每秒攻击', AttrDefs.categories.AMPLIFY, 100, 'fixed1', { growth_kind = 'per_second' }),
+  define_attr('每秒力量', AttrDefs.categories.AMPLIFY, 110, 'fixed1', { growth_kind = 'per_second' }),
+  define_attr('每秒敏捷', AttrDefs.categories.AMPLIFY, 120, 'fixed1', { growth_kind = 'per_second' }),
+  define_attr('每秒智力', AttrDefs.categories.AMPLIFY, 130, 'fixed1', { growth_kind = 'per_second' }),
+  define_attr('每秒生命', AttrDefs.categories.AMPLIFY, 140, 'fixed1', { growth_kind = 'per_second' }),
+  define_attr('杀敌攻击', AttrDefs.categories.AMPLIFY, 150, 'fixed2', { growth_kind = 'on_kill' }),
+  define_attr('杀敌力量', AttrDefs.categories.AMPLIFY, 160, 'fixed2', { growth_kind = 'on_kill' }),
+  define_attr('杀敌敏捷', AttrDefs.categories.AMPLIFY, 170, 'fixed2', { growth_kind = 'on_kill' }),
+  define_attr('杀敌智力', AttrDefs.categories.AMPLIFY, 180, 'fixed2', { growth_kind = 'on_kill' }),
+  define_attr('杀敌生命', AttrDefs.categories.AMPLIFY, 190, 'fixed2', { growth_kind = 'on_kill' }),
+  define_attr('杀敌护甲', AttrDefs.categories.AMPLIFY, 200, 'fixed2', { growth_kind = 'on_kill' }),
+  define_attr('最终力量', AttrDefs.categories.AMPLIFY, 210, 'fixed1', { derived_output = true }),
+  define_attr('最终敏捷', AttrDefs.categories.AMPLIFY, 220, 'fixed1', { derived_output = true }),
+  define_attr('最终智力', AttrDefs.categories.AMPLIFY, 230, 'fixed1', { derived_output = true }),
+  define_attr('最终攻击', AttrDefs.categories.AMPLIFY, 240, 'percent', { is_ratio = true }),
+  define_attr('最终生命', AttrDefs.categories.AMPLIFY, 250, 'percent', { is_ratio = true }),
+  define_attr('最终护甲', AttrDefs.categories.AMPLIFY, 260, 'percent', { is_ratio = true }),
+  define_attr('攻击结算值', AttrDefs.categories.AMPLIFY, 265, 'fixed1', { derived_output = true, persist = false }),
+  define_attr('生命结算值', AttrDefs.categories.AMPLIFY, 266, 'fixed1', { derived_output = true, persist = false }),
+  define_attr('护甲结算值', AttrDefs.categories.AMPLIFY, 267, 'fixed1', { derived_output = true, persist = false }),
+  define_attr('最终力量增幅', AttrDefs.categories.AMPLIFY, 270, 'percent', { is_ratio = true }),
+  define_attr('最终敏捷增幅', AttrDefs.categories.AMPLIFY, 280, 'percent', { is_ratio = true }),
+  define_attr('最终智力增幅', AttrDefs.categories.AMPLIFY, 290, 'percent', { is_ratio = true }),
+  define_attr('精控伤害', AttrDefs.categories.OTHER, 40, 'percent', { is_ratio = true }),
+  define_attr('燃烧伤害', AttrDefs.categories.OTHER, 50, 'percent', { is_ratio = true }),
+  define_attr('百分比恢复', AttrDefs.categories.OTHER, 60, 'percent', { is_ratio = true }),
+  define_attr('穿透次数', AttrDefs.categories.OTHER, 70, 'integer'),
+  define_attr('挑战伤害', AttrDefs.categories.OTHER, 110, 'percent', { is_ratio = true }),
+  define_attr('冻结伤害', AttrDefs.categories.OTHER, 120, 'percent', { is_ratio = true }),
+  define_attr('恢复效果', AttrDefs.categories.OTHER, 130, 'percent', { is_ratio = true }),
+  define_attr('卡牌增幅', AttrDefs.categories.OTHER, 140, 'percent', { is_ratio = true }),
+}
+
+AttrDefs.by_name = {}
+AttrDefs.default_values = {}
+for _, def in ipairs(AttrDefs.list) do
+  AttrDefs.by_name[def.name] = def
+  AttrDefs.default_values[def.name] = def.default or 0
+end
+
+local LOG_ATTR_ORDER = {
+  '攻击', '攻击白字', '攻击绿字', '攻击速度', '攻击范围', '生命', '护甲', '护甲白字', '护甲绿字',
+  '力量', '力量白字', '力量绿字', '敏捷', '敏捷白字', '敏捷绿字', '智力', '智力白字', '智力绿字',
+  '最终攻击', '最终生命', '最终护甲', '攻击结算值', '生命结算值', '护甲结算值',
+}
+
+local function round_number(value)
+  return math.floor((tonumber(value) or 0) + 0.5)
+end
+
+local function format_log_value(name, value)
+  local number = tonumber(value) or 0
+  if name == '最终攻击' or name == '最终生命' or name == '最终护甲' then
+    if math.abs(number) <= 1 then
+      number = number * 100
+    end
+    return string.format('%d%%', round_number(number))
+  end
+  return tostring(round_number(number))
+end
+
+function AttrLog.emit(label, snapshot, extra)
+  if AttrLog.enabled ~= true then
+    return
+  end
+  local parts = { string.format('[hero_attr] %s', tostring(label or 'snapshot')) }
+  for _, name in ipairs(LOG_ATTR_ORDER) do
+    parts[#parts + 1] = string.format('%s=%s', name, format_log_value(name, snapshot and snapshot[name] or 0))
+  end
+  if extra and extra ~= '' then
+    parts[#parts + 1] = tostring(extra)
+  end
+  local line = table.concat(parts, ' | ')
+  if log and log.info then
+    log.info(line)
+    return
+  end
+  print(line)
+end
 
 local function normalize_ratio(value)
   local number = tonumber(value) or 0
@@ -596,6 +776,84 @@ function M.set_main_stat_attack_ratio(value)
   end
   MAIN_STAT_ATTACK_RATIO = number
   return true
+end
+
+local function format_number(value, digits)
+  local number = tonumber(value) or 0
+  digits = digits or 0
+  if digits <= 0 then
+    return tostring(math.floor(number + 0.5))
+  end
+  local text = string.format('%.' .. tostring(digits) .. 'f', number)
+  text = text:gsub('(%..-)0+$', '%1'):gsub('%.$', '')
+  return text
+end
+
+local function format_panel_value(def, value)
+  local format_kind = def and def.format or 'fixed1'
+  if format_kind == 'integer' then
+    return format_number(value, 0)
+  end
+  if format_kind == 'fixed2' then
+    return format_number(value, 2)
+  end
+  if format_kind == 'fixed1' then
+    return format_number(value, 1)
+  end
+  if format_kind == 'percent' or format_kind == 'percent_or_zero' then
+    local ratio = tonumber(value) or 0
+    if math.abs(ratio) <= 1 then
+      ratio = ratio * 100
+    end
+    return format_number(ratio, 1) .. '%'
+  end
+  return format_number(value, 1)
+end
+
+local function panel_line(snapshot, name, label, get_fallback_value)
+  local value = snapshot and snapshot[name] or nil
+  if value == nil and get_fallback_value then
+    value = get_fallback_value(name)
+  end
+  local def = AttrDefs.by_name[name] or { format = 'fixed1' }
+  return string.format('%s：%s', label or name, format_panel_value(def, value))
+end
+
+function M.build_panel_chunks(snapshot, get_fallback_value)
+  if not snapshot then
+    return { '属性面板暂不可用' }
+  end
+  local lines = {
+    '属性面板',
+    '',
+    panel_line(snapshot, '每秒攻击', '攻击成长', get_fallback_value),
+    panel_line(snapshot, '每秒生命', '生命成长', get_fallback_value),
+    panel_line(snapshot, '攻击范围', '攻击范围', get_fallback_value),
+    panel_line(snapshot, '多重数量', '多重数量', get_fallback_value),
+    panel_line(snapshot, '生命恢复', '生命恢复', get_fallback_value),
+    panel_line(snapshot, '攻击速度', '攻击速度', get_fallback_value),
+    panel_line(snapshot, '闪避', '闪避概率', get_fallback_value),
+    panel_line(snapshot, '命中', '命中概率', get_fallback_value),
+    panel_line(snapshot, '护甲穿透', '护甲穿透', get_fallback_value),
+    panel_line(snapshot, '物理暴击', '物理暴击', get_fallback_value),
+    panel_line(snapshot, '物理暴伤', '物理暴伤', get_fallback_value),
+    panel_line(snapshot, '魔法暴击', '魔法暴击', get_fallback_value),
+    panel_line(snapshot, '魔法暴伤', '魔法暴伤', get_fallback_value),
+    panel_line(snapshot, '普攻伤害', '普攻伤害', get_fallback_value),
+    panel_line(snapshot, '物理伤害', '物理伤害', get_fallback_value),
+    panel_line(snapshot, '魔法伤害', '魔法伤害', get_fallback_value),
+    panel_line(snapshot, '最终伤害', '最终伤害', get_fallback_value),
+    panel_line(snapshot, '伤害减免', '伤害减免', get_fallback_value),
+    panel_line(snapshot, '杀敌经验', '经验加成', get_fallback_value),
+    panel_line(snapshot, '杀敌金币', '金币加成', get_fallback_value),
+    panel_line(snapshot, '挑战伤害', 'BOSS增伤', get_fallback_value),
+    panel_line(snapshot, '精控伤害', '精英增伤', get_fallback_value),
+  }
+  return { table.concat(lines, '\n') }
+end
+
+function M.get_defs()
+  return AttrDefs
 end
 
 return M

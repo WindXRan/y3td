@@ -1,5 +1,5 @@
 local a=(require'data.game_tables').hero_roster
-local b=require'data.tables.hero_form_skills'
+local b=require'data.tables.hero.hero_form_skills'
 local c={}function c.create(d)local e=d.STATE;
 local f=d.y3;
 local g=d.message or function()end;
@@ -31,7 +31,7 @@ local function E()local F=C()if not F or not a or type(a)~='table' or type(a.by_
 return a.by_unit_id[F]end;
 local function G()local H=E()if not H or not b or type(b)~='table' or type(b.by_hero_id)~='table' then return nil,nil end;
 return b.by_hero_id[H.id],H end;
-local function I(H,J)if not H or not J then return end;g(string.format('当前专精：[%s] %s，专精「%s」已生效。',tostring(H.rarity or'?'),tostring(H.name or H.id),tostring(J.name or J.id)))end;
+local function I(H,J)if not H or not J then return end;g(string.format('????????[%s] %s???????%s??????Ч??',tostring(H.rarity or'?'),tostring(H.name or H.id),tostring(J.name or J.id)))end;
 local function K(J)return t().cooldowns[J.id]or 0 end;
 local function L(J,M)t().cooldowns[J.id]=math.max(0,M or 0)end;
 local function N(J,O)local v=t()v.counters[J.id]=(v.counters[J.id]or 0)+(O or 0)return v.counters[J.id]end;
@@ -41,16 +41,16 @@ local function U(V,W)if not e.hero or not e.hero.is_exist or not e.hero:is_exist
 local i=j and j.get_attr(e.hero,V)or e.hero:get_attr(V)i=f.helper.tonumber(i)or 0;
 if i>0 or not W then return i end;
 local X=j and j.get_attr(e.hero,W)or e.hero:get_attr(W)return f.helper.tonumber(X)or 0 end;
-local function Y()return math.max(1,U('攻击结算值','攻击'))end;
-local function Z()local i=U('生命结算值','生命')if i>0 then return i end;
-return math.max(1,U('最大生命'))end;
+local function Y()return math.max(1,U('?????????','????'))end;
+local function Z()local i=U('?????????','????')if i>0 then return i end;
+return math.max(1,U('???????'))end;
 local function _(a0)if not a0 or not a0.is_exist or not a0:is_exist()then return 1 end;
-local a1=f.helper.tonumber(a0:get_attr('生命'))or f.helper.tonumber(a0:get_attr('最大生命'))or 0;
+local a1=f.helper.tonumber(a0:get_attr('????'))or f.helper.tonumber(a0:get_attr('???????'))or 0;
 if a1<=0 then return 1 end;
 return math.max(0,(a0:get_hp()or 0)/a1)end;
 local function a2(a0)if not a0 or not m then return false end;
 local B=m(a0)return n and n(B)or o and o(B)or false end;
-local function a3(J)return{damage_type=J.damage_type or'法术',damage_form=J.damage_form or'spell',element=J.element or'none',damage_label=J.damage_label or'专精伤害'}end;
+local function a3(J)return{damage_type=J.damage_type or'????',damage_form=J.damage_form or'spell',element=J.element or'none',damage_label=J.damage_label or'??????'}end;
 local function a4(J,a5,a0)local a6=Y()*math.max(0,a5 or 0)if(J.boss_bonus_ratio or 0)>0 and a2(a0)then a6=a6*(1+(J.boss_bonus_ratio or 0))end;
 return math.max(0,a6)end;
 local function a7(J,a0,a5)if not a0 or not k(a0)then return false end;
@@ -130,9 +130,9 @@ function s.handle_enemy_kill(B)local J=aO()if not J or J.trigger_type~='enemy_ki
 local aR=math.max(1,h(J.trigger_value or 1))if N(J,1)>=aR and aL(J,{info=B,point=A(B)})then P(J)end end;
 function s.get_active_entry()local ah,H=G()return H end;
 function s.get_active_skill()local J=G()return J end;
-function s.force_cast_skill(skill_id,target,point)local J=b.by_id[tostring(skill_id or '')]if not J then return false,'未找到专精技能：'..tostring(skill_id)end;
-local ok=aL(J,{target=target,point=point})if not ok then return false,'专精技能触发失败：'..tostring(J.name or J.id)end;
-return true,'专精技能已触发：'..tostring(J.name or J.id)end;
+function s.force_cast_skill(skill_id,target,point)local J=b.by_id[tostring(skill_id or '')]if not J then return false,'δ???????????'..tostring(skill_id)end;
+local ok=aL(J,{target=target,point=point})if not ok then return false,'??????????????'..tostring(J.name or J.id)end;
+return true,'??????????????'..tostring(J.name or J.id)end;
 function s.get_roster()return a end;
 function s.get_skill_defs()return b end;
 return s end;

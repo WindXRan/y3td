@@ -1,4 +1,11 @@
 {
   "files.encoding": "utf8",
-  "files.autoGuessEncoding": true
+  "files.autoGuessEncoding": true,
+  "python-envs.pythonProjects": [
+    {
+      "path": "maps/EntryMap/script/data_csv/by_feature/hero",
+      "envManager": "ms-python.python:venv",
+      "packageManager": "ms-python.python:pip"
+    }
+  ]
 }

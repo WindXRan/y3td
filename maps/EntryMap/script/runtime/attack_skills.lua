@@ -1,8 +1,8 @@
-﻿local PresentationProfiles = require 'data.tables.attack_skill_presentation_profiles'
+﻿local PresentationProfiles = require 'data.tables.skill.attack_skill_presentation_profiles'
 local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
-local SkillRuntimeTuning = require 'data.tables.skill_runtime_tuning'
+local SkillRuntimeTuning = require 'data.tables.skill.skill_runtime_tuning'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
-local SkillDamageTemplateConfig = require 'data.tables.skill_damage_templates'
+local SkillDamageTemplateConfig = require 'data.tables.skill.skill_damage_templates'
 
 local M = {}
 
@@ -2764,4 +2764,5 @@ function M.create(env)
 end
 
 return M
+
 

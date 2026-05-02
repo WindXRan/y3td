@@ -1,8 +1,8 @@
 ﻿local CsvLoader = require 'data.csv_loader'
-local AttrEffect = require 'data.tables.attreffect'
-local MonsterMaintask = require 'data.tables.monster_maintask'
-local hero_attr_config = require 'data.tables.hero_attr_config'
-local hero_level_progression = require 'data.tables.hero_level_progression'
+local AttrEffect = require 'data.tables.skill.attreffect'
+local MonsterMaintask = require 'data.tables.battle.monster_maintask'
+local hero_attr_config = require 'data.tables.hero.hero_attr_config'
+local hero_level_progression = require 'data.tables.hero.hero_level_progression'
 
 local M = {}
 
@@ -261,3 +261,4 @@ table.sort(mainline_list, function(a,b) if (a.chapter_id or 0)==(b.chapter_id or
 M.mainline_task_rewards = { list = mainline_list, by_id = list_to_map(mainline_list) }
 
 return M
+

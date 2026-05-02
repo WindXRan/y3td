@@ -52,6 +52,10 @@ function M.create(env)
   end
 
   local function try_refresh_battle_ui()
+    if STATE.runtime_ui_refresh_disabled == true then
+      return false
+    end
+
     local ok, err = pcall(function()
       if ensure_runtime_hud then
         ensure_runtime_hud()
@@ -88,6 +92,22 @@ function M.create(env)
     end
 
     local err_text = tostring(err)
+    local is_event_key_error = err_text:find('KeyError', 1, true) ~= nil
+      and (
+        err_text:find('左键', 1, true) ~= nil
+        or err_text:find('鼠标', 1, true) ~= nil
+        or err_text:find('\\xd7\\xf3\\xbc\\xfc', 1, true) ~= nil
+        or err_text:find('\\xca\\xf3\\xb1\\xea', 1, true) ~= nil
+      )
+    if is_event_key_error then
+      STATE.runtime_ui_refresh_disabled = true
+      print(string.format(
+        '[runtime.loops] battle ui refresh disabled due to unsupported ui event key: %s',
+        err_text
+      ))
+      return false
+    end
+
     if STATE.runtime_ui_fault_logged ~= true or STATE.runtime_ui_fault_message ~= err_text then
       print(string.format('[runtime.loops] battle ui refresh failed, gameplay continues: %s', err_text))
     end

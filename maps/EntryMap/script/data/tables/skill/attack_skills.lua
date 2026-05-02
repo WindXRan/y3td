@@ -1,9 +1,9 @@
 ﻿local CsvLoader = require 'data.csv_loader'
 local helpers = require 'data.tables.helpers'
-local SecondBatchBlueprints = require 'data.tables.attack_skill_second_batch_blueprints'
-local SkillTaxonomy = require 'data.tables.attack_skill_taxonomy'
+local SecondBatchBlueprints = require 'data.tables.skill.attack_skill_second_batch_blueprints'
+local SkillTaxonomy = require 'data.tables.skill.attack_skill_taxonomy'
 local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
-local BondEffectRuntimeRules = require 'data.tables.bond_effect_runtime_rules'
+local BondEffectRuntimeRules = require 'data.tables.bond.bond_effect_runtime_rules'
 local Json = require 'y3.tools.json'
 
 local skill_rows = CsvLoader.read_rows_optional('data_csv/attack_skills.csv')
@@ -443,5 +443,6 @@ return {
   blueprints = SecondBatchBlueprints,
   blueprint_by_id = helpers.list_to_map(SecondBatchBlueprints.list),
 }
+
 
 

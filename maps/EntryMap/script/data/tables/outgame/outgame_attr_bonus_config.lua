@@ -1,4 +1,4 @@
-﻿local AttrEffect = require 'data.tables.attreffect'
+﻿local AttrEffect = require 'data.tables.skill.attreffect'
 
 local rows = AttrEffect.by_source.outgame_bonus or {}
 
@@ -44,4 +44,5 @@ return {
   list = list,
   by_stage_mode = by_stage_mode,
 }
+
 

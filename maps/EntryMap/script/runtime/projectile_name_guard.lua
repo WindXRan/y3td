@@ -1,5 +1,5 @@
 ﻿local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
-local SkillVisuals = require 'data.tables.skill_visuals'
+local SkillVisuals = require 'data.tables.skill.skill_visuals'
 
 local M = {}
 
@@ -65,5 +65,6 @@ function M.validate(env, extra_ids)
 end
 
 return M
+
 
 

@@ -1,4 +1,4 @@
-﻿local AttrEffect = require 'data.tables.attreffect'
+﻿local AttrEffect = require 'data.tables.skill.attreffect'
 local HeroRoster = (require 'data.game_tables').hero_roster
 local helpers = require 'data.tables.helpers'
 
@@ -83,6 +83,7 @@ return {
   list = list,
   by_id = helpers.list_to_map(list),
 }
+
 
 
 

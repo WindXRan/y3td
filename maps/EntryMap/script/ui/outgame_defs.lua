@@ -1,7 +1,8 @@
 ﻿local M = {}
-local HonorLevels = require 'data.tables.honor_levels'
-local EquipmentCatalog = require 'data.tables.equipment_catalog'
-local ShopItems = require 'data.tables.shop_items'
+local EquipmentCatalog = require 'data.tables.economy.equipment_catalog'
+local ShopItems = require 'data.tables.economy.shop_items'
+local Consumables = require 'data.tables.economy.consumables'
+local QualityImageTable = require 'data.tables.economy.quality_image_table'
 
 local function build_universal_specs()
   local specs = {
@@ -43,10 +44,6 @@ local function build_universal_specs()
     },
   }
 
-  if #HonorLevels.list > 0 then
-    specs.map = HonorLevels.list
-  end
-
   return specs
 end
 
@@ -79,7 +76,187 @@ local function build_outgame_detail_config(config)
   }
 end
 
+local function build_archive_shop_specs(shop_items)
+  local list = {}
+  local by_key = {}
+  local primary_tabs = {}
+  local primary_seen = {}
+  local categories = {}
+  local category_seen = {}
+  local categories_by_primary = {}
+  local function resolve_bg_by_quality(quality, fallback_bg)
+    return QualityImageTable.get_frame_image(quality) or fallback_bg or shop_items.default_bg or 131166
+  end
+
+  local PRIMARY_ORDER = { '商品', '仓库', '皮肤', '翅膀', '荣誉等级', '地图等级', '典藏积分' }
+  local function classify_primary(spec)
+    local configured_primary = tostring(spec.primary or '')
+    if configured_primary ~= '' then
+      return configured_primary
+    end
+    local title = tostring(spec.title or '')
+    local category = tostring(spec.category or '')
+    local source = tostring(spec.source or '')
+    if title:find('皮肤', 1, true) or category:find('皮肤', 1, true) then
+      return '皮肤'
+    end
+    if title:find('翅膀', 1, true) or category:find('翅膀', 1, true) then
+      return '翅膀'
+    end
+    if title:find('荣誉', 1, true) or category:find('荣誉', 1, true) then
+      return '荣誉等级'
+    end
+    if title:find('积分', 1, true) or category:find('积分', 1, true) then
+      return '荣誉等级'
+    end
+    if title:find('地图等级', 1, true) or category:find('地图等级', 1, true) then
+      return '地图等级'
+    end
+    return '商品'
+  end
+
+  local function normalize_category(spec)
+    local categories = spec.categories
+    if type(categories) == 'table' and #categories > 0 then
+      return tostring(categories[1] or '全部')
+    end
+    local category = tostring(spec.category or '')
+    if category == '' then
+      return '全部'
+    end
+    return category
+  end
+
+  local function push_spec(spec)
+    if not spec or not spec.key or by_key[spec.key] then
+      return
+    end
+    local primary = classify_primary(spec)
+    local category = normalize_category(spec)
+    local category_list = (type(spec.categories) == 'table' and spec.categories) or { category }
+    spec.primary = primary
+    spec.category = category
+    spec.categories = category_list
+    list[#list + 1] = spec
+    by_key[spec.key] = spec
+    if primary_seen[primary] ~= true then
+      primary_seen[primary] = true
+      primary_tabs[#primary_tabs + 1] = primary
+    end
+    categories_by_primary[primary] = categories_by_primary[primary] or {}
+    local by_primary_seen = categories_by_primary[primary .. '__seen'] or {}
+    for _, one in ipairs(category_list) do
+      local c = tostring(one or '')
+      if c ~= '' and by_primary_seen[c] ~= true then
+        by_primary_seen[c] = true
+        categories_by_primary[primary][#categories_by_primary[primary] + 1] = c
+      end
+    end
+    categories_by_primary[primary .. '__seen'] = by_primary_seen
+    for _, one in ipairs(category_list) do
+      local c = tostring(one or '')
+      if c ~= '' and category_seen[c] ~= true then
+        category_seen[c] = true
+        categories[#categories + 1] = c
+      end
+    end
+  end
+
+  for _, spec in ipairs(shop_items.list or {}) do
+    spec.bg = spec.bg or resolve_bg_by_quality(spec.quality, shop_items.default_bg)
+    spec.default_bg = spec.default_bg or shop_items.default_bg or 131166
+    push_spec(spec)
+  end
+  for _, spec in ipairs(Consumables.list or {}) do
+    push_spec({
+      key = spec.key,
+      node = spec.node or spec.key,
+      index = spec.id or 0,
+      title = spec.title,
+      icon = spec.icon or shop_items.default_icon or 906565,
+      bg = spec.bg or resolve_bg_by_quality(spec.quality, shop_items.default_bg),
+      default_icon = shop_items.default_icon or 906565,
+      default_bg = shop_items.default_bg or 131166,
+      attr_text = '',
+      value_text = '',
+      special_effect = spec.special_effect or '',
+      obtain = spec.obtain or '商城购买',
+      owned_text = spec.owned_text or '未拥有',
+      stackable = true,
+      quality = spec.quality or 'N',
+      primary = '仓库',
+      category = '全部',
+      attr_lines = spec.attr_lines or {},
+      line_1 = spec.line_1 or '',
+      line_2 = spec.line_2 or '',
+      line_3 = spec.line_3 or '',
+      source = 'consumables',
+    })
+  end
+
+  local ordered_primary_tabs = {}
+  local ordered_seen = {}
+  for _, primary in ipairs(PRIMARY_ORDER) do
+    if primary_seen[primary] == true then
+      ordered_primary_tabs[#ordered_primary_tabs + 1] = primary
+      ordered_seen[primary] = true
+    end
+  end
+
+  for _, primary in ipairs(primary_tabs) do
+    if ordered_seen[primary] ~= true then
+      ordered_primary_tabs[#ordered_primary_tabs + 1] = primary
+    end
+  end
+
+  for key in pairs(categories_by_primary) do
+    if tostring(key):sub(-6) == '__seen' then
+      categories_by_primary[key] = nil
+    end
+  end
+
+  return {
+    list = list,
+    by_key = by_key,
+    primary_tabs = ordered_primary_tabs,
+    categories = categories,
+    categories_by_primary = categories_by_primary,
+    primary_tab = ordered_primary_tabs[1] or '商品',
+    default_icon = shop_items.default_icon or 906565,
+  }
+end
+
+local function build_honor_level_specs_from_shop(shop_specs)
+  local list = {}
+  for _, spec in ipairs(shop_specs or {}) do
+    if spec.primary == '典藏积分' or spec.primary == '荣誉等级' then
+      list[#list + 1] = {
+        key = spec.key,
+        node = spec.node,
+        level = tonumber(spec.index) or (#list + 1),
+        title = spec.title,
+        icon = spec.icon,
+        quality = spec.quality,
+        obtain = spec.obtain,
+        extra_effect = spec.special_effect,
+        initial_unlocked = tostring(spec.owned_text or '') == '已拥有',
+        attr_lines = spec.attr_lines or {},
+        line_1 = spec.line_1 or '',
+        line_2 = spec.line_2 or '',
+        line_3 = spec.line_3 or '',
+        source = 'shop_item',
+      }
+    end
+  end
+  table.sort(list, function(a, b)
+    return (a.level or 0) < (b.level or 0)
+  end)
+  return list
+end
+
 function M.create(config)
+  local merged_shop = build_archive_shop_specs(ShopItems)
+  local honor_level_specs = build_honor_level_specs_from_shop(merged_shop.list)
   return {
     stage_list = config.stages and config.stages.list or {},
     stages_by_id = config.stages and config.stages.by_id or {},
@@ -134,24 +311,23 @@ function M.create(config)
     archive_universal_item_specs = build_universal_specs(),
     archive_universal_tab_labels = {
       pass = '通关',
-      map = #HonorLevels.list > 0 and '荣誉' or '地图',
+      map = '地图',
       community = '社区',
       achievement = '成就',
       lottery = '抽奖',
       test = '测试',
       fish = '捕鱼',
     },
-    honor_level_specs = HonorLevels.list,
+    honor_level_specs = honor_level_specs,
     archive_pool_item_specs = build_pool_specs(),
-    archive_shop_item_specs = ShopItems.list,
-    archive_shop_primary_tab = ShopItems.primary_tab,
-    archive_shop_primary_tabs = ShopItems.primary_tabs or {},
-    archive_shop_categories = ShopItems.categories,
-    archive_shop_categories_by_primary = ShopItems.categories_by_primary or {},
-    archive_shop_default_icon = ShopItems.default_icon,
+    archive_shop_item_specs = merged_shop.list,
+    archive_shop_primary_tab = merged_shop.primary_tab,
+    archive_shop_primary_tabs = merged_shop.primary_tabs or {},
+    archive_shop_categories = merged_shop.categories,
+    archive_shop_categories_by_primary = merged_shop.categories_by_primary or {},
+    archive_shop_default_icon = merged_shop.default_icon,
     outgame_detail_config = build_outgame_detail_config(config),
   }
 end
 
 return M
-

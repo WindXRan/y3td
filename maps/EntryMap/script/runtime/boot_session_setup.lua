@@ -73,6 +73,19 @@ function M.create(ctx)
     message = ctx.message,
     round_number = ctx.round_number,
     get_player = ctx.get_player,
+    open_hero_tujian = function()
+      local hud = ctx.get_runtime_hud_system and ctx.get_runtime_hud_system() or nil
+      if hud and hud.toggle_hero_tujian then
+        return hud.toggle_hero_tujian()
+      end
+      return false
+    end,
+    open_bond_album = function()
+      if ctx.open_bond_card_album then
+        return ctx.open_bond_card_album()
+      end
+      return false
+    end,
     stage_runtime = {
       get_current_stage_text = function()
         if ctx.STATE.current_stage_def and (ctx.STATE.current_stage_def.display_label or ctx.STATE.current_stage_def.display_name) then

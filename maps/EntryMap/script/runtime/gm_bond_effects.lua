@@ -1,9 +1,9 @@
 ﻿local M = {}
 
 local UiRoot = require 'ui.ui_root'
-local BondModifierPool = require 'data.tables.bond_modifier_pool'
-local SkillVisuals = require 'data.tables.skill_visuals'
-local SkillRuntimeTuning = require 'data.tables.skill_runtime_tuning'
+local BondModifierPool = require 'data.tables.bond.bond_modifier_pool'
+local SkillVisuals = require 'data.tables.skill.skill_visuals'
+local SkillRuntimeTuning = require 'data.tables.skill.skill_runtime_tuning'
 local CsvLoader = require 'data.csv_loader'
 
 local BOND_GM_TEXT = SkillRuntimeTuning and SkillRuntimeTuning.bond and SkillRuntimeTuning.bond.gm or {}

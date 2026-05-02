@@ -1,16 +1,14 @@
 ﻿local M = {}
 
-local BondNodes = require 'data.tables.bond_nodes'
+local BondNodes = require 'data.tables.bond.bond_nodes'
 local BondTipModelBuilder = require 'runtime.bond_tip_model_builder'
 local BondTemplates = require 'runtime.bond_templates.init'
 local BondBonusPack = require 'runtime.bond_bonus_pack'
-local BondDrawConfig = require 'data.tables.bond_draw_config'
-local BondMiscConfig = require 'data.tables.bond_misc_config'
-local BondPickConfig = require 'data.tables.bond_pick_config'
-local BondModifierPool = require 'data.tables.bond_modifier_pool'
+local BondEffectRuntimeRules = require 'data.tables.bond.bond_effect_runtime_rules'
+local BondModifierPool = require 'data.tables.bond.bond_modifier_pool'
 local BondModifierEffects = require 'runtime.bond_modifier_effects'
-local SkillRuntimeTuning = require 'data.tables.skill_runtime_tuning'
-local SkillVisuals = require 'data.tables.skill_visuals'
+local SkillRuntimeTuning = require 'data.tables.skill.skill_runtime_tuning'
+local SkillVisuals = require 'data.tables.skill.skill_visuals'
 
 local NODE_LIST = BondNodes.list
 local NODE_BY_ID = BondNodes.by_id
@@ -21,6 +19,10 @@ local ROOT_SUBTREE_NODE_IDS = {}
 local ROOT_SET_PROGRESS_NODE_IDS = {}
 local ROOT_STAGE_NODE_IDS = {}
 local ROOT_STAGE_TIERS = {}
+
+local BondDrawConfig = BondEffectRuntimeRules.draw or {}
+local BondMiscConfig = BondEffectRuntimeRules.misc or {}
+local BondPickConfig = BondEffectRuntimeRules.pick or {}
 
 local BOND_DRAW_COST = BondDrawConfig.draw_cost or 100
 local SYSTEM_DYNAMIC_NODE_ID = '__system__'
@@ -2975,5 +2977,6 @@ M.debug_activate_single_modifier_skill = M.debug_activate_single_modifier_bond
 M.debug_clear_active_modifier_skills = M.debug_clear_active_modifier_bonds
 
 return M
+
 
 

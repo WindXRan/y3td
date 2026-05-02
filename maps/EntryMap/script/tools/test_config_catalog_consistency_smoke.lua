@@ -1,7 +1,7 @@
 ﻿package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
 local CsvLoader = require 'data.csv_loader'
-local attreffect = require 'data.tables.attreffect'
+local attreffect = require 'data.tables.skill.attreffect'
 local waves = (require 'data.game_tables').waves
 local challenges = (require 'data.game_tables').challenges
 local battlefield_scene_config = (require 'data.game_tables').battlefield_scene_config
@@ -135,5 +135,6 @@ for _, challenge in ipairs(challenges.list or {}) do
 end
 
 print('[OK] config catalog consistency smoke passed')
+
 
 

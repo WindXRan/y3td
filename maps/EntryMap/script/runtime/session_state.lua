@@ -1,4 +1,4 @@
-﻿local EquipmentCatalog = require 'data.tables.equipment_catalog'
+﻿local EquipmentCatalog = require 'data.tables.economy.equipment_catalog'
 
 local M = {}
 
@@ -186,11 +186,13 @@ function M.create(env)
 
     local err_text = tostring(err)
     if STATE.runtime_ui_fault_logged ~= true or STATE.runtime_ui_fault_message ~= err_text then
-      print(string.format('[session_state] battle ui init failed, abort stage start: %s', err_text))
+      print(string.format('[session_state] battle ui init failed, continue with degraded ui: %s', err_text))
     end
     STATE.runtime_ui_fault_logged = true
     STATE.runtime_ui_fault_message = err_text
-    return false
+    -- 降级策略：UI 初始化异常不再阻断开局，避免事件名字典差异导致无法进入战斗。
+    -- 相关点击交互可能失效，但战斗主流程应继续可玩。
+    return true
   end
 
   local function rollback_stage_start(text)
@@ -318,4 +320,5 @@ function M.create(env)
 end
 
 return M
+
 

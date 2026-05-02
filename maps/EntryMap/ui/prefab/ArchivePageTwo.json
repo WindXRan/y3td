@@ -265,13 +265,13 @@
                 }, 
                 "hover_status_added": false, 
                 "is_scale9_enable": false, 
-                "name": "button_1", 
+                "name": "button", 
                 "normal_cap_insets": {
                     "__tuple__": true, 
                     "items": [
-                        72.0, 
+                        86.0, 
                         28.0, 
-                        72.0, 
+                        86.0, 
                         28.0
                     ]
                 }, 
@@ -293,7 +293,7 @@
                         255
                     ]
                 }, 
-                "normal_picture": 133069, 
+                "normal_picture": 131160, 
                 "normal_text": {
                     "__tuple__": true, 
                     "items": [
@@ -314,14 +314,14 @@
                         0
                     ]
                 }, 
-                "prefab_sub_key": "72599b6b-18a7-4b56-8ff1-4b8d8e89e095", 
+                "prefab_sub_key": "b3fa5059-665e-492a-9a2f-50bd3b6b0cc0", 
                 "press_cap_insets": {
                     "__tuple__": true, 
                     "items": [
-                        60.0, 
-                        29.0, 
-                        60.0, 
-                        29.0
+                        24, 
+                        8, 
+                        24, 
+                        8
                     ]
                 }, 
                 "press_color": {
@@ -342,7 +342,7 @@
                         255
                     ]
                 }, 
-                "press_picture": 133074, 
+                "press_picture": 106390, 
                 "press_text": {
                     "__tuple__": true, 
                     "items": [
@@ -420,7 +420,7 @@
                         "type": 45
                     }
                 }, 
-                "pressed_status_added": true, 
+                "pressed_status_added": false, 
                 "rotation": 0, 
                 "scale": {
                     "__tuple__": true, 
@@ -436,7 +436,7 @@
                     "__tuple__": true, 
                     "items": [
                         120.0, 
-                        50.0
+                        40.0
                     ]
                 }, 
                 "suspend_cap_insets": {
@@ -519,7 +519,7 @@
                 "font": {
                     "__tuple__": true, 
                     "items": [
-                        "HKYuanW5", 
+                        "HKYuanW9", 
                         24
                     ]
                 }, 
@@ -527,8 +527,8 @@
                     "__tuple__": true, 
                     "items": [
                         254, 
-                        211, 
-                        56, 
+                        254, 
+                        254, 
                         254
                     ]
                 }, 
@@ -590,7 +590,7 @@
                         0
                     ]
                 }, 
-                "name": "label_1", 
+                "name": "label", 
                 "opacity": 1.0, 
                 "open_adapter": false, 
                 "over_pattern": false, 
@@ -605,7 +605,7 @@
                         0
                     ]
                 }, 
-                "prefab_sub_key": "805c5391-0ce4-4361-b201-6a6e5db8b440", 
+                "prefab_sub_key": "8dc3512c-2137-4f2e-9cab-da4d1260da51", 
                 "review_word": false, 
                 "rotation": 0, 
                 "scale": {
@@ -620,8 +620,8 @@
                 "size": {
                     "__tuple__": true, 
                     "items": [
-                        302.0, 
-                        100.0
+                        155.30711286102294, 
+                        28.482518095669217
                     ]
                 }, 
                 "strike_through": false, 
@@ -639,7 +639,7 @@
                 "text": {
                     "__tuple__": true, 
                     "items": [
-                        "SSR", 
+                        "\u5730\u56fe", 
                         false
                     ]
                 }, 

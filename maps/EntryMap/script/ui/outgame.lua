@@ -1,8 +1,9 @@
 ﻿local theme = require 'ui.theme'
 local outgame_defs = require 'ui.outgame_defs'
-local QualityImageTable = require 'data.tables.quality_image_table'
+local QualityImageTable = require 'data.tables.economy.quality_image_table'
 local ArchiveShop = require 'ui.outgame_archive_shop'
 local OutgameHeroGrowth = require 'runtime.outgame_hero_growth'
+local ArchiveRankingTabs = require 'data.tables.outgame.archive_ranking_tabs'
 
 local M = {}
 
@@ -23,6 +24,7 @@ function M.create(env)
     and CONFIG.outgame_attr_bonus_config.by_stage_mode
     or {}
   local OUTGAME_DEFS = outgame_defs.create(CONFIG)
+  local RANKING_TABS = ArchiveRankingTabs.list or {}
   local OUTGAME_TOP_ENTRY_LIST = CONFIG.outgame_top_entry_list and CONFIG.outgame_top_entry_list.list or {}
   local OUTGAME_DETAIL_CONFIG = OUTGAME_DEFS.outgame_detail_config or {}
   local HONOR_LEVEL_SPECS = OUTGAME_DEFS.honor_level_specs or {}
@@ -92,6 +94,7 @@ function M.create(env)
   local refresh_ui
   local ensure_archive_panel_ui
   local refresh_archive_panel_ui
+  local set_archive_panel_visible
   local is_outgame_ui_alive
   local ui_retry_timer = nil
   local ui_retry_remaining = 0
@@ -189,6 +192,24 @@ function M.create(env)
       ui:set_z_order(z_order)
     end
   end
+  local ARCHIVE_PANEL_Z_ORDER = 9800
+  local function ensure_archive_panel_on_top(ui)
+    if not ui then
+      return
+    end
+    set_z_order_if_alive(ui.root, ARCHIVE_PANEL_Z_ORDER)
+    set_z_order_if_alive(ui.overlay, ARCHIVE_PANEL_Z_ORDER + 1)
+    set_z_order_if_alive(ui.window, ARCHIVE_PANEL_Z_ORDER + 1)
+    set_z_order_if_alive(ui.layout, ARCHIVE_PANEL_Z_ORDER + 2)
+    set_z_order_if_alive(ui.layout_bg, ARCHIVE_PANEL_Z_ORDER + 2)
+    set_z_order_if_alive(ui.panel_main, ARCHIVE_PANEL_Z_ORDER + 3)
+    set_z_order_if_alive(ui.panel_ranking, ARCHIVE_PANEL_Z_ORDER + 3)
+    set_z_order_if_alive(ui.panel_idle, ARCHIVE_PANEL_Z_ORDER + 3)
+    set_z_order_if_alive(ui.panel_start, ARCHIVE_PANEL_Z_ORDER + 3)
+    set_z_order_if_alive(ui.panel_battlepass, ARCHIVE_PANEL_Z_ORDER + 3)
+    set_z_order_if_alive(ui.layout_title, ARCHIVE_PANEL_Z_ORDER + 4)
+    set_z_order_if_alive(ui.layout_exit, ARCHIVE_PANEL_Z_ORDER + 4)
+  end
 
   local function set_parent_if_alive(ui, parent_ui)
     if is_ui_alive(ui) and is_ui_alive(parent_ui) and ui.set_ui_comp_parent and parent_ui.handle then
@@ -243,6 +264,128 @@ function M.create(env)
   local function set_image_url_if_alive(ui, url, aid)
     if is_ui_alive(ui) and ui.set_image_url and type(url) == 'string' and url ~= '' then
       ui:set_image_url(url, aid)
+    end
+  end
+
+  local function get_ranking_rows_for_tab(tab)
+    local rows = {}
+    local local_player = env.get_player and env.get_player() or nil
+    local local_name = '玩家'
+    if local_player and local_player.get_name then
+      local ok_name, name = pcall(function()
+        return local_player:get_name()
+      end)
+      if ok_name and type(name) == 'string' and name ~= '' then
+        local_name = name
+      end
+    end
+    local map_rank = (local_player and local_player.get_map_level_rank and local_player:get_map_level_rank()) or 0
+    local kill_count = tonumber(STATE.total_kills or 0) or 0
+    local score = 0
+    if tab == 1 then
+      score = math.max(0, 100000 - map_rank * 100 + kill_count * 10)
+    elseif tab == 2 then
+      score = kill_count
+    else
+      score = math.floor(kill_count * 0.65)
+    end
+    rows[#rows + 1] = { name = local_name, score = score }
+
+    local group = y3 and y3.player_group and y3.player_group.get_all_players and y3.player_group.get_all_players() or nil
+    if group and group.pairs then
+      for p in group:pairs() do
+        if p and p ~= local_player then
+          local pname = (p.get_name and p:get_name()) or '玩家'
+          local prank = (p.get_map_level_rank and p:get_map_level_rank()) or 0
+          local pscore = (tab == 1) and math.max(0, 100000 - prank * 100) or 0
+          rows[#rows + 1] = { name = pname, score = pscore }
+        end
+      end
+    end
+
+    table.sort(rows, function(a, b)
+      if (a.score or 0) ~= (b.score or 0) then
+        return (a.score or 0) > (b.score or 0)
+      end
+      return tostring(a.name or '') < tostring(b.name or '')
+    end)
+    return rows
+  end
+
+  local function get_ranking_tab_index()
+    local tab = tonumber(STATE.archive_ranking_tab or 1) or 1
+    if tab < 1 then
+      tab = 1
+    end
+    if #RANKING_TABS > 0 and tab > #RANKING_TABS then
+      tab = #RANKING_TABS
+    end
+    return tab
+  end
+
+  local function refresh_archive_ranking_ui(ui)
+    if not ui then
+      return
+    end
+    local tab = get_ranking_tab_index()
+    local active_tab = RANKING_TABS[tab] or { tab = 1, title = '排行榜', list_node = '排行榜列表_1' }
+
+    local tab_paths = {
+      'ArchiveMain.排行榜.page_grid.ArchivePageOne',
+      'ArchiveMain.排行榜.page_grid.ArchivePageOne_1',
+      'ArchiveMain.排行榜.page_grid.ArchivePageOne_2',
+      'ArchiveMain.排行榜.page_grid.ArchivePageOne_3',
+      'ArchivePanel.排行榜.page_grid.ArchivePageOne',
+      'ArchivePanel.排行榜.page_grid.ArchivePageOne_1',
+      'ArchivePanel.排行榜.page_grid.ArchivePageOne_2',
+      'ArchivePanel.排行榜.page_grid.ArchivePageOne_3',
+    }
+    for i, path in ipairs(tab_paths) do
+      local root = resolve_ui(path)
+      if is_ui_alive(root) then
+        local idx = ((i - 1) % 4) + 1
+        local def = RANKING_TABS[idx]
+        local visible = def ~= nil and def.enabled ~= false
+        set_visible_if_alive(root, visible)
+        if visible then
+          local label = resolve_ui(path .. '.label')
+          local bg = resolve_ui(path .. '.button') or root
+          set_text_if_alive(label, tostring(def.title or '排行榜'))
+          local selected = def.tab == active_tab.tab
+          set_image_color_if_alive(bg, selected and { 183, 137, 48, 244 } or { 64, 68, 80, 230 })
+          set_text_color_if_alive(label, selected and { 255, 247, 232, 255 } or { 218, 222, 232, 255 })
+        end
+      end
+    end
+
+    for _, def in ipairs(RANKING_TABS) do
+      local list_root = resolve_ui_first({
+        'ArchiveMain.排行榜.排行.' .. tostring(def.list_node or ''),
+        'ArchivePanel.排行榜.排行.' .. tostring(def.list_node or ''),
+      })
+      if is_ui_alive(list_root) then
+        local is_active = def.tab == active_tab.tab
+        set_visible_if_alive(list_root, is_active)
+        if is_active then
+          local rows = get_ranking_rows_for_tab(tab)
+          local row_names = { 'bg', 'bg_7', 'bg_8', 'bg_9', 'bg_10' }
+          for idx, row_name in ipairs(row_names) do
+            local row_root = resolve_ui_first({
+              'ArchiveMain.排行榜.排行.' .. tostring(def.list_node) .. '.' .. row_name,
+              'ArchivePanel.排行榜.排行.' .. tostring(def.list_node) .. '.' .. row_name,
+            })
+            local num = resolve_ui_first({
+              'ArchiveMain.排行榜.排行.' .. tostring(def.list_node) .. '.' .. row_name .. '.num',
+              'ArchivePanel.排行榜.排行.' .. tostring(def.list_node) .. '.' .. row_name .. '.num',
+            })
+            local row = rows[idx]
+            set_visible_if_alive(row_root, row ~= nil)
+            if row then
+              set_text_if_alive(num, string.format('%d. %s  %d', idx, tostring(row.name or '玩家'), tonumber(row.score or 0) or 0))
+            end
+          end
+        end
+      end
     end
   end
 
@@ -1331,11 +1474,21 @@ function M.create(env)
     if idx <= 0 then
       return nil
     end
-    local name = (idx == 1) and 'button' or string.format('button_%d', idx - 1)
-    return resolve_ui_first({
-      'top.list.' .. name,
-      'top.top.list.' .. name,
-    })
+    local candidates = {}
+    if idx == 1 then
+      candidates = { 'button' }
+    elseif idx == 7 then
+      -- 当前 top UI 缺少 button_6，直接兼容 button_7。
+      candidates = { 'button_7', 'button_6' }
+    else
+      candidates = { string.format('button_%d', idx - 1) }
+    end
+    local paths = {}
+    for _, name in ipairs(candidates) do
+      paths[#paths + 1] = 'top.list.' .. name
+      paths[#paths + 1] = 'top.top.list.' .. name
+    end
+    return resolve_ui_first(paths)
   end
 
   local function resolve_top_entry_label(index)
@@ -1343,11 +1496,20 @@ function M.create(env)
     if idx <= 0 then
       return nil
     end
-    local name = (idx == 1) and 'button' or string.format('button_%d', idx - 1)
-    return resolve_ui_first({
-      'top.list.' .. name .. '.label',
-      'top.top.list.' .. name .. '.label',
-    })
+    local candidates = {}
+    if idx == 1 then
+      candidates = { 'button' }
+    elseif idx == 7 then
+      candidates = { 'button_7', 'button_6' }
+    else
+      candidates = { string.format('button_%d', idx - 1) }
+    end
+    local paths = {}
+    for _, name in ipairs(candidates) do
+      paths[#paths + 1] = 'top.list.' .. name .. '.label'
+      paths[#paths + 1] = 'top.top.list.' .. name .. '.label'
+    end
+    return resolve_ui_first(paths)
   end
 
   local function dispatch_top_entry_action(entry)
@@ -1355,12 +1517,54 @@ function M.create(env)
       return
     end
     local action = tostring(entry.action or '')
+    local function open_archive_with(section, show_ranking)
+      if set_selected_view_mode then
+        set_selected_view_mode(VIEW_MODE_MAINLINE)
+      end
+      STATE.archive_panel_section = section
+      STATE.archive_ranking_visible = show_ranking == true
+      if STATE.archive_ranking_visible == true and (not STATE.archive_ranking_tab or STATE.archive_ranking_tab <= 0) then
+        STATE.archive_ranking_tab = 1
+      end
+      local profile = load_profile()
+      if not set_archive_panel_visible(true) then
+        api.open_save_panel()
+        return
+      end
+      if refresh_archive_panel_ui then
+        refresh_archive_panel_ui(profile)
+      end
+    end
     if action == 'open_archive' then
+      STATE.archive_panel_section = 'archive'
+      STATE.archive_ranking_visible = false
       api.open_save_panel()
+      return
+    end
+    if action == 'open_archive_career' then
+      open_archive_with('career', false)
+      return
+    end
+    if action == 'open_archive_shop' then
+      open_archive_with('shop', false)
+      return
+    end
+    if action == 'open_archive_ranking' then
+      open_archive_with('ranking', true)
       return
     end
     if action == 'start_stage' then
       api.start_selected_stage()
+      return
+    end
+    if action == 'switch_cultivation' then
+      if set_selected_view_mode(VIEW_MODE_CULTIVATION) then
+        api.refresh_ui()
+      end
+      return
+    end
+    if action == 'open_battlepass' then
+      open_archive_with('battlepass', false)
       return
     end
     if action == 'show_hero_growth_tip' then
@@ -1377,11 +1581,68 @@ function M.create(env)
     end
   end
 
+  local function get_top_entry_title_by_action(action, fallback_title)
+    local target_action = tostring(action or '')
+    if target_action ~= '' then
+      for _, entry in ipairs(OUTGAME_TOP_ENTRY_LIST) do
+        if tostring(entry.action or '') == target_action then
+          local title = tostring(entry.title or '')
+          if title ~= '' then
+            return title
+          end
+          local label = tostring(entry.label or '')
+          if label ~= '' then
+            return label
+          end
+          break
+        end
+      end
+    end
+    return tostring(fallback_title or '')
+  end
+
+  local function resolve_outgame_top_title(profile)
+    if STATE.archive_panel_visible == true then
+      if STATE.archive_ranking_visible == true then
+        return get_top_entry_title_by_action('open_archive_ranking', '排行榜')
+      end
+      local section = tostring(STATE.archive_panel_section or '')
+      if section == 'career' then
+        return get_top_entry_title_by_action('open_archive_career', '生涯')
+      end
+      if section == 'shop' then
+        return get_top_entry_title_by_action('open_archive_shop', '商城')
+      end
+      return get_top_entry_title_by_action('open_archive', '存档')
+    end
+    local selected_view_mode = get_selected_view_mode(profile)
+    if selected_view_mode == VIEW_MODE_CULTIVATION then
+      return get_top_entry_title_by_action('switch_cultivation', '挂机')
+    end
+    return get_top_entry_title_by_action('start_stage', '选择难度')
+  end
+
   local function ensure_top_entry_list_ui(ui)
     if not ui then
       return nil
     end
     ui.top_entry_list_root = ui.top_entry_list_root or resolve_ui_first({ 'top.list', 'top.top.list' })
+    if (not is_ui_alive(ui.top_entry_list_root)) and (ui.top_entry_fallback_root == nil) then
+      local host = resolve_ui_first({ 'top.top', 'top' })
+      if is_ui_alive(host) and host.create_child then
+        local root = host:create_child('布局')
+        if is_ui_alive(root) then
+          if root.set_ui_size then
+            root:set_ui_size(820, 48)
+          end
+          if root.set_pos then
+            root:set_pos(370, 1035)
+          end
+          ui.top_entry_fallback_root = root
+          ui.top_entry_list_root = root
+        end
+      end
+    end
     ui.top_entry_items = ui.top_entry_items or {}
     for _, entry in ipairs(OUTGAME_TOP_ENTRY_LIST) do
       local slot = tonumber(entry.slot) or 0
@@ -1390,6 +1651,22 @@ function M.create(env)
         ui.top_entry_items[slot].entry = entry
         ui.top_entry_items[slot].button = ui.top_entry_items[slot].button or resolve_top_entry_button(slot)
         ui.top_entry_items[slot].label = ui.top_entry_items[slot].label or resolve_top_entry_label(slot)
+        if (not is_ui_alive(ui.top_entry_items[slot].button)) and is_ui_alive(ui.top_entry_fallback_root) and ui.top_entry_fallback_root.create_child then
+          local btn = ui.top_entry_fallback_root:create_child('按钮')
+          if is_ui_alive(btn) then
+            if btn.set_ui_size then
+              btn:set_ui_size(104, 40)
+            end
+            if btn.set_pos then
+              btn:set_pos(56 + (slot - 1) * 112, 24)
+            end
+            if btn.set_text then
+              btn:set_text(tostring(entry.label or entry.title or entry.id or '入口'))
+            end
+            ui.top_entry_items[slot].button = btn
+            ui.top_entry_items[slot].label = btn
+          end
+        end
       end
     end
     return ui.top_entry_items
@@ -1400,11 +1677,18 @@ function M.create(env)
     if not items then
       return
     end
-    local should_show = STATE.session_phase == 'outgame'
+    local in_outgame = STATE.session_phase == 'outgame'
+    local in_battle = STATE.session_phase == 'battle'
+    local should_show = in_outgame or in_battle
     set_visible_if_alive(ui.top_entry_list_root, should_show)
     for _, slot_ui in pairs(items) do
       local entry = slot_ui.entry
-      local visible = should_show and (entry.visible_in_outgame ~= false)
+      local visible = false
+      if in_outgame then
+        visible = entry.visible_in_outgame ~= false
+      elseif in_battle then
+        visible = entry.visible_in_battle ~= false
+      end
       set_visible_if_alive(slot_ui.button, visible)
       set_text_if_alive(slot_ui.label, entry.label or '')
     end
@@ -1507,7 +1791,16 @@ function M.create(env)
     primary_tabs = OUTGAME_DEFS.archive_shop_primary_tabs or { OUTGAME_DEFS.archive_shop_primary_tab or '地图商城' },
     primary_tab_label = OUTGAME_DEFS.archive_shop_primary_tab or '地图商城',
     categories = OUTGAME_DEFS.archive_shop_categories or {},
+    all_category_label = '全部',
     categories_by_primary = OUTGAME_DEFS.archive_shop_categories_by_primary or {},
+    group_templates = {
+      ['商品'] = { icon = true, label = 'title' },
+      ['皮肤'] = { icon = true, label = 'title' },
+      ['翅膀'] = { icon = true, label = 'title' },
+      ['地图等级'] = { lv = true, label = 'quality' },
+      ['荣誉等级'] = { num = true, label = 'title' },
+      ['典藏积分'] = { num = true, label = 'title' },
+    },
     default_icon = OUTGAME_DEFS.archive_shop_default_icon or 906565,
     play_ui_click = play_ui_click,
   }
@@ -1923,7 +2216,6 @@ function M.create(env)
       'ArchiveMain.layout_1.exit',
       'ArchiveMain.layout.exit',
       'ArchiveMain.layout.close',
-      'ArchiveMain.layout.button',
       'ArchivePanel.layout_1.exit',
       'ArchivePanel.layout.exit',
     })
@@ -1931,8 +2223,53 @@ function M.create(env)
       local ui = {
         variant = 'archive_main_v2',
         root = archive_main_root,
+        layout = resolve_ui_first({ 'ArchiveMain.layout', 'ArchivePanel.layout' }),
+        layout_bg = resolve_ui_first({ 'ArchiveMain.layout.bg', 'ArchivePanel.layout.bg' }),
+        layout_title = resolve_ui_first({ 'ArchiveMain.layout.title', 'ArchivePanel.layout.title' }),
+        layout_exit = resolve_ui_first({ 'ArchiveMain.layout.exit', 'ArchivePanel.layout.exit' }),
         overlay = archive_main_overlay,
         window = archive_main_overlay,
+        panel_main = resolve_ui_first({ 'ArchiveMain.存档生涯商城', 'ArchivePanel.存档生涯商城' }),
+        panel_main_page_grid = resolve_ui_first({
+          'ArchiveMain.存档生涯商城.page_grid',
+          'ArchivePanel.存档生涯商城.page_grid',
+        }),
+        panel_main_page2_grid = resolve_ui_first({
+          'ArchiveMain.存档生涯商城.page2_grid',
+          'ArchivePanel.存档生涯商城.page2_grid',
+        }),
+        panel_main_content_root = resolve_ui_first({
+          'ArchiveMain.存档生涯商城.中间内容',
+          'ArchivePanel.存档生涯商城.中间内容',
+        }),
+        panel_main_detail = resolve_ui_first({
+          'ArchiveMain.存档生涯商城.文本详情',
+          'ArchiveMain.存档生涯商城.scroll_view',
+          'ArchivePanel.存档生涯商城.文本详情',
+          'ArchivePanel.存档生涯商城.scroll_view',
+        }),
+        panel_main_content_archive = resolve_ui_first({
+          'ArchiveMain.存档生涯商城.中间内容.存档',
+          'ArchivePanel.存档生涯商城.中间内容.存档',
+        }),
+        panel_main_content_shop = resolve_ui_first({
+          'ArchiveMain.存档生涯商城.中间内容.商城',
+          'ArchivePanel.存档生涯商城.中间内容.商城',
+        }),
+        panel_main_content_career = resolve_ui_first({
+          'ArchiveMain.存档生涯商城.中间内容.生涯',
+          'ArchivePanel.存档生涯商城.中间内容.生涯',
+        }),
+        panel_ranking = resolve_ui_first({ 'ArchiveMain.排行榜', 'ArchivePanel.排行榜' }),
+        panel_ranking_page_grid = resolve_ui_first({ 'ArchiveMain.排行榜.page_grid', 'ArchivePanel.排行榜.page_grid' }),
+        panel_ranking_list = resolve_ui_first({ 'ArchiveMain.排行榜.排行榜列表', 'ArchivePanel.排行榜.排行榜列表' }),
+        panel_ranking_scroll = resolve_ui_first({ 'ArchiveMain.排行榜.排行', 'ArchivePanel.排行榜.排行' }),
+        panel_idle = resolve_ui_first({ 'ArchiveMain.挂机', 'ArchivePanel.挂机' }),
+        panel_idle_page_grid = resolve_ui_first({ 'ArchiveMain.挂机.page_grid', 'ArchivePanel.挂机.page_grid' }),
+        panel_idle_list = resolve_ui_first({ 'ArchiveMain.挂机.排行榜列表', 'ArchivePanel.挂机.排行榜列表' }),
+        panel_idle_scroll = resolve_ui_first({ 'ArchiveMain.挂机.排行', 'ArchivePanel.挂机.排行' }),
+        panel_start = resolve_ui_first({ 'ArchiveMain.开始', 'ArchivePanel.开始' }),
+        panel_battlepass = resolve_ui_first({ 'ArchiveMain.战令', 'ArchivePanel.战令' }),
         close_button = archive_main_close,
         close_chip = {
           root = archive_main_close,
@@ -1946,6 +2283,7 @@ function M.create(env)
         bound = false,
       }
       STATE.archive_panel_ui = ui
+      ensure_archive_panel_on_top(ui)
       ensure_archive_main_shop_ui(ui)
       bind_archive_panel_events(ui)
       refresh_archive_enter_panel_visible(ui)
@@ -1969,7 +2307,7 @@ function M.create(env)
     set_visible_if_alive(ui.enter_panel_icon, visible)
   end
 
-  local function set_archive_panel_visible(visible)
+  set_archive_panel_visible = function(visible)
     visible = visible == true
     local ui = ensure_archive_panel_ui()
     if visible then
@@ -1981,9 +2319,17 @@ function M.create(env)
         STATE.archive_panel_hidden_non_outgame = true
       end
       set_visible_if_alive(ui.root, true)
+      set_visible_if_alive(ui.layout, true)
+      set_visible_if_alive(ui.layout_bg, true)
+      set_visible_if_alive(ui.layout_title, true)
+      set_visible_if_alive(ui.layout_exit, true)
       set_visible_if_alive(ui.overlay, true)
       set_visible_if_alive(ui.window, true)
+      ensure_archive_panel_on_top(ui)
       STATE.archive_panel_visible = true
+      if refresh_archive_panel_ui then
+        refresh_archive_panel_ui(load_profile())
+      end
       refresh_archive_enter_panel_visible(ui)
       return true
     end
@@ -1994,6 +2340,10 @@ function M.create(env)
     end
     if is_archive_panel_ui_alive(ui) then
       set_visible_if_alive(ui.root, false)
+      set_visible_if_alive(ui.layout, false)
+      set_visible_if_alive(ui.layout_bg, false)
+      set_visible_if_alive(ui.layout_title, false)
+      set_visible_if_alive(ui.layout_exit, false)
       set_visible_if_alive(ui.overlay, false)
       set_visible_if_alive(ui.window, false)
     end
@@ -2027,6 +2377,9 @@ function M.create(env)
 
     if is_ui_alive(ui.dim) then
       ui.dim:add_fast_event('左键-按下', function()
+        if STATE.archive_panel_visible ~= true then
+          return
+        end
         if play_ui_click then
           play_ui_click()
         end
@@ -2038,11 +2391,46 @@ function M.create(env)
       or (is_ui_alive(ui.close_button) and ui.close_button or nil)
     if is_ui_alive(close_button_target) then
       close_button_target:add_fast_event('左键-按下', function()
+        if STATE.archive_panel_visible ~= true then
+          return
+        end
         if play_ui_click then
           play_ui_click()
         end
         set_archive_panel_visible(false)
       end)
+    end
+
+    local ranking_tab_paths = {
+      'ArchiveMain.排行榜.page_grid.ArchivePageOne',
+      'ArchiveMain.排行榜.page_grid.ArchivePageOne_1',
+      'ArchiveMain.排行榜.page_grid.ArchivePageOne_2',
+      'ArchiveMain.排行榜.page_grid.ArchivePageOne_3',
+      'ArchivePanel.排行榜.page_grid.ArchivePageOne',
+      'ArchivePanel.排行榜.page_grid.ArchivePageOne_1',
+      'ArchivePanel.排行榜.page_grid.ArchivePageOne_2',
+      'ArchivePanel.排行榜.page_grid.ArchivePageOne_3',
+    }
+    for index, path in ipairs(ranking_tab_paths) do
+      local root = resolve_ui(path)
+      local button = resolve_ui(path .. '.button') or root
+      if is_ui_alive(button) then
+        local tab_index = ((index - 1) % 4) + 1
+        set_intercepts_if_alive(button, true)
+        button:add_fast_event('左键-按下', function()
+          if tostring(STATE.archive_panel_section or '') ~= 'ranking' then
+            return
+          end
+          if tonumber(STATE.archive_ranking_tab or 1) == tab_index then
+            return
+          end
+          if play_ui_click then
+            play_ui_click()
+          end
+          STATE.archive_ranking_tab = tab_index
+          refresh_archive_ranking_ui(ui)
+        end)
+      end
     end
   end
 
@@ -2051,9 +2439,56 @@ function M.create(env)
     if not is_archive_panel_ui_alive(ui) then
       return false
     end
+    ensure_archive_panel_on_top(ui)
+    local section = tostring(STATE.archive_panel_section or '')
+    if STATE.archive_ranking_visible == true then
+      section = 'ranking'
+    elseif section == '' then
+      section = 'archive'
+    end
+    if section == 'battlepass' and not is_ui_alive(ui.panel_battlepass) then
+      section = 'career'
+    end
+    local show_main = section == 'main' or section == 'career' or section == 'shop' or section == 'archive'
+    local show_ranking = section == 'ranking'
+    local show_idle = section == 'idle'
+    local show_start = section == 'start'
+    local show_battlepass = section == 'battlepass'
+    local has_active_panel = show_main or show_ranking or show_idle or show_start or show_battlepass
     set_visible_if_alive(ui.root, STATE.archive_panel_visible == true)
-    set_visible_if_alive(ui.overlay, STATE.archive_panel_visible == true)
-    set_visible_if_alive(ui.window, STATE.archive_panel_visible == true)
+    set_visible_if_alive(ui.layout, STATE.archive_panel_visible == true and has_active_panel)
+    set_visible_if_alive(ui.layout_bg, STATE.archive_panel_visible == true and has_active_panel)
+    set_visible_if_alive(ui.layout_title, STATE.archive_panel_visible == true and has_active_panel)
+    set_visible_if_alive(ui.layout_exit, STATE.archive_panel_visible == true and has_active_panel)
+    set_visible_if_alive(ui.overlay, STATE.archive_panel_visible == true and has_active_panel)
+    set_visible_if_alive(ui.window, STATE.archive_panel_visible == true and has_active_panel)
+    set_visible_if_alive(ui.panel_main, STATE.archive_panel_visible == true and show_main)
+    set_visible_if_alive(ui.panel_ranking, STATE.archive_panel_visible == true and show_ranking)
+    set_visible_if_alive(ui.panel_idle, STATE.archive_panel_visible == true and show_idle)
+    set_visible_if_alive(ui.panel_start, STATE.archive_panel_visible == true and show_start)
+    set_visible_if_alive(ui.panel_battlepass, STATE.archive_panel_visible == true and show_battlepass)
+    local show_main_content = STATE.archive_panel_visible == true and show_main
+    local show_archive_content = show_main_content and (section == 'archive')
+    local show_shop_content = show_main_content and (section == 'shop')
+    local show_career_content = show_main_content and (section == 'career' or section == 'main')
+    set_visible_if_alive(ui.panel_main_content_root, show_main_content)
+    set_visible_if_alive(ui.panel_main_content_archive, show_archive_content)
+    set_visible_if_alive(ui.panel_main_content_shop, show_shop_content)
+    set_visible_if_alive(ui.panel_main_content_career, show_career_content)
+    set_visible_if_alive(ui.panel_main_page_grid, show_main_content)
+    set_visible_if_alive(ui.panel_main_page2_grid, show_main_content)
+    set_visible_if_alive(ui.panel_main_detail, show_main_content)
+    set_visible_if_alive(ui.panel_ranking_page_grid, STATE.archive_panel_visible == true and show_ranking)
+    set_visible_if_alive(ui.panel_ranking_list, STATE.archive_panel_visible == true and show_ranking)
+    set_visible_if_alive(ui.panel_ranking_scroll, STATE.archive_panel_visible == true and show_ranking)
+    set_visible_if_alive(ui.panel_idle_page_grid, STATE.archive_panel_visible == true and show_idle)
+    set_visible_if_alive(ui.panel_idle_list, STATE.archive_panel_visible == true and show_idle)
+    set_visible_if_alive(ui.panel_idle_scroll, STATE.archive_panel_visible == true and show_idle)
+    if STATE.archive_panel_visible == true and show_ranking then
+      refresh_archive_ranking_ui(ui)
+    end
+    -- 面板标题跟随当前分区/入口，不再固定“选择难度”。
+    set_text_if_alive(ui.layout_title, resolve_outgame_top_title(profile))
     ensure_archive_main_shop_ui(ui)
     refresh_archive_main_shop_items(ui)
     refresh_archive_enter_panel_visible(ui)
@@ -2340,7 +2775,8 @@ function M.create(env)
 
     local is_cultivation_mode = selected_view_mode == VIEW_MODE_CULTIVATION
 
-    set_text_if_alive(ui.title, is_cultivation_mode and '打鱼模式' or '正常模式')
+    local top_title = resolve_outgame_top_title(profile)
+    set_text_if_alive(ui.title, top_title)
     set_text_if_alive(ui.header_tip, build_header_tip_text(profile, selected_stage_id, selected_mode_id))
     set_text_if_alive(ui.quit_tip, '按 ESC 键可退出游戏')
     set_visible_if_alive(ui.tip_root, is_cultivation_mode)
@@ -2350,7 +2786,7 @@ function M.create(env)
 
     refresh_mode_selectors(ui, profile, selected_stage_id, selected_mode_id)
     refresh_stage_slots(ui, profile, selected_stage_id)
-    set_text_if_alive(ui.difficulty_title, is_cultivation_mode and '打鱼模式' or '正常模式')
+    set_text_if_alive(ui.difficulty_title, top_title)
     set_visible_if_alive(ui.stage_slot_container, not is_cultivation_mode)
     for _, slot in ipairs(ui.stage_slots or {}) do
       set_visible_if_alive(slot.root, not is_cultivation_mode and slot.stage_def ~= nil)
@@ -2395,14 +2831,23 @@ function M.create(env)
 
   function api.open_save_panel()
     local profile = load_profile()
+    if STATE.archive_panel_section == nil or STATE.archive_panel_section == '' then
+      STATE.archive_panel_section = 'archive'
+      STATE.archive_ranking_visible = false
+    end
     if STATE.archive_panel_visible == true then
+      if refresh_archive_panel_ui then
+        refresh_archive_panel_ui(profile)
+      end
       return true
     end
-    if not refresh_archive_panel_ui(profile) then
+    if not set_archive_panel_visible(true) then
       message(build_save_status_detail(profile))
       return false
     end
-    set_archive_panel_visible(true)
+    if refresh_archive_panel_ui then
+      refresh_archive_panel_ui(profile)
+    end
     return true
   end
 
@@ -2415,7 +2860,7 @@ function M.create(env)
   end
 
   function api.set_ui_visible(visible)
-    if visible ~= true then
+    if visible ~= true and STATE.session_phase == 'outgame' then
       set_archive_panel_visible(false)
     end
     local archive_ui = ensure_archive_panel_ui()

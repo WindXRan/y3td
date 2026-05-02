@@ -1,6 +1,6 @@
-local M = {}
-local MagicEffects = require 'data.tables.magic_effects'
-local SkillLogicHooks = require 'data.tables.skill_logic_hooks'
+﻿local M = {}
+local MagicEffects = require 'data.tables.skill.magic_effects'
+local SkillLogicHooks = require 'data.tables.skill.skill_logic_hooks'
 
 function M.create(deps)
   deps = deps or {}
@@ -673,3 +673,4 @@ function M.create(deps)
 end
 
 return M
+

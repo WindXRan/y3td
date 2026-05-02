@@ -1,5 +1,5 @@
 ﻿local EditorJsonTable = require 'data.tables.editor_json_table'
-local BondSkillTextTemplates = require 'data.tables.bond_skill_text_templates'
+local BondSkillTextTemplates = require 'data.tables.bond.bond_skill_text_templates'
 local CsvLoader = require 'data.csv_loader'
 
 local M = {}
@@ -279,4 +279,5 @@ M.activation_effects = activation_effects
 M.enabled = #cards > 0
 
 return M
+
 

@@ -1,5 +1,5 @@
 ﻿local CsvLoader = require 'data.csv_loader'
-local AttrEffect = require 'data.tables.attreffect'
+local AttrEffect = require 'data.tables.skill.attreffect'
 
 local node_rows = CsvLoader.read_rows_optional('data_csv/bond_nodes.csv')
 local bond_effects = AttrEffect.by_source.bond_node or {}
@@ -115,4 +115,5 @@ return {
   by_line = by_line,
   by_group = by_group,
 }
+
 

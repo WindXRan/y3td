@@ -1,7 +1,7 @@
 ﻿local a=require'ui.ui_root'
-local b=require'data.tables.marks'
+local b=require'data.tables.outgame.marks'
 local c=(require'data.game_tables').hero_roster
-local d=require'data.tables.hero_form_skills'
+local d=require'data.tables.hero.hero_form_skills'
 local e={}
 local f=8;
 local g=8;
@@ -60,6 +60,30 @@ local R=v.get_bottom_status_effect_entries;
 local S=v.play_ui_click;
 local T;
 local U;
+local safe_ui_call
+local set_ui_visible
+local set_ui_text
+local set_ui_text_color
+local set_ui_font_size
+local set_ui_text_alignment
+local set_ui_image
+local set_ui_image_color
+local set_ui_size
+local set_ui_anchor
+local set_ui_pos
+local set_ui_progress
+local bind_ui_model_unit
+local apply_ui_model_camera
+local set_ui_pos_percent
+local toggle_big_cursor
+local toggle_damage_text_visible
+local toggle_hit_effects_visible
+local toggle_soft_pause
+local toggle_runtime_attr_panel
+local ensure_hud
+local refresh_hud
+local set_hud_visible
+local show_runtime_tip_panel
 local function V()return A and A()or nil end;
 
 local function W()w.ui_preferences=w.ui_preferences or{}
@@ -862,7 +886,7 @@ local a0=Y()
 if a0.bound_events[cT]==u and t(u)then return end;
 
 if not t(u)or not u.add_fast_event then return end;
-a0.bound_events[cT]=u;a6(u,'set_intercepts_operations',true)u:add_fast_event('左键-点击',function()
+a0.bound_events[cT]=u;safe_ui_call(u,'set_intercepts_operations',true)u:add_fast_event('左键-点击',function()
 if S then S()end;
 cU()end)end;
 
@@ -871,7 +895,7 @@ local a0=Y()
 if a0.bound_events[cT]==u and t(u)then return end;
 
 if not t(u)or not u.add_fast_event then return end;
-a0.bound_events[cT]=u;a6(u,'set_intercepts_operations',true)u:add_fast_event('鼠标-移入',function()
+a0.bound_events[cT]=u;safe_ui_call(u,'set_intercepts_operations',true)u:add_fast_event('鼠标-移入',function()
 if cW then cW(u)end end)u:add_fast_event('鼠标-移出',function()
 if cX then cX(u)end end)end;
 
@@ -1364,39 +1388,86 @@ dT()
 dV()
 dW()
 dn()
-a9(a0.big_cursor,a0.visible~=false and W().big_cursor)
-a9(a0.attr_panel,a0.visible~=false and a0.attr_panel_visible)
-a9(a0.skill_prefab_root,a0.visible~=false)
-a9(a0.buff_prefab_root,a0.visible~=false)
+set_ui_visible(a0.big_cursor,a0.visible~=false and W().big_cursor)
+set_ui_visible(a0.attr_panel,a0.visible~=false and a0.attr_panel_visible)
+set_ui_visible(a0.skill_prefab_root,a0.visible~=false)
+set_ui_visible(a0.buff_prefab_root,a0.visible~=false)
 d1()
 d3()return a0 end;
 
 local function dX(aa)
-local a0=Y()a0.visible=aa==true;a9(Z('top'),aa)
-a9(Z('BattleBottomHUD'),aa)
-a9(Z('GameHUD'),false)
-a9(Z('bottom_bg'),false)
-a9(a0.attr_panel,
+local a0=Y()a0.visible=aa==true;set_ui_visible(Z('top'),aa)
+set_ui_visible(Z('BattleBottomHUD'),aa)
+set_ui_visible(Z('GameHUD'),false)
+set_ui_visible(Z('bottom_bg'),false)
+set_ui_visible(a0.attr_panel,
 aa==true and a0.attr_panel_visible)
-a9(a0.tip_panel,
+set_ui_visible(a0.tip_panel,
 aa==true and a0.tip_expires_at>(w.runtime_elapsed or 0))
-a9(a0.hover_tip_panel,
+set_ui_visible(a0.hover_tip_panel,
 aa==true and a0.hover_tip_visible==true)
-a9(a0.bond_tip_panel,
+set_ui_visible(a0.bond_tip_panel,
 aa==true and a0.bond_tip_visible==true)
 cL0(aa==true and a0.bond_tip_visible==true)
-a9(a0.big_cursor,
+set_ui_visible(a0.big_cursor,
 aa==true and W().big_cursor)
-a9(a0.hero_tujian_root,
+set_ui_visible(a0.hero_tujian_root,
 aa==true and a0.hero_tujian_visible==true)
-a9(a0.skill_prefab_root,aa==true)
-a9(a0.buff_prefab_root,aa==true)end;
+set_ui_visible(a0.skill_prefab_root,aa==true)
+set_ui_visible(a0.buff_prefab_root,aa==true)end;
 
-return{ensure_hud=T,
-refresh_hud=U,
-set_visible=dX,
-show_tip_panel=cZ,
-toggle_attr_panel=d8}end;
+-- maintainable helper aliases (no behavior change)
+safe_ui_call=a6
+set_ui_visible=a9
+set_ui_text=ab
+set_ui_text_color=ad
+set_ui_font_size=af
+set_ui_text_alignment=ah
+set_ui_image=ak
+set_ui_image_color=am
+set_ui_size=an
+set_ui_anchor=aq
+set_ui_pos=at
+set_ui_progress=au
+bind_ui_model_unit=az
+apply_ui_model_camera=aE
+set_ui_pos_percent=aG
+
+-- maintainable action aliases (no behavior change)
+toggle_big_cursor=d4
+toggle_damage_text_visible=d5
+toggle_hit_effects_visible=d6
+toggle_soft_pause=d7
+toggle_runtime_attr_panel=d8
+ensure_hud=T
+refresh_hud=U
+set_hud_visible=dX
+show_runtime_tip_panel=cZ
+
+return{ensure_hud=ensure_hud,
+refresh_hud=refresh_hud,
+set_visible=set_hud_visible,
+show_tip_panel=show_runtime_tip_panel,
+toggle_attr_panel=toggle_runtime_attr_panel,
+safe_ui_call=safe_ui_call,
+set_ui_visible=set_ui_visible,
+set_ui_text=set_ui_text,
+set_ui_text_color=set_ui_text_color,
+set_ui_font_size=set_ui_font_size,
+set_ui_text_alignment=set_ui_text_alignment,
+set_ui_image=set_ui_image,
+set_ui_image_color=set_ui_image_color,
+set_ui_size=set_ui_size,
+set_ui_anchor=set_ui_anchor,
+set_ui_pos=set_ui_pos,
+set_ui_progress=set_ui_progress,
+bind_ui_model_unit=bind_ui_model_unit,
+apply_ui_model_camera=apply_ui_model_camera,
+set_ui_pos_percent=set_ui_pos_percent,
+toggle_big_cursor=toggle_big_cursor,
+toggle_damage_text_visible=toggle_damage_text_visible,
+toggle_hit_effects_visible=toggle_hit_effects_visible,
+toggle_soft_pause=toggle_soft_pause}end;
 
 return e
 

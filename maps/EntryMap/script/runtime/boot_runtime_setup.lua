@@ -131,9 +131,6 @@ function M.create(ctx)
       return ctx.reset_session_state()
     end,
     register_runtime_events = register_runtime_events,
-    register_cannon_skill = function()
-      return ctx.cannon_skill_134258724_system.register()
-    end,
     register_dev_commands = function()
       return register_dev_commands()
     end,
@@ -144,7 +141,11 @@ function M.create(ctx)
         ctx.gm_bond_effects_system.refresh_board()
       end
       ctx.outgame_system.load_profile()
-      ctx.outgame_system.enter_outgame()
+      -- 启动默认不展示局外大厅，避免开局残留“选择难度底板/退出按钮”。
+      -- 仅在明确进入局外流程时再调用 enter_outgame()。
+      if ctx.outgame_system.set_ui_visible then
+        ctx.outgame_system.set_ui_visible(false)
+      end
     end,
   })
 

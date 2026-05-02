@@ -1,4 +1,4 @@
-﻿local GameTables = require 'data.game_tables'
+local GameTables = require 'data.game_tables'
 local battle_base = GameTables.battle_base_config
 local battlefield_scene = GameTables.battlefield_scene_config
 local battlefield_unit_config = GameTables.battlefield_unit_config
@@ -51,11 +51,14 @@ local ok_treasure_compat, TreasureCatalogCompatObjects = pcall(require, 'data.ta
 if not ok_treasure_compat or type(TreasureCatalogCompatObjects) ~= 'table' then
   TreasureCatalogCompatObjects = {}
 end
-local OutgameAttrBonusConfig = require 'data.tables.outgame_attr_bonus_config'
-local OutgameTopEntryList = require 'data.tables.outgame_top_entry_list'
-local OutgameDetailConfig = require 'data.tables.outgame_detail_config'
-local GearUpgradeConfig = require 'data.tables.gear_upgrade_config'
-local SkillRuntimeTuning = require 'data.tables.skill_runtime_tuning'
+local OutgameAttrBonusConfig = require 'data.tables.outgame.outgame_attr_bonus_config'
+local OutgameTopEntryList = require 'data.tables.outgame.outgame_top_entry_list'
+local OutgameArchiveMidContent = require 'data.tables.outgame.archive_mid_content'
+local OutgameArchiveRankingTabs = require 'data.tables.outgame.archive_ranking_tabs'
+local OutgameArchiveTabs = require 'data.tables.outgame.archive_tabs'
+local OutgameDetailConfig = require 'data.tables.outgame.outgame_detail_config'
+local GearUpgradeConfig = require 'data.tables.economy.gear_upgrade_config'
+local SkillRuntimeTuning = require 'data.tables.skill.skill_runtime_tuning'
 local ATTACK_SKILL_DEPRECATED = true
 
 local M = {
@@ -112,6 +115,9 @@ local M = {
   treasure_catalog_compat = TreasureCatalogCompatObjects,
   outgame_attr_bonus_config = OutgameAttrBonusConfig,
   outgame_top_entry_list = OutgameTopEntryList,
+  outgame_archive_mid_content = OutgameArchiveMidContent,
+  outgame_archive_ranking_tabs = OutgameArchiveRankingTabs,
+  outgame_archive_tabs = OutgameArchiveTabs,
   outgame_detail_config = OutgameDetailConfig,
   gear_upgrade_config = GearUpgradeConfig,
   skill_runtime_tuning = SkillRuntimeTuning,
@@ -127,5 +133,6 @@ for _, wave in ipairs(M.waves) do
 end
 
 return M
+
 
 

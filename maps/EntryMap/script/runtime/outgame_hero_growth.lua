@@ -1,5 +1,5 @@
 ﻿local HeroRoster = (require 'data.game_tables').hero_roster
-local HeroList = require 'data.tables.herolist'
+local HeroList = require 'data.tables.hero.herolist'
 
 local M = {}
 
@@ -262,5 +262,6 @@ function M.create()
 end
 
 return M
+
 
 

@@ -1,4 +1,4 @@
-ï»¿local a=require'data.tables.auto_active_effects'local b=require'data.tables.runtime_editor_ids'local c={}local function d(e)local f={}for g,h in pairs(e or{})do f[g]=h end;
+local a=require'data.tables.skill.auto_active_effects'local b=require'data.tables.runtime_editor_ids'local c={}local function d(e)local f={}for g,h in pairs(e or{})do f[g]=h end;
 return f end;
 function c.create(i)local j=i.STATE;
 local k=i.y3;
@@ -33,21 +33,21 @@ return false end;
 local function T(U,V)if not U or not U.is_exist or not U:is_exist()then return 0 end;
 if m and U==j.hero then return m.get_attr(U,V)end;
 return k.helper.tonumber(U:get_attr(V))or 0 end;
-local function W()local X=T(j.hero,'æ”»å‡»ç»“ç®—å€¼')if X>0 then return math.max(1,X)end;
-local Y=T(j.hero,'æ”»å‡»')if Y>0 then return math.max(1,Y)end;
-return math.max(1,T(j.hero,'ç‰©ç†æ”»å‡»'))end;
+local function W()local X=T(j.hero,'¹¥»÷½áËãÖµ')if X>0 then return math.max(1,X)end;
+local Y=T(j.hero,'¹¥»÷')if Y>0 then return math.max(1,Y)end;
+return math.max(1,T(j.hero,'ÎïÀí¹¥»÷'))end;
 local function Z(_)if not _ or not _.move then return nil end;
 return _:move()end;
-local function a0()return math.max(1,T(j.hero,'æ™ºåŠ›'))end;
-local function a1()return math.max(1,T(j.hero,'åŠ›é‡'))end;
-local function a2()local a3=T(j.hero,'ç”Ÿå‘½ç»“ç®—å€¼')if a3>0 then return math.max(1,a3)end;
-local a4=T(j.hero,'ç”Ÿå‘½')if a4>0 then return math.max(1,a4)end;
-return math.max(1,T(j.hero,'æœ€å¤§ç”Ÿå‘½'))end;
+local function a0()return math.max(1,T(j.hero,'ÖÇÁ¦'))end;
+local function a1()return math.max(1,T(j.hero,'Á¦Á¿'))end;
+local function a2()local a3=T(j.hero,'ÉúÃü½áËãÖµ')if a3>0 then return math.max(1,a3)end;
+local a4=T(j.hero,'ÉúÃü')if a4>0 then return math.max(1,a4)end;
+return math.max(1,T(j.hero,'×î´óÉúÃü'))end;
 local function a5()if not j.hero or not j.hero:is_exist()then return 1 end;
 local a6=a2()return math.max(0,math.min(1,j.hero:get_hp()/a6))end;
 local function a7(A)if not A or not A:is_exist()then return 1 end;
-local a6=math.max(1,k.helper.tonumber(A:get_attr('ç”Ÿå‘½'))or k.helper.tonumber(A:get_attr('æœ€å¤§ç”Ÿå‘½'))or 1)return math.max(0,A:get_hp()/a6)end;
-local function a8(A)local a6=k.helper.tonumber(A and A.get_attr and A:get_attr('ç”Ÿå‘½'))or T(A,'æœ€å¤§ç”Ÿå‘½')return math.max(1,a6)end;
+local a6=math.max(1,k.helper.tonumber(A:get_attr('ÉúÃü'))or k.helper.tonumber(A:get_attr('×î´óÉúÃü'))or 1)return math.max(0,A:get_hp()/a6)end;
+local function a8(A)local a6=k.helper.tonumber(A and A.get_attr and A:get_attr('ÉúÃü'))or T(A,'×î´óÉúÃü')return math.max(1,a6)end;
 local function a9()if not j.attack_skill_state or not j.attack_skill_state.slots then return 0 end;
 local aa=0;
 for ab=1,l,1 do local ac=j.attack_skill_state.slots[ab]if ac and ac.id~='basic_attack'then aa=aa+1 end end;
@@ -102,7 +102,7 @@ local aM=2;
 for aI,U in ipairs(r(j.hero,aG or 900,nil,16))do if q(U)then local aN=a7(U)if aN<=(aK or 1)and aN<aM then aM=aN;aL=U end end end;
 return aL end;
 local function aO(aP,aQ,aR,aS,aj)local aT=false;
-for aI,U in ipairs(r(aP,aQ or 0,nil,24))do local aU='magic'if aS=='ç‰©ç†'or aS=='weapon'then aU='physics'end;s(U,aR,aS,{text_type=aU,particle=aj})aT=true end;
+for aI,U in ipairs(r(aP,aQ or 0,nil,24))do local aU='magic'if aS=='ÎïÀí'or aS=='weapon'then aU='physics'end;s(U,aR,aS,{text_type=aU,particle=aj})aT=true end;
 return aT end;
 local function aV(E,aW,ao)local O=C()local aX=O.temp_attr_bonuses[E]if not aX then aX={attr={},remaining=0}O.temp_attr_bonuses[E]=aX end;
 local aY=j.hero;
@@ -135,7 +135,7 @@ local bb=1+(ba and a9()or 0)local aQ=(S.radius or 300)+(ba and 150 or 0)local bc
 am()
 ad(j.hero,ar and ar.cast_particle or nil,ar and ar.cast_scale or 1,ar and ar.cast_time or 0.2,'origin')
 for aI=1,bb,1 do local bd=aF(S.range)or A;
-if bd and bd:is_exist()then local aP=bd:get_point()ak(aP,ar and ar.explosion_particle or ar and ar.impact_particle or nil,1.15,0.35,12)aO(aP,aQ,bc,'é­”æ³•')end end;
+if bd and bd:is_exist()then local aP=bd:get_point()ak(aP,ar and ar.explosion_particle or ar and ar.impact_particle or nil,1.15,0.35,12)aO(aP,aQ,bc,'Ä§·¨')end end;
 return true end;
 local function be(S,bf)local ac=bf and bf.skill or nil;
 if not ac or ac.id=='basic_attack'then return false end;
@@ -146,16 +146,16 @@ local ar=n[S.vfx]local bh=a1()*(S.damage_ratio or 0.60)local aT=false;
 ad(j.hero,ar and ar.cast_particle or ar and ar.impact_particle or nil,1.15,0.30,'origin')
 for aI,U in ipairs(r(j.hero,S.radius or 1200,nil,30))do if q(U)then
 local bi=a8(U)*(S.extra_hp_ratio or 0)
-s(U,bh+bi,'ç‰©ç†',{text_type='physics'})
-local bj=-T(U,'æŠ¤ç”²')*(S.armor_reduction_ratio or 0)
-local bk=-T(U,'ç‰©ç†æ”»å‡»')*(S.attack_reduction_ratio or 0)
-b1(S.id,U,{['æŠ¤ç”²']=bj,['ç‰©ç†æ”»å‡»']=bk},1.25)
+s(U,bh+bi,'ÎïÀí',{text_type='physics'})
+local bj=-T(U,'»¤¼×')*(S.armor_reduction_ratio or 0)
+local bk=-T(U,'ÎïÀí¹¥»÷')*(S.attack_reduction_ratio or 0)
+b1(S.id,U,{['»¤¼×']=bj,['ÎïÀí¹¥»÷']=bk},1.25)
 an(S.id,U,S.modifier_key or w.fighting_spirit,1.25)
 aT=true
 end end;
 return aT end;
 local function bl(S)if math.random()>math.max(0,math.min(1,S.chance or 0))then return false end;
-aV(S.id,{['æ”»å‡»é€Ÿåº¦']=S.attack_speed_bonus or 100},S.duration or 5.0)
+aV(S.id,{['¹¥»÷ËÙ¶È']=S.attack_speed_bonus or 100},S.duration or 5.0)
 an(S.id,j.hero,S.modifier_key or w.rapid_overdrive,S.duration or 5.0)
 local ar=n[S.vfx]
 ad(j.hero,ar and ar.cast_particle or ar and ar.impact_particle or nil,1.05,0.25,'origin')
@@ -169,9 +169,9 @@ for aI=1,br,1 do
 t(a2()*(S.heal_ratio or 0.20))
 ad(j.hero,ar and ar.cast_particle or ar and ar.impact_particle or nil,1.2,0.35,'origin')
 for aI,U in ipairs(r(j.hero,S.blast_radius or 320,nil,16))do if q(U)then
-s(U,a8(U)*(S.damage_ratio or 0.50),'ç‰©ç†',{text_type='physics'})
+s(U,a8(U)*(S.damage_ratio or 0.50),'ÎïÀí',{text_type='physics'})
 an(S.id,U,w.stun,1.0)
-b1(S.id,U,{['æ”»å‡»é€Ÿåº¦']=-500,['ç§»åŠ¨é€Ÿåº¦']=-500},1.0)
+b1(S.id,U,{['¹¥»÷ËÙ¶È']=-500,['ÒÆ¶¯ËÙ¶È']=-500},1.0)
 aT=true
 end end
 end;
@@ -183,13 +183,13 @@ local ar=n[S.vfx]
 ad(j.hero,ar and ar.cast_particle or ar and ar.impact_particle or nil,1.2,0.35,'origin')
 return true end;
 local function bt(S)if not j.hero or not j.hero:is_exist()then return false end;
-local ar=n[S.vfx]local bc=W()*(S.damage_ratio or 1)am()ad(j.hero,ar and ar.impact_particle or nil,1.25,0.35,'origin')return aO(j.hero,S.radius or 300,bc,'ç‰©ç†')end;
+local ar=n[S.vfx]local bc=W()*(S.damage_ratio or 1)am()ad(j.hero,ar and ar.impact_particle or nil,1.25,0.35,'origin')return aO(j.hero,S.radius or 300,bc,'ÎïÀí')end;
 local function bu(S,A)local bd=A;
 if not q(bd)then bd=aF(S.range)end;
 if not bd then return false end;
 local ar=n[S.vfx]local bc=W()*(S.damage_ratio or 1)aq(ar,bd,function(bv,aC)if aC~=true then return end;
 if bv and ar and ar.impact_particle then ak(bv,ar.impact_particle,ar.impact_scale,ar.impact_time,18)end;
-if q(bd)then s(bd,bc,'é­”æ³•',{text_type='magic'})end end)return true end;
+if q(bd)then s(bd,bc,'Ä§·¨',{text_type='magic'})end end)return true end;
 local function bw(S)if not S then return 0 end;
 if S.id=='spell_burst'then local L=S.cooldown or 0;
 if o and o('auto_spell_burst_amp')then L=L-5 end;

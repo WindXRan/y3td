@@ -3,6 +3,50 @@ local CsvLoader = require 'data.csv_loader'
 local Json = require 'y3.tools.json'
 
 M.version = '2026-04-29.bond_runtime_rules.v4_production_finish_pass'
+-- 合并原独立小文件：
+-- bond_draw_config.lua / bond_pick_config.lua / bond_misc_config.lua
+M.draw = {
+  draw_cost = 100,
+  refresh_costs = {
+    [1] = 40,
+    [2] = 80,
+    [3] = 100,
+  },
+  group_choice_order = {},
+  group_choice_defs = {},
+}
+
+M.pick = {
+  choice_count = 3,
+  include_group_choices = true,
+  weights = {
+    node = 1,
+    group = 1,
+  },
+}
+
+function M.pick.get_candidate_weight(candidate)
+  if candidate and candidate.id and string.sub(candidate.id, 1, 8) == '__group_' then
+    return M.pick.weights.group or 1
+  end
+  return M.pick.weights.node or 1
+end
+
+M.misc = {
+  group_labels = {},
+  per_second_attr_keys = {},
+  manual_color_keywords = {
+    green = {
+      '自适应伤害', '技能伤害', '魔法伤害', '所有伤害', '物理暴伤', '魔法暴伤', '物理暴击', '魔法暴击',
+      '攻击力', '生命值', '生命恢复', '护甲', '格挡', '力量', '敏捷', '智力', '木材', '金币', '经验',
+      '杀敌金币', '杀敌经验', '杀敌加成', '每秒',
+    },
+    cyan = {
+      '%d+%.?%d*%%',
+      '%d+%.?%d*',
+    },
+  },
+}
 M.presentation_defaults = {
   persistent_area_warmup = 0.05,
   instant_warmup = 0.02,

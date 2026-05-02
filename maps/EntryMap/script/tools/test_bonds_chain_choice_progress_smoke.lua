@@ -1,7 +1,7 @@
 ﻿package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
 local bonds = require 'runtime.bonds_chain'
-local bond_nodes = require 'data.tables.bond_nodes'
+local bond_nodes = require 'data.tables.bond.bond_nodes'
 
 local function get_build_choice_entry()
   local collect_candidate_choice_entries = nil
@@ -100,4 +100,5 @@ assert_same_root_progress('bond_archery_core', 'bond_archery_shooting')
 assert_same_root_progress('bond_growth_core', 'bond_growth_barbarian_warcry')
 
 print('bonds chain choice progress smoke ok')
+
 

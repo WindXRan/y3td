@@ -1,5 +1,6 @@
 local UiRoot = require 'ui.ui_root'
-local AttrDefs = require 'runtime.hero_attr_defs'
+local HeroAttrSystem = require 'runtime.hero_attr_system'
+local AttrDefs = HeroAttrSystem.get_defs and HeroAttrSystem.get_defs() or { aliases = {}, by_name = {} }
 
 local M = {}
 

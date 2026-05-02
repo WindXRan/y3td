@@ -1,8 +1,8 @@
 ﻿local TreasureObjects = { list = {}, by_id = {} }
-local EvolutionObjects = require 'data.tables.marks'
-local EvolutionNodeObjects = require 'data.tables.evolution_nodes'
+local EvolutionObjects = require 'data.tables.outgame.marks'
+local EvolutionNodeObjects = require 'data.tables.outgame.evolution_nodes'
 local HeroRoster = (require 'data.game_tables').hero_roster
-local HeroFormSkills = require 'data.tables.hero_form_skills'
+local HeroFormSkills = require 'data.tables.hero.hero_form_skills'
 
 local M = {}
 
@@ -1871,5 +1871,6 @@ function M.create(env)
 end
 
 return M
+
 
 

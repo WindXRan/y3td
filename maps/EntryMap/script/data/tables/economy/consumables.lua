@@ -1,0 +1,95 @@
+local helpers = require 'data.tables.helpers'
+
+local list = {
+  {
+    key = 'consumable_hp_potion_s',
+    id = 301001,
+    title = '小型生命药水',
+    quality = 'N',
+    icon = 906565,
+    obtain = '商城购买 / 战斗掉落',
+    special_effect = '立即恢复 500 生命值，冷却 12 秒。',
+    attr_lines = {
+      '恢复生命 +500',
+      '冷却时间 12秒',
+    },
+    line_1 = '恢复生命 +500',
+    line_2 = '冷却时间 12秒',
+    line_3 = '战斗内可使用',
+    owned_text = '未拥有',
+  },
+  {
+    key = 'consumable_hp_potion_l',
+    id = 301002,
+    title = '大型生命药水',
+    quality = 'R',
+    icon = 906565,
+    obtain = '商城购买 / 活动奖励',
+    special_effect = '立即恢复 1500 生命值，冷却 18 秒。',
+    attr_lines = {
+      '恢复生命 +1500',
+      '冷却时间 18秒',
+    },
+    line_1 = '恢复生命 +1500',
+    line_2 = '冷却时间 18秒',
+    line_3 = '战斗内可使用',
+    owned_text = '未拥有',
+  },
+  {
+    key = 'consumable_rage_tonic',
+    id = 301003,
+    title = '狂怒药剂',
+    quality = 'SR',
+    icon = 906565,
+    obtain = '商城购买',
+    special_effect = '10 秒内攻击速度 +25%，移动速度 +10%。',
+    attr_lines = {
+      '攻速 +25%',
+      '移速 +10%',
+    },
+    line_1 = '持续时间 10秒',
+    line_2 = '攻速 +25%',
+    line_3 = '移速 +10%',
+    owned_text = '未拥有',
+  },
+  {
+    key = 'consumable_arcane_scroll',
+    id = 301004,
+    title = '奥术卷轴',
+    quality = 'R',
+    icon = 906565,
+    obtain = '商城购买 / 典藏积分兑换',
+    special_effect = '下一次技能伤害提高 40%，命中后失效。',
+    attr_lines = {
+      '技能增伤 +40%',
+      '单次生效',
+    },
+    line_1 = '技能增伤 +40%',
+    line_2 = '单次生效',
+    line_3 = '战斗内可使用',
+    owned_text = '未拥有',
+  },
+  {
+    key = 'consumable_revive_charm',
+    id = 301005,
+    title = '回魂符',
+    quality = 'SSR',
+    icon = 906565,
+    obtain = '商城购买 / 稀有掉落',
+    special_effect = '阵亡后原地复活并恢复 35% 生命，每局限 1 次。',
+    attr_lines = {
+      '复活机会 +1',
+      '复活生命 35%',
+    },
+    line_1 = '每局限 1 次',
+    line_2 = '复活生命 35%',
+    line_3 = '自动触发',
+    owned_text = '未拥有',
+  },
+}
+
+return {
+  list = list,
+  by_key = helpers.list_to_map(list),
+}
+
