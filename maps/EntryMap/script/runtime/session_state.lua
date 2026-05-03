@@ -16,6 +16,7 @@ function M.create(env)
   local create_treasure_runtime = env.create_treasure_runtime
   local create_skill_runtime = env.create_skill_runtime
   local create_attack_skill_state = env.create_attack_skill_state
+  local reset_skill_framework_runtime = env.reset_skill_framework_runtime
   local ATTACK_SKILL_BLUEPRINTS = env.ATTACK_SKILL_BLUEPRINTS or { list = {} }
   local destroy_choice_panel = env.destroy_choice_panel
   local battlefield_system = env.battlefield_system
@@ -116,6 +117,15 @@ function M.create(env)
     STATE.hero_progress = nil
     STATE.skill_runtime = create_skill_runtime()
     STATE.attack_skill_state = create_attack_skill_state()
+    STATE.active_skill_runtime = {
+      active_ids = {},
+      queue = {},
+      cursor = 1,
+      next_cast_ready_time = 0,
+    }
+    if reset_skill_framework_runtime then
+      reset_skill_framework_runtime()
+    end
     STATE.reward_queue = {}
     reset_challenge_charge_state()
     STATE.bond_draw_count = 0

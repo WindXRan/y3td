@@ -15,7 +15,7 @@ local function deepcopy(src)
   return out
 end
 
-local function make_vfx(pattern, element)
+local function make_vfx(pattern, element, sub_behavior)
   local element_vfx = Skills.get_element_vfx(element) or Skills.get_element_vfx('physical')
   local element_fx = {
     phys = { cast = 106060, warning = 106060, impact = 106069, hit = 106069 },
@@ -25,7 +25,7 @@ local function make_vfx(pattern, element)
     arcane = { cast = 106065, warning = 106065, impact = 106065, hit = 106065 },
   }
   local fx = element_fx[element] or element_fx.phys
-  local is_burst = pattern == 'area_burst'
+  local is_burst = pattern == 'area' or pattern == 'area_burst' or sub_behavior == 'burst'
   return {
     cast = fx.cast,
     warning = fx.warning,
@@ -38,13 +38,17 @@ local function make_vfx(pattern, element)
 end
 
 local PATTERN_TO_BASE = {
-  line_pierce = 'sf_line_pierce',
-  area_burst = 'sf_area_burst',
-  area_tick = 'sf_area_tick',
-  chain_bounce = 'sf_chain_bounce',
+  projectile = 'sf_projectile',
+  area = 'sf_area',
+  line_pierce = 'sf_projectile',
+  area_burst = 'sf_area',
+  area_tick = 'sf_area',
+  chain_bounce = 'sf_projectile',
 }
 
 local PATTERN_TARGET_MODE = {
+  projectile = 'unit',
+  area = 'point',
   line_pierce = 'unit',
   area_burst = 'point',
   area_tick = 'point',
@@ -66,8 +70,9 @@ local function build_rows()
       id = def.id,
       name = def.name or def.id,
       desc = def.desc or '',
-      base_id = PATTERN_TO_BASE[pattern] or 'sf_area_burst',
+      base_id = PATTERN_TO_BASE[pattern] or 'sf_area',
       pattern = pattern,
+      sub_behavior = def.sub_behavior,
       target_mode = def.target_mode or PATTERN_TARGET_MODE[pattern] or 'point',
       damage_type = def.damage_type or '法术',
       cooldown = resource.cooldown or 0.95,
@@ -75,7 +80,7 @@ local function build_rows()
       width = hit_model.width or 210,
       radius = hit_model.radius or 360,
       attack_ratio = scale.attack_ratio or 1.95,
-      visual = def.visual or make_vfx(pattern, element),
+      visual = def.visual or make_vfx(pattern, element, def.sub_behavior),
     }
   end
   return rows
@@ -83,7 +88,7 @@ end
 
 function M.create(env)
   env = env or {}
-  local framework = SkillFramework.create({
+  local framework = env.skill_framework or SkillFramework.create({
     y3 = env.y3,
     skill_damage_api = env.skill_damage_api,
     get_primary_target = env.get_primary_target,
@@ -101,12 +106,31 @@ function M.create(env)
   local by_id = {}
   local next_index = 1
 
+  local function find_sample_id(pattern, sub_behavior)
+    for _, def in ipairs(defs) do
+      if def.pattern == pattern and def.sub_behavior == sub_behavior then
+        return def.id
+      end
+    end
+    return nil
+  end
+
   local alias_to_id = {
-    sf_line_pierce_mid = defs[1] and defs[1].id or nil,
-    sf_area_burst_mid = defs[2] and defs[2].id or nil,
-    sf_chain_bounce_mid = defs[3] and defs[3].id or nil,
-    ['裂地重斩'] = defs[1] and defs[1].id or nil,
+    sf_line_pierce = find_sample_id('projectile', 'pierce'),
+    sf_line_pierce_mid = find_sample_id('projectile', 'pierce'),
+    sf_area_burst = find_sample_id('area', 'burst'),
+    sf_area_burst_mid = find_sample_id('area', 'burst'),
+    sf_area_tick = find_sample_id('area', 'tick'),
+    sf_area_tick_mid = find_sample_id('area', 'tick'),
+    sf_chain_bounce = find_sample_id('projectile', 'chain'),
+    sf_chain_bounce_mid = find_sample_id('projectile', 'chain'),
+    ['裂地重斩'] = find_sample_id('projectile', 'burst') or (defs[1] and defs[1].id or nil),
   }
+
+  local function resolve_sample_id(sample_id)
+    local key = tostring(sample_id or '')
+    return alias_to_id[key] or key
+  end
 
   for _, row in ipairs(defs) do
     by_id[row.id] = row
@@ -114,6 +138,7 @@ function M.create(env)
       id = row.id,
       name = row.name,
       pattern = row.pattern,
+      sub_behavior = row.sub_behavior,
       target_mode = row.target_mode,
       damage_type = row.damage_type,
       resource = { cooldown = row.cooldown },
@@ -147,8 +172,7 @@ function M.create(env)
   end
 
   function api.cast_sample(sample_id)
-    local key = tostring(sample_id or '')
-    local resolved = alias_to_id[key] or key
+    local resolved = resolve_sample_id(sample_id)
     local def = by_id[resolved]
     if not def then
       return false, string.format('未知 sample 技能：%s', tostring(sample_id))
@@ -182,15 +206,26 @@ function M.create(env)
     if not framework or not framework.get_telemetry then
       return nil
     end
-    return framework.get_telemetry(skill_id)
+    return framework.get_telemetry(resolve_sample_id(skill_id))
   end
 
   function api.reset_framework_telemetry(skill_id)
     if not framework or not framework.reset_telemetry then
       return false
     end
-    framework.reset_telemetry(skill_id)
+    framework.reset_telemetry(resolve_sample_id(skill_id))
     return true
+  end
+
+  function api.get_framework()
+    return framework
+  end
+
+  function api.reset_framework_runtime()
+    if framework and framework.reset_runtime then
+      return framework.reset_runtime()
+    end
+    return false
   end
 
   function api.build_framework_tier_report()

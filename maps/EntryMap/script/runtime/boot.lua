@@ -1,12 +1,11 @@
-local CONFIG = require 'config.entry_config'
+﻿local CONFIG = require 'config.entry_config'
 local BondSystem = require 'runtime.bonds_chain'
-local AttackSkillObjects = require 'data.tables.skill.attack_skills'
+local AttackSkillObjects = require 'data.tables.attack_skills'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
-local BondEffectRuntimeRules = require 'data.tables.bond.bond_effect_runtime_rules'
-local BondDrawConfig = BondEffectRuntimeRules.draw or {}
-local BondNodeObjects = require 'data.tables.bond.bond_nodes'
-local QualityImageTable = require 'data.tables.economy.quality_image_table'
-local EvolutionObjects = require 'data.tables.outgame.marks'
+local BondDrawConfig = require 'data.tables.bond_draw_config'
+local BondNodeObjects = require 'data.tables.bond_nodes'
+local QualityImageTable = require 'data.tables.quality_image_table'
+local EvolutionObjects = require 'data.tables.marks'
 local ProgressionSystem = require 'runtime.progression'
 local BattlefieldSystem = require 'runtime.battlefield'
 local DebugToolsSystem = require 'runtime.debug_tools'
@@ -24,28 +23,27 @@ local RuntimeHudSystem = require 'ui.runtime_hud'
 local OutgameSystem = require 'ui.outgame'
 local AttackSkillsSystem = require 'runtime.attack_skills'
 local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
+local CannonSkill134258724System = require 'runtime.cannon_skill_134258724'
+local BondSetEffectsSystem = require 'runtime.bond_set_effects'
 local BondModifierEffects = require 'runtime.bond_modifier_effects'
+local BondEffectsTestFramework = require 'runtime.bond_effects_test_framework'
 local BattleAutoAcceptanceSystem = require 'runtime.battle_auto_acceptance'
 local EffectDebugSystem = require 'runtime.effect_debug'
 local BattleEventFeedSystem = require 'runtime.battle_event_feed'
-local RewardSystem = require 'runtime.rewards'
+local RewardSystem = require 'runtime.rewards_disabled'
 local GearUpgrades = require 'runtime.gear_upgrades'
 local AttrChoices = require 'runtime.attr_choices'
 local HeroSelectionRangeSystem = require 'runtime.hero_selection_range'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
+local HeroAttrDefs = require 'runtime.hero_attr_defs'
+local HeroAttrPanel = require 'runtime.hero_attr_panel'
+local SkillFrameworkSystem = require 'runtime.skill_framework'
 local SampleSkillsSystem = require 'runtime.sample_skills'
 local ProjectileNameGuard = require 'runtime.projectile_name_guard'
 local BootCore = require 'runtime.boot_core'
 local BootDevCommands = require 'runtime.boot_dev_commands'
 local BootBootstrapSequence = require 'runtime.boot_bootstrap_sequence'
 local RuntimeEntry = {}
-
-local function run_bond_self_test_stub(message)
-  if message then
-    message('[bond_test] 已下线：bond_effects_test_framework（返回空报告）')
-  end
-  return { total = 0, passed = 0, failed = 0, cases = {} }
-end
 local projectile_create_original = nil
 local projectile_override_hook_installed = false
 local helper_signals_started = false
@@ -67,11 +65,14 @@ hero_tujian_panel_system = nil
 attack_skills_system = nil
 auto_active_effects_system = nil
 battle_auto_acceptance_system = nil
+cannon_skill_134258724_system = nil
+bond_set_effects_system = nil
 local effect_debug_system = nil
 reward_system = nil
 attr_choice_system = nil
 audio_system = nil
 hero_selection_range_system = nil
+skill_framework_system = nil
 sample_skills_system = nil
 message = nil
 ensure_round_choice_available = nil
@@ -647,6 +648,11 @@ local function enforce_runtime_ui_phase(is_battle)
     local hidden_in_battle = {
       'outgame',
       'ArchivePanel',
+      'ArchivePageProfile',
+      'ArchivePageEquipment',
+      'ArchivePageUniversal',
+      'ArchivePageChest',
+      'ArchivePagePool',
       'LoadingPanel',
       'LogoPanel',
       'win',
@@ -837,9 +843,6 @@ local function add_hero_attr_pack(unit, attr_pack)
 
   for attr_name, value in pairs(attr_pack) do
     if value ~= nil and value ~= 0 then
-      if hero_attr_system.is_attr_defined and not hero_attr_system.is_attr_defined(attr_name) then
-        print('[hero_attr_system] WARNING: unregistered attribute [' .. tostring(attr_name) .. '] used in add_hero_attr_pack')
-      end
       hero_attr_system.add_attr(unit, attr_name, value)
     end
   end
@@ -858,7 +861,7 @@ local function build_runtime_attr_dialog_chunks()
   if snapshot and hero_attr_system and hero_attr_system.log_snapshot then
     hero_attr_system.log_snapshot(STATE.hero, 'show_runtime_attr_dialog', nil, STATE)
   end
-  return HeroAttrSystem.build_panel_chunks(snapshot, function(name)
+  return HeroAttrPanel.build_chunks(snapshot, HeroAttrDefs, function(name)
     return hero_attr_system.get_attr(STATE.hero, name)
   end)
 end
@@ -1668,11 +1671,126 @@ local td_damage_api = SkillDamageTemplates.create({
   is_active_enemy = is_active_enemy,
 })
 
+skill_framework_system = SkillFrameworkSystem.create({
+  y3 = y3,
+  skill_damage_api = td_damage_api,
+  get_enemies_in_range = get_enemies_in_range,
+  get_hero = function()
+    if STATE.hero and STATE.hero:is_exist() then
+      return STATE.hero
+    end
+    return nil
+  end,
+  get_hero_point = get_hero_point,
+  get_hero_attack = function()
+    if not STATE.hero or not STATE.hero:is_exist() then
+      return 0
+    end
+    return hero_attr_system.get_attr(STATE.hero, '攻击') or STATE.hero:get_attr('攻击') or 0
+  end,
+  get_primary_target = function(range)
+    local units = get_enemies_in_range(STATE.hero, range or 1200, nil, 1)
+    return units and units[1] or nil
+  end,
+  get_hero_facing_towards = function(target)
+    local hero = STATE.hero
+    if not hero or not hero:is_exist() then
+      return 0
+    end
+    local hero_point = get_hero_point()
+    local target_point = target and target.get_point and target:get_point() or nil
+    if hero_point and target_point and hero_point.get_angle_with then
+      return hero_point:get_angle_with(target_point)
+    end
+    return hero.get_facing and (tonumber(hero:get_facing()) or 0) or 0
+  end,
+  create_offset_point = function(_, base_point, angle, distance, z)
+    if not base_point then
+      return nil
+    end
+    local dir = tonumber(angle) or 0
+    local travel = tonumber(distance) or 0
+    if y3 and y3.point and y3.point.get_point_offset_vector then
+      local ok, point = pcall(y3.point.get_point_offset_vector, base_point, dir, travel)
+      if ok and point then
+        return point
+      end
+    end
+    if y3 and y3.point and y3.point.create and base_point.get_x and base_point.get_y then
+      local x = base_point:get_x() + math.cos(dir) * travel
+      local y = base_point:get_y() + math.sin(dir) * travel
+      local point_z = z or (base_point.get_z and base_point:get_z() or 0)
+      return y3.point.create(x, y, point_z)
+    end
+    return nil
+  end,
+  spawn_particle = function(_, point, effect_id, scale, duration, height)
+    if not effect_id or not point then
+      return nil
+    end
+    local ok, particle = pcall(y3.particle.create, {
+      type = effect_id,
+      target = point,
+      angle = 0,
+      scale = scale or 1.0,
+      time = duration or 0.3,
+      height = height or 0,
+    })
+    if ok and particle then
+      return particle
+    end
+    return nil
+  end,
+  launch_projectile_from_hero = function(projectile_key, target, end_point, angle, time, height, on_finish)
+    if not projectile_key or not STATE.hero or not STATE.hero:is_exist() then
+      if on_finish then on_finish(nil) end
+      return nil
+    end
+    local ok, proj = pcall(y3.projectile.create, {
+      key = projectile_key,
+      target = STATE.hero,
+      socket = 'origin',
+      owner = STATE.hero,
+      angle = angle or 0,
+      time = time or 0.92,
+      remove_immediately = true,
+    })
+    if not ok or not proj then
+      if on_finish then on_finish(nil) end
+      return nil
+    end
+    if height then
+      pcall(proj.set_height, proj, height)
+    end
+    local dest = (target and target:is_exist() and target) or end_point
+    if dest then
+      pcall(proj.mover_target, proj, {
+        target = dest,
+        speed = 1500,
+        target_distance = 36,
+        height = height or 100,
+        face_angle = true,
+        on_finish = function()
+          local impact_pt = proj and proj:is_exist() and proj:get_point()
+          if proj and proj:is_exist() then
+            proj:remove()
+          end
+          if on_finish then on_finish(impact_pt) end
+        end,
+      })
+    elseif on_finish then
+      on_finish(nil)
+    end
+    return proj
+  end,
+})
+
 sample_skills_system = SampleSkillsSystem.create({
   STATE = STATE,
   y3 = y3,
   message = message,
   hero_attr_system = hero_attr_system,
+  skill_framework = skill_framework_system,
   skill_damage_api = td_damage_api,
   get_enemies_in_range = get_enemies_in_range,
   is_active_enemy = is_active_enemy,
@@ -2242,6 +2360,7 @@ attack_skills_system = AttackSkillsSystem.create({
   STATE = STATE,
   CONFIG = CONFIG,
   y3 = y3,
+  skill_framework = skill_framework_system,
   attack_skill_slot_count = ATTACK_SKILL_SLOT_COUNT,
   round_number = round_number,
   message = message,
@@ -2343,6 +2462,12 @@ effect_debug_system = EffectDebugSystem.create({
     return auto_active_effects_system.clear_effect_runtime(effect_id)
   end,
 })
+
+bond_set_effects_system = BondSetEffectsSystem.create({
+  auto_active_effects_system = auto_active_effects_system,
+  effect_debug_system = effect_debug_system,
+})
+bond_set_effects_system.register_global_apis()
 
 STATE.hero_form_skills_system = require('runtime.hero_form_skills').create({
   STATE = STATE,
@@ -2941,7 +3066,9 @@ gm_bond_effects_system = GmBondEffectsSystem.create({
     return BondModifierEffects.is_force_special_effects_100()
   end,
   run_bond_self_test = function()
-    return run_bond_self_test_stub(message)
+    return BondEffectsTestFramework.run({
+      message = message,
+    })
   end,
   list_sample_skills = function()
     if sample_skills_system and sample_skills_system.list_samples then
@@ -3055,7 +3182,9 @@ battle_auto_acceptance_system = BattleAutoAcceptanceSystem.create({
     BondModifierEffects.set_force_special_effects_100(enabled)
   end,
   run_bond_self_test = function()
-    return run_bond_self_test_stub(message)
+    return BondEffectsTestFramework.run({
+      message = message,
+    })
   end,
   get_game_time = function()
     if y3 and y3.game and y3.game.current_game_run_time then
@@ -3232,7 +3361,7 @@ local function bind_choice_click_target(target, index)
   if target.set_intercepts_operations then
     target:set_intercepts_operations(true)
   end
-  target:add_fast_event('左键-按下', function()
+  target:add_fast_event('左键-点击', function()
     apply_round_choice(index)
   end)
 end
@@ -3311,10 +3440,26 @@ runtime_ui_helpers.refresh_choice_panel = function(...)
   return nil
 end
 
+cannon_skill_134258724_system = CannonSkill134258724System.create({
+  STATE = STATE,
+  y3 = y3,
+  hero_attr_system = hero_attr_system,
+  get_enemies_in_range = get_enemies_in_range,
+  deal_skill_damage = deal_skill_damage,
+  emit_damage_debug = function(visual)
+    emit_damage_debug_visual(visual, nil)
+  end,
+})
+
 runtime_ui_helpers.install_panel_systems()
 
 runtime_ui_helpers.__raw_set_battle_hud_visible = runtime_ui_helpers.set_battle_hud_visible
 set_battle_hud_visible = function(visible)
+  if visible == true and STATE.archive_panel_visible == true then
+    local result = runtime_ui_helpers.__raw_set_battle_hud_visible(false)
+    enforce_runtime_ui_phase(false)
+    return result
+  end
   local result = runtime_ui_helpers.__raw_set_battle_hud_visible(visible)
   enforce_runtime_ui_phase(visible == true)
   if runtime_ui_helpers and runtime_ui_helpers.refresh_bond_swallow_panel then
@@ -3342,6 +3487,15 @@ RuntimeEntry._session_bundle = require('runtime.boot_session_setup').create({
   reward_system = reward_system,
   create_skill_runtime = create_skill_runtime,
   create_attack_skill_state = create_attack_skill_state,
+  reset_skill_framework_runtime = function()
+    if sample_skills_system and sample_skills_system.reset_framework_runtime then
+      return sample_skills_system.reset_framework_runtime()
+    end
+    if skill_framework_system and skill_framework_system.reset_runtime then
+      return skill_framework_system.reset_runtime()
+    end
+    return false
+  end,
   ATTACK_SKILL_BLUEPRINTS = ATTACK_SKILL_BLUEPRINTS,
   ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS,
   runtime_ui_helpers = runtime_ui_helpers,
@@ -3353,10 +3507,6 @@ RuntimeEntry._session_bundle = require('runtime.boot_session_setup').create({
   get_outgame_system = function()
     return outgame_system
   end,
-  get_runtime_hud_system = function()
-    return runtime_hud_system
-  end,
-  open_bond_card_album = open_bond_card_album,
   unlock_attack_skill = unlock_attack_skill,
   show_attack_skill_loadout = show_attack_skill_loadout,
   setup_basic_attack_ability = setup_basic_attack_ability,
@@ -3429,6 +3579,7 @@ RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({
   reset_session_state = function()
     return reset_session_state()
   end,
+  cannon_skill_134258724_system = cannon_skill_134258724_system,
 })
 
 input_events_system = RuntimeEntry._runtime_bundle.input_events_system
@@ -3448,6 +3599,4 @@ function RuntimeEntry.bootstrap()
 end
 
 return RuntimeEntry
-
-
 

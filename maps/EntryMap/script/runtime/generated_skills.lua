@@ -25,7 +25,15 @@ local OPTIONAL_NUMBER_KEYS = {
 
 local OPTIONAL_STRING_KEYS = {
   damage_type = true,
+  sub_behavior = true,
   desc = true,
+}
+
+local OLD_PATTERN_SUB_BEHAVIOR = {
+  line_pierce = { pattern = 'projectile', sub_behavior = 'pierce' },
+  chain_bounce = { pattern = 'projectile', sub_behavior = 'chain' },
+  area_burst = { pattern = 'area', sub_behavior = 'burst' },
+  area_tick = { pattern = 'area', sub_behavior = 'tick' },
 }
 
 local function safe_number(value)
@@ -119,12 +127,22 @@ function M.load_defs()
     local element = row.element or 'physical'
     local pattern = row.pattern or 'area_burst'
     local tier = row.tier or 'mid'
+    local mapped = OLD_PATTERN_SUB_BEHAVIOR[pattern]
+    local sub_behavior = row.sub_behavior
+    if mapped then
+      pattern = mapped.pattern
+      if sub_behavior == nil or sub_behavior == '' then
+        sub_behavior = mapped.sub_behavior
+      end
+    end
 
     if not row.id or row.id == '' then
       goto continue
     end
 
     local overrides = build_overrides(row)
+    overrides.pattern = pattern
+    overrides.sub_behavior = sub_behavior
     local def = Skills.build_element_skill(element, pattern, tier, overrides)
     if def then
       defs[#defs + 1] = def

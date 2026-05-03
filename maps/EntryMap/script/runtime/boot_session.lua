@@ -18,6 +18,7 @@ function M.create(args)
     create_treasure_runtime = args.create_treasure_runtime,
     create_skill_runtime = args.create_skill_runtime,
     create_attack_skill_state = args.create_attack_skill_state,
+    reset_skill_framework_runtime = args.reset_skill_framework_runtime,
     ATTACK_SKILL_BLUEPRINTS = args.ATTACK_SKILL_BLUEPRINTS,
     destroy_choice_panel = args.destroy_choice_panel,
     battlefield_system = args.battlefield_system,

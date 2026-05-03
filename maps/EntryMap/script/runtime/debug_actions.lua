@@ -331,7 +331,7 @@ function M.create(env)
     end
     local id = tostring(sample_id or '')
     if id == '' then
-      debug_message('用法：.eframe <sample_id>，例如 .eframe sf_line_pierce')
+      debug_message('用法：.eframe <sample_id>，例如 .eframe ice_lance')
       return
     end
     local t = sample_skill_system.get_framework_telemetry(id)

@@ -259,7 +259,7 @@ function M.create(env)
     debug_message('羁绊GM命令：.egmbond [on|off|toggle] / .egmcard <card_id|卡名> / .egmbondeffect <羁绊名>')
     debug_message('样例技能命令：.esample list / .esample next / .esample report / .esample <sample_id>')
     debug_message('验收快照命令：.esample report（别名：.esample r）')
-    debug_message('框架统计命令：.eframe <sample_id>（示例：.eframe sf_line_pierce）')
+    debug_message('框架统计命令：.eframe <sample_id>（示例：.eframe ice_lance）')
     debug_message('分档连测命令：.etier run / .etier report')
   end
 
@@ -478,7 +478,7 @@ function M.create(env)
       onCommand = function(sample_id)
         local id = tostring(sample_id or '')
         if id == '' then
-          message('用法：.eframe <sample_id>，例如 .eframe sf_line_pierce')
+          message('用法：.eframe <sample_id>，例如 .eframe ice_lance')
           return
         end
         if env.debug_print_sample_framework_telemetry then

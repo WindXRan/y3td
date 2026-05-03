@@ -47,6 +47,7 @@ function M.create(env)
   local notify_auto_active_skill_cast = env.notify_auto_active_skill_cast
   local play_basic_attack_sound = env.play_basic_attack_sound
   local play_attack_skill_sound = env.play_attack_skill_sound
+  local skill_framework = env.skill_framework
   local ATTACK_STATUS_MODIFIER_KEYS = RuntimeEditorIds.modifier.attack_status or {}
   local VISUAL_ANIMATION_SPEED = tonumber(VISUAL_TUNING.animation_speed) or 0.5
   local DAMAGE_AREA_DEBUG_EFFECT_ID = tonumber(DEBUG_TUNING.damage_area_effect_id) or 101492
@@ -2695,6 +2696,95 @@ function M.create(env)
   
     skill.cooldown_remaining = get_skill_current_cooldown(skill)
   end
+
+  local function get_framework_game_time()
+    if y3 and y3.game and y3.game.current_game_run_time then
+      return tonumber(y3.game.current_game_run_time()) or 0
+    end
+    return tonumber(STATE.runtime_elapsed) or 0
+  end
+
+  local function ensure_active_skill_runtime()
+    STATE.active_skill_runtime = STATE.active_skill_runtime or {}
+    local runtime = STATE.active_skill_runtime
+    runtime.active_ids = runtime.active_ids or {}
+    runtime.queue = runtime.queue or {}
+    runtime.cursor = math.max(1, math.floor(tonumber(runtime.cursor) or 1))
+    runtime.next_cast_ready_time = tonumber(runtime.next_cast_ready_time) or 0
+    return runtime
+  end
+
+  local function set_active_skill_ids(skill_ids)
+    local runtime = ensure_active_skill_runtime()
+    runtime.active_ids = {}
+    runtime.queue = {}
+    runtime.cursor = 1
+    runtime.next_cast_ready_time = 0
+
+    if type(skill_ids) ~= 'table' or not skill_framework or not skill_framework.get_def then
+      return 0, runtime.active_ids
+    end
+
+    local seen = {}
+    for _, raw_id in ipairs(skill_ids) do
+      local skill_id = tostring(raw_id or '')
+      if skill_id ~= '' and not seen[skill_id] and skill_framework.get_def(skill_id) then
+        seen[skill_id] = true
+        runtime.active_ids[#runtime.active_ids + 1] = skill_id
+      end
+    end
+    return #runtime.active_ids, runtime.active_ids
+  end
+
+  local function get_active_skill_ids()
+    local runtime = ensure_active_skill_runtime()
+    local result = {}
+    for _, skill_id in ipairs(runtime.active_ids or {}) do
+      result[#result + 1] = skill_id
+    end
+    return result
+  end
+
+  local function update_active_skills(dt)
+    if not skill_framework or not skill_framework.cast_by_id or not skill_framework.get_def then
+      return
+    end
+    if not STATE.hero or not STATE.hero:is_exist() then
+      return
+    end
+
+    local runtime = ensure_active_skill_runtime()
+    local active_ids = runtime.active_ids
+    if type(active_ids) ~= 'table' or #active_ids <= 0 then
+      return
+    end
+
+    local now = get_framework_game_time()
+    if now < (runtime.next_cast_ready_time or 0) then
+      return
+    end
+
+    local total = #active_ids
+    for _ = 1, total do
+      if runtime.cursor > total then
+        runtime.cursor = 1
+      end
+      local skill_id = active_ids[runtime.cursor]
+      runtime.cursor = runtime.cursor + 1
+      local def = skill_framework.get_def(skill_id)
+      if def then
+        local state = skill_framework.get_skill_state and skill_framework.get_skill_state(skill_id) or nil
+        local cooldown_left = state and tonumber(state.cooldown_left) or 0
+        if cooldown_left <= 0 then
+          local ok = skill_framework.cast_by_id(skill_id)
+          runtime.next_cast_ready_time = now + 0.08
+          if ok then
+            return
+          end
+        end
+      end
+    end
+  end
   
   local function update_basic_attack(dt)
     local skill = get_basic_attack_skill()
@@ -2725,6 +2815,7 @@ function M.create(env)
     end
   
     update_basic_attack(dt)
+    update_active_skills(dt)
   end
 
   local function debug_cast_basic_attack_once()
@@ -2759,6 +2850,9 @@ function M.create(env)
     get_skill_damage_template_id = get_skill_damage_template_id,
     debug_cast_basic_attack_once = debug_cast_basic_attack_once,
     update_enemy_statuses = update_enemy_statuses,
+    set_active_skill_ids = set_active_skill_ids,
+    get_active_skill_ids = get_active_skill_ids,
+    update_active_skills = update_active_skills,
     update_attack_skills = update_attack_skills,
   }
 end

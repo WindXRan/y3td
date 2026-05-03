@@ -22,6 +22,7 @@ function M.create(ctx)
     create_treasure_runtime = ctx.reward_system.create_treasure_runtime,
     create_skill_runtime = ctx.create_skill_runtime,
     create_attack_skill_state = ctx.create_attack_skill_state,
+    reset_skill_framework_runtime = ctx.reset_skill_framework_runtime,
     ATTACK_SKILL_BLUEPRINTS = ctx.ATTACK_SKILL_BLUEPRINTS,
     destroy_choice_panel = ctx.runtime_ui_helpers.destroy_choice_panel,
     battlefield_system = ctx.battlefield_system,
