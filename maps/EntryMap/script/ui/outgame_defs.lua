@@ -1,6 +1,44 @@
 local M = {}
 local ShopItems = require 'data.tables.economy.shop_items'
 local QualityImageTable = require 'data.tables.economy.quality_image_table'
+local GameTables = require 'data.game_tables'
+local BondNodes = require 'data.tables.bond.bond_nodes'
+local BondModifierPool = require 'data.tables.bond.bond_modifier_pool'
+
+local function trim(value)
+  return tostring(value or ''):gsub('^%s+', ''):gsub('%s+$', '')
+end
+
+local function normalize_quality(value, fallback)
+  local raw = trim(value)
+  if raw == '' then
+    return fallback or 'N'
+  end
+  local upper = string.upper(raw)
+  if upper == 'N' or upper == 'R' or upper == 'SR' or upper == 'SSR' or upper == 'UR' then
+    return upper
+  end
+  local lower = string.lower(raw)
+  return ({
+    common = 'N',
+    rare = 'R',
+    excellent = 'R',
+    epic = 'SR',
+    legendary = 'SSR',
+  })[lower] or fallback or upper
+end
+
+local function compact_lines(...)
+  local result = {}
+  for index = 1, select('#', ...) do
+    local line = select(index, ...)
+    local text = trim(line)
+    if text ~= '' then
+      result[#result + 1] = text
+    end
+  end
+  return result
+end
 
 local function build_outgame_detail_config(config)
   local table_config = config.outgame_detail_config or {}
@@ -96,7 +134,122 @@ local function build_archive_shop_specs(shop_items)
   end
 
   for _, spec in ipairs(shop_items.list or {}) do
-    push_spec(spec)
+    local primary = classify_primary(spec)
+    if primary ~= '英雄图鉴' and primary ~= '羁绊图鉴' then
+      push_spec(spec)
+    end
+  end
+
+  for _, hero in ipairs((GameTables.hero_roster and GameTables.hero_roster.list) or {}) do
+    local id = trim(hero.id)
+    local name = trim(hero.name)
+    if id ~= '' and name ~= '' then
+      local quality = normalize_quality(hero.rarity, 'R')
+      local categories = { quality, '全部' }
+      push_spec({
+        key = 'hero_catalog_' .. id,
+        node = 'hero_catalog_' .. id,
+        index = tonumber(hero.order_index) or 0,
+        title = name,
+        icon = shop_items.default_icon or 906565,
+        bg = resolve_bg_by_quality(quality, shop_items.default_bg),
+        default_icon = shop_items.default_icon or 906565,
+        default_bg = shop_items.default_bg or 131166,
+        attr_text = trim(hero.title),
+        value_text = trim(hero.rarity),
+        special_effect = trim(hero.summary),
+        obtain = hero.is_initial_hero and '初始英雄' or '局内解锁或后续投放',
+        owned_text = hero.is_initial_hero and '已解锁' or '未解锁',
+        quality = quality,
+        l1_tab = '英雄图鉴',
+        l2_tab = quality,
+        l2_tabs = categories,
+        partition = '生涯',
+        render_mode = 'icon',
+        primary = '英雄图鉴',
+        category = quality,
+        categories = categories,
+        attr_lines = compact_lines(
+          trim(hero.title) ~= '' and ('定位：' .. trim(hero.title)) or nil,
+          trim(hero.skill_id) ~= '' and ('技能：' .. trim(hero.skill_id)) or nil,
+          hero.unit_id ~= nil and ('单位ID：' .. tostring(hero.unit_id)) or nil
+        ),
+        line_1 = trim(hero.title),
+        line_2 = trim(hero.summary),
+        line_3 = hero.is_initial_hero and '初始英雄' or '局内解锁或后续投放',
+        source = 'hero_roster',
+      })
+    end
+  end
+
+  local pushed_bond = {}
+  local function push_bond_spec(spec)
+    local id = trim(spec.id or spec.bond_name or spec.name)
+    local title = trim(spec.display_name or spec.name or spec.bond_name)
+    if id == '' or title == '' or pushed_bond[id] == true then
+      return
+    end
+    pushed_bond[id] = true
+    local quality = normalize_quality(spec.quality, 'SR')
+    local category = trim(spec.group_id or spec.trigger_kind or quality)
+    if category == '' then
+      category = quality
+    end
+    local categories = { category, quality, '全部' }
+    local desc = trim((type(spec.desc) == 'table' and (spec.desc.single or spec.desc.advanced)) or spec.desc)
+    local required_count = tonumber(spec.required_count) or tonumber(spec.tier) or nil
+    local condition = required_count and ('集齐 ' .. tostring(required_count) .. ' 张同羁绊卡牌') or '局内收集同羁绊卡牌激活'
+    push_spec({
+      key = 'bond_catalog_' .. id,
+      node = 'bond_catalog_' .. id,
+      index = tonumber(spec.index) or tonumber(spec.tier) or 0,
+      title = title,
+      icon = tonumber(spec.icon) or shop_items.default_icon or 906565,
+      bg = resolve_bg_by_quality(quality, shop_items.default_bg),
+      default_icon = shop_items.default_icon or 906565,
+      default_bg = shop_items.default_bg or 131166,
+      attr_text = condition,
+      value_text = required_count and tostring(required_count) or '',
+      special_effect = desc,
+      obtain = condition,
+      owned_text = '未激活',
+      quality = quality,
+      l1_tab = '羁绊图鉴',
+      l2_tab = category,
+      l2_tabs = categories,
+      partition = '生涯',
+      render_mode = 'icon',
+      primary = '羁绊图鉴',
+      category = category,
+      categories = categories,
+      attr_lines = compact_lines(
+        '激活条件：' .. condition,
+        spec.line_id and ('路线：' .. tostring(spec.line_id)) or nil,
+        spec.group_id and ('分组：' .. tostring(spec.group_id)) or nil
+      ),
+      line_1 = condition,
+      line_2 = desc,
+      line_3 = condition,
+      source = spec.source or 'bond_table',
+    })
+  end
+
+  for _, node_def in ipairs((BondNodes and BondNodes.list) or {}) do
+    push_bond_spec(node_def)
+  end
+  if next(pushed_bond) == nil then
+    for _, effect in ipairs((BondModifierPool and BondModifierPool.activation_effects) or {}) do
+      push_bond_spec({
+        id = effect.id,
+        bond_name = effect.bond_name,
+        name = effect.name,
+        desc = effect.desc,
+        icon = effect.icon,
+        quality = effect.quality,
+        required_count = effect.required_count,
+        source = 'bond_modifier_pool',
+      })
+    end
   end
 
   local ordered_primary_tabs = {}

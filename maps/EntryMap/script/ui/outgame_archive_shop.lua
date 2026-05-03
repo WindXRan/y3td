@@ -429,6 +429,29 @@ local function get_categories_for_primary(state, options, specs, primary)
 end
 
 local function ensure_selection(state, options, specs)
+  if tostring(state and state.archive_panel_section or '') == 'career' then
+    state.archive_panel_career_tab = state.archive_panel_career_tab or CAREER_TAB_LABELS[1]
+    local categories = get_categories_for_primary(state, options, specs, state.archive_panel_career_tab)
+    if #categories == 0 then
+      categories[1] = get_all_category_label(options)
+    end
+    if (not state.archive_panel_shop_category) or state.archive_panel_shop_category == '' then
+      state.archive_panel_shop_category = categories[1]
+    end
+    local exists = false
+    for _, category in ipairs(categories) do
+      if category == state.archive_panel_shop_category then
+        exists = true
+        break
+      end
+    end
+    if not exists then
+      state.archive_panel_shop_category = categories[1]
+      state.archive_panel_shop_item = nil
+    end
+    return CAREER_TAB_LABELS, categories
+  end
+
   local primary_tabs = get_primary_tabs(state, options, specs)
   if (not state.archive_panel_shop_primary) or state.archive_panel_shop_primary == '' then
     state.archive_panel_shop_primary = primary_tabs[1]
@@ -713,7 +736,7 @@ end
 
 local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_items, options)
   local section = tostring(state and state.archive_panel_section or '')
-  local in_shop_like_section = in_shop_section or section == 'archive'
+  local in_shop_like_section = in_shop_section or section == 'archive' or section == 'career'
   local groups = shop.middle_groups or {}
   local all_category = get_all_category_label(options)
   local active_group_key = resolve_active_group_key(shop, state, all_category)
@@ -1133,7 +1156,7 @@ local function schedule_next_tick_shop_refresh(ui, options, signature)
     end
     s.deferred_refresh_pending = false
     local section = tostring((options.state and options.state.archive_panel_section) or '')
-    if section ~= 'shop' and section ~= 'archive' then
+    if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
       return
     end
     M.refresh(ui, options)
@@ -1155,7 +1178,7 @@ function M.refresh(ui, options)
   local in_archive_section = section == 'archive'
   local specs = options.specs or {}
   local primary_tabs, categories = ensure_selection(state, options, specs)
-  if in_shop_like_section then
+  if in_shop_like_section and not in_career_section then
     local primary_valid = false
     for _, p in ipairs(primary_tabs or {}) do
       if p == state.archive_panel_shop_primary then
@@ -1184,20 +1207,19 @@ function M.refresh(ui, options)
     local current_primary = primary_tabs[index]
     entry.primary = current_primary
     set_visible(entry.root, in_main_section)
-    if in_shop_like_section then
-      set_visible(entry.root, current_primary ~= nil)
-      set_text(entry.label, current_primary or entry.raw_label or '')
-      local selected = current_primary ~= nil and current_primary == get_primary(state)
-      set_image_color(entry.bg, selected and { 183, 137, 48, 244 } or { 64, 68, 80, 230 })
-      set_text_color(entry.label, selected and { 255, 247, 232, 255 } or { 218, 222, 232, 255 })
-    elseif in_career_section then
-      local index = entry.index or 0
+    if in_career_section then
       local tab_label = CAREER_TAB_LABELS[index]
       local selected = (state.archive_panel_career_tab or CAREER_TAB_LABELS[1]) == tab_label
       set_visible(entry.root, tab_label ~= nil)
       if tab_label then
         set_text(entry.label, tab_label)
       end
+      set_image_color(entry.bg, selected and { 183, 137, 48, 244 } or { 64, 68, 80, 230 })
+      set_text_color(entry.label, selected and { 255, 247, 232, 255 } or { 218, 222, 232, 255 })
+    elseif in_shop_like_section then
+      set_visible(entry.root, current_primary ~= nil)
+      set_text(entry.label, current_primary or entry.raw_label or '')
+      local selected = current_primary ~= nil and current_primary == get_primary(state)
       set_image_color(entry.bg, selected and { 183, 137, 48, 244 } or { 64, 68, 80, 230 })
       set_text_color(entry.label, selected and { 255, 247, 232, 255 } or { 218, 222, 232, 255 })
     else
@@ -1385,7 +1407,7 @@ function M.ensure(ui, options)
         set_intercepts(click_target, true)
         click_target:add_fast_event('左键-按下', function()
           local section = tostring(options.state.archive_panel_section or '')
-          if section ~= 'shop' and section ~= 'archive' then
+          if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
             return
           end
           if options.play_ui_click then
