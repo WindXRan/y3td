@@ -12,7 +12,6 @@ local DebugToolsSystem = require 'runtime.debug_tools'
 local DebugActionsSystem = require 'runtime.debug_actions'
 local GmBondEffectsSystem = require 'runtime.gm_bond_effects'
 local OverviewModelSystem = require 'runtime.overview_model'
-local BootHeroTujian = require 'runtime.boot_hero_tujian'
 local BootEvents = require 'runtime.boot_events'
 local BootLoops = require 'runtime.boot_loops'
 local BootInput = require 'runtime.boot_input'
@@ -880,9 +879,7 @@ reward_system = RewardSystem.create({
   sync_basic_attack_ability = sync_basic_attack_ability,
   setup_basic_attack_ability = setup_basic_attack_ability,
   get_player = get_player,
-  heal_hero = function(amount)
-    return heal_hero(amount)
-  end,
+  heal_hero = heal_hero,
   collect_bond_route_tags = function()
     return BondSystem.collect_route_tags(STATE)
   end,
@@ -2098,9 +2095,7 @@ battlefield_system = BattlefieldSystem.create({
   handle_bond_enemy_kill = function(info)
     return handle_bond_enemy_kill(info)
   end,
-  heal_hero = function(amount)
-    return heal_hero(amount)
-  end,
+  heal_hero = heal_hero,
   play_enemy_death_sound = function(unit, info, death_point)
     local is_boss = info and info.kind == 'boss'
     local played = audio_system and audio_system.play_enemy_death and
@@ -2366,9 +2361,7 @@ auto_active_effects_system = AutoActiveEffectsSystem.create({
   is_active_enemy = is_active_enemy,
   get_enemies_in_range = get_enemies_in_range,
   deal_skill_damage = deal_skill_damage,
-  heal_hero = function(amount)
-    return heal_hero(amount)
-  end,
+  heal_hero = heal_hero,
 })
 
 effect_debug_system = EffectDebugSystem.create({
@@ -2403,9 +2396,7 @@ STATE.hero_form_skills_system = require('runtime.hero_form_skills').create({
   is_boss_runtime_enemy = is_boss_runtime_enemy,
   is_elite_runtime_enemy = is_elite_runtime_enemy,
   deal_skill_damage = deal_skill_damage,
-  heal_hero = function(amount)
-    return heal_hero(amount)
-  end,
+  heal_hero = heal_hero,
   play_skill_sound = function(skill)
     return audio_system and audio_system.play_attack_skill and audio_system.play_attack_skill(skill, STATE.hero) or nil
   end,
@@ -3487,11 +3478,10 @@ RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({
   reset_session_state = function()
     return reset_session_state()
   end,
-  cannon_skill_134258724_system = cannon_skill_134258724_system,
 })
 
 input_events_system = RuntimeEntry._runtime_bundle.input_events_system
-hero_tujian_panel_system = RuntimeEntry._runtime_bundle.hero_tujian_panel_system
+
 runtime_loops_system = RuntimeEntry._runtime_bundle.runtime_loops_system
 register_dev_commands = RuntimeEntry._runtime_bundle.register_dev_commands
 RuntimeEntry.register_runtime_events = RuntimeEntry._runtime_bundle.register_runtime_events

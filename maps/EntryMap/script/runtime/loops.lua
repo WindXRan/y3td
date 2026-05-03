@@ -28,7 +28,6 @@ function M.create(env)
   local get_enemies_in_range = env.get_enemies_in_range
   local deal_skill_damage = env.deal_skill_damage
   local hero_attr_system = env.hero_attr_system
-  local hero_tujian_panel_system = env.hero_tujian_panel_system
   local skill_damage_api = SkillDamageTemplates.create({
     y3 = y3,
     deal_skill_damage = function(target, amount, damage_meta, visual)
@@ -80,9 +79,6 @@ function M.create(env)
       end
       if refresh_runtime_overview then
         refresh_runtime_overview()
-      end
-      if hero_tujian_panel_system and hero_tujian_panel_system.refresh then
-        hero_tujian_panel_system.refresh()
       end
     end)
     if ok then

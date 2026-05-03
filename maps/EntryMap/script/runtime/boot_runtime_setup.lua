@@ -48,19 +48,6 @@ function M.create(ctx)
 
   local input_events_system = ctx.BootInput.create(build_input_events_env())
 
-  local hero_tujian_panel_system = ctx.BootHeroTujian.create({
-    STATE = ctx.STATE,
-    y3 = ctx.y3,
-    get_player = ctx.get_player,
-    message = ctx.message,
-    get_audio_system = function()
-      return ctx.audio_system
-    end,
-    get_outgame_system = function()
-      return ctx.outgame_system
-    end,
-  })
-
   local register_runtime_events = function()
     ctx.BootEvents.register({
       input_events_system = input_events_system,
@@ -107,7 +94,6 @@ function M.create(ctx)
       emit_damage_debug = function(visual)
         ctx.emit_damage_debug_visual(visual, nil)
       end,
-      hero_tujian_panel_system = hero_tujian_panel_system,
     }
   end
 
@@ -151,7 +137,6 @@ function M.create(ctx)
 
   return {
     input_events_system = input_events_system,
-    hero_tujian_panel_system = hero_tujian_panel_system,
     runtime_loops_system = runtime_loops_system,
     register_runtime_events = register_runtime_events,
     start_runtime_loops = start_runtime_loops,

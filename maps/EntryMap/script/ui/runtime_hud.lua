@@ -134,9 +134,6 @@ attr_panel_body=nil,
 attr_panel_hint=nil,
 big_cursor=nil,
 hero_model_ui=nil,
-hero_tujian_prefab=nil,
-hero_tujian_root=nil,
-hero_tujian_visible=false,
 buff_prefab=nil,
 buff_prefab_root=nil,
 buff_list_comp=nil}return w.runtime_hud end;
@@ -1039,32 +1036,6 @@ a9(dr,dq~=nil)
 ak(dr,dq)
 if not dq then ak(dr,nil)end end end;
 
-local function dY()
-local a0=Y()
-local a2=V()
-if not a2 then cZ('当前没有可用玩家。',4,'如何变强')return end;
-
-if t(a0.hero_tujian_root)then a0.hero_tujian_visible=not a0.hero_tujian_visible;a9(a0.hero_tujian_root,a0.visible~=false and a0.hero_tujian_visible==true)return end;
-
-local dZ=a3({'BattleBottomHUD.layout','BattleBottomHUD','top.top','top'})
-or(a.get_overlay_parent and a.get_overlay_parent(y,a2)or nil);
-if not t(dZ)or not y or not y.ui_prefab or type(y.ui_prefab.create)~='function'then cZ('herotujian prefab 未就绪。',4,'如何变强')return end;
-
-local ea,
-eb=pcall(y.ui_prefab.create,a2,'herotujian',dZ)
-if not ea or not eb then cZ('herotujian prefab 创建失败。',4,'如何变强')return end;
-
-local ec=eb.get_child and eb:get_child()or nil;
-if not t(ec)then
-if eb.remove then pcall(eb.remove,eb)end;
-cZ('herotujian prefab 根节点无效。',4,'如何变强')return end;
-a0.hero_tujian_prefab=eb;a0.hero_tujian_root=ec;a0.hero_tujian_visible=true;a6(ec,'set_z_order',9580)
-a6(ec,'set_intercepts_operations',true)
-a9(ec,a0.visible~=false)
-local ed=a.resolve_child(ec,'exit')
-cS('hero_tujian_exit',ed,function()
-local ee=Y()ee.hero_tujian_visible=false;a9(ee.hero_tujian_root,false)end)end;
-
 local function dY1()
 local a0=Y()
 local a2=V()
@@ -1126,7 +1097,7 @@ cS('draw_button',Z('BattleBottomHUD.layout.right_station.card_panel.draw_button.
 if E then E()end;
 U()end)
 cS('reward_button',Z('BattleBottomHUD.layout.right_station.card_panel.reward_button.button'),function()
-dY();U()end)
+U()end)
 cS('kill_reward_button',Z('BattleBottomHUD.layout.right_station.card_panel.kill_reward_button.button'),function()
 if G then G()end;
 U()end)
@@ -1375,8 +1346,6 @@ aa==true and a0.bond_tip_visible==true)
 cL0(aa==true and a0.bond_tip_visible==true)
 set_ui_visible(a0.big_cursor,
 aa==true and W().big_cursor)
-set_ui_visible(a0.hero_tujian_root,
-aa==true and a0.hero_tujian_visible==true)
 set_ui_visible(a0.buff_prefab_root,aa==true)end;
 
 -- maintainable helper aliases (no behavior change)

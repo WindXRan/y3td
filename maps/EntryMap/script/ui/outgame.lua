@@ -1578,10 +1578,6 @@ function M.create(env)
       message('英雄养成入口已迁移到“如何变强 / H”。')
       return
     end
-    if action == 'show_hero_tujian_tip' then
-      message('英雄图鉴入口已迁移到“如何变强 / H”。')
-      return
-    end
     if action == 'refresh' then
       api.refresh_ui()
       return

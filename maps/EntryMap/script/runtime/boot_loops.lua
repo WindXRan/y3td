@@ -29,7 +29,6 @@ function M.create(args)
     is_active_enemy = args.is_active_enemy,
     get_enemies_in_range = args.get_enemies_in_range,
     deal_skill_damage = args.deal_skill_damage,
-    hero_tujian_panel_system = args.hero_tujian_panel_system,
   })
 end
 
