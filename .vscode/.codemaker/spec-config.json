@@ -1,0 +1,24 @@
+{
+  "gameName": "肉鸽守线",
+  "paths": {
+    "designDoc": "openspec/docs",
+    "executionDoc": "openspec/docs",
+    "testPlan": "openspec/docs",
+    "testReport": "openspec/docs",
+    "htmlReport": "openspec/reports"
+  },
+  "fileNames": {
+    "designDoc": "{gameName}设计案.md",
+    "executionDoc": "{gameName}执行案.md",
+    "testPlan": "{gameName}测试案.md",
+    "testReport": "{gameName}测试报告-{timestamp}.md",
+    "htmlReport": "{gameName}测试报告-{timestamp}.html"
+  },
+  "htmlReport": {
+    "autoOpen": false
+  },
+  "svn": {
+    "autoUpload": false,
+    "commitMessage": "{gameName}测试报告-{timestamp}"
+  }
+}

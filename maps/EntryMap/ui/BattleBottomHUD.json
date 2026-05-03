@@ -5838,6 +5838,542 @@
                                         false, 
                                         false, 
                                         false, 
+                                        150.0, 
+                                        6.0, 
+                                        260.0, 
+                                        6.0
+                                    ], 
+                                    "children": [
+                                        {
+                                            "adapter_option": [
+                                                true, 
+                                                true, 
+                                                true, 
+                                                true, 
+                                                0.0, 
+                                                0.0, 
+                                                0.0, 
+                                                0.0
+                                            ], 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "image": 906555, 
+                                            "name": "card_slot_9_bg", 
+                                            "open_adapter": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    29.0, 
+                                                    29.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                58.0, 
+                                                58.0
+                                            ], 
+                                            "type": 4, 
+                                            "uid": "eab549d7-89b9-4418-8142-ede46eebce2c"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "image": 134226696, 
+                                            "name": "frame", 
+                                            "open_adapter": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    29.0, 
+                                                    29.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                58.0, 
+                                                58.0
+                                            ], 
+                                            "type": 4, 
+                                            "uid": "2816bf1c-f9b4-4354-a7ec-d6049d7917f1"
+                                        }, 
+                                        {
+                                            "adapter_option": [
+                                                false, 
+                                                false, 
+                                                false, 
+                                                false, 
+                                                7.0, 
+                                                7.0, 
+                                                7.0, 
+                                                7.0
+                                            ], 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "image": null, 
+                                            "name": "icon", 
+                                            "open_adapter": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    29.0, 
+                                                    29.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                44.0, 
+                                                44.0
+                                            ], 
+                                            "type": 4, 
+                                            "uid": "e366fcf2-dc0c-4f01-b128-29b2ccd8db9c"
+                                        }
+                                    ], 
+                                    "event_list": [], 
+                                    "name": "card_slot_9", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            20.0, 
+                                            94.9999, 
+                                            7.6338, 
+                                            40.0784, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        58.0, 
+                                        58.0
+                                    ], 
+                                    "type": 7, 
+                                    "uid": "91d92aaf-aaec-4df9-8f2e-3c55b29cec5f"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        150.0, 
+                                        6.0, 
+                                        322.0, 
+                                        6.0
+                                    ], 
+                                    "children": [
+                                        {
+                                            "adapter_option": [
+                                                true, 
+                                                true, 
+                                                true, 
+                                                true, 
+                                                0.0, 
+                                                0.0, 
+                                                0.0, 
+                                                0.0
+                                            ], 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "image": 906555, 
+                                            "name": "card_slot_10_bg", 
+                                            "open_adapter": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    29.0, 
+                                                    29.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                58.0, 
+                                                58.0
+                                            ], 
+                                            "type": 4, 
+                                            "uid": "24f0e238-8515-486b-b648-ea7666115ed7"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "image": 134226696, 
+                                            "name": "frame", 
+                                            "open_adapter": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    29.0, 
+                                                    29.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                58.0, 
+                                                58.0
+                                            ], 
+                                            "type": 4, 
+                                            "uid": "dacadcc6-e93a-4d4d-a897-273d63ee78f0"
+                                        }, 
+                                        {
+                                            "adapter_option": [
+                                                false, 
+                                                false, 
+                                                false, 
+                                                false, 
+                                                7.0, 
+                                                7.0, 
+                                                7.0, 
+                                                7.0
+                                            ], 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "image": null, 
+                                            "name": "icon", 
+                                            "open_adapter": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    29.0, 
+                                                    29.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                44.0, 
+                                                44.0
+                                            ], 
+                                            "type": 4, 
+                                            "uid": "bdc0be42-88b1-4a07-bac2-fd3297bef52e"
+                                        }
+                                    ], 
+                                    "event_list": [], 
+                                    "name": "card_slot_10", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            82.0, 
+                                            94.9999, 
+                                            30.7681, 
+                                            40.0784, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        58.0, 
+                                        58.0
+                                    ], 
+                                    "type": 7, 
+                                    "uid": "38e15cba-b173-4037-9fb7-7b183e4c2d9b"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        150.0, 
+                                        6.0, 
+                                        384.0, 
+                                        6.0
+                                    ], 
+                                    "children": [
+                                        {
+                                            "adapter_option": [
+                                                true, 
+                                                true, 
+                                                true, 
+                                                true, 
+                                                0.0, 
+                                                0.0, 
+                                                0.0, 
+                                                0.0
+                                            ], 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "image": 906555, 
+                                            "name": "card_slot_11_bg", 
+                                            "open_adapter": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    29.0, 
+                                                    29.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                58.0, 
+                                                58.0
+                                            ], 
+                                            "type": 4, 
+                                            "uid": "eab549d7-89b9-4418-8142-ede46eebce2d"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "image": 134226696, 
+                                            "name": "frame", 
+                                            "open_adapter": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    29.0, 
+                                                    29.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                58.0, 
+                                                58.0
+                                            ], 
+                                            "type": 4, 
+                                            "uid": "2816bf1c-f9b4-4354-a7ec-d6049d7917f2"
+                                        }, 
+                                        {
+                                            "adapter_option": [
+                                                false, 
+                                                false, 
+                                                false, 
+                                                false, 
+                                                7.0, 
+                                                7.0, 
+                                                7.0, 
+                                                7.0
+                                            ], 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "image": null, 
+                                            "name": "icon", 
+                                            "open_adapter": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    29.0, 
+                                                    29.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                44.0, 
+                                                44.0
+                                            ], 
+                                            "type": 4, 
+                                            "uid": "e366fcf2-dc0c-4f01-b128-29b2ccd8db9d"
+                                        }
+                                    ], 
+                                    "event_list": [], 
+                                    "name": "card_slot_11", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            144.0, 
+                                            94.9999, 
+                                            53.9025, 
+                                            40.0784, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        58.0, 
+                                        58.0
+                                    ], 
+                                    "type": 7, 
+                                    "uid": "91d92aaf-aaec-4df9-8f2e-3c55b29cec60"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
+                                        150.0, 
+                                        6.0, 
+                                        446.0, 
+                                        6.0
+                                    ], 
+                                    "children": [
+                                        {
+                                            "adapter_option": [
+                                                true, 
+                                                true, 
+                                                true, 
+                                                true, 
+                                                0.0, 
+                                                0.0, 
+                                                0.0, 
+                                                0.0
+                                            ], 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "image": 906555, 
+                                            "name": "card_slot_12_bg", 
+                                            "open_adapter": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    29.0, 
+                                                    29.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                58.0, 
+                                                58.0
+                                            ], 
+                                            "type": 4, 
+                                            "uid": "24f0e238-8515-486b-b648-ea7666115ed8"
+                                        }, 
+                                        {
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "image": 134226696, 
+                                            "name": "frame", 
+                                            "open_adapter": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    29.0, 
+                                                    29.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                58.0, 
+                                                58.0
+                                            ], 
+                                            "type": 4, 
+                                            "uid": "dacadcc6-e93a-4d4d-a897-273d63ee78f1"
+                                        }, 
+                                        {
+                                            "adapter_option": [
+                                                false, 
+                                                false, 
+                                                false, 
+                                                false, 
+                                                7.0, 
+                                                7.0, 
+                                                7.0, 
+                                                7.0
+                                            ], 
+                                            "children": [], 
+                                            "event_list": [], 
+                                            "image": null, 
+                                            "name": "icon", 
+                                            "open_adapter": true, 
+                                            "pos_data": {
+                                                "__tuple__": true, 
+                                                "items": [
+                                                    29.0, 
+                                                    29.0, 
+                                                    50.0, 
+                                                    50.0, 
+                                                    1, 
+                                                    1
+                                                ]
+                                            }, 
+                                            "prefab_sub_key": null, 
+                                            "scene_ui_name": null, 
+                                            "size": [
+                                                44.0, 
+                                                44.0
+                                            ], 
+                                            "type": 4, 
+                                            "uid": "bdc0be42-88b1-4a07-bac2-fd3297bef52f"
+                                        }
+                                    ], 
+                                    "event_list": [], 
+                                    "name": "card_slot_12", 
+                                    "open_adapter": true, 
+                                    "pos_data": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            206.0, 
+                                            94.9999, 
+                                            77.0368, 
+                                            40.0784, 
+                                            1, 
+                                            1
+                                        ]
+                                    }, 
+                                    "prefab_sub_key": null, 
+                                    "scene_ui_name": null, 
+                                    "size": [
+                                        58.0, 
+                                        58.0
+                                    ], 
+                                    "type": 7, 
+                                    "uid": "38e15cba-b173-4037-9fb7-7b183e4c2d9c"
+                                }, 
+                                {
+                                    "adapter_option": [
+                                        false, 
+                                        false, 
+                                        false, 
+                                        false, 
                                         34.0, 
                                         146.0, 
                                         10.0, 
