@@ -1,11 +1,11 @@
-﻿local CONFIG = require 'config.entry_config'
+local CONFIG = require 'config.entry_config'
 local BondSystem = require 'runtime.bonds_chain'
-local AttackSkillObjects = require 'data.tables.attack_skills'
+local AttackSkillObjects = require 'data.tables.skill.attack_skills'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
-local BondDrawConfig = require 'data.tables.bond_draw_config'
-local BondNodeObjects = require 'data.tables.bond_nodes'
-local QualityImageTable = require 'data.tables.quality_image_table'
-local EvolutionObjects = require 'data.tables.marks'
+local BondDrawConfig = require 'data.tables.bond.bond_effect_runtime_rules'
+local BondNodeObjects = require 'data.tables.bond.bond_nodes'
+local QualityImageTable = require 'data.tables.economy.quality_image_table'
+local EvolutionObjects = require 'data.tables.outgame.marks'
 local ProgressionSystem = require 'runtime.progression'
 local BattlefieldSystem = require 'runtime.battlefield'
 local DebugToolsSystem = require 'runtime.debug_tools'
@@ -23,20 +23,16 @@ local RuntimeHudSystem = require 'ui.runtime_hud'
 local OutgameSystem = require 'ui.outgame'
 local AttackSkillsSystem = require 'runtime.attack_skills'
 local AutoActiveEffectsSystem = require 'runtime.auto_active_effects'
-local CannonSkill134258724System = require 'runtime.cannon_skill_134258724'
-local BondSetEffectsSystem = require 'runtime.bond_set_effects'
 local BondModifierEffects = require 'runtime.bond_modifier_effects'
-local BondEffectsTestFramework = require 'runtime.bond_effects_test_framework'
 local BattleAutoAcceptanceSystem = require 'runtime.battle_auto_acceptance'
 local EffectDebugSystem = require 'runtime.effect_debug'
 local BattleEventFeedSystem = require 'runtime.battle_event_feed'
-local RewardSystem = require 'runtime.rewards_disabled'
+local RewardSystem = require 'runtime.rewards'
 local GearUpgrades = require 'runtime.gear_upgrades'
 local AttrChoices = require 'runtime.attr_choices'
 local HeroSelectionRangeSystem = require 'runtime.hero_selection_range'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
-local HeroAttrPanel = require 'runtime.hero_attr_panel'
 local SkillFrameworkSystem = require 'runtime.skill_framework'
 local SampleSkillsSystem = require 'runtime.sample_skills'
 local ProjectileNameGuard = require 'runtime.projectile_name_guard'
@@ -54,20 +50,8 @@ debug_tools_system = nil
 debug_actions_system = nil
 gm_bond_effects_system = nil
 runtime_hud_system = nil
-choice_panel_system = nil
-runtime_ui_helpers = nil
 overview_model_system = nil
 outgame_system = nil
-session_state_system = nil
-input_events_system = nil
-runtime_loops_system = nil
-hero_tujian_panel_system = nil
-attack_skills_system = nil
-auto_active_effects_system = nil
-battle_auto_acceptance_system = nil
-cannon_skill_134258724_system = nil
-bond_set_effects_system = nil
-local effect_debug_system = nil
 reward_system = nil
 attr_choice_system = nil
 audio_system = nil
@@ -861,9 +845,7 @@ local function build_runtime_attr_dialog_chunks()
   if snapshot and hero_attr_system and hero_attr_system.log_snapshot then
     hero_attr_system.log_snapshot(STATE.hero, 'show_runtime_attr_dialog', nil, STATE)
   end
-  return HeroAttrPanel.build_chunks(snapshot, HeroAttrDefs, function(name)
-    return hero_attr_system.get_attr(STATE.hero, name)
-  end)
+  return {}
 end
 
 local function show_runtime_attr_dialog()
@@ -905,8 +887,6 @@ reward_system = RewardSystem.create({
     return BondSystem.collect_route_tags(STATE)
   end,
 })
-
-audio_system = nil
 
 mainline_task_system = require('runtime.mainline_tasks').create({
   STATE = STATE,
@@ -1495,7 +1475,8 @@ emit_damage_debug_visual = function(visual, fallback_target)
   end
   local debug_uid = tostring(visual.debug_uid or '')
   if visual.debug_kind == 'area' then
-    local center = resolve_debug_point(visual.debug_center) or (fallback_target and get_target_point(fallback_target) or nil)
+    local center = resolve_debug_point(visual.debug_center) or
+        (fallback_target and get_target_point(fallback_target) or nil)
     local radius = math.max(50, tonumber(visual.debug_radius) or 70)
     local area_uid = debug_uid ~= '' and ('area:' .. debug_uid) or nil
     if should_emit_damage_debug_uid(area_uid) then
@@ -1580,7 +1561,6 @@ function RuntimeEntry.emit_skill_hit_feedback(target, final_damage, hp_before)
   end
 end
 
-
 local SKILL_DAMAGE_REENTRANT_GUARD_LIMIT = 96
 
 deal_skill_damage = function(target, amount, damage, visual)
@@ -1602,10 +1582,15 @@ deal_skill_damage = function(target, amount, damage, visual)
     local target_multiplier = get_damage_bonus_multiplier(target, {
       is_skill = true,
     })
-    local final_damage = hero_attr_system.compute_damage(STATE.hero, amount, damage_meta, {
-      damage_kind = 'skill',
-      target_multiplier = target_multiplier,
-    })
+    local final_damage
+    if hero_attr_system and hero_attr_system.compute_damage then
+      final_damage = hero_attr_system.compute_damage(STATE.hero, amount, damage_meta, {
+        damage_kind = 'skill',
+        target_multiplier = target_multiplier,
+      })
+    else
+      final_damage = amount
+    end
     if final_damage <= 0 then
       return
     end
@@ -1659,6 +1644,89 @@ deal_skill_damage = function(target, amount, damage, visual)
   end
 end
 
+local function get_hero_attack()
+  if not STATE.hero or not STATE.hero:is_exist() then
+    return 0
+  end
+  if hero_attr_system and hero_attr_system.get_attr then
+    return hero_attr_system.get_attr(STATE.hero, '攻击') or STATE.hero:get_attr('攻击') or 0
+  end
+  return STATE.hero:get_attr('攻击') or 0
+end
+
+local function get_current_hero()
+  if STATE.hero and STATE.hero:is_exist() then
+    return STATE.hero
+  end
+  return nil
+end
+
+local function get_primary_target(range)
+  local units = get_enemies_in_range(STATE.hero, range or 1200, nil, 1)
+  return units and units[1] or nil
+end
+
+local function spawn_particle(_, point, effect_id, scale, duration, height)
+  if not effect_id or not point then
+    return nil
+  end
+  local ok, particle = pcall(y3.particle.create, {
+    type = effect_id,
+    target = point,
+    angle = 0,
+    scale = scale or 1.0,
+    time = duration or 0.3,
+    height = height or 0,
+  })
+  if ok and particle then
+    return particle
+  end
+  return nil
+end
+
+local function launch_projectile_from_hero(projectile_key, target, end_point, angle, time, height, on_finish)
+  if not projectile_key or not STATE.hero or not STATE.hero:is_exist() then
+    if on_finish then on_finish(nil) end
+    return nil
+  end
+  local ok, proj = pcall(y3.projectile.create, {
+    key = projectile_key,
+    target = STATE.hero,
+    socket = 'origin',
+    owner = STATE.hero,
+    angle = angle or 0,
+    time = time or 0.92,
+    remove_immediately = true,
+  })
+  if not ok or not proj then
+    if on_finish then on_finish(nil) end
+    return nil
+  end
+  if height then
+    pcall(proj.set_height, proj, height)
+  end
+  local dest = (target and target:is_exist() and target) or end_point
+  if dest then
+    pcall(proj.mover_target, proj, {
+      target = dest,
+      speed = 1500,
+      target_distance = 36,
+      height = height or 100,
+      face_angle = true,
+      on_finish = function()
+        local impact_pt = proj and proj:is_exist() and proj:get_point()
+        if proj and proj:is_exist() then
+          proj:remove()
+        end
+        if on_finish then on_finish(impact_pt) end
+      end,
+    })
+  elseif on_finish then
+    on_finish(nil)
+  end
+  return proj
+end
+
 local td_damage_api = SkillDamageTemplates.create({
   y3 = y3,
   deal_skill_damage = function(target, amount, damage_meta, visual)
@@ -1675,23 +1743,10 @@ skill_framework_system = SkillFrameworkSystem.create({
   y3 = y3,
   skill_damage_api = td_damage_api,
   get_enemies_in_range = get_enemies_in_range,
-  get_hero = function()
-    if STATE.hero and STATE.hero:is_exist() then
-      return STATE.hero
-    end
-    return nil
-  end,
+  get_hero = get_current_hero,
   get_hero_point = get_hero_point,
-  get_hero_attack = function()
-    if not STATE.hero or not STATE.hero:is_exist() then
-      return 0
-    end
-    return hero_attr_system.get_attr(STATE.hero, '攻击') or STATE.hero:get_attr('攻击') or 0
-  end,
-  get_primary_target = function(range)
-    local units = get_enemies_in_range(STATE.hero, range or 1200, nil, 1)
-    return units and units[1] or nil
-  end,
+  get_hero_attack = get_hero_attack,
+  get_primary_target = get_primary_target,
   get_hero_facing_towards = function(target)
     local hero = STATE.hero
     if not hero or not hero:is_exist() then
@@ -1724,65 +1779,8 @@ skill_framework_system = SkillFrameworkSystem.create({
     end
     return nil
   end,
-  spawn_particle = function(_, point, effect_id, scale, duration, height)
-    if not effect_id or not point then
-      return nil
-    end
-    local ok, particle = pcall(y3.particle.create, {
-      type = effect_id,
-      target = point,
-      angle = 0,
-      scale = scale or 1.0,
-      time = duration or 0.3,
-      height = height or 0,
-    })
-    if ok and particle then
-      return particle
-    end
-    return nil
-  end,
-  launch_projectile_from_hero = function(projectile_key, target, end_point, angle, time, height, on_finish)
-    if not projectile_key or not STATE.hero or not STATE.hero:is_exist() then
-      if on_finish then on_finish(nil) end
-      return nil
-    end
-    local ok, proj = pcall(y3.projectile.create, {
-      key = projectile_key,
-      target = STATE.hero,
-      socket = 'origin',
-      owner = STATE.hero,
-      angle = angle or 0,
-      time = time or 0.92,
-      remove_immediately = true,
-    })
-    if not ok or not proj then
-      if on_finish then on_finish(nil) end
-      return nil
-    end
-    if height then
-      pcall(proj.set_height, proj, height)
-    end
-    local dest = (target and target:is_exist() and target) or end_point
-    if dest then
-      pcall(proj.mover_target, proj, {
-        target = dest,
-        speed = 1500,
-        target_distance = 36,
-        height = height or 100,
-        face_angle = true,
-        on_finish = function()
-          local impact_pt = proj and proj:is_exist() and proj:get_point()
-          if proj and proj:is_exist() then
-            proj:remove()
-          end
-          if on_finish then on_finish(impact_pt) end
-        end,
-      })
-    elseif on_finish then
-      on_finish(nil)
-    end
-    return proj
-  end,
+  spawn_particle = spawn_particle,
+  launch_projectile_from_hero = launch_projectile_from_hero,
 })
 
 sample_skills_system = SampleSkillsSystem.create({
@@ -1794,82 +1792,12 @@ sample_skills_system = SampleSkillsSystem.create({
   skill_damage_api = td_damage_api,
   get_enemies_in_range = get_enemies_in_range,
   is_active_enemy = is_active_enemy,
-  get_hero = function()
-    if STATE.hero and STATE.hero:is_exist() then
-      return STATE.hero
-    end
-    return nil
-  end,
+  get_hero = get_current_hero,
   get_hero_point = get_hero_point,
-  get_hero_attack = function()
-    if not STATE.hero or not STATE.hero:is_exist() then
-      return 0
-    end
-    return hero_attr_system.get_attr(STATE.hero, '攻击') or STATE.hero:get_attr('攻击') or 0
-  end,
-  get_primary_target = function(range)
-    local units = get_enemies_in_range(STATE.hero, range or 1200, nil, 1)
-    return units and units[1] or nil
-  end,
-  spawn_particle = function(_, point, effect_id, scale, duration, height)
-    if not effect_id or not point then
-      return nil
-    end
-    local ok, particle = pcall(y3.particle.create, {
-      type = effect_id,
-      target = point,
-      angle = 0,
-      scale = scale or 1.0,
-      time = duration or 0.3,
-      height = height or 0,
-    })
-    if ok and particle then
-      return particle
-    end
-    return nil
-  end,
-  launch_projectile_from_hero = function(projectile_key, target, end_point, angle, time, height, on_finish)
-    if not projectile_key or not STATE.hero or not STATE.hero:is_exist() then
-      if on_finish then on_finish(nil) end
-      return nil
-    end
-    local ok, proj = pcall(y3.projectile.create, {
-      key = projectile_key,
-      target = STATE.hero,
-      socket = 'origin',
-      owner = STATE.hero,
-      angle = angle or 0,
-      time = time or 0.92,
-      remove_immediately = true,
-    })
-    if not ok or not proj then
-      if on_finish then on_finish(nil) end
-      return nil
-    end
-    if height then
-      pcall(proj.set_height, proj, height)
-    end
-    local dest = (target and target:is_exist() and target) or end_point
-    if dest then
-      pcall(proj.mover_target, proj, {
-        target = dest,
-        speed = 1500,
-        target_distance = 36,
-        height = height or 100,
-        face_angle = true,
-        on_finish = function()
-          local impact_pt = proj and proj:is_exist() and proj:get_point()
-          if proj and proj:is_exist() then
-            proj:remove()
-          end
-          if on_finish then on_finish(impact_pt) end
-        end,
-      })
-    elseif on_finish then
-      on_finish(nil)
-    end
-    return proj
-  end,
+  get_hero_attack = get_hero_attack,
+  get_primary_target = get_primary_target,
+  spawn_particle = spawn_particle,
+  launch_projectile_from_hero = launch_projectile_from_hero,
 })
 
 heal_hero = function(amount)
@@ -2463,12 +2391,6 @@ effect_debug_system = EffectDebugSystem.create({
   end,
 })
 
-bond_set_effects_system = BondSetEffectsSystem.create({
-  auto_active_effects_system = auto_active_effects_system,
-  effect_debug_system = effect_debug_system,
-})
-bond_set_effects_system.register_global_apis()
-
 STATE.hero_form_skills_system = require('runtime.hero_form_skills').create({
   STATE = STATE,
   y3 = y3,
@@ -2705,7 +2627,6 @@ end
 local function finish_game(is_win, reason)
   return battlefield_system.finish_game(is_win, reason)
 end
-
 
 debug_actions_system = DebugActionsSystem.create({
   STATE = STATE,
@@ -3066,9 +2987,7 @@ gm_bond_effects_system = GmBondEffectsSystem.create({
     return BondModifierEffects.is_force_special_effects_100()
   end,
   run_bond_self_test = function()
-    return BondEffectsTestFramework.run({
-      message = message,
-    })
+    return nil
   end,
   list_sample_skills = function()
     if sample_skills_system and sample_skills_system.list_samples then
@@ -3182,9 +3101,7 @@ battle_auto_acceptance_system = BattleAutoAcceptanceSystem.create({
     BondModifierEffects.set_force_special_effects_100(enabled)
   end,
   run_bond_self_test = function()
-    return BondEffectsTestFramework.run({
-      message = message,
-    })
+    return nil
   end,
   get_game_time = function()
     if y3 and y3.game and y3.game.current_game_run_time then
@@ -3406,12 +3323,14 @@ local function build_choice_list_cards()
     if card and is_visible and choice then
       local title = resolve_ui_child(card, 'title')
       if title and title.set_text then
-        title:set_text(tostring(choice.pretty_display_name or choice.display_name or choice.title_text or choice.name or '候选'))
+        title:set_text(tostring(choice.pretty_display_name or choice.display_name or choice.title_text or choice.name or
+          '候选'))
       end
 
       local subtitle = resolve_ui_child(card, 'sub_title')
       if subtitle and subtitle.set_text then
-        subtitle:set_text(tostring(choice.bond_root_name or choice.bond_name or choice.tag or choice.quality or kind or '候选'))
+        subtitle:set_text(tostring(choice.bond_root_name or choice.bond_name or choice.tag or choice.quality or kind or
+          '候选'))
       end
 
       local desc = resolve_ui_child(card, 'desc')
@@ -3439,17 +3358,6 @@ runtime_ui_helpers.refresh_choice_panel = function(...)
   build_choice_list_cards()
   return nil
 end
-
-cannon_skill_134258724_system = CannonSkill134258724System.create({
-  STATE = STATE,
-  y3 = y3,
-  hero_attr_system = hero_attr_system,
-  get_enemies_in_range = get_enemies_in_range,
-  deal_skill_damage = deal_skill_damage,
-  emit_damage_debug = function(visual)
-    emit_damage_debug_visual(visual, nil)
-  end,
-})
 
 runtime_ui_helpers.install_panel_systems()
 
@@ -3599,4 +3507,3 @@ function RuntimeEntry.bootstrap()
 end
 
 return RuntimeEntry
-

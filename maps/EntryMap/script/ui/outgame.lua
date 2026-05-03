@@ -1,4 +1,4 @@
-﻿local theme = require 'ui.theme'
+local theme = require 'ui.theme'
 local outgame_defs = require 'ui.outgame_defs'
 local ArchiveShop = require 'ui.outgame_archive_shop'
 local OutgameHeroGrowth = require 'runtime.outgame_hero_growth'
@@ -1631,9 +1631,13 @@ function M.create(env)
 
   local function ensure_top_entry_list_ui(ui)
     if not ui then
+      message('[top_entry] ui is nil, cannot ensure top entry list')
       return nil
     end
     ui.top_entry_list_root = ui.top_entry_list_root or resolve_ui_first({ 'top.list', 'top.top.list' })
+    if not is_ui_alive(ui.top_entry_list_root) then
+      message('[top_entry] top_entry_list_root is not alive, trying fallback')
+    end
     if (not is_ui_alive(ui.top_entry_list_root)) and (ui.top_entry_fallback_root == nil) then
       local host = resolve_ui_first({ 'top.top', 'top' })
       if is_ui_alive(host) and host.create_child then
@@ -1704,20 +1708,29 @@ function M.create(env)
   local function bind_top_entry_list(ui)
     local items = ensure_top_entry_list_ui(ui)
     if not items then
+      message('[top_entry] bind_top_entry_list: items is nil')
       return
     end
+    local bound_count = 0
+    local missing_count = 0
     for _, slot_ui in pairs(items) do
       local button = slot_ui.button
-      if is_ui_alive(button) and slot_ui.bound ~= true then
-        slot_ui.bound = true
-        button:add_fast_event('左键-按下', function()
-          if play_ui_click then
-            play_ui_click()
-          end
-          dispatch_top_entry_action(slot_ui.entry or {})
-        end)
+      if is_ui_alive(button) then
+        if slot_ui.bound ~= true then
+          slot_ui.bound = true
+          button:add_fast_event('左键-按下', function()
+            if play_ui_click then
+              play_ui_click()
+            end
+            dispatch_top_entry_action(slot_ui.entry or {})
+          end)
+          bound_count = bound_count + 1
+        end
+      else
+        missing_count = missing_count + 1
       end
     end
+    message(string.format('[top_entry] bind_top_entry_list: bound %d buttons, missing %d buttons', bound_count, missing_count))
   end
 
   local function bind_ui_events(ui)

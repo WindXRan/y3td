@@ -137,9 +137,6 @@ hero_model_ui=nil,
 hero_tujian_prefab=nil,
 hero_tujian_root=nil,
 hero_tujian_visible=false,
-skill_prefab=nil,
-skill_prefab_root=nil,
-skill_btn_comp=nil,
 buff_prefab=nil,
 buff_prefab_root=nil,
 buff_list_comp=nil}return w.runtime_hud end;
@@ -1072,23 +1069,7 @@ local function dY1()
 local a0=Y()
 local a2=V()
 if not a2 or not y or not y.ui_prefab or type(y.ui_prefab.create)~='function' then return end;
-local skill_parent=cN('skill_bar') or Z('BattleBottomHUD.layout.center_hub.combat_module')
 local buff_parent=cN('buff_row') or Z('BattleBottomHUD.layout.center_hub.combat_module')
-
-if not t(a0.skill_prefab_root) then
-local ok,prefab=pcall(y.ui_prefab.create,a2,'skill_btn',skill_parent)
-if ok and prefab then
-local root=prefab.get_child and prefab:get_child()or nil
-if t(root) then
-a0.skill_prefab=prefab
-a0.skill_prefab_root=root
-a0.skill_btn_comp=a.resolve_child(root,'skill_btn_1')or a.resolve_child(root,'skill_btn')
-a6(root,'set_z_order',9570)
-a6(root,'set_intercepts_operations',false)
-a9(root,a0.visible~=false)
-end
-end
-end
 
 if not t(a0.buff_prefab_root) then
 local ok,prefab=pcall(y.ui_prefab.create,a2,'bufflist',buff_parent)
@@ -1109,23 +1090,6 @@ end;
 local function dY2()
 local a0=Y()
 local hero=b9()
-if t(a0.skill_btn_comp)then
-local ability=nil
-if hero and hero.get_ability_by_slot and y and y.const and y.const.AbilityType then
-local ok,res=pcall(hero.get_ability_by_slot,hero,y.const.AbilityType.HERO,1)
-if ok then ability=res end
-if (not ability)and y.const.AbilityType.NORMAL then
-local ok2,res2=pcall(hero.get_ability_by_slot,hero,y.const.AbilityType.NORMAL,1)
-if ok2 then ability=res2 end
-end
-end
-if ability and a0.skill_btn_comp.bind_ability then
-pcall(a0.skill_btn_comp.bind_ability,a0.skill_btn_comp,ability)
-a9(a0.skill_prefab_root,a0.visible~=false)
-else
-a9(a0.skill_prefab_root,false)
-end
-end
 if t(a0.buff_list_comp)then
 if hero and a0.buff_list_comp.set_buff_on_ui then
 pcall(a0.buff_list_comp.set_buff_on_ui,a0.buff_list_comp,hero)
@@ -1391,7 +1355,6 @@ dW()
 dn()
 set_ui_visible(a0.big_cursor,a0.visible~=false and W().big_cursor)
 set_ui_visible(a0.attr_panel,a0.visible~=false and a0.attr_panel_visible)
-set_ui_visible(a0.skill_prefab_root,a0.visible~=false)
 set_ui_visible(a0.buff_prefab_root,a0.visible~=false)
 d1()
 d3()return a0 end;
@@ -1414,7 +1377,6 @@ set_ui_visible(a0.big_cursor,
 aa==true and W().big_cursor)
 set_ui_visible(a0.hero_tujian_root,
 aa==true and a0.hero_tujian_visible==true)
-set_ui_visible(a0.skill_prefab_root,aa==true)
 set_ui_visible(a0.buff_prefab_root,aa==true)end;
 
 -- maintainable helper aliases (no behavior change)

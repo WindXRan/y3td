@@ -790,704 +790,648 @@
             {
               "name": "skill_btn_1",
               "uid": "b646518a-1efa-48d3-9570-aea97d0ffeaf",
-              "type": 4,
+              "type": 17,
               "children": [
                 {
-                  "name": "skill_btn",
-                  "uid": "738f9888-8999-43a0-ae1f-73d058359a55",
-                  "type": 17,
+                  "name": "bg",
+                  "uid": "014dd8db-7f70-43a1-8718-3c844388b326",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "icon",
+                  "uid": "eb0e6570-2d41-448b-9a6c-b956f34a089d",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "cd",
+                  "uid": "b8ad2c2a-eb71-418e-92d6-022849d38929",
+                  "type": 5,
+                  "children": []
+                },
+                {
+                  "name": "cd_text",
+                  "uid": "dc47477e-f5ed-4424-95d5-771fb6553174",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "lv_bg",
+                  "uid": "60af0531-a863-4e42-84d3-094998476f07",
+                  "type": 4,
                   "children": [
                     {
-                      "name": "bg",
-                      "uid": "014dd8db-7f70-43a1-8718-3c844388b326",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "icon",
-                      "uid": "eb0e6570-2d41-448b-9a6c-b956f34a089d",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "cd",
-                      "uid": "b8ad2c2a-eb71-418e-92d6-022849d38929",
-                      "type": 5,
-                      "children": []
-                    },
-                    {
-                      "name": "cd_text",
-                      "uid": "dc47477e-f5ed-4424-95d5-771fb6553174",
+                      "name": "lv",
+                      "uid": "0901bf4c-f183-46fc-af8d-6b372119f467",
                       "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "lv_bg",
-                      "uid": "60af0531-a863-4e42-84d3-094998476f07",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "lv",
-                          "uid": "0901bf4c-f183-46fc-af8d-6b372119f467",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "stack",
-                      "uid": "f955f3a9-152c-4769-9c9c-0c0c227e0c56",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "learn",
-                      "uid": "648c0305-b4f7-4dc5-b4c7-95a7cca005c3",
-                      "type": 1,
-                      "children": []
-                    },
-                    {
-                      "name": "hot_key_bg",
-                      "uid": "eb98d444-2c27-4c2e-a018-6d51c4778c4e",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "hot_key",
-                          "uid": "80a367cc-321a-4586-a5c8-1e2168f6fbdd",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "out_of_mana",
-                      "uid": "2e62dbb2-9d63-44a0-b763-685167261a95",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "disable",
-                      "uid": "1ab29214-ef88-4e7b-89e6-6766b5db0ff3",
-                      "type": 4,
                       "children": []
                     }
                   ]
+                },
+                {
+                  "name": "stack",
+                  "uid": "f955f3a9-152c-4769-9c9c-0c0c227e0c56",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "learn",
+                  "uid": "648c0305-b4f7-4dc5-b4c7-95a7cca005c3",
+                  "type": 1,
+                  "children": []
+                },
+                {
+                  "name": "hot_key_bg",
+                  "uid": "eb98d444-2c27-4c2e-a018-6d51c4778c4e",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "hot_key",
+                      "uid": "80a367cc-321a-4586-a5c8-1e2168f6fbdd",
+                      "type": 3,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "out_of_mana",
+                  "uid": "2e62dbb2-9d63-44a0-b763-685167261a95",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "disable",
+                  "uid": "1ab29214-ef88-4e7b-89e6-6766b5db0ff3",
+                  "type": 4,
+                  "children": []
                 }
               ]
             },
             {
               "name": "skill_btn_2",
               "uid": "c7df14ef-0f24-4369-b0be-29a322b1b387",
-              "type": 4,
+              "type": 17,
               "children": [
                 {
-                  "name": "skill_btn",
-                  "uid": "79a6fcad-95b6-4867-bcd3-7b7c12411edc",
-                  "type": 17,
+                  "name": "bg",
+                  "uid": "e9d6890e-3efc-406e-886c-bfe8236375fc",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "icon",
+                  "uid": "415037d0-85f0-44ee-838c-61a0bee7cd8a",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "cd",
+                  "uid": "fe19d69b-a050-4afe-b8ce-53b8e58e103a",
+                  "type": 5,
+                  "children": []
+                },
+                {
+                  "name": "cd_text",
+                  "uid": "a0514f29-8d0a-4410-a063-4917fd533f7f",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "lv_bg",
+                  "uid": "c10a93d4-8a8c-4472-9144-014ec3eba8ab",
+                  "type": 4,
                   "children": [
                     {
-                      "name": "bg",
-                      "uid": "e9d6890e-3efc-406e-886c-bfe8236375fc",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "icon",
-                      "uid": "415037d0-85f0-44ee-838c-61a0bee7cd8a",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "cd",
-                      "uid": "fe19d69b-a050-4afe-b8ce-53b8e58e103a",
-                      "type": 5,
-                      "children": []
-                    },
-                    {
-                      "name": "cd_text",
-                      "uid": "a0514f29-8d0a-4410-a063-4917fd533f7f",
+                      "name": "lv",
+                      "uid": "2627ccf2-b8e5-46a8-a791-d789dac6d0c8",
                       "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "lv_bg",
-                      "uid": "c10a93d4-8a8c-4472-9144-014ec3eba8ab",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "lv",
-                          "uid": "2627ccf2-b8e5-46a8-a791-d789dac6d0c8",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "stack",
-                      "uid": "acc12f5c-6a05-4dee-b075-8d001b5de259",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "learn",
-                      "uid": "5771d647-5b96-4145-a8a0-bd1e98d7a0d7",
-                      "type": 1,
-                      "children": []
-                    },
-                    {
-                      "name": "hot_key_bg",
-                      "uid": "ffe1445d-dd13-470a-bec5-b1cf4157daae",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "hot_key",
-                          "uid": "5d891be3-7190-468d-a8b6-32912f3e4646",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "out_of_mana",
-                      "uid": "a4972f04-9541-4009-a7ee-85aa7f0136a6",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "disable",
-                      "uid": "c867abf7-c6b4-4268-b467-1e1a0ff5fe60",
-                      "type": 4,
                       "children": []
                     }
                   ]
+                },
+                {
+                  "name": "stack",
+                  "uid": "acc12f5c-6a05-4dee-b075-8d001b5de259",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "learn",
+                  "uid": "5771d647-5b96-4145-a8a0-bd1e98d7a0d7",
+                  "type": 1,
+                  "children": []
+                },
+                {
+                  "name": "hot_key_bg",
+                  "uid": "ffe1445d-dd13-470a-bec5-b1cf4157daae",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "hot_key",
+                      "uid": "5d891be3-7190-468d-a8b6-32912f3e4646",
+                      "type": 3,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "out_of_mana",
+                  "uid": "a4972f04-9541-4009-a7ee-85aa7f0136a6",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "disable",
+                  "uid": "c867abf7-c6b4-4268-b467-1e1a0ff5fe60",
+                  "type": 4,
+                  "children": []
                 }
               ]
             },
             {
               "name": "skill_btn_3",
               "uid": "d1e7eb78-7b35-485d-878a-c18a754fa0a5",
-              "type": 4,
+              "type": 17,
               "children": [
                 {
-                  "name": "skill_btn",
-                  "uid": "e1feacbd-ac68-40e1-ad44-90d04438b46d",
-                  "type": 17,
+                  "name": "bg",
+                  "uid": "9e9bc39d-3054-48bd-a73a-144854b274aa",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "icon",
+                  "uid": "bf7bc46b-0f75-40ad-b622-415bf25da6ad",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "cd",
+                  "uid": "b690f062-96ff-4214-8ae6-61ae46c4d2b3",
+                  "type": 5,
+                  "children": []
+                },
+                {
+                  "name": "cd_text",
+                  "uid": "95e3a96a-0e46-4e90-8443-8b3069be790c",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "lv_bg",
+                  "uid": "76c36873-01ad-4d35-9fc3-b654c76afbd7",
+                  "type": 4,
                   "children": [
                     {
-                      "name": "bg",
-                      "uid": "9e9bc39d-3054-48bd-a73a-144854b274aa",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "icon",
-                      "uid": "bf7bc46b-0f75-40ad-b622-415bf25da6ad",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "cd",
-                      "uid": "b690f062-96ff-4214-8ae6-61ae46c4d2b3",
-                      "type": 5,
-                      "children": []
-                    },
-                    {
-                      "name": "cd_text",
-                      "uid": "95e3a96a-0e46-4e90-8443-8b3069be790c",
+                      "name": "lv",
+                      "uid": "b37dc5c9-0b40-4946-b6e6-09837bbf9c11",
                       "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "lv_bg",
-                      "uid": "76c36873-01ad-4d35-9fc3-b654c76afbd7",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "lv",
-                          "uid": "b37dc5c9-0b40-4946-b6e6-09837bbf9c11",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "stack",
-                      "uid": "ccd6d7bf-7240-4e89-a54a-3c32dd0e9009",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "learn",
-                      "uid": "c37d66e9-3cfe-40d9-92ea-0fd589e0b8a6",
-                      "type": 1,
-                      "children": []
-                    },
-                    {
-                      "name": "hot_key_bg",
-                      "uid": "21a69779-10f3-4384-84a1-249fed4414e2",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "hot_key",
-                          "uid": "cbc2c721-9cd4-4652-875c-e7bd40086a8a",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "out_of_mana",
-                      "uid": "7dbabec3-c5a1-4538-902c-bb0ee2984ac7",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "disable",
-                      "uid": "c1cdec6e-1d01-4a5b-bb13-caefa903de93",
-                      "type": 4,
                       "children": []
                     }
                   ]
+                },
+                {
+                  "name": "stack",
+                  "uid": "ccd6d7bf-7240-4e89-a54a-3c32dd0e9009",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "learn",
+                  "uid": "c37d66e9-3cfe-40d9-92ea-0fd589e0b8a6",
+                  "type": 1,
+                  "children": []
+                },
+                {
+                  "name": "hot_key_bg",
+                  "uid": "21a69779-10f3-4384-84a1-249fed4414e2",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "hot_key",
+                      "uid": "cbc2c721-9cd4-4652-875c-e7bd40086a8a",
+                      "type": 3,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "out_of_mana",
+                  "uid": "7dbabec3-c5a1-4538-902c-bb0ee2984ac7",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "disable",
+                  "uid": "c1cdec6e-1d01-4a5b-bb13-caefa903de93",
+                  "type": 4,
+                  "children": []
                 }
               ]
             },
             {
               "name": "skill_btn_4",
               "uid": "8f1db3dd-9f47-4616-afc7-bd553ff489e9",
-              "type": 4,
+              "type": 17,
               "children": [
                 {
-                  "name": "skill_btn",
-                  "uid": "0db22b5b-a073-4020-9e15-4619a55aedba",
-                  "type": 17,
+                  "name": "bg",
+                  "uid": "6bac7c94-17e7-4cf5-9d36-eeb038ed08bf",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "icon",
+                  "uid": "05c789b9-b638-4e18-9ad9-1c6cafa06bd4",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "cd",
+                  "uid": "22e29d08-fd99-4fe0-ab2e-59b9ca751be9",
+                  "type": 5,
+                  "children": []
+                },
+                {
+                  "name": "cd_text",
+                  "uid": "234c2519-bb3f-443f-8f08-4c096398796c",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "lv_bg",
+                  "uid": "19242ce9-b3b0-4ece-a503-b8b26682980b",
+                  "type": 4,
                   "children": [
                     {
-                      "name": "bg",
-                      "uid": "6bac7c94-17e7-4cf5-9d36-eeb038ed08bf",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "icon",
-                      "uid": "05c789b9-b638-4e18-9ad9-1c6cafa06bd4",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "cd",
-                      "uid": "22e29d08-fd99-4fe0-ab2e-59b9ca751be9",
-                      "type": 5,
-                      "children": []
-                    },
-                    {
-                      "name": "cd_text",
-                      "uid": "234c2519-bb3f-443f-8f08-4c096398796c",
+                      "name": "lv",
+                      "uid": "ac7e6ac8-61b2-483e-a921-3ce6b69dee8e",
                       "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "lv_bg",
-                      "uid": "19242ce9-b3b0-4ece-a503-b8b26682980b",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "lv",
-                          "uid": "ac7e6ac8-61b2-483e-a921-3ce6b69dee8e",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "stack",
-                      "uid": "2521da7f-2809-4f0d-9ae3-03f1aa852dc4",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "learn",
-                      "uid": "001e1e7d-77c1-4429-ba84-c94a3d71721e",
-                      "type": 1,
-                      "children": []
-                    },
-                    {
-                      "name": "hot_key_bg",
-                      "uid": "93c6fc5a-6057-436c-a800-5ba6fcca3ccf",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "hot_key",
-                          "uid": "7d4fc2f3-51c3-491c-96de-ba7563c91c36",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "out_of_mana",
-                      "uid": "933ebf95-3b67-4745-b2e4-8629e4e167af",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "disable",
-                      "uid": "71214c82-b9b6-45f7-80d9-13c46e90d4c0",
-                      "type": 4,
                       "children": []
                     }
                   ]
+                },
+                {
+                  "name": "stack",
+                  "uid": "2521da7f-2809-4f0d-9ae3-03f1aa852dc4",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "learn",
+                  "uid": "001e1e7d-77c1-4429-ba84-c94a3d71721e",
+                  "type": 1,
+                  "children": []
+                },
+                {
+                  "name": "hot_key_bg",
+                  "uid": "93c6fc5a-6057-436c-a800-5ba6fcca3ccf",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "hot_key",
+                      "uid": "7d4fc2f3-51c3-491c-96de-ba7563c91c36",
+                      "type": 3,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "out_of_mana",
+                  "uid": "933ebf95-3b67-4745-b2e4-8629e4e167af",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "disable",
+                  "uid": "71214c82-b9b6-45f7-80d9-13c46e90d4c0",
+                  "type": 4,
+                  "children": []
                 }
               ]
             },
             {
               "name": "skill_btn_5",
               "uid": "a1975b86-95d5-45ed-b2e6-80ce6e6dd1e9",
-              "type": 4,
+              "type": 17,
               "children": [
                 {
-                  "name": "skill_btn",
-                  "uid": "ec903fbb-6fe5-43c2-94b6-f8708014a6a1",
-                  "type": 17,
+                  "name": "bg",
+                  "uid": "c92f9096-ec97-4026-8a9a-25a56fd7b13d",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "icon",
+                  "uid": "d85d7f6f-b911-443e-8f9a-4bee09073688",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "cd",
+                  "uid": "4fdc9a89-9a6f-44ea-8bca-fa38a7bdd6fa",
+                  "type": 5,
+                  "children": []
+                },
+                {
+                  "name": "cd_text",
+                  "uid": "2b20b908-f9dc-414a-9193-7e96a430faf3",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "lv_bg",
+                  "uid": "55e5e3bd-43d7-4ce8-82f9-5142eff60730",
+                  "type": 4,
                   "children": [
                     {
-                      "name": "bg",
-                      "uid": "c92f9096-ec97-4026-8a9a-25a56fd7b13d",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "icon",
-                      "uid": "d85d7f6f-b911-443e-8f9a-4bee09073688",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "cd",
-                      "uid": "4fdc9a89-9a6f-44ea-8bca-fa38a7bdd6fa",
-                      "type": 5,
-                      "children": []
-                    },
-                    {
-                      "name": "cd_text",
-                      "uid": "2b20b908-f9dc-414a-9193-7e96a430faf3",
+                      "name": "lv",
+                      "uid": "c9fc0f91-67a5-4fb7-a7e1-5d9665ec7f85",
                       "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "lv_bg",
-                      "uid": "55e5e3bd-43d7-4ce8-82f9-5142eff60730",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "lv",
-                          "uid": "c9fc0f91-67a5-4fb7-a7e1-5d9665ec7f85",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "stack",
-                      "uid": "bcbcba30-d1f8-4b17-9637-cffa6a511053",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "learn",
-                      "uid": "adc5d0d1-e6eb-4c2f-ad71-70e24429c54a",
-                      "type": 1,
-                      "children": []
-                    },
-                    {
-                      "name": "hot_key_bg",
-                      "uid": "20db59cc-0cb4-414b-a528-eeabd235593a",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "hot_key",
-                          "uid": "3e2e730b-7222-425e-bb37-0244e4b75e03",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "out_of_mana",
-                      "uid": "5e23e21c-ee31-4a4e-bcfc-011a66cb5cf4",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "disable",
-                      "uid": "9224fc3d-9756-4ec3-bac1-c9b146fc02fa",
-                      "type": 4,
                       "children": []
                     }
                   ]
+                },
+                {
+                  "name": "stack",
+                  "uid": "bcbcba30-d1f8-4b17-9637-cffa6a511053",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "learn",
+                  "uid": "adc5d0d1-e6eb-4c2f-ad71-70e24429c54a",
+                  "type": 1,
+                  "children": []
+                },
+                {
+                  "name": "hot_key_bg",
+                  "uid": "20db59cc-0cb4-414b-a528-eeabd235593a",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "hot_key",
+                      "uid": "3e2e730b-7222-425e-bb37-0244e4b75e03",
+                      "type": 3,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "out_of_mana",
+                  "uid": "5e23e21c-ee31-4a4e-bcfc-011a66cb5cf4",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "disable",
+                  "uid": "9224fc3d-9756-4ec3-bac1-c9b146fc02fa",
+                  "type": 4,
+                  "children": []
                 }
               ]
             },
             {
               "name": "skill_btn_6",
               "uid": "0a6efdb8-c516-4eb5-a3aa-0a313fc20dc4",
-              "type": 4,
+              "type": 17,
               "children": [
                 {
-                  "name": "skill_btn",
-                  "uid": "4e04d3ac-8ea9-4d74-8aa1-635d0ddf7e32",
-                  "type": 17,
+                  "name": "bg",
+                  "uid": "6189079d-8075-4a29-8677-09189d30a7e7",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "icon",
+                  "uid": "b21018ce-bd49-4d5c-b7bb-3c2d0b3687da",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "cd",
+                  "uid": "babae597-059e-4fd3-801c-097b793b3d8f",
+                  "type": 5,
+                  "children": []
+                },
+                {
+                  "name": "cd_text",
+                  "uid": "ee5911cf-f736-469f-a1f0-ad9965c5f3c2",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "lv_bg",
+                  "uid": "ce585c94-36eb-459a-a679-604f5d83431a",
+                  "type": 4,
                   "children": [
                     {
-                      "name": "bg",
-                      "uid": "6189079d-8075-4a29-8677-09189d30a7e7",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "icon",
-                      "uid": "b21018ce-bd49-4d5c-b7bb-3c2d0b3687da",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "cd",
-                      "uid": "babae597-059e-4fd3-801c-097b793b3d8f",
-                      "type": 5,
-                      "children": []
-                    },
-                    {
-                      "name": "cd_text",
-                      "uid": "ee5911cf-f736-469f-a1f0-ad9965c5f3c2",
+                      "name": "lv",
+                      "uid": "5e1d3863-661f-4ec7-858e-eafcc27e02d8",
                       "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "lv_bg",
-                      "uid": "ce585c94-36eb-459a-a679-604f5d83431a",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "lv",
-                          "uid": "5e1d3863-661f-4ec7-858e-eafcc27e02d8",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "stack",
-                      "uid": "5a5d2758-6203-4db7-a620-d6beb3e96568",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "learn",
-                      "uid": "b3a5c656-821f-457a-88b0-f78ab7074af0",
-                      "type": 1,
-                      "children": []
-                    },
-                    {
-                      "name": "hot_key_bg",
-                      "uid": "0d1f9446-e5a7-44ef-8ac3-be66134433fe",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "hot_key",
-                          "uid": "6b691d0c-dd55-4223-8e0b-7fff93e971f7",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "out_of_mana",
-                      "uid": "b1395535-3752-4c3c-8c9f-30934591c4e6",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "disable",
-                      "uid": "9b58a645-fc82-4d3c-8e1d-c29938664acd",
-                      "type": 4,
                       "children": []
                     }
                   ]
+                },
+                {
+                  "name": "stack",
+                  "uid": "5a5d2758-6203-4db7-a620-d6beb3e96568",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "learn",
+                  "uid": "b3a5c656-821f-457a-88b0-f78ab7074af0",
+                  "type": 1,
+                  "children": []
+                },
+                {
+                  "name": "hot_key_bg",
+                  "uid": "0d1f9446-e5a7-44ef-8ac3-be66134433fe",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "hot_key",
+                      "uid": "6b691d0c-dd55-4223-8e0b-7fff93e971f7",
+                      "type": 3,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "out_of_mana",
+                  "uid": "b1395535-3752-4c3c-8c9f-30934591c4e6",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "disable",
+                  "uid": "9b58a645-fc82-4d3c-8e1d-c29938664acd",
+                  "type": 4,
+                  "children": []
                 }
               ]
             },
             {
               "name": "skill_btn_7",
               "uid": "42aa380d-4f8a-4e99-8351-ffa589a705d9",
-              "type": 4,
+              "type": 17,
               "children": [
                 {
-                  "name": "skill_btn",
-                  "uid": "fe3c69f7-c9fa-4448-a134-bc3103542916",
-                  "type": 17,
+                  "name": "bg",
+                  "uid": "01434a6e-334d-4d8a-ad00-3a4b9c79b2a6",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "icon",
+                  "uid": "57e3006b-ce8c-46de-88fb-83d43e440473",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "cd",
+                  "uid": "1449a3b9-b2c2-4e01-aeff-1fb9edf23cac",
+                  "type": 5,
+                  "children": []
+                },
+                {
+                  "name": "cd_text",
+                  "uid": "0ea89eb1-9b19-46cb-8d2e-ec7c7c3ebb76",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "lv_bg",
+                  "uid": "ab06c5ca-b1ff-4187-b648-0128ac0ecbec",
+                  "type": 4,
                   "children": [
                     {
-                      "name": "bg",
-                      "uid": "01434a6e-334d-4d8a-ad00-3a4b9c79b2a6",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "icon",
-                      "uid": "57e3006b-ce8c-46de-88fb-83d43e440473",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "cd",
-                      "uid": "1449a3b9-b2c2-4e01-aeff-1fb9edf23cac",
-                      "type": 5,
-                      "children": []
-                    },
-                    {
-                      "name": "cd_text",
-                      "uid": "0ea89eb1-9b19-46cb-8d2e-ec7c7c3ebb76",
+                      "name": "lv",
+                      "uid": "eff60119-36c3-40cc-98a1-66da7f51fcbe",
                       "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "lv_bg",
-                      "uid": "ab06c5ca-b1ff-4187-b648-0128ac0ecbec",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "lv",
-                          "uid": "eff60119-36c3-40cc-98a1-66da7f51fcbe",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "stack",
-                      "uid": "d9d48233-fa5b-4a2e-8543-6f1c5e1ecf18",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "learn",
-                      "uid": "eec4ff51-30e3-4bbf-801b-1203e21ce129",
-                      "type": 1,
-                      "children": []
-                    },
-                    {
-                      "name": "hot_key_bg",
-                      "uid": "7926b2c7-96c6-4b25-bbb8-ac4ee09559d6",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "hot_key",
-                          "uid": "5b1abaaa-239c-4d1d-be43-0a6119a4d6c5",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "out_of_mana",
-                      "uid": "f2ba1648-8624-4d3b-b9b3-7b6acb7ea605",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "disable",
-                      "uid": "6c59661f-f893-47f1-bfd7-042acb219106",
-                      "type": 4,
                       "children": []
                     }
                   ]
+                },
+                {
+                  "name": "stack",
+                  "uid": "d9d48233-fa5b-4a2e-8543-6f1c5e1ecf18",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "learn",
+                  "uid": "eec4ff51-30e3-4bbf-801b-1203e21ce129",
+                  "type": 1,
+                  "children": []
+                },
+                {
+                  "name": "hot_key_bg",
+                  "uid": "7926b2c7-96c6-4b25-bbb8-ac4ee09559d6",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "hot_key",
+                      "uid": "5b1abaaa-239c-4d1d-be43-0a6119a4d6c5",
+                      "type": 3,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "out_of_mana",
+                  "uid": "f2ba1648-8624-4d3b-b9b3-7b6acb7ea605",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "disable",
+                  "uid": "6c59661f-f893-47f1-bfd7-042acb219106",
+                  "type": 4,
+                  "children": []
                 }
               ]
             },
             {
               "name": "skill_btn_8",
               "uid": "4e759b3d-dd0f-4666-80be-93e45b43712d",
-              "type": 4,
+              "type": 17,
               "children": [
                 {
-                  "name": "skill_btn",
-                  "uid": "9747acd8-270b-46c4-b3c3-48c32a8b0731",
-                  "type": 17,
+                  "name": "bg",
+                  "uid": "4778337e-df90-4be5-b763-1e158a0a7e00",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "icon",
+                  "uid": "9472001e-422d-45e5-8f7f-4b79748650c2",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "cd",
+                  "uid": "92e2449e-6ec3-4b23-87e5-5aaafb966037",
+                  "type": 5,
+                  "children": []
+                },
+                {
+                  "name": "cd_text",
+                  "uid": "1bb7f9b6-0fd3-440f-9356-6e85655b394f",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "lv_bg",
+                  "uid": "0f2c60b7-c674-457d-b2c8-73f0f622f441",
+                  "type": 4,
                   "children": [
                     {
-                      "name": "bg",
-                      "uid": "4778337e-df90-4be5-b763-1e158a0a7e00",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "icon",
-                      "uid": "9472001e-422d-45e5-8f7f-4b79748650c2",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "cd",
-                      "uid": "92e2449e-6ec3-4b23-87e5-5aaafb966037",
-                      "type": 5,
-                      "children": []
-                    },
-                    {
-                      "name": "cd_text",
-                      "uid": "1bb7f9b6-0fd3-440f-9356-6e85655b394f",
+                      "name": "lv",
+                      "uid": "4b27bc87-2176-4538-b628-ba5a61d93133",
                       "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "lv_bg",
-                      "uid": "0f2c60b7-c674-457d-b2c8-73f0f622f441",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "lv",
-                          "uid": "4b27bc87-2176-4538-b628-ba5a61d93133",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "stack",
-                      "uid": "2345386b-0136-444b-825b-d0f8bf0a1fbd",
-                      "type": 3,
-                      "children": []
-                    },
-                    {
-                      "name": "learn",
-                      "uid": "4babad0c-245e-41cb-aafc-29657053458f",
-                      "type": 1,
-                      "children": []
-                    },
-                    {
-                      "name": "hot_key_bg",
-                      "uid": "8fead8f9-0d3d-41e6-a999-7aa10b6b9614",
-                      "type": 4,
-                      "children": [
-                        {
-                          "name": "hot_key",
-                          "uid": "ccbd633a-5246-4cf8-88dd-f54560934103",
-                          "type": 3,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "name": "out_of_mana",
-                      "uid": "dca583b5-e6d9-4dc7-aeca-f08dcfa5d557",
-                      "type": 4,
-                      "children": []
-                    },
-                    {
-                      "name": "disable",
-                      "uid": "85c94c4d-55a9-4243-ae24-f8ecfe4f37ea",
-                      "type": 4,
                       "children": []
                     }
                   ]
+                },
+                {
+                  "name": "stack",
+                  "uid": "2345386b-0136-444b-825b-d0f8bf0a1fbd",
+                  "type": 3,
+                  "children": []
+                },
+                {
+                  "name": "learn",
+                  "uid": "4babad0c-245e-41cb-aafc-29657053458f",
+                  "type": 1,
+                  "children": []
+                },
+                {
+                  "name": "hot_key_bg",
+                  "uid": "8fead8f9-0d3d-41e6-a999-7aa10b6b9614",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "hot_key",
+                      "uid": "ccbd633a-5246-4cf8-88dd-f54560934103",
+                      "type": 3,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "out_of_mana",
+                  "uid": "dca583b5-e6d9-4dc7-aeca-f08dcfa5d557",
+                  "type": 4,
+                  "children": []
+                },
+                {
+                  "name": "disable",
+                  "uid": "85c94c4d-55a9-4243-ae24-f8ecfe4f37ea",
+                  "type": 4,
+                  "children": []
                 }
               ]
             }

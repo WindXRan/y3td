@@ -1733,10 +1733,6 @@ function M.get_slot_icon(state, slot)
   end
 
   local node_def = get_node_def(node_id)
-  if node_def and node_def.icon then
-    return node_def.icon
-  end
-
   if string.sub(node_id, 1, 8) == '__group_' then
     local group_def = GROUP_CHOICE_DEFS[string.sub(node_id, 9)]
     return group_def and group_def.icon or nil
@@ -1744,16 +1740,38 @@ function M.get_slot_icon(state, slot)
 
   local modifier_card = get_modifier_card(node_id)
   if modifier_card then
-    if modifier_card.icon then
-      return modifier_card.icon
-    end
+    -- 对于技能卡，先尝试从 SkillVisuals 获取图标
     local visual = SkillVisuals and SkillVisuals.get_by_bond_name and SkillVisuals.get_by_bond_name(modifier_card.bond_name or '')
       or (SkillVisuals and SkillVisuals.visual_by_bond and SkillVisuals.visual_by_bond[modifier_card.bond_name or ''])
-    if visual and tonumber(visual.icon_key) and tonumber(visual.icon_key) > 0 then
-      return tonumber(visual.icon_key)
+    if visual then
+      if tonumber(visual.icon_key) and tonumber(visual.icon_key) > 0 then
+        return tonumber(visual.icon_key)
+      elseif tonumber(visual.particle_key) and tonumber(visual.particle_key) > 0 then
+        return tonumber(visual.particle_key)
+      end
     end
-    if visual and tonumber(visual.particle_key) and tonumber(visual.particle_key) > 0 then
-      return tonumber(visual.particle_key)
+    -- 如果 SkillVisuals 没有，使用卡片自带的图标或回退图标
+    if modifier_card.icon and tonumber(modifier_card.icon) and tonumber(modifier_card.icon) > 0 then
+      return tonumber(modifier_card.icon)
+    end
+    return 134269625 -- 回退图标
+  end
+
+  if node_def then
+    -- 对于普通节点，先尝试从 SkillVisuals 获取图标
+    local bond_name = node_def.visual_bond ~= '' and node_def.visual_bond or node_def.group_id
+    local visual = SkillVisuals and SkillVisuals.get_by_bond_name and SkillVisuals.get_by_bond_name(bond_name or '')
+      or (SkillVisuals and SkillVisuals.visual_by_bond and SkillVisuals.visual_by_bond[bond_name or ''])
+    if visual then
+      if tonumber(visual.icon_key) and tonumber(visual.icon_key) > 0 then
+        return tonumber(visual.icon_key)
+      elseif tonumber(visual.particle_key) and tonumber(visual.particle_key) > 0 then
+        return tonumber(visual.particle_key)
+      end
+    end
+    -- 如果 SkillVisuals 没有，使用节点自带的图标
+    if node_def.icon and tonumber(node_def.icon) and tonumber(node_def.icon) > 0 then
+      return tonumber(node_def.icon)
     end
   end
 
