@@ -3171,7 +3171,7 @@ battle_auto_acceptance_system = BattleAutoAcceptanceSystem.create({
   CONFIG = CONFIG,
   y3 = y3,
   message = message,
-  auto_start_in_n0 = true,
+  auto_start_in_n0 = false,
   is_battle_active = function()
     return STATE.session_phase == 'battle' and STATE.game_finished ~= true
   end,
