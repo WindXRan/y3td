@@ -1,8 +1,0 @@
-﻿l0_key,l0_title,l1_key,l1_title,l2_key,l2_title,action,section,shop_primary,shop_category,enabled,order_index
-archive_root,存档生涯商城,archive,存档,warehouse,仓库,open_archive,archive,,,1,10
-archive_root,存档生涯商城,career,生涯,honor_level,荣誉等级,open_archive_honor_level,career,,,1,20
-archive_root,存档生涯商城,career,生涯,achievement,成就,open_archive_career,career,,,1,25
-archive_root,存档生涯商城,shop,商城,goods,商品,open_archive_shop,shop,商品,,1,30
-archive_root,存档生涯商城,shop,商城,collection_score,典藏积分,open_archive_collection_score,shop,典藏积分,,1,40
-archive_root,存档生涯商城,shop,商城,map_level,地图等级,open_archive_map_level,shop,地图等级,,1,50
-archive_root,存档生涯商城,ranking,排行榜,power_rank,战力排行榜,open_archive_ranking,shop,,,1,60

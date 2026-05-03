@@ -581,6 +581,7 @@ end
 local function resolve_active_group_key(shop, state, all_category)
   local section = tostring(state and state.archive_panel_section or '')
   local active_group_key = normalize_key(get_category(state))
+  local primary_group_key = normalize_key(get_primary(state))
   if section == 'career' then
     active_group_key = normalize_key(tostring(state and state.archive_panel_career_tab or CAREER_TAB_LABELS[1]))
   end
@@ -588,7 +589,7 @@ local function resolve_active_group_key(shop, state, all_category)
     if section == 'career' then
       active_group_key = normalize_key(tostring(state and state.archive_panel_career_tab or CAREER_TAB_LABELS[1]))
     else
-      active_group_key = normalize_key(get_primary(state))
+      active_group_key = primary_group_key
     end
   end
   if active_group_key == '' then
@@ -602,7 +603,20 @@ local function resolve_active_group_key(shop, state, all_category)
     end
   end
   if not group_exists then
-    active_group_key = normalize_key((shop.middle_groups and shop.middle_groups[1] and shop.middle_groups[1].name) or '')
+    local primary_group_exists = false
+    if primary_group_key ~= '' then
+      for _, group in ipairs(shop.middle_groups or {}) do
+        if normalize_key(group.name) == primary_group_key then
+          primary_group_exists = true
+          break
+        end
+      end
+    end
+    if primary_group_exists then
+      active_group_key = primary_group_key
+    else
+      active_group_key = normalize_key((shop.middle_groups and shop.middle_groups[1] and shop.middle_groups[1].name) or '')
+    end
   end
   return active_group_key
 end

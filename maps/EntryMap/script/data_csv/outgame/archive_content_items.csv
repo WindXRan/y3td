@@ -1,7 +1,0 @@
-﻿一级页签,二级页签,key,node,label_node,label,value_node,value_source,action,enabled,order_index
-生涯,荣誉等级,honor_level,生涯.称号,label,荣誉等级,,,open_archive_honor_level,1,10
-生涯,成就,achievement,生涯.成就,label,成就,,,open_archive_career,1,20
-商城,典藏积分,collection_score,商城.典藏积分,label,典藏积分,bg.num,archive_pool_score,open_archive_collection_score,1,30
-商城,地图等级,map_level,商城.地图等级,label,地图等级,bg.lv,map_level,open_archive_map_level,1,40
-商城,商品,shop,商城.商城1,label,商城,,,open_archive_shop,1,50
-存档,仓库,warehouse,存档.仓库,label,仓库,,,open_archive_warehouse,1,60

@@ -647,11 +647,6 @@ local function enforce_runtime_ui_phase(is_battle)
     local hidden_in_battle = {
       'outgame',
       'ArchivePanel',
-      'ArchivePageProfile',
-      'ArchivePageEquipment',
-      'ArchivePageUniversal',
-      'ArchivePageChest',
-      'ArchivePagePool',
       'LoadingPanel',
       'LogoPanel',
       'win',
