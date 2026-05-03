@@ -1,0 +1,2310 @@
+{
+  "name": "ArchiveMain",
+  "uid": "6f7266eb-92a4-40e7-b789-298b75c399d6",
+  "type": 2,
+  "children": [
+    {
+      "name": "layout",
+      "uid": "b25c0cad-bc77-4b97-a56d-675fe8c49470",
+      "type": 7,
+      "children": [
+        {
+          "name": "bg",
+          "uid": "28235377-d091-4f8f-b893-65fe71e2c1df",
+          "type": 4
+        },
+        {
+          "name": "title",
+          "uid": "85cc2094-ed3d-43c6-9813-4fa87472a38c",
+          "type": 3
+        },
+        {
+          "name": "exit",
+          "uid": "8c23eca1-d9dc-4484-b687-783a0867e3a7",
+          "type": 1
+        }
+      ]
+    },
+    {
+      "name": "存档生涯商城",
+      "uid": "c069d6ec-f249-4d8c-85ce-1ed86869a539",
+      "type": 7,
+      "children": [
+        {
+          "name": "page_grid",
+          "uid": "850099c4-3757-4ccf-baa0-9fe0a5add547",
+          "type": 25,
+          "children": [
+            {
+              "name": "ArchivePageOne",
+              "uid": "0b25722a-470e-4875-a931-7f3644b3978d",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "e03ea104-5dca-4e9a-ba2d-e2fbf9d7f2f9",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "ad57528c-b7ab-44a9-b4fc-70e1003bfac1",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_1",
+              "uid": "c86990ab-2e34-4d8f-b5e5-4adc9fc8d525",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "e44649f9-c66d-42c8-8224-431895097cb1",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "b63c5d26-7803-4d0f-a895-3739de819eb5",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_2",
+              "uid": "f2a17925-19b4-482c-bd9e-f2914782ca94",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "9a6bc08e-5452-4776-a776-41807bb34880",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "fcbc1c3d-6db7-408c-8519-a9b3b521b3cc",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_3",
+              "uid": "c5a02f54-5f73-4efe-aa15-914cfc3ed123",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "05e3980c-3182-4396-ad4b-7aa0d13dbcb0",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "e4baa88d-0ee1-49ad-a3b6-c46d9637dae9",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_4",
+              "uid": "d95d7d27-45be-45e4-a66b-aee1596772c2",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "73adf7f5-8719-4791-a421-746b8cbf0a8a",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "7293f700-e121-43b7-9145-09e43d15f510",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_5",
+              "uid": "9216dc25-f400-4871-8eec-53904d488191",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "4a1621d2-942b-4100-8530-065a11107246",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "53f58354-489b-4b4c-9ccb-711ae0190bba",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_6",
+              "uid": "52c3dc41-f3c4-46af-b1fd-c71b3e53c392",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "fd3ff73c-3e92-4340-9d47-8e637e6c21bc",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "f25d2eaa-bea2-4d3b-9e61-a86712e7f932",
+                  "type": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "page2_grid",
+          "uid": "f101c3ac-c87a-4da6-a5d8-de5fea0210e0",
+          "type": 25,
+          "children": [
+            {
+              "name": "ArchivePageTwo",
+              "uid": "d66bb02a-ffb0-4250-b609-83113901bfe9",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "32702548-7e67-4ce3-beff-cc6baf6d31cb",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "3f3e8608-ed62-4d78-8285-282b8c5af8f6",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageTwo_1",
+              "uid": "5a1c1497-754e-40d1-bd2d-239a481d2089",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "7aec2f7d-83bb-4c13-ad0c-9df5a029056c",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "1f9d3ff5-50e7-4725-93ea-26ca0442b048",
+                  "type": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "中间内容",
+          "uid": "2fa18792-824a-492b-8164-3122bc4f0a43",
+          "type": 7,
+          "children": [
+            {
+              "name": "通用内容",
+              "uid": "d884d932-b6d3-48a1-b2ca-9f4ce1a08cbc",
+              "type": 25,
+              "children": [
+                {
+                  "name": "bg",
+                  "uid": "213de56e-e548-4788-a439-659767532c4d",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "image",
+                      "uid": "82fe91fd-4b16-45b2-a9e3-486097960b86",
+                      "type": 4
+                    },
+                    {
+                      "name": "label",
+                      "uid": "42c0ffcf-c09c-4f1a-9211-575d91ac4c1d",
+                      "type": 3
+                    },
+                    {
+                      "name": "num",
+                      "uid": "33a2f40b-98b0-48ed-9a5a-4310f4864d2e",
+                      "type": 3
+                    },
+                    {
+                      "name": "lv",
+                      "uid": "9dc5b4bc-36ad-436a-922a-5fef18482204",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "scroll_view",
+          "uid": "fe9e2c2c-7dca-4aec-ba75-08e2fec1e489",
+          "type": 10,
+          "children": [
+            {
+              "name": "标题",
+              "uid": "1c92637c-b31e-4fdb-aa7f-8ceaa2a58c1a",
+              "type": 3
+            },
+            {
+              "name": "是否拥有",
+              "uid": "eb28b822-5a19-4dfc-8602-b11d2e3da805",
+              "type": 3
+            },
+            {
+              "name": "详情效果标题",
+              "uid": "764a0a39-62ad-46e7-bded-bf81cb60be07",
+              "type": 3
+            },
+            {
+              "name": "详情效果内容",
+              "uid": "b1cd578c-1f59-441b-8701-a65cdeb203a3",
+              "type": 3
+            },
+            {
+              "name": "特殊效果标题",
+              "uid": "29b455af-55a5-4a05-afe0-1009b606116b",
+              "type": 3
+            },
+            {
+              "name": "特殊效果内容",
+              "uid": "a69ac796-34c7-45f8-8826-62ecdac32c66",
+              "type": 3
+            },
+            {
+              "name": "获取方式标题",
+              "uid": "0c599566-e04d-421f-b147-1a6114394447",
+              "type": 3
+            },
+            {
+              "name": "获取方式内容",
+              "uid": "04b17be3-6925-4914-af97-dcdda0130a68",
+              "type": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "排行榜",
+      "uid": "a62c9fdf-ab70-460a-9e48-8cf279e365a1",
+      "type": 7,
+      "children": [
+        {
+          "name": "desc",
+          "uid": "e6bcaefe-b62c-4b74-86c7-bf609ac0a20c",
+          "type": 3
+        },
+        {
+          "name": "page_grid",
+          "uid": "eae520af-7069-4341-9288-366d31889e9f",
+          "type": 25,
+          "children": [
+            {
+              "name": "ArchivePageOne",
+              "uid": "ce69c850-1f6b-4755-abfb-9f7f4ed8b6ab",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "43552f2b-7ccc-46b2-bd53-e5f538ab2581",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "eab5a40b-2500-4093-808b-dea5adc7b59b",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_1",
+              "uid": "88ddb5bb-63f8-4a73-8efc-e940f089a026",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "43d2228b-baa6-4006-871b-ac2184598133",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "098e1707-6edf-4dd1-ae21-b086272c200a",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_2",
+              "uid": "10f2f8c2-8fdc-48c9-bc7a-b8923626a2f5",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "6eb4da1a-f091-4733-9429-e1dde8612412",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "11989039-e69f-430a-a5c6-773f062cc435",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_3",
+              "uid": "e9869308-4633-4f04-983f-4c45eca87062",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "76eed304-4cb1-4dd4-92b0-9266157f16da",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "e2013a18-d324-4d47-8b79-d9e9c4d4234b",
+                  "type": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "排行榜列表",
+          "uid": "cbfa01e4-9fd9-4eed-af6d-e7a86b80abdc",
+          "type": 10,
+          "children": [
+            {
+              "name": "label",
+              "uid": "513f584a-66f2-41f2-a3c5-32193579d4c5",
+              "type": 3
+            },
+            {
+              "name": "label_1",
+              "uid": "c20be905-32fa-4c70-8dbc-20e2264b55c4",
+              "type": 3
+            },
+            {
+              "name": "label_2",
+              "uid": "2c12369a-20be-46c7-8968-e79d1bb9a480",
+              "type": 3
+            },
+            {
+              "name": "label_3",
+              "uid": "ac75bf2f-0a87-4311-a309-cc861ae5575c",
+              "type": 3
+            }
+          ]
+        },
+        {
+          "name": "排行",
+          "uid": "5ddeaafd-7425-478a-b0be-af84923acd94",
+          "type": 10,
+          "children": [
+            {
+              "name": "排行榜列表_1",
+              "uid": "cd07d0f8-b13b-45e3-8096-a9df5762c891",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "d6c91500-197a-4db9-a795-363ee1b9e860",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "21363f24-b3cd-4cb1-bfd6-8b739d42b702",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "9b4cc809-ecdc-4e96-b79b-40be9cfe2891",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "f1f6180b-04d4-4146-ac94-4bb5ace52269",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "6544da87-4372-4d6b-b278-a6df1266c7c2",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "6b319a27-7ab9-413f-92c6-a832aebe381d",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "8760093d-62a9-4eb1-a68f-6482872c7df2",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "082fa365-c42b-4635-9bbb-f42b9ac97e5b",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "a7806544-1021-4e88-a1c7-27030e029f69",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "ae5a7ccf-f086-4a90-97e7-db964d4c884a",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "dbf43fb8-0bf9-498f-a99d-8248586aa466",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "b4c486f9-11be-4215-8932-ec2c1477e342",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "e3fefc08-1ba7-432c-bf70-2cbd7b46fd7e",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "27fa2eef-006a-46da-aa8e-0ece82b37686",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "c9e44c87-df2a-4592-90aa-435403b55488",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "c078d484-3eba-400c-846d-e64b0e4375c0",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "3676b25e-ef9b-43aa-b2d8-44875058751f",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "d02a1c0b-4f36-4c30-b39d-91a7be0ade5d",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "db79839b-8651-4786-a297-de87b23ebe6c",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "排行榜列表_1_1",
+              "uid": "550f5aa3-adda-4cb8-96e0-6a357bd3a697",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "aebfcc63-fe9e-4011-ac23-bca80797dd8b",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "7adddab9-40f1-46ac-8375-5b69b2741251",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "6bd15247-c47a-4153-8e56-bb14d6c72a25",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "e037a00f-25e3-4e80-ad6c-418e1e039408",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "e23412cb-e7d2-41e0-a354-24297385b726",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "26e011af-c7a0-4dfc-a23a-52c8b3fe0382",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "a09025b4-91fd-4d62-824c-2bbe3ca94404",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "a6782c33-0ca8-4fb2-b523-7bf41c61c22f",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "b5014b48-18be-4744-ae96-f038ac34c132",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "0c6b8d4b-7548-4235-8c12-d041ed49b715",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "b172ea98-1319-4a9d-a57a-dbddd12284a4",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "0b92286b-73d1-459a-b4b3-87cfbbbf1f35",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "40bee436-cf5c-4c67-bb95-d5d1a6e36e97",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "ac950f96-fcb1-4b6b-a347-52fdb1c67530",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "b7aa362e-2c13-4c13-8ba9-a68f34ebf419",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "e9ea5136-9fc6-4d03-bcd2-890570a79f15",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "aea16d39-0566-4428-a38e-cea1b2de36a1",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "9fc4ca20-c98f-4bdd-9e69-bd65ce7286fb",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "6971e7a4-07f6-4c8a-a2b7-45108490ae1b",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "排行榜列表_1_2",
+              "uid": "4a445c13-0321-48c9-bd85-2fa92af2a00f",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "177a4f8a-fcab-4ded-ae87-d8542f883ef4",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "fb3d4af0-f97e-4df3-bb94-0ee416214c9e",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "cd12ec6d-a52d-47ca-9704-021215711ece",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "b8831597-3c5f-487a-ac70-241e26e8615d",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "65ae1c41-6b62-4970-b9a2-9d122e1c5388",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "c83cd485-a741-4a17-b56e-f81ee4802176",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "cf604d95-8673-44ae-95ee-11bc01e6f83b",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "5c1f34a7-5202-4b48-a160-7cce39d4d396",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "6091dcd9-33e7-4995-83d7-1f571b2f1858",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "b7a943c3-d2b9-448e-a884-691d1d8f5721",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "5c67c679-82e0-480d-9cd9-004aa8b3e22f",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "0c49d8d5-7c41-496d-b5ce-57727c09f66a",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "ae09b80d-66a2-4f62-a69c-f539de118c43",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "a8558e6f-3946-46b3-96f1-7166ad39976d",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "700bb01f-633c-4c3f-bc9d-5883ed181712",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "57001817-9334-46f0-9fef-27058108d95b",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "db3bf05a-9fd7-4306-90f7-92b606931599",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "281a790e-489b-4782-9240-b2bd00c192ce",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "b472e046-ffbc-4890-ab54-da6da72e9fd1",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "排行榜列表_1_3",
+              "uid": "16e8df0f-9f30-41cd-a61b-ce6c412692b8",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "7b9c4c09-0c6c-4805-8444-343fb2e247f4",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "10f272b1-1fbd-4c05-b5f6-5c2fc163e2f8",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "4e4fe0db-7df1-46f5-97c0-b97e29ad6c62",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "babcc520-02b8-4833-9c5d-c76140e9d8ae",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "35db959d-35d1-47b2-b49a-211a8fc0fc68",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "a5c7344d-000e-4487-9d1a-bb42a15bed98",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "4422e1a0-9aa0-4739-b340-154908ba2422",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "131c3be8-ea73-422f-b470-c80a332140c1",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "f98782da-5cbf-45dd-88de-cfca2c3da503",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "3b62d598-ad96-4a02-bdf8-19f39f5c5ef6",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "d71feb58-8021-46f5-99e5-a6b143828118",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "94b437fb-8480-4600-a8ee-7e764261c139",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "2ecd31ff-d8f4-4713-8c43-e589dc8bc24e",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "51d5af35-664d-4bd4-aebb-7f3c12613625",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "32d5963d-7ac3-41cd-be66-040b2a2cad38",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "04648f8c-66e7-44e8-be1e-06086c9ba79c",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "ec51fa1f-a496-4edd-bd29-2bba5f64f14d",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "658c4830-9882-4bc5-8fa3-cf3800560c9a",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "a4804d14-e595-4d68-8e12-8774d2a5142b",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "排行榜列表_1_4",
+              "uid": "52b7359e-5c8e-4855-9b1c-7418235c7f69",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "37d46137-754f-4caf-9e5b-681a002bdbde",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "49becaed-3fd3-4c13-94da-91cf92ba4438",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "6323e970-6082-4a81-aa0b-4e40e1f675a9",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "607828d5-98a6-4046-8431-40b07c5ff353",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "4db9d1d0-42ca-4b08-a4f4-2d4a2ecf4673",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "0413c461-3c1b-4aa9-b897-999834fc2d85",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "0eb71683-daac-442a-bee9-356a344734aa",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "90a4bebd-a7e4-41aa-9cf4-10b5f62e2175",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "d94568ab-1eeb-4d85-912a-5457963ec4bd",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "db315c15-25fa-4f3d-b543-4f767b2abc58",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "def931b8-dbf4-4af0-a9fe-4366de2d4c40",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "1bbc3068-68fd-4d50-9c1b-6e5cbbb663a1",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "76742985-a0b8-4b5c-9b21-4cc0d399b7ca",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "ac0c3610-5065-4447-8d13-96de6c7f2d28",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "6b413369-69d4-4e69-b18a-6d877a866d0b",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "6489d8ed-38f9-406e-a457-be6674bca9b3",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "554865fd-f80a-4572-9f1c-3ceb97473a43",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "7ed0da14-b9d0-4734-8df6-dce79a319013",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "d904364a-2671-4a46-921e-a1cb24ecc2f2",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "排行榜列表_1_5",
+              "uid": "ed021227-143a-4eeb-b03c-7549cfb3f97c",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "d6223a0d-7bbc-4189-806f-25dfc1d45d02",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "95cf754b-2984-458b-81f4-aa67d5e8fcf4",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "8107016f-3f16-481c-83f9-1b8c6859efdd",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "eb0caf03-48de-4056-9815-896cab52525d",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "52569922-ff3a-4f5f-b684-a9ede1ae4e94",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "909b7b3c-c4a6-4d82-b0f2-d6b0c447057a",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "c4fa15df-dbdf-4f50-b37d-afc80ed80348",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "7bcf31a6-ff5a-4475-a6f1-10c00fb6f6b5",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "65f610e6-1b22-42ce-9d69-b5add95290c2",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "2c0fa3f3-147f-4562-978c-a97db9c81497",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "e569e241-c5db-44d8-bb12-55fa0bf2f804",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "af394ce6-6d71-430d-b8cd-99112677392f",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "ca9cb96f-55b0-4dbf-8d9a-a3f143dbee9f",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "50e6dae4-574f-4d56-be91-d393331b0d77",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "f9b3373e-f3a3-4c9d-bb27-4e02ba07dd28",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "beeaa0f7-49f0-49e2-bbaf-3ad07a94bd75",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "49eddc15-42dd-444d-9f66-6bfc04d2d76f",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "37752072-6cf8-4f90-a42f-25563c14c82b",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "8695f752-4adc-4e36-903b-21fa5b0ae637",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "排行榜列表_1_5_1",
+              "uid": "dbfeffe0-0500-42d4-88d8-2386857f7e00",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "6aeb83c3-d714-4f80-b7d0-9a724addd537",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "3445a4b7-8e54-4926-9d94-3be304feb92e",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "831f9eea-ffdd-48f7-b97b-ab7913921a03",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "c79a97af-944e-4e89-9996-403f015f3180",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "d87123dc-8813-42a5-a684-bd4c90091647",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "375fb5bd-7733-4155-b6aa-a473598b7663",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "c6992672-dda1-494a-8261-32c48cd9ec0d",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "4a0d9baf-239c-4ab3-b175-4060d8d5605f",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "faafc374-21a1-4eef-8234-223fde4c5be5",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "8323afdc-afe6-4786-93f2-229d5c923eb6",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "e231a532-defb-4f6f-9471-50c138cf8900",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "a643a218-ff10-46a6-bc30-f2ef9f8e3f98",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "00a6d050-f99f-4476-a214-85d8641b63d3",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "0729fa9e-fa69-4d8c-82a0-7c830da6895e",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "34890e3a-6030-400c-aae2-4559483f5f23",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "048edef8-97ab-4bc3-97fa-9fd4405f68ae",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "1f79fa61-705e-44bc-9730-4120c643daf1",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "5d96c5a4-fdf3-416b-a3f5-6e6c1d0d9da3",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "4637b4ff-2497-4ff0-aa1b-4b7a30d1ffe9",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "挂机",
+      "uid": "e3a4f4a3-8229-4b83-b520-49071d30dee1",
+      "type": 7,
+      "children": [
+        {
+          "name": "desc",
+          "uid": "cbcbd1c6-f5e9-408f-9df2-b0cf06e9514d",
+          "type": 3
+        },
+        {
+          "name": "page_grid",
+          "uid": "3a85149c-ef02-4766-963c-6712ddfe5b9c",
+          "type": 25,
+          "children": [
+            {
+              "name": "ArchivePageOne",
+              "uid": "1e133de3-5ff7-48cd-a4f8-5407cec462cf",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "7445ee36-1df8-481e-9829-9a172dcebb3e",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "94983ff3-c1ea-4136-8150-961bcfa181e6",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_1",
+              "uid": "51b9beed-2c91-4e93-b55b-5de4633d796b",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "725dd94d-cbd8-4cfa-b73a-2a5cb90fe9bc",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "2d094a37-dc57-4485-9dba-9490f3e6819d",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_2",
+              "uid": "3f3b4893-457e-4f60-986b-0944e12edbda",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "0b723994-0453-4047-8409-555ebf8df0b8",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "ceba0735-0d16-42e2-a108-f22f191cace8",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_3",
+              "uid": "e8544076-53c2-40f8-80e2-7f8172157c27",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "61913cdf-48f4-46eb-8204-bfb581590def",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "fbb4e004-eb21-48f2-81fa-ccd0421d1ff0",
+                  "type": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "排行榜列表",
+          "uid": "876bd9e7-8bed-44dd-b465-b6a91b9b2aeb",
+          "type": 10,
+          "children": [
+            {
+              "name": "label",
+              "uid": "3cb8d7b3-b8e5-40f7-bbf0-09c790671b3c",
+              "type": 3
+            },
+            {
+              "name": "label_1",
+              "uid": "83c02b20-6460-4683-a6f5-884aeab3e6e1",
+              "type": 3
+            },
+            {
+              "name": "label_2",
+              "uid": "eecb1702-b030-44f1-83a3-38419a1b8752",
+              "type": 3
+            },
+            {
+              "name": "label_3",
+              "uid": "d8e2cbfd-60c5-4313-a864-a4385a703a87",
+              "type": 3
+            }
+          ]
+        },
+        {
+          "name": "排行",
+          "uid": "b59405a7-687e-4c22-a874-3bc31d97e8bd",
+          "type": 10,
+          "children": [
+            {
+              "name": "排行榜列表_1",
+              "uid": "37504631-2f9a-499f-8f30-fa679db53ad7",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "ce72ec64-06e7-4574-acba-534d80d44e3a",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "256eacc8-ec40-498b-809d-961f9d032685",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "5e349fe3-5739-466d-a83c-bdadb318650c",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "9547b1ee-166d-422e-a4d6-25a340f61f6b",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "c33a24ed-6715-40d6-8d64-38a492c17f28",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "867f75fb-8abd-48fa-b638-e053ef1d6077",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "1622c248-8f46-47a9-acd4-3b37b261afe3",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "f7069f60-5774-4068-9531-7c9f826f424a",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "a9bf1458-796b-4743-bcdf-d6b7eb226868",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "ed29ba15-7ecf-4eb5-b310-9690093b3054",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "5c287ca3-b6a1-4e11-8f4d-27be7ad43603",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "b4361199-ce60-4fb9-bedc-9f889a408049",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "344125eb-8061-4935-bb95-7a0604a6f5dc",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "fa792fab-6042-4bf5-8839-cd1ab9ca6e3d",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "4606b512-1355-4f80-b328-076507f25246",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "541e962e-d3bd-4ac4-b8bb-a08653f259de",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "a1feb562-5b8a-454c-8174-0472970933f3",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "2d695e53-9c77-40e0-a5b3-a83d4d617d68",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "5603aaba-e846-478a-bc76-ecf8f6bf591c",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "排行榜列表_1_1",
+              "uid": "0383071a-e2f3-44f9-abb6-f61cf0703ef5",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "6db2e03a-7d4a-4efb-bb13-880e5d5a7774",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "ba913c64-ca96-401a-84ec-0a5ae34d6101",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "8b65a64a-fd48-4502-8eeb-d1ba8105456a",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "e4f74569-8bb5-4aeb-a318-f5601a499411",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "6eb728fe-426c-46aa-ba46-642b1251b43c",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "af4eb2e6-03f0-4348-bbf5-d1ecedf60320",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "69f0763f-d79a-4ba6-bcff-174205c34f40",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "ccbeef5a-5051-4cf7-a8b0-4fe3e8ce6d48",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "a49cf0dc-3924-41f4-99a0-36bb3dbe6923",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "b0e5536d-8274-4ad0-b19d-ef7cd4a79195",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "43f1bcdf-2363-4526-a78a-07cf04e9ba20",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "f84b13bb-c1b4-4ff1-b1ec-ce17839c71c7",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "d826da4f-8520-4b65-9451-4578e21c62d1",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "91db304d-585b-481a-8668-ea781490c7a8",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "4b70ef52-c031-4e83-83d6-d0f7b54cc086",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "f21e7d64-215e-49ba-855e-6a675809223b",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "b9a49d9e-13ee-42f5-b9d3-e5dcbea36324",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "68d89135-cace-4baf-8408-9405c6570b6d",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "b3152fff-0d32-4e34-a86e-ed9ac667cb88",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "排行榜列表_1_2",
+              "uid": "e3b20fd7-13ba-415c-9fbf-1f93c86b1fa7",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "7553a59d-b430-4ac0-bc10-7acf96237ccc",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "14ef2b70-1b81-4852-a180-ad082566e416",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "f569ef59-b208-47ea-b04f-14a58ee1122b",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "ff4ea51e-7fdb-40b7-a1c7-34c8e2110a74",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "e55f16fa-6956-4f68-a49e-ae8c199d3154",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "f111bc49-974c-4699-a1d5-1849d40820b4",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "4873d6ba-7578-45b1-a797-b08d152da22c",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "79319f88-106a-4721-bc7a-edc10697f231",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "6edc2ba9-b34e-4a5d-aa96-82b2c0af7cec",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "393bf870-2372-4d02-a036-d86eab14984d",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "01decfaf-44b3-460f-91a0-e1ca63c7ad53",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "b7a19de3-839a-418a-9dfc-01eced6d048f",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "68c60e47-f4b0-489b-81b3-f84d4b8d28a3",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "e0900d36-f002-48b2-88a2-0217284f58dd",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "879830f0-1ea4-45b6-af39-e3164c141e89",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "1070d33a-e1e3-4390-a709-ded562674510",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "f2016711-abbc-4e1f-a100-60668ec78b40",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "5b6a0344-4d85-478f-94ca-930ab449bc63",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "77f7bbc9-5310-4ff2-b52f-af8b9ff34b32",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "排行榜列表_1_3",
+              "uid": "7d38c359-ff23-42f9-8f76-2b81edb202ca",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "24254b87-6615-40bf-9d4f-7c8ddb6826be",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "58eb389a-3b80-4bac-b9ba-8ef896515ca9",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "0fa61bee-c45d-400b-a96c-e97ac5a995fd",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "7b889f5e-408e-4dd5-943e-b5a4eef446c1",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "1a8e9fa9-7717-4cbd-acfb-01d53b80be6e",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "28719a9b-203e-4a43-af35-23440858bbdf",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "d2e56b80-4808-4606-a450-b2fc300fcaa0",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "fd550fde-557b-4ea7-bec8-97dad2cae057",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "fc10144a-53d8-4a7d-8bc8-63fb3749b499",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "ecf63b4a-0b13-4ed6-86e5-fb3417fe149e",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "a02074f3-8996-44ee-8b47-de0e957bda41",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "2824b16b-e424-4d8c-a20c-84426b80a4ed",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "a16fcfea-7b1a-440a-a2f3-669231fa8c26",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "bab27628-04bb-49dd-8908-53edd3743314",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "af5bb693-3973-46c3-812e-c19aafd006d4",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "db53fe3c-130c-4ab8-bc6c-9d0aa69d6b2e",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "fa3103ba-d3ca-4b1b-b1f8-2e0093bc8df3",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "b2df4f4d-467c-426d-af03-f8e15f521a61",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "c875baca-a027-424c-9892-aa16c4b863c5",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "排行榜列表_1_4",
+              "uid": "2cd33833-8a62-42a1-9542-75597d3fb4c5",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "77107caa-3764-4b5a-8f50-b766b915b49e",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "5f1d1a31-6f00-4669-ba6e-1529dbea60c1",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "8d21c549-00db-4b3d-a808-318ffa95a791",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "4b2bfb92-8907-4863-91eb-4db78552b575",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "1048555a-4c0b-49e0-b07c-0421388ec305",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "889f5949-cb3e-4cdf-a910-ae6c9baf6375",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "d97167d0-a672-41d9-b5c2-0e3058cb7e02",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "1d4682e2-ac42-4afd-8b6e-3af0e8685864",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "a51708e5-7b1a-43c6-aee0-6b797f66c78a",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "4550d68f-a242-4e99-9f69-6ff68a9d99d4",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "681a7578-0004-4b85-949f-c1fbb7beea2c",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "e32c0157-b28f-435f-bbe7-09c6d8c81778",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "ac7f226b-d5ae-4cdd-a2d4-fd925ca56164",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "fdc60914-2fa1-44e0-b86d-49c8d4501acb",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "ce57e7f1-f020-415e-b290-83adc1c5d317",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "4673f3f4-92a9-4ec9-b9e4-423ce40a41ef",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "800f2d08-bde0-4ff6-9f3d-ef05af0971fc",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "73bac962-4f19-4e8b-87aa-556cbf5249fc",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "4e5f98b9-0f25-48d2-9470-e11064171fcc",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "排行榜列表_1_5",
+              "uid": "522358a9-4750-46b6-a6ff-cdf63cf3ab03",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "eeb841a2-9750-40cb-ade1-c21de793a7a7",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "e2837fe2-78f1-4b50-a421-6d8342e1454d",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "c11d84f6-fdb3-49e6-add0-8b2d661efb79",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "c4fe35b0-fdaf-4983-aee1-52aaa1aa6c28",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "7cd5bdb0-cae5-4f3a-97b4-f7113b8d14b6",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "52ccaa72-25c5-46cb-a291-b0344881c87a",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "b6281ebe-ea8f-4329-907e-6a76b161ea05",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "87e1ab2a-e120-4e70-aa3a-a9b410a05c9d",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "c8d033e5-bca2-44f3-ac03-dd83ac6f25de",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "59f00d88-1d06-47fa-ac69-b08c1a7ee74e",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "0ed0e14f-e062-448e-a12b-5867c97652b3",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "dc251c52-457c-4bc4-af30-207a1c81ec7d",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "773b545e-34b3-4e4c-a69b-3ee6c0e431ff",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "8134f13d-0f4d-4646-88a2-7565071c6c0f",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "63900b21-df6d-4ff7-ba87-22eb105fddf7",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "83e2200d-791e-4e98-a7fd-dada3287bf59",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "e5adf539-25eb-4531-93bd-fabd2fc0ee90",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "c9578822-0248-4233-a33c-de80e7ffc6f5",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "7bf17103-afeb-4d7d-bb6f-8e1e06ff65b2",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "排行榜列表_1_5_1",
+              "uid": "bf468bc9-2fc3-46bf-8eff-93d1897e4352",
+              "type": 10,
+              "children": [
+                {
+                  "name": "label",
+                  "uid": "d8cb81bd-b378-409f-8533-0fc4b12169d0",
+                  "type": 3
+                },
+                {
+                  "name": "label_1",
+                  "uid": "d6f9ebe5-efca-4651-b658-7664103e6e8e",
+                  "type": 3
+                },
+                {
+                  "name": "label_2",
+                  "uid": "c8ad142f-0485-45ae-ad00-b8daa6997a31",
+                  "type": 3
+                },
+                {
+                  "name": "label_3",
+                  "uid": "1de23d1d-dfbd-48ec-8228-50cfafe8ceb4",
+                  "type": 3
+                },
+                {
+                  "name": "bg",
+                  "uid": "c9832e7e-c212-44fc-a09c-52d9c18e282e",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "16561dbb-8daf-4d73-bbc2-0b28720fbc80",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "672ccaa8-c8de-4d93-bd1b-f8471266df60",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_7",
+                  "uid": "e3d5c883-6a52-4a9a-a283-c4f319aacd93",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "e7874251-a656-4c78-8b82-4672f8dcc77e",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "69d13458-fc3e-4387-ad5c-b2ff4a99d2fe",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_8",
+                  "uid": "f47237e1-f58c-4c38-b24d-7c42a68cae8e",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "63a66b0a-5000-4173-b47f-f0d7fa882c9f",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "c22f19f2-1bdf-4c93-b218-934048705bf7",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_9",
+                  "uid": "5c3a0927-1695-495f-b60a-9de8eea70a2d",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "6a609172-b5c1-475a-8c7b-5037f10638f1",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "b70bade8-2e2f-4a42-a7f3-94cd740353ab",
+                      "type": 3
+                    }
+                  ]
+                },
+                {
+                  "name": "bg_10",
+                  "uid": "b2c3b014-ad64-40f8-8b91-f1fb438c3685",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "icon",
+                      "uid": "af981154-00c3-4364-8be5-2cce6399c72c",
+                      "type": 4
+                    },
+                    {
+                      "name": "num",
+                      "uid": "c068ab99-932b-4156-9563-8f22ff7116f8",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "开始",
+      "uid": "3786a37e-d0cb-465d-8d2b-c25d7b86b321",
+      "type": 7,
+      "children": [
+        {
+          "name": "desc",
+          "uid": "25462fde-e510-456f-98ab-5638a3dfe089",
+          "type": 3
+        },
+        {
+          "name": "page_grid",
+          "uid": "183e16d1-5745-4f84-accc-65ba6564ac64",
+          "type": 25,
+          "children": [
+            {
+              "name": "ArchivePageOne",
+              "uid": "93c37c48-bc50-41c9-8771-5328ea0bc221",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "cc29cd57-a8cf-464a-9401-2d8e2f9df80e",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "e00c4cda-9d11-432c-90e3-261aa265496d",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_1",
+              "uid": "bff3013b-1117-4a30-abe1-a34f90e4f52d",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "1b4e1bd8-9f63-450e-b3af-4af9cd0a4751",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "382ea9b3-7f07-41a3-86f6-a7a85a5ddaa9",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_2",
+              "uid": "3a444500-fd74-4fe5-ba4a-d0dae4966b24",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "548b5136-0327-49f8-baba-43f108c4ae7a",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "6c5274bb-04b3-4143-9081-aca293080c05",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_3",
+              "uid": "a26c47d1-e1fd-46d2-901e-4f0dca745ace",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "31d82494-2a57-43ad-b666-d9646b864c55",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "4ffb2509-002e-49d8-bd49-848aca598f20",
+                  "type": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "page_grid_1",
+          "uid": "8fb72285-9e56-4d70-8b81-dfb397e61f87",
+          "type": 25,
+          "children": [
+            {
+              "name": "ArchivePageOne",
+              "uid": "e20fa5c3-d866-4fd5-a2fe-623217370969",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "468765a3-0a39-419d-9ee6-1d44cde6a1dc",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "50869fd9-10c9-4db3-a72c-ae256e3df1c4",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_1",
+              "uid": "22fd5063-2cc4-4dbc-ac0e-db08ebe7fe50",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "c5825c03-a0c0-43e4-b830-ef7ab4f340c2",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "b4e331ab-11a9-4b9f-9f58-ecaf8e9f9fde",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_2",
+              "uid": "5cf8fe5d-5fcd-4118-8cf8-b8f5aa463b63",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "99d2d221-3a3a-4712-93b9-9e4b0b709102",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "7c6f8976-dc0d-457d-bd95-f8b540ae407f",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "name": "ArchivePageOne_3",
+              "uid": "be574d0d-cbe5-488d-9c23-9b61706aaac8",
+              "type": 7,
+              "children": [
+                {
+                  "name": "button",
+                  "uid": "e5cef07e-0211-46e8-8509-eaee292e94d8",
+                  "type": 1
+                },
+                {
+                  "name": "label",
+                  "uid": "73328ebc-73ce-44dc-ba12-1838f3d13eb1",
+                  "type": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "scroll_view",
+          "uid": "f3b9590d-18db-445a-bdff-2d59b3aac18e",
+          "type": 10,
+          "children": [
+            {
+              "name": "标题",
+              "uid": "ab08e981-25a4-4ae9-8e55-cb0a7fb42275",
+              "type": 3
+            },
+            {
+              "name": "是否拥有",
+              "uid": "50e08c04-9735-49cb-8a64-079bdadabc73",
+              "type": 3
+            },
+            {
+              "name": "详情效果标题",
+              "uid": "0b15152f-1cfe-41ab-9278-0dbf69b6cea9",
+              "type": 3
+            },
+            {
+              "name": "详情效果内容",
+              "uid": "f49e84ce-1130-4258-9f1c-6ffa91d3cb04",
+              "type": 3
+            },
+            {
+              "name": "特殊效果标题",
+              "uid": "53603269-ccb2-40c0-8ac3-6c9c92053073",
+              "type": 3
+            },
+            {
+              "name": "特殊效果内容",
+              "uid": "11caeeb3-9001-4cfb-829f-300c5272d94f",
+              "type": 3
+            },
+            {
+              "name": "获取方式标题",
+              "uid": "8deb99bf-1f44-4d6c-9ea9-8bf5c525b4ab",
+              "type": 3
+            },
+            {
+              "name": "获取方式内容",
+              "uid": "7c7b7b36-559e-422c-a9bd-6c22d502e6b6",
+              "type": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

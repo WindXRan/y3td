@@ -1,4 +1,4 @@
-﻿local HeroRoster = (require 'data.game_tables').hero_roster
+local HeroRoster = (require 'data.game_tables').hero_roster
 local HeroList = require 'data.tables.hero.herolist'
 
 local M = {}
@@ -38,7 +38,8 @@ local function build_growth_defs()
         talent_skill = extra.talent_skill or roster.summary or '',
         star_effect = normalize_text(extra.star_effect or ''),
         awaken_effect = normalize_text(extra.awaken_effect or ''),
-        hero_model = roster.model_id or extra.hero_model,
+        hero_model = extra.hero_model or roster.model_id,
+        hero_icon = extra.skill_icon or roster.icon,
       }
       list[#list + 1] = def
       by_hero_id[hero_id] = def
@@ -168,6 +169,7 @@ function M.create()
       skill_key = def.skill_key,
       talent_skill = def.talent_skill,
       hero_model = def.hero_model,
+      hero_icon = def.hero_icon,
       star = entry.star,
       max_star = MAX_STAR,
       proficiency = entry.proficiency,

@@ -60,39 +60,6 @@ local function set_image(ui, image)
   end
 end
 
-local function resolve_model_id(y3, unit_id, preferred_model_id)
-  local direct_model_id = tonumber(preferred_model_id)
-  if direct_model_id and direct_model_id ~= 0 then
-    return direct_model_id
-  end
-  if not unit_id or not y3 or not y3.unit then
-    return nil
-  end
-  local ok_model, model_id = pcall(y3.unit.get_model_by_key, unit_id)
-  if ok_model and model_id and model_id ~= 0 then
-    return model_id
-  end
-  return nil
-end
-
-local function set_model_id(ui, model_id)
-  if not is_alive(ui) or not model_id then
-    return false
-  end
-  return call_ui(ui, 'set_ui_model_id', model_id)
-end
-
-local function set_model_by_unit(ui, y3, unit_id, preferred_model_id)
-  if not is_alive(ui) then
-    return nil
-  end
-  local model_id = resolve_model_id(y3, unit_id, preferred_model_id)
-  if model_id then
-    set_model_id(ui, model_id)
-  end
-  return model_id
-end
-
 local function unpack_args(values)
   if table and table.unpack then
     return table.unpack(values)
@@ -102,8 +69,6 @@ end
 
 function M.create(env)
   local STATE = env.STATE
-  local y3 = env.y3
-  local get_player = env.get_player
   local message = env.message or function() end
   local play_ui_click = env.play_ui_click
   local get_all_hero_growth = env.get_all_hero_growth
@@ -117,8 +82,8 @@ function M.create(env)
     slot_nodes = nil,
     detail = nil,
     bound = false,
-    slot_model_ids = {},
-    detail_model_id = nil,
+    slot_icon_ids = {},
+    detail_icon_id = nil,
   }
 
   local function get_runtime_hud()
@@ -134,8 +99,8 @@ function M.create(env)
       cache.slot_nodes = nil
       cache.detail = nil
       cache.bound = false
-      cache.slot_model_ids = {}
-      cache.detail_model_id = nil
+      cache.slot_icon_ids = {}
+      cache.detail_icon_id = nil
       return nil
     end
     if cache.root ~= root then
@@ -143,8 +108,8 @@ function M.create(env)
       cache.slot_nodes = nil
       cache.detail = nil
       cache.bound = false
-      cache.slot_model_ids = {}
-      cache.detail_model_id = nil
+      cache.slot_icon_ids = {}
+      cache.detail_icon_id = nil
     end
     return cache.root
   end
@@ -255,12 +220,10 @@ function M.create(env)
       if growth then
         set_text(slot.name, growth.hero_name)
         apply_star_icons(slot.star_1, slot.star_2, slot.star_3, growth.star)
-        local model_id = resolve_model_id(y3, growth.unit_id, growth.hero_model)
-        if cache.slot_model_ids[index] ~= model_id then
-          cache.slot_model_ids[index] = model_id
-          if model_id then
-            set_model_id(slot.model, model_id)
-          end
+        local icon_id = growth.hero_icon
+        if cache.slot_icon_ids[index] ~= icon_id then
+          cache.slot_icon_ids[index] = icon_id
+          set_image(slot.model, icon_id)
         end
         bind_slot_click(slot, growth)
         local is_selected = selected and growth.hero_id == selected.hero_id
@@ -350,12 +313,10 @@ function M.create(env)
     set_text(detail.star_effect, selected.star_effect or '')
     set_text(detail.awaken_effect, selected.awaken_effect or '')
     apply_star_icons(detail.detail_star_1, detail.detail_star_2, detail.detail_star_3, selected.star)
-    local detail_model_id = resolve_model_id(y3, selected.unit_id, selected.hero_model)
-    if cache.detail_model_id ~= detail_model_id then
-      cache.detail_model_id = detail_model_id
-      if detail_model_id then
-        set_model_id(detail.detail_model, detail_model_id)
-      end
+    local detail_icon_id = selected.hero_icon
+    if cache.detail_icon_id ~= detail_icon_id then
+      cache.detail_icon_id = detail_icon_id
+      set_image(detail.detail_model, detail_icon_id)
     end
 
     call_ui(detail.star_up_button, 'set_button_enable', selected.next_star_cost ~= nil and selected.next_star_cost > 0 and selected.proficiency >= selected.next_star_cost)

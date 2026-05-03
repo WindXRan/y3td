@@ -146,13 +146,15 @@ local function build_archive_shop_specs(shop_items)
     if id ~= '' and name ~= '' then
       local quality = normalize_quality(hero.rarity, 'R')
       local categories = { quality, '全部' }
+      local hero_icon = tonumber(hero.icon) or tonumber(hero['图标']) or tonumber(hero['icon_id'])
+      local hero_bg = tonumber(hero.bg) or tonumber(hero['底图']) or tonumber(hero['背景']) or tonumber(hero['背景图']) or tonumber(hero['BG'])
       push_spec({
         key = 'hero_catalog_' .. id,
         node = 'hero_catalog_' .. id,
         index = tonumber(hero.order_index) or 0,
         title = name,
-        icon = shop_items.default_icon or 906565,
-        bg = resolve_bg_by_quality(quality, shop_items.default_bg),
+        icon = hero_icon or shop_items.default_icon or 906565,
+        bg = hero_bg or resolve_bg_by_quality(quality, shop_items.default_bg),
         default_icon = shop_items.default_icon or 906565,
         default_bg = shop_items.default_bg or 131166,
         attr_text = trim(hero.title),
@@ -191,7 +193,7 @@ local function build_archive_shop_specs(shop_items)
     end
     pushed_bond[id] = true
     local quality = normalize_quality(spec.quality, 'SR')
-    local category = trim(spec.group_id or spec.trigger_kind or quality)
+    local category = trim(spec.archetype or spec.group_id or spec.trigger_kind or quality)
     if category == '' then
       category = quality
     end
@@ -199,13 +201,15 @@ local function build_archive_shop_specs(shop_items)
     local desc = trim((type(spec.desc) == 'table' and (spec.desc.single or spec.desc.advanced)) or spec.desc)
     local required_count = tonumber(spec.required_count) or tonumber(spec.tier) or nil
     local condition = required_count and ('集齐 ' .. tostring(required_count) .. ' 张同羁绊卡牌') or '局内收集同羁绊卡牌激活'
+    local bond_icon = tonumber(spec.icon) or tonumber(spec['图标']) or tonumber(spec['icon_id'])
+    local bond_bg = tonumber(spec.bg) or tonumber(spec['底图']) or tonumber(spec['背景']) or tonumber(spec['背景图']) or tonumber(spec['BG'])
     push_spec({
       key = 'bond_catalog_' .. id,
       node = 'bond_catalog_' .. id,
       index = tonumber(spec.index) or tonumber(spec.tier) or 0,
       title = title,
-      icon = tonumber(spec.icon) or shop_items.default_icon or 906565,
-      bg = resolve_bg_by_quality(quality, shop_items.default_bg),
+      icon = bond_icon or shop_items.default_icon or 906565,
+      bg = bond_bg or resolve_bg_by_quality(quality, shop_items.default_bg),
       default_icon = shop_items.default_icon or 906565,
       default_bg = shop_items.default_bg or 131166,
       attr_text = condition,
@@ -234,8 +238,11 @@ local function build_archive_shop_specs(shop_items)
     })
   end
 
-  for _, node_def in ipairs((BondNodes and BondNodes.list) or {}) do
-    push_bond_spec(node_def)
+  for _, node_id in ipairs((BondNodes and BondNodes.root_ids) or {}) do
+    local node_def = BondNodes.by_id[node_id]
+    if node_def then
+      push_bond_spec(node_def)
+    end
   end
   if next(pushed_bond) == nil then
     for _, effect in ipairs((BondModifierPool and BondModifierPool.activation_effects) or {}) do
@@ -245,6 +252,7 @@ local function build_archive_shop_specs(shop_items)
         name = effect.name,
         desc = effect.desc,
         icon = effect.icon,
+        bg = effect.bg,
         quality = effect.quality,
         required_count = effect.required_count,
         source = 'bond_modifier_pool',

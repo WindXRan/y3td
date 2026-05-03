@@ -1,42 +1,101 @@
 ﻿local M = {}
 
 local DEFAULT_ICON = 906565
+local ARCHIVE_PANEL_ROOTS = { 'ArchiveMain', 'ArchivePanel' }
+local ARCHIVE_MAIN_PANEL = '存档生涯商城'
+local ARCHIVE_CONTENT_SECTIONS = { '商城', '存档', '生涯' }
+local ARCHIVE_GENERIC_CONTENT_GROUP = '通用内容'
+local ARCHIVE_GROUPS = {
+  { name = '仓库' },
+  { name = '商品' },
+  { name = '皮肤' },
+  { name = '翅膀' },
+  { name = '地图等级' },
+  { name = '荣誉等级', aliases = { '荣誉等级', '典藏积分' } },
+  { name = '成就' },
+  { name = '英雄图鉴' },
+  { name = '羁绊图鉴' },
+  { name = '称号' },
+}
+
+local function append_path(paths, path)
+  paths[#paths + 1] = path
+end
+
+local function build_panel_paths(suffix)
+  local paths = {}
+  for _, root in ipairs(ARCHIVE_PANEL_ROOTS) do
+    append_path(paths, root .. '.' .. ARCHIVE_MAIN_PANEL .. '.' .. suffix)
+  end
+  return paths
+end
+
 local GRID_BASE_PATHS = {
   'ArchiveMain.layout_1.scroll_view_main.scroll_view_1.ArchiveGridView.grid_view_1.',
-  'ArchiveMain.存档生涯商城.scroll_view.ArchiveGridView.grid_view_1.',
-  'ArchiveMain.存档生涯商城.文本详情.ArchiveGridView.grid_view_1.',
 }
+for _, path in ipairs(build_panel_paths('scroll_view.ArchiveGridView.grid_view_1.')) do
+  append_path(GRID_BASE_PATHS, path)
+end
+for _, path in ipairs(build_panel_paths('文本详情.ArchiveGridView.grid_view_1.')) do
+  append_path(GRID_BASE_PATHS, path)
+end
 local GRID_ROOT_PATHS = {
   'ArchiveMain.layout_1.scroll_view_main.scroll_view_1.ArchiveGridView.grid_view_1',
-  'ArchiveMain.存档生涯商城.scroll_view.ArchiveGridView.grid_view_1',
-  'ArchiveMain.存档生涯商城.文本详情.ArchiveGridView.grid_view_1',
 }
+for _, path in ipairs(build_panel_paths('scroll_view.ArchiveGridView.grid_view_1')) do
+  append_path(GRID_ROOT_PATHS, path)
+end
+for _, path in ipairs(build_panel_paths('文本详情.ArchiveGridView.grid_view_1')) do
+  append_path(GRID_ROOT_PATHS, path)
+end
 local TIP_ROOT_PATHS = {
   'ArchiveMain.layout_1.scroll_view_main.scroll_view_1.ArchiveTips',
-  'ArchiveMain.存档生涯商城.scroll_view.ArchiveTips',
-  'ArchiveMain.存档生涯商城.文本详情.ArchiveTips',
-  'ArchiveMain.存档生涯商城.scroll_view',
-  'ArchiveMain.存档生涯商城.文本详情',
 }
+for _, path in ipairs(build_panel_paths('scroll_view.ArchiveTips')) do
+  append_path(TIP_ROOT_PATHS, path)
+end
+for _, path in ipairs(build_panel_paths('文本详情.ArchiveTips')) do
+  append_path(TIP_ROOT_PATHS, path)
+end
+for _, path in ipairs(build_panel_paths('scroll_view')) do
+  append_path(TIP_ROOT_PATHS, path)
+end
+for _, path in ipairs(build_panel_paths('文本详情')) do
+  append_path(TIP_ROOT_PATHS, path)
+end
 local TIP_SCROLL_PATHS = {
   'ArchiveMain.layout_1.scroll_view_main.scroll_view_1.ArchiveTips.scroll_view',
-  'ArchiveMain.存档生涯商城.scroll_view.ArchiveTips.scroll_view',
-  'ArchiveMain.存档生涯商城.文本详情.ArchiveTips.scroll_view',
-  'ArchiveMain.存档生涯商城.文本详情',
-  'ArchiveMain.存档生涯商城.scroll_view',
 }
+for _, path in ipairs(build_panel_paths('scroll_view.ArchiveTips.scroll_view')) do
+  append_path(TIP_SCROLL_PATHS, path)
+end
+for _, path in ipairs(build_panel_paths('文本详情.ArchiveTips.scroll_view')) do
+  append_path(TIP_SCROLL_PATHS, path)
+end
+for _, path in ipairs(build_panel_paths('文本详情')) do
+  append_path(TIP_SCROLL_PATHS, path)
+end
+for _, path in ipairs(build_panel_paths('scroll_view')) do
+  append_path(TIP_SCROLL_PATHS, path)
+end
 local PRIMARY_TAB_BASE_PATHS = {
   'ArchiveMain.layout_1.scroll_view_main.page_grid.ArchivePageOne',
-  'ArchiveMain.存档生涯商城.page_grid.ArchivePageOne',
 }
+for _, path in ipairs(build_panel_paths('page_grid.ArchivePageOne')) do
+  append_path(PRIMARY_TAB_BASE_PATHS, path)
+end
 local SECONDARY_TAB_BASE_PATHS = {
   'ArchiveMain.layout_1.scroll_view_main.page2_grid.ArchivePageTwo',
-  'ArchiveMain.存档生涯商城.page2_grid.ArchivePageTwo',
 }
+for _, path in ipairs(build_panel_paths('page2_grid.ArchivePageTwo')) do
+  append_path(SECONDARY_TAB_BASE_PATHS, path)
+end
 local SECONDARY_TAB_GRID_PATHS = {
   'ArchiveMain.layout_1.scroll_view_main.page2_grid',
-  'ArchiveMain.存档生涯商城.page2_grid',
 }
+for _, path in ipairs(build_panel_paths('page2_grid')) do
+  append_path(SECONDARY_TAB_GRID_PATHS, path)
+end
 local CAREER_TAB_LABELS = { '成就', '英雄图鉴', '羁绊图鉴', '称号' }
 local CAREER_TAB_DETAILS = {
   ['成就'] = {
@@ -672,11 +731,29 @@ local function get_group_template(options, group_name, visible_items)
     return { icon = true, label = 'title' }
   end
   local templates = options and options.group_templates or nil
-  local tpl = templates and templates[group_name] or nil
+  local template_name = group_name
+  if group_name == ARCHIVE_GENERIC_CONTENT_GROUP then
+    local state = options and options.state or nil
+    local section = tostring(state and state.archive_panel_section or '')
+    if section == 'career' then
+      template_name = tostring(state and state.archive_panel_career_tab or '')
+    else
+      template_name = tostring(state and get_primary(state) or '')
+    end
+    if template_name == '' and first then
+      template_name = tostring(first.primary or first.category or group_name)
+    end
+  end
+  local tpl = templates and templates[template_name] or nil
   if type(tpl) ~= 'table' then
     return { icon = true, label = 'title' }
   end
   return tpl
+end
+
+local function is_catalog_spec(spec)
+  local primary = tostring(spec and spec.primary or '')
+  return primary == '英雄图鉴' or primary == '羁绊图鉴'
 end
 
 local function find_best_spec(items, wanted_key)
@@ -746,6 +823,26 @@ local function select_spec_by_group(options, group_name)
   return spec
 end
 
+local function find_generic_content_group(player)
+  for _, panel_root in ipairs(ARCHIVE_PANEL_ROOTS) do
+    local base = table.concat({ panel_root, ARCHIVE_MAIN_PANEL, '中间内容', ARCHIVE_GENERIC_CONTENT_GROUP }, '.')
+    local root = resolve_ui(player, base)
+    if is_ui_alive(root) then
+      return {
+        name = ARCHIVE_GENERIC_CONTENT_GROUP,
+        generic = true,
+        base = base,
+        root = root,
+        icon = resolve_ui(player, base .. '.bg.image'),
+        label = resolve_ui(player, base .. '.bg.label'),
+        lv = resolve_ui(player, base .. '.bg.lv'),
+        num = resolve_ui(player, base .. '.bg.num'),
+      }
+    end
+  end
+  return nil
+end
+
 local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_items, options)
   local section = tostring(state and state.archive_panel_section or '')
   local in_shop_like_section = in_shop_section or section == 'archive' or section == 'career'
@@ -754,9 +851,16 @@ local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_
   local active_group_key = resolve_active_group_key(shop, state, all_category)
   for _, group in ipairs(groups) do
     local group_key = normalize_key(group.name)
-    local is_active_group = active_group_key ~= '' and group_key == active_group_key
+    local is_active_group = group.generic == true or (active_group_key ~= '' and group_key == active_group_key)
     set_visible(group.root, in_shop_like_section and is_active_group)
     if in_shop_like_section and is_active_group then
+      if group.generic == true then
+        set_visible(group.icon, false)
+        set_visible(group.lv, false)
+        set_visible(group.num, false)
+        set_visible(group.label, false)
+        goto continue_group
+      end
       local spec = pick_group_spec(visible_items, group.name)
       local tpl = get_group_template(options, group.name, visible_items)
       local show_icon = tpl.icon == true
@@ -798,6 +902,7 @@ local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_
       set_visible(group.lv, false)
       set_visible(group.num, false)
     end
+    ::continue_group::
   end
 end
 
@@ -934,10 +1039,11 @@ local function create_runtime_group_item(group, spec, index, options, total)
         icon:set_image(spec.icon or spec.default_icon or DEFAULT_ICON)
       end
       if icon.set_ui_size then
-        icon:set_ui_size(52, 52)
+        local icon_size = is_catalog_spec(spec) and 56 or 52
+        icon:set_ui_size(icon_size, icon_size)
       end
       if icon.set_pos then
-        icon:set_pos(42, 49)
+        icon:set_pos(42, is_catalog_spec(spec) and 48 or 49)
       end
     end
     if tpl.label ~= false then
@@ -1103,13 +1209,13 @@ local function refresh_group_dynamic_items(ui, shop, options, visible_items)
   end
   local active_group_key = resolve_active_group_key(shop, state, all_category)
   for _, group in ipairs(shop.middle_groups or {}) do
-    local active = normalize_key(group.name) == active_group_key
+    local active = group.generic == true or normalize_key(group.name) == active_group_key
     -- 列表项只受“分区+一级页签+二级页签”控制，不再按分组名二次过滤，
     -- 否则点击刷新后会出现同页签内商品被误隐藏的问题。
     local group_items = visible_items or {}
 
     local static_slot_count = count_static_slots(player, group, math.max(32, #group_items + 4))
-    local use_runtime_only = static_slot_count <= 1
+    local use_runtime_only = group.generic == true or static_slot_count <= 1
     local effective_static_slot_count = use_runtime_only and 0 or static_slot_count
     local overflow_count = math.max(0, #group_items - effective_static_slot_count)
     local need_runtime_creation = overflow_count > 0
@@ -1119,7 +1225,7 @@ local function refresh_group_dynamic_items(ui, shop, options, visible_items)
         pcall(group.root.set_ui_gridview_scroll, group.root, true)
       end
       if need_runtime_creation then
-        local signature = tostring(get_primary(state) or '') .. '|' .. tostring(get_category(state) or '') .. '|' .. tostring(#group_items) .. '|' .. tostring(effective_static_slot_count)
+        local signature = tostring(active_group_key or '') .. '|' .. tostring(get_primary(state) or '') .. '|' .. tostring(get_category(state) or '') .. '|' .. tostring(#group_items) .. '|' .. tostring(effective_static_slot_count)
         if group.runtime_signature ~= signature then
           group.runtime_signature = signature
           clear_runtime_group_items(group)
@@ -1139,7 +1245,7 @@ local function refresh_group_dynamic_items(ui, shop, options, visible_items)
       clear_runtime_group_items(group)
     end
 
-    local max_slots = math.max(12, effective_static_slot_count)
+    local max_slots = group.generic == true and math.max(1, static_slot_count) or math.max(12, effective_static_slot_count)
     for i = 1, max_slots do
       local slot = resolve_group_slot(player, group.base, i)
       if is_ui_alive(slot and slot.root) then
@@ -1383,67 +1489,61 @@ function M.ensure(ui, options)
     middle_groups = {},
   }
 
-  local group_name_aliases = {
-    ['仓库'] = { '仓库' },
-    ['商品'] = { '商品' },
-    ['皮肤'] = { '皮肤' },
-    ['翅膀'] = { '翅膀' },
-    ['地图等级'] = { '地图等级' },
-    ['荣誉等级'] = { '荣誉等级', '典藏积分' },
-    ['成就'] = { '成就' },
-    ['英雄图鉴'] = { '英雄图鉴' },
-    ['羁绊图鉴'] = { '羁绊图鉴' },
-    ['称号'] = { '称号' },
-  }
-  for _, name in ipairs({ '仓库', '商品', '皮肤', '翅膀', '地图等级', '荣誉等级', '成就', '英雄图鉴', '羁绊图鉴', '称号' }) do
-    local aliases = group_name_aliases[name] or { name }
-    local base = nil
-    local root = nil
-    for _, alias in ipairs(aliases) do
-      local base_candidates = {
-        'ArchiveMain.存档生涯商城.中间内容.商城.' .. alias,
-        'ArchiveMain.存档生涯商城.中间内容.存档.' .. alias,
-        'ArchiveMain.存档生涯商城.中间内容.生涯.' .. alias,
-        'ArchivePanel.存档生涯商城.中间内容.商城.' .. alias,
-        'ArchivePanel.存档生涯商城.中间内容.存档.' .. alias,
-        'ArchivePanel.存档生涯商城.中间内容.生涯.' .. alias,
-      }
-      for _, one_base in ipairs(base_candidates) do
-        base = one_base
-        root = resolve_ui(player, one_base)
+  local generic_group = find_generic_content_group(player)
+  if generic_group then
+    ui.shop.middle_groups[#ui.shop.middle_groups + 1] = generic_group
+  end
+
+  if not generic_group then
+    for _, group_def in ipairs(ARCHIVE_GROUPS) do
+      local name = group_def.name
+      local aliases = group_def.aliases or { name }
+      local base = nil
+      local root = nil
+      for _, alias in ipairs(aliases) do
+        for _, panel_root in ipairs(ARCHIVE_PANEL_ROOTS) do
+          for _, section_name in ipairs(ARCHIVE_CONTENT_SECTIONS) do
+            local one_base = table.concat({ panel_root, ARCHIVE_MAIN_PANEL, '中间内容', section_name, alias }, '.')
+            base = one_base
+            root = resolve_ui(player, one_base)
+            if is_ui_alive(root) then
+              break
+            end
+          end
+          if is_ui_alive(root) then
+            break
+          end
+        end
         if is_ui_alive(root) then
           break
         end
       end
       if is_ui_alive(root) then
-        break
-      end
-    end
-    if is_ui_alive(root) then
-      ui.shop.middle_groups[#ui.shop.middle_groups + 1] = {
-        name = name,
-        base = base,
-        root = root,
-        icon = resolve_ui(player, base .. '.bg.image'),
-        label = resolve_ui(player, base .. '.bg.label'),
-        lv = resolve_ui(player, base .. '.bg.lv'),
-        num = resolve_ui(player, base .. '.bg.num'),
-      }
-      local entry = ui.shop.middle_groups[#ui.shop.middle_groups]
-      local click_target = resolve_ui(player, base .. '.bg') or root
-      if is_ui_alive(click_target) then
-        set_intercepts(click_target, true)
-        click_target:add_fast_event('左键-按下', function()
-          local section = tostring(options.state.archive_panel_section or '')
-          if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
-            return
-          end
-          if options.play_ui_click then
-            options.play_ui_click()
-          end
-          select_spec_by_group(options, entry.name)
-          M.refresh(ui, options)
-        end)
+        ui.shop.middle_groups[#ui.shop.middle_groups + 1] = {
+          name = name,
+          base = base,
+          root = root,
+          icon = resolve_ui(player, base .. '.bg.image'),
+          label = resolve_ui(player, base .. '.bg.label'),
+          lv = resolve_ui(player, base .. '.bg.lv'),
+          num = resolve_ui(player, base .. '.bg.num'),
+        }
+        local entry = ui.shop.middle_groups[#ui.shop.middle_groups]
+        local click_target = resolve_ui(player, base .. '.bg') or root
+        if is_ui_alive(click_target) then
+          set_intercepts(click_target, true)
+          click_target:add_fast_event('左键-按下', function()
+            local section = tostring(options.state.archive_panel_section or '')
+            if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
+              return
+            end
+            if options.play_ui_click then
+              options.play_ui_click()
+            end
+            select_spec_by_group(options, entry.name)
+            M.refresh(ui, options)
+          end)
+        end
       end
     end
   end

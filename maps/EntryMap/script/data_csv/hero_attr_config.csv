@@ -1,4 +1,4 @@
-﻿scope,key,value
+scope,key,value
 __字段说明__,字段：key,字段：value
 panel_default,伤害减免,0
 panel_default,冻结伤害,0
@@ -73,7 +73,7 @@ panel_default,生命结算值,0
 panel_default,生命绿字,0
 panel_default,百分比恢复,0
 panel_default,穿透次数,0
-panel_default,精控伤害,0
+panel_default,精英伤害,0
 debug_bonus,攻击,72
 debug_bonus,攻击范围,100
 debug_bonus,攻击速度,60

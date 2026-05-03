@@ -51,7 +51,7 @@ def main() -> None:
         "assert(cfg.hero_init_stats['物理暴伤'] == 25) "
         "assert(cfg.hero_init_stats['命中'] == 0) "
         "assert(cfg.hero_init_stats['挑战伤害'] == 0) "
-        "assert(cfg.hero_init_stats['精控伤害'] == 0) "
+        "assert(cfg.hero_init_stats['精英伤害'] == 0) "
         "assert(cfg.hero_init_stats['冻结伤害'] == 0) "
         "assert(cfg.hero_init_stats['最终攻击'] == 0) "
         "assert(cfg.hero_init_stats['最终生命'] == 0) "

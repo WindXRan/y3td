@@ -231,7 +231,7 @@ function M.create(env)
       attr_line('金币', read_gold(), function(value) return format_number(value, 0) end),
       attr_line('绝学伤害', read_attr('技能伤害'), function(value) return format_percent(value, 1) end),
       attr_line('小怪增伤', read_attr('所有伤害'), function(value) return format_percent(value, 1) end),
-      attr_line('精英增伤', read_attr('精控伤害'), function(value) return format_percent(value, 1) end),
+      attr_line('精英增伤', read_attr('精英伤害'), function(value) return format_percent(value, 1) end),
       attr_line('BOSS增伤', read_attr('挑战伤害'), function(value) return format_percent(value, 1) end),
     }
   end

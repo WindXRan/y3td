@@ -1,6 +1,7 @@
-﻿local EditorJsonTable = require 'data.tables.editor_json_table'
+local EditorJsonTable = require 'data.tables.editor_json_table'
 local BondSkillTextTemplates = require 'data.tables.bond.bond_skill_text_templates'
 local CsvLoader = require 'data.csv_loader'
+local SkillVisuals = require 'data.tables.skill.skill_visuals'
 
 local M = {}
 
@@ -96,6 +97,54 @@ local function read_first(row, keys, fallback)
   return fallback
 end
 
+local function read_param_rows_by_skill_id()
+  local result = {}
+  for _, row in ipairs(CsvLoader.read_rows_optional('data_csv/bond_skill_params.csv')) do
+    local skill_id = trim(row.skill_id)
+    if skill_id ~= '' and skill_id ~= '__字段说明__' then
+      result[skill_id] = row
+    end
+  end
+  return result
+end
+
+local PARAM_BY_SKILL_ID = read_param_rows_by_skill_id()
+
+local function read_param_text(skill_id, key)
+  local row = PARAM_BY_SKILL_ID[trim(skill_id)]
+  return row and trim(row[key]) or ''
+end
+
+local function read_param_number(skill_id, keys)
+  local row = PARAM_BY_SKILL_ID[trim(skill_id)]
+  if not row then
+    return nil
+  end
+  for _, key in ipairs(keys or {}) do
+    local num = tonumber(row[key])
+    if num and num > 0 then
+      return num
+    end
+  end
+  return nil
+end
+
+local function resolve_visual_icon(skill_id, bond_name, fallback)
+  local param_icon = read_param_number(skill_id, { 'ui_icon', 'icon' })
+  if param_icon and param_icon > 0 then
+    return param_icon
+  end
+  if fallback and tonumber(fallback) and tonumber(fallback) > 0 then
+    return tonumber(fallback)
+  end
+  local visual = SkillVisuals.get_by_skill_id(skill_id) or SkillVisuals.get_by_bond_name(bond_name)
+  local visual_icon = visual and visual.icon_key
+  if visual_icon and tonumber(visual_icon) and tonumber(visual_icon) > 0 then
+    return tonumber(visual_icon)
+  end
+  return fallback
+end
+
 local function normalize_quality(value)
   local raw = trim(value)
   if raw == '' then
@@ -177,6 +226,7 @@ end
 local cards = {}
 local card_by_id = {}
 local cards_by_bond = {}
+local bond_skill_by_bond = {}
 
 local function read_pool_rows()
   for _, table_name in ipairs({ 'bonds_init', '初始羁绊卡池' }) do
@@ -214,11 +264,27 @@ local function build_fallback_cards_from_bond_skills()
       local skill_id = trim(row.skill_id)
       local skill_name = trim(row.skill_name)
       local bond_name = trim(row.bond_name)
+      if (scope == 'bond_basic' or scope == 'bond_periodic') and skill_id ~= '' and bond_name ~= '' then
+        local csv_icon = tonumber(row.icon) or tonumber(row['图标'])
+        bond_skill_by_bond[bond_name] = {
+          skill_id = skill_id,
+          skill_name = skill_name,
+          trigger_kind = trim(row.trigger_kind),
+          damage_type = trim(row.damage_type),
+          archetype = read_param_text(skill_id, 'archetype'),
+          summary = read_param_text(skill_id, 'summary'),
+          icon = resolve_visual_icon(skill_id, bond_name, csv_icon),
+        }
+      end
       if scope:match('^card_') and skill_id ~= '' and bond_name ~= '' then
+        local param_name = read_param_text(skill_id, 'name')
+        local summary = read_param_text(skill_id, 'summary')
+        local csv_icon = tonumber(row.icon) or tonumber(row['图标'])
+        local csv_bg = tonumber(row.bg) or tonumber(row['底图'])
         local card = {
           index = next_index,
           id = skill_id,
-          name = skill_name ~= '' and skill_name or skill_id,
+          name = param_name ~= '' and param_name or skill_name ~= '' and skill_name or skill_id,
           bond_name = bond_name,
           desc = '',
           raw_attr_text = '',
@@ -228,8 +294,9 @@ local function build_fallback_cards_from_bond_skills()
           condition_text = '',
           required_count = 1,
           activation_desc = BondSkillTextTemplates.get_activation_desc(bond_name, ''),
-          extra_skill_desc = BondSkillTextTemplates.get_card_desc(skill_name, bond_name, ''),
-          icon = nil,
+          extra_skill_desc = summary ~= '' and summary or BondSkillTextTemplates.get_card_desc(skill_name, bond_name, ''),
+          icon = resolve_visual_icon(skill_id, bond_name, csv_icon),
+          bg = csv_bg,
           quality = 'SR',
           initially_unlocked = true,
         }
@@ -258,14 +325,20 @@ end
 local activation_effects = {}
 for bond_name, bond_cards in pairs(cards_by_bond) do
   local first_card = bond_cards[1]
+  local bond_skill = bond_skill_by_bond[bond_name] or {}
+  local desc = trim(bond_skill.summary) ~= '' and trim(bond_skill.summary) or (first_card and first_card.activation_desc or '')
   activation_effects[#activation_effects + 1] = {
     id = 'initial_bond_set_' .. bond_name,
     bond_name = bond_name,
     required_count = first_card and first_card.required_count or #bond_cards,
     name = bond_name,
-    desc = first_card and first_card.activation_desc or '',
-    icon = first_card and first_card.icon or nil,
+    desc = desc,
+    icon = resolve_visual_icon(bond_skill.skill_id, bond_name, first_card and first_card.icon or nil),
+    bg = first_card and first_card.bg,
     quality = first_card and first_card.quality or 'SR',
+    archetype = trim(bond_skill.archetype) ~= '' and trim(bond_skill.archetype) or trim(bond_skill.trigger_kind),
+    damage_type = trim(bond_skill.damage_type),
+    source_skill_id = bond_skill.skill_id,
   }
 end
 table.sort(activation_effects, function(a, b)

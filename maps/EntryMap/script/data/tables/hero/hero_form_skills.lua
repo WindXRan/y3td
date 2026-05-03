@@ -1,4 +1,54 @@
-﻿local helpers = require 'data.tables.helpers'
+local helpers = require 'data.tables.helpers'
+local HeroList = require 'data.tables.hero.herolist'
+local HeroRoster = require 'data.game_tables'.hero_roster
+
+local pinyin_to_name_map = {
+  ['chi_ran_luohan'] = '贺钓帝',
+  ['xuan_jia_dutong'] = '从小喝到大',
+  ['tian_ji_lingnv'] = '开局一条狗',
+  ['pili_nuji'] = '抽卡大师',
+  ['jiuli_zhanjiang'] = '精英杀手',
+  ['canglan_zhanhun'] = '快枪手',
+  ['zhuri_shengong'] = '蛇皮走位',
+  ['xiansheng_zhenjun'] = '火爆哥',
+  ['youdu_tianxiang'] = '肉山',
+  ['yaochi_xianshu'] = '自然之子',
+  ['yunyuan_shaojun'] = '选择困难症',
+  ['xunhai_qiangshi'] = '小又·',
+  ['chiyu_tiangong'] = '风',
+  ['yuehua_xianshu'] = '云',
+  ['yudi_yaoxian'] = '吸血鸦',
+  ['liuyun_jianhou'] = '爽文男主',
+  ['huode_zhenjun'] = '3分钟真男人',
+  ['baihong_qiangxian'] = '云龙',
+  ['beichen_dijun'] = '多重高手',
+  ['zhenyue_jingang'] = '自爆侠',
+  ['qinglian_junzi'] = '冰霜骑士',
+  ['tiebi_shanjun'] = '英雄没有闪',
+  ['huangtian_fawang'] = '点金手',
+  ['talang_yecha'] = '药不能停',
+  ['taohua_xianshu'] = '红温',
+  ['lingtai_tianshi'] = '神盾局局长',
+  ['pozhen_daowei'] = '绝命毒师',
+  ['taixu_mousheng'] = '蛤蟆仙人',
+  ['dumu_zhanpo'] = '大大大后期',
+  ['xuanfeng_zhenjun'] = '神射手',
+}
+
+local hero_icon_by_pinyin = {}
+if HeroRoster and HeroRoster.list then
+  local name_to_icon = {}
+  for _, hero in ipairs(HeroRoster.list) do
+    if hero.name and hero.name ~= '' and hero.icon then
+      name_to_icon[hero.name] = hero.icon
+    end
+  end
+  for pinyin, name in pairs(pinyin_to_name_map) do
+    if name_to_icon[name] then
+      hero_icon_by_pinyin[pinyin] = name_to_icon[name]
+    end
+  end
+end
 
 local list = {
   {
@@ -916,6 +966,10 @@ local by_id = helpers.list_to_map(list)
 local by_hero_id = {}
 for _, skill in ipairs(list) do
   if skill.hero_id and skill.hero_id ~= '' then
+    local icon = hero_icon_by_pinyin[skill.hero_id]
+    if icon then
+      skill.icon = icon
+    end
     by_hero_id[skill.hero_id] = skill
   end
 end

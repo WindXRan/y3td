@@ -1,4 +1,4 @@
-﻿local a=require'ui.ui_root'
+local a=require'ui.ui_root'
 local b=require'data.tables.outgame.marks'
 local c=(require'data.game_tables').hero_roster
 local d=require'data.tables.hero.hero_form_skills'
@@ -613,9 +613,10 @@ local bt={string.format('[%s] %s',c7(cb.quality),cg)}if bX and bX.name and bX.na
 
 if ch~=''then bt[#bt+1]=tostring(ch)end;
 
+local icon_from_skill = bX and bX.icon
 return{id=tostring(cb.id or'evolution_'..tostring(bY)),
 name=tostring(cf),
-icon=b7(cb.hero_unit_id)or b6(),
+icon=icon_from_skill or b7(cb.hero_unit_id) or b6(),
 key=tostring(bY),
 cooldown_text='',
 legacy_cooldown_text='',

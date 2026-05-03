@@ -1,119 +1,115 @@
-﻿local CsvLoader = require 'data.csv_loader'
-local AttrEffect = require 'data.tables.skill.attreffect'
+local CsvLoader = require 'data.csv_loader'
 
-local node_rows = CsvLoader.read_rows_optional('data_csv/bond_nodes.csv')
-local bond_effects = AttrEffect.by_source.bond_node or {}
-
-local function split_pipe_list(raw)
-  if raw == nil or raw == '' then
-    return {}
-  end
-
-  local result = {}
-  for part in string.gmatch(raw, '([^|]+)') do
-    result[#result + 1] = part
-  end
-  return result
-end
-
-local function clone_number_map(source)
-  local result = {}
-  for key, value in pairs(source or {}) do
-    result[key] = tonumber(value) or 0
-  end
-  return result
-end
-
-local function build_unlock_rewards(effect_bucket)
-  local resource = effect_bucket and effect_bucket.resource or nil
-  local rewards = {}
-  if resource and resource.gold ~= nil then
-    rewards.gold = tonumber(resource.gold) or 0
-  end
-  if resource and resource.wood ~= nil then
-    rewards.wood = tonumber(resource.wood) or 0
-  end
-  if resource and resource.exp ~= nil then
-    rewards.exp = tonumber(resource.exp) or 0
-  end
-  return rewards
-end
-
-local function node(def)
-  def.quality = def.quality or 'rare'
-  def.editor_skill_id = def.editor_skill_id or nil
-  def.editor_modifier_id = def.editor_modifier_id or nil
-  def.icon = def.icon or nil
-  def.attr = def.attr or {}
-  def.runtime = def.runtime or {}
-  def.desc = def.desc or {}
-  def.route_tags = def.route_tags or {}
-  def.next_ids = def.next_ids or {}
-  def.unlock_rewards = def.unlock_rewards or {}
-  return def
-end
+local node_rows = CsvLoader.read_rows_optional('data_csv/bond_skills.csv')
 
 local list = {}
-
-for _, row in ipairs(node_rows) do
-  local effect_bucket = bond_effects[row.id] or {}
-
-  list[#list + 1] = node({
-    id = row.id,
-    display_name = row.display_name,
-    group_id = row.group_id,
-    line_id = row.line_id,
-    tier = tonumber(row.tier) or 0,
-    parent_id = row.parent_id ~= '' and row.parent_id or nil,
-    next_ids = split_pipe_list(row.next_ids),
-    route_tags = split_pipe_list(row.route_tags),
-    template = row.template,
-    quality = row.quality ~= '' and row.quality or 'rare',
-    icon = row.icon ~= '' and (tonumber(row.icon) or row.icon) or nil,
-    editor_skill_id = row.editor_skill_id ~= '' and (tonumber(row.editor_skill_id) or row.editor_skill_id) or nil,
-    editor_modifier_id = row.editor_modifier_id ~= '' and (tonumber(row.editor_modifier_id) or row.editor_modifier_id) or nil,
-    unlock_rewards = build_unlock_rewards(effect_bucket),
-    attr = clone_number_map(effect_bucket.attr),
-    runtime = clone_number_map(effect_bucket.runtime),
-    desc = {
-      single = row.desc_single ~= '' and row.desc_single or nil,
-      advanced = row.desc_advanced ~= '' and row.desc_advanced or nil,
-    },
-  })
-end
-
 local by_id = {}
-local root_ids = {}
-local by_line = {}
 local by_group = {}
+local by_line = {}
+local root_ids = {}
 
-for _, def in ipairs(list) do
-  assert(not by_id[def.id], string.format('duplicate bond node id: %s', def.id))
-  by_id[def.id] = def
-  by_line[def.line_id] = by_line[def.line_id] or {}
-  by_line[def.line_id][#by_line[def.line_id] + 1] = def
-  by_group[def.group_id] = by_group[def.group_id] or {}
-  by_group[def.group_id][#by_group[def.group_id] + 1] = def
-  if not def.parent_id then
-    root_ids[#root_ids + 1] = def.id
-  end
-end
-
-for _, def in ipairs(list) do
-  if def.parent_id then
-    assert(by_id[def.parent_id], string.format('missing parent_id for bond node: %s -> %s', def.id, def.parent_id))
-  end
-  for _, next_id in ipairs(def.next_ids) do
-    assert(by_id[next_id], string.format('missing next_id for bond node: %s -> %s', def.id, next_id))
-  end
-end
-
-return {
-  list = list,
-  by_id = by_id,
-  root_ids = root_ids,
-  by_line = by_line,
-  by_group = by_group,
+local BOND_GROUPS = {
+  ['枪炮师'] = true,
+  ['神射手'] = true,
+  ['游侠'] = true,
+  ['狂战士'] = true,
+  ['剑魂'] = true,
+  ['剑宗'] = true,
+  ['龙骑士'] = true,
+  ['战斗法师'] = true,
+  ['魔剑士'] = true,
+  ['火法师'] = true,
+  ['冰霜法师'] = true,
+  ['猎人'] = true,
+  ['雷电法王'] = true,
+  ['骷髅法师'] = true,
+  ['基础'] = true,
 }
 
+local function parse_attr_json(attr_json_str)
+  if not attr_json_str or attr_json_str == '' then
+    return {}
+  end
+  local ok, result = pcall(function()
+    return assert(loadstring('return ' .. attr_json_str))()
+  end)
+  if ok and result then
+    return result
+  end
+  return {}
+end
 
+for _, row in ipairs(node_rows) do
+  if row.enabled == '1' or row.enabled == 1 then
+    local node_id = row.skill_id
+    local bond_name = row.bond_name or row.skill_name or ''
+    local scope = row.scope or ''
+    local attr_pack = parse_attr_json(row.attr_json)
+
+    local node_def = {
+      id = node_id,
+      display_name = row.skill_name or '',
+      group_id = bond_name,
+      line_id = scope,
+      tier = 1,
+      parent_id = nil,
+      next_ids = {},
+      template = scope,
+      quality = 'rare',
+      icon = tonumber(row.icon) or 134269625,
+      bg = row.bg ~= '' and tonumber(row.bg) or nil,
+      editor_skill_id = node_id,
+      editor_modifier_id = nil,
+      attr = attr_pack,
+      runtime = {},
+      route_tags = { bond_name },
+      desc = {
+        single = row.notes or '',
+        advanced = row.notes or '',
+      },
+      scope = scope,
+      trigger_kind = row.trigger_kind or '',
+      damage_type = row.damage_type or '',
+      visual_bond = row.visual_bond or '',
+    }
+
+    list[#list + 1] = node_def
+    by_id[node_id] = node_def
+
+    if not by_group[bond_name] then
+      by_group[bond_name] = {}
+    end
+    by_group[bond_name][#by_group[bond_name] + 1] = node_def
+
+    if not by_line[scope] then
+      by_line[scope] = {}
+    end
+    by_line[scope][#by_line[scope] + 1] = node_def
+
+    if scope == 'bond_basic' or scope == 'bond_periodic' then
+      root_ids[#root_ids + 1] = node_id
+    end
+  end
+end
+
+
+
+local M = {
+  list = list,
+  by_id = by_id,
+  by_group = by_group,
+  by_line = by_line,
+  root_ids = root_ids,
+  NODE_LIST = list,
+  NODE_BY_ID = by_id,
+  LINE_BY_ID = by_line,
+  ROOT_NODE_IDS = root_ids,
+  get_node_def = function(node_id)
+    return by_id[node_id]
+  end,
+  get_line_nodes = function(line_id)
+    return by_line[line_id] or {}
+  end,
+}
+
+return M

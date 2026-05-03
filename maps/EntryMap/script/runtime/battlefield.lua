@@ -161,7 +161,13 @@ function M.create(env)
       return
     end
 
-    if spec.model_id and unit.replace_model then
+    -- 如果 model_id 是无效的单位物编ID（等于模板单位ID），则跳过模型替换，保持模板的默认模型
+    -- 只有有效的模型资源ID才进行替换
+    local invalid_model_ids = {
+      [134278989] = true,  -- 生物模板单位ID
+      [134245850] = true,  -- 英雄模板单位ID
+    }
+    if spec.model_id and unit.replace_model and not invalid_model_ids[spec.model_id] then
       pcall(unit.replace_model, unit, spec.model_id)
     end
 
@@ -833,7 +839,7 @@ function M.create(env)
     STATE.enemy_info_map = STATE.enemy_info_map or {}
     STATE.enemy_info_map[unit] = info
     STATE.all_enemies:add_unit(unit)
-    STATE.total_enemy_alive = STATE.total_enemy_alive + 1
+    STATE.total_enemy_alive = (STATE.total_enemy_alive or 0) + 1
 
     if info.owner then
       info.owner.alive_count = (info.owner.alive_count or 0) + 1
@@ -856,7 +862,7 @@ function M.create(env)
       if STATE.basic_attack_pending_damage and unit then
         STATE.basic_attack_pending_damage[unit] = nil
       end
-      if STATE.total_enemy_alive > 0 then
+      if STATE.total_enemy_alive and STATE.total_enemy_alive > 0 then
         STATE.total_enemy_alive = STATE.total_enemy_alive - 1
       end
       if info.owner and info.owner.alive_count and info.owner.alive_count > 0 then
@@ -1492,18 +1498,19 @@ function M.create(env)
 
   function api.create_hero(basic_attack_range)
     local player = env.get_player()
-    local preferred_unit_id = CONFIG.unit_ids.hero
-    local hero, hero_create_err = try_create_player_unit(player, preferred_unit_id, STATE.hero_spawn_point, 0)
-    if not hero and preferred_unit_id ~= HERO_RUNTIME_FALLBACK_UNIT_ID then
-      hero, hero_create_err = try_create_player_unit(player, HERO_RUNTIME_FALLBACK_UNIT_ID, STATE.hero_spawn_point, 0)
-    end
+    -- 统一只创建英雄模板单位，英雄差异通过 model_id 替换呈现
+    local hero, hero_create_err = try_create_player_unit(player, HERO_RUNTIME_FALLBACK_UNIT_ID, STATE.hero_spawn_point, 0)
     if not hero then
       error(string.format(
-        'failed to create hero unit id=%s fallback=%s err=%s',
-        tostring(preferred_unit_id),
+        'failed to create hero unit id=%s err=%s',
         tostring(HERO_RUNTIME_FALLBACK_UNIT_ID),
         tostring(hero_create_err)
       ))
+    end
+    -- 应用英雄模型替换
+    local hero_model_id = CONFIG.hero_model_id or tonumber(CONFIG.unit_ids.hero_model)
+    if hero_model_id and hero.replace_model then
+      pcall(hero.replace_model, hero, hero_model_id)
     end
     if player and player.select_unit then
       player:select_unit(hero)

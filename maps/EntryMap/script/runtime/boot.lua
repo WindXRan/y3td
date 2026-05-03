@@ -1,4 +1,4 @@
-﻿local CONFIG = require 'config.entry_config'
+local CONFIG = require 'config.entry_config'
 local BondSystem = require 'runtime.bonds_chain'
 local AttackSkillObjects = require 'data.tables.skill.attack_skills'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
@@ -837,6 +837,9 @@ local function add_hero_attr_pack(unit, attr_pack)
 
   for attr_name, value in pairs(attr_pack) do
     if value ~= nil and value ~= 0 then
+      if hero_attr_system.is_attr_defined and not hero_attr_system.is_attr_defined(attr_name) then
+        print('[hero_attr_system] WARNING: unregistered attribute [' .. tostring(attr_name) .. '] used in add_hero_attr_pack')
+      end
       hero_attr_system.add_attr(unit, attr_name, value)
     end
   end

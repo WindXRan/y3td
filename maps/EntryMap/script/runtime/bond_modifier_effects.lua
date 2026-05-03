@@ -1,4 +1,4 @@
-﻿local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
+local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
 local BondModifierPool = require 'data.tables.bond_modifier_pool'
 local SkillVisuals = require 'data.tables.skill_visuals'
 local BondEffectRuntimeRules = require 'data.tables.bond_effect_runtime_rules'
@@ -1727,6 +1727,16 @@ local function add_hero_attr(env, attr_name, value)
   end
   local hero = env.STATE.hero
   local hero_attr_system = env.hero_attr_system
+  if hero_attr_system and hero_attr_system.is_attr_defined then
+    if not hero_attr_system.is_attr_defined(attr_name) then
+      local ok, err = pcall(function()
+        error(' unregistered attribute: [' .. tostring(attr_name) .. '] used in add_hero_attr, please register it in hero_attr_system.lua')
+      end)
+      if ok and err then
+        print('[hero_attr_system] WARNING: unregistered attribute [' .. tostring(attr_name) .. ']')
+      end
+    end
+  end
   if hero_attr_system and hero_attr_system.add_attr then
     hero_attr_system.add_attr(hero, attr_name, value)
   elseif hero.add_attr then
