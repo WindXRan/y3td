@@ -153,6 +153,18 @@ local function set_text_alignment(ui, horizontal, vertical)
   end
 end
 
+local function set_ui_size(ui, width, height)
+  if is_ui_alive(ui) and ui.set_ui_size and width and height then
+    ui:set_ui_size(width, height)
+  end
+end
+
+local function set_pos(ui, x, y)
+  if is_ui_alive(ui) and ui.set_pos and x and y then
+    ui:set_pos(x, y)
+  end
+end
+
 local function set_intercepts(ui, intercepts)
   if is_ui_alive(ui) and ui.set_intercepts_operations then
     ui:set_intercepts_operations(intercepts == true)
@@ -651,7 +663,7 @@ local function get_group_template(options, group_name, visible_items)
     mode = tostring(first.render_mode or '')
   end
   if mode == 'icon_num' then
-    return { icon = true, num = true, label = 'title' }
+    return { icon = true, num = true, label = false }
   elseif mode == 'num' then
     return { num = true, label = 'title' }
   elseif mode == 'lv' then
@@ -832,16 +844,25 @@ local function apply_group_slot(slot, group_name, spec, index, total)
   local show_icon = tpl.icon == true
   local show_lv = tpl.lv == true
   local show_num = tpl.num == true
+  local show_label = tpl.label ~= false
   set_visible(slot.icon, show_icon)
   set_visible(slot.lv, show_lv)
   set_visible(slot.num, show_num)
-  set_visible(slot.label, true)
+  set_visible(slot.label, show_label)
   if is_ui_alive(slot.root) and slot.root.set_image and spec and spec.bg then
     set_image(slot.root, spec.bg)
   end
   if show_icon then
+    set_ui_size(slot.icon, show_num and 54 or 52, show_num and 54 or 52)
+    set_pos(slot.icon, 42, show_num and 48 or 49)
     set_image(slot.icon, spec and (spec.icon or spec.default_icon) or DEFAULT_ICON)
-    set_text(slot.label, spec and tostring(spec.title or group_name) or group_name)
+    if show_label then
+      set_font_size(slot.label, 13)
+      set_text_alignment(slot.label, '中', '中')
+      set_ui_size(slot.label, 82, 20)
+      set_pos(slot.label, 42, 10)
+      set_text(slot.label, spec and tostring(spec.title or group_name) or group_name)
+    end
   end
   if show_lv then
     local quality = spec and tostring(spec.quality or '') or ''
@@ -853,7 +874,10 @@ local function apply_group_slot(slot, group_name, spec, index, total)
     set_text(slot.lv, 'LV.' .. tostring(index))
   end
   if show_num then
-    set_text(slot.label, spec and tostring(spec.title or '当前筛选') or '当前筛选')
+    set_font_size(slot.num, 18)
+    set_text_alignment(slot.num, '中', '中')
+    set_ui_size(slot.num, 82, 24)
+    set_pos(slot.num, 42, 14)
     set_text(slot.num, get_spec_owned_display(spec, total))
   end
 end
@@ -916,22 +940,24 @@ local function create_runtime_group_item(group, spec, index, options, total)
         icon:set_pos(42, 49)
       end
     end
-    label = cell:create_child('文本')
-    if is_ui_alive(label) then
-      if label.set_text then
-        label:set_text(tostring(spec.title or '未命名商品'))
-      end
-      if label.set_font_size then
-        label:set_font_size(14)
-      end
-      if label.set_text_alignment then
-        label:set_text_alignment('中', '中')
-      end
-      if label.set_ui_size then
-        label:set_ui_size(82, 24)
-      end
-      if label.set_pos then
-        label:set_pos(42, 12)
+    if tpl.label ~= false then
+      label = cell:create_child('文本')
+      if is_ui_alive(label) then
+        if label.set_text then
+          label:set_text(tostring(spec.title or '未命名商品'))
+        end
+        if label.set_font_size then
+          label:set_font_size(14)
+        end
+        if label.set_text_alignment then
+          label:set_text_alignment('中', '中')
+        end
+        if label.set_ui_size then
+          label:set_ui_size(82, 24)
+        end
+        if label.set_pos then
+          label:set_pos(42, 12)
+        end
       end
     end
   end
@@ -974,22 +1000,24 @@ local function create_runtime_group_item(group, spec, index, options, total)
     end
   end
   if tpl.num == true then
-    label = cell:create_child('文本')
-    if is_ui_alive(label) then
-      if label.set_text then
-        label:set_text(tostring(spec.title or group.name or '当前筛选'))
-      end
-      if label.set_font_size then
-        label:set_font_size(14)
-      end
-      if label.set_text_alignment then
-        label:set_text_alignment('中', '中')
-      end
-      if label.set_ui_size then
-        label:set_ui_size(82, 28)
-      end
-      if label.set_pos then
-        label:set_pos(42, 50)
+    if tpl.label ~= false and not is_ui_alive(label) then
+      label = cell:create_child('文本')
+      if is_ui_alive(label) then
+        if label.set_text then
+          label:set_text(tostring(spec.title or group.name or '当前筛选'))
+        end
+        if label.set_font_size then
+          label:set_font_size(14)
+        end
+        if label.set_text_alignment then
+          label:set_text_alignment('中', '中')
+        end
+        if label.set_ui_size then
+          label:set_ui_size(82, 28)
+        end
+        if label.set_pos then
+          label:set_pos(42, 50)
+        end
       end
     end
     num = cell:create_child('文本')
