@@ -608,9 +608,14 @@ local bt={string.format('[%s] %s',c7(cb.quality),cg)}if bX and bX.name and bX.na
 if ch~=''then bt[#bt+1]=tostring(ch)end;
 
 local icon_from_skill = bX and bX.icon
+local icon = icon_from_skill or tonumber(cb.icon) or b7(cb.hero_unit_id)
+if not icon then
+  warn(('[runtime_hud] 技能栏技能图标缺失，skill_id=%s, hero_unit_id=%s'):format(tostring(cb.id), tostring(cb.hero_unit_id)))
+  icon = b6()
+end
 return{id=tostring(cb.id or'evolution_'..tostring(bY)),
 name=tostring(cf),
-icon=icon_from_skill or b7(cb.hero_unit_id) or b6(),
+icon=icon,
 key=tostring(bY),
 cooldown_text='',
 legacy_cooldown_text='',

@@ -1,4 +1,4 @@
-﻿local CsvLoader = require 'data.csv_loader'
+local CsvLoader = require 'data.csv_loader'
 local helpers = require 'data.tables.helpers'
 local SecondBatchBlueprints = require 'data.tables.skill.attack_skill_second_batch_blueprints'
 local SkillTaxonomy = require 'data.tables.skill.attack_skill_taxonomy'
@@ -425,8 +425,8 @@ if not defs_by_id.basic_attack then
     base_pierce = tonumber(profile.base_pierce) or 0,
     base_pierce_width = tonumber(profile.base_pierce_width) or 90,
     base_repeat_count = tonumber(profile.base_repeat_count) or 1,
-    ui_icon = tonumber(profile.ui_icon),
-    icon = tonumber(profile.icon),
+    ui_icon = tonumber(profile.ui_icon) or tonumber(profile.icon) or tonumber(rawget(_G, 'BondEffectRuntimeRules') and type(BondEffectRuntimeRules.basic_attack_raw) == 'table' and BondEffectRuntimeRules.basic_attack_raw.icon),
+    icon = tonumber(profile.icon) or tonumber(profile.ui_icon) or tonumber(rawget(_G, 'BondEffectRuntimeRules') and type(BondEffectRuntimeRules.basic_attack_raw) == 'table' and BondEffectRuntimeRules.basic_attack_raw.icon) or 134269625,
     archetype = profile.archetype,
     vfx = fallback_basic_vfx,
   }
