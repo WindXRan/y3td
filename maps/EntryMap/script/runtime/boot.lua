@@ -35,6 +35,7 @@ local HeroSelectionRangeSystem = require 'runtime.hero_selection_range'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
 local SkillFrameworkSystem = require 'runtime.skill_framework'
+local GeneratedSkills = require 'runtime.generated_skills'
 local SampleSkillsSystem = require 'runtime.sample_skills'
 local ProjectileNameGuard = require 'runtime.projectile_name_guard'
 local BootCore = require 'runtime.boot_core'
@@ -1812,68 +1813,13 @@ sample_skills_system = SampleSkillsSystem.create({
   launch_projectile_from_hero = launch_projectile_from_hero,
 })
 
--- ===== 自定义技能注册 =====
--- 区域持续伤害技能：在目标区域生成持续5秒的伤害领域，特效随范围等比缩放
-skill_framework_system.register({
-  id = 'custom_area_dot',
-  name = '持续伤害领域',
-  pattern = 'area',
-  sub_behavior = 'tick',
-  target_mode = 'point',
-  damage_type = '法术',
-  timeline = {
-    duration = 5.0,
-    tick_interval = 0.5,
-    cast_point = 0.10,
-    impact_delay = 0.20,
-  },
-  hit_model = {
-    radius = 200,
-    range = 1200,
-  },
-  scale = {
-    tick_ratio = 0.4,
-  },
-  resource = {
-    cooldown = 1.2,
-  },
-  visual = {
-    cast = 103615,
-    warning = 103615,
-    impact = 103615,
-    hit = 103615,
-  },
-})
-
--- 区域瞬间伤害技能：在目标区域产生瞬间爆发伤害，特效随范围等比缩放
-skill_framework_system.register({
-  id = 'custom_area_burst',
-  name = '瞬间爆发领域',
-  pattern = 'area',
-  sub_behavior = 'burst',
-  target_mode = 'point',
-  damage_type = '法术',
-  timeline = {
-    cast_point = 0.10,
-    impact_delay = 0.24,
-  },
-  hit_model = {
-    radius = 200,
-    range = 1200,
-  },
-  scale = {
-    attack_ratio = 1.8,
-  },
-  resource = {
-    cooldown = 0.95,
-  },
-  visual = {
-    cast = 104733,
-    warning = 104733,
-    impact = 104733,
-    hit = 104733,
-  },
-})
+-- ===== 数据驱动技能批量注册 =====
+-- 内建技能 + CSV 技能统一入口，新增技能只需改 CSV 或 generated_skills.load_builtin_defs()
+do
+  local generated_api = GeneratedSkills.create(skill_framework_system)
+  local count = generated_api.register_all()
+  print('[boot] 批量注册技能完成: ' .. tostring(count) .. ' 个')
+end
 
 heal_hero = function(amount)
   if amount <= 0 or not STATE.hero or not STATE.hero:is_exist() then

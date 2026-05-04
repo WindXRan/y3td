@@ -4,7 +4,7 @@
 
 local CsvLoader = require 'data.csv_loader'
 local Skills = require 'runtime.skills'
-local BuffSystem = require 'runtime.buff_system'
+local SkillHooks = require 'runtime.skill_hooks'
 
 local M = {}
 
@@ -28,13 +28,6 @@ local OPTIONAL_STRING_KEYS = {
   damage_type = true,
   sub_behavior = true,
   desc = true,
-}
-
-local OLD_PATTERN_SUB_BEHAVIOR = {
-  line_pierce = { pattern = 'projectile', sub_behavior = 'pierce' },
-  chain_bounce = { pattern = 'projectile', sub_behavior = 'chain' },
-  area_burst = { pattern = 'area', sub_behavior = 'burst' },
-  area_tick = { pattern = 'area', sub_behavior = 'tick' },
 }
 
 local function safe_number(value)
@@ -122,13 +115,19 @@ end
 --- 从 CSV 加载所有技能定义
 --- @return table[] 完整的技能定义列表
 function M.load_defs()
-  local rows = CsvLoader.read_rows_optional('data_csv/element_skills.csv')
   local defs = {}
+
+  -- 内建技能（自定义粒子，不适合进 CSV）
+  for _, builtin in ipairs(M.load_builtin_defs()) do
+    defs[#defs + 1] = builtin
+  end
+
+  local rows = CsvLoader.read_rows_optional('data_csv/element_skills.csv')
   for _, row in ipairs(rows) do
     local element = row.element or 'physical'
     local pattern = row.pattern or 'area_burst'
     local tier = row.tier or 'mid'
-    local mapped = OLD_PATTERN_SUB_BEHAVIOR[pattern]
+    local mapped = Skills.PATTERN_SUB_BEHAVIOR[pattern]
     local sub_behavior = row.sub_behavior
     if mapped then
       pattern = mapped.pattern
@@ -146,18 +145,13 @@ function M.load_defs()
     overrides.sub_behavior = sub_behavior
     local def = Skills.build_element_skill(element, pattern, tier, overrides)
     if def then
-      -- 火系技能命中后附加灼烧
-      if element == 'fire' and def.id == 'fireball' then
-        print('[buff_system] 注册 fireball OnProjectileHit hook')
-        def.hooks = def.hooks or {}
-        def.hooks.OnProjectileHit = function(ctx)
-          print('[buff_system] fireball OnProjectileHit 触发, hits=' .. tostring(#(ctx.hits or {})))
-          for _, unit in ipairs(ctx.hits or {}) do
-            if unit and unit.is_exist and unit:is_exist() then
-              local buff = BuffSystem.apply_buff(unit, 'burn', 3.0, 1, ctx.caster)
-              print('[buff_system] apply_buff burn on ' .. tostring(unit.handle) .. ' buff=' .. tostring(buff))
-            end
-          end
+      -- 从 hook 注册表自动挂载特例行为
+      for _, hook_name in ipairs({ 'OnSpellStart', 'OnProjectileHit', 'OnTick', 'OnFinish' }) do
+        local hook_fn = SkillHooks.get(def.id, hook_name)
+        if hook_fn then
+          print('[skill_hooks] 注册 ' .. def.id .. ' ' .. hook_name .. ' hook')
+          def.hooks = def.hooks or {}
+          def.hooks[hook_name] = hook_fn
         end
       end
       defs[#defs + 1] = def
@@ -166,6 +160,71 @@ function M.load_defs()
     ::continue::
   end
   return defs
+end
+
+--- 内建技能定义（非 CSV 驱动，使用自定义粒子资源）
+--- @return table[]
+function M.load_builtin_defs()
+  return {
+    {
+      id = 'custom_area_dot',
+      name = '持续伤害领域',
+      pattern = 'area',
+      sub_behavior = 'tick',
+      target_mode = 'point',
+      damage_type = '法术',
+      timeline = {
+        duration = 5.0,
+        tick_interval = 0.5,
+        cast_point = 0.10,
+        impact_delay = 0.20,
+      },
+      hit_model = {
+        radius = 200,
+        range = 1200,
+      },
+      scale = {
+        tick_ratio = 0.4,
+      },
+      resource = {
+        cooldown = 1.2,
+      },
+      visual = {
+        cast = 103615,
+        warning = 103615,
+        impact = 103615,
+        hit = 103615,
+      },
+    },
+    {
+      id = 'custom_area_burst',
+      name = '瞬间爆发领域',
+      pattern = 'area',
+      sub_behavior = 'burst',
+      target_mode = 'point',
+      damage_type = '法术',
+      timeline = {
+        cast_point = 0.10,
+        impact_delay = 0.24,
+      },
+      hit_model = {
+        radius = 200,
+        range = 1200,
+      },
+      scale = {
+        attack_ratio = 1.8,
+      },
+      resource = {
+        cooldown = 0.95,
+      },
+      visual = {
+        cast = 104733,
+        warning = 104733,
+        impact = 104733,
+        hit = 104733,
+      },
+    },
+  }
 end
 
 --- 创建运行时 API，需要注入 framework 实例

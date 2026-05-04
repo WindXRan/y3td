@@ -4,56 +4,23 @@ local GeneratedSkills = require 'runtime.generated_skills'
 
 local M = {}
 
-local function deepcopy(src)
-  if type(src) ~= 'table' then
-    return src
-  end
-  local out = {}
-  for k, v in pairs(src) do
-    out[k] = deepcopy(v)
-  end
-  return out
-end
-
 local function make_vfx(pattern, element, sub_behavior)
   local element_vfx = Skills.get_element_vfx(element) or Skills.get_element_vfx('physical')
-  local element_fx = {
-    phys = { cast = 106060, warning = 106060, impact = 106069, hit = 106069 },
-    fire = { cast = 104727, warning = 104727, impact = 103953, hit = 103953 },
-    ice = { cast = 106070, warning = 106067, impact = 106067, hit = 106070 },
-    lightning = { cast = 106074, warning = 106074, impact = 106112, hit = 106074 },
-    arcane = { cast = 106065, warning = 106065, impact = 106065, hit = 106065 },
-  }
-  local fx = element_fx[element] or element_fx.phys
   local is_burst = pattern == 'area' or pattern == 'area_burst' or sub_behavior == 'burst'
   return {
-    cast = fx.cast,
-    warning = fx.warning,
-    impact = fx.impact,
-    hit = fx.hit,
+    cast = element_vfx.cast,
+    warning = element_vfx.warning,
+    impact = element_vfx.impact,
+    hit = element_vfx.hit,
     projectile_key = element_vfx.projectile_key,
     projectile_height = element_vfx.projectile_height or (is_burst and 30 or 20),
     projectile_time = element_vfx.projectile_time or (is_burst and 0.72 or 0.62),
   }
 end
 
-local PATTERN_TO_BASE = {
-  projectile = 'sf_projectile',
-  area = 'sf_area',
-  line_pierce = 'sf_projectile',
-  area_burst = 'sf_area',
-  area_tick = 'sf_area',
-  chain_bounce = 'sf_projectile',
-}
-
-local PATTERN_TARGET_MODE = {
-  projectile = 'unit',
-  area = 'point',
-  line_pierce = 'unit',
-  area_burst = 'point',
-  area_tick = 'point',
-  chain_bounce = 'unit',
-}
+-- 复用 skills.lua 的权威映射，不再维护副本
+local PATTERN_TO_BASE = Skills.PATTERN_TO_BASE
+local PATTERN_TARGET_MODE = Skills.PATTERN_TARGET_MODE
 
 -- 从 CSV 批量构建技能行，补全同事的 build_rows() 骨架
 local function build_rows()

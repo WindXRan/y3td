@@ -168,6 +168,50 @@ local PATTERN_PRODUCTION_PATCH = {
   },
 }
 
+-- 统一 pattern → target_mode 映射，供 sample_skills 等复用
+M.PATTERN_TARGET_MODE = {
+  projectile = 'unit',
+  area = 'point',
+  line_pierce = 'unit',
+  area_burst = 'point',
+  area_tick = 'point',
+  chain_bounce = 'unit',
+}
+
+-- 扁平 overrides 到嵌套结构的映射表
+local FLAT_TO_NESTED = {
+  cooldown = { 'resource', 'cooldown' },
+  charges = { 'resource', 'charges' },
+  attack_ratio = { 'scale', 'attack_ratio' },
+  splash_ratio = { 'scale', 'splash_ratio' },
+  tick_ratio = { 'scale', 'tick_ratio' },
+  bounce_ratio = { 'scale', 'bounce_ratio' },
+  radius = { 'hit_model', 'radius' },
+  range = { 'hit_model', 'range' },
+  width = { 'hit_model', 'width' },
+  bounce = { 'hit_model', 'bounce' },
+  max_hits = { 'hit_model', 'max_hits' },
+  duration = { 'timeline', 'duration' },
+  tick_interval = { 'timeline', 'tick_interval' },
+  cast_point = { 'timeline', 'cast_point' },
+  impact_delay = { 'timeline', 'impact_delay' },
+}
+
+local function normalize_flat_overrides(overrides)
+  local out = clone_table(overrides or {})
+  for flat_key, nested_path in pairs(FLAT_TO_NESTED) do
+    local value = out[flat_key]
+    if value ~= nil then
+      local parent_key = nested_path[1]
+      local child_key = nested_path[2]
+      out[parent_key] = out[parent_key] or {}
+      out[parent_key][child_key] = value
+      out[flat_key] = nil
+    end
+  end
+  return out
+end
+
 local function clone_table(src)
   local out = {}
   for k, v in pairs(src or {}) do
@@ -258,7 +302,7 @@ function M.build_element_skill(element, pattern, tier, overrides)
   if not vfx then
     vfx = ELEMENT_VFX.physical
   end
-  local patched_overrides = clone_table(overrides or {})
+  local patched_overrides = normalize_flat_overrides(overrides or {})
   patched_overrides.pattern = normalized_pattern
   if not patched_overrides.sub_behavior or patched_overrides.sub_behavior == '' then
     patched_overrides.sub_behavior = legacy and legacy.sub_behavior or (normalized_pattern == 'area' and 'burst' or 'base')
@@ -285,6 +329,11 @@ end
 function M.get_element_vfx(element)
   return ELEMENT_VFX[element]
 end
+
+-- ===== 共享映射表导出 =====
+-- 供 sample_skills / generated_skills 等模块复用，避免多处维护映射
+M.PATTERN_TO_BASE = PATTERN_TO_BASE
+M.PATTERN_SUB_BEHAVIOR = PATTERN_SUB_BEHAVIOR
 
 -- ===== 同事兼容接口 =====
 -- 框架技能系统迁移中。以下别名供历史调用兼容，底层复用上述构建链路。
