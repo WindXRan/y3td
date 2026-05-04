@@ -517,7 +517,9 @@ BuffSystem.init({
 })
 
 -- 将 Buff 系统注入到血条模块，使 Buff 图标能显示在单位头顶
-CustomHealthBars.set_buff_system(BuffSystem)
+if CustomHealthBars.set_buff_system then
+  CustomHealthBars.set_buff_system(BuffSystem)
+end
 
 local function install_projectile_override_hook()
   if projectile_override_hook_installed then
@@ -3408,6 +3410,8 @@ local function build_choice_list_cards()
   if root.set_z_order then
     root:set_z_order(9600)
   end
+end
+
 return function(...)
   -- 选择面板统一走 ChoiceList 动态卡片链路，不再依赖旧 BondChoice2/3/4 渲染。
   build_choice_list_cards()
