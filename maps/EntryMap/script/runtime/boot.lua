@@ -1797,6 +1797,69 @@ sample_skills_system = SampleSkillsSystem.create({
   launch_projectile_from_hero = launch_projectile_from_hero,
 })
 
+-- ===== 自定义技能注册 =====
+-- 区域持续伤害技能：在目标区域生成持续5秒的伤害领域，特效随范围等比缩放
+skill_framework_system.register({
+  id = 'custom_area_dot',
+  name = '持续伤害领域',
+  pattern = 'area',
+  sub_behavior = 'tick',
+  target_mode = 'point',
+  damage_type = '法术',
+  timeline = {
+    duration = 5.0,
+    tick_interval = 0.5,
+    cast_point = 0.10,
+    impact_delay = 0.20,
+  },
+  hit_model = {
+    radius = 200,
+    range = 1200,
+  },
+  scale = {
+    tick_ratio = 0.4,
+  },
+  resource = {
+    cooldown = 1.2,
+  },
+  visual = {
+    cast = 103615,
+    warning = 103615,
+    impact = 103615,
+    hit = 103615,
+  },
+})
+
+-- 区域瞬间伤害技能：在目标区域产生瞬间爆发伤害，特效随范围等比缩放
+skill_framework_system.register({
+  id = 'custom_area_burst',
+  name = '瞬间爆发领域',
+  pattern = 'area',
+  sub_behavior = 'burst',
+  target_mode = 'point',
+  damage_type = '法术',
+  timeline = {
+    cast_point = 0.10,
+    impact_delay = 0.24,
+  },
+  hit_model = {
+    radius = 200,
+    range = 1200,
+  },
+  scale = {
+    attack_ratio = 1.8,
+  },
+  resource = {
+    cooldown = 0.95,
+  },
+  visual = {
+    cast = 104733,
+    warning = 104733,
+    impact = 104733,
+    hit = 104733,
+  },
+})
+
 heal_hero = function(amount)
   if amount <= 0 or not STATE.hero or not STATE.hero:is_exist() then
     return
@@ -2987,10 +3050,18 @@ gm_bond_effects_system = GmBondEffectsSystem.create({
     return {}
   end,
   cast_sample_skill = function(sample_id)
+    -- 先尝试 sample 技能系统
     if sample_skills_system and sample_skills_system.cast_sample then
-      return sample_skills_system.cast_sample(sample_id)
+      local ok, msg = sample_skills_system.cast_sample(sample_id)
+      if ok then
+        return ok, msg
+      end
     end
-    return false, 'sample 技能系统未初始化。'
+    -- 自定义技能：直接走框架
+    if skill_framework_system and skill_framework_system.cast_by_id then
+      return skill_framework_system.cast_by_id(sample_id)
+    end
+    return false, '技能系统未初始化。'
   end,
   cast_next_sample_skill = function()
     if sample_skills_system and sample_skills_system.cast_next_sample then
@@ -2999,10 +3070,39 @@ gm_bond_effects_system = GmBondEffectsSystem.create({
     return false, 'sample 技能系统未初始化。'
   end,
   get_sample_skill_defs = function()
+    local seen = {}
+    local defs = {}
+    -- 先收录 sample 系统的技能
     if sample_skills_system and sample_skills_system.get_sample_defs then
-      return sample_skills_system.get_sample_defs()
+      for _, def in ipairs(sample_skills_system.get_sample_defs()) do
+        if def.id and not seen[def.id] then
+          seen[def.id] = true
+          defs[#defs + 1] = def
+        end
+      end
     end
-    return {}
+    -- 再扫描框架中所有已注册技能，自动收录 sample 系统未覆盖的
+    if skill_framework_system and skill_framework_system.list_registered then
+      for _, def in ipairs(skill_framework_system.list_registered()) do
+        if def.id and not seen[def.id] then
+          seen[def.id] = true
+          defs[#defs + 1] = {
+            id = def.id,
+            name = def.name or def.id,
+            desc = string.format('%s/%s·范围%d', def.pattern or '', def.sub_behavior or '', def.hit_model and def.hit_model.radius or 0),
+            pattern = def.pattern,
+            sub_behavior = def.sub_behavior,
+            target_mode = def.target_mode,
+            damage_type = def.damage_type,
+            cooldown = def.resource and def.resource.cooldown or 0,
+            radius = def.hit_model and def.hit_model.radius or 0,
+            range = def.hit_model and def.hit_model.range or 0,
+            attack_ratio = def.scale and (def.scale.attack_ratio or def.scale.tick_ratio) or 0,
+          }
+        end
+      end
+    end
+    return defs
   end,
   cast_basic_attack_ability = function()
     if attack_skills_system and attack_skills_system.debug_cast_basic_attack_once then
@@ -3071,7 +3171,7 @@ battle_auto_acceptance_system = BattleAutoAcceptanceSystem.create({
   CONFIG = CONFIG,
   y3 = y3,
   message = message,
-  auto_start_in_n0 = true,
+  auto_start_in_n0 = false,
   is_battle_active = function()
     return STATE.session_phase == 'battle' and STATE.game_finished ~= true
   end,
