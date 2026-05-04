@@ -1,6 +1,2 @@
 id,name,element,pattern,sub_behavior,tier,damage_type,cooldown,attack_ratio,radius,range,bounce,charges,desc
 fireball,火球术,fire,projectile,burst,mid,法术,,,,,,,飞行火球命中后落点AOE爆发
-chain_lightning,连锁闪电,lightning,projectile,chain,mid,法术,,,,,4,,目标间链式弹跳 伤害逐段衰减
-ice_lance,冰枪术,ice,projectile,pierce,light,法术,,,,,,,直线穿透冰系技能
-shadow_nova,暗影新星,shadow,area,burst,heavy,法术,,,,,,,大范围暗影爆发
-arcane_missile,奥术飞弹,arcane,projectile,chain,light,法术,,,,,3,,快速奥术弹跳弹

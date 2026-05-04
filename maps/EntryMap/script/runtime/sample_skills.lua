@@ -122,6 +122,9 @@ function M.create(env)
       hooks = row.hooks,
     })
     if built then
+      if row.id == 'wind_blade' and built.timeline then
+        built.timeline.tick_interval = nil
+      end
       if row.hooks and row.hooks.OnProjectileHit then
         print('[buff_system] sample_skills 注册 ' .. tostring(row.id) .. ' 带 OnProjectileHit hook')
       end

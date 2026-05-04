@@ -224,6 +224,106 @@ function M.load_builtin_defs()
         hit = 104733,
       },
     },
+    -- ===== 风系主动技能 =====
+    {
+      id = 'wind_blade',
+      name = '风刃',
+      pattern = 'projectile',
+      sub_behavior = 'pierce',
+      target_mode = 'unit',
+      damage_type = '物理',
+      timeline = {
+        cast_point = 0.06,
+        impact_delay = 0.12,
+        duration = 1.0,
+      },
+      hit_model = {
+        range = 1300,
+        width = 200,
+        max_hits = 0,
+      },
+      scale = {
+        attack_ratio = 1.35,
+      },
+      resource = {
+        cooldown = 0.55,
+      },
+      visual = {
+        cast = 101093,
+        warning = 101093,
+        impact = 101093,
+        hit = 101093,
+        projectile_key = 134256670,
+        projectile_height = 28,
+        projectile_time = 0.82,
+      },
+    },
+    {
+      id = 'tornado',
+      name = '龙卷风',
+      pattern = 'projectile',
+      sub_behavior = 'pierce',
+      target_mode = 'unit',
+      damage_type = '法术',
+      timeline = {
+        cast_point = 0.10,
+        impact_delay = 0.22,
+        duration = 1.0,
+        tick_interval = 0.26,
+      },
+      hit_model = {
+        range = 1400,
+        width = 280,
+        max_hits = 0,
+      },
+      scale = {
+        attack_ratio = 0.45,
+        tick_ratio = 0.38,
+      },
+      resource = {
+        cooldown = 0.95,
+      },
+      visual = {
+        cast = 100771,
+        warning = 100771,
+        impact = 100771,
+        hit = 100771,
+        projectile_key = 134263445,
+        projectile_height = 28,
+        projectile_time = 0.90,
+      },
+    },
+    {
+      id = 'hurricane_eye',
+      name = '飓风之眼',
+      pattern = 'area',
+      sub_behavior = 'tick',
+      target_mode = 'point',
+      damage_type = '法术',
+      timeline = {
+        cast_point = 0.14,
+        impact_delay = 0.28,
+        duration = 3.8,
+        tick_interval = 0.30,
+      },
+      hit_model = {
+        range = 1200,
+        radius = 460,
+        max_hits = 0,
+      },
+      scale = {
+        tick_ratio = 0.72,
+      },
+      resource = {
+        cooldown = 1.35,
+      },
+      visual = {
+        cast = 100035,
+        warning = 100035,
+        impact = 100035,
+        hit = 100035,
+      },
+    },
   }
 end
 

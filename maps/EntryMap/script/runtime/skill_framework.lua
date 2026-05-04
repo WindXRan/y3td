@@ -114,6 +114,7 @@ local function normalize_skill(def)
       backswing = normalize_number(cfg.timeline and cfg.timeline.backswing, 0.12, 0),
       duration = normalize_number(cfg.timeline and cfg.timeline.duration, 1.0, 0.05),
       tick_interval = normalize_number(cfg.timeline and cfg.timeline.tick_interval, 0.2, 0.03),
+      has_tick_interval = cfg.timeline and cfg.timeline.tick_interval ~= nil or false,
     },
     hit_model = {
       range = normalize_number(cfg.hit_model and cfg.hit_model.range, 1200, 80),
@@ -220,6 +221,22 @@ local function dedupe_units(units)
     end
   end
   return result
+end
+
+local function get_unit_hit_key(unit)
+  if type(unit) == 'table' and type(unit.get_id) == 'function' then
+    local ok, id = pcall(unit.get_id, unit)
+    if ok and id ~= nil then
+      return 'id:' .. tostring(id)
+    end
+  end
+  if type(unit) == 'table' and unit.handle ~= nil then
+    return 'handle:' .. tostring(unit.handle)
+  end
+  if unit ~= nil then
+    return 'unit:' .. tostring(unit)
+  end
+  return nil
 end
 
 local function area_fx_scale(radius)
@@ -461,6 +478,95 @@ function M.create(env)
       elseif cast_ctx.caster and cast_ctx.caster.get_facing then
         angle = tonumber(cast_ctx.caster:get_facing()) or 0
       end
+      local proj_key = visual_key(skill, 'projectile_key')
+      local pierce_duration = tonumber(skill.timeline.duration or 0)
+      -- 穿透型投射物：duration > 0 时使用 mover_line 碰撞模式
+      if pierce_duration > 0 and proj_key and y3 and y3.projectile then
+        local proj_speed = math.max(600, (skill.hit_model.range or 1300) / math.max(0.01, resolve_impact_delay(skill))) * 0.335
+        local proj_height = visual_key(skill, 'projectile_height') or 28
+        local hit_radius = skill.hit_model.width or 200
+        local tick_interval = skill.timeline.has_tick_interval and tonumber(skill.timeline.tick_interval or 0) or 0
+        local hit_same = skill.timeline.has_tick_interval and tick_interval > 0
+        -- 非连续模式：hit_interval 设极大值 + 手动去重，杜绝同一帧内重入
+        local mover_hit_interval = hit_same and math.max(tick_interval, 0.01) or 999
+        local damage_per_hit = hit_same
+          and damage_amount(skill, 'tick_ratio')
+          or damage_amount(skill, 'attack_ratio')
+        local hit_particle = visual_key(skill, 'hit')
+        local hit_units = {}
+        local first_hit = false
+        -- 初始存活时间设大，命中首个敌人后重置为 pierce_duration
+        local init_proj_time = math.max(pierce_duration + 4.0, 8.0)
+        local ok, proj = pcall(y3.projectile.create, {
+          key = proj_key,
+          target = cast_ctx.caster or y3.point(hero_point.x, hero_point.y),
+          socket = cast_ctx.caster and 'origin' or nil,
+          owner = cast_ctx.caster,
+          angle = angle,
+          time = init_proj_time,
+          remove_immediately = true,
+        })
+        if not ok or not proj then
+          return false, '投射物创建失败。'
+        end
+        local function cleanup_proj()
+          if proj and proj:is_exist() then
+            pcall(proj.remove, proj)
+          end
+        end
+        pcall(proj.set_height, proj, proj_height)
+        pcall(proj.mover_line, proj, {
+          angle = angle,
+          distance = proj_speed * init_proj_time,
+          speed = proj_speed,
+          hit_radius = hit_radius,
+          hit_type = 0,
+          hit_same = hit_same,
+          hit_interval = mover_hit_interval,
+          face_angle = true,
+          on_hit = function(_, hit_unit)
+            if not hit_unit or not hit_unit.is_exist or not hit_unit:is_exist() then
+              return
+            end
+            local hit_key = get_unit_hit_key(hit_unit)
+            if not hit_same and hit_key ~= nil and hit_units[hit_key] then
+              return
+            end
+            if hit_key ~= nil then
+              hit_units[hit_key] = true
+            end
+            -- 首次命中后重置存活时间为 duration
+            if not first_hit and proj and proj:is_exist() then
+              first_hit = true
+              pcall(proj.set_time, proj, pierce_duration)
+            end
+            local amount = damage_per_hit
+            if skill_damage_api.single(hit_unit, amount, skill.damage_type, {
+              particle = hit_particle,
+              metric_scope = 'skill_framework',
+              metric_key = skill.id,
+            }) then
+              cast_ctx.hit_count = (cast_ctx.hit_count or 0) + 1
+              cast_ctx.total_damage = (cast_ctx.total_damage or 0) + (amount or 0)
+              mark_damage_impact(cast_ctx)
+              fire_hook(skill, 'OnProjectileHit', cast_ctx)
+            end
+          end,
+          on_finish = function()
+            cleanup_proj()
+            fire_hook(skill, 'OnFinish', cast_ctx)
+          end,
+          on_break = function()
+            cleanup_proj()
+            fire_hook(skill, 'OnFinish', cast_ctx)
+          end,
+        })
+        local fx_scale = impact_fx_scale(skill)
+        spawn_particle(y3, cast_ctx.caster, visual_key(skill, 'cast'), fx_scale * 0.95, 0.20, 24)
+        fire_hook(skill, 'OnSpellStart', cast_ctx)
+        return true, string.format('[%s] projectile.pierce(mover_line) 触发', skill.id)
+      end
+      -- 原有线段扫掠逻辑（duration == 0 时回退）
       local end_point = create_offset_point and create_offset_point(y3, hero_point, angle, skill.hit_model.range, 0) or impact_point
       if not end_point then
         return false, '直线终点创建失败。'

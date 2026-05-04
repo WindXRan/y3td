@@ -59,6 +59,15 @@ local ELEMENT_VFX = {
     impact = 106107,
     hit = 106056,
   },
+  wind = {
+    projectile_key = 134263445,   -- 龙卷风投射物
+    projectile_time = 0.90,
+    projectile_height = 28,
+    cast = 100771,
+    warning = 100771,
+    impact = 100771,
+    hit = 100771,
+  },
 }
 
 -- pattern → framework base_skill_id 的映射
@@ -197,21 +206,6 @@ local FLAT_TO_NESTED = {
   impact_delay = { 'timeline', 'impact_delay' },
 }
 
-local function normalize_flat_overrides(overrides)
-  local out = clone_table(overrides or {})
-  for flat_key, nested_path in pairs(FLAT_TO_NESTED) do
-    local value = out[flat_key]
-    if value ~= nil then
-      local parent_key = nested_path[1]
-      local child_key = nested_path[2]
-      out[parent_key] = out[parent_key] or {}
-      out[parent_key][child_key] = value
-      out[flat_key] = nil
-    end
-  end
-  return out
-end
-
 local function clone_table(src)
   local out = {}
   for k, v in pairs(src or {}) do
@@ -231,6 +225,21 @@ local function merge_table(base, override)
       out[k] = merge_table(out[k], v)
     else
       out[k] = v
+    end
+  end
+  return out
+end
+
+local function normalize_flat_overrides(overrides)
+  local out = clone_table(overrides or {})
+  for flat_key, nested_path in pairs(FLAT_TO_NESTED) do
+    local value = out[flat_key]
+    if value ~= nil then
+      local parent_key = nested_path[1]
+      local child_key = nested_path[2]
+      out[parent_key] = out[parent_key] or {}
+      out[parent_key][child_key] = value
+      out[flat_key] = nil
     end
   end
   return out
