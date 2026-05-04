@@ -22,7 +22,7 @@
     "attack_speed": 80.0, 
     "attack_speed_grow": 5.0, 
     "attack_type": 10000, 
-    "bar_show_name": 2, 
+    "bar_show_name": 1, 
     "bar_show_scale": true, 
     "bar_slot_size": 6, 
     "base_color_mod": 1, 
@@ -47,7 +47,7 @@
     "billboard_scale_x": 1, 
     "billboard_scale_y": 1, 
     "blood_bar": 327681, 
-    "blood_show_type": 0, 
+    "blood_show_type": 1, 
     "body_size": 1.2, 
     "build_ignore_dyn_collision": false, 
     "build_res_cost_list": {

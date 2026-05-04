@@ -1813,6 +1813,7 @@ function M.create(env)
       ['商品'] = { icon = true, label = 'title' },
       ['皮肤'] = { icon = true, label = 'title' },
       ['翅膀'] = { icon = true, label = 'title' },
+      ['套装'] = { icon = true, label = 'title' },
       ['地图等级'] = { lv = true, label = 'quality' },
       ['荣誉等级'] = { num = true, label = 'title' },
       ['典藏积分'] = { num = true, label = 'title' },

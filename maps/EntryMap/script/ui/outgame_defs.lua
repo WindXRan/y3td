@@ -61,20 +61,28 @@ local function build_archive_shop_specs(shop_items)
     return QualityImageTable.get_frame_image(quality) or fallback_bg or shop_items.default_bg or 131166
   end
 
-  local primary_order = { '商品', '仓库', '皮肤', '翅膀', '荣誉等级', '地图等级', '典藏积分' }
+  local primary_order = { '商品', '仓库', '皮肤', '翅膀', '套装', '荣誉等级', '地图等级', '典藏积分' }
 
   local function classify_primary(spec)
     local configured_primary = tostring(spec.primary or '')
     if configured_primary ~= '' then
+      if configured_primary == '套装' then
+        print('[DEBUG] classify_primary: spec.primary is 套装, title='..tostring(spec.title or 'nil'))
+      end
       return configured_primary
     end
     local title = tostring(spec.title or '')
     local category = tostring(spec.category or '')
+    local tab1 = tostring(spec.l1_tab or spec.tab1 or '')
     if title:find('皮肤', 1, true) or category:find('皮肤', 1, true) then
       return '皮肤'
     end
     if title:find('翅膀', 1, true) or category:find('翅膀', 1, true) then
       return '翅膀'
+    end
+    if title:find('套装', 1, true) or category:find('套装', 1, true) or tab1:find('套装', 1, true) then
+      print('[DEBUG] classify_primary: matched 套装 by title/category/tab1, title='..title..', tab1='..tab1)
+      return '套装'
     end
     if title:find('荣誉', 1, true) or category:find('荣誉', 1, true) then
       return '荣誉等级'

@@ -875,11 +875,13 @@ function M.create(env)
       if grant_death_rewards then
         if info.kind == 'main' then
           env.award_rewards(env.build_reward_with_bond_bonus(info.reward), nil, true)
-          if STATE.skill_runtime.medbot_every > 0 and STATE.skill_runtime.medbot_heal > 0 then
-            STATE.skill_runtime.medbot_kills = STATE.skill_runtime.medbot_kills + 1
-            if STATE.skill_runtime.medbot_kills >= STATE.skill_runtime.medbot_every then
-              STATE.skill_runtime.medbot_kills = STATE.skill_runtime.medbot_kills - STATE.skill_runtime.medbot_every
-              env.heal_hero(STATE.skill_runtime.medbot_heal)
+          local medbot_every = STATE.skill_runtime and tonumber(STATE.skill_runtime.medbot_every) or 0
+          local medbot_heal = STATE.skill_runtime and tonumber(STATE.skill_runtime.medbot_heal) or 0
+          if medbot_every > 0 and medbot_heal > 0 then
+            STATE.skill_runtime.medbot_kills = (STATE.skill_runtime.medbot_kills or 0) + 1
+            if STATE.skill_runtime.medbot_kills >= medbot_every then
+              STATE.skill_runtime.medbot_kills = STATE.skill_runtime.medbot_kills - medbot_every
+              env.heal_hero(medbot_heal)
             end
           end
         elseif info.kind == 'boss' then
@@ -1029,12 +1031,15 @@ function M.create(env)
     if info and info.attr_overrides then
       set_attr_pack(unit, info.attr_overrides)
     end
+    -- 如果显式设置了 spawn_hp，则覆盖自动设置的血量
     if info and info.spawn_hp ~= nil then
       unit:set_hp(info.spawn_hp)
-    elseif info and info.attr_overrides and info.attr_overrides['生命'] ~= nil then
-      unit:set_hp(info.attr_overrides['生命'])
-    elseif info and info.attr_overrides and info.attr_overrides['最大生命'] ~= nil then
-      unit:set_hp(info.attr_overrides['最大生命'])
+    else
+      -- 确保怪物是满血状态
+      local max_hp = tonumber(unit:get_attr('最大生命')) or tonumber(unit:get_attr('生命'))
+      if max_hp and max_hp > 0 then
+        unit:set_hp(max_hp)
+      end
     end
     apply_spawn_enemy_speed_tuning(unit, info)
     unit:set_reward_exp(0)

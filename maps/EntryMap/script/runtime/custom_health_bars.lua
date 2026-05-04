@@ -2,8 +2,8 @@ local M = {}
 
 local BLOOD_BAR_TYPE = {
   hero = 0x0050001,
-  main = 0x0040002,
-  elite = 0x0040003,
+  main = 0x0050002,
+  elite = 0x0050003,
   boss = 0x0060002,
   challenge = 0x0060003,
 }
@@ -102,14 +102,14 @@ end
 local function get_max_hp(y3, hero_attr_system, unit, role)
   if role == 'hero' and hero_attr_system and hero_attr_system.get_attr then
     local hero_max = tonumber(hero_attr_system.get_attr(unit, '生命结算值'))
-      or tonumber(hero_attr_system.get_attr(unit, '生命'))
-      or tonumber(hero_attr_system.get_attr(unit, '最大生命'))
+        or tonumber(hero_attr_system.get_attr(unit, '最大生命'))
+        or tonumber(hero_attr_system.get_attr(unit, '生命'))
     if hero_max and hero_max > 0 then
       return hero_max
     end
   end
 
-  local attrs = { '生命结算值', '生命', '最大生命' }
+  local attrs = { '生命结算值', '最大生命', '生命' }
   for _, attr_name in ipairs(attrs) do
     local value = tonumber_attr(y3, safe_call(unit, 'get_attr', attr_name))
     if value and value > 0 then
@@ -154,32 +154,10 @@ function M.apply_unit(env, unit, role, max_hp)
   local text = format_hp_text(role, current_hp, max_hp)
 
   safe_call(unit, 'set_blood_bar_type', BLOOD_BAR_TYPE[role] or BLOOD_BAR_TYPE.main)
-  safe_call(unit, 'set_health_bar_display', 0)
-  safe_gameapi_call(gameapi, 'set_billboard_visible', unit, 'root', true, nil)
-  safe_gameapi_call(gameapi, 'set_billboard_visible', unit, 'main', true, nil)
-
-  if unit.handle and unit.handle.api_set_hp_color then
-    pcall(unit.handle.api_set_hp_color, unit.handle, COLOR[role] or COLOR.main)
-  end
-  if unit.handle and unit.handle.api_set_bar_text_visible then
-    pcall(unit.handle.api_set_bar_text_visible, unit.handle, true)
-  end
-  if unit.handle and unit.handle.api_set_bar_name_visible then
-    pcall(unit.handle.api_set_bar_name_visible, unit.handle, true)
-  end
-  if unit.handle and unit.handle.api_set_bar_name then
-    pcall(unit.handle.api_set_bar_name, unit.handle, TEXT_PREFIX[role] or TEXT_PREFIX.main)
-  end
-  if unit.handle and unit.handle.api_set_bar_name_font_size then
-    pcall(unit.handle.api_set_bar_name_font_size, unit.handle, role == 'boss' and 16 or 13)
-  end
-
-  for _, node_name in ipairs(PROGRESS_NODES) do
-    safe_call(unit, 'set_billboard_progress', node_name, progress, nil, 0.08)
-  end
-  for _, node_name in ipairs(TEXT_NODES) do
-    safe_call(unit, 'set_blood_bar_text', node_name, text, nil, 'DFPYuanW7-GB')
-  end
+  safe_call(unit, 'set_health_bar_display', 1)
+  -- 只更新第一个进度条和文本节点，避免重复调用
+  safe_call(unit, 'set_billboard_progress', PROGRESS_NODES[1], progress, nil, 0.08)
+  safe_call(unit, 'set_blood_bar_text', TEXT_NODES[1], text, nil, 'DFPYuanW7-GB')
 end
 
 function M.apply_enemy(env, info)
@@ -194,7 +172,16 @@ function M.apply_hero(env, hero)
   M.apply_unit(env, hero, 'hero')
 end
 
+local LAST_REFRESH_TIME = 0
+local REFRESH_INTERVAL = 0.5 -- 每0.5秒刷新一次
+
 function M.refresh_all(env)
+  local current_time = env and env.y3 and env.y3.system.get_time and env.y3.system.get_time() or 0
+  if current_time - LAST_REFRESH_TIME < REFRESH_INTERVAL then
+    return
+  end
+  LAST_REFRESH_TIME = current_time
+
   local state = env and env.STATE or nil
   if not state then
     return

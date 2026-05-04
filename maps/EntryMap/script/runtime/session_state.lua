@@ -1,4 +1,4 @@
-﻿local EquipmentCatalog = require 'data.tables.economy.equipment_catalog'
+local EquipmentCatalog = require 'data.tables.economy.equipment_catalog'
 
 local M = {}
 
@@ -108,6 +108,9 @@ function M.create(env)
     STATE.resource_income_elapsed = 0
     STATE.bond_runtime = create_bond_runtime()
     STATE.skill_runtime = STATE.bond_runtime
+    -- 确保初始卡片被加载
+    local BondSystem = require 'runtime.bonds_chain'
+    BondSystem.ensure_runtime(STATE)
     STATE.battle_event_feed = create_battle_event_feed_runtime()
     STATE.effect_debug_runtime = create_effect_debug_runtime()
     STATE.mark_runtime = create_mark_runtime()

@@ -507,6 +507,10 @@ STATE = boot_core.create_initial_state()
 STATE.effect_debug_runtime = nil
 STATE.fixed_camera_enabled = true
 
+-- 提前初始化 bond_runtime，确保初始卡片被加载
+STATE.bond_runtime = BondSystem.create_runtime()
+BondSystem.ensure_runtime(STATE)
+
 local function install_projectile_override_hook()
   if projectile_override_hook_installed then
     return
@@ -800,10 +804,30 @@ local function set_attr_pack(unit, attr_pack)
     return
   end
 
+  local need_set_hp = false
+  local hp_value = nil
+
   for attr_name, value in pairs(attr_pack) do
     if value ~= nil then
-      unit:set_attr(attr_name, value)
+      local num_value = tonumber(value) or value
+      unit:set_attr(attr_name, num_value)
+      -- 如果设置了"生命"属性，同时设置"最大生命"属性，保持最大生命与生命一致
+      if attr_name == '生命' then
+        unit:set_attr('最大生命', num_value)
+        need_set_hp = true
+        hp_value = tonumber(value)
+      end
+      -- 如果设置了"最大生命"属性，标记需要设置当前血量
+      if attr_name == '最大生命' then
+        need_set_hp = true
+        hp_value = tonumber(value)
+      end
     end
+  end
+
+  -- 只在最后设置一次血量，避免多次调用
+  if need_set_hp and hp_value and hp_value > 0 then
+    unit:set_hp(hp_value)
   end
 end
 
@@ -2043,14 +2067,16 @@ local function trigger_td_skills_on_hit(data)
     basic_chain_particle = nil
   end
 
-  if skill.normal_attack_bonus_ratio > 0 then
-    td_damage_api.single(target, data.damage * skill.normal_attack_bonus_ratio, '物理', {
+  local normal_attack_bonus_ratio = tonumber(skill.normal_attack_bonus_ratio) or 0
+  if normal_attack_bonus_ratio > 0 then
+    td_damage_api.single(target, data.damage * normal_attack_bonus_ratio, '物理', {
       text_type = 'physics',
     })
   end
 
-  if skill.splash_ratio > 0 then
-    td_damage_api.area(target, skill.splash_radius, data.damage * skill.splash_ratio, '物理', {
+  local splash_ratio = tonumber(skill.splash_ratio) or 0
+  if splash_ratio > 0 then
+    td_damage_api.area(target, skill.splash_radius, data.damage * splash_ratio, '物理', {
       except_unit = target,
       visual = {
         text_type = 'physics',
@@ -2058,10 +2084,13 @@ local function trigger_td_skills_on_hit(data)
     })
   end
 
-  if skill.chain_bounces > 0 and skill.chain_chance > 0 and math.random() <= skill.chain_chance then
+  local chain_bounces = tonumber(skill.chain_bounces) or 0
+  local chain_chance = tonumber(skill.chain_chance) or 0
+  local chain_ratio = tonumber(skill.chain_ratio) or 0
+  if chain_bounces > 0 and chain_chance > 0 and math.random() <= chain_chance then
     td_damage_api.chain(
-      get_enemies_in_range(chain_center, skill.chain_radius, target, skill.chain_bounces),
-      data.damage * skill.chain_ratio,
+      get_enemies_in_range(chain_center, skill.chain_radius, target, chain_bounces),
+      data.damage * chain_ratio,
       basic_attack_def,
       {
         visual = function()
@@ -2101,9 +2130,10 @@ local function trigger_td_skills_on_hit(data)
     )
   end
 
-  if skill.execute_threshold > 0 and target:is_exist() and target:get_hp() > 0 then
+  local execute_threshold = tonumber(skill.execute_threshold) or 0
+  if execute_threshold > 0 and target:is_exist() and target:get_hp() > 0 then
     local max_hp = get_unit_max_hp(target)
-    if max_hp > 0 and target:get_hp() / max_hp <= skill.execute_threshold then
+    if max_hp > 0 and target:get_hp() / max_hp <= execute_threshold then
       target:kill_by(STATE.hero)
     end
   end

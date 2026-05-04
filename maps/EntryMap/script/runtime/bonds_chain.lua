@@ -96,16 +96,75 @@ local function get_node_theme_name(node_def, fallback)
   return fallback or node_def.display_name or ''
 end
 
+-- 默认回退图标ID
+local DEFAULT_BOND_ICON = 134269625
+
+-- 调试日志
+if log and log.debug then
+  log.debug(string.format('[bonds_chain] 模块加载开始，ROOT_NODE_IDS 数量: %d', #ROOT_NODE_IDS))
+  local def_count = 0
+  for k in pairs(GROUP_CHOICE_DEFS) do def_count = def_count + 1 end
+  log.debug(string.format('[bonds_chain] 初始 GROUP_CHOICE_DEFS 数量: %d', def_count))
+
+  -- 打印前几个 ROOT_NODE_IDS
+  for i = 1, math.min(5, #ROOT_NODE_IDS) do
+    log.debug(string.format('[bonds_chain] ROOT_NODE_IDS[%d] = %s', i, tostring(ROOT_NODE_IDS[i])))
+  end
+end
+
+local function ensure_group_choice_def_icon(group_id, group_def, node_def)
+  -- 确保图标存在，否则使用回退图标
+  if not group_def.icon then
+    if node_def and node_def.icon and tonumber(node_def.icon) and tonumber(node_def.icon) > 0 then
+      group_def.icon = node_def.icon
+    else
+      group_def.icon = DEFAULT_BOND_ICON
+      if log and log.warn then
+        log.warn(string.format('[bonds_chain] GROUP_CHOICE_DEFS[%s] 未配置图标，使用回退图标', tostring(group_id)))
+      else
+        print(string.format('[bonds_chain] GROUP_CHOICE_DEFS[%s] 未配置图标，使用回退图标', tostring(group_id)))
+      end
+    end
+  end
+end
+
 for _, node_id in ipairs(ROOT_NODE_IDS) do
   ROOT_NODE_ID_SET[node_id] = true
   local node_def = NODE_BY_ID[node_id]
   if node_def and node_def.group_id then
     GROUP_ROOT_IDS_BY_GROUP[node_def.group_id] = GROUP_ROOT_IDS_BY_GROUP[node_def.group_id] or {}
     GROUP_ROOT_IDS_BY_GROUP[node_def.group_id][#GROUP_ROOT_IDS_BY_GROUP[node_def.group_id] + 1] = node_id
-    if GROUP_CHOICE_DEFS[node_def.group_id] and not GROUP_CHOICE_DEFS[node_def.group_id].icon then
-      GROUP_CHOICE_DEFS[node_def.group_id].icon = node_def.icon
+    -- 确保 GROUP_CHOICE_DEFS 中存在该 group 的定义
+    if not GROUP_CHOICE_DEFS[node_def.group_id] then
+      local icon_value = node_def.icon and tonumber(node_def.icon) and tonumber(node_def.icon) > 0 and node_def.icon or
+          DEFAULT_BOND_ICON
+      GROUP_CHOICE_DEFS[node_def.group_id] = {
+        id = '__group_' .. node_def.group_id,
+        group_id = node_def.group_id,
+        display_name = node_def.display_name or node_def.group_id,
+        quality = node_def.quality or 'rare',
+        icon = icon_value,
+        desc = node_def.desc and (type(node_def.desc) == 'string' and node_def.desc or node_def.desc.single) or '',
+      }
+      if log and log.debug then
+        log.debug(string.format('[bonds_chain] 创建 GROUP_CHOICE_DEFS[%s], icon=%s', tostring(node_def.group_id),
+          tostring(icon_value)))
+      end
+    else
+      ensure_group_choice_def_icon(node_def.group_id, GROUP_CHOICE_DEFS[node_def.group_id], node_def)
+    end
+  else
+    if log and log.debug then
+      log.debug(string.format('[bonds_chain] node_id=%s 没有 node_def 或 group_id', tostring(node_id)))
     end
   end
+end
+
+-- 调试日志
+if log and log.debug then
+  local def_count = 0
+  for k in pairs(GROUP_CHOICE_DEFS) do def_count = def_count + 1 end
+  log.debug(string.format('[bonds_chain] 模块加载完成，GROUP_CHOICE_DEFS 数量: %d', def_count))
 end
 
 local function collect_root_subtree_ids(root_id, result, seen)
@@ -169,9 +228,9 @@ end
 
 local function is_damage_text_hidden(state)
   return state
-    and state.ui_preferences
-    and state.ui_preferences.hide_damage_text == true
-    or false
+      and state.ui_preferences
+      and state.ui_preferences.hide_damage_text == true
+      or false
 end
 
 local function get_node_def(node_id)
@@ -296,6 +355,42 @@ local function ensure_runtime(state)
   end
   state.bond_runtime.state_ref = state
   state.skill_runtime = state.bond_runtime
+
+  -- 初始化时处理初始解锁的卡片
+  local runtime = state.bond_runtime
+  if not runtime._initialized_initial_cards then
+    runtime._initialized_initial_cards = true
+
+    -- 先尝试从 BondModifierPool 加载初始卡片
+    local has_initial_cards = false
+    if BondModifierPool and BondModifierPool.cards then
+      for _, card in ipairs(BondModifierPool.cards) do
+        if card.initially_unlocked then
+          has_initial_cards = true
+          runtime.owned_node_order[#runtime.owned_node_order + 1] = card.id
+          runtime.last_unlocked_node_id = card.id
+        end
+      end
+    end
+
+    -- 如果没有初始卡片，自动解锁一些基础羁绊节点作为默认值
+    if not has_initial_cards then
+      for _, root_id in ipairs(ROOT_NODE_IDS) do
+        local node_def = NODE_BY_ID[root_id]
+        if node_def and node_def.scope == 'bond_basic' then
+          runtime.owned_node_order[#runtime.owned_node_order + 1] = node_def.id
+          runtime.last_unlocked_node_id = node_def.id
+          runtime.unlocked_node_ids[node_def.id] = true
+
+          -- 只解锁前2个基础羁绊节点
+          if #runtime.owned_node_order >= 2 then
+            break
+          end
+        end
+      end
+    end
+  end
+
   return state.bond_runtime
 end
 
@@ -625,7 +720,7 @@ end
 
 local function build_choice_next_text(node_def)
   return ''
---[[
+  --[[
   if not node_def or not node_def.next_ids or #node_def.next_ids == 0 then
     return ''
   end
@@ -1402,7 +1497,8 @@ local BOND_SET_ATTR_BONUSES = BondModifierEffects.SET_ATTR_BONUSES
 local BOND_SET_RUNTIME_BONUSES = BondModifierEffects.SET_RUNTIME_BONUSES
 
 local function get_modifier_cards_by_bond(bond_name)
-  local normalized = BondModifierEffects.normalize_bond_name and BondModifierEffects.normalize_bond_name(bond_name) or bond_name
+  local normalized = BondModifierEffects.normalize_bond_name and BondModifierEffects.normalize_bond_name(bond_name) or
+      bond_name
   return BondModifierPool and BondModifierPool.cards_by_bond and BondModifierPool.cards_by_bond[normalized] or {}
 end
 
@@ -1470,7 +1566,8 @@ local function build_modifier_choice_entry(state, card, index)
     value_text = trim_choice_prefix(current_text),
     effect_title = effect_text ~= '' and string.format('集齐[%s]激活：', set_name) or '',
     effect_text = effect_text,
-    body_blocks = build_choice_body_blocks(state, nil, current_text, '', effect_text ~= '' and string.format('集齐[%s]激活：', set_name) or '', effect_text),
+    body_blocks = build_choice_body_blocks(state, nil, current_text, '',
+      effect_text ~= '' and string.format('集齐[%s]激活：', set_name) or '', effect_text),
     effect_color_mode = 'auto',
   }
 end
@@ -1722,7 +1819,8 @@ function M.get_node_def(node_id)
 end
 
 function M.get_slot_icon(state, slot)
-  local runtime = get_runtime(state)
+  -- 使用 ensure_runtime 确保初始化逻辑被执行
+  local runtime = ensure_runtime(state)
   if not runtime or not slot then
     return nil
   end
@@ -1734,15 +1832,27 @@ function M.get_slot_icon(state, slot)
 
   local node_def = get_node_def(node_id)
   if string.sub(node_id, 1, 8) == '__group_' then
-    local group_def = GROUP_CHOICE_DEFS[string.sub(node_id, 9)]
-    return group_def and group_def.icon or nil
+    local group_id = string.sub(node_id, 9)
+    local group_def = GROUP_CHOICE_DEFS[group_id]
+    if log and log.debug then
+      log.debug(string.format('[bonds_chain] get_slot_icon: group_id=%s, group_def=%s, icon=%s',
+        tostring(group_id), tostring(group_def), group_def and tostring(group_def.icon) or 'nil'))
+    end
+    if group_def and group_def.icon then
+      return group_def.icon
+    end
+    if log and log.debug then
+      log.debug(string.format('[bonds_chain] get_slot_icon: 使用回退图标 DEFAULT_BOND_ICON=%d', DEFAULT_BOND_ICON))
+    end
+    return DEFAULT_BOND_ICON -- 回退图标
   end
 
   local modifier_card = get_modifier_card(node_id)
   if modifier_card then
     -- 对于技能卡，先尝试从 SkillVisuals 获取图标
-    local visual = SkillVisuals and SkillVisuals.get_by_bond_name and SkillVisuals.get_by_bond_name(modifier_card.bond_name or '')
-      or (SkillVisuals and SkillVisuals.visual_by_bond and SkillVisuals.visual_by_bond[modifier_card.bond_name or ''])
+    local visual = SkillVisuals and SkillVisuals.get_by_bond_name and
+        SkillVisuals.get_by_bond_name(modifier_card.bond_name or '')
+        or (SkillVisuals and SkillVisuals.visual_by_bond and SkillVisuals.visual_by_bond[modifier_card.bond_name or ''])
     if visual then
       if tonumber(visual.icon_key) and tonumber(visual.icon_key) > 0 then
         return tonumber(visual.icon_key)
@@ -1754,14 +1864,14 @@ function M.get_slot_icon(state, slot)
     if modifier_card.icon and tonumber(modifier_card.icon) and tonumber(modifier_card.icon) > 0 then
       return tonumber(modifier_card.icon)
     end
-    return 134269625 -- 回退图标
+    return DEFAULT_BOND_ICON -- 回退图标
   end
 
   if node_def then
     -- 对于普通节点，先尝试从 SkillVisuals 获取图标
     local bond_name = node_def.visual_bond ~= '' and node_def.visual_bond or node_def.group_id
     local visual = SkillVisuals and SkillVisuals.get_by_bond_name and SkillVisuals.get_by_bond_name(bond_name or '')
-      or (SkillVisuals and SkillVisuals.visual_by_bond and SkillVisuals.visual_by_bond[bond_name or ''])
+        or (SkillVisuals and SkillVisuals.visual_by_bond and SkillVisuals.visual_by_bond[bond_name or ''])
     if visual then
       if tonumber(visual.icon_key) and tonumber(visual.icon_key) > 0 then
         return tonumber(visual.icon_key)
@@ -1773,6 +1883,7 @@ function M.get_slot_icon(state, slot)
     if node_def.icon and tonumber(node_def.icon) and tonumber(node_def.icon) > 0 then
       return tonumber(node_def.icon)
     end
+    return DEFAULT_BOND_ICON -- 回退图标
   end
 
   return nil
@@ -2023,7 +2134,7 @@ function M.update_effects(env, dt)
         effect_state.cooldown = math.max(0, effect_state.cooldown - (dt or 0))
       end
       if runtime.modifier_pool_active_effects[effect_id] == true
-        or BondModifierEffects.has_active_modifier_bond(runtime, effect_state.bond_name, get_modifier_cards_by_bond) then
+          or BondModifierEffects.has_active_modifier_bond(runtime, effect_state.bond_name, get_modifier_cards_by_bond) then
         BondModifierEffects.trigger_modifier_periodic_effect(env, runtime, effect_state.bond_name, effect_state, dt)
       end
     end
@@ -2035,7 +2146,9 @@ function M.update_effects(env, dt)
   local static_runtime = collect_merged_bonus_packs(runtime.applied_node_runtime_bonuses)
   merge_bonus_pack(static_runtime, collect_merged_bonus_packs(runtime.completed_root_set_runtime_bonuses))
   merge_bonus_pack(static_runtime, collect_merged_bonus_packs(runtime.modifier_pool_active_runtime_bonuses))
-  local max_hp = math.max(1, hero_attr_system and hero_attr_system.get_attr(state.hero, '生命结算值') or env.y3.helper.tonumber(state.hero:get_attr('生命')) or env.y3.helper.tonumber(state.hero:get_attr('最大生命')) or 1)
+  local max_hp = math.max(1,
+    hero_attr_system and hero_attr_system.get_attr(state.hero, '生命结算值') or
+    env.y3.helper.tonumber(state.hero:get_attr('生命')) or env.y3.helper.tonumber(state.hero:get_attr('最大生命')) or 1)
   local hp_ratio = math.max(0, state.hero:get_hp() / max_hp)
 
   for key, value in pairs(static_runtime) do
@@ -2110,7 +2223,8 @@ function M.try_trigger_hunter_first_hit(env, target)
   end
 
   runtime.hunter_hit_targets[target] = true
-  local damage = env.round_number((hero_attr_system and hero_attr_system.get_attr(state.hero, '攻击结算值') or state.hero:get_attr('攻击') or state.hero:get_attr('物理攻击')) * ratio)
+  local damage = env.round_number((hero_attr_system and hero_attr_system.get_attr(state.hero, '攻击结算值') or state.hero:get_attr('攻击') or state.hero:get_attr('物理攻击')) *
+    ratio)
   if env.reserve_formula_damage then
     env.reserve_formula_damage(target, damage, {
       source = 'hunter_first_hit',
@@ -2179,7 +2293,7 @@ function M.notify_basic_attack(env, target)
   local ok, err = pcall(function()
     for _, effect_state in pairs(runtime.modifier_pool_effect_state or {}) do
       if effect_state and effect_state.bond_name
-        and BondModifierEffects.has_active_modifier_bond(runtime, effect_state.bond_name, get_modifier_cards_by_bond) then
+          and BondModifierEffects.has_active_modifier_bond(runtime, effect_state.bond_name, get_modifier_cards_by_bond) then
         BondModifierEffects.trigger_modifier_basic_attack_effect(env, runtime, effect_state.bond_name, target)
       end
     end
@@ -2578,7 +2692,8 @@ function M.build_slot_tip_payload(state, slot)
     local tip_model = BondTipModelBuilder.build({
       quality_text = '技能卡',
       set_name_text = modifier_card.bond_name or '',
-      progress_text = string.format('%d/%d', get_owned_modifier_bond_count(runtime, modifier_card.bond_name), required_count),
+      progress_text = string.format('%d/%d', get_owned_modifier_bond_count(runtime, modifier_card.bond_name),
+        required_count),
       icon_res = modifier_card.icon,
       item_name_text = modifier_card.name or '技能卡牌',
       current_text = modifier_card.desc or '',
@@ -2670,9 +2785,8 @@ function M.show_loadout(env)
   local state = env and env.STATE
   local runtime = get_runtime(state)
   if not runtime or #runtime.owned_node_order == 0 then
-  return
-end
-
+    return
+  end
 end
 
 function M.build_choice_preview_text(index, choice)
@@ -2734,8 +2848,8 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
         -- 运行时激活状态统一使用 initial_bond_set_<bond_name>，避免和配置表 effect.id 混用导致“已激活但未显示吞噬”。
         local effect_id = 'initial_bond_set_' .. tostring(bond_name)
         local consumed = runtime.modifier_pool_active_effects
-          and runtime.modifier_pool_active_effects[effect_id] == true
-          or false
+            and runtime.modifier_pool_active_effects[effect_id] == true
+            or false
         local completed = owned_count >= required_count
         root_entries[#root_entries + 1] = {
           index = index,
@@ -2773,29 +2887,29 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
     local selected_cards = get_modifier_cards_by_bond(selected and selected.bond_name)
     local effect_id = selected and selected.root_id or ''
     local consumed = runtime.modifier_pool_active_effects
-      and runtime.modifier_pool_active_effects[effect_id] == true
-      or false
-	    local card_entries = {}
-	    for index, card in ipairs(selected_cards) do
-	      local unlocked = runtime.modifier_card_ids and runtime.modifier_card_ids[card.id] == true or false
-	      local activation_text = get_modifier_bond_activation_text(card.bond_name, card.activation_desc or '')
-	      local special_text = tostring(card.extra_skill_desc or '')
-	      local display_effect_text = special_text ~= '' and special_text ~= '无' and special_text or activation_text
-	      local display_effect_body = ''
-	      if display_effect_text ~= activation_text and activation_text ~= '' then
-	        display_effect_body = string.format('集齐[%s]激活：%s', tostring(card.bond_name or '技能'), activation_text)
-	      end
-	      local tip_model = BondTipModelBuilder.build({
-	        quality_text = '技能卡',
-	        set_name_text = card.bond_name or '',
-	        progress_text = selected and selected.progress_text or '',
-	        icon_res = card.icon,
-	        item_name_text = card.name or '技能卡牌',
-	        current_text = card.desc or '',
-	        effect_text = display_effect_text,
-	        effect_body_text = display_effect_body,
-	      })
-	      card_entries[#card_entries + 1] = {
+        and runtime.modifier_pool_active_effects[effect_id] == true
+        or false
+    local card_entries = {}
+    for index, card in ipairs(selected_cards) do
+      local unlocked = runtime.modifier_card_ids and runtime.modifier_card_ids[card.id] == true or false
+      local activation_text = get_modifier_bond_activation_text(card.bond_name, card.activation_desc or '')
+      local special_text = tostring(card.extra_skill_desc or '')
+      local display_effect_text = special_text ~= '' and special_text ~= '无' and special_text or activation_text
+      local display_effect_body = ''
+      if display_effect_text ~= activation_text and activation_text ~= '' then
+        display_effect_body = string.format('集齐[%s]激活：%s', tostring(card.bond_name or '技能'), activation_text)
+      end
+      local tip_model = BondTipModelBuilder.build({
+        quality_text = '技能卡',
+        set_name_text = card.bond_name or '',
+        progress_text = selected and selected.progress_text or '',
+        icon_res = card.icon,
+        item_name_text = card.name or '技能卡牌',
+        current_text = card.desc or '',
+        effect_text = display_effect_text,
+        effect_body_text = display_effect_body,
+      })
+      card_entries[#card_entries + 1] = {
         index = index,
         modifier_card_id = card.id,
         display_name = card.name,
@@ -2808,12 +2922,12 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
         unlocked = unlocked,
         consumed = consumed,
         current_text = card.desc or '',
-	        desc_text = card.desc or '',
-	        value_text = card.desc or '',
-	        advanced_text = display_effect_text,
-	        effect_title = display_effect_text ~= '' and '特殊效果：' or '',
-	        effect_text = display_effect_text,
-	        bond_root_name = card.bond_name,
+        desc_text = card.desc or '',
+        value_text = card.desc or '',
+        advanced_text = display_effect_text,
+        effect_title = display_effect_text ~= '' and '特殊效果：' or '',
+        effect_text = display_effect_text,
+        bond_root_name = card.bond_name,
         bond_root_progress_text = selected and selected.progress_text or '',
         title_text = string.format('%s (%s)', card.bond_name or '技能', selected and selected.progress_text or '0/0'),
         tip_model = tip_model,
@@ -2993,8 +3107,6 @@ M.build_skill_swallow_panel_model = M.build_bond_swallow_panel_model
 M.debug_activate_modifier_skill = M.debug_activate_modifier_bond
 M.debug_activate_single_modifier_skill = M.debug_activate_single_modifier_bond
 M.debug_clear_active_modifier_skills = M.debug_clear_active_modifier_bonds
+M.ensure_runtime = ensure_runtime
 
 return M
-
-
-
