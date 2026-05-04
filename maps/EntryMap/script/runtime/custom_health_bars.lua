@@ -1,10 +1,9 @@
-local BuffSystem = nil
 local M = {}
 
 local BLOOD_BAR_TYPE = {
   hero = 0x0050001,
-  main = 0x0040002,
-  elite = 0x0040003,
+  main = 0x0050002,
+  elite = 0x0050003,
   boss = 0x0060002,
   challenge = 0x0060003,
 }
@@ -50,7 +49,13 @@ local TEXT_NODES = {
 }
 
 local function safe_call(unit, method_name, ...)
-  if not unit or not unit.is_exist or not unit:is_exist() then
+  if not unit then
+    return nil
+  end
+  local is_valid = pcall(function()
+    return unit.is_exist and unit:is_exist()
+  end)
+  if not is_valid then
     return nil
   end
   local ok_method, method = pcall(function()
@@ -63,26 +68,6 @@ local function safe_call(unit, method_name, ...)
     return nil
   end
   local ok, result = pcall(method, unit, ...)
-  if ok then
-    return result
-  end
-  return nil
-end
-
-local function safe_gameapi_call(gameapi, method_name, unit, ...)
-  if not gameapi or not unit or not unit.is_exist or not unit:is_exist() then
-    return nil
-  end
-  local ok_method, method = pcall(function()
-    return gameapi[method_name]
-  end)
-  if not ok_method then
-    return nil
-  end
-  if type(method) ~= 'function' then
-    return nil
-  end
-  local ok, result = pcall(method, unit.handle, ...)
   if ok then
     return result
   end
@@ -103,14 +88,14 @@ end
 local function get_max_hp(y3, hero_attr_system, unit, role)
   if role == 'hero' and hero_attr_system and hero_attr_system.get_attr then
     local hero_max = tonumber(hero_attr_system.get_attr(unit, '生命结算值'))
-      or tonumber(hero_attr_system.get_attr(unit, '生命'))
-      or tonumber(hero_attr_system.get_attr(unit, '最大生命'))
+        or tonumber(hero_attr_system.get_attr(unit, '最大生命'))
+        or tonumber(hero_attr_system.get_attr(unit, '生命'))
     if hero_max and hero_max > 0 then
       return hero_max
     end
   end
 
-  local attrs = { '生命结算值', '生命', '最大生命' }
+  local attrs = { '生命结算值', '最大生命', '生命' }
   for _, attr_name in ipairs(attrs) do
     local value = tonumber_attr(y3, safe_call(unit, 'get_attr', attr_name))
     if value and value > 0 then
@@ -141,7 +126,13 @@ local function format_hp_text(role, current_hp, max_hp)
 end
 
 function M.apply_unit(env, unit, role, max_hp)
-  if not unit or not unit.is_exist or not unit:is_exist() then
+  if not unit then
+    return
+  end
+  local is_valid = pcall(function()
+    return unit.is_exist and unit:is_exist()
+  end)
+  if not is_valid then
     return
   end
 
@@ -153,38 +144,53 @@ function M.apply_unit(env, unit, role, max_hp)
   max_hp = math.max(1, max_hp)
   local progress = math.max(0, math.min(1, current_hp / max_hp))
   local text = format_hp_text(role, current_hp, max_hp)
+  local color = COLOR[role] or COLOR.main
+  local prefix = TEXT_PREFIX[role] or TEXT_PREFIX.main
 
+  -- 设置血条类型和显示方式
   safe_call(unit, 'set_blood_bar_type', BLOOD_BAR_TYPE[role] or BLOOD_BAR_TYPE.main)
-  safe_call(unit, 'set_health_bar_display', 0)
-  safe_gameapi_call(gameapi, 'set_billboard_visible', unit, 'root', true, nil)
-  safe_gameapi_call(gameapi, 'set_billboard_visible', unit, 'main', true, nil)
+  safe_call(unit, 'set_health_bar_display', 2)
 
-  if unit.handle and unit.handle.api_set_hp_color then
-    pcall(unit.handle.api_set_hp_color, unit.handle, COLOR[role] or COLOR.main)
-  end
-  if unit.handle and unit.handle.api_set_bar_text_visible then
-    pcall(unit.handle.api_set_bar_text_visible, unit.handle, true)
-  end
-  if unit.handle and unit.handle.api_set_bar_name_visible then
-    pcall(unit.handle.api_set_bar_name_visible, unit.handle, true)
-  end
-  if unit.handle and unit.handle.api_set_bar_name then
-    pcall(unit.handle.api_set_bar_name, unit.handle, TEXT_PREFIX[role] or TEXT_PREFIX.main)
-  end
-  if unit.handle and unit.handle.api_set_bar_name_font_size then
-    pcall(unit.handle.api_set_bar_name_font_size, unit.handle, role == 'boss' and 16 or 13)
+  -- 设置billboard可见
+  if gameapi then
+    pcall(gameapi.set_billboard_visible, unit.handle, 'root', true)
+    pcall(gameapi.set_billboard_visible, unit.handle, 'main', true)
   end
 
+  -- 设置血条属性
+  if unit.handle then
+    if unit.handle.api_set_hp_bar_show_type then
+      pcall(unit.handle.api_set_hp_bar_show_type, unit.handle, 2)
+    end
+    if unit.handle.api_set_hp_color then
+      pcall(unit.handle.api_set_hp_color, unit.handle, color)
+    end
+    if unit.handle.api_set_bar_text_visible then
+      pcall(unit.handle.api_set_bar_text_visible, unit.handle, true)
+    end
+    if unit.handle.api_set_bar_name_visible then
+      pcall(unit.handle.api_set_bar_name_visible, unit.handle, true)
+    end
+    if unit.handle.api_set_bar_name then
+      pcall(unit.handle.api_set_bar_name, unit.handle, prefix)
+    end
+    if unit.handle.api_set_bar_name_font_size then
+      pcall(unit.handle.api_set_bar_name_font_size, unit.handle, role == 'boss' and 16 or 13)
+    end
+  end
+
+  -- 更新所有进度条节点
   for _, node_name in ipairs(PROGRESS_NODES) do
-    safe_call(unit, 'set_billboard_progress', node_name, progress, nil, 0.08)
-  end
-  for _, node_name in ipairs(TEXT_NODES) do
-    safe_call(unit, 'set_blood_bar_text', node_name, text, nil, 'DFPYuanW7-GB')
+    if safe_call(unit, 'set_billboard_progress', node_name, progress, nil, 0.08) then
+      break
+    end
   end
 
-  -- 刷新血条下方的 Buff 图标
-  if BuffSystem then
-    pcall(BuffSystem.refresh_unit_buff_icons, BuffSystem, unit)
+  -- 更新所有文本节点
+  for _, node_name in ipairs(TEXT_NODES) do
+    if safe_call(unit, 'set_blood_bar_text', node_name, text, nil, 'DFPYuanW7-GB') then
+      break
+    end
   end
 end
 
@@ -200,27 +206,43 @@ function M.apply_hero(env, hero)
   M.apply_unit(env, hero, 'hero')
 end
 
+local LAST_REFRESH_TIME = 0
+local REFRESH_INTERVAL = 0.5 -- 每0.5秒刷新一次
+
 function M.refresh_all(env)
+  local current_time = 0
+  if env and env.y3 and env.y3.system and env.y3.system.get_time then
+    current_time = env.y3.system.get_time()
+  end
+  if current_time - LAST_REFRESH_TIME < REFRESH_INTERVAL then
+    return
+  end
+  LAST_REFRESH_TIME = current_time
+
   local state = env and env.STATE or nil
   if not state then
     return
   end
-  if state.hero and state.hero.is_exist and state.hero:is_exist() then
-    M.apply_hero(env, state.hero)
+  if state.hero then
+    local hero_valid = pcall(function()
+      return state.hero.is_exist and state.hero:is_exist()
+    end)
+    if hero_valid then
+      M.apply_hero(env, state.hero)
+    end
   end
   if state.enemy_info_map then
     for _, info in pairs(state.enemy_info_map) do
-      if info and info.alive and info.unit and info.unit.is_exist and info.unit:is_exist() then
-        M.apply_enemy(env, info)
+      if info and info.alive and info.unit then
+        local unit_valid = pcall(function()
+          return info.unit.is_exist and info.unit:is_exist()
+        end)
+        if unit_valid then
+          M.apply_enemy(env, info)
+        end
       end
     end
   end
-end
-
----关联 Buff 系统，用于刷新血条下方的 Buff 图标
----@param bs table
-function M.set_buff_system(bs)
-  BuffSystem = bs
 end
 
 return M

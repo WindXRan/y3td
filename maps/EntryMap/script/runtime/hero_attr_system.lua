@@ -92,6 +92,19 @@ local function normalize_ratio(value)
   return number
 end
 
+local ATTRS_TO_SPLIT = {'攻击', '生命', '护甲', '力量', '敏捷', '智力'}
+
+local function split_attr_to_base_bonus(result, values, attr_name)
+  if values and values[attr_name] ~= nil and values[attr_name .. '白字'] == nil and values[attr_name .. '绿字'] == nil then
+    result[attr_name .. '白字'] = values[attr_name]
+    result[attr_name] = 0
+  end
+  if result[attr_name] ~= 0 and result[attr_name .. '白字'] == 0 and result[attr_name .. '绿字'] == 0 then
+    result[attr_name .. '白字'] = result[attr_name]
+    result[attr_name] = 0
+  end
+end
+
 local function build_initial_values(values)
   local result = {}
   for name, value in pairs(AttrDefs.default_values) do
@@ -102,33 +115,8 @@ local function build_initial_values(values)
     result[normalized_name] = value
   end
 
-  if values and values['攻击'] ~= nil and values['攻击白字'] == nil and values['攻击绿字'] == nil then
-    result['攻击白字'] = values['攻击']
-    result['攻击'] = 0
-  end
-  if result['攻击'] ~= 0 and result['攻击白字'] == 0 and result['攻击绿字'] == 0 then
-    result['攻击白字'] = result['攻击']
-    result['攻击'] = 0
-  end
-  if values and values['生命'] ~= nil and values['生命白字'] == nil and values['生命绿字'] == nil then
-    result['生命白字'] = values['生命']
-    result['生命'] = 0
-  end
-  if values and values['护甲'] ~= nil and values['护甲白字'] == nil and values['护甲绿字'] == nil then
-    result['护甲白字'] = values['护甲']
-    result['护甲'] = 0
-  end
-  if values and values['力量'] ~= nil and values['力量白字'] == nil and values['力量绿字'] == nil then
-    result['力量白字'] = values['力量']
-    result['力量'] = 0
-  end
-  if values and values['敏捷'] ~= nil and values['敏捷白字'] == nil and values['敏捷绿字'] == nil then
-    result['敏捷白字'] = values['敏捷']
-    result['敏捷'] = 0
-  end
-  if values and values['智力'] ~= nil and values['智力白字'] == nil and values['智力绿字'] == nil then
-    result['智力白字'] = values['智力']
-    result['智力'] = 0
+  for _, attr_name in ipairs(ATTRS_TO_SPLIT) do
+    split_attr_to_base_bonus(result, values, attr_name)
   end
 
   return result

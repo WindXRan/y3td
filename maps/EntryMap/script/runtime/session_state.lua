@@ -106,7 +106,10 @@ function M.create(env)
       wood = get_resource_rules().initial_wood or 0,
     }
     STATE.resource_income_elapsed = 0
-    STATE.bond_runtime = create_bond_runtime()
+    -- 复用已创建的 bond_runtime，避免覆盖已初始化的初始卡片
+    if not STATE.bond_runtime then
+        STATE.bond_runtime = create_bond_runtime()
+    end
     STATE.skill_runtime = STATE.bond_runtime
     STATE.battle_event_feed = create_battle_event_feed_runtime()
     STATE.effect_debug_runtime = create_effect_debug_runtime()

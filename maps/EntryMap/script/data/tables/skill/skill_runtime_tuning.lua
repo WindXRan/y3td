@@ -15,7 +15,7 @@ local M = {
       default_speed = 1000,
       default_target_distance = 60,
       default_time = 3.0,
-      local_default_time = 0.25,
+      local_default_time = 0.15,
     },
     cooldown = {
       skill_min_cooldown = 0.4,

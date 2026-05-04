@@ -6,11 +6,11 @@ M.version = '2026-04-29.bond_runtime_rules.v4_production_finish_pass'
 -- 合并原独立小文件：
 -- bond_draw_config.lua / bond_pick_config.lua / bond_misc_config.lua
 M.draw = {
-  draw_cost = 100,
+  draw_cost = 50,
   refresh_costs = {
-    [1] = 40,
-    [2] = 80,
-    [3] = 100,
+    [1] = 20,
+    [2] = 40,
+    [3] = 50,
   },
   group_choice_order = {},
   group_choice_defs = {},
@@ -595,8 +595,8 @@ local function decode_params_json(raw, skill_id)
 end
 
 local function apply_bond_skill_rows()
-  local skill_rows = CsvLoader.read_rows_optional('data_csv/bond_skills.csv')
-  local param_rows = CsvLoader.read_rows_optional('data_csv/bond_skill_params.csv')
+  local skill_rows = CsvLoader.read_rows_optional('data_csv/by_feature/bond/bond_skills.csv')
+  local param_rows = CsvLoader.read_rows_optional('data_csv/by_feature/bond/bond_skill_params.csv')
   if #skill_rows <= 0 then
     warn('bond_skills.csv missing/empty, keep lua fallback rules')
     return

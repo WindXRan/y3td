@@ -713,6 +713,10 @@ local function infer_battle_event_style(text)
   return 'neutral'
 end
 
+local function sync_gear_runtime_effects(state, hero, config)
+  return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
+end
+
 local BattleEventPrompts = BattleEventPromptsFactory.create({
   STATE = STATE,
   BattleEventFeedSystem = BattleEventFeedSystem,
@@ -738,9 +742,7 @@ local BattleEventPrompts = BattleEventPromptsFactory.create({
   ensure_round_choice_available = function(allowed_kind)
     return ensure_round_choice_available(allowed_kind)
   end,
-  sync_gear_runtime_effects = function(state, hero, config)
-    return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
-  end,
+  sync_gear_runtime_effects = sync_gear_runtime_effects,
 })
 
 
@@ -2196,7 +2198,7 @@ battlefield_system = BattlefieldSystem.create({
     return reward_system.handle_wave_started(wave_index)
   end,
   on_mainline_task_wave_started = function(wave_index)
-    return mainline_task_system.handle_wave_started(wave_index)
+    return mainline_task_system.handle_wave_started()
   end,
   on_mainline_task_enemy_killed = function(info)
     return mainline_task_system.handle_enemy_killed(info)
@@ -2205,13 +2207,13 @@ battlefield_system = BattlefieldSystem.create({
     return mainline_task_system.handle_wave_cleared()
   end,
   on_mainline_task_cleared = function(task)
-    return mainline_task_system.handle_task_cleared(task)
+    return mainline_task_system.handle_task_cleared()
   end,
   on_boss_spawned = function(boss_info)
     if audio_system and audio_system.handle_boss_spawned then
       audio_system.handle_boss_spawned(boss_info)
     end
-    return reward_system.handle_boss_spawned(boss_info)
+    return reward_system.handle_boss_spawned()
   end,
   on_boss_warning = function(wave, remain)
     if audio_system and audio_system.handle_boss_warning then
@@ -2881,6 +2883,7 @@ runtime_hud_system = RuntimeHudSystem.create({
   attack_skill_slot_count = ATTACK_SKILL_SLOT_COUNT,
   get_player = get_player,
   hero_attr_system = hero_attr_system,
+  mainline_task_system = mainline_task_system,
   message = message,
   try_bond_draw = try_bond_draw,
   try_skill_draw = try_skill_draw,
@@ -3171,7 +3174,7 @@ local function resolve_quality_frame_image(quality)
     end
   end
 
-  local image_table = quality_image_table or QUALITY_IMAGE_TABLE
+  local image_table = rawget(_G, 'quality_image_table') or rawget(_G, 'QUALITY_IMAGE_TABLE')
   if type(image_table) ~= 'table' then
     return nil
   end
@@ -3220,6 +3223,8 @@ local function resolve_quality_frame_image(quality)
       or image_table['普通']
 end
 
+runtime_ui_helpers.__raw_refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel
+runtime_ui_helpers.refresh_choice_panel = (function()
 local function set_ui_visible(ui, visible)
   if ui and (not ui.is_removed or not ui:is_removed()) and ui.set_visible then
     ui:set_visible(visible == true)
@@ -3403,13 +3408,12 @@ local function build_choice_list_cards()
   if root.set_z_order then
     root:set_z_order(9600)
   end
-end
-runtime_ui_helpers.__raw_refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel
-runtime_ui_helpers.refresh_choice_panel = function(...)
+return function(...)
   -- 选择面板统一走 ChoiceList 动态卡片链路，不再依赖旧 BondChoice2/3/4 渲染。
   build_choice_list_cards()
   return nil
 end
+end)()
 
 runtime_ui_helpers.install_panel_systems()
 
@@ -3488,7 +3492,7 @@ RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({
   BootInput = BootInput,
   BootEvents = BootEvents,
   BootLoops = BootLoops,
-  BootHeroTujian = BootHeroTujian,
+  BootHeroTujian = rawget(_G, 'BootHeroTujian'),
   BootDevCommands = BootDevCommands,
   BootBootstrapSequence = BootBootstrapSequence,
   BattleEventPrompts = BattleEventPrompts,

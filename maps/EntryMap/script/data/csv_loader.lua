@@ -62,7 +62,12 @@ local function strip_utf8_bom(value)
   if type(value) ~= 'string' then
     return value
   end
-  return (value:gsub('^\239\187\191', ''))
+  -- 移除多个 UTF-8 BOM 头
+  local result = value
+  while result:sub(1, 3) == '\239\187\191' do
+    result = result:sub(4)
+  end
+  return result
 end
 
 local function warn_once(registry, key, message)
@@ -96,13 +101,10 @@ local function read_rows_safe(path, optional)
   local rows = {}
 
   for line in file:lines() do
-    line = line:gsub('\r$', '')
+    line = strip_utf8_bom(line:gsub('\r$', ''))
     if line ~= '' then
       if not headers then
         headers = split_csv_line(line)
-        if headers and headers[1] then
-          headers[1] = strip_utf8_bom(headers[1])
-        end
       else
         local values = split_csv_line(line)
         local row = {}

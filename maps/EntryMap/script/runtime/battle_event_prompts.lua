@@ -24,13 +24,21 @@ function M.create(env)
     return false
   end
 
-  local function infer_board_spec(text, style)
+  local function is_debug_or_empty(text)
     local content = tostring(text or '')
     if content == ''
       or string.find(content, '[DEBUG]', 1, true)
       or string.find(content, '[effect_debug]', 1, true) then
+      return true
+    end
+    return false
+  end
+
+  local function infer_board_spec(text, style)
+    if is_debug_or_empty(text) then
       return nil
     end
+    local content = tostring(text or '')
 
     if contains_any(content, {
       '游戏胜利',
@@ -95,12 +103,10 @@ function M.create(env)
   end
 
   local function infer_marquee_spec(text)
-    local content = tostring(text or '')
-    if content == ''
-      or string.find(content, '[DEBUG]', 1, true)
-      or string.find(content, '[effect_debug]', 1, true) then
+    if is_debug_or_empty(text) then
       return nil
     end
+    local content = tostring(text or '')
 
     if contains_any(content, {
       '游戏胜利',

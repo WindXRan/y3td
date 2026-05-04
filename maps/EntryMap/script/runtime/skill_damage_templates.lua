@@ -27,6 +27,10 @@ local function resolve_value(value, context, ...)
   return value
 end
 
+local function is_valid_entity(unit)
+  return unit and unit.is_exist and unit:is_exist()
+end
+
 function M.create(env)
   env = env or {}
   local y3 = env.y3
@@ -46,21 +50,25 @@ function M.create(env)
     return string.format('%s_%d', prefix or 'skill', debug_event_seq)
   end
 
-  function api.single(target, amount, damage_meta, visual)
-    if not target or not target.is_exist or not target:is_exist() then
+  local function check_can_damage(target)
+    if not is_valid_entity(target) then
       return false
     end
-    if env and env.STATE and env.STATE.hero and env.STATE.hero.is_exist and env.STATE.hero:is_exist()
+    if env and env.STATE and env.STATE.hero and is_valid_entity(env.STATE.hero)
       and target == env.STATE.hero then
       return false
     end
     local enemy_ok = is_active_enemy(target)
-    if not enemy_ok and env and env.STATE and env.STATE.hero and env.STATE.hero.is_exist and env.STATE.hero:is_exist()
+    if not enemy_ok and env and env.STATE and env.STATE.hero and is_valid_entity(env.STATE.hero)
       and env.STATE.hero.is_enemy then
       local ok, is_enemy_to_hero = pcall(env.STATE.hero.is_enemy, env.STATE.hero, target)
       enemy_ok = ok and is_enemy_to_hero == true
     end
-    if not enemy_ok then
+    return enemy_ok
+  end
+
+  function api.single(target, amount, damage_meta, visual)
+    if not check_can_damage(target) then
       return false
     end
     deal_skill_damage(target, amount, damage_meta, visual)

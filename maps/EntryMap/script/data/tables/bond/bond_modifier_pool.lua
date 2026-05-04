@@ -99,7 +99,7 @@ end
 
 local function read_param_rows_by_skill_id()
   local result = {}
-  for _, row in ipairs(CsvLoader.read_rows_optional('data_csv/bond_skill_params.csv')) do
+  for _, row in ipairs(CsvLoader.read_rows_optional('data_csv/by_feature/bond/bond_skill_params.csv')) do
     local skill_id = trim(row.skill_id)
     if skill_id ~= '' and skill_id ~= '__字段说明__' then
       result[skill_id] = row
@@ -255,7 +255,7 @@ local function is_enabled(raw)
 end
 
 local function build_fallback_cards_from_bond_skills()
-  local rows = CsvLoader.read_rows_optional('data_csv/bond_skills.csv')
+  local rows = CsvLoader.read_rows_optional('data_csv/by_feature/bond/bond_skills.csv')
   local next_index = #cards + 1
   local bond_card_count = {}
   for _, row in ipairs(rows) do
@@ -318,9 +318,7 @@ local function build_fallback_cards_from_bond_skills()
   end
 end
 
-if #cards == 0 then
-  build_fallback_cards_from_bond_skills()
-end
+build_fallback_cards_from_bond_skills()
 
 local activation_effects = {}
 for bond_name, bond_cards in pairs(cards_by_bond) do

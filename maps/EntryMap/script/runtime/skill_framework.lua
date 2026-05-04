@@ -1,5 +1,15 @@
-﻿local M = {}
+local M = {}
 local Registry = require 'runtime.skill_framework_registry'
+
+local function pow(base, exponent)
+  if not base or not exponent then
+    return 1
+  end
+  if exponent == 0 then
+    return 1
+  end
+  return base ^ exponent
+end
 
 local VALID_DAMAGE_TYPE = { ['物理'] = true, ['法术'] = true, ['真实'] = true }
 local VALID_PATTERN = { projectile = true, area = true }
@@ -114,7 +124,6 @@ local function normalize_skill(def)
       backswing = normalize_number(cfg.timeline and cfg.timeline.backswing, 0.12, 0),
       duration = normalize_number(cfg.timeline and cfg.timeline.duration, 1.0, 0.05),
       tick_interval = normalize_number(cfg.timeline and cfg.timeline.tick_interval, 0.2, 0.03),
-      has_tick_interval = cfg.timeline and cfg.timeline.tick_interval ~= nil or false,
     },
     hit_model = {
       range = normalize_number(cfg.hit_model and cfg.hit_model.range, 1200, 80),
@@ -221,22 +230,6 @@ local function dedupe_units(units)
     end
   end
   return result
-end
-
-local function get_unit_hit_key(unit)
-  if type(unit) == 'table' and type(unit.get_id) == 'function' then
-    local ok, id = pcall(unit.get_id, unit)
-    if ok and id ~= nil then
-      return 'id:' .. tostring(id)
-    end
-  end
-  if type(unit) == 'table' and unit.handle ~= nil then
-    return 'handle:' .. tostring(unit.handle)
-  end
-  if unit ~= nil then
-    return 'unit:' .. tostring(unit)
-  end
-  return nil
 end
 
 local function area_fx_scale(radius)
@@ -478,95 +471,6 @@ function M.create(env)
       elseif cast_ctx.caster and cast_ctx.caster.get_facing then
         angle = tonumber(cast_ctx.caster:get_facing()) or 0
       end
-      local proj_key = visual_key(skill, 'projectile_key')
-      local pierce_duration = tonumber(skill.timeline.duration or 0)
-      -- 穿透型投射物：duration > 0 时使用 mover_line 碰撞模式
-      if pierce_duration > 0 and proj_key and y3 and y3.projectile then
-        local proj_speed = math.max(600, (skill.hit_model.range or 1300) / math.max(0.01, resolve_impact_delay(skill))) * 0.335
-        local proj_height = visual_key(skill, 'projectile_height') or 28
-        local hit_radius = skill.hit_model.width or 200
-        local tick_interval = skill.timeline.has_tick_interval and tonumber(skill.timeline.tick_interval or 0) or 0
-        local hit_same = skill.timeline.has_tick_interval and tick_interval > 0
-        -- 非连续模式：hit_interval 设极大值 + 手动去重，杜绝同一帧内重入
-        local mover_hit_interval = hit_same and math.max(tick_interval, 0.01) or 999
-        local damage_per_hit = hit_same
-          and damage_amount(skill, 'tick_ratio')
-          or damage_amount(skill, 'attack_ratio')
-        local hit_particle = visual_key(skill, 'hit')
-        local hit_units = {}
-        local first_hit = false
-        -- 初始存活时间设大，命中首个敌人后重置为 pierce_duration
-        local init_proj_time = math.max(pierce_duration + 4.0, 8.0)
-        local ok, proj = pcall(y3.projectile.create, {
-          key = proj_key,
-          target = cast_ctx.caster or y3.point(hero_point.x, hero_point.y),
-          socket = cast_ctx.caster and 'origin' or nil,
-          owner = cast_ctx.caster,
-          angle = angle,
-          time = init_proj_time,
-          remove_immediately = true,
-        })
-        if not ok or not proj then
-          return false, '投射物创建失败。'
-        end
-        local function cleanup_proj()
-          if proj and proj:is_exist() then
-            pcall(proj.remove, proj)
-          end
-        end
-        pcall(proj.set_height, proj, proj_height)
-        pcall(proj.mover_line, proj, {
-          angle = angle,
-          distance = proj_speed * init_proj_time,
-          speed = proj_speed,
-          hit_radius = hit_radius,
-          hit_type = 0,
-          hit_same = hit_same,
-          hit_interval = mover_hit_interval,
-          face_angle = true,
-          on_hit = function(_, hit_unit)
-            if not hit_unit or not hit_unit.is_exist or not hit_unit:is_exist() then
-              return
-            end
-            local hit_key = get_unit_hit_key(hit_unit)
-            if not hit_same and hit_key ~= nil and hit_units[hit_key] then
-              return
-            end
-            if hit_key ~= nil then
-              hit_units[hit_key] = true
-            end
-            -- 首次命中后重置存活时间为 duration
-            if not first_hit and proj and proj:is_exist() then
-              first_hit = true
-              pcall(proj.set_time, proj, pierce_duration)
-            end
-            local amount = damage_per_hit
-            if skill_damage_api.single(hit_unit, amount, skill.damage_type, {
-              particle = hit_particle,
-              metric_scope = 'skill_framework',
-              metric_key = skill.id,
-            }) then
-              cast_ctx.hit_count = (cast_ctx.hit_count or 0) + 1
-              cast_ctx.total_damage = (cast_ctx.total_damage or 0) + (amount or 0)
-              mark_damage_impact(cast_ctx)
-              fire_hook(skill, 'OnProjectileHit', cast_ctx)
-            end
-          end,
-          on_finish = function()
-            cleanup_proj()
-            fire_hook(skill, 'OnFinish', cast_ctx)
-          end,
-          on_break = function()
-            cleanup_proj()
-            fire_hook(skill, 'OnFinish', cast_ctx)
-          end,
-        })
-        local fx_scale = impact_fx_scale(skill)
-        spawn_particle(y3, cast_ctx.caster, visual_key(skill, 'cast'), fx_scale * 0.95, 0.20, 24)
-        fire_hook(skill, 'OnSpellStart', cast_ctx)
-        return true, string.format('[%s] projectile.pierce(mover_line) 触发', skill.id)
-      end
-      -- 原有线段扫掠逻辑（duration == 0 时回退）
       local end_point = create_offset_point and create_offset_point(y3, hero_point, angle, skill.hit_model.range, 0) or impact_point
       if not end_point then
         return false, '直线终点创建失败。'
@@ -635,7 +539,130 @@ function M.create(env)
       cast_ctx.hits = skill_damage_api.chain(chain_targets, base, skill.damage_type, {
         amount = function(context)
           local idx = context.index or 1
-          local amount = base * math.pow(skill.scale.bounce_ratio, math.max(0, idx - 1))
+          local amount = base * pow(skill.scale.bounce_ratio, math.max(0, idx - 1))
+          total_damage = total_damage + math.max(0, tonumber(amount) or 0)
+          return amount
+        end,
+        visual = function()
+          return {
+            particle = visual_key(skill, 'hit'),
+            metric_scope = 'skill_framework',
+            metric_key = skill.id,
+          }
+        end,
+        on_hit = function(context)
+          cast_ctx.bounce_index = context.index
+          cast_ctx.hit_unit = context.target
+          if context.target then
+            spawn_particle(y3, context.target, visual_key(skill, 'impact') or visual_key(skill, 'hit'), fx_scale, 0.16, 26)
+          end
+          fire_hook(skill, 'OnProjectileHit', cast_ctx)
+        end,
+      })
+      cast_ctx.hit_count = #(cast_ctx.hits or {})
+      cast_ctx.total_damage = total_damage
+      mark_damage_impact(cast_ctx)
+      fire_hook(skill, 'OnFinish', cast_ctx)
+      return true, string.format('[%s] projectile.chain 触发', skill.id)
+    end
+
+    if skill.pattern == 'area_burst' then
+      local center = impact_point or hero_point
+      local fx_scale = impact_fx_scale(skill)
+      local proj_time = tonumber(skill.visual and skill.visual.projectile_time) or skill.timeline.impact_delay
+      -- 施法特效在英雄身上
+      spawn_particle(y3, cast_ctx.caster, visual_key(skill, 'cast'), fx_scale, 0.25, nil)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      local function do_impact(impact_point)
+        local pt = impact_point or center
+        mark_visual_impact(cast_ctx)
+        spawn_particle(y3, pt, visual_key(skill, 'impact'), fx_scale * 1.08, 0.18, 28)
+        cast_ctx.hits = skill_damage_api.area(pt, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
+          max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
+          visual = {
+            particle = visual_key(skill, 'hit'),
+            metric_scope = 'skill_framework',
+            metric_key = skill.id,
+          },
+        })
+        cast_ctx.hit_count = #(cast_ctx.hits or {})
+        cast_ctx.total_damage = (damage_amount(skill, 'attack_ratio') or 0) * cast_ctx.hit_count
+        mark_damage_impact(cast_ctx)
+        fire_hook(skill, 'OnProjectileHit', cast_ctx)
+        fire_hook(skill, 'OnFinish', cast_ctx)
+      end
+      -- 投射物飞行：用投射物自身飞行时间，到达时触发爆炸
+      local proj_key = visual_key(skill, 'projectile_key')
+      if proj_key and launch_projectile_from_hero then
+        launch_projectile_from_hero(proj_key, target, center, nil, proj_time, visual_key(skill, 'projectile_height'), do_impact)
+      else
+        y3.ltimer.wait(proj_time, function() do_impact(nil) end)
+      end
+      return true, string.format('[%s] area_burst 触发', skill.id)
+    end
+
+    if skill.pattern == 'area_tick' then
+      local center = impact_point or hero_point
+      local tick_count = math.max(1, math.floor(skill.timeline.duration / skill.timeline.tick_interval + 0.5))
+      local fx_scale = impact_fx_scale(skill)
+      spawn_particle(y3, center, visual_key(skill, 'warning') or visual_key(skill, 'cast'), fx_scale, skill.timeline.duration, 20)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      cast_ctx.hit_count = 0
+      cast_ctx.total_damage = 0
+      skill_damage_api.area_ticks(skill.timeline.tick_interval, tick_count, skill.damage_type, {
+        center = center,
+        radius = skill.hit_model.radius,
+        amount = damage_amount(skill, 'tick_ratio'),
+        max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
+        visual = {
+          particle = visual_key(skill, 'hit'),
+          metric_scope = 'skill_framework',
+          metric_key = skill.id,
+        },
+        after_tick = function(ctx)
+          cast_ctx.tick = ctx.current
+          cast_ctx.hits = ctx.hits
+          local one_tick_hits = #(ctx.hits or {})
+          cast_ctx.hit_count = cast_ctx.hit_count + one_tick_hits
+          cast_ctx.total_damage = cast_ctx.total_damage + ((damage_amount(skill, 'tick_ratio') or 0) * one_tick_hits)
+          fire_hook(skill, 'OnTick', cast_ctx)
+        end,
+      })
+      y3.ltimer.wait(skill.timeline.duration, function()
+        fire_hook(skill, 'OnFinish', cast_ctx)
+      end)
+      return true, string.format('[%s] area_tick %d tick', skill.id, tick_count)
+    end
+
+    if skill.pattern == 'chain_bounce' then
+      if not target then
+        return false, '附近没有可攻击目标。'
+      end
+      local chain_targets = { target }
+      local extra = get_enemies_in_range and get_enemies_in_range(target, skill.hit_model.radius, target, skill.hit_model.bounce) or {}
+      for _, unit in ipairs(extra) do
+        chain_targets[#chain_targets + 1] = unit
+      end
+      chain_targets = dedupe_units(chain_targets)
+      local base = damage_amount(skill, 'attack_ratio')
+      local fx_scale = impact_fx_scale(skill)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      spawn_particle(y3, target, visual_key(skill, 'cast'), fx_scale, 0.20, 28)
+      -- 投射物仅作视觉装饰，伤害立即结算，避免目标在飞行期间被击杀导致落空。
+      launch_projectile_from_hero(
+        visual_key(skill, 'projectile_key'),
+        target,
+        nil,
+        nil,
+        resolve_impact_delay(skill),
+        visual_key(skill, 'projectile_height')
+      )
+      mark_visual_impact(cast_ctx)
+      local total_damage = 0
+      cast_ctx.hits = skill_damage_api.chain(chain_targets, base, skill.damage_type, {
+        amount = function(context)
+          local idx = context.index or 1
+          local amount = base * pow(skill.scale.bounce_ratio, math.max(0, idx - 1))
           total_damage = total_damage + math.max(0, tonumber(amount) or 0)
           return amount
         end,
@@ -772,16 +799,14 @@ function M.create(env)
     return true, string.format('[%s] area.%s 触发', skill.id, tostring(skill.sub_behavior))
   end
 
-  local PATTERN_EXECUTORS = {
-    projectile = execute_projectile,
-    area = execute_area,
-  }
-
   local function execute_pattern(cast_ctx)
-    local executor = PATTERN_EXECUTORS[cast_ctx.skill.pattern]
-    if executor then
-      return executor(cast_ctx)
+    if cast_ctx.skill.pattern == 'projectile' then
+      return execute_projectile(cast_ctx)
     end
+    if cast_ctx.skill.pattern == 'area' then
+      return execute_area(cast_ctx)
+    end
+
     return false, '不支持的技能 pattern。'
   end
 

@@ -36,6 +36,43 @@ end
 local DEBUG_TIME_SCALE = ((y3 and y3.game and y3.game.is_debug_mode and y3.game.is_debug_mode()) and 0.2) or 1.0
 local function scale(seconds) return (seconds or 0) * DEBUG_TIME_SCALE end
 
+local function build_attr_overrides(row, prefix)
+  local r = {}
+  if tonumber(row[prefix .. '_hp_max']) then r['最大生命'] = tonumber(row[prefix .. '_hp_max']) end
+  if tonumber(row[prefix .. '_attack']) then r['攻击'] = tonumber(row[prefix .. '_attack']) end
+  if tonumber(row[prefix .. '_armor']) then r['护甲'] = tonumber(row[prefix .. '_armor']) end
+  return next(r) and r or nil
+end
+
+local function listnum(raw)
+  if raw == nil or raw == '' then return nil end
+  local t = {}
+  for part in tostring(raw):gmatch('[^|,]+') do
+    local n = tonumber(part); if n and n > 0 then t[#t + 1] = n end
+  end
+  return #t > 0 and t or nil
+end
+
+local function build_reward(row, prefix)
+  return { 
+    exp = tonumber(row[prefix .. '_exp']) or 0, 
+    gold = tonumber(row[prefix .. '_gold']) or 0, 
+    wood = tonumber(row[prefix .. '_wood']) or 0 
+  }
+end
+
+local function process_csv_rows(csv_path, order_key, builder)
+  local rows = CsvLoader.read_rows(csv_path)
+  local list = {}
+  for _, row in ipairs(rows) do
+    list[#list + 1] = builder(row)
+  end
+  if order_key then
+    table.sort(list, function(a, b) return (a[order_key] or 0) < (b[order_key] or 0) end)
+  end
+  return { list = list, by_id = list_to_map(list) }
+end
+
 M.battle_base_config = {
   global_rules = {
     debug_time_scale_debug = 0.2,
@@ -103,29 +140,19 @@ M.battlefield_unit_config = {
 }
 
 -- waves
-local wave_rows = CsvLoader.read_rows('data_csv/waves.csv')
-local waves_list = {}
-for _, row in ipairs(wave_rows) do
+M.waves = process_csv_rows('data_csv/waves.csv', 'index', function(row)
   local seg = {}
   for i = 1, 3 do
     local s = row['segment' .. i .. '_start_sec']
     local it = row['segment' .. i .. '_interval_sec']
-    if s ~= '' and it ~= '' then seg[#seg + 1] = { start_sec = scale(tonumber(s) or 0), interval_sec = scale(tonumber(it) or
-      0) } end
-  end
-  local function reward(prefix)
-    return { exp = tonumber(row[prefix .. '_exp']) or 0, gold = tonumber(row[prefix .. '_gold']) or 0, wood = tonumber(
-    row[prefix .. '_wood']) or 0 }
-  end
-  local function listnum(raw)
-    if raw == nil or raw == '' then return nil end
-    local t = {}
-    for part in tostring(raw):gmatch('[^|,]+') do
-      local n = tonumber(part); if n and n > 0 then t[#t + 1] = n end
+    if s ~= '' and it ~= '' then 
+      seg[#seg + 1] = { 
+        start_sec = scale(tonumber(s) or 0), 
+        interval_sec = scale(tonumber(it) or 0) 
+      } 
     end
-    return #t > 0 and t or nil
   end
-  waves_list[#waves_list + 1] = {
+  return {
     id = row.id,
     index = tonumber(row.index) or 0,
     name = row.name,
@@ -137,23 +164,11 @@ for _, row in ipairs(wave_rows) do
     max_alive = tonumber(row.max_alive) or 0,
     spawn_segments = seg,
     post_boss_interval_sec = scale(tonumber(row.post_boss_interval_sec) or 0),
-    main_attr_overrides = (function()
-      local r = {}
-      if tonumber(row.main_hp_max) then r['最大生命'] = tonumber(row.main_hp_max) end
-      if tonumber(row.main_attack) then r['攻击'] = tonumber(row.main_attack) end
-      if tonumber(row.main_armor) then r['护甲'] = tonumber(row.main_armor) end
-      return next(r) and r or nil
-    end)(),
-    boss_attr_overrides = (function()
-      local r = {}
-      if tonumber(row.boss_hp_max) then r['最大生命'] = tonumber(row.boss_hp_max) end
-      if tonumber(row.boss_attack) then r['攻击'] = tonumber(row.boss_attack) end
-      if tonumber(row.boss_armor) then r['护甲'] = tonumber(row.boss_armor) end
-      return next(r) and r or nil
-    end)(),
+    main_attr_overrides = build_attr_overrides(row, 'main'),
+    boss_attr_overrides = build_attr_overrides(row, 'boss'),
     main_spawn_hp = to_optional_number(row.main_spawn_hp),
-    main_kill_reward = reward('main_kill_reward'),
-    boss_kill_reward = reward('boss_kill_reward'),
+    main_kill_reward = build_reward(row, 'main_kill_reward'),
+    boss_kill_reward = build_reward(row, 'boss_kill_reward'),
     main_model_id = tonumber(row.main_model_id) or nil,
     boss_model_id = tonumber(row.boss_model_id) or nil,
     main_template_unit_id = tonumber(row.main_template_unit_id) or nil,
@@ -161,15 +176,12 @@ for _, row in ipairs(wave_rows) do
     main_extra_ability_ids = listnum(row.main_extra_ability_ids),
     boss_extra_ability_ids = listnum(row.boss_extra_ability_ids),
   }
-end
-table.sort(waves_list, function(a, b) return (a.index or 0) < (b.index or 0) end)
-M.waves = { list = waves_list, by_id = list_to_map(waves_list) }
+end)
 
 -- challenges
-local challenge_rows = CsvLoader.read_rows('data_csv/challenges.csv')
-local challenges_list = {}
-for _, row in ipairs(challenge_rows) do
-  challenges_list[#challenges_list + 1] = {
+M.challenges = process_csv_rows('data_csv/challenges.csv', 'order_index', function(row)
+  local count = tonumber(row.batch_count) or 0
+  return {
     id = row.id,
     name = row.name,
     hotkey = row.hotkey ~= '' and row.hotkey or nil,
@@ -177,26 +189,29 @@ for _, row in ipairs(challenge_rows) do
     recover_sec = scale(tonumber(row.recover_sec) or 0),
     cost_charge = tonumber(row.cost_charge) or 0,
     spawn_area_id = row.spawn_area_id,
-    reward = { gold = tonumber(row.reward_gold) or 0, wood = tonumber(row.reward_wood) or 0, exp = tonumber(row.reward_exp) or 0, special = row.reward_special ~= '' and row.reward_special or nil },
-    kill_reward = { gold = tonumber(row.kill_reward_gold) or 0, wood = tonumber(row.kill_reward_wood) or 0, exp = tonumber(row.kill_reward_exp) or 0, special = row.kill_reward_special ~= '' and row.kill_reward_special or nil },
+    reward = { 
+      gold = tonumber(row.reward_gold) or 0, 
+      wood = tonumber(row.reward_wood) or 0, 
+      exp = tonumber(row.reward_exp) or 0, 
+      special = row.reward_special ~= '' and row.reward_special or nil 
+    },
+    kill_reward = { 
+      gold = tonumber(row.kill_reward_gold) or 0, 
+      wood = tonumber(row.kill_reward_wood) or 0, 
+      exp = tonumber(row.kill_reward_exp) or 0, 
+      special = row.kill_reward_special ~= '' and row.kill_reward_special or nil 
+    },
     unit_id = to_optional_number(row.unit_id),
     boss_unit_id = to_optional_number(row.boss_unit_id),
     guard_unit_id = to_optional_number(row.guard_unit_id),
-    batches = (function()
-      local count = tonumber(row.batch_count) or 0; return count > 0 and
-      { { time_sec = scale(tonumber(row.batch_time_sec) or 0), count = count } } or {}
-    end)(),
+    batches = count > 0 and { { time_sec = scale(tonumber(row.batch_time_sec) or 0), count = count } } or {},
     order_index = tonumber(row.order_index) or 0,
   }
-end
-table.sort(challenges_list, function(a, b) return (a.order_index or 0) < (b.order_index or 0) end)
-M.challenges = { list = challenges_list, by_id = list_to_map(challenges_list) }
+end)
 
 -- stages / modes
-local stage_rows = CsvLoader.read_rows('data_csv/stages.csv')
-local stages_list = {}
-for _, row in ipairs(stage_rows) do
-  stages_list[#stages_list + 1] = {
+M.stages = process_csv_rows('data_csv/stages.csv', 'order_index', function(row)
+  return {
     id = row.id,
     stage_id = row.stage_id,
     display_name = row.display_name,
@@ -209,14 +224,10 @@ for _, row in ipairs(stage_rows) do
     n0_opening_no_cooldown = row.n0_opening_no_cooldown ~= '' and row.n0_opening_no_cooldown or nil,
     n0_disable_mainline_spawn = row.n0_disable_mainline_spawn ~= '' and row.n0_disable_mainline_spawn or nil,
   }
-end
-table.sort(stages_list, function(a, b) return (a.order_index or 0) < (b.order_index or 0) end)
-M.stages = { list = stages_list, by_id = list_to_map(stages_list) }
+end)
 
-local mode_rows = CsvLoader.read_rows('data_csv/stage_modes.csv')
-local modes_list = {}
-for _, row in ipairs(mode_rows) do
-  modes_list[#modes_list + 1] = {
+M.stage_modes = process_csv_rows('data_csv/stage_modes.csv', 'order_index', function(row)
+  return {
     id = row.id,
     mode_id = row.mode_id,
     order_index = tonumber(row.order_index) or 0,
@@ -226,9 +237,7 @@ for _, row in ipairs(mode_rows) do
     battle_config_key = row.battle_config_key,
     result_bucket = row.result_bucket,
   }
-end
-table.sort(modes_list, function(a, b) return (a.order_index or 0) < (b.order_index or 0) end)
-M.stage_modes = { list = modes_list, by_id = list_to_map(modes_list) }
+end)
 
 -- hero roster
 local roster_rows = CsvLoader.read_rows('data_csv/hero_roster.csv')

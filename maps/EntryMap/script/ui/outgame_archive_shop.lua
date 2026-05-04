@@ -3,20 +3,22 @@
 local DEFAULT_ICON = 906565
 local ARCHIVE_PANEL_ROOTS = { 'ArchiveMain', 'ArchivePanel' }
 local ARCHIVE_MAIN_PANEL = '存档生涯商城'
-local ARCHIVE_CONTENT_SECTIONS = { '商城', '存档', '生涯' }
+local ArchiveTabDefinitions = require 'data.tables.archive_tab_definitions'
+local ARCHIVE_CONTENT_SECTIONS = ArchiveTabDefinitions.get_valid_partitions()
 local ARCHIVE_GENERIC_CONTENT_GROUP = '通用内容'
-local ARCHIVE_GROUPS = {
-  { name = '仓库' },
-  { name = '商品' },
-  { name = '皮肤' },
-  { name = '翅膀' },
-  { name = '地图等级' },
-  { name = '荣誉等级', aliases = { '荣誉等级', '典藏积分' } },
-  { name = '成就' },
-  { name = '英雄图鉴' },
-  { name = '羁绊图鉴' },
-  { name = '称号' },
-}
+
+-- 使用静态定义的页签构建 ARCHIVE_GROUPS
+local static_primary_tabs = ArchiveTabDefinitions.get_valid_primary_tabs()
+local ARCHIVE_GROUPS = {}
+for _, name in ipairs(static_primary_tabs) do
+  local group = { name = name }
+  if name == '荣誉等级' then
+    group.aliases = { '荣誉等级', '典藏积分' }
+  end
+  ARCHIVE_GROUPS[#ARCHIVE_GROUPS + 1] = group
+end
+
+local CAREER_TAB_LABELS = ArchiveTabDefinitions.get_career_tabs()
 
 local function append_path(paths, path)
   paths[#paths + 1] = path
@@ -78,6 +80,75 @@ end
 for _, path in ipairs(build_panel_paths('scroll_view')) do
   append_path(TIP_SCROLL_PATHS, path)
 end
+local TIP_BLOCK_SLOTS = {
+  { title = 'detail_title', body = 'detail' },
+  { title = 'special_title', body = 'special' },
+  { title = 'obtain_title', body = 'obtain' },
+}
+local TIP_BLOCK_STYLE = {
+  normal = {
+    title_color = { 255, 232, 44, 255 },
+    body_color = { 178, 183, 194, 255 },
+    body_size = 14,
+  },
+  attr = {
+    title_color = { 255, 232, 44, 255 },
+    body_color = { 44, 255, 112, 255 },
+    body_size = 16,
+  },
+  highlight = {
+    title_color = { 255, 232, 44, 255 },
+    body_color = { 146, 219, 255, 255 },
+    body_size = 15,
+  },
+  cost = {
+    title_color = { 255, 232, 44, 255 },
+    body_color = { 255, 196, 92, 255 },
+    body_size = 15,
+  },
+  list = {
+    title_color = { 255, 232, 44, 255 },
+    body_color = { 220, 226, 238, 255 },
+    body_size = 14,
+  },
+  warning = {
+    title_color = { 255, 214, 72, 255 },
+    body_color = { 255, 118, 94, 255 },
+    body_size = 15,
+  },
+}
+local QUALITY_STYLE = {
+  N = {
+    label = 'N',
+    text_color = { 214, 220, 230, 255 },
+    frame_color = { 150, 160, 174, 255 },
+    badge_color = { 92, 100, 112, 245 },
+  },
+  R = {
+    label = 'R',
+    text_color = { 108, 205, 255, 255 },
+    frame_color = { 74, 176, 255, 255 },
+    badge_color = { 26, 93, 142, 245 },
+  },
+  SR = {
+    label = 'SR',
+    text_color = { 224, 132, 255, 255 },
+    frame_color = { 188, 83, 255, 255 },
+    badge_color = { 92, 42, 126, 245 },
+  },
+  SSR = {
+    label = 'SSR',
+    text_color = { 255, 198, 73, 255 },
+    frame_color = { 255, 159, 42, 255 },
+    badge_color = { 136, 75, 18, 245 },
+  },
+  UR = {
+    label = 'UR',
+    text_color = { 255, 99, 122, 255 },
+    frame_color = { 255, 73, 104, 255 },
+    badge_color = { 130, 24, 50, 245 },
+  },
+}
 local PRIMARY_TAB_BASE_PATHS = {
   'ArchiveMain.layout_1.scroll_view_main.page_grid.ArchivePageOne',
 }
@@ -96,7 +167,6 @@ local SECONDARY_TAB_GRID_PATHS = {
 for _, path in ipairs(build_panel_paths('page2_grid')) do
   append_path(SECONDARY_TAB_GRID_PATHS, path)
 end
-local CAREER_TAB_LABELS = { '成就', '英雄图鉴', '羁绊图鉴', '称号' }
 local CAREER_TAB_DETAILS = {
   ['成就'] = {
     title = '成就总览',
@@ -210,6 +280,10 @@ local function set_text_alignment(ui, horizontal, vertical)
   if is_ui_alive(ui) and ui.set_text_alignment then
     ui:set_text_alignment(horizontal or '左', vertical or '中')
   end
+end
+
+local function trim_text(value)
+  return tostring(value or ''):gsub('^%s+', ''):gsub('%s+$', '')
 end
 
 local function set_ui_size(ui, width, height)
@@ -601,40 +675,179 @@ local function is_owned(spec)
   return true
 end
 
+local function build_owned_badge(spec)
+  local raw = tostring((spec and spec.owned_text) or ''):gsub('^%s+', ''):gsub('%s+$', '')
+  local owned = is_owned(spec)
+  local text = raw
+  if text == '' then
+    text = owned and '已拥有' or '未拥有'
+  elseif tonumber(text) ~= nil then
+    text = owned and ('已拥有 ' .. text) or '未拥有'
+  end
+  return {
+    text = text,
+    owned = owned,
+    color = owned and { 86, 232, 132, 255 } or { 255, 112, 96, 255 },
+  }
+end
+
+local function normalize_quality_label(quality)
+  local value = tostring(quality or ''):gsub('^%s+', ''):gsub('%s+$', '')
+  value = string.upper(value)
+  if value == 'N' or value == 'R' or value == 'SR' or value == 'SSR' or value == 'UR' then
+    return value
+  end
+  return 'N'
+end
+
+local function get_quality_style(quality)
+  local normalized = normalize_quality_label(quality)
+  return QUALITY_STYLE[normalized] or QUALITY_STYLE.N
+end
+
+local function is_selected_spec(state, spec)
+  return tostring(state and state.archive_panel_shop_item or '') ~= ''
+    and tostring(state and state.archive_panel_shop_item or '') == tostring(spec and spec.key or '')
+end
+
+local function build_fallback_tip_blocks(spec)
+  if spec and spec.is_suit then
+    local equip_lines = {}
+    for _, equip in ipairs(spec.equipment or {}) do
+      if equip.name and equip.name ~= '' then
+        table.insert(equip_lines, equip.slot .. ': ' .. equip.name)
+      end
+    end
+
+    local detail_text = ''
+    if spec.description and spec.description ~= '' then
+      detail_text = spec.description .. '\n\n'
+    end
+    detail_text = detail_text .. '套装效果: ' .. (spec.effects_summary or '暂无')
+    if #equip_lines > 0 then
+      detail_text = detail_text .. '\n\n套装装备:\n' .. table.concat(equip_lines, '\n')
+    end
+
+    return {
+      { title = '[套装详情]', body = detail_text },
+      { title = '[升级消耗]', body = spec.upgrade_cost_info or '升星石' },
+      { title = '[获取方式]', body = spec.obtain ~= '' and spec.obtain or '暂无' },
+    }
+  end
+
+  return {
+    { title = '[详情效果]', body = table.concat((spec and spec.attr_lines) or {}, '\n') },
+    { title = '[特殊效果]', body = spec and spec.special_effect ~= '' and spec.special_effect or '暂无' },
+    { title = '[获取方式]', body = spec and spec.obtain ~= '' and spec.obtain or '暂无' },
+  }
+end
+
+local function get_tip_blocks(spec)
+  if type(spec and spec.detail_blocks) == 'table' and #spec.detail_blocks > 0 then
+    return spec.detail_blocks
+  end
+  if type(spec and spec.description_blocks) == 'table' and #spec.description_blocks > 0 then
+    return spec.description_blocks
+  end
+  return build_fallback_tip_blocks(spec)
+end
+
+local function get_visible_tip_blocks(spec)
+  local source = get_tip_blocks(spec)
+  local result = {}
+  for _, block in ipairs(source or {}) do
+    local condition = tostring(block.visible or '')
+    local include = condition == '' or condition == 'always'
+    if condition == 'owned' then
+      include = is_owned(spec)
+    elseif condition == 'not_owned' or condition == 'unowned' then
+      include = not is_owned(spec)
+    end
+    if include then
+      result[#result + 1] = block
+    end
+  end
+  return result
+end
+
+local function fit_tip_blocks_to_slots(blocks)
+  local slot_count = #TIP_BLOCK_SLOTS
+  if #blocks <= slot_count then
+    return blocks
+  end
+  local result = {}
+  for index = 1, slot_count - 1 do
+    result[index] = blocks[index]
+  end
+  local merged_title = trim_text(blocks[slot_count] and blocks[slot_count].title) ~= '' and blocks[slot_count].title or '[更多说明]'
+  local merged_lines = {}
+  for index = slot_count, #blocks do
+    local block = blocks[index] or {}
+    local title = trim_text(block.title)
+    local body = trim_text(block.body)
+    if title ~= '' and not (index == slot_count and title == merged_title) then
+      merged_lines[#merged_lines + 1] = title
+    end
+    if body ~= '' then
+      merged_lines[#merged_lines + 1] = body
+    end
+  end
+  result[slot_count] = {
+    title = merged_title,
+    body = table.concat(merged_lines, '\n\n'),
+    style = (blocks[slot_count] and blocks[slot_count].style) or 'normal',
+  }
+  return result
+end
+
+local function apply_tip_blocks(tip, spec)
+  local blocks = fit_tip_blocks_to_slots(get_visible_tip_blocks(spec))
+  for index, slot in ipairs(TIP_BLOCK_SLOTS) do
+    local block = blocks[index] or {}
+    local title = trim_text(block.title)
+    local body = trim_text(block.body)
+    local visible = title ~= '' or body ~= ''
+    set_visible(tip[slot.title], visible)
+    set_visible(tip[slot.body], visible)
+    set_text(tip[slot.title], title)
+    set_text(tip[slot.body], body)
+  end
+end
+
+local function apply_tip_block_styles(tip, spec)
+  local blocks = fit_tip_blocks_to_slots(get_visible_tip_blocks(spec))
+  for index, slot in ipairs(TIP_BLOCK_SLOTS) do
+    local block = blocks[index] or {}
+    local style = TIP_BLOCK_STYLE[tostring(block.style or 'normal')] or TIP_BLOCK_STYLE.normal
+    set_font_size(tip[slot.title], 15)
+    set_text_color(tip[slot.title], style.title_color)
+    set_text_alignment(tip[slot.title], '左', '中')
+    set_font_size(tip[slot.body], style.body_size)
+    set_text_color(tip[slot.body], style.body_color)
+    set_text_alignment(tip[slot.body], '左', '上')
+  end
+end
+
 local function refresh_tip(state, shop, spec)
   if not spec then
     return false
   end
   state.archive_panel_shop_item = spec.key
   local tip = shop.tip or {}
-  local quality = tostring(spec.quality or '')
-  local title_color = { 255, 232, 120, 255 }
-  if quality == 'SSR' then
-    title_color = { 255, 220, 72, 255 }
-  elseif quality == 'SR' then
-    title_color = { 238, 158, 255, 255 }
-  elseif quality == 'R' then
-    title_color = { 105, 214, 255, 255 }
-  elseif quality == 'N' then
-    title_color = { 220, 226, 238, 255 }
-  end
+  local quality_style = get_quality_style(spec.quality)
 
   set_visible(tip.root, true)
   set_text(tip.title, spec.title)
-  set_text(tip.owned, spec.owned_text ~= '' and spec.owned_text or '未拥有')
-  set_text(tip.detail_title, '[详情效果]')
-  set_text(tip.detail, table.concat(spec.attr_lines or {}, '\n'))
-  set_text(tip.special_title, '[特殊效果]')
-  set_text(tip.special, spec.special_effect ~= '' and spec.special_effect or '暂无')
-  set_text(tip.obtain_title, '[获取方式]')
-  set_text(tip.obtain, spec.obtain ~= '' and spec.obtain or '暂无')
+  local owned_badge = build_owned_badge(spec)
+  set_text(tip.owned, '当前选中 · ' .. quality_style.label .. ' · ' .. owned_badge.text)
+  apply_tip_blocks(tip, spec)
 
   set_font_size(tip.title, 24)
-  set_text_color(tip.title, title_color)
+  set_text_color(tip.title, quality_style.text_color)
   set_text_alignment(tip.title, '左', '中')
 
   set_font_size(tip.owned, 14)
-  set_text_color(tip.owned, { 162, 166, 178, 255 })
+  set_text_color(tip.owned, owned_badge.color)
   set_text_alignment(tip.owned, '中', '中')
 
   set_font_size(tip.detail_title, 15)
@@ -657,6 +870,7 @@ local function refresh_tip(state, shop, spec)
   set_font_size(tip.obtain, 14)
   set_text_color(tip.obtain, { 178, 183, 194, 255 })
   set_text_alignment(tip.obtain, '左', '上')
+  apply_tip_block_styles(tip, spec)
   return true
 end
 
@@ -670,6 +884,52 @@ local function get_spec_owned_display(spec, fallback)
     return text
   end
   return tostring(fallback or '')
+end
+
+local function apply_slot_state(slot, state, spec)
+  if not is_ui_alive(slot and slot.root) then
+    return
+  end
+  local selected = is_selected_spec(state, spec)
+  local owned_badge = build_owned_badge(spec)
+  local quality_style = get_quality_style(spec and spec.quality)
+  set_image_color(slot.bg or slot.root, selected and { 255, 226, 96, 255 } or quality_style.frame_color)
+  set_image_color(slot.icon, selected and { 255, 255, 255, 255 } or { 224, 228, 238, 255 })
+  if selected then
+    set_ui_size(slot.root, 90, 88)
+  else
+    set_ui_size(slot.root, 84, 82)
+  end
+  if is_ui_alive(slot.label) then
+    set_text_color(slot.label, selected and { 255, 246, 190, 255 } or quality_style.text_color)
+  end
+  if is_ui_alive(slot.lv) then
+    set_text_color(slot.lv, selected and { 255, 246, 190, 255 } or { 218, 222, 232, 255 })
+  end
+  if is_ui_alive(slot.num) then
+    set_text_color(slot.num, owned_badge.color)
+  end
+  if is_ui_alive(slot.quality_badge) then
+    set_visible(slot.quality_badge, true)
+    set_text(slot.quality_badge, quality_style.label)
+    set_font_size(slot.quality_badge, 12)
+    set_text_alignment(slot.quality_badge, '中', '中')
+    set_text_color(slot.quality_badge, selected and { 255, 255, 255, 255 } or quality_style.text_color)
+    set_ui_size(slot.quality_badge, 34, 18)
+    set_pos(slot.quality_badge, 67, 71)
+  end
+end
+
+local function refresh_selected_slot_state(shop, options)
+  local state = options and options.state or nil
+  if shop and shop.selected_slot then
+    apply_slot_state(shop.selected_slot, state, shop.selected_slot.spec)
+  end
+  for _, group in ipairs(shop and shop.middle_groups or {}) do
+    for _, item in ipairs(group.runtime_items or {}) do
+      apply_slot_state(item, state, item.spec)
+    end
+  end
 end
 
 local function resolve_active_group_key(shop, state, all_category)
@@ -716,6 +976,31 @@ local function resolve_active_group_key(shop, state, all_category)
 end
 
 local function get_group_template(options, group_name, visible_items)
+  -- 专门处理套装、地图等级、荣誉积分的渲染规则
+  local normalized_name = normalize_key(group_name)
+  if normalized_name == normalize_key('套装') then
+    return {
+      icon = true,
+      label = 'title',
+      suit = true,
+      show_equip_count = true,
+    }
+  elseif normalized_name == normalize_key('地图等级') then
+    return {
+      lv = true,
+      label = 'title',
+      map_level = true,
+      show_progress = true,
+    }
+  elseif normalized_name == normalize_key('荣誉等级') or normalized_name == normalize_key('典藏积分') then
+    return {
+      num = true,
+      label = 'title',
+      honor = true,
+      show_points = true,
+    }
+  end
+
   local mode = ''
   local first = type(visible_items) == 'table' and visible_items[1] or nil
   if first then
@@ -944,12 +1229,14 @@ local function apply_group_slot(slot, group_name, spec, index, total)
   if not is_ui_alive(slot and slot.root) then
     return
   end
+  slot.spec = spec
   local tpl = get_group_template(slot.options, group_name, { spec })
   set_visible(slot.root, true)
   local show_icon = tpl.icon == true
   local show_lv = tpl.lv == true
   local show_num = tpl.num == true
   local show_label = tpl.label ~= false
+  slot.quality_badge = (not show_num) and slot.num or nil
   set_visible(slot.icon, show_icon)
   set_visible(slot.lv, show_lv)
   set_visible(slot.num, show_num)
@@ -957,6 +1244,86 @@ local function apply_group_slot(slot, group_name, spec, index, total)
   if is_ui_alive(slot.root) and slot.root.set_image and spec and spec.bg then
     set_image(slot.root, spec.bg)
   end
+
+  -- 套装专用渲染逻辑
+  if tpl.suit == true then
+    if show_icon then
+      set_ui_size(slot.icon, 52, 52)
+      set_pos(slot.icon, 42, 48)
+      set_image(slot.icon, spec and (spec.icon or spec.default_icon) or DEFAULT_ICON)
+    end
+    if show_label then
+      set_font_size(slot.label, 13)
+      set_text_alignment(slot.label, '中', '中')
+      set_ui_size(slot.label, 82, 24)
+      set_pos(slot.label, 42, 12)
+      local suit_name = spec and tostring(spec.title or '套装') or '套装'
+      set_text(slot.label, suit_name)
+    end
+    -- 显示装备数量
+    if tpl.show_equip_count and is_ui_alive(slot.num) then
+      set_visible(slot.num, true)
+      set_font_size(slot.num, 14)
+      set_text_alignment(slot.num, '中', '中')
+      set_ui_size(slot.num, 82, 20)
+      set_pos(slot.num, 42, 70)
+      local equip_count = spec and spec.equipment and #spec.equipment or 0
+      set_text(slot.num, tostring(equip_count) .. '件')
+      slot.quality_badge = nil
+    end
+    apply_slot_state(slot, slot.options and slot.options.state or nil, spec)
+    return
+  end
+
+  -- 地图等级专用渲染逻辑
+  if tpl.map_level == true then
+    if show_label then
+      set_font_size(slot.label, 14)
+      set_text_alignment(slot.label, '中', '中')
+      set_ui_size(slot.label, 82, 28)
+      set_pos(slot.label, 42, 52)
+      local map_title = spec and tostring(spec.title or '地图') or '地图'
+      set_text(slot.label, map_title)
+    end
+    if show_lv then
+      set_font_size(slot.lv, 22)
+      set_text_alignment(slot.lv, '中', '中')
+      set_ui_size(slot.lv, 82, 32)
+      set_pos(slot.lv, 42, 22)
+      local level_value = spec and tostring(spec.quality or index) or tostring(index)
+      set_text(slot.lv, 'LV.' .. level_value)
+    end
+    -- 显示进度条
+    if tpl.show_progress then
+      -- 这里可以添加进度条渲染逻辑
+    end
+    apply_slot_state(slot, slot.options and slot.options.state or nil, spec)
+    return
+  end
+
+  -- 荣誉积分专用渲染逻辑
+  if tpl.honor == true then
+    if show_label then
+      set_font_size(slot.label, 13)
+      set_text_alignment(slot.label, '中', '中')
+      set_ui_size(slot.label, 82, 24)
+      set_pos(slot.label, 42, 54)
+      local honor_title = spec and tostring(spec.title or '荣誉') or '荣誉'
+      set_text(slot.label, honor_title)
+    end
+    if tpl.show_points and is_ui_alive(slot.num) then
+      set_font_size(slot.num, 20)
+      set_text_alignment(slot.num, '中', '中')
+      set_ui_size(slot.num, 82, 28)
+      set_pos(slot.num, 42, 22)
+      local points_text = get_spec_owned_display(spec, total)
+      set_text(slot.num, points_text)
+    end
+    apply_slot_state(slot, slot.options and slot.options.state or nil, spec)
+    return
+  end
+
+  -- 默认渲染逻辑
   if show_icon then
     set_ui_size(slot.icon, show_num and 54 or 52, show_num and 54 or 52)
     set_pos(slot.icon, 42, show_num and 48 or 49)
@@ -985,6 +1352,10 @@ local function apply_group_slot(slot, group_name, spec, index, total)
     set_pos(slot.num, 42, 14)
     set_text(slot.num, get_spec_owned_display(spec, total))
   end
+  if not show_num and is_ui_alive(slot.quality_badge) then
+    set_visible(slot.quality_badge, true)
+  end
+  apply_slot_state(slot, slot.options and slot.options.state or nil, spec)
 end
 
 local function clear_runtime_group_items(group)
@@ -1031,7 +1402,164 @@ local function create_runtime_group_item(group, spec, index, options, total)
   local label = nil
   local lv = nil
   local num = nil
+  local quality_badge = nil
 
+  -- 套装专用渲染逻辑
+  if tpl.suit == true then
+    icon = cell:create_child('图片')
+    if is_ui_alive(icon) then
+      if icon.set_image then
+        icon:set_image(spec.icon or spec.default_icon or DEFAULT_ICON)
+      end
+      if icon.set_ui_size then
+        icon:set_ui_size(52, 52)
+      end
+      if icon.set_pos then
+        icon:set_pos(42, 48)
+      end
+    end
+    label = cell:create_child('文本')
+    if is_ui_alive(label) then
+      if label.set_text then
+        local suit_name = tostring(spec.title or '套装')
+        label:set_text(suit_name)
+      end
+      if label.set_font_size then
+        label:set_font_size(13)
+      end
+      if label.set_text_alignment then
+        label:set_text_alignment('中', '中')
+      end
+      if label.set_ui_size then
+        label:set_ui_size(82, 24)
+      end
+      if label.set_pos then
+        label:set_pos(42, 12)
+      end
+    end
+    num = cell:create_child('文本')
+    if is_ui_alive(num) then
+      if num.set_text then
+        local equip_count = spec and spec.equipment and #spec.equipment or 0
+        num:set_text(tostring(equip_count) .. '件')
+      end
+      if num.set_font_size then
+        num:set_font_size(14)
+      end
+      if num.set_text_alignment then
+        num:set_text_alignment('中', '中')
+      end
+      if num.set_ui_size then
+        num:set_ui_size(82, 20)
+      end
+      if num.set_pos then
+        num:set_pos(42, 70)
+      end
+    end
+    if group.root.insert_ui_gridview_comp then
+      pcall(group.root.insert_ui_gridview_comp, group.root, cell, index)
+    end
+    local item = { root = cell, bg = bg, spec = spec, icon = icon, label = label, lv = lv, num = num, quality_badge = quality_badge }
+    apply_slot_state(item, options and options.state or nil, spec)
+    return item
+  end
+
+  -- 地图等级专用渲染逻辑
+  if tpl.map_level == true then
+    label = cell:create_child('文本')
+    if is_ui_alive(label) then
+      if label.set_text then
+        local map_title = tostring(spec.title or '地图')
+        label:set_text(map_title)
+      end
+      if label.set_font_size then
+        label:set_font_size(14)
+      end
+      if label.set_text_alignment then
+        label:set_text_alignment('中', '中')
+      end
+      if label.set_ui_size then
+        label:set_ui_size(82, 28)
+      end
+      if label.set_pos then
+        label:set_pos(42, 52)
+      end
+    end
+    lv = cell:create_child('文本')
+    if is_ui_alive(lv) then
+      if lv.set_text then
+        local level_value = tostring(spec.quality or index)
+        lv:set_text('LV.' .. level_value)
+      end
+      if lv.set_font_size then
+        lv:set_font_size(22)
+      end
+      if lv.set_text_alignment then
+        lv:set_text_alignment('中', '中')
+      end
+      if lv.set_ui_size then
+        lv:set_ui_size(82, 32)
+      end
+      if lv.set_pos then
+        lv:set_pos(42, 22)
+      end
+    end
+    if group.root.insert_ui_gridview_comp then
+      pcall(group.root.insert_ui_gridview_comp, group.root, cell, index)
+    end
+    local item = { root = cell, bg = bg, spec = spec, icon = icon, label = label, lv = lv, num = num, quality_badge = quality_badge }
+    apply_slot_state(item, options and options.state or nil, spec)
+    return item
+  end
+
+  -- 荣誉积分专用渲染逻辑
+  if tpl.honor == true then
+    label = cell:create_child('文本')
+    if is_ui_alive(label) then
+      if label.set_text then
+        local honor_title = tostring(spec.title or '荣誉')
+        label:set_text(honor_title)
+      end
+      if label.set_font_size then
+        label:set_font_size(13)
+      end
+      if label.set_text_alignment then
+        label:set_text_alignment('中', '中')
+      end
+      if label.set_ui_size then
+        label:set_ui_size(82, 24)
+      end
+      if label.set_pos then
+        label:set_pos(42, 54)
+      end
+    end
+    num = cell:create_child('文本')
+    if is_ui_alive(num) then
+      if num.set_text then
+        num:set_text(get_spec_owned_display(spec, total or index))
+      end
+      if num.set_font_size then
+        num:set_font_size(20)
+      end
+      if num.set_text_alignment then
+        num:set_text_alignment('中', '中')
+      end
+      if num.set_ui_size then
+        num:set_ui_size(82, 28)
+      end
+      if num.set_pos then
+        num:set_pos(42, 22)
+      end
+    end
+    if group.root.insert_ui_gridview_comp then
+      pcall(group.root.insert_ui_gridview_comp, group.root, cell, index)
+    end
+    local item = { root = cell, bg = bg, spec = spec, icon = icon, label = label, lv = lv, num = num, quality_badge = quality_badge }
+    apply_slot_state(item, options and options.state or nil, spec)
+    return item
+  end
+
+  -- 默认渲染逻辑
   if tpl.icon == true then
     icon = cell:create_child('图片')
     if is_ui_alive(icon) then
@@ -1064,6 +1592,23 @@ local function create_runtime_group_item(group, spec, index, options, total)
         if label.set_pos then
           label:set_pos(42, 12)
         end
+      end
+    end
+    if not is_ui_alive(num) then
+      num = cell:create_child('文本')
+    end
+    if is_ui_alive(num) then
+      if num.set_ui_size then
+        num:set_ui_size(34, 18)
+      end
+      if num.set_pos then
+        num:set_pos(67, 71)
+      end
+      if num.set_text_alignment then
+        num:set_text_alignment('中', '中')
+      end
+      if num.set_font_size then
+        num:set_font_size(12)
       end
     end
   end
@@ -1148,7 +1693,9 @@ local function create_runtime_group_item(group, spec, index, options, total)
   if group.root.insert_ui_gridview_comp then
     pcall(group.root.insert_ui_gridview_comp, group.root, cell, index)
   end
-  return { root = cell, spec = spec, icon = icon, label = label, lv = lv, num = num }
+  local item = { root = cell, bg = bg, spec = spec, icon = icon, label = label, lv = lv, num = num, quality_badge = tpl.num == true and nil or num }
+  apply_slot_state(item, options and options.state or nil, spec)
+  return item
 end
 
 local function count_static_slots(player, group, max_probe)
@@ -1196,6 +1743,13 @@ local function bind_slot_click(slot, ui, options)
     -- 点击条目只刷新右侧详情，避免触发列表重算导致其它条目被误隐藏。
     if selected_spec then
       refresh_tip(options.state, ui.shop, selected_spec)
+      if ui.shop.selected_slot and ui.shop.selected_slot.root ~= slot.root then
+        apply_slot_state(ui.shop.selected_slot, options.state, ui.shop.selected_slot.spec)
+      end
+      slot.spec = selected_spec
+      ui.shop.selected_slot = slot
+      apply_slot_state(slot, options.state, selected_spec)
+      refresh_selected_slot_state(ui.shop, options)
     end
   end)
 end
@@ -1706,5 +2260,9 @@ function M.ensure(ui, options)
   M.refresh(ui, options)
   return true
 end
+
+M._build_owned_badge = build_owned_badge
+M._is_selected_spec = is_selected_spec
+M._get_quality_style = get_quality_style
 
 return M

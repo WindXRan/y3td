@@ -2424,6 +2424,12 @@ function M.create(env)
     sync_outgame_backdrop(ui)
     set_visible_if_alive(ui.root, STATE.session_phase == 'outgame')
     set_visible_if_alive(ui.hall_root, STATE.session_phase == 'outgame')
+    
+    -- 确保这些面板始终可见（除非在非局外阶段）
+    set_visible_if_alive(ui.left_panel, true)
+    set_visible_if_alive(ui.right_panel, true)
+    set_visible_if_alive(ui.mode_panel, true)
+    
     refresh_save_entry_ui(ui, profile)
     local archive_ui = ensure_archive_panel_ui()
     if is_archive_panel_ui_alive(archive_ui) then
@@ -2433,7 +2439,45 @@ function M.create(env)
       refresh_archive_panel_ui(profile)
     end
 
+    -- 如果没有选择关卡，仍然刷新基本UI，只跳过依赖关卡的部分
     if not selected_stage_def then
+      -- 仍然刷新不需要关卡的部分
+      local top_title = "请选择关卡"
+      set_text_if_alive(ui.title, top_title)
+      set_text_if_alive(ui.header_tip, "请选择关卡")
+      set_text_if_alive(ui.quit_tip, '按 ESC 键可退出游戏')
+      set_visible_if_alive(ui.tip_root, false)
+      
+      -- 刷新模式选择器
+      refresh_mode_selectors(ui, profile, selected_stage_id, selected_mode_id)
+      
+      -- 隐藏难度选择器
+      set_visible_if_alive(ui.stage_slot_container, false)
+      
+      -- 刷新每日任务和其他面板
+      set_text_if_alive(ui.difficulty_title, top_title)
+      set_text_if_alive(ui.difficulty_hint, '请选择关卡')
+      set_visible_if_alive(ui.cultivation_note, false)
+      
+      -- 刷新详情面板（使用默认值）
+      set_visible_if_alive(ui.detail_title, true)
+      set_visible_if_alive(ui.detail_status, false)
+      set_visible_if_alive(ui.detail_hint, true)
+      set_text_if_alive(ui.detail_title, "请选择关卡")
+      set_text_if_alive(ui.detail_hint, "请选择关卡")
+      
+      set_text_if_alive(ui.left_title, '每日任务（周末双倍）')
+      set_text_if_alive(ui.left_rule, '（每日任务获得的资源，不计算每日上限）')
+      refresh_daily_rows(ui, profile, nil)
+      refresh_reward_card(ui, profile, nil)
+      refresh_footer(ui, profile)
+      
+      -- 禁用开始按钮
+      ui.start_button:set_text('请选择关卡')
+      ui.start_button:set_button_enable(false)
+      set_image_color_if_alive(ui.start_button_bg, COLOR.start_locked_bg)
+      set_text_color_if_alive(ui.start_button, COLOR.locked_text)
+      
       return
     end
 

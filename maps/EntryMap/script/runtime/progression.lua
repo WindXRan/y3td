@@ -125,6 +125,21 @@ function M.create(env)
     }
   end
 
+  local function apply_attr_pack_to_hero(hero, attr_pack, hero_attr_system)
+    for attr_name, value in pairs(attr_pack) do
+      if value ~= 0 then
+        if hero_attr_system and hero_attr_system.add_attr then
+          hero_attr_system.add_attr(hero, attr_name, value)
+        elseif hero.add_attr then
+          hero:add_attr(attr_name, value)
+        end
+      end
+    end
+    if hero_attr_system and hero_attr_system.rebuild_derived_attrs then
+      hero_attr_system.rebuild_derived_attrs(hero)
+    end
+  end
+
   local function apply_hero_level_growth(target_level)
     local progress = STATE.hero_progress
     if not progress or not STATE.hero or not STATE.hero:is_exist() then
@@ -140,25 +155,9 @@ function M.create(env)
       return false
     end
 
-    local hero_attr_system = env.hero_attr_system
-    local hp_growth = tonumber(growth_pack['生命']) or 0
-    if hero_attr_system and hero_attr_system.add_attr then
-      for attr_name, value in pairs(growth_pack) do
-        if value ~= 0 then
-          hero_attr_system.add_attr(STATE.hero, attr_name, value)
-        end
-      end
-      if hero_attr_system.rebuild_derived_attrs then
-        hero_attr_system.rebuild_derived_attrs(STATE.hero)
-      end
-    else
-      for attr_name, value in pairs(growth_pack) do
-        if value ~= 0 and STATE.hero.add_attr then
-          STATE.hero:add_attr(attr_name, value)
-        end
-      end
-    end
+    apply_attr_pack_to_hero(STATE.hero, growth_pack, env.hero_attr_system)
 
+    local hp_growth = tonumber(growth_pack['生命']) or 0
     if hp_growth > 0 and STATE.hero.add_hp then
       STATE.hero:add_hp(hp_growth)
     end

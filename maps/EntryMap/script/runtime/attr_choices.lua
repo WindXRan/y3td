@@ -75,6 +75,21 @@ local function build_choices(level)
   return choices
 end
 
+local function apply_attr_pack_to_hero(hero, attr_pack, hero_attr_system)
+  for attr_name, value in pairs(attr_pack) do
+    if value ~= 0 then
+      if hero_attr_system and hero_attr_system.add_attr then
+        hero_attr_system.add_attr(hero, attr_name, value)
+      elseif hero.add_attr then
+        hero:add_attr(attr_name, value)
+      end
+    end
+  end
+  if hero_attr_system and hero_attr_system.rebuild_derived_attrs then
+    hero_attr_system.rebuild_derived_attrs(hero)
+  end
+end
+
 function M.create(env)
   local STATE = env.STATE
   local hero_attr_system = env.hero_attr_system
@@ -161,16 +176,7 @@ function M.create(env)
 
     local hero = STATE.hero
     if hero and hero.is_exist and hero:is_exist() then
-      for attr_name, value in pairs(choice.attr_pack or {}) do
-        if hero_attr_system and hero_attr_system.add_attr then
-          hero_attr_system.add_attr(hero, attr_name, value)
-        elseif hero.add_attr then
-          hero:add_attr(attr_name, value)
-        end
-      end
-      if hero_attr_system and hero_attr_system.rebuild_derived_attrs then
-        hero_attr_system.rebuild_derived_attrs(hero)
-      end
+      apply_attr_pack_to_hero(hero, choice.attr_pack or {}, hero_attr_system)
     end
 
     runtime.applied_packs[#runtime.applied_packs + 1] = copy_pack(choice.attr_pack)

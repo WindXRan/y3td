@@ -1,4 +1,4 @@
-﻿local M = {}
+local M = {}
 
 local UiRoot = require 'ui.ui_root'
 local BondModifierPool = require 'data.tables.bond.bond_modifier_pool'
@@ -47,7 +47,7 @@ function M.create(env)
   local function build_skill_bond_lookup()
     local by_skill_id = {}
     local by_skill_name = {}
-    local ok, rows = pcall(CsvLoader.read_rows_optional, 'data_csv/bond_skills.csv')
+    local ok, rows = pcall(CsvLoader.read_rows_optional, 'data_csv/by_feature/bond/bond_skills.csv')
     if not ok or type(rows) ~= 'table' then
       return by_skill_id, by_skill_name
     end
@@ -71,7 +71,7 @@ function M.create(env)
 
   local function build_fallback_skill_entries()
     local rows = {}
-    local ok, data = pcall(CsvLoader.read_rows_optional, 'data_csv/bond_skills.csv')
+    local ok, data = pcall(CsvLoader.read_rows_optional, 'data_csv/by_feature/bond/bond_skills.csv')
     if ok and type(data) == 'table' then
       rows = data
     end
