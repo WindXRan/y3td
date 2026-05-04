@@ -283,15 +283,6 @@ end
 
 local source_rows = {}
 append_csv_rows(source_rows, 'data_csv/by_feature/economy/shangchengdaojv.csv', 'csv_shangchengdaojv_feature', '商城道具')
-append_csv_rows(source_rows, 'data_csv/by_feature/economy/suit_catalog.csv', 'csv_suit_catalog', '套装')
-print('[DEBUG] shop_items: loaded '..#source_rows..' rows total')
-local suit_count = 0
-for _, src in ipairs(source_rows) do
-  if src.fallback_primary == '套装' then
-    suit_count = suit_count + 1
-  end
-end
-print('[DEBUG] shop_items: loaded '..suit_count..' suit rows')
 -- 统一单源：商城数据只从 CSV 读取，避免旧编辑器表结构污染页签与标题字段。
 
 local primary_tab = ''
@@ -320,7 +311,7 @@ for index, source in ipairs(source_rows) do
     if is_placeholder_text(quality) then
       quality = ''
     end
-    local tab1 = normalize_tab1(primary)
+    local tab1 = resolve_shop_tab1(row)
     local tab2_list = split_tab2_list_from_row(row)
     local tab2 = tab2_list[1]
     local special_effect = trim(row.special_effect or row['特殊效果'] or row['额外效果字符串'])
@@ -328,7 +319,7 @@ for index, source in ipairs(source_rows) do
     if is_placeholder_text(special_effect) then
       special_effect = ''
     end
-    local obtain = trim(row.obtain or row['获取方式'] or row['obtain_text'])
+    local obtain = trim(row.obtain or row['获取方式'])
     if is_placeholder_text(obtain) then
       obtain = ''
     end
@@ -336,14 +327,12 @@ for index, source in ipairs(source_rows) do
     if is_placeholder_text(owned_text) then
       owned_text = ''
     end
-    local attr = trim(row.attr or row['属性'] or row['attr_text'])
-    local value = trim(row.value or row['数值'] or row['value_text'])
     local fingerprint = table.concat({
       name,
       tab1,
       tostring(tab2 or ''),
-      attr,
-      value,
+      trim(row.attr or row['属性']),
+      trim(row.value or row['数值']),
       special_effect,
       obtain,
     }, '|')
@@ -353,7 +342,7 @@ for index, source in ipairs(source_rows) do
     row_fingerprint_seen[fingerprint] = true
 
     local key = string.format('shop_item_%s_%03d_%03d', source.table_name or 'unknown', source.row_index or 0, index)
-    local attr_lines = build_attr_lines(attr, value)
+    local attr_lines = build_attr_lines(row.attr or row['属性'], row.value or row['数值'])
     local image_icon, image_bg = parse_icon_bg_from_image_field(row.image or row['图片'])
     local icon = read_first_number(row, { '图标', 'icon', 'Icon', 'ICON', 'icon_id', '图标ID', 'icon_id_res', '图片icon' })
       or image_icon
@@ -373,8 +362,8 @@ for index, source in ipairs(source_rows) do
       bg = bg,
       default_icon = DEFAULT_ICON,
       default_bg = DEFAULT_BG,
-      attr_text = attr,
-      value_text = value,
+      attr_text = trim(row.attr or row['属性']),
+      value_text = trim(row.value or row['数值']),
       special_effect = special_effect,
       obtain = obtain,
       owned_text = owned_text,
@@ -398,10 +387,6 @@ for index, source in ipairs(source_rows) do
     }
     list[#list + 1] = spec
     by_key[key] = spec
-    
-    if tab1 == '套装' then
-      print('[DEBUG] shop_items: added suit item: '..name..', key='..key)
-    end
 
     if primary_seen[tab1] ~= true then
       primary_seen[tab1] = true

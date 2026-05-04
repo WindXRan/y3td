@@ -12,6 +12,7 @@ function M.create(env)
   local update_effect_debug = env.update_effect_debug
   local update_enemy_statuses = env.update_enemy_statuses
   local update_attack_skills = env.update_attack_skills
+  local update_buff_system = env.update_buff_system
   local update_mainline_task = env.update_mainline_task
   local update_battle_auto_acceptance = env.update_battle_auto_acceptance
   local ensure_runtime_hud = env.ensure_runtime_hud
@@ -133,6 +134,9 @@ function M.create(env)
         end
         update_enemy_statuses(0.25)
         update_attack_skills(0.25)
+        if update_buff_system then
+          update_buff_system(0.25)
+        end
         try_refresh_battle_ui()
         return
       end

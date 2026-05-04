@@ -1,4 +1,4 @@
-local AttrEffect = require 'data.tables.skill.attreffect'
+﻿local AttrEffect = require 'data.tables.skill.attreffect'
 local HeroRoster = (require 'data.game_tables').hero_roster
 local helpers = require 'data.tables.helpers'
 
@@ -29,17 +29,6 @@ local function push_mark(index, hero_entry)
   end
 
   local mark_id = string.format('mark_%s', tostring(hero_entry.id or index))
-  
-  if not hero_entry.id then
-    warn(('[marks] 英雄条目缺少 id 字段，index=%d'):format(index))
-  end
-  if not hero_entry.unit_id then
-    warn(('[marks] 英雄条目 %s 缺少 unit_id 字段'):format(tostring(hero_entry.id or index)))
-  end
-  if not hero_entry.icon and not hero_entry.portrait then
-    warn(('[marks] 英雄条目 %s 缺少 icon 和 portrait 字段'):format(tostring(hero_entry.id or index)))
-  end
-  
   list[#list + 1] = {
     id = mark_id,
     name = hero_entry.name or ('英雄专精' .. tostring(index)),
@@ -47,7 +36,6 @@ local function push_mark(index, hero_entry)
     pool_weight = quality == 'epic' and 20 or (quality == 'rare' and 35 or 45),
     order_index = index,
     hero_unit_id = hero_entry.unit_id,
-    icon = tonumber(hero_entry.icon) or tonumber(hero_entry.portrait),
     summary = hero_entry.summary or '激活该英雄真身与专精效果。',
     tags = { 'hero_form', quality },
     bonuses = {

@@ -115,6 +115,7 @@ local M = {
   outgame_top_entry_list = OutgameTopEntryList,
   outgame_archive_ranking_tabs = OutgameArchiveRankingTabs,
   outgame_detail_config = OutgameDetailConfig,
+  GameTables = GameTables,
   gear_upgrade_config = GearUpgradeConfig,
   skill_runtime_tuning = SkillRuntimeTuning,
   attack_skill_runtime_tuning = SkillRuntimeTuning.attack or {},

@@ -1,5 +1,6 @@
 local CsvLoader = require 'data.csv_loader'
 local AttrEffect = require 'data.tables.skill.attreffect'
+local BuffTemplates = require 'data.tables.skill.buff_templates'
 local MonsterMaintask = require 'data.tables.battle.monster_maintask'
 local hero_attr_config = require 'data.tables.hero.hero_attr_config'
 local hero_level_progression = require 'data.tables.hero.hero_level_progression'
@@ -341,5 +342,6 @@ table.sort(mainline_list,
     return (a.chapter_id or 0) < (b.chapter_id or 0)
   end)
 M.mainline_task_rewards = { list = mainline_list, by_id = list_to_map(mainline_list) }
+M.buff_templates = BuffTemplates
 
 return M

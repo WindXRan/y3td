@@ -1,5 +1,0 @@
-box_id,name,icon,bg,price_single,price_ten,pool_type,quality_weights,guarantee_count,guarantee_quality,stackable,bonus_points_n,bonus_points_r,bonus_points_sr,bonus_points_ssr,bonus_points_ur,description
-__字段说明__,宝箱ID,宝箱名称,图标资源ID,底图资源ID,单次抽取价格(元),十连抽取价格(元),奖池类型,品质权重(N|R|SR|SSR|UR),保底抽取次数,保底品质,是否可堆叠,抽取N奖励积分,抽取R奖励积分,抽取SR奖励积分,抽取SSR奖励积分,抽取UR奖励积分,宝箱描述
-string,string,string,string,number,number,string,string,number,string,bool,number,number,number,number,number,string
-legend_box,传说宝箱,134242447,907123,8,72,legend,695|250|40|15|0,100,SSR,false,10,50,200,1000,0,传说品质奖池，可获得N/R/SR/SSR品质道具
-myth_box,神话宝箱,134242447,907123,12,108,myth,0|888|82|20|10,100,UR,false,0,50,200,1000,3000,神话品质奖池，可获得R/SR/SSR/UR品质道具

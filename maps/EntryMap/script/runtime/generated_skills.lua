@@ -4,6 +4,7 @@
 
 local CsvLoader = require 'data.csv_loader'
 local Skills = require 'runtime.skills'
+local BuffSystem = require 'runtime.buff_system'
 
 local M = {}
 
@@ -145,6 +146,20 @@ function M.load_defs()
     overrides.sub_behavior = sub_behavior
     local def = Skills.build_element_skill(element, pattern, tier, overrides)
     if def then
+      -- 火系技能命中后附加灼烧
+      if element == 'fire' and def.id == 'fireball' then
+        print('[buff_system] 注册 fireball OnProjectileHit hook')
+        def.hooks = def.hooks or {}
+        def.hooks.OnProjectileHit = function(ctx)
+          print('[buff_system] fireball OnProjectileHit 触发, hits=' .. tostring(#(ctx.hits or {})))
+          for _, unit in ipairs(ctx.hits or {}) do
+            if unit and unit.is_exist and unit:is_exist() then
+              local buff = BuffSystem.apply_buff(unit, 'burn', 3.0, 1, ctx.caster)
+              print('[buff_system] apply_buff burn on ' .. tostring(unit.handle) .. ' buff=' .. tostring(buff))
+            end
+          end
+        end
+      end
       defs[#defs + 1] = def
     end
 

@@ -81,6 +81,7 @@ local function build_rows()
       radius = hit_model.radius or 360,
       attack_ratio = scale.attack_ratio or 1.95,
       visual = def.visual or make_vfx(pattern, element, def.sub_behavior),
+      hooks = def.hooks,
     }
   end
   return rows
@@ -151,8 +152,12 @@ function M.create(env)
       scale = {
         attack_ratio = row.attack_ratio,
       },
+      hooks = row.hooks,
     })
     if built then
+      if row.hooks and row.hooks.OnProjectileHit then
+        print('[buff_system] sample_skills 注册 ' .. tostring(row.id) .. ' 带 OnProjectileHit hook')
+      end
       framework.register(built)
     end
   end

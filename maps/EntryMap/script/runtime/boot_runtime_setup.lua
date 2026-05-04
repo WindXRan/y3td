@@ -70,6 +70,7 @@ function M.create(ctx)
       update_effect_debug = ctx.update_effect_debug,
       update_enemy_statuses = ctx.update_enemy_statuses,
       update_attack_skills = ctx.update_attack_skills,
+      update_buff_system = ctx.update_buff_system,
       update_mainline_task = function(dt)
         return ctx.mainline_task_system and ctx.mainline_task_system.update and ctx.mainline_task_system.update(dt) or nil
       end,

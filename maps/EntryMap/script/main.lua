@@ -69,4 +69,4 @@ y3.ltimer.wait(0, function()
   bootstrap_once()
 end)
 
--- include '可重载的代码' -- 热重载示例已移除
+include '可重载的代码'

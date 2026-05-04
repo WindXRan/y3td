@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>UI Preview: top</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background:
+                radial-gradient(circle at 50% -10%, rgba(73, 120, 182, 0.18), transparent 30%),
+                linear-gradient(180deg, #050b11 0%, #08101a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+        }
+        .canvas {
+            width: 1920px;
+            height: 1080px;
+            transform: scale(0.62);
+            transform-origin: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(169, 204, 247, 0.12);
+            background:
+                radial-gradient(circle at 12% 20%, rgba(255, 214, 126, 0.08), transparent 18%),
+                radial-gradient(circle at 86% 14%, rgba(90, 154, 255, 0.12), transparent 20%),
+                linear-gradient(180deg, rgba(73, 103, 45, 0.55) 0%, rgba(48, 72, 31, 0.15) 18%, rgba(7, 11, 16, 0) 32%),
+                linear-gradient(180deg, #1b2c16 0%, #223316 18%, #172510 35%, #11190f 54%, #0b1116 100%);
+        }
+        [data-type] { position: absolute; }
+    </style>
+</head>
+<body>
+<div class="canvas">
+    <div data-type="layout" data-name="top"
+         data-x="0" data-y="0" data-w="1920" data-h="248" data-adapter="top,left,right"
+         style="left:0; top:0; width:1920px; height:248px;">
+
+        <div data-type="image" data-name="top_bg"
+             data-x="0" data-y="0" data-w="1920" data-h="248" data-image="131998"
+             data-color="#061019f2" data-scale9="true" data-cap-insets="20,20,20,20"
+             style="left:0; top:0; width:1920px; height:248px;"></div>
+
+        <div data-type="image" data-name="left_strip"
+             data-x="0" data-y="0" data-w="1920" data-h="68" data-image="100062"
+             data-color="#132334f6" data-scale9="true" data-cap-insets="18,18,18,18"
+             style="left:0; top:0; width:1920px; height:68px;"></div>
+
+        <div data-type="image" data-name="rail_glow"
+             data-x="236" data-y="0" data-w="1448" data-h="68" data-image="100062"
+             data-color="#4c6f9a3c" data-scale9="true" data-cap-insets="18,18,18,18"
+             style="left:236px; top:0; width:1448px; height:68px;"></div>
+
+        <div data-type="image" data-name="rail_glow_gold"
+             data-x="560" data-y="0" data-w="800" data-h="68" data-image="100062"
+             data-color="#c79b4a22" data-scale9="true" data-cap-insets="18,18,18,18"
+             style="left:560px; top:0; width:800px; height:68px;"></div>
+
+        <div data-type="image" data-name="top_line"
+             data-x="172" data-y="94" data-w="1576" data-h="2" data-image="999" data-color="#d7bf7a7f"
+             style="left:172px; top:94px; width:1576px; height:2px;"></div>
+
+        <div data-type="layout" data-name="left_buttons"
+             data-x="72" data-y="12" data-w="648" data-h="56"
+             style="left:72px; top:12px; width:648px; height:56px;">
+            <div data-type="layout" data-name="brand_mark"
+                 data-x="0" data-y="1" data-w="54" data-h="54"
+                 style="left:0; top:1px; width:54px; height:54px;">
+                <div data-type="image" data-name="brand_mark_bg"
+                     data-x="0" data-y="0" data-w="54" data-h="54" data-image="131998" data-color="#111a26f6"
+                     data-scale9="true" data-cap-insets="20,20,20,20"
+                     style="left:0; top:0; width:54px; height:54px;"></div>
+                <div data-type="image" data-name="brand_mark_glow"
+                     data-x="8" data-y="8" data-w="38" data-h="38" data-image="100062" data-color="#ffd67e1f"
+                     data-scale9="true" data-cap-insets="18,18,18,18"
+                     style="left:8px; top:8px; width:38px; height:38px;"></div>
+                <div data-type="label" data-name="brand_mark_text"
+                     data-x="0" data-y="0" data-w="54" data-h="54" data-text="Y3" data-font-size="20"
+                     data-color="#ffe4a4" data-align="center,middle"
+                     style="left:0; top:0; width:54px; height:54px;">Y3</div>
+            </div>
+            <div data-type="image" data-name="left_buttons_bg"
+                 data-x="66" data-y="0" data-w="582" data-h="56" data-image="131998" data-color="#070d14d9"
+                 data-scale9="true" data-cap-insets="20,20,20,20"
+                 style="left:66px; top:0; width:582px; height:56px;"></div>
+
+            <div data-type="button" data-name="btn_exit"
+                 data-x="78" data-y="8" data-w="84" data-h="40"
+                 data-normal-image="134242808" data-hover-image="134242808"
+                 data-press-image="134242808" data-disabled-image="134242808"
+                 data-font-size="15" data-color="#edf4ff" data-cap-insets="41,10,41,10" data-text="退出"
+                 style="left:78px; top:8px; width:84px; height:40px;">
+                <div data-type="image" data-name="icon"
+                     data-x="11" data-y="12" data-w="16" data-h="16" data-image="903408" data-color="#ffe4a4ff"
+                     style="left:11px; top:12px; width:16px; height:16px;"></div>
+            </div>
+
+            <div data-type="button" data-name="btn_pause"
+                 data-x="172" data-y="8" data-w="84" data-h="40"
+                 data-normal-image="134242808" data-hover-image="134242808"
+                 data-press-image="134242808" data-disabled-image="134242808"
+                 data-font-size="15" data-color="#edf4ff" data-cap-insets="41,10,41,10" data-text="暂停"
+                 style="left:172px; top:8px; width:84px; height:40px;">
+                <div data-type="image" data-name="icon"
+                     data-x="11" data-y="12" data-w="16" data-h="16" data-image="108210" data-color="#ffd3b9ff"
+                     style="left:11px; top:12px; width:16px; height:16px;"></div>
+            </div>
+
+            <div data-type="button" data-name="btn_setting"
+                 data-x="268" data-y="8" data-w="88" data-h="40"
+                 data-normal-image="134242808" data-hover-image="134242808"
+                 data-press-image="134242808" data-disabled-image="134242808"
+                 data-font-size="15" data-color="#edf4ff" data-cap-insets="41,10,41,10" data-text="设置"
+                 style="left:268px; top:8px; width:88px; height:40px;">
+                <div data-type="image" data-name="icon"
+                     data-x="11" data-y="12" data-w="16" data-h="16" data-image="133776" data-color="#dcebffff"
+                     style="left:11px; top:12px; width:16px; height:16px;"></div>
+            </div>
+
+            <div data-type="button" data-name="btn_save"
+                 data-x="366" data-y="8" data-w="88" data-h="40"
+                 data-normal-image="134242808" data-hover-image="134242808"
+                 data-press-image="134242808" data-disabled-image="134242808"
+                 data-font-size="15" data-color="#edf4ff" data-cap-insets="41,10,41,10" data-text="存档"
+                 style="left:366px; top:8px; width:88px; height:40px;">
+                <div data-type="image" data-name="icon"
+                     data-x="11" data-y="12" data-w="16" data-h="16" data-image="107030" data-color="#ffe2a0ff"
+                     style="left:11px; top:12px; width:16px; height:16px;"></div>
+            </div>
+
+            <div data-type="button" data-name="btn_powerup"
+                 data-x="464" data-y="8" data-w="88" data-h="40"
+                 data-normal-image="134242808" data-hover-image="134242808"
+                 data-press-image="134242808" data-disabled-image="134242808"
+                 data-font-size="15" data-color="#edf4ff" data-cap-insets="41,10,41,10" data-text="强化"
+                 style="left:464px; top:8px; width:88px; height:40px;">
+                <div data-type="image" data-name="icon"
+                     data-x="11" data-y="12" data-w="16" data-h="16" data-image="106504" data-color="#ffe9a8ff"
+                     style="left:11px; top:12px; width:16px; height:16px;"></div>
+            </div>
+
+            <div data-type="button" data-name="btn_hotkey"
+                 data-x="560" data-y="8" data-w="84" data-h="40"
+                 data-normal-image="134242808" data-hover-image="134242808"
+                 data-press-image="134242808" data-disabled-image="134242808"
+                 data-font-size="15" data-color="#edf4ff" data-cap-insets="41,10,41,10" data-text="键位"
+                 style="left:560px; top:8px; width:84px; height:40px;">
+                <div data-type="image" data-name="icon"
+                     data-x="11" data-y="12" data-w="16" data-h="16" data-image="107030" data-color="#dfe8ffff"
+                     style="left:11px; top:12px; width:16px; height:16px;"></div>
+            </div>
+        </div>
+
+        <div data-type="layout" data-name="scoreboard"
+             data-x="1506" data-y="54" data-w="388" data-h="176"
+             style="left:1506px; top:54px; width:388px; height:176px;">
+            <div data-type="image" data-name="scoreboard_bg"
+                 data-x="0" data-y="0" data-w="388" data-h="176" data-image="131998"
+                 data-color="#0a141ded" data-scale9="true" data-cap-insets="20,20,20,20"
+                 style="left:0; top:0; width:388px; height:176px;"></div>
+            <div data-type="layout" data-name="shadow"
+                 data-x="0" data-y="22" data-w="388" data-h="154" data-bg-color="#091019dc"
+                 style="left:0; top:22px; width:388px; height:154px;"></div>
+            <div data-type="layout" data-name="header_bar"
+                 data-x="0" data-y="0" data-w="388" data-h="22" data-bg-color="#34567cd8"
+                 style="left:0; top:0; width:388px; height:22px;"></div>
+            <div data-type="layout" data-name="bg"
+                 data-x="0" data-y="22" data-w="388" data-h="154" data-bg-color="#101925d9"
+                 style="left:0; top:22px; width:388px; height:154px;"></div>
+            <div data-type="label" data-name="title"
+                 data-x="0" data-y="3" data-w="388" data-h="16" data-text="玩家状态" data-font-size="12"
+                 data-color="#fff0c8" data-align="center,middle"
+                 style="left:0; top:3px; width:388px; height:16px;">玩家状态</div>
+            <div data-type="label" data-name="scoreboard_col_avatar"
+                 data-x="10" data-y="25" data-w="24" data-h="10" data-text="" data-font-size="9"
+                 data-color="#8ea3bc" data-align="center,middle"
+                 style="left:10px; top:25px; width:24px; height:10px;"></div>
+            <div data-type="label" data-name="scoreboard_col_name"
+                 data-x="40" data-y="25" data-w="108" data-h="10" data-text="玩家" data-font-size="9"
+                 data-color="#8ea3bc" data-align="left,middle"
+                 style="left:40px; top:25px; width:108px; height:10px;">玩家</div>
+            <div data-type="label" data-name="scoreboard_col_state"
+                 data-x="152" data-y="25" data-w="40" data-h="10" data-text="状态" data-font-size="9"
+                 data-color="#8ea3bc" data-align="center,middle"
+                 style="left:152px; top:25px; width:40px; height:10px;">状态</div>
+            <div data-type="label" data-name="scoreboard_col_level"
+                 data-x="196" data-y="25" data-w="40" data-h="10" data-text="等级" data-font-size="9"
+                 data-color="#8ea3bc" data-align="center,middle"
+                 style="left:196px; top:25px; width:40px; height:10px;">等级</div>
+            <div data-type="label" data-name="scoreboard_col_equip"
+                 data-x="240" data-y="25" data-w="40" data-h="10" data-text="爬塔" data-font-size="9"
+                 data-color="#8ea3bc" data-align="center,middle"
+                 style="left:240px; top:25px; width:40px; height:10px;">爬塔</div>
+            <div data-type="label" data-name="scoreboard_col_swallow"
+                 data-x="284" data-y="25" data-w="40" data-h="10" data-text="吞噬" data-font-size="9"
+                 data-color="#8ea3bc" data-align="center,middle"
+                 style="left:284px; top:25px; width:40px; height:10px;">吞噬</div>
+            <div data-type="label" data-name="scoreboard_col_power"
+                 data-x="328" data-y="25" data-w="52" data-h="10" data-text="战力" data-font-size="9"
+                 data-color="#8ea3bc" data-align="center,middle"
+                 style="left:328px; top:25px; width:52px; height:10px;">战力</div>
+            <div data-type="image" data-name="avatar"
+                 data-x="14" data-y="36" data-w="24" data-h="24" data-image="106730"
+                 style="left:14px; top:36px; width:24px; height:24px;"></div>
+            <div data-type="label" data-name="player_name"
+                 data-x="40" data-y="40" data-w="108" data-h="12" data-text="为你钟情" data-font-size="12"
+                 data-color="#edf4ff" data-align="left,middle"
+                 style="left:40px; top:40px; width:108px; height:12px;">为你钟情</div>
+            <div data-type="label" data-name="player_state"
+                 data-x="152" data-y="40" data-w="40" data-h="12" data-text="在线" data-font-size="11"
+                 data-color="#8ce4a6" data-align="center,middle"
+                 style="left:152px; top:40px; width:40px; height:12px;">在线</div>
+            <div data-type="label" data-name="player_level"
+                 data-x="196" data-y="40" data-w="40" data-h="12" data-text="80" data-font-size="12"
+                 data-color="#dceaff" data-align="center,middle"
+                 style="left:196px; top:40px; width:40px; height:12px;">80</div>
+            <div data-type="label" data-name="player_equip"
+                 data-x="240" data-y="40" data-w="40" data-h="12" data-text="31" data-font-size="12"
+                 data-color="#dceaff" data-align="center,middle"
+                 style="left:240px; top:40px; width:40px; height:12px;">31</div>
+            <div data-type="label" data-name="player_swallow"
+                 data-x="284" data-y="40" data-w="40" data-h="12" data-text="123" data-font-size="12"
+                 data-color="#dceaff" data-align="center,middle"
+                 style="left:284px; top:40px; width:40px; height:12px;">123</div>
+            <div data-type="label" data-name="player_power"
+                 data-x="328" data-y="40" data-w="52" data-h="12" data-text="3332万" data-font-size="12"
+                 data-color="#ff8475" data-align="center,middle"
+                 style="left:328px; top:40px; width:52px; height:12px;">3332万</div>
+
+            <div data-type="image" data-name="avatar_2"
+                 data-x="14" data-y="70" data-w="24" data-h="24" data-image="106730"
+                 style="left:14px; top:70px; width:24px; height:24px;"></div>
+            <div data-type="label" data-name="player_name_2"
+                 data-x="40" data-y="74" data-w="108" data-h="12" data-text="为你钟情公子" data-font-size="12"
+                 data-color="#edf4ff" data-align="left,middle"
+                 style="left:40px; top:74px; width:108px; height:12px;">为你钟情公子</div>
+            <div data-type="label" data-name="player_state_2"
+                 data-x="152" data-y="74" data-w="40" data-h="12" data-text="在线" data-font-size="11"
+                 data-color="#8ce4a6" data-align="center,middle"
+                 style="left:152px; top:74px; width:40px; height:12px;">在线</div>
+            <div data-type="label" data-name="player_level_2"
+                 data-x="196" data-y="74" data-w="40" data-h="12" data-text="1" data-font-size="12"
+                 data-color="#dceaff" data-align="center,middle"
+                 style="left:196px; top:74px; width:40px; height:12px;">1</div>
+            <div data-type="label" data-name="player_equip_2"
+                 data-x="240" data-y="74" data-w="40" data-h="12" data-text="1" data-font-size="12"
+                 data-color="#dceaff" data-align="center,middle"
+                 style="left:240px; top:74px; width:40px; height:12px;">1</div>
+            <div data-type="label" data-name="player_swallow_2"
+                 data-x="284" data-y="74" data-w="40" data-h="12" data-text="0" data-font-size="12"
+                 data-color="#dceaff" data-align="center,middle"
+                 style="left:284px; top:74px; width:40px; height:12px;">0</div>
+            <div data-type="label" data-name="player_power_2"
+                 data-x="328" data-y="74" data-w="52" data-h="12" data-text="1.59万" data-font-size="12"
+                 data-color="#ff8475" data-align="center,middle"
+                 style="left:328px; top:74px; width:52px; height:12px;">1.59万</div>
+
+            <div data-type="image" data-name="avatar_3"
+                 data-x="14" data-y="104" data-w="24" data-h="24" data-image="106730"
+                 style="left:14px; top:104px; width:24px; height:24px;"></div>
+            <div data-type="label" data-name="player_name_3"
+                 data-x="40" data-y="108" data-w="108" data-h="12" data-text="CrimsonFox" data-font-size="12"
+                 data-color="#edf4ff" data-align="left,middle"
+                 style="left:40px; top:108px; width:108px; height:12px;">CrimsonFox</div>
+            <div data-type="label" data-name="player_state_3"
+                 data-x="152" data-y="108" data-w="40" data-h="12" data-text="离线" data-font-size="11"
+                 data-color="#f0cc7f" data-align="center,middle"
+                 style="left:152px; top:108px; width:40px; height:12px;">离线</div>
+            <div data-type="label" data-name="player_level_3"
+                 data-x="196" data-y="108" data-w="40" data-h="12" data-text="52" data-font-size="12"
+                 data-color="#dceaff" data-align="center,middle"
+                 style="left:196px; top:108px; width:40px; height:12px;">52</div>
+            <div data-type="label" data-name="player_equip_3"
+                 data-x="240" data-y="108" data-w="40" data-h="12" data-text="14" data-font-size="12"
+                 data-color="#dceaff" data-align="center,middle"
+                 style="left:240px; top:108px; width:40px; height:12px;">14</div>
+            <div data-type="label" data-name="player_swallow_3"
+                 data-x="284" data-y="108" data-w="40" data-h="12" data-text="67" data-font-size="12"
+                 data-color="#dceaff" data-align="center,middle"
+                 style="left:284px; top:108px; width:40px; height:12px;">67</div>
+            <div data-type="label" data-name="player_power_3"
+                 data-x="328" data-y="108" data-w="52" data-h="12" data-text="802万" data-font-size="12"
+                 data-color="#ffb47d" data-align="center,middle"
+                 style="left:328px; top:108px; width:52px; height:12px;">802万</div>
+
+            <div data-type="image" data-name="avatar_4"
+                 data-x="14" data-y="138" data-w="24" data-h="24" data-image="106730"
+                 style="left:14px; top:138px; width:24px; height:24px;"></div>
+            <div data-type="label" data-name="player_name_4"
+                 data-x="40" data-y="142" data-w="108" data-h="12" data-text="NightBloom" data-font-size="12"
+                 data-color="#edf4ff" data-align="left,middle"
+                 style="left:40px; top:142px; width:108px; height:12px;">NightBloom</div>
+            <div data-type="label" data-name="player_state_4"
+                 data-x="152" data-y="142" data-w="40" data-h="12" data-text="承压" data-font-size="11"
+                 data-color="#ff9688" data-align="center,middle"
+                 style="left:152px; top:142px; width:40px; height:12px;">承压</div>
+            <div data-type="label" data-name="player_level_4"
+                 data-x="196" data-y="142" data-w="40" data-h="12" data-text="44" data-font-size="12"
+                 data-color="#dceaff" data-align="center,middle"
+                 style="left:196px; top:142px; width:40px; height:12px;">44</div>
+            <div data-type="label" data-name="player_equip_4"
+                 data-x="240" data-y="142" data-w="40" data-h="12" data-text="8" data-font-size="12"
+                 data-color="#dceaff" data-align="center,middle"
+                 style="left:240px; top:142px; width:40px; height:12px;">8</div>
+            <div data-type="label" data-name="player_swallow_4"
+                 data-x="284" data-y="142" data-w="40" data-h="12" data-text="39" data-font-size="12"
+                 data-color="#dceaff" data-align="center,middle"
+                 style="left:284px; top:142px; width:40px; height:12px;">39</div>
+            <div data-type="label" data-name="player_power_4"
+                 data-x="328" data-y="142" data-w="52" data-h="12" data-text="231万" data-font-size="12"
+                 data-color="#ff8475" data-align="center,middle"
+                 style="left:328px; top:142px; width:52px; height:12px;">231万</div>
+        </div>
+
+        <div data-type="layout" data-name="金币"
+             data-x="1206" data-y="22" data-w="146" data-h="52"
+             style="left:1206px; top:22px; width:146px; height:52px;">
+            <div data-type="image" data-name="card_bg"
+                 data-x="0" data-y="0" data-w="146" data-h="52" data-image="131998"
+                 data-color="#273547ec" data-scale9="true" data-cap-insets="20,20,20,20"
+                 style="left:0; top:0; width:146px; height:52px;"></div>
+            <div data-type="layout" data-name="accent"
+                 data-x="12" data-y="0" data-w="122" data-h="3" data-bg-color="#f3cb67"
+                 style="left:12px; top:0; width:122px; height:3px;"></div>
+            <div data-type="label" data-name="title"
+                 data-x="36" data-y="10" data-w="56" data-h="11" data-text="金币" data-font-size="11"
+                 data-color="#f3cb67" data-align="left,middle"
+                 style="left:36px; top:10px; width:56px; height:11px;">金币</div>
+            <div data-type="layout" data-name="image_3"
+                 data-x="10" data-y="23" data-w="124" data-h="20"
+                 style="left:10px; top:23px; width:124px; height:20px;">
+                <div data-type="image" data-name="image_3_bg"
+                     data-x="0" data-y="0" data-w="124" data-h="20" data-image="999" data-color="#ffffff00"
+                     style="left:0; top:0; width:124px; height:20px;"></div>
+                <div data-type="image" data-name="icon"
+                     data-x="0" data-y="1" data-w="18" data-h="18" data-image="109594"
+                     style="left:0; top:1px; width:18px; height:18px;"></div>
+                <div data-type="label" data-name="label_2"
+                     data-x="26" data-y="0" data-w="52" data-h="20" data-text="35" data-font-size="20"
+                     data-color="#edf4ff" data-align="left,middle"
+                     style="left:26px; top:0; width:52px; height:20px;">35</div>
+                <div data-type="label" data-name="delta"
+                     data-x="84" data-y="1" data-w="40" data-h="18" data-text="+0" data-font-size="14"
+                     data-color="#8df0a7" data-align="right,middle"
+                     style="left:84px; top:1px; width:40px; height:18px;">+0</div>
+            </div>
+        </div>
+
+        <div data-type="layout" data-name="木材"
+             data-x="1364" data-y="22" data-w="146" data-h="52"
+             style="left:1364px; top:22px; width:146px; height:52px;">
+            <div data-type="image" data-name="card_bg"
+                 data-x="0" data-y="0" data-w="146" data-h="52" data-image="131998"
+                 data-color="#273547ec" data-scale9="true" data-cap-insets="20,20,20,20"
+                 style="left:0; top:0; width:146px; height:52px;"></div>
+            <div data-type="layout" data-name="accent"
+                 data-x="12" data-y="0" data-w="122" data-h="3" data-bg-color="#88db9a"
+                 style="left:12px; top:0; width:122px; height:3px;"></div>
+            <div data-type="label" data-name="title"
+                 data-x="36" data-y="10" data-w="56" data-h="11" data-text="木材" data-font-size="11"
+                 data-color="#88db9a" data-align="left,middle"
+                 style="left:36px; top:10px; width:56px; height:11px;">木材</div>
+            <div data-type="layout" data-name="image_3"
+                 data-x="10" data-y="23" data-w="124" data-h="20"
+                 style="left:10px; top:23px; width:124px; height:20px;">
+                <div data-type="image" data-name="image_3_bg"
+                     data-x="0" data-y="0" data-w="124" data-h="20" data-image="999" data-color="#ffffff00"
+                     style="left:0; top:0; width:124px; height:20px;"></div>
+                <div data-type="image" data-name="icon"
+                     data-x="0" data-y="1" data-w="18" data-h="18" data-image="106364"
+                     style="left:0; top:1px; width:18px; height:18px;"></div>
+                <div data-type="label" data-name="label_2"
+                     data-x="26" data-y="0" data-w="52" data-h="20" data-text="158" data-font-size="20"
+                     data-color="#edf4ff" data-align="left,middle"
+                     style="left:26px; top:0; width:52px; height:20px;">158</div>
+                <div data-type="label" data-name="delta"
+                     data-x="76" data-y="1" data-w="48" data-h="18" data-text="+1.0" data-font-size="14"
+                     data-color="#8df0a7" data-align="right,middle"
+                     style="left:76px; top:1px; width:48px; height:18px;">+1.0</div>
+            </div>
+        </div>
+
+        <div data-type="layout" data-name="人口"
+             data-x="1522" data-y="22" data-w="146" data-h="52"
+             style="left:1522px; top:22px; width:146px; height:52px;">
+            <div data-type="image" data-name="card_bg"
+                 data-x="0" data-y="0" data-w="146" data-h="52" data-image="131998"
+                 data-color="#273547ec" data-scale9="true" data-cap-insets="20,20,20,20"
+                 style="left:0; top:0; width:146px; height:52px;"></div>
+            <div data-type="layout" data-name="accent"
+                 data-x="12" data-y="0" data-w="122" data-h="3" data-bg-color="#86bbff"
+                 style="left:12px; top:0; width:122px; height:3px;"></div>
+            <div data-type="label" data-name="title"
+                 data-x="36" data-y="10" data-w="56" data-h="11" data-text="人口" data-font-size="11"
+                 data-color="#86bbff" data-align="left,middle"
+                 style="left:36px; top:10px; width:56px; height:11px;">人口</div>
+            <div data-type="layout" data-name="image_3"
+                 data-x="10" data-y="23" data-w="124" data-h="20"
+                 style="left:10px; top:23px; width:124px; height:20px;">
+                <div data-type="image" data-name="image_3_bg"
+                     data-x="0" data-y="0" data-w="124" data-h="20" data-image="999" data-color="#ffffff00"
+                     style="left:0; top:0; width:124px; height:20px;"></div>
+                <div data-type="image" data-name="icon"
+                     data-x="0" data-y="1" data-w="18" data-h="18" data-image="906711"
+                     style="left:0; top:1px; width:18px; height:18px;"></div>
+                <div data-type="label" data-name="label_2"
+                     data-x="26" data-y="0" data-w="52" data-h="20" data-text="5" data-font-size="20"
+                     data-color="#edf4ff" data-align="left,middle"
+                     style="left:26px; top:0; width:52px; height:20px;">5</div>
+                <div data-type="label" data-name="delta"
+                     data-x="84" data-y="1" data-w="40" data-h="18" data-text="+0" data-font-size="14"
+                     data-color="#8df0a7" data-align="right,middle"
+                     style="left:84px; top:1px; width:40px; height:18px;">+0</div>
+            </div>
+        </div>
+
+        <div data-type="layout" data-name="system_notice"
+             data-x="762" data-y="98" data-w="396" data-h="20"
+             style="left:762px; top:98px; width:396px; height:20px;">
+            <div data-type="image" data-name="system_notice_bg"
+                 data-x="0" data-y="0" data-w="396" data-h="20" data-image="131998"
+                 data-color="#04090f9e" data-scale9="true" data-cap-insets="20,20,20,20"
+                 style="left:0; top:0; width:396px; height:20px;"></div>
+            <div data-type="layout" data-name="main_bar"
+                 data-x="0" data-y="0" data-w="396" data-h="20" data-bg-color="#ffffff00"
+                 style="left:0; top:0; width:396px; height:20px;"></div>
+            <div data-type="layout" data-name="title_chip"
+                 data-x="10" data-y="7" data-w="6" data-h="6" data-bg-color="#73aef4"
+                 style="left:10px; top:7px; width:6px; height:6px;"></div>
+            <div data-type="layout" data-name="reward_bar"
+                 data-x="24" data-y="0" data-w="362" data-h="20" data-bg-color="#ffffff00"
+                 style="left:24px; top:0; width:362px; height:20px;"></div>
+            <div data-type="layout" data-name="right_edge"
+                 data-x="388" data-y="3" data-w="1" data-h="14" data-bg-color="#00000000"
+                 style="left:388px; top:3px; width:1px; height:14px;"></div>
+            <div data-type="label" data-name="notice_title"
+                 data-x="0" data-y="0" data-w="0" data-h="0" data-text="" data-font-size="8"
+                 data-color="#00000000" data-align="left,middle"
+                 style="left:0; top:0; width:0; height:0;"></div>
+            <div data-type="label" data-name="notice_text"
+                 data-x="24" data-y="3" data-w="362" data-h="14" data-text="战况播报：第 1 波来袭，保持火力覆盖中线。" data-font-size="11"
+                 data-color="#d9e8fa" data-align="left,middle"
+                 style="left:24px; top:3px; width:362px; height:14px;">战况播报：第 1 波来袭，保持火力覆盖中线。</div>
+        </div>
+    </div>
+
+    <div data-type="layout" data-name="tophud"
+         data-x="702" data-y="10" data-w="516" data-h="84" data-adapter="top"
+         style="left:702px; top:10px; width:516px; height:84px;">
+        <div data-type="image" data-name="tophud_bg"
+             data-x="0" data-y="0" data-w="516" data-h="84" data-image="131998" data-color="#09131beb"
+             data-scale9="true" data-cap-insets="24,24,24,24"
+             style="left:0; top:0; width:516px; height:84px;"></div>
+        <div data-type="layout" data-name="layout_2"
+             data-x="0" data-y="0" data-w="516" data-h="84"
+             style="left:0; top:0; width:516px; height:84px;">
+            <div data-type="image" data-name="layout_2_bg"
+                 data-x="0" data-y="0" data-w="516" data-h="84" data-image="131998" data-color="#0e1822d4"
+                 data-scale9="true" data-cap-insets="24,24,24,24"
+                 style="left:0; top:0; width:516px; height:84px;"></div>
+            <div data-type="image" data-name="center_shadow"
+                 data-x="0" data-y="0" data-w="516" data-h="84" data-image="131998"
+                 data-color="#09121ae8" data-scale9="true" data-cap-insets="24,24,24,24"
+                 style="left:0; top:0; width:516px; height:84px;"></div>
+            <div data-type="layout" data-name="center_rim"
+                 data-x="18" data-y="0" data-w="480" data-h="4" data-bg-color="#d5af69"
+                 style="left:18px; top:0; width:480px; height:4px;"></div>
+            <div data-type="image" data-name="mode_icon"
+                 data-x="22" data-y="18" data-w="24" data-h="24" data-image="106504" data-color="#ffd57d"
+                 style="left:22px; top:18px; width:24px; height:24px;"></div>
+            <div data-type="label" data-name="curlevel"
+                 data-x="56" data-y="15" data-w="152" data-h="16" data-text="正常模式 N1" data-font-size="15"
+                 data-color="#edf4ff" data-align="left,middle"
+                 style="left:56px; top:15px; width:152px; height:16px;">正常模式 N1</div>
+            <div data-type="label" data-name="curlevel_sub"
+                 data-x="56" data-y="34" data-w="152" data-h="10" data-text="Battlefront Standard" data-font-size="10"
+                 data-color="#9fb3c9" data-align="left,middle"
+                 style="left:56px; top:34px; width:152px; height:10px;">Battlefront Standard</div>
+            <div data-type="image" data-name="phase_bg"
+                 data-x="334" data-y="14" data-w="156" data-h="24" data-image="131998"
+                 data-color="#29496cdb" data-scale9="true" data-cap-insets="14,14,14,14"
+                 style="left:334px; top:14px; width:156px; height:24px;"></div>
+            <div data-type="label" data-name="phase_text"
+                 data-x="344" data-y="20" data-w="136" data-h="12" data-text="首领将在 240 秒后登场" data-font-size="10"
+                 data-color="#dfeeff" data-align="center,middle"
+                 style="left:344px; top:20px; width:136px; height:12px;">首领将在 240 秒后登场</div>
+            <div data-type="image" data-name="wave_chip_bg"
+                 data-x="24" data-y="54" data-w="132" data-h="22" data-image="131998"
+                 data-color="#15202dc9" data-scale9="true" data-cap-insets="14,14,14,14"
+                 style="left:24px; top:54px; width:132px; height:22px;"></div>
+            <div data-type="label" data-name="wave"
+                 data-x="36" data-y="59" data-w="108" data-h="12" data-text="第 1 / 15 波" data-font-size="14"
+                 data-color="#edf4ff" data-align="left,middle"
+                 style="left:36px; top:59px; width:108px; height:12px;">第 1 / 15 波</div>
+            <div data-type="image" data-name="timer_core_bg"
+                 data-x="188" data-y="42" data-w="140" data-h="34" data-image="131998"
+                 data-color="#121c27f0" data-scale9="true" data-cap-insets="16,16,16,16"
+                 style="left:188px; top:42px; width:140px; height:34px;"></div>
+            <div data-type="label" data-name="gametime"
+                 data-x="208" data-y="47" data-w="100" data-h="16" data-text="00:09" data-font-size="26"
+                 data-color="#ffe09b" data-align="center,middle"
+                 style="left:208px; top:47px; width:100px; height:16px;">00:09</div>
+            <div data-type="image" data-name="threat_chip_bg"
+                 data-x="360" data-y="54" data-w="132" data-h="22" data-image="131998"
+                 data-color="#15202dc9" data-scale9="true" data-cap-insets="14,14,14,14"
+                 style="left:360px; top:54px; width:132px; height:22px;"></div>
+            <div data-type="label" data-name="threat_text"
+                 data-x="372" data-y="59" data-w="108" data-h="12" data-text="饥饿地精已就位" data-font-size="12"
+                 data-color="#edf4ff" data-align="center,middle"
+                 style="left:372px; top:59px; width:108px; height:12px;">饥饿地精已就位</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

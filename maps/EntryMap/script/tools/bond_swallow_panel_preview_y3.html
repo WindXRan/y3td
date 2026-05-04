@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>UI Preview: BondSwallowPanel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0c1219;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+    .canvas {
+      width: 1920px;
+      height: 1080px;
+      transform: scale(0.62);
+      transform-origin: center;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(180deg, #111923 0%, #080c12 100%);
+    }
+    [data-type] { position: absolute; }
+    [data-type="label"] {
+      display: flex;
+      overflow: hidden;
+      white-space: pre-wrap;
+      line-height: 1.15;
+      text-shadow: 0 1px 2px rgba(0,0,0,.65);
+    }
+    [data-type="button"] {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #eef4fb;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+<div class="canvas">
+<div data-type="layout" data-name="layout" data-x="0" data-y="0" data-w="1920" data-h="1080" data-adapter="all" style="left:0px; top:0px; width:1920px; height:1080px;"><div data-type="image" data-name="dim_bg" data-x="0" data-y="0" data-w="1920" data-h="1080" data-image="999" data-color="#0000006a" style="left:0px; top:0px; width:1920px; height:1080px;"></div>
+<div data-type="layout" data-name="main_frame" data-x="370" data-y="180" data-w="1180" data-h="720" style="left:370px; top:180px; width:1180px; height:720px;"><div data-type="image" data-name="frame_bg" data-x="0" data-y="0" data-w="1180" data-h="720" data-image="131998" data-color="#0a0e16f2" data-scale9="true" data-cap-insets="24,24,24,24" style="left:0px; top:0px; width:1180px; height:720px;"></div>
+<div data-type="image" data-name="frame_inner" data-x="16" data-y="16" data-w="1148" data-h="688" data-image="100062" data-color="#101722d6" data-scale9="true" data-cap-insets="20,20,20,20" style="left:16px; top:16px; width:1148px; height:688px;"></div>
+<div data-type="image" data-name="top_bevel" data-x="27" data-y="22" data-w="1126" data-h="4" data-image="999" data-color="#ffdc69b9" style="left:27px; top:22px; width:1126px; height:4px;"></div>
+<div data-type="label" data-name="title" data-x="36" data-y="44" data-w="190" data-h="40" data-text="卡牌图鉴" data-font-size="30" data-color="#ffe64aff" data-align="left,middle" style="left:36px; top:44px; width:190px; height:40px;">卡牌图鉴</div>
+<div data-type="label" data-name="subtitle" data-x="230" data-y="54" data-w="230" data-h="24" data-text="职业卡组 / 特殊卡组" data-font-size="16" data-color="#b4d2f2ff" data-align="left,middle" style="left:230px; top:54px; width:230px; height:24px;">职业卡组 / 特殊卡组</div>
+<div data-type="label" data-name="total_label" data-x="470" data-y="55" data-w="140" data-h="22" data-text="全部已吞：" data-font-size="16" data-color="#f2f6ffff" data-align="left,middle" style="left:470px; top:55px; width:140px; height:22px;">全部已吞：</div>
+<div data-type="label" data-name="total_value" data-x="570" data-y="55" data-w="70" data-h="22" data-text="0" data-font-size="18" data-color="#ffdf5fff" data-align="left,middle" style="left:570px; top:55px; width:70px; height:22px;">0</div>
+<div data-type="button" data-name="close_button" data-x="1118" data-y="42" data-w="44" data-h="44" data-text="X" data-preset="gold" data-color="#ffffffff" style="left:1118px; top:42px; width:44px; height:44px;">X</div>
+<div data-type="layout" data-name="group_panel" data-x="34" data-y="104" data-w="430" data-h="590" style="left:34px; top:104px; width:430px; height:590px;"><div data-type="image" data-name="panel_bg" data-x="0" data-y="0" data-w="430" data-h="590" data-image="131998" data-color="#090d16dd" data-scale9="true" data-cap-insets="20,20,20,20" style="left:0px; top:0px; width:430px; height:590px;"></div>
+<div data-type="label" data-name="basic_title" data-x="26" data-y="18" data-w="140" data-h="20" data-text="职业卡组：" data-font-size="14" data-color="#7bb4ffff" data-align="left,middle" style="left:26px; top:18px; width:140px; height:20px;">职业卡组：</div>
+<div data-type="label" data-name="special_title" data-x="26" data-y="320" data-w="140" data-h="20" data-text="特殊卡组：" data-font-size="14" data-color="#ffd26eff" data-align="left,middle" style="left:26px; top:320px; width:140px; height:20px;">特殊卡组：</div>
+<div data-type="layout" data-name="root_btn_1" data-x="28" data-y="50" data-w="124" data-h="32" style="left:28px; top:50px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="神射手(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">神射手(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_2" data-x="160" data-y="50" data-w="124" data-h="32" style="left:160px; top:50px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="游侠(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">游侠(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_3" data-x="292" data-y="50" data-w="124" data-h="32" style="left:292px; top:50px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="枪炮师(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">枪炮师(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_4" data-x="28" data-y="92" data-w="124" data-h="32" style="left:28px; top:92px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="猎人(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">猎人(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_5" data-x="160" data-y="92" data-w="124" data-h="32" style="left:160px; top:92px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="刀锋战士(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">刀锋战士(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_6" data-x="292" data-y="92" data-w="124" data-h="32" style="left:292px; top:92px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="魔剑士(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">魔剑士(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_7" data-x="28" data-y="134" data-w="124" data-h="32" style="left:28px; top:134px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="狂战士(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">狂战士(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_8" data-x="160" data-y="134" data-w="124" data-h="32" style="left:160px; top:134px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="剑魂(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">剑魂(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_9" data-x="292" data-y="134" data-w="124" data-h="32" style="left:292px; top:134px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="骷髅法师(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">骷髅法师(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_10" data-x="28" data-y="176" data-w="124" data-h="32" style="left:28px; top:176px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="剑宗(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">剑宗(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_11" data-x="160" data-y="176" data-w="124" data-h="32" style="left:160px; top:176px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="龙骑士(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">龙骑士(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_12" data-x="292" data-y="176" data-w="124" data-h="32" style="left:292px; top:176px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="雷电法王(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">雷电法王(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_13" data-x="28" data-y="218" data-w="124" data-h="32" style="left:28px; top:218px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="火法师(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">火法师(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_14" data-x="160" data-y="218" data-w="124" data-h="32" style="left:160px; top:218px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="冰霜法师(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">冰霜法师(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_15" data-x="292" data-y="218" data-w="124" data-h="32" style="left:292px; top:218px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="战斗法师(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">战斗法师(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_16" data-x="28" data-y="350" data-w="124" data-h="32" style="left:28px; top:350px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="新兵套(0/3)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">新兵套(0/3)</div>
+</div>
+<div data-type="layout" data-name="root_btn_17" data-x="160" data-y="350" data-w="124" data-h="32" style="left:160px; top:350px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="炼金术(0/3)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">炼金术(0/3)</div>
+</div>
+<div data-type="layout" data-name="root_btn_18" data-x="292" data-y="350" data-w="124" data-h="32" style="left:292px; top:350px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="王牌(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">王牌(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_19" data-x="28" data-y="386" data-w="124" data-h="32" style="left:28px; top:386px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="异火(0/10)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">异火(0/10)</div>
+</div>
+<div data-type="layout" data-name="root_btn_20" data-x="160" data-y="386" data-w="124" data-h="32" style="left:160px; top:386px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="赌神(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">赌神(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_21" data-x="292" data-y="386" data-w="124" data-h="32" style="left:292px; top:386px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="狩猎达人(0/3)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">狩猎达人(0/3)</div>
+</div>
+<div data-type="layout" data-name="root_btn_22" data-x="28" data-y="422" data-w="124" data-h="32" style="left:28px; top:422px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="小成箭术(0/3)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">小成箭术(0/3)</div>
+</div>
+<div data-type="layout" data-name="root_btn_23" data-x="160" data-y="422" data-w="124" data-h="32" style="left:160px; top:422px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="大成箭术(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">大成箭术(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_24" data-x="292" data-y="422" data-w="124" data-h="32" style="left:292px; top:422px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="龙珠(0/7)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">龙珠(0/7)</div>
+</div>
+<div data-type="layout" data-name="root_btn_25" data-x="28" data-y="458" data-w="124" data-h="32" style="left:28px; top:458px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="凡人修仙(0/10)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">凡人修仙(0/10)</div>
+</div>
+<div data-type="layout" data-name="root_btn_26" data-x="160" data-y="458" data-w="124" data-h="32" style="left:160px; top:458px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="爆战兔(0/3)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">爆战兔(0/3)</div>
+</div>
+<div data-type="layout" data-name="root_btn_27" data-x="292" data-y="458" data-w="124" data-h="32" style="left:292px; top:458px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="证帝(0/10)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">证帝(0/10)</div>
+</div>
+<div data-type="layout" data-name="root_btn_28" data-x="28" data-y="494" data-w="124" data-h="32" style="left:28px; top:494px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="雀魂麻将(0/8)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">雀魂麻将(0/8)</div>
+</div>
+<div data-type="layout" data-name="root_btn_29" data-x="160" data-y="494" data-w="124" data-h="32" style="left:160px; top:494px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="作者宝库(0/10)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">作者宝库(0/10)</div>
+</div>
+<div data-type="layout" data-name="root_btn_30" data-x="292" data-y="494" data-w="124" data-h="32" style="left:292px; top:494px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="绝学(0/9)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">绝学(0/9)</div>
+</div>
+<div data-type="layout" data-name="root_btn_31" data-x="28" data-y="530" data-w="124" data-h="32" style="left:28px; top:530px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="诛仙剑阵(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">诛仙剑阵(0/5)</div>
+</div>
+<div data-type="layout" data-name="root_btn_32" data-x="160" data-y="530" data-w="124" data-h="32" style="left:160px; top:530px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="超能果实(0/6)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">超能果实(0/6)</div>
+</div>
+<div data-type="layout" data-name="root_btn_33" data-x="292" data-y="530" data-w="124" data-h="32" style="left:292px; top:530px; width:124px; height:32px;"><div data-type="button" data-name="button" data-x="0" data-y="0" data-w="124" data-h="32" data-text="盲盒(0/5)" data-preset="blue" data-color="#ffffffff" style="left:0px; top:0px; width:124px; height:32px;">盲盒(0/5)</div>
+</div>
+</div>
+<div data-type="layout" data-name="card_grid" data-x="512" data-y="104" data-w="500" data-h="420" style="left:512px; top:104px; width:500px; height:420px;"><div data-type="image" data-name="grid_bg" data-x="0" data-y="0" data-w="500" data-h="420" data-image="131998" data-color="#080b12d4" data-scale9="true" data-cap-insets="20,20,20,20" style="left:0px; top:0px; width:500px; height:420px;"></div>
+<div data-type="label" data-name="grid_title" data-x="24" data-y="18" data-w="180" data-h="22" data-text="当前卡组" data-font-size="16" data-color="#7bb4ffff" data-align="left,middle" style="left:24px; top:18px; width:180px; height:22px;">当前卡组</div>
+<div data-type="layout" data-name="card_slot_1" data-x="30" data-y="58" data-w="68" data-h="68" style="left:30px; top:58px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_2" data-x="118" data-y="58" data-w="68" data-h="68" style="left:118px; top:58px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_3" data-x="206" data-y="58" data-w="68" data-h="68" style="left:206px; top:58px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_4" data-x="294" data-y="58" data-w="68" data-h="68" style="left:294px; top:58px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_5" data-x="382" data-y="58" data-w="68" data-h="68" style="left:382px; top:58px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_6" data-x="30" data-y="140" data-w="68" data-h="68" style="left:30px; top:140px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_7" data-x="118" data-y="140" data-w="68" data-h="68" style="left:118px; top:140px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_8" data-x="206" data-y="140" data-w="68" data-h="68" style="left:206px; top:140px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_9" data-x="294" data-y="140" data-w="68" data-h="68" style="left:294px; top:140px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_10" data-x="382" data-y="140" data-w="68" data-h="68" style="left:382px; top:140px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_11" data-x="30" data-y="222" data-w="68" data-h="68" style="left:30px; top:222px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_12" data-x="118" data-y="222" data-w="68" data-h="68" style="left:118px; top:222px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_13" data-x="206" data-y="222" data-w="68" data-h="68" style="left:206px; top:222px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_14" data-x="294" data-y="222" data-w="68" data-h="68" style="left:294px; top:222px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_15" data-x="382" data-y="222" data-w="68" data-h="68" style="left:382px; top:222px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_16" data-x="30" data-y="304" data-w="68" data-h="68" style="left:30px; top:304px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_17" data-x="118" data-y="304" data-w="68" data-h="68" style="left:118px; top:304px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_18" data-x="206" data-y="304" data-w="68" data-h="68" style="left:206px; top:304px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_19" data-x="294" data-y="304" data-w="68" data-h="68" style="left:294px; top:304px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+<div data-type="layout" data-name="card_slot_20" data-x="382" data-y="304" data-w="68" data-h="68" style="left:382px; top:304px; width:68px; height:68px;"><div data-type="image" data-name="slot_bg" data-x="0" data-y="0" data-w="68" data-h="68" data-image="131998" data-color="#091119d8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="empty_mark" data-x="13" data-y="13" data-w="42" data-h="42" data-image="100061" data-color="#ffffff42" style="left:13px; top:13px; width:42px; height:42px;"></div>
+<div data-type="image" data-name="frame" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffffffd8" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+<div data-type="image" data-name="icon" data-x="10" data-y="10" data-w="48" data-h="48" data-image="999" data-color="#ffffffff" style="left:10px; top:10px; width:48px; height:48px;"></div>
+<div data-type="image" data-name="state_glow" data-x="0" data-y="0" data-w="68" data-h="68" data-image="100062" data-color="#ffd24e00" data-scale9="true" data-cap-insets="18,18,18,18" style="left:0px; top:0px; width:68px; height:68px;"></div>
+</div>
+</div>
+<div data-type="layout" data-name="detail_panel" data-x="512" data-y="484" data-w="500" data-h="210" style="left:512px; top:484px; width:500px; height:210px;"><div data-type="image" data-name="detail_bg" data-x="0" data-y="0" data-w="500" data-h="210" data-image="131998" data-color="#0c1017e8" data-scale9="true" data-cap-insets="20,20,20,20" style="left:0px; top:0px; width:500px; height:210px;"></div>
+<div data-type="image" data-name="detail_top" data-x="16" data-y="18" data-w="468" data-h="2" data-image="999" data-color="#ffdd5da0" style="left:16px; top:18px; width:468px; height:2px;"></div>
+<div data-type="label" data-name="detail_title" data-x="34" data-y="34" data-w="430" data-h="24" data-text="选择左侧卡组查看详情" data-font-size="17" data-color="#ffe146ff" data-align="center,middle" style="left:34px; top:34px; width:430px; height:24px;">选择左侧卡组查看详情</div>
+<div data-type="label" data-name="detail_status" data-x="40" data-y="66" data-w="420" data-h="20" data-text="未激活" data-font-size="13" data-color="#b2becfff" data-align="center,middle" style="left:40px; top:66px; width:420px; height:20px;">未激活</div>
+<div data-type="label" data-name="detail_body" data-x="36" data-y="98" data-w="430" data-h="96" data-text="已吞羁绊与卡牌详情会显示在这里。" data-font-size="15" data-color="#e6eef8ff" data-align="left,top" style="left:36px; top:98px; width:430px; height:96px;">已吞羁绊与卡牌详情会显示在这里。</div>
+</div>
+</div>
+</div>
+
+</div>
+</body>
+</html>

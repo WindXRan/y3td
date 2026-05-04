@@ -1,6 +1,6 @@
 ﻿id,stage_id,display_name,order_index,content_source_stage_id,preview_note,mode_ids,n0_activation_mode,n0_opening_no_cooldown,n0_disable_mainline_spawn
 __字段说明__,字段：stage_id,字段：display_name,排序,字段：content_source_stage_id,字段：preview_note,字段：mode_ids,字段：n0_activation_mode,字段：n0_opening_no_cooldown,字段：n0_disable_mainline_spawn
-1-0,1-0,N0-验收靶场,0,1-1,N0难度：开战自动验收特殊效果并生成无限血靶子（支持单羁绊）,standard,single,1,
+1-0,1-0,N0-验收靶场,0,1-1,N0难度：开战自动验收特殊效果并生成无限血靶子（支持单羁绊）,standard,none,1,
 1-1,1-1,猎场山洞-1,1,1-1,当前章节内容已接入,standard,,,
 1-2,1-2,猎场山洞-2,2,1-1,当前暂复用 1-1 战斗内容,standard,,,
 1-3,1-3,猎场山洞-3,3,1-1,当前暂复用 1-1 战斗内容,standard,,,

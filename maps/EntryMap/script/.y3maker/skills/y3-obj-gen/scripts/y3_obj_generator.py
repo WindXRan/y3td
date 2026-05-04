@@ -353,10 +353,14 @@ def generate_modifier(map_path, obj_config, lang_data):
     data['description'] = desc_key
     lang_data[str(desc_key)] = desc
     
-    # Buff类型
+    # Buff类型 (1=普通, 2=光环, 3=光环效果, 4=护盾)
     if 'modifier_type' in obj_config:
         data['modifier_type'] = obj_config['modifier_type']
-    
+
+    # 效果类型 (0=中性, 1=增益, 2=减益)
+    if 'modifier_effect' in obj_config:
+        data['modifier_effect'] = obj_config['modifier_effect']
+
     # 图标
     if 'icon' in obj_config:
         data['modifier_icon'] = obj_config['icon']
