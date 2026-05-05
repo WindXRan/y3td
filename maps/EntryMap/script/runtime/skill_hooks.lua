@@ -7,6 +7,14 @@ local BuffSystem = require 'runtime.buff_system'
 
 local M = {}
 
+local function apply_cold_hook(ctx)
+  for _, unit in ipairs(ctx.hits or {}) do
+    if unit and unit.is_exist and unit:is_exist() then
+      BuffSystem.apply_buff(unit, 'cold', 3.0, 1, ctx.caster)
+    end
+  end
+end
+
 local HOOKS = {
   fireball = {
     OnProjectileHit = function(ctx)
@@ -19,6 +27,17 @@ local HOOKS = {
       end
     end,
   },
+  ice_bird = {
+    OnProjectileHit = function(ctx)
+      local pt = ctx.impact_point
+      if pt then
+        pcall(y3.particle.create, { type = 100390, target = pt, angle = 0, scale = 1.0, time = 0.3, height = 28 })
+      end
+      apply_cold_hook(ctx)
+    end,
+  },
+  ice_spike_array = { OnProjectileHit = apply_cold_hook },
+  ice_tornado = { OnProjectileHit = apply_cold_hook },
 }
 
 --- 查询某技能某 hook 的特例实现

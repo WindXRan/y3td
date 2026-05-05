@@ -18,7 +18,7 @@ return {
     flying_swords = 201390016,
   },
   projectile = {
-    basic_attack = 201392031,
+    basic_attack = 134244467,
     ['狙击箭'] = 201392031,
     ['疾风箭'] = 201392032,
     ['多重箭'] = 201392033,

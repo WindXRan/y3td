@@ -2422,7 +2422,15 @@ function M.create(env)
 
     local reserved_damage = compute_basic_attack_final_damage(skill, target, damage)
     reserve_basic_attack_damage(target, reserved_damage)
-    launch_projectile_to_target(sniper_vfx or gale_vfx or vfx, target, function(impact_point, did_hit)
+    local cast_delay = 0.30
+    y3.ltimer.wait(cast_delay, function()
+      if not STATE.hero or not STATE.hero:is_exist() then
+        return
+      end
+      if not target or not target:is_exist() then
+        return
+      end
+      launch_projectile_to_target(sniper_vfx or gale_vfx or vfx, target, function(impact_point, did_hit)
       release_basic_attack_damage(target, reserved_damage)
       if STATE.game_finished or not STATE.hero or not STATE.hero:is_exist() then
         return
@@ -2557,7 +2565,6 @@ function M.create(env)
         end
       end
     end, damage_ability)
-
     if #multishot_targets > 0 and multishot_ratio > 0 then
       local multishot_audio_played = false
       for _, unit in ipairs(multishot_targets) do
@@ -2588,6 +2595,7 @@ function M.create(env)
         end, damage_ability)
       end
     end
+    end)
   end
   
   local function cast_attack_skill_once(skill, target)

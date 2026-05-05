@@ -543,7 +543,9 @@ function M.create(env)
             cast_ctx.hit_count = (cast_ctx.hit_count or 0) + 1
             cast_ctx.total_damage = (cast_ctx.total_damage or 0) + (amount or 0)
             mark_damage_impact(cast_ctx)
+            cast_ctx.hits = { hit_unit }
             fire_hook(skill, 'OnProjectileHit', cast_ctx)
+            cast_ctx.hits = nil
           end
         end,
         on_finish = function()
@@ -814,7 +816,8 @@ function M.create(env)
     local proj_time = skill.sub_behavior == 'delayed_burst'
       and (tonumber(skill.visual and skill.visual.projectile_time) or skill.timeline.impact_delay)
       or 0
-    spawn_particle(y3, cast_ctx.caster, visual_key(skill, 'cast'), fx_scale, 0.25, nil)
+    -- area 系技能在目标区域显示预警，避免在英雄自身产生与冲击相同的粒子造成"自瞄"错觉
+    spawn_particle(y3, center, visual_key(skill, 'warning') or visual_key(skill, 'cast'), fx_scale * 0.6, 0.35, 20)
     fire_hook(skill, 'OnSpellStart', cast_ctx)
     local function do_impact(impact_point)
       local pt = impact_point or center

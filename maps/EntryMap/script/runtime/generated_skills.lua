@@ -168,7 +168,7 @@ function M.load_builtin_defs()
   return {
     {
       id = 'custom_area_dot',
-      name = '持续伤害领域',
+      name = '熔岩地狱',
       pattern = 'area',
       sub_behavior = 'tick',
       target_mode = 'point',
@@ -198,7 +198,7 @@ function M.load_builtin_defs()
     },
     {
       id = 'custom_area_burst',
-      name = '瞬间爆发领域',
+      name = '烈焰迸发',
       pattern = 'area',
       sub_behavior = 'burst',
       target_mode = 'point',
@@ -222,6 +222,103 @@ function M.load_builtin_defs()
         warning = 104733,
         impact = 104733,
         hit = 104733,
+      },
+    },
+    -- ===== 冰系主动技能 =====
+    {
+      id = 'ice_bird',
+      name = '冰鸟',
+      pattern = 'projectile',
+      sub_behavior = 'burst',
+      target_mode = 'unit',
+      damage_type = '法术',
+      timeline = {
+        cast_point = 0.10,
+        impact_delay = 0.22,
+      },
+      hit_model = {
+        range = 1350,
+        radius = 200,
+        max_hits = 0,
+      },
+      scale = {
+        attack_ratio = 1.95,
+      },
+      resource = {
+        cooldown = 0.95,
+      },
+      visual = {
+        cast = 106070,
+        warning = 106067,
+        impact = 101376,   -- 冰鸟爆炸主特效，决定爆炸范围
+        hit = 101376,
+        projectile_key = 134232384,
+        projectile_height = 28,
+        projectile_time = 0.95,
+      },
+    },
+    {
+      id = 'ice_spike_array',
+      name = '冰锥法阵',
+      pattern = 'area',
+      sub_behavior = 'burst',
+      target_mode = 'point',
+      damage_type = '法术',
+      timeline = {
+        cast_point = 0.10,
+        impact_delay = 0.24,
+      },
+      hit_model = {
+        range = 1200,
+        radius = 200,
+        max_hits = 0,
+      },
+      scale = {
+        attack_ratio = 1.8,
+      },
+      resource = {
+        cooldown = 0.95,
+      },
+      visual = {
+        cast = 106070,
+        warning = 106067,
+        impact = 101742,
+        hit = 106070,
+      },
+    },
+    {
+      id = 'ice_tornado',
+      name = '冰霜龙卷风',
+      pattern = 'projectile',
+      sub_behavior = 'pierce',
+      target_mode = 'unit',
+      damage_type = '法术',
+      timeline = {
+        cast_point = 0.10,
+        impact_delay = 0.22,
+        duration = 1.0,
+        tick_interval = 0.26,
+      },
+      hit_model = {
+        range = 1400,
+        width = 280,
+        max_hits = 0,
+      },
+      scale = {
+        attack_ratio = 0.45,
+        tick_ratio = 0.38,
+      },
+      resource = {
+        cooldown = 0.95,
+      },
+      visual = {
+        cast = 106070,
+        warning = 106067,
+        impact = 106067,
+        hit = 106070,
+        projectile_key = 134260537,
+        projectile_height = 28,
+        projectile_time = 0.90,
       },
     },
     -- ===== 风系主动技能 =====

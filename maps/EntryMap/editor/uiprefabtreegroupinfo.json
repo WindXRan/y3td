@@ -4,6 +4,26 @@
   "key": 2147483647, 
   "group": [
    {
+    "name": "Choice", 
+    "key": "V0W8AkU1EfGyexsvhH0wGo", 
+    "group": [
+     {
+      "__tuple__": true, 
+      "items": [
+       "5db0740f-bc1a-48ea-a62c-cf71dc1776fe", 
+       "Card"
+      ]
+     }, 
+     {
+      "__tuple__": true, 
+      "items": [
+       "a2082192-b8a2-40f2-a3c7-a47acd74468b", 
+       "ChoiceList"
+      ]
+     }
+    ]
+   }, 
+   {
     "name": "SkillPrefab", 
     "key": "2sVqUkUZEfG47emopOS-H0", 
     "group": [
@@ -39,6 +59,19 @@
       "items": [
        "cf7c8fc6-5af7-4cf1-870f-02cb315bc8eb", 
        "level"
+      ]
+     }
+    ]
+   }, 
+   {
+    "name": "TuJian", 
+    "key": "zJkYcUHlEfGdhWVXOOvKDO", 
+    "group": [
+     {
+      "__tuple__": true, 
+      "items": [
+       "f5ba61dc-e816-4726-9b3b-ce61092b4991", 
+       "heromodel"
       ]
      }
     ]
@@ -112,6 +145,13 @@
       "items": [
        "28a9fe87-d81f-467c-bfac-9033f63bbaa6", 
        "ArchivePageTwo"
+      ]
+     }, 
+     {
+      "__tuple__": true, 
+      "items": [
+       "d44c56fc-8a15-452a-bca2-687dc9b240e7", 
+       "YangChengIcon"
       ]
      }
     ]
