@@ -1,84 +1,4 @@
 {
-    "ui/01261fda-32b3-437c-bbbd-6758b23df74b": {
-        "default_editor_id": 134274548, 
-        "describe": "", 
-        "key": "ui/01261fda-32b3-437c-bbbd-6758b23df74b", 
-        "name": "\u51b0\u9b44\u796d\u7940_1", 
-        "path": "ui/01261fda-32b3-437c-bbbd-6758b23df74b", 
-        "uid": "res_icon_ui/01261fda-32b3-437c-bbbd-6758b23df74b"
-    }, 
-    "ui/040ce429-e56c-42e0-9328-295ef0097033": {
-        "default_editor_id": 134229332, 
-        "describe": "", 
-        "key": "ui/040ce429-e56c-42e0-9328-295ef0097033", 
-        "name": "\u6b66\u5668\u5927\u5e08R_1", 
-        "path": "ui/040ce429-e56c-42e0-9328-295ef0097033", 
-        "uid": "res_icon_ui/040ce429-e56c-42e0-9328-295ef0097033"
-    }, 
-    "ui/04a1e741-a568-485c-82d4-a44251fc736a": {
-        "default_editor_id": 134256026, 
-        "describe": "", 
-        "key": "ui/04a1e741-a568-485c-82d4-a44251fc736a", 
-        "name": "\u6df1\u6d77\u6076\u9738Q", 
-        "path": "ui/04a1e741-a568-485c-82d4-a44251fc736a", 
-        "uid": "res_icon_ui/04a1e741-a568-485c-82d4-a44251fc736a"
-    }, 
-    "ui/09a4114a-3e66-4a12-ab8f-2d899e58089d": {
-        "default_editor_id": 134262826, 
-        "describe": "", 
-        "key": "ui/09a4114a-3e66-4a12-ab8f-2d899e58089d", 
-        "name": "\u9738\u8c61\u5927\u738bW", 
-        "path": "ui/09a4114a-3e66-4a12-ab8f-2d899e58089d", 
-        "uid": "res_icon_ui/09a4114a-3e66-4a12-ab8f-2d899e58089d"
-    }, 
-    "ui/09d626ce-5dbd-49cc-829e-e77c29484dd5": {
-        "default_editor_id": 134282716, 
-        "describe": "", 
-        "key": "ui/09d626ce-5dbd-49cc-829e-e77c29484dd5", 
-        "name": "\u7194\u5ca9\u5de8\u517dW_1", 
-        "path": "ui/09d626ce-5dbd-49cc-829e-e77c29484dd5", 
-        "uid": "res_icon_ui/09d626ce-5dbd-49cc-829e-e77c29484dd5"
-    }, 
-    "ui/0a4cc8f6-0d71-45bf-8304-631939ad4dd0": {
-        "default_editor_id": 134268009, 
-        "describe": "", 
-        "key": "ui/0a4cc8f6-0d71-45bf-8304-631939ad4dd0", 
-        "name": "\u81ea\u7136\u523a\u5ba2Q", 
-        "path": "ui/0a4cc8f6-0d71-45bf-8304-631939ad4dd0", 
-        "uid": "res_icon_ui/0a4cc8f6-0d71-45bf-8304-631939ad4dd0"
-    }, 
-    "ui/0ac6f477-7232-445c-973b-f306639f08af": {
-        "default_editor_id": 134244086, 
-        "describe": "", 
-        "key": "ui/0ac6f477-7232-445c-973b-f306639f08af", 
-        "name": "\u9a6d\u8725\u5c0f\u516c\u4e3bR", 
-        "path": "ui/0ac6f477-7232-445c-973b-f306639f08af", 
-        "uid": "res_icon_ui/0ac6f477-7232-445c-973b-f306639f08af"
-    }, 
-    "ui/0d1f2d65-53f6-46cf-9d40-3a07c6070bf3": {
-        "default_editor_id": 134241498, 
-        "describe": "", 
-        "key": "ui/0d1f2d65-53f6-46cf-9d40-3a07c6070bf3", 
-        "name": "\u667a\u6167\u5148\u77e5R", 
-        "path": "ui/0d1f2d65-53f6-46cf-9d40-3a07c6070bf3", 
-        "uid": "res_icon_ui/0d1f2d65-53f6-46cf-9d40-3a07c6070bf3"
-    }, 
-    "ui/10420b6c-e4be-4887-aaff-7eac3ce81036": {
-        "default_editor_id": 134271611, 
-        "describe": "", 
-        "key": "ui/10420b6c-e4be-4887-aaff-7eac3ce81036", 
-        "name": "\u901a\u7075\u5927\u6cd5\u5e08B", 
-        "path": "ui/10420b6c-e4be-4887-aaff-7eac3ce81036", 
-        "uid": "res_icon_ui/10420b6c-e4be-4887-aaff-7eac3ce81036"
-    }, 
-    "ui/119d60a6-aa3d-49e9-80df-2c3eb3016c59": {
-        "default_editor_id": 134265260, 
-        "describe": "", 
-        "key": "ui/119d60a6-aa3d-49e9-80df-2c3eb3016c59", 
-        "name": "\u6df1\u6d77\u6076\u9738R", 
-        "path": "ui/119d60a6-aa3d-49e9-80df-2c3eb3016c59", 
-        "uid": "res_icon_ui/119d60a6-aa3d-49e9-80df-2c3eb3016c59"
-    }, 
     "ui/134218135": {
         "default_editor_id": 134218135, 
         "describe": "", 
@@ -86,38 +6,6 @@
         "name": "image (82)", 
         "path": "ui/134218135", 
         "uid": "res_icon_ui/134218135"
-    }, 
-    "ui/134218572": {
-        "default_editor_id": 134218572, 
-        "describe": "", 
-        "key": "ui/134218572", 
-        "name": "img_shop_details_bg", 
-        "path": "ui/134218572", 
-        "uid": "res_icon_ui/134218572"
-    }, 
-    "ui/134218604": {
-        "default_editor_id": 134218604, 
-        "describe": "", 
-        "key": "ui/134218604", 
-        "name": "5", 
-        "path": "ui/134218604", 
-        "uid": "res_icon_ui/134218604"
-    }, 
-    "ui/134218915": {
-        "default_editor_id": 134218915, 
-        "describe": "", 
-        "key": "ui/134218915", 
-        "name": "\u673a\u7532", 
-        "path": "ui/134218915", 
-        "uid": "res_icon_ui/134218915"
-    }, 
-    "ui/134219140": {
-        "default_editor_id": 134219140, 
-        "describe": "", 
-        "key": "ui/134219140", 
-        "name": "\u795e\u79d8", 
-        "path": "ui/134219140", 
-        "uid": "res_icon_ui/134219140"
     }, 
     "ui/134219821": {
         "default_editor_id": 134219821, 
@@ -143,86 +31,6 @@
         "path": "ui/134220193", 
         "uid": "res_icon_ui/134220193"
     }, 
-    "ui/134220400": {
-        "default_editor_id": 134220400, 
-        "describe": "", 
-        "key": "ui/134220400", 
-        "name": "\u5229\u7ef4\u5766\u5934\u50cf", 
-        "path": "ui/134220400", 
-        "uid": "res_icon_ui/134220400"
-    }, 
-    "ui/134220666": {
-        "default_editor_id": 134220666, 
-        "describe": "", 
-        "key": "ui/134220666", 
-        "name": "1", 
-        "path": "ui/134220666", 
-        "uid": "res_icon_ui/134220666"
-    }, 
-    "ui/134221575": {
-        "default_editor_id": 134221575, 
-        "describe": "", 
-        "key": "ui/134221575", 
-        "name": "\u7075\u9b42\u94b1\u5e011", 
-        "path": "ui/134221575", 
-        "uid": "res_icon_ui/134221575"
-    }, 
-    "ui/134221617": {
-        "default_editor_id": 134221617, 
-        "describe": "", 
-        "key": "ui/134221617", 
-        "name": "icon_\u901a\u7528\u519b\u9636\u7ecf\u9a8c", 
-        "path": "ui/134221617", 
-        "uid": "res_icon_ui/134221617"
-    }, 
-    "ui/134222280": {
-        "default_editor_id": 134222280, 
-        "describe": "", 
-        "key": "ui/134222280", 
-        "name": "\u9000\u6f6e", 
-        "path": "ui/134222280", 
-        "uid": "res_icon_ui/134222280"
-    }, 
-    "ui/134222772": {
-        "default_editor_id": 134222772, 
-        "describe": "", 
-        "key": "ui/134222772", 
-        "name": "\u6df7\u6c8c\u6218\u9524", 
-        "path": "ui/134222772", 
-        "uid": "res_icon_ui/134222772"
-    }, 
-    "ui/134222859": {
-        "default_editor_id": 134222859, 
-        "describe": "", 
-        "key": "ui/134222859", 
-        "name": "\u865a\u7a7a\u63a0\u593a\u8005", 
-        "path": "ui/134222859", 
-        "uid": "res_icon_ui/134222859"
-    }, 
-    "ui/134222881": {
-        "default_editor_id": 134222881, 
-        "describe": "", 
-        "key": "ui/134222881", 
-        "name": "ZM_kpzs_1", 
-        "path": "ui/134222881", 
-        "uid": "res_icon_ui/134222881"
-    }, 
-    "ui/134222930": {
-        "default_editor_id": 134222930, 
-        "describe": "", 
-        "key": "ui/134222930", 
-        "name": "PGC_DM6_icon_xuan", 
-        "path": "ui/134222930", 
-        "uid": "res_icon_ui/134222930"
-    }, 
-    "ui/134223236": {
-        "default_editor_id": 134223236, 
-        "describe": "", 
-        "key": "ui/134223236", 
-        "name": "avatar_\u521d\u7ea7\u5386\u7ec3\u77f3", 
-        "path": "ui/134223236", 
-        "uid": "res_icon_ui/134223236"
-    }, 
     "ui/134223394": {
         "default_editor_id": 134223394, 
         "describe": "", 
@@ -246,22 +54,6 @@
         "name": "choice-card-shell", 
         "path": "ui/134223766", 
         "uid": "res_icon_ui/134223766"
-    }, 
-    "ui/134224091": {
-        "default_editor_id": 134224091, 
-        "describe": "", 
-        "key": "ui/134224091", 
-        "name": "\u865a\u7a7a\u63a0\u593a\u8005W", 
-        "path": "ui/134224091", 
-        "uid": "res_icon_ui/134224091"
-    }, 
-    "ui/134224886": {
-        "default_editor_id": 134224886, 
-        "describe": "", 
-        "key": "ui/134224886", 
-        "name": "\u9752\u5e74\u63b7\u77db\u5175\u5934\u50cf", 
-        "path": "ui/134224886", 
-        "uid": "res_icon_ui/134224886"
     }, 
     "ui/134225014": {
         "default_editor_id": 134225014, 
@@ -287,22 +79,6 @@
         "path": "ui/134225591", 
         "uid": "res_icon_ui/134225591"
     }, 
-    "ui/134225872": {
-        "default_editor_id": 134225872, 
-        "describe": "", 
-        "key": "ui/134225872", 
-        "name": "\u51b0\u9b44\u796d\u7940", 
-        "path": "ui/134225872", 
-        "uid": "res_icon_ui/134225872"
-    }, 
-    "ui/134225954": {
-        "default_editor_id": 134225954, 
-        "describe": "", 
-        "key": "ui/134225954", 
-        "name": "RL_sp_zy_04 1", 
-        "path": "ui/134225954", 
-        "uid": "res_icon_ui/134225954"
-    }, 
     "ui/134226696": {
         "default_editor_id": 134226696, 
         "describe": "", 
@@ -310,14 +86,6 @@
         "name": "img_prop_frame", 
         "path": "ui/134226696", 
         "uid": "res_icon_ui/134226696"
-    }, 
-    "ui/134226763": {
-        "default_editor_id": 134226763, 
-        "describe": "", 
-        "key": "ui/134226763", 
-        "name": "\u865a\u7a7a\u63a0\u593a\u8005Q", 
-        "path": "ui/134226763", 
-        "uid": "res_icon_ui/134226763"
     }, 
     "ui/134227227": {
         "default_editor_id": 134227227, 
@@ -335,62 +103,6 @@
         "path": "ui/134227826", 
         "uid": "res_icon_ui/134227826"
     }, 
-    "ui/134227948": {
-        "default_editor_id": 134227948, 
-        "describe": "", 
-        "key": "ui/134227948", 
-        "name": "ZM_btn_zm_hov_1", 
-        "path": "ui/134227948", 
-        "uid": "res_icon_ui/134227948"
-    }, 
-    "ui/134229262": {
-        "default_editor_id": 134229262, 
-        "describe": "", 
-        "key": "ui/134229262", 
-        "name": "\u5c0f\u7ea2\u5e3d\u5934\u50cf\u76ae\u80a4", 
-        "path": "ui/134229262", 
-        "uid": "res_icon_ui/134229262"
-    }, 
-    "ui/134229577": {
-        "default_editor_id": 134229577, 
-        "describe": "", 
-        "key": "ui/134229577", 
-        "name": "\u5973\u67aa", 
-        "path": "ui/134229577", 
-        "uid": "res_icon_ui/134229577"
-    }, 
-    "ui/134229682": {
-        "default_editor_id": 134229682, 
-        "describe": "", 
-        "key": "ui/134229682", 
-        "name": "\u5973\u67aa_Q", 
-        "path": "ui/134229682", 
-        "uid": "res_icon_ui/134229682"
-    }, 
-    "ui/134229892": {
-        "default_editor_id": 134229892, 
-        "describe": "", 
-        "key": "ui/134229892", 
-        "name": "\u7267\u7f8a\u4eba\u4e4b\u5200", 
-        "path": "ui/134229892", 
-        "uid": "res_icon_ui/134229892"
-    }, 
-    "ui/134230600": {
-        "default_editor_id": 134230600, 
-        "describe": "", 
-        "key": "ui/134230600", 
-        "name": "\u673a\u7532_1", 
-        "path": "ui/134230600", 
-        "uid": "res_icon_ui/134230600"
-    }, 
-    "ui/134230688": {
-        "default_editor_id": 134230688, 
-        "describe": "", 
-        "key": "ui/134230688", 
-        "name": "1", 
-        "path": "ui/134230688", 
-        "uid": "res_icon_ui/134230688"
-    }, 
     "ui/134230937": {
         "default_editor_id": 134230937, 
         "describe": "", 
@@ -407,54 +119,6 @@
         "path": "ui/134232402", 
         "uid": "res_icon_ui/134232402"
     }, 
-    "ui/134232500": {
-        "default_editor_id": 134232500, 
-        "describe": "", 
-        "key": "ui/134232500", 
-        "name": "\u91cd\u9524\u51fa\u51fb", 
-        "path": "ui/134232500", 
-        "uid": "res_icon_ui/134232500"
-    }, 
-    "ui/134235182": {
-        "default_editor_id": 134235182, 
-        "describe": "", 
-        "key": "ui/134235182", 
-        "name": "frame_3\u7ea7\u6b66\u5c06\u5e38\u6001_1", 
-        "path": "ui/134235182", 
-        "uid": "res_icon_ui/134235182"
-    }, 
-    "ui/134235461": {
-        "default_editor_id": 134235461, 
-        "describe": "", 
-        "key": "ui/134235461", 
-        "name": "\u5973\u67aa_W", 
-        "path": "ui/134235461", 
-        "uid": "res_icon_ui/134235461"
-    }, 
-    "ui/134236066": {
-        "default_editor_id": 134236066, 
-        "describe": "", 
-        "key": "ui/134236066", 
-        "name": "ZM_kpzs_4", 
-        "path": "ui/134236066", 
-        "uid": "res_icon_ui/134236066"
-    }, 
-    "ui/134236091": {
-        "default_editor_id": 134236091, 
-        "describe": "", 
-        "key": "ui/134236091", 
-        "name": "ZM_kpzs_6", 
-        "path": "ui/134236091", 
-        "uid": "res_icon_ui/134236091"
-    }, 
-    "ui/134236879": {
-        "default_editor_id": 134236879, 
-        "describe": "", 
-        "key": "ui/134236879", 
-        "name": "\u51b0\u9b44\u796d\u7940Q", 
-        "path": "ui/134236879", 
-        "uid": "res_icon_ui/134236879"
-    }, 
     "ui/134237341": {
         "default_editor_id": 134237341, 
         "describe": "", 
@@ -462,22 +126,6 @@
         "name": "image (83)", 
         "path": "ui/134237341", 
         "uid": "res_icon_ui/134237341"
-    }, 
-    "ui/134237582": {
-        "default_editor_id": 134237582, 
-        "describe": "", 
-        "key": "ui/134237582", 
-        "name": "4", 
-        "path": "ui/134237582", 
-        "uid": "res_icon_ui/134237582"
-    }, 
-    "ui/134238572": {
-        "default_editor_id": 134238572, 
-        "describe": "", 
-        "key": "ui/134238572", 
-        "name": "avatar_\u63d0\u53d6\u5b9d\u94bb", 
-        "path": "ui/134238572", 
-        "uid": "res_icon_ui/134238572"
     }, 
     "ui/134238945": {
         "default_editor_id": 134238945, 
@@ -559,14 +207,6 @@
         "path": "ui/134242767", 
         "uid": "res_icon_ui/134242767"
     }, 
-    "ui/134242781": {
-        "default_editor_id": 134242781, 
-        "describe": "", 
-        "key": "ui/134242781", 
-        "name": "ZM_btn_sl_nml_2", 
-        "path": "ui/134242781", 
-        "uid": "res_icon_ui/134242781"
-    }, 
     "ui/134242808": {
         "default_editor_id": 134242808, 
         "describe": "", 
@@ -583,14 +223,6 @@
         "path": "ui/134242910", 
         "uid": "res_icon_ui/134242910"
     }, 
-    "ui/134243092": {
-        "default_editor_id": 134243092, 
-        "describe": "", 
-        "key": "ui/134243092", 
-        "name": "\u7194\u5ca9\u5de8\u517dW", 
-        "path": "ui/134243092", 
-        "uid": "res_icon_ui/134243092"
-    }, 
     "ui/134243288": {
         "default_editor_id": 134243288, 
         "describe": "", 
@@ -606,38 +238,6 @@
         "name": "image (77)", 
         "path": "ui/134244150", 
         "uid": "res_icon_ui/134244150"
-    }, 
-    "ui/134244416": {
-        "default_editor_id": 134244416, 
-        "describe": "", 
-        "key": "ui/134244416", 
-        "name": "7", 
-        "path": "ui/134244416", 
-        "uid": "res_icon_ui/134244416"
-    }, 
-    "ui/134244504": {
-        "default_editor_id": 134244504, 
-        "describe": "", 
-        "key": "ui/134244504", 
-        "name": "0", 
-        "path": "ui/134244504", 
-        "uid": "res_icon_ui/134244504"
-    }, 
-    "ui/134244580": {
-        "default_editor_id": 134244580, 
-        "describe": "", 
-        "key": "ui/134244580", 
-        "name": "avatar_\u4e2d\u7ea7\u5386\u7ec3\u77f3", 
-        "path": "ui/134244580", 
-        "uid": "res_icon_ui/134244580"
-    }, 
-    "ui/134245345": {
-        "default_editor_id": 134245345, 
-        "describe": "", 
-        "key": "ui/134245345", 
-        "name": "\u7194\u5ca9\u5de8\u517dR", 
-        "path": "ui/134245345", 
-        "uid": "res_icon_ui/134245345"
     }, 
     "ui/134245526": {
         "default_editor_id": 134245526, 
@@ -662,38 +262,6 @@
         "name": "image (80)", 
         "path": "ui/134245810", 
         "uid": "res_icon_ui/134245810"
-    }, 
-    "ui/134246136": {
-        "default_editor_id": 134246136, 
-        "describe": "", 
-        "key": "ui/134246136", 
-        "name": "\u866b\u65cf", 
-        "path": "ui/134246136", 
-        "uid": "res_icon_ui/134246136"
-    }, 
-    "ui/134246233": {
-        "default_editor_id": 134246233, 
-        "describe": "", 
-        "key": "ui/134246233", 
-        "name": "\u795e\u79d8_1", 
-        "path": "ui/134246233", 
-        "uid": "res_icon_ui/134246233"
-    }, 
-    "ui/134246408": {
-        "default_editor_id": 134246408, 
-        "describe": "", 
-        "key": "ui/134246408", 
-        "name": "\u661f\u6708\u4e4b\u77f3", 
-        "path": "ui/134246408", 
-        "uid": "res_icon_ui/134246408"
-    }, 
-    "ui/134247525": {
-        "default_editor_id": 134247525, 
-        "describe": "", 
-        "key": "ui/134247525", 
-        "name": "\u51b0\u9b44\u796d\u7940R", 
-        "path": "ui/134247525", 
-        "uid": "res_icon_ui/134247525"
     }, 
     "ui/134247858": {
         "default_editor_id": 134247858, 
@@ -775,14 +343,6 @@
         "path": "ui/134251028", 
         "uid": "res_icon_ui/134251028"
     }, 
-    "ui/134251378": {
-        "default_editor_id": 134251378, 
-        "describe": "", 
-        "key": "ui/134251378", 
-        "name": "img_shop_details_content_bg", 
-        "path": "ui/134251378", 
-        "uid": "res_icon_ui/134251378"
-    }, 
     "ui/134251708": {
         "default_editor_id": 134251708, 
         "describe": "", 
@@ -790,22 +350,6 @@
         "name": "bg_\u901a\u7528\u60ac\u6d6e\u63d0\u793a", 
         "path": "ui/134251708", 
         "uid": "res_icon_ui/134251708"
-    }, 
-    "ui/134251993": {
-        "default_editor_id": 134251993, 
-        "describe": "", 
-        "key": "ui/134251993", 
-        "name": "\u4e2d\u7acb", 
-        "path": "ui/134251993", 
-        "uid": "res_icon_ui/134251993"
-    }, 
-    "ui/134252230": {
-        "default_editor_id": 134252230, 
-        "describe": "", 
-        "key": "ui/134252230", 
-        "name": "\u866b\u65cf_1", 
-        "path": "ui/134252230", 
-        "uid": "res_icon_ui/134252230"
     }, 
     "ui/134252236": {
         "default_editor_id": 134252236, 
@@ -847,22 +391,6 @@
         "path": "ui/134252919", 
         "uid": "res_icon_ui/134252919"
     }, 
-    "ui/134253037": {
-        "default_editor_id": 134253037, 
-        "describe": "", 
-        "key": "ui/134253037", 
-        "name": "\u51b0\u9b44\u796d\u7940B", 
-        "path": "ui/134253037", 
-        "uid": "res_icon_ui/134253037"
-    }, 
-    "ui/134253260": {
-        "default_editor_id": 134253260, 
-        "describe": "", 
-        "key": "ui/134253260", 
-        "name": "ZM_kp_jin", 
-        "path": "ui/134253260", 
-        "uid": "res_icon_ui/134253260"
-    }, 
     "ui/134253341": {
         "default_editor_id": 134253341, 
         "describe": "", 
@@ -871,14 +399,6 @@
         "path": "ui/134253341", 
         "uid": "res_icon_ui/134253341"
     }, 
-    "ui/134253399": {
-        "default_editor_id": 134253399, 
-        "describe": "", 
-        "key": "ui/134253399", 
-        "name": "\u547d\u8fd0\u6c34\u6676", 
-        "path": "ui/134253399", 
-        "uid": "res_icon_ui/134253399"
-    }, 
     "ui/134253560": {
         "default_editor_id": 134253560, 
         "describe": "", 
@@ -886,14 +406,6 @@
         "name": "img_kuang_ming", 
         "path": "ui/134253560", 
         "uid": "res_icon_ui/134253560"
-    }, 
-    "ui/134254179": {
-        "default_editor_id": 134254179, 
-        "describe": "", 
-        "key": "ui/134254179", 
-        "name": "\u6b66\u5668\u5927\u5e08R", 
-        "path": "ui/134254179", 
-        "uid": "res_icon_ui/134254179"
     }, 
     "ui/134254185": {
         "default_editor_id": 134254185, 
@@ -919,14 +431,6 @@
         "path": "ui/134254687", 
         "uid": "res_icon_ui/134254687"
     }, 
-    "ui/134254792": {
-        "default_editor_id": 134254792, 
-        "describe": "", 
-        "key": "ui/134254792", 
-        "name": "\u6b66\u5668\u5927\u5e08W", 
-        "path": "ui/134254792", 
-        "uid": "res_icon_ui/134254792"
-    }, 
     "ui/134254859": {
         "default_editor_id": 134254859, 
         "describe": "", 
@@ -934,22 +438,6 @@
         "name": "image (84)", 
         "path": "ui/134254859", 
         "uid": "res_icon_ui/134254859"
-    }, 
-    "ui/134254902": {
-        "default_editor_id": 134254902, 
-        "describe": "", 
-        "key": "ui/134254902", 
-        "name": "ZM_btn_zm_dwn_1", 
-        "path": "ui/134254902", 
-        "uid": "res_icon_ui/134254902"
-    }, 
-    "ui/134255974": {
-        "default_editor_id": 134255974, 
-        "describe": "", 
-        "key": "ui/134255974", 
-        "name": "ZM_kp_hong", 
-        "path": "ui/134255974", 
-        "uid": "res_icon_ui/134255974"
     }, 
     "ui/134257037": {
         "default_editor_id": 134257037, 
@@ -959,14 +447,6 @@
         "path": "ui/134257037", 
         "uid": "res_icon_ui/134257037"
     }, 
-    "ui/134257679": {
-        "default_editor_id": 134257679, 
-        "describe": "", 
-        "key": "ui/134257679", 
-        "name": "PGC_DM6_xuetiaodi", 
-        "path": "ui/134257679", 
-        "uid": "res_icon_ui/134257679"
-    }, 
     "ui/134257779": {
         "default_editor_id": 134257779, 
         "describe": "", 
@@ -975,22 +455,6 @@
         "path": "ui/134257779", 
         "uid": "res_icon_ui/134257779"
     }, 
-    "ui/134257846": {
-        "default_editor_id": 134257846, 
-        "describe": "", 
-        "key": "ui/134257846", 
-        "name": "\u9ec4\u91d1\u978b", 
-        "path": "ui/134257846", 
-        "uid": "res_icon_ui/134257846"
-    }, 
-    "ui/134258576": {
-        "default_editor_id": 134258576, 
-        "describe": "", 
-        "key": "ui/134258576", 
-        "name": "ZM_kpzs_2", 
-        "path": "ui/134258576", 
-        "uid": "res_icon_ui/134258576"
-    }, 
     "ui/134258900": {
         "default_editor_id": 134258900, 
         "describe": "", 
@@ -998,22 +462,6 @@
         "name": "choice-card-shell_1", 
         "path": "ui/134258900", 
         "uid": "res_icon_ui/134258900"
-    }, 
-    "ui/134259591": {
-        "default_editor_id": 134259591, 
-        "describe": "", 
-        "key": "ui/134259591", 
-        "name": "\u521d\u59cb\u4e4b\u77f3", 
-        "path": "ui/134259591", 
-        "uid": "res_icon_ui/134259591"
-    }, 
-    "ui/134259827": {
-        "default_editor_id": 134259827, 
-        "describe": "", 
-        "key": "ui/134259827", 
-        "name": "ZM_btn_zm_nml_1", 
-        "path": "ui/134259827", 
-        "uid": "res_icon_ui/134259827"
     }, 
     "ui/134260223": {
         "default_editor_id": 134260223, 
@@ -1031,54 +479,6 @@
         "path": "ui/134260496", 
         "uid": "res_icon_ui/134260496"
     }, 
-    "ui/134260586": {
-        "default_editor_id": 134260586, 
-        "describe": "", 
-        "key": "ui/134260586", 
-        "name": "\u5b97\u6559_1", 
-        "path": "ui/134260586", 
-        "uid": "res_icon_ui/134260586"
-    }, 
-    "ui/134260877": {
-        "default_editor_id": 134260877, 
-        "describe": "", 
-        "key": "ui/134260877", 
-        "name": "\u706b\u7130\u676f", 
-        "path": "ui/134260877", 
-        "uid": "res_icon_ui/134260877"
-    }, 
-    "ui/134261213": {
-        "default_editor_id": 134261213, 
-        "describe": "", 
-        "key": "ui/134261213", 
-        "name": "\u4e2d\u7acb_1", 
-        "path": "ui/134261213", 
-        "uid": "res_icon_ui/134261213"
-    }, 
-    "ui/134261605": {
-        "default_editor_id": 134261605, 
-        "describe": "", 
-        "key": "ui/134261605", 
-        "name": "\u5723\u5973\u8d1e\u5fb7\u5934\u50cf", 
-        "path": "ui/134261605", 
-        "uid": "res_icon_ui/134261605"
-    }, 
-    "ui/134262398": {
-        "default_editor_id": 134262398, 
-        "describe": "", 
-        "key": "ui/134262398", 
-        "name": "ZM_kpzs_3", 
-        "path": "ui/134262398", 
-        "uid": "res_icon_ui/134262398"
-    }, 
-    "ui/134262436": {
-        "default_editor_id": 134262436, 
-        "describe": "", 
-        "key": "ui/134262436", 
-        "name": "\u94f6\u6cb3\u4e4b\u67aa", 
-        "path": "ui/134262436", 
-        "uid": "res_icon_ui/134262436"
-    }, 
     "ui/134262555": {
         "default_editor_id": 134262555, 
         "describe": "", 
@@ -1086,14 +486,6 @@
         "name": "img_dikuang_jinbi", 
         "path": "ui/134262555", 
         "uid": "res_icon_ui/134262555"
-    }, 
-    "ui/134262895": {
-        "default_editor_id": 134262895, 
-        "describe": "", 
-        "key": "ui/134262895", 
-        "name": "frame_2\u7ea7\u6b66\u5c06\u5e38\u6001_1", 
-        "path": "ui/134262895", 
-        "uid": "res_icon_ui/134262895"
     }, 
     "ui/134263581": {
         "default_editor_id": 134263581, 
@@ -1103,38 +495,6 @@
         "path": "ui/134263581", 
         "uid": "res_icon_ui/134263581"
     }, 
-    "ui/134263721": {
-        "default_editor_id": 134263721, 
-        "describe": "", 
-        "key": "ui/134263721", 
-        "name": "\u5e1d\u56fd\u8f7b\u9a91\u5175\u5934\u50cf", 
-        "path": "ui/134263721", 
-        "uid": "res_icon_ui/134263721"
-    }, 
-    "ui/134263926": {
-        "default_editor_id": 134263926, 
-        "describe": "", 
-        "key": "ui/134263926", 
-        "name": "ZM_kpzs_5", 
-        "path": "ui/134263926", 
-        "uid": "res_icon_ui/134263926"
-    }, 
-    "ui/134264014": {
-        "default_editor_id": 134264014, 
-        "describe": "", 
-        "key": "ui/134264014", 
-        "name": "\u6b66\u5668\u5927\u5e08\u88ab\u52a8", 
-        "path": "ui/134264014", 
-        "uid": "res_icon_ui/134264014"
-    }, 
-    "ui/134264436": {
-        "default_editor_id": 134264436, 
-        "describe": "", 
-        "key": "ui/134264436", 
-        "name": "\u521d\u59cb\u4e4b\u76fe", 
-        "path": "ui/134264436", 
-        "uid": "res_icon_ui/134264436"
-    }, 
     "ui/134264555": {
         "default_editor_id": 134264555, 
         "describe": "", 
@@ -1143,14 +503,6 @@
         "path": "ui/134264555", 
         "uid": "res_icon_ui/134264555"
     }, 
-    "ui/134264598": {
-        "default_editor_id": 134264598, 
-        "describe": "", 
-        "key": "ui/134264598", 
-        "name": "6", 
-        "path": "ui/134264598", 
-        "uid": "res_icon_ui/134264598"
-    }, 
     "ui/134264735": {
         "default_editor_id": 134264735, 
         "describe": "", 
@@ -1158,30 +510,6 @@
         "name": "PGC_DM6_icon_gs", 
         "path": "ui/134264735", 
         "uid": "res_icon_ui/134264735"
-    }, 
-    "ui/134264913": {
-        "default_editor_id": 134264913, 
-        "describe": "", 
-        "key": "ui/134264913", 
-        "name": "img_fast", 
-        "path": "ui/134264913", 
-        "uid": "res_icon_ui/134264913"
-    }, 
-    "ui/134265244": {
-        "default_editor_id": 134265244, 
-        "describe": "", 
-        "key": "ui/134265244", 
-        "name": "img_shop_details_line", 
-        "path": "ui/134265244", 
-        "uid": "res_icon_ui/134265244"
-    }, 
-    "ui/134265849": {
-        "default_editor_id": 134265849, 
-        "describe": "", 
-        "key": "ui/134265849", 
-        "name": "frame_1\u7ea7\u6b66\u5c06\u5e38\u6001_1", 
-        "path": "ui/134265849", 
-        "uid": "res_icon_ui/134265849"
     }, 
     "ui/134266502": {
         "default_editor_id": 134266502, 
@@ -1223,22 +551,6 @@
         "path": "ui/134268904", 
         "uid": "res_icon_ui/134268904"
     }, 
-    "ui/134269129": {
-        "default_editor_id": 134269129, 
-        "describe": "", 
-        "key": "ui/134269129", 
-        "name": "\u7194\u5ca9\u5de8\u517dB", 
-        "path": "ui/134269129", 
-        "uid": "res_icon_ui/134269129"
-    }, 
-    "ui/134269625": {
-        "default_editor_id": 134269625, 
-        "describe": "", 
-        "key": "ui/134269625", 
-        "name": "\u5973\u67aa_R", 
-        "path": "ui/134269625", 
-        "uid": "res_icon_ui/134269625"
-    }, 
     "ui/134269669": {
         "default_editor_id": 134269669, 
         "describe": "", 
@@ -1271,14 +583,6 @@
         "path": "ui/134271828", 
         "uid": "res_icon_ui/134271828"
     }, 
-    "ui/134271879": {
-        "default_editor_id": 134271879, 
-        "describe": "", 
-        "key": "ui/134271879", 
-        "name": "\u51b0\u9b44\u796d\u7940W", 
-        "path": "ui/134271879", 
-        "uid": "res_icon_ui/134271879"
-    }, 
     "ui/134272066": {
         "default_editor_id": 134272066, 
         "describe": "", 
@@ -1287,38 +591,6 @@
         "path": "ui/134272066", 
         "uid": "res_icon_ui/134272066"
     }, 
-    "ui/134272079": {
-        "default_editor_id": 134272079, 
-        "describe": "", 
-        "key": "ui/134272079", 
-        "name": "\u7194\u5ca9\u5de8\u517dQ", 
-        "path": "ui/134272079", 
-        "uid": "res_icon_ui/134272079"
-    }, 
-    "ui/134272163": {
-        "default_editor_id": 134272163, 
-        "describe": "", 
-        "key": "ui/134272163", 
-        "name": "ZM_kp_lan", 
-        "path": "ui/134272163", 
-        "uid": "res_icon_ui/134272163"
-    }, 
-    "ui/134272735": {
-        "default_editor_id": 134272735, 
-        "describe": "", 
-        "key": "ui/134272735", 
-        "name": "ZM_kp_zi", 
-        "path": "ui/134272735", 
-        "uid": "res_icon_ui/134272735"
-    }, 
-    "ui/134274433": {
-        "default_editor_id": 134274433, 
-        "describe": "", 
-        "key": "ui/134274433", 
-        "name": "\u5973\u67aa_B", 
-        "path": "ui/134274433", 
-        "uid": "res_icon_ui/134274433"
-    }, 
     "ui/134274626": {
         "default_editor_id": 134274626, 
         "describe": "", 
@@ -1326,14 +598,6 @@
         "name": "hero_hover", 
         "path": "ui/134274626", 
         "uid": "res_icon_ui/134274626"
-    }, 
-    "ui/134274884": {
-        "default_editor_id": 134274884, 
-        "describe": "", 
-        "key": "ui/134274884", 
-        "name": "\u865a\u7a7a\u63a0\u593a\u8005E", 
-        "path": "ui/134274884", 
-        "uid": "res_icon_ui/134274884"
     }, 
     "ui/134275186": {
         "default_editor_id": 134275186, 
@@ -1415,54 +679,6 @@
         "path": "ui/134277125", 
         "uid": "res_icon_ui/134277125"
     }, 
-    "ui/134277631": {
-        "default_editor_id": 134277631, 
-        "describe": "", 
-        "key": "ui/134277631", 
-        "name": "avatar_\u968f\u673a\u8bcd\u6761\u77f3", 
-        "path": "ui/134277631", 
-        "uid": "res_icon_ui/134277631"
-    }, 
-    "ui/134277978": {
-        "default_editor_id": 134277978, 
-        "describe": "", 
-        "key": "ui/134277978", 
-        "name": "\u56fe\u5c42 17", 
-        "path": "ui/134277978", 
-        "uid": "res_icon_ui/134277978"
-    }, 
-    "ui/134278201": {
-        "default_editor_id": 134278201, 
-        "describe": "", 
-        "key": "ui/134278201", 
-        "name": "\u62c9\u59c6\u9f50\u7684\u94c3\u94db", 
-        "path": "ui/134278201", 
-        "uid": "res_icon_ui/134278201"
-    }, 
-    "ui/134278424": {
-        "default_editor_id": 134278424, 
-        "describe": "", 
-        "key": "ui/134278424", 
-        "name": "\u5e1d\u56fd_1", 
-        "path": "ui/134278424", 
-        "uid": "res_icon_ui/134278424"
-    }, 
-    "ui/134278644": {
-        "default_editor_id": 134278644, 
-        "describe": "", 
-        "key": "ui/134278644", 
-        "name": "\u6b66\u5668\u5927\u5e08", 
-        "path": "ui/134278644", 
-        "uid": "res_icon_ui/134278644"
-    }, 
-    "ui/134278720": {
-        "default_editor_id": 134278720, 
-        "describe": "", 
-        "key": "ui/134278720", 
-        "name": "ZM_kp_lv", 
-        "path": "ui/134278720", 
-        "uid": "res_icon_ui/134278720"
-    }, 
     "ui/134278859": {
         "default_editor_id": 134278859, 
         "describe": "", 
@@ -1470,14 +686,6 @@
         "name": "Snipaste_2024-08-29_14-24-03", 
         "path": "ui/134278859", 
         "uid": "res_icon_ui/134278859"
-    }, 
-    "ui/134279005": {
-        "default_editor_id": 134279005, 
-        "describe": "", 
-        "key": "ui/134279005", 
-        "name": "HUD_bp_xinxidi_2", 
-        "path": "ui/134279005", 
-        "uid": "res_icon_ui/134279005"
     }, 
     "ui/134279449": {
         "default_editor_id": 134279449, 
@@ -1487,30 +695,6 @@
         "path": "ui/134279449", 
         "uid": "res_icon_ui/134279449"
     }, 
-    "ui/134279816": {
-        "default_editor_id": 134279816, 
-        "describe": "", 
-        "key": "ui/134279816", 
-        "name": "ZM_btn_sl_dwn_1", 
-        "path": "ui/134279816", 
-        "uid": "res_icon_ui/134279816"
-    }, 
-    "ui/134280481": {
-        "default_editor_id": 134280481, 
-        "describe": "", 
-        "key": "ui/134280481", 
-        "name": "\u7194\u5ca9\u5de8\u517d", 
-        "path": "ui/134280481", 
-        "uid": "res_icon_ui/134280481"
-    }, 
-    "ui/134280717": {
-        "default_editor_id": 134280717, 
-        "describe": "", 
-        "key": "ui/134280717", 
-        "name": "RL_sp_zy_03", 
-        "path": "ui/134280717", 
-        "uid": "res_icon_ui/134280717"
-    }, 
     "ui/134281957": {
         "default_editor_id": 134281957, 
         "describe": "", 
@@ -1518,14 +702,6 @@
         "name": "Rectangle-2", 
         "path": "ui/134281957", 
         "uid": "res_icon_ui/134281957"
-    }, 
-    "ui/134282047": {
-        "default_editor_id": 134282047, 
-        "describe": "", 
-        "key": "ui/134282047", 
-        "name": "frame_0\u7ea7\u6b66\u5c06\u5e38\u6001_1", 
-        "path": "ui/134282047", 
-        "uid": "res_icon_ui/134282047"
     }, 
     "ui/134282277": {
         "default_editor_id": 134282277, 
@@ -1535,294 +711,6 @@
         "path": "ui/134282277", 
         "uid": "res_icon_ui/134282277"
     }, 
-    "ui/134283022": {
-        "default_editor_id": 134283022, 
-        "describe": "", 
-        "key": "ui/134283022", 
-        "name": "2", 
-        "path": "ui/134283022", 
-        "uid": "res_icon_ui/134283022"
-    }, 
-    "ui/166ea700-5b23-418a-aa95-dd2a08744774": {
-        "default_editor_id": 134223498, 
-        "describe": "", 
-        "key": "ui/166ea700-5b23-418a-aa95-dd2a08744774", 
-        "name": "\u9a6d\u8725\u5c0f\u516c\u4e3bW", 
-        "path": "ui/166ea700-5b23-418a-aa95-dd2a08744774", 
-        "uid": "res_icon_ui/166ea700-5b23-418a-aa95-dd2a08744774"
-    }, 
-    "ui/1e6ad362-c05d-4ff7-af0b-41238ef5d7dd": {
-        "default_editor_id": 134259505, 
-        "describe": "", 
-        "key": "ui/1e6ad362-c05d-4ff7-af0b-41238ef5d7dd", 
-        "name": "\u517d\u4eba\u5c06\u519b", 
-        "path": "ui/1e6ad362-c05d-4ff7-af0b-41238ef5d7dd", 
-        "uid": "res_icon_ui/1e6ad362-c05d-4ff7-af0b-41238ef5d7dd"
-    }, 
-    "ui/1e945aaf-3580-401f-9666-c4ed2ec9754e": {
-        "default_editor_id": 134222413, 
-        "describe": "", 
-        "key": "ui/1e945aaf-3580-401f-9666-c4ed2ec9754e", 
-        "name": "\u81ea\u7136\u523a\u5ba2W", 
-        "path": "ui/1e945aaf-3580-401f-9666-c4ed2ec9754e", 
-        "uid": "res_icon_ui/1e945aaf-3580-401f-9666-c4ed2ec9754e"
-    }, 
-    "ui/1f7ccae3-b553-43c9-b75d-7d4426334e6b": {
-        "default_editor_id": 134275199, 
-        "describe": "", 
-        "key": "ui/1f7ccae3-b553-43c9-b75d-7d4426334e6b", 
-        "name": "\u6b66\u5668\u5927\u5e08_1", 
-        "path": "ui/1f7ccae3-b553-43c9-b75d-7d4426334e6b", 
-        "uid": "res_icon_ui/1f7ccae3-b553-43c9-b75d-7d4426334e6b"
-    }, 
-    "ui/1fa0d0f0-0544-471c-be2c-143f557b76ac": {
-        "default_editor_id": 134249886, 
-        "describe": "", 
-        "key": "ui/1fa0d0f0-0544-471c-be2c-143f557b76ac", 
-        "name": "\u751c\u871c\u6cbb\u6108\u8005R", 
-        "path": "ui/1fa0d0f0-0544-471c-be2c-143f557b76ac", 
-        "uid": "res_icon_ui/1fa0d0f0-0544-471c-be2c-143f557b76ac"
-    }, 
-    "ui/2047d7bb-3e66-41c4-9067-a094a910472b": {
-        "default_editor_id": 134269594, 
-        "describe": "", 
-        "key": "ui/2047d7bb-3e66-41c4-9067-a094a910472b", 
-        "name": "%ID300540000_2", 
-        "path": "ui/2047d7bb-3e66-41c4-9067-a094a910472b", 
-        "uid": "res_icon_ui/2047d7bb-3e66-41c4-9067-a094a910472b"
-    }, 
-    "ui/2055aa79-74ae-4b19-8694-0a09030a2b54": {
-        "default_editor_id": 134218501, 
-        "describe": "", 
-        "key": "ui/2055aa79-74ae-4b19-8694-0a09030a2b54", 
-        "name": "\u9a6d\u8725\u5c0f\u516c\u4e3bB", 
-        "path": "ui/2055aa79-74ae-4b19-8694-0a09030a2b54", 
-        "uid": "res_icon_ui/2055aa79-74ae-4b19-8694-0a09030a2b54"
-    }, 
-    "ui/215e820f-009b-4de2-bd25-007eaf13369b": {
-        "default_editor_id": 134280324, 
-        "describe": "", 
-        "key": "ui/215e820f-009b-4de2-bd25-007eaf13369b", 
-        "name": "\u8d64\u708e\u5c06\u519bW", 
-        "path": "ui/215e820f-009b-4de2-bd25-007eaf13369b", 
-        "uid": "res_icon_ui/215e820f-009b-4de2-bd25-007eaf13369b"
-    }, 
-    "ui/2952f089-d7a4-4fec-ab82-acfbbff1170b": {
-        "default_editor_id": 134242811, 
-        "describe": "", 
-        "key": "ui/2952f089-d7a4-4fec-ab82-acfbbff1170b", 
-        "name": "\u901a\u7075\u5927\u6cd5\u5e08Q", 
-        "path": "ui/2952f089-d7a4-4fec-ab82-acfbbff1170b", 
-        "uid": "res_icon_ui/2952f089-d7a4-4fec-ab82-acfbbff1170b"
-    }, 
-    "ui/2e219684-2ac5-47d4-876d-3df211bb6bb2": {
-        "default_editor_id": 134278925, 
-        "describe": "", 
-        "key": "ui/2e219684-2ac5-47d4-876d-3df211bb6bb2", 
-        "name": "\u77ee\u4eba\u5f11\u541b\u8005R", 
-        "path": "ui/2e219684-2ac5-47d4-876d-3df211bb6bb2", 
-        "uid": "res_icon_ui/2e219684-2ac5-47d4-876d-3df211bb6bb2"
-    }, 
-    "ui/300540000": {
-        "default_editor_id": 300540000, 
-        "describe": "", 
-        "key": "ui/300540000", 
-        "name": "%ID300540000", 
-        "path": "ui/300540000", 
-        "uid": "res_icon_ui/300540000"
-    }, 
-    "ui/3375e53f-e20a-4a3c-9f69-492b889882ea": {
-        "default_editor_id": 134253357, 
-        "describe": "", 
-        "key": "ui/3375e53f-e20a-4a3c-9f69-492b889882ea", 
-        "name": "\u6c34\u9b42\u672f\u58ebQ", 
-        "path": "ui/3375e53f-e20a-4a3c-9f69-492b889882ea", 
-        "uid": "res_icon_ui/3375e53f-e20a-4a3c-9f69-492b889882ea"
-    }, 
-    "ui/34c64638-93d5-4d01-b504-309ee920c7d6": {
-        "default_editor_id": 134252389, 
-        "describe": "", 
-        "key": "ui/34c64638-93d5-4d01-b504-309ee920c7d6", 
-        "name": "\u5973\u67aa_R_1", 
-        "path": "ui/34c64638-93d5-4d01-b504-309ee920c7d6", 
-        "uid": "res_icon_ui/34c64638-93d5-4d01-b504-309ee920c7d6"
-    }, 
-    "ui/355c2b6c-fee1-44d1-be1f-203e20446053": {
-        "default_editor_id": 134222677, 
-        "describe": "", 
-        "key": "ui/355c2b6c-fee1-44d1-be1f-203e20446053", 
-        "name": "img_shop_details_bg_1", 
-        "path": "ui/355c2b6c-fee1-44d1-be1f-203e20446053", 
-        "uid": "res_icon_ui/355c2b6c-fee1-44d1-be1f-203e20446053"
-    }, 
-    "ui/397ab0da-31a3-40d1-bcf1-8ba14c282256": {
-        "default_editor_id": 134257584, 
-        "describe": "", 
-        "key": "ui/397ab0da-31a3-40d1-bcf1-8ba14c282256", 
-        "name": "\u6bd2\u8725\u795e\u7badB", 
-        "path": "ui/397ab0da-31a3-40d1-bcf1-8ba14c282256", 
-        "uid": "res_icon_ui/397ab0da-31a3-40d1-bcf1-8ba14c282256"
-    }, 
-    "ui/3a01c726-7056-4363-bb95-a8e5a904e503": {
-        "default_editor_id": 134251213, 
-        "describe": "", 
-        "key": "ui/3a01c726-7056-4363-bb95-a8e5a904e503", 
-        "name": "\u51b0\u9b44\u796d\u7940Q_1", 
-        "path": "ui/3a01c726-7056-4363-bb95-a8e5a904e503", 
-        "uid": "res_icon_ui/3a01c726-7056-4363-bb95-a8e5a904e503"
-    }, 
-    "ui/3c178156-8a73-4b10-ab55-2ba2a120b28a": {
-        "default_editor_id": 134254545, 
-        "describe": "", 
-        "key": "ui/3c178156-8a73-4b10-ab55-2ba2a120b28a", 
-        "name": "\u5973\u67aa_E_1", 
-        "path": "ui/3c178156-8a73-4b10-ab55-2ba2a120b28a", 
-        "uid": "res_icon_ui/3c178156-8a73-4b10-ab55-2ba2a120b28a"
-    }, 
-    "ui/3d8386a6-61ca-423b-919f-ad5e9ac8b181": {
-        "default_editor_id": 134248216, 
-        "describe": "", 
-        "key": "ui/3d8386a6-61ca-423b-919f-ad5e9ac8b181", 
-        "name": "\u5973\u67aa_1", 
-        "path": "ui/3d8386a6-61ca-423b-919f-ad5e9ac8b181", 
-        "uid": "res_icon_ui/3d8386a6-61ca-423b-919f-ad5e9ac8b181"
-    }, 
-    "ui/404aa522-5853-46b4-abfc-e799450597ab": {
-        "default_editor_id": 134220552, 
-        "describe": "", 
-        "key": "ui/404aa522-5853-46b4-abfc-e799450597ab", 
-        "name": "\u51b0\u9b44\u796d\u7940W_1", 
-        "path": "ui/404aa522-5853-46b4-abfc-e799450597ab", 
-        "uid": "res_icon_ui/404aa522-5853-46b4-abfc-e799450597ab"
-    }, 
-    "ui/44495f9f-e7a0-4c01-9c89-fb259b526131": {
-        "default_editor_id": 134261849, 
-        "describe": "", 
-        "key": "ui/44495f9f-e7a0-4c01-9c89-fb259b526131", 
-        "name": "\u81ea\u7136\u523a\u5ba2E", 
-        "path": "ui/44495f9f-e7a0-4c01-9c89-fb259b526131", 
-        "uid": "res_icon_ui/44495f9f-e7a0-4c01-9c89-fb259b526131"
-    }, 
-    "ui/45e29ab5-c383-4b52-b977-dcb55c48b475": {
-        "default_editor_id": 134248687, 
-        "describe": "", 
-        "key": "ui/45e29ab5-c383-4b52-b977-dcb55c48b475", 
-        "name": "\u96f7\u7535\u5927\u796d\u53f8R", 
-        "path": "ui/45e29ab5-c383-4b52-b977-dcb55c48b475", 
-        "uid": "res_icon_ui/45e29ab5-c383-4b52-b977-dcb55c48b475"
-    }, 
-    "ui/4b39981d-6e67-4f6a-893a-439a4ef3b1be": {
-        "default_editor_id": 134265209, 
-        "describe": "", 
-        "key": "ui/4b39981d-6e67-4f6a-893a-439a4ef3b1be", 
-        "name": "\u77ee\u4eba\u5f11\u541b\u8005", 
-        "path": "ui/4b39981d-6e67-4f6a-893a-439a4ef3b1be", 
-        "uid": "res_icon_ui/4b39981d-6e67-4f6a-893a-439a4ef3b1be"
-    }, 
-    "ui/4cdd85f3-3715-42c6-a1c1-6c0b84f3b946": {
-        "default_editor_id": 134251138, 
-        "describe": "", 
-        "key": "ui/4cdd85f3-3715-42c6-a1c1-6c0b84f3b946", 
-        "name": "\u6b66\u5668\u5927\u5e08\u88ab\u52a8_1", 
-        "path": "ui/4cdd85f3-3715-42c6-a1c1-6c0b84f3b946", 
-        "uid": "res_icon_ui/4cdd85f3-3715-42c6-a1c1-6c0b84f3b946"
-    }, 
-    "ui/4ce44682-da09-40d1-b1d0-4dd9073475af": {
-        "default_editor_id": 134267441, 
-        "describe": "", 
-        "key": "ui/4ce44682-da09-40d1-b1d0-4dd9073475af", 
-        "name": "\u517d\u4eba\u5c06\u519b", 
-        "path": "ui/4ce44682-da09-40d1-b1d0-4dd9073475af", 
-        "uid": "res_icon_ui/4ce44682-da09-40d1-b1d0-4dd9073475af"
-    }, 
-    "ui/4f2e555a-dbb8-4d4c-9945-804ccb7eff06": {
-        "default_editor_id": 134245182, 
-        "describe": "", 
-        "key": "ui/4f2e555a-dbb8-4d4c-9945-804ccb7eff06", 
-        "name": "\u667a\u6167\u5148\u77e5B", 
-        "path": "ui/4f2e555a-dbb8-4d4c-9945-804ccb7eff06", 
-        "uid": "res_icon_ui/4f2e555a-dbb8-4d4c-9945-804ccb7eff06"
-    }, 
-    "ui/5208043f-c9a0-4090-aeaa-46f8552a36a9": {
-        "default_editor_id": 134235862, 
-        "describe": "", 
-        "key": "ui/5208043f-c9a0-4090-aeaa-46f8552a36a9", 
-        "name": "\u5973\u67aa_W_1", 
-        "path": "ui/5208043f-c9a0-4090-aeaa-46f8552a36a9", 
-        "uid": "res_icon_ui/5208043f-c9a0-4090-aeaa-46f8552a36a9"
-    }, 
-    "ui/52b52195-6fea-44c0-9e68-9084d9fbbb8a": {
-        "default_editor_id": 134274965, 
-        "describe": "", 
-        "key": "ui/52b52195-6fea-44c0-9e68-9084d9fbbb8a", 
-        "name": "\u6bd2\u8725\u795e\u7badE", 
-        "path": "ui/52b52195-6fea-44c0-9e68-9084d9fbbb8a", 
-        "uid": "res_icon_ui/52b52195-6fea-44c0-9e68-9084d9fbbb8a"
-    }, 
-    "ui/5392504a-c18a-4ae0-b6c6-6efbaffae3df": {
-        "default_editor_id": 134254922, 
-        "describe": "", 
-        "key": "ui/5392504a-c18a-4ae0-b6c6-6efbaffae3df", 
-        "name": "\u6df1\u6d77\u6076\u9738", 
-        "path": "ui/5392504a-c18a-4ae0-b6c6-6efbaffae3df", 
-        "uid": "res_icon_ui/5392504a-c18a-4ae0-b6c6-6efbaffae3df"
-    }, 
-    "ui/539f1e2a-0117-4ef7-adfa-b2d000f99a82": {
-        "default_editor_id": 134256159, 
-        "describe": "", 
-        "key": "ui/539f1e2a-0117-4ef7-adfa-b2d000f99a82", 
-        "name": "\u77ee\u4eba\u5f11\u541b\u8005W", 
-        "path": "ui/539f1e2a-0117-4ef7-adfa-b2d000f99a82", 
-        "uid": "res_icon_ui/539f1e2a-0117-4ef7-adfa-b2d000f99a82"
-    }, 
-    "ui/53b0ac36-a88a-411a-89cc-93d13c1127e3": {
-        "default_editor_id": 134241389, 
-        "describe": "", 
-        "key": "ui/53b0ac36-a88a-411a-89cc-93d13c1127e3", 
-        "name": "\u5723\u796d\u7940Q", 
-        "path": "ui/53b0ac36-a88a-411a-89cc-93d13c1127e3", 
-        "uid": "res_icon_ui/53b0ac36-a88a-411a-89cc-93d13c1127e3"
-    }, 
-    "ui/546514ea-cc66-4faa-bfc9-9aa965355200": {
-        "default_editor_id": 134250311, 
-        "describe": "", 
-        "key": "ui/546514ea-cc66-4faa-bfc9-9aa965355200", 
-        "name": "\u5723\u796d\u7940", 
-        "path": "ui/546514ea-cc66-4faa-bfc9-9aa965355200", 
-        "uid": "res_icon_ui/546514ea-cc66-4faa-bfc9-9aa965355200"
-    }, 
-    "ui/55449787-6948-4833-8abe-819b2c29572b": {
-        "default_editor_id": 134223473, 
-        "describe": "", 
-        "key": "ui/55449787-6948-4833-8abe-819b2c29572b", 
-        "name": "\u8d64\u708e\u5c06\u519b", 
-        "path": "ui/55449787-6948-4833-8abe-819b2c29572b", 
-        "uid": "res_icon_ui/55449787-6948-4833-8abe-819b2c29572b"
-    }, 
-    "ui/58445304-8828-464b-8565-5a6708a4e6a1": {
-        "default_editor_id": 134281458, 
-        "describe": "", 
-        "key": "ui/58445304-8828-464b-8565-5a6708a4e6a1", 
-        "name": "\u81ea\u7136\u523a\u5ba2", 
-        "path": "ui/58445304-8828-464b-8565-5a6708a4e6a1", 
-        "uid": "res_icon_ui/58445304-8828-464b-8565-5a6708a4e6a1"
-    }, 
-    "ui/5dc7b9cf-a1c1-43bd-abb7-d6e7c4044a5d": {
-        "default_editor_id": 134224007, 
-        "describe": "", 
-        "key": "ui/5dc7b9cf-a1c1-43bd-abb7-d6e7c4044a5d", 
-        "name": "\u6bd2\u8725\u795e\u7badR", 
-        "path": "ui/5dc7b9cf-a1c1-43bd-abb7-d6e7c4044a5d", 
-        "uid": "res_icon_ui/5dc7b9cf-a1c1-43bd-abb7-d6e7c4044a5d"
-    }, 
-    "ui/5e0c708b-5f0f-408e-a059-1d24caf31fb6": {
-        "default_editor_id": 134220349, 
-        "describe": "", 
-        "key": "ui/5e0c708b-5f0f-408e-a059-1d24caf31fb6", 
-        "name": "\u9a6d\u8725\u5c0f\u516c\u4e3bQ", 
-        "path": "ui/5e0c708b-5f0f-408e-a059-1d24caf31fb6", 
-        "uid": "res_icon_ui/5e0c708b-5f0f-408e-a059-1d24caf31fb6"
-    }, 
     "ui/5e707c80-28c0-4219-9f5f-fb7ebe7056a7": {
         "default_editor_id": 134257674, 
         "describe": "", 
@@ -1830,126 +718,6 @@
         "name": "img_prop_frame_1", 
         "path": "ui/5e707c80-28c0-4219-9f5f-fb7ebe7056a7", 
         "uid": "res_icon_ui/5e707c80-28c0-4219-9f5f-fb7ebe7056a7"
-    }, 
-    "ui/5e9f4c28-03c8-473d-a2f8-458c174520ee": {
-        "default_editor_id": 134237865, 
-        "describe": "", 
-        "key": "ui/5e9f4c28-03c8-473d-a2f8-458c174520ee", 
-        "name": "\u96f7\u7535\u5927\u796d\u53f8B", 
-        "path": "ui/5e9f4c28-03c8-473d-a2f8-458c174520ee", 
-        "uid": "res_icon_ui/5e9f4c28-03c8-473d-a2f8-458c174520ee"
-    }, 
-    "ui/63803e0a-2a4d-4f04-b9e9-7e3fcd2469bf": {
-        "default_editor_id": 134266825, 
-        "describe": "", 
-        "key": "ui/63803e0a-2a4d-4f04-b9e9-7e3fcd2469bf", 
-        "name": "\u6c34\u9b42\u672f\u58ebE", 
-        "path": "ui/63803e0a-2a4d-4f04-b9e9-7e3fcd2469bf", 
-        "uid": "res_icon_ui/63803e0a-2a4d-4f04-b9e9-7e3fcd2469bf"
-    }, 
-    "ui/66d3ee62-5bbd-4ca6-b518-300d18399140": {
-        "default_editor_id": 134280937, 
-        "describe": "", 
-        "key": "ui/66d3ee62-5bbd-4ca6-b518-300d18399140", 
-        "name": "\u7194\u5ca9\u5de8\u517d_1", 
-        "path": "ui/66d3ee62-5bbd-4ca6-b518-300d18399140", 
-        "uid": "res_icon_ui/66d3ee62-5bbd-4ca6-b518-300d18399140"
-    }, 
-    "ui/66e699bb-93b5-4e4a-8d9f-e770116d29b4": {
-        "default_editor_id": 134221750, 
-        "describe": "", 
-        "key": "ui/66e699bb-93b5-4e4a-8d9f-e770116d29b4", 
-        "name": "\u667a\u6167\u5148\u77e5E", 
-        "path": "ui/66e699bb-93b5-4e4a-8d9f-e770116d29b4", 
-        "uid": "res_icon_ui/66e699bb-93b5-4e4a-8d9f-e770116d29b4"
-    }, 
-    "ui/68866988-b536-4ca3-a311-60f70badb7f3": {
-        "default_editor_id": 134276490, 
-        "describe": "", 
-        "key": "ui/68866988-b536-4ca3-a311-60f70badb7f3", 
-        "name": "\u8d64\u708e\u5c06\u519bQ", 
-        "path": "ui/68866988-b536-4ca3-a311-60f70badb7f3", 
-        "uid": "res_icon_ui/68866988-b536-4ca3-a311-60f70badb7f3"
-    }, 
-    "ui/6da6e607-8783-4313-9db7-a122aac54925": {
-        "default_editor_id": 134250862, 
-        "describe": "", 
-        "key": "ui/6da6e607-8783-4313-9db7-a122aac54925", 
-        "name": "\u5723\u796d\u7940B", 
-        "path": "ui/6da6e607-8783-4313-9db7-a122aac54925", 
-        "uid": "res_icon_ui/6da6e607-8783-4313-9db7-a122aac54925"
-    }, 
-    "ui/70270bb5-e895-43c3-b195-b0f279f1735f": {
-        "default_editor_id": 134257179, 
-        "describe": "", 
-        "key": "ui/70270bb5-e895-43c3-b195-b0f279f1735f", 
-        "name": "\u77ee\u4eba\u5f11\u541b\u8005Q", 
-        "path": "ui/70270bb5-e895-43c3-b195-b0f279f1735f", 
-        "uid": "res_icon_ui/70270bb5-e895-43c3-b195-b0f279f1735f"
-    }, 
-    "ui/74978aa7-b94b-4257-bc90-b50df7e29879": {
-        "default_editor_id": 134257353, 
-        "describe": "", 
-        "key": "ui/74978aa7-b94b-4257-bc90-b50df7e29879", 
-        "name": "\u77ee\u4eba\u5f11\u541b\u8005E", 
-        "path": "ui/74978aa7-b94b-4257-bc90-b50df7e29879", 
-        "uid": "res_icon_ui/74978aa7-b94b-4257-bc90-b50df7e29879"
-    }, 
-    "ui/773db536-2536-4771-9049-ba8e06ac076d": {
-        "default_editor_id": 134280659, 
-        "describe": "", 
-        "key": "ui/773db536-2536-4771-9049-ba8e06ac076d", 
-        "name": "\u7729\u6655\u56fe\u6807", 
-        "path": "ui/773db536-2536-4771-9049-ba8e06ac076d", 
-        "uid": "res_icon_ui/773db536-2536-4771-9049-ba8e06ac076d"
-    }, 
-    "ui/77a7a4f1-2a3e-4f49-b4e8-3a97803cbbdf": {
-        "default_editor_id": 134259163, 
-        "describe": "", 
-        "key": "ui/77a7a4f1-2a3e-4f49-b4e8-3a97803cbbdf", 
-        "name": "\u9738\u8c61\u5927\u738b\u88ab\u52a8", 
-        "path": "ui/77a7a4f1-2a3e-4f49-b4e8-3a97803cbbdf", 
-        "uid": "res_icon_ui/77a7a4f1-2a3e-4f49-b4e8-3a97803cbbdf"
-    }, 
-    "ui/7882a454-26ed-409d-9c15-453a68125893": {
-        "default_editor_id": 134258438, 
-        "describe": "", 
-        "key": "ui/7882a454-26ed-409d-9c15-453a68125893", 
-        "name": "\u9a6d\u8725\u5c0f\u516c\u4e3bE", 
-        "path": "ui/7882a454-26ed-409d-9c15-453a68125893", 
-        "uid": "res_icon_ui/7882a454-26ed-409d-9c15-453a68125893"
-    }, 
-    "ui/79253585-d423-4777-8201-c92918fff916": {
-        "default_editor_id": 134226535, 
-        "describe": "", 
-        "key": "ui/79253585-d423-4777-8201-c92918fff916", 
-        "name": "\u8d64\u708e\u5c06\u519bB", 
-        "path": "ui/79253585-d423-4777-8201-c92918fff916", 
-        "uid": "res_icon_ui/79253585-d423-4777-8201-c92918fff916"
-    }, 
-    "ui/7ce01396-70dd-40ea-8364-e5896e662e7a": {
-        "default_editor_id": 134263734, 
-        "describe": "", 
-        "key": "ui/7ce01396-70dd-40ea-8364-e5896e662e7a", 
-        "name": "\u751c\u871c\u6cbb\u6108\u8005Q", 
-        "path": "ui/7ce01396-70dd-40ea-8364-e5896e662e7a", 
-        "uid": "res_icon_ui/7ce01396-70dd-40ea-8364-e5896e662e7a"
-    }, 
-    "ui/84eeb13c-efae-41c9-82b3-b89a6f037c89": {
-        "default_editor_id": 134251174, 
-        "describe": "", 
-        "key": "ui/84eeb13c-efae-41c9-82b3-b89a6f037c89", 
-        "name": "\u6b87\u4e4b\u6728\u4e43\u4f0aB", 
-        "path": "ui/84eeb13c-efae-41c9-82b3-b89a6f037c89", 
-        "uid": "res_icon_ui/84eeb13c-efae-41c9-82b3-b89a6f037c89"
-    }, 
-    "ui/8592c295-c8ad-427a-95f9-000c4ff117b6": {
-        "default_editor_id": 134260211, 
-        "describe": "", 
-        "key": "ui/8592c295-c8ad-427a-95f9-000c4ff117b6", 
-        "name": "\u751c\u871c\u6cbb\u6108\u8005E", 
-        "path": "ui/8592c295-c8ad-427a-95f9-000c4ff117b6", 
-        "uid": "res_icon_ui/8592c295-c8ad-427a-95f9-000c4ff117b6"
     }, 
     "ui/86433754-f59a-493a-bfa8-cdfabc132a13": {
         "default_editor_id": 134227030, 
@@ -1959,342 +727,6 @@
         "path": "ui/86433754-f59a-493a-bfa8-cdfabc132a13", 
         "uid": "res_icon_ui/86433754-f59a-493a-bfa8-cdfabc132a13"
     }, 
-    "ui/87436a26-5dde-4565-8367-2a0ab2997565": {
-        "default_editor_id": 134271470, 
-        "describe": "", 
-        "key": "ui/87436a26-5dde-4565-8367-2a0ab2997565", 
-        "name": "main_riding", 
-        "path": "ui/87436a26-5dde-4565-8367-2a0ab2997565", 
-        "uid": "res_icon_ui/87436a26-5dde-4565-8367-2a0ab2997565"
-    }, 
-    "ui/88338fe2-6627-401a-a42f-a421b1f69c81": {
-        "default_editor_id": 134257744, 
-        "describe": "", 
-        "key": "ui/88338fe2-6627-401a-a42f-a421b1f69c81", 
-        "name": "img_shop_details_content_bg_1", 
-        "path": "ui/88338fe2-6627-401a-a42f-a421b1f69c81", 
-        "uid": "res_icon_ui/88338fe2-6627-401a-a42f-a421b1f69c81"
-    }, 
-    "ui/8a35557d-7b11-4c1c-ad04-5608b62aa633": {
-        "default_editor_id": 134262729, 
-        "describe": "", 
-        "key": "ui/8a35557d-7b11-4c1c-ad04-5608b62aa633", 
-        "name": "\u9738\u8c61\u5927\u738b", 
-        "path": "ui/8a35557d-7b11-4c1c-ad04-5608b62aa633", 
-        "uid": "res_icon_ui/8a35557d-7b11-4c1c-ad04-5608b62aa633"
-    }, 
-    "ui/8ccbc773-1b90-4432-9f26-54e8b6e792cd": {
-        "default_editor_id": 134249060, 
-        "describe": "", 
-        "key": "ui/8ccbc773-1b90-4432-9f26-54e8b6e792cd", 
-        "name": "\u8d64\u708e\u5c06\u519bE", 
-        "path": "ui/8ccbc773-1b90-4432-9f26-54e8b6e792cd", 
-        "uid": "res_icon_ui/8ccbc773-1b90-4432-9f26-54e8b6e792cd"
-    }, 
-    "ui/8f7e1da1-603c-4372-9667-cfcafb5dfde4": {
-        "default_editor_id": 134247724, 
-        "describe": "", 
-        "key": "ui/8f7e1da1-603c-4372-9667-cfcafb5dfde4", 
-        "name": "\u7ea26-2", 
-        "path": "ui/8f7e1da1-603c-4372-9667-cfcafb5dfde4", 
-        "uid": "res_icon_ui/8f7e1da1-603c-4372-9667-cfcafb5dfde4"
-    }, 
-    "ui/903d37a7-f7d3-4ba6-b0c6-cd62a08d8546": {
-        "default_editor_id": 134220061, 
-        "describe": "", 
-        "key": "ui/903d37a7-f7d3-4ba6-b0c6-cd62a08d8546", 
-        "name": "\u6c34\u9b42\u672f\u58eb", 
-        "path": "ui/903d37a7-f7d3-4ba6-b0c6-cd62a08d8546", 
-        "uid": "res_icon_ui/903d37a7-f7d3-4ba6-b0c6-cd62a08d8546"
-    }, 
-    "ui/91341031-c48e-4a54-a1d5-5e4321d27b59": {
-        "default_editor_id": 134247647, 
-        "describe": "", 
-        "key": "ui/91341031-c48e-4a54-a1d5-5e4321d27b59", 
-        "name": "\u751c\u871c\u6cbb\u6108\u8005", 
-        "path": "ui/91341031-c48e-4a54-a1d5-5e4321d27b59", 
-        "uid": "res_icon_ui/91341031-c48e-4a54-a1d5-5e4321d27b59"
-    }, 
-    "ui/9506a9c8-78d1-4894-9f31-c7f492cd1f20": {
-        "default_editor_id": 134232383, 
-        "describe": "", 
-        "key": "ui/9506a9c8-78d1-4894-9f31-c7f492cd1f20", 
-        "name": "\u901a\u7075\u5927\u6cd5\u5e08E", 
-        "path": "ui/9506a9c8-78d1-4894-9f31-c7f492cd1f20", 
-        "uid": "res_icon_ui/9506a9c8-78d1-4894-9f31-c7f492cd1f20"
-    }, 
-    "ui/97168e97-d55e-451a-b96d-e80e60d0cff2": {
-        "default_editor_id": 134233028, 
-        "describe": "", 
-        "key": "ui/97168e97-d55e-451a-b96d-e80e60d0cff2", 
-        "name": "\u6697\u5f71\u4e4b\u5f71W", 
-        "path": "ui/97168e97-d55e-451a-b96d-e80e60d0cff2", 
-        "uid": "res_icon_ui/97168e97-d55e-451a-b96d-e80e60d0cff2"
-    }, 
-    "ui/988cea9c-6e7f-49c5-ab39-cdcf4fb05c60": {
-        "default_editor_id": 134273336, 
-        "describe": "", 
-        "key": "ui/988cea9c-6e7f-49c5-ab39-cdcf4fb05c60", 
-        "name": "\u9738\u8c61\u5927\u738bR", 
-        "path": "ui/988cea9c-6e7f-49c5-ab39-cdcf4fb05c60", 
-        "uid": "res_icon_ui/988cea9c-6e7f-49c5-ab39-cdcf4fb05c60"
-    }, 
-    "ui/98ee5020-4766-4768-80bc-6840683491bc": {
-        "default_editor_id": 134269795, 
-        "describe": "", 
-        "key": "ui/98ee5020-4766-4768-80bc-6840683491bc", 
-        "name": "\u667a\u6167\u5148\u77e5Q", 
-        "path": "ui/98ee5020-4766-4768-80bc-6840683491bc", 
-        "uid": "res_icon_ui/98ee5020-4766-4768-80bc-6840683491bc"
-    }, 
-    "ui/9a0bbd43-5927-4471-b96d-c5b59ccb8ec1": {
-        "default_editor_id": 134222855, 
-        "describe": "", 
-        "key": "ui/9a0bbd43-5927-4471-b96d-c5b59ccb8ec1", 
-        "name": "\u81ea\u7136\u523a\u5ba2B", 
-        "path": "ui/9a0bbd43-5927-4471-b96d-c5b59ccb8ec1", 
-        "uid": "res_icon_ui/9a0bbd43-5927-4471-b96d-c5b59ccb8ec1"
-    }, 
-    "ui/9d30bc2c-fe56-4ccb-b98e-4f3f81d30fdc": {
-        "default_editor_id": 134225763, 
-        "describe": "", 
-        "key": "ui/9d30bc2c-fe56-4ccb-b98e-4f3f81d30fdc", 
-        "name": "\u5973\u67aa_B_1", 
-        "path": "ui/9d30bc2c-fe56-4ccb-b98e-4f3f81d30fdc", 
-        "uid": "res_icon_ui/9d30bc2c-fe56-4ccb-b98e-4f3f81d30fdc"
-    }, 
-    "ui/a51e3581-5f89-468e-873c-aea9e037e1a2": {
-        "default_editor_id": 134249747, 
-        "describe": "", 
-        "key": "ui/a51e3581-5f89-468e-873c-aea9e037e1a2", 
-        "name": "\u51b0\u9b44\u796d\u7940B_1", 
-        "path": "ui/a51e3581-5f89-468e-873c-aea9e037e1a2", 
-        "uid": "res_icon_ui/a51e3581-5f89-468e-873c-aea9e037e1a2"
-    }, 
-    "ui/a5e7837d-744e-481f-a8a4-25d1ab257411": {
-        "default_editor_id": 134230455, 
-        "describe": "", 
-        "key": "ui/a5e7837d-744e-481f-a8a4-25d1ab257411", 
-        "name": "\u751c\u871c\u6cbb\u6108\u8005W", 
-        "path": "ui/a5e7837d-744e-481f-a8a4-25d1ab257411", 
-        "uid": "res_icon_ui/a5e7837d-744e-481f-a8a4-25d1ab257411"
-    }, 
-    "ui/aa8878f1-c54a-4382-b616-8647d020c854": {
-        "default_editor_id": 134265248, 
-        "describe": "", 
-        "key": "ui/aa8878f1-c54a-4382-b616-8647d020c854", 
-        "name": "\u6b66\u5668\u5927\u5e08Q_1", 
-        "path": "ui/aa8878f1-c54a-4382-b616-8647d020c854", 
-        "uid": "res_icon_ui/aa8878f1-c54a-4382-b616-8647d020c854"
-    }, 
-    "ui/aaa7355d-ab6f-498d-9508-9daec4b101e4": {
-        "default_editor_id": 134222437, 
-        "describe": "", 
-        "key": "ui/aaa7355d-ab6f-498d-9508-9daec4b101e4", 
-        "name": "\u6b66\u5668\u5927\u5e08W_1", 
-        "path": "ui/aaa7355d-ab6f-498d-9508-9daec4b101e4", 
-        "uid": "res_icon_ui/aaa7355d-ab6f-498d-9508-9daec4b101e4"
-    }, 
-    "ui/abe2227c-169e-45a1-aca0-1214bc1395c5": {
-        "default_editor_id": 134268863, 
-        "describe": "", 
-        "key": "ui/abe2227c-169e-45a1-aca0-1214bc1395c5", 
-        "name": "\u901a\u7075\u5927\u6cd5\u5e08", 
-        "path": "ui/abe2227c-169e-45a1-aca0-1214bc1395c5", 
-        "uid": "res_icon_ui/abe2227c-169e-45a1-aca0-1214bc1395c5"
-    }, 
-    "ui/af003aad-7574-4914-bb4d-477445183e47": {
-        "default_editor_id": 134229245, 
-        "describe": "", 
-        "key": "ui/af003aad-7574-4914-bb4d-477445183e47", 
-        "name": "\u6bd2\u8725\u795e\u7bad", 
-        "path": "ui/af003aad-7574-4914-bb4d-477445183e47", 
-        "uid": "res_icon_ui/af003aad-7574-4914-bb4d-477445183e47"
-    }, 
-    "ui/b22502ce-cb30-4fb7-83f1-bb885bd30cb4": {
-        "default_editor_id": 134274149, 
-        "describe": "", 
-        "key": "ui/b22502ce-cb30-4fb7-83f1-bb885bd30cb4", 
-        "name": "\u6bd2\u8725\u795e\u7badW", 
-        "path": "ui/b22502ce-cb30-4fb7-83f1-bb885bd30cb4", 
-        "uid": "res_icon_ui/b22502ce-cb30-4fb7-83f1-bb885bd30cb4"
-    }, 
-    "ui/b4454cf6-eb4f-478e-bab4-496d7a358d4e": {
-        "default_editor_id": 134257173, 
-        "describe": "", 
-        "key": "ui/b4454cf6-eb4f-478e-bab4-496d7a358d4e", 
-        "name": "\u96f7\u7535\u5927\u796d\u53f8", 
-        "path": "ui/b4454cf6-eb4f-478e-bab4-496d7a358d4e", 
-        "uid": "res_icon_ui/b4454cf6-eb4f-478e-bab4-496d7a358d4e"
-    }, 
-    "ui/b576b4ba-2614-421c-ba55-1fc4754b63d0": {
-        "default_editor_id": 134252229, 
-        "describe": "", 
-        "key": "ui/b576b4ba-2614-421c-ba55-1fc4754b63d0", 
-        "name": "\u51b0\u9b44\u796d\u7940E_1", 
-        "path": "ui/b576b4ba-2614-421c-ba55-1fc4754b63d0", 
-        "uid": "res_icon_ui/b576b4ba-2614-421c-ba55-1fc4754b63d0"
-    }, 
-    "ui/b9323c2a-e0a9-4850-a916-6d12beae859e": {
-        "default_editor_id": 134249590, 
-        "describe": "", 
-        "key": "ui/b9323c2a-e0a9-4850-a916-6d12beae859e", 
-        "name": "\u7194\u5ca9\u5de8\u517dB_1", 
-        "path": "ui/b9323c2a-e0a9-4850-a916-6d12beae859e", 
-        "uid": "res_icon_ui/b9323c2a-e0a9-4850-a916-6d12beae859e"
-    }, 
-    "ui/bb89996b-0ba5-4220-9cd6-3e8cecdd2b8c": {
-        "default_editor_id": 134281495, 
-        "describe": "", 
-        "key": "ui/bb89996b-0ba5-4220-9cd6-3e8cecdd2b8c", 
-        "name": "\u96f7\u7535\u5927\u796d\u53f8Q", 
-        "path": "ui/bb89996b-0ba5-4220-9cd6-3e8cecdd2b8c", 
-        "uid": "res_icon_ui/bb89996b-0ba5-4220-9cd6-3e8cecdd2b8c"
-    }, 
-    "ui/bbd9aec3-b07d-489e-8d33-64f98807034d": {
-        "default_editor_id": 134273214, 
-        "describe": "", 
-        "key": "ui/bbd9aec3-b07d-489e-8d33-64f98807034d", 
-        "name": "\u9738\u8c61\u5927\u738bE", 
-        "path": "ui/bbd9aec3-b07d-489e-8d33-64f98807034d", 
-        "uid": "res_icon_ui/bbd9aec3-b07d-489e-8d33-64f98807034d"
-    }, 
-    "ui/bbe136a4-6abf-4ef9-a691-dbcffbb3a12f": {
-        "default_editor_id": 134246123, 
-        "describe": "", 
-        "key": "ui/bbe136a4-6abf-4ef9-a691-dbcffbb3a12f", 
-        "name": "\u901a\u7075\u5927\u6cd5\u5e08W", 
-        "path": "ui/bbe136a4-6abf-4ef9-a691-dbcffbb3a12f", 
-        "uid": "res_icon_ui/bbe136a4-6abf-4ef9-a691-dbcffbb3a12f"
-    }, 
-    "ui/bdebe787-afb2-4dba-8e16-c19b06c62a30": {
-        "default_editor_id": 134262286, 
-        "describe": "", 
-        "key": "ui/bdebe787-afb2-4dba-8e16-c19b06c62a30", 
-        "name": "\u7194\u5ca9\u5de8\u517dR_1", 
-        "path": "ui/bdebe787-afb2-4dba-8e16-c19b06c62a30", 
-        "uid": "res_icon_ui/bdebe787-afb2-4dba-8e16-c19b06c62a30"
-    }, 
-    "ui/bef5823a-67a5-409d-b44f-1221fcb31abf": {
-        "default_editor_id": 134254743, 
-        "describe": "", 
-        "key": "ui/bef5823a-67a5-409d-b44f-1221fcb31abf", 
-        "name": "\u7194\u5ca9\u5de8\u517dQ_1", 
-        "path": "ui/bef5823a-67a5-409d-b44f-1221fcb31abf", 
-        "uid": "res_icon_ui/bef5823a-67a5-409d-b44f-1221fcb31abf"
-    }, 
-    "ui/c0079df8-5263-41b5-9ccd-7286e7e47c9e": {
-        "default_editor_id": 134256099, 
-        "describe": "", 
-        "key": "ui/c0079df8-5263-41b5-9ccd-7286e7e47c9e", 
-        "name": "\u5973\u67aa_Q_1", 
-        "path": "ui/c0079df8-5263-41b5-9ccd-7286e7e47c9e", 
-        "uid": "res_icon_ui/c0079df8-5263-41b5-9ccd-7286e7e47c9e"
-    }, 
-    "ui/c14bc93a-e1c6-4f65-b3a7-250331e8ea7f": {
-        "default_editor_id": 134264814, 
-        "describe": "", 
-        "key": "ui/c14bc93a-e1c6-4f65-b3a7-250331e8ea7f", 
-        "name": "\u81ea\u7136\u523a\u5ba2R", 
-        "path": "ui/c14bc93a-e1c6-4f65-b3a7-250331e8ea7f", 
-        "uid": "res_icon_ui/c14bc93a-e1c6-4f65-b3a7-250331e8ea7f"
-    }, 
-    "ui/c22c19ac-f66a-49a2-a8e1-4827b588872a": {
-        "default_editor_id": 134231522, 
-        "describe": "", 
-        "key": "ui/c22c19ac-f66a-49a2-a8e1-4827b588872a", 
-        "name": "\u6697\u5f71\u4e4b\u5f71\u88ab\u52a8", 
-        "path": "ui/c22c19ac-f66a-49a2-a8e1-4827b588872a", 
-        "uid": "res_icon_ui/c22c19ac-f66a-49a2-a8e1-4827b588872a"
-    }, 
-    "ui/c410c072-7cd7-4e36-a630-21ecbfb572e7": {
-        "default_editor_id": 134247564, 
-        "describe": "", 
-        "key": "ui/c410c072-7cd7-4e36-a630-21ecbfb572e7", 
-        "name": "\u6697\u5f71\u4e4b\u5f71", 
-        "path": "ui/c410c072-7cd7-4e36-a630-21ecbfb572e7", 
-        "uid": "res_icon_ui/c410c072-7cd7-4e36-a630-21ecbfb572e7"
-    }, 
-    "ui/c4ffa232-4336-43a9-b70d-971c3c8931a7": {
-        "default_editor_id": 134272570, 
-        "describe": "", 
-        "key": "ui/c4ffa232-4336-43a9-b70d-971c3c8931a7", 
-        "name": "\u9738\u8c61\u5927\u738bQ", 
-        "path": "ui/c4ffa232-4336-43a9-b70d-971c3c8931a7", 
-        "uid": "res_icon_ui/c4ffa232-4336-43a9-b70d-971c3c8931a7"
-    }, 
-    "ui/c5003a43-99c4-4cdb-84f5-b6f30b03cdd5": {
-        "default_editor_id": 134219148, 
-        "describe": "", 
-        "key": "ui/c5003a43-99c4-4cdb-84f5-b6f30b03cdd5", 
-        "name": "\u6697\u5f71\u4e4b\u5f71E", 
-        "path": "ui/c5003a43-99c4-4cdb-84f5-b6f30b03cdd5", 
-        "uid": "res_icon_ui/c5003a43-99c4-4cdb-84f5-b6f30b03cdd5"
-    }, 
-    "ui/c684f3d7-77b6-40b0-b65a-81e6087890a8": {
-        "default_editor_id": 134245159, 
-        "describe": "", 
-        "key": "ui/c684f3d7-77b6-40b0-b65a-81e6087890a8", 
-        "name": "\u65e0\u6781\u5251\u5723Q", 
-        "path": "ui/c684f3d7-77b6-40b0-b65a-81e6087890a8", 
-        "uid": "res_icon_ui/c684f3d7-77b6-40b0-b65a-81e6087890a8"
-    }, 
-    "ui/c83705a2-3974-499f-b80f-c1d12c61e73b": {
-        "default_editor_id": 134255330, 
-        "describe": "", 
-        "key": "ui/c83705a2-3974-499f-b80f-c1d12c61e73b", 
-        "name": "\u8d64\u708e\u5c06\u519bR", 
-        "path": "ui/c83705a2-3974-499f-b80f-c1d12c61e73b", 
-        "uid": "res_icon_ui/c83705a2-3974-499f-b80f-c1d12c61e73b"
-    }, 
-    "ui/cd041979-9f29-434c-b7bd-7387f55aef66": {
-        "default_editor_id": 134259378, 
-        "describe": "", 
-        "key": "ui/cd041979-9f29-434c-b7bd-7387f55aef66", 
-        "name": "\u6c34\u9b42\u672f\u58ebW", 
-        "path": "ui/cd041979-9f29-434c-b7bd-7387f55aef66", 
-        "uid": "res_icon_ui/cd041979-9f29-434c-b7bd-7387f55aef66"
-    }, 
-    "ui/d020da2e-716d-48a7-9484-b9437fbb89ab": {
-        "default_editor_id": 134232981, 
-        "describe": "", 
-        "key": "ui/d020da2e-716d-48a7-9484-b9437fbb89ab", 
-        "name": "\u6697\u5f71\u4e4b\u5f71R", 
-        "path": "ui/d020da2e-716d-48a7-9484-b9437fbb89ab", 
-        "uid": "res_icon_ui/d020da2e-716d-48a7-9484-b9437fbb89ab"
-    }, 
-    "ui/d0910a26-8e6f-49c1-b4c4-442804c82be5": {
-        "default_editor_id": 134253053, 
-        "describe": "", 
-        "key": "ui/d0910a26-8e6f-49c1-b4c4-442804c82be5", 
-        "name": "\u96f7\u7535\u5927\u796d\u53f8W", 
-        "path": "ui/d0910a26-8e6f-49c1-b4c4-442804c82be5", 
-        "uid": "res_icon_ui/d0910a26-8e6f-49c1-b4c4-442804c82be5"
-    }, 
-    "ui/d483f4d9-c03d-4e18-ab6c-a6fa42402adf": {
-        "default_editor_id": 134275326, 
-        "describe": "", 
-        "key": "ui/d483f4d9-c03d-4e18-ab6c-a6fa42402adf", 
-        "name": "%ID300540000_1", 
-        "path": "ui/d483f4d9-c03d-4e18-ab6c-a6fa42402adf", 
-        "uid": "res_icon_ui/d483f4d9-c03d-4e18-ab6c-a6fa42402adf"
-    }, 
-    "ui/d566b4c7-cdad-429c-84bc-112c5fd9688f": {
-        "default_editor_id": 134258033, 
-        "describe": "", 
-        "key": "ui/d566b4c7-cdad-429c-84bc-112c5fd9688f", 
-        "name": "\u77ee\u4eba\u5f11\u541b\u8005\u88ab\u52a8", 
-        "path": "ui/d566b4c7-cdad-429c-84bc-112c5fd9688f", 
-        "uid": "res_icon_ui/d566b4c7-cdad-429c-84bc-112c5fd9688f"
-    }, 
-    "ui/d7353f26-2584-4b4a-b49e-4e6585712fbc": {
-        "default_editor_id": 134272638, 
-        "describe": "", 
-        "key": "ui/d7353f26-2584-4b4a-b49e-4e6585712fbc", 
-        "name": "\u5723\u796d\u7940R", 
-        "path": "ui/d7353f26-2584-4b4a-b49e-4e6585712fbc", 
-        "uid": "res_icon_ui/d7353f26-2584-4b4a-b49e-4e6585712fbc"
-    }, 
     "ui/d879ab27-cbe3-4e69-ac4a-1f5ca80aac85": {
         "default_editor_id": 134262182, 
         "describe": "", 
@@ -2302,14 +734,6 @@
         "name": "\u517d\u4eba\u5c06\u519bE", 
         "path": "ui/d879ab27-cbe3-4e69-ac4a-1f5ca80aac85", 
         "uid": "res_icon_ui/d879ab27-cbe3-4e69-ac4a-1f5ca80aac85"
-    }, 
-    "ui/d9e67c60-20f4-4d58-9512-2e95a4d02b1a": {
-        "default_editor_id": 134240969, 
-        "describe": "", 
-        "key": "ui/d9e67c60-20f4-4d58-9512-2e95a4d02b1a", 
-        "name": "\u6c34\u9b42\u672f\u58ebR", 
-        "path": "ui/d9e67c60-20f4-4d58-9512-2e95a4d02b1a", 
-        "uid": "res_icon_ui/d9e67c60-20f4-4d58-9512-2e95a4d02b1a"
     }, 
     "ui/dac8bc4f-40c0-4a86-ab01-d9185b29e7e1": {
         "default_editor_id": 134230757, 
@@ -2319,78 +743,6 @@
         "path": "ui/dac8bc4f-40c0-4a86-ab01-d9185b29e7e1", 
         "uid": "res_icon_ui/dac8bc4f-40c0-4a86-ab01-d9185b29e7e1"
     }, 
-    "ui/dc56e01a-d844-4882-841a-e93ead0070e7": {
-        "default_editor_id": 134228727, 
-        "describe": "", 
-        "key": "ui/dc56e01a-d844-4882-841a-e93ead0070e7", 
-        "name": "PGC_DM6_bingzhong_fashu", 
-        "path": "ui/dc56e01a-d844-4882-841a-e93ead0070e7", 
-        "uid": "res_icon_ui/dc56e01a-d844-4882-841a-e93ead0070e7"
-    }, 
-    "ui/e222dc7d-d421-42cf-878f-d2fedf63ee55": {
-        "default_editor_id": 134264679, 
-        "describe": "", 
-        "key": "ui/e222dc7d-d421-42cf-878f-d2fedf63ee55", 
-        "name": "\u6df1\u6d77\u6076\u9738E", 
-        "path": "ui/e222dc7d-d421-42cf-878f-d2fedf63ee55", 
-        "uid": "res_icon_ui/e222dc7d-d421-42cf-878f-d2fedf63ee55"
-    }, 
-    "ui/e28b6968-4f34-4e0c-a2e4-7fb2803fb28c": {
-        "default_editor_id": 134253792, 
-        "describe": "", 
-        "key": "ui/e28b6968-4f34-4e0c-a2e4-7fb2803fb28c", 
-        "name": "\u751c\u871c\u6cbb\u6108\u8005B", 
-        "path": "ui/e28b6968-4f34-4e0c-a2e4-7fb2803fb28c", 
-        "uid": "res_icon_ui/e28b6968-4f34-4e0c-a2e4-7fb2803fb28c"
-    }, 
-    "ui/e52f1398-6b55-4b6e-9d9d-b15aa47a1571": {
-        "default_editor_id": 134255538, 
-        "describe": "", 
-        "key": "ui/e52f1398-6b55-4b6e-9d9d-b15aa47a1571", 
-        "name": "\u667a\u6167\u5148\u77e5", 
-        "path": "ui/e52f1398-6b55-4b6e-9d9d-b15aa47a1571", 
-        "uid": "res_icon_ui/e52f1398-6b55-4b6e-9d9d-b15aa47a1571"
-    }, 
-    "ui/ea7a772d-a1be-4fc7-ac4e-0d407ba767d6": {
-        "default_editor_id": 134276666, 
-        "describe": "", 
-        "key": "ui/ea7a772d-a1be-4fc7-ac4e-0d407ba767d6", 
-        "name": "\u51b0\u9b44\u796d\u7940R_1", 
-        "path": "ui/ea7a772d-a1be-4fc7-ac4e-0d407ba767d6", 
-        "uid": "res_icon_ui/ea7a772d-a1be-4fc7-ac4e-0d407ba767d6"
-    }, 
-    "ui/eb69db9d-b570-4d06-b3e7-20d962a29881": {
-        "default_editor_id": 134220169, 
-        "describe": "", 
-        "key": "ui/eb69db9d-b570-4d06-b3e7-20d962a29881", 
-        "name": "\u9a6d\u8725\u5c0f\u516c\u4e3b", 
-        "path": "ui/eb69db9d-b570-4d06-b3e7-20d962a29881", 
-        "uid": "res_icon_ui/eb69db9d-b570-4d06-b3e7-20d962a29881"
-    }, 
-    "ui/ec1a0402-179e-44da-b2da-a19b2cfa4f6f": {
-        "default_editor_id": 134220961, 
-        "describe": "", 
-        "key": "ui/ec1a0402-179e-44da-b2da-a19b2cfa4f6f", 
-        "name": "\u6c34\u9b42\u672f\u58eb\u88ab\u52a8", 
-        "path": "ui/ec1a0402-179e-44da-b2da-a19b2cfa4f6f", 
-        "uid": "res_icon_ui/ec1a0402-179e-44da-b2da-a19b2cfa4f6f"
-    }, 
-    "ui/ee7e2b5c-2221-43bc-8ed9-f30511e95fca": {
-        "default_editor_id": 134239299, 
-        "describe": "", 
-        "key": "ui/ee7e2b5c-2221-43bc-8ed9-f30511e95fca", 
-        "name": "\u7194\u5ca9\u5de8\u517dE_1", 
-        "path": "ui/ee7e2b5c-2221-43bc-8ed9-f30511e95fca", 
-        "uid": "res_icon_ui/ee7e2b5c-2221-43bc-8ed9-f30511e95fca"
-    }, 
-    "ui/efe38852-a332-4ecf-8995-d8c92db050ed": {
-        "default_editor_id": 134253005, 
-        "describe": "", 
-        "key": "ui/efe38852-a332-4ecf-8995-d8c92db050ed", 
-        "name": "Q", 
-        "path": "ui/efe38852-a332-4ecf-8995-d8c92db050ed", 
-        "uid": "res_icon_ui/efe38852-a332-4ecf-8995-d8c92db050ed"
-    }, 
     "ui/f0745ca3-9847-4abe-bbcd-8e5049a1aec0": {
         "default_editor_id": 134225891, 
         "describe": "", 
@@ -2399,22 +751,6 @@
         "path": "ui/f0745ca3-9847-4abe-bbcd-8e5049a1aec0", 
         "uid": "res_icon_ui/f0745ca3-9847-4abe-bbcd-8e5049a1aec0"
     }, 
-    "ui/f082b4c1-1cd5-4d5d-b270-5bae7ae0634a": {
-        "default_editor_id": 134231611, 
-        "describe": "", 
-        "key": "ui/f082b4c1-1cd5-4d5d-b270-5bae7ae0634a", 
-        "name": "\u901a\u7075\u5927\u6cd5\u5e08R", 
-        "path": "ui/f082b4c1-1cd5-4d5d-b270-5bae7ae0634a", 
-        "uid": "res_icon_ui/f082b4c1-1cd5-4d5d-b270-5bae7ae0634a"
-    }, 
-    "ui/f33a43f3-4b48-4dde-a429-2da20fcd4b9f": {
-        "default_editor_id": 134276926, 
-        "describe": "", 
-        "key": "ui/f33a43f3-4b48-4dde-a429-2da20fcd4b9f", 
-        "name": "\u6df1\u6d77\u6076\u9738W", 
-        "path": "ui/f33a43f3-4b48-4dde-a429-2da20fcd4b9f", 
-        "uid": "res_icon_ui/f33a43f3-4b48-4dde-a429-2da20fcd4b9f"
-    }, 
     "ui/f995395b-e445-4032-a291-9be0aab0c5b8": {
         "default_editor_id": 134271479, 
         "describe": "", 
@@ -2422,29 +758,5 @@
         "name": "img_defense", 
         "path": "ui/f995395b-e445-4032-a291-9be0aab0c5b8", 
         "uid": "res_icon_ui/f995395b-e445-4032-a291-9be0aab0c5b8"
-    }, 
-    "ui/fb2d11ad-b168-4a30-aec4-39ea2bed7754": {
-        "default_editor_id": 134242533, 
-        "describe": "", 
-        "key": "ui/fb2d11ad-b168-4a30-aec4-39ea2bed7754", 
-        "name": "\u5723\u796d\u7940W", 
-        "path": "ui/fb2d11ad-b168-4a30-aec4-39ea2bed7754", 
-        "uid": "res_icon_ui/fb2d11ad-b168-4a30-aec4-39ea2bed7754"
-    }, 
-    "ui/fc27a745-0260-4bdc-92e4-dc7f5028a530": {
-        "default_editor_id": 134235703, 
-        "describe": "", 
-        "key": "ui/fc27a745-0260-4bdc-92e4-dc7f5028a530", 
-        "name": "\u5723\u796d\u7940E", 
-        "path": "ui/fc27a745-0260-4bdc-92e4-dc7f5028a530", 
-        "uid": "res_icon_ui/fc27a745-0260-4bdc-92e4-dc7f5028a530"
-    }, 
-    "ui/fc7fa880-0b62-4dc7-a2a3-0b1442b1bae4": {
-        "default_editor_id": 134220765, 
-        "describe": "", 
-        "key": "ui/fc7fa880-0b62-4dc7-a2a3-0b1442b1bae4", 
-        "name": "\u667a\u6167\u5148\u77e5W", 
-        "path": "ui/fc7fa880-0b62-4dc7-a2a3-0b1442b1bae4", 
-        "uid": "res_icon_ui/fc7fa880-0b62-4dc7-a2a3-0b1442b1bae4"
     }
 }
