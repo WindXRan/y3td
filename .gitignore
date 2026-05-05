@@ -9,6 +9,8 @@
 /debug.log
 /*.log
 /y3/
+/maps/EntryMap/script/y3
+/maps/EntryMap/script/y3/
 /lock/
 
 # Local temporary screenshots and recovery snapshots
