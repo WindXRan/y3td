@@ -1234,6 +1234,78 @@ get_enemies_in_range = function(center, radius, except_unit, max_count)
   return result
 end
 
+get_enemies_on_line = function(origin_point, impact_point, max_distance, line_width, max_hits, except_unit)
+  local result = {}
+  if not origin_point or not impact_point then
+    return result
+  end
+  local normalized_max_hits = nil
+  if type(max_hits) == 'string' then
+    local lowered = string.lower(max_hits)
+    if lowered ~= 'max' and lowered ~= 'all' and lowered ~= '' then
+      normalized_max_hits = tonumber(max_hits)
+    end
+  else
+    normalized_max_hits = tonumber(max_hits)
+  end
+  if normalized_max_hits and normalized_max_hits <= 0 then
+    return result
+  end
+
+  local ox = origin_point:get_x()
+  local oy = origin_point:get_y()
+  local tx = impact_point:get_x()
+  local ty = impact_point:get_y()
+  local dir_x = tx - ox
+  local dir_y = ty - oy
+  local length = origin_point:get_distance_with(impact_point)
+  if length < 1 then
+    return result
+  end
+
+  local reach = math.max(length, max_distance or length)
+  local width = math.max(40, line_width or 95)
+  local start_projection = math.max(0, length - width)
+  local segment_length = reach - start_projection
+  if segment_length <= 0 then
+    return result
+  end
+
+  local direction = origin_point:get_angle_with(impact_point)
+  local segment_center = y3.point.get_point_offset_vector(
+    origin_point,
+    direction,
+    start_projection + segment_length / 2
+  )
+  local line_shape = y3.shape.create_rectangle_shape(width * 2, segment_length, direction)
+  local candidates = {}
+  local picked = y3.selector.create()
+    :is_enemy(get_player())
+    :in_shape(segment_center, line_shape)
+    :pick()
+
+  for _, unit in ipairs(picked) do
+    if unit ~= except_unit and is_active_enemy(unit) then
+      local point = unit:get_point()
+      candidates[#candidates + 1] = {
+        unit = unit,
+        projection = ((point:get_x() - ox) * dir_x + (point:get_y() - oy) * dir_y) / length,
+      }
+    end
+  end
+
+  table.sort(candidates, function(a, b)
+    return a.projection < b.projection
+  end)
+
+  local limit = normalized_max_hits and math.min(math.max(1, math.floor(normalized_max_hits)), #candidates) or #candidates
+  for index = 1, limit, 1 do
+    result[#result + 1] = candidates[index].unit
+  end
+
+  return result
+end
+
 local function get_ui_preferences()
   return STATE.ui_preferences or {}
 end
@@ -1753,6 +1825,7 @@ local td_damage_api = SkillDamageTemplates.create({
     emit_damage_debug_visual(visual, nil)
   end,
   get_enemies_in_range = get_enemies_in_range,
+  get_enemies_on_line = get_enemies_on_line,
   is_active_enemy = is_active_enemy,
 })
 

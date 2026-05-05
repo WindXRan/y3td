@@ -471,45 +471,91 @@ function M.create(env)
       elseif cast_ctx.caster and cast_ctx.caster.get_facing then
         angle = tonumber(cast_ctx.caster:get_facing()) or 0
       end
-      local end_point = create_offset_point and create_offset_point(y3, hero_point, angle, skill.hit_model.range, 0) or impact_point
-      if not end_point then
-        return false, '直线终点创建失败。'
+      local proj_key = visual_key(skill, 'projectile_key')
+      if not proj_key then
+        return false, 'pierce 缺少 projectile_key。'
       end
+      local pierce_duration = tonumber(skill.timeline.duration or 1.0)
       local impact_delay = resolve_impact_delay(skill)
-      if visual_key(skill, 'projectile_key') then
-        launch_projectile_from_hero(
-          visual_key(skill, 'projectile_key'),
-          target,
-          end_point,
-          angle,
-          impact_delay,
-          visual_key(skill, 'projectile_height')
-        )
+      local proj_speed = math.max(600, (skill.hit_model.range or 1300) / math.max(0.01, impact_delay)) * 0.335
+      local proj_height = visual_key(skill, 'projectile_height') or 28
+      local hit_radius = skill.hit_model.width or 200
+      -- tick_interval > 0.22 视为持续伤害型（龙卷风），否则为单次命中（风刃）
+      local tick_interval = tonumber(skill.timeline.tick_interval or 0)
+      local hit_same = tick_interval > 0.22
+      local mover_hit_interval = hit_same and math.max(tick_interval, 0.01) or 999
+      local damage_per_hit = hit_same
+        and damage_amount(skill, 'tick_ratio')
+        or damage_amount(skill, 'attack_ratio')
+      local hit_particle = visual_key(skill, 'hit')
+      local hit_units = {}
+      local first_hit = false
+      local init_proj_time = math.max(pierce_duration + 4.0, 8.0)
+      local ok, proj = pcall(y3.projectile.create, {
+        key = proj_key,
+        target = cast_ctx.caster or hero_point,
+        socket = cast_ctx.caster and 'origin' or nil,
+        owner = cast_ctx.caster,
+        angle = angle,
+        time = init_proj_time,
+        remove_immediately = true,
+      })
+      if not ok or not proj then
+        return false, '投射物创建失败。'
       end
+      local function cleanup_proj()
+        if proj and proj:is_exist() then
+          pcall(proj.remove, proj)
+        end
+      end
+      pcall(proj.set_height, proj, proj_height)
       local fx_scale = impact_fx_scale(skill)
       spawn_particle(y3, cast_ctx.caster, visual_key(skill, 'cast'), fx_scale * 0.95, 0.20, 24)
       fire_hook(skill, 'OnSpellStart', cast_ctx)
-      y3.ltimer.wait(impact_delay, function()
-        mark_visual_impact(cast_ctx)
-        spawn_particle(y3, end_point, visual_key(skill, 'impact') or visual_key(skill, 'hit'), fx_scale * 1.02, 0.16, 24)
-        local hits = skill_damage_api.line(hero_point, end_point, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
-          max_distance = skill.hit_model.range,
-          line_width = skill.hit_model.width,
-          max_hits = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
-          visual = {
-            particle = visual_key(skill, 'hit'),
+      pcall(proj.mover_line, proj, {
+        angle = angle,
+        distance = proj_speed * init_proj_time,
+        speed = proj_speed,
+        hit_radius = hit_radius,
+        hit_type = 0,
+        hit_same = hit_same,
+        hit_interval = mover_hit_interval,
+        face_angle = true,
+        on_hit = function(_, hit_unit)
+          if not hit_unit or not hit_unit.is_exist or not hit_unit:is_exist() then
+            return
+          end
+          if not hit_same and hit_units[hit_unit] then
+            return
+          end
+          hit_units[hit_unit] = true
+          -- 命中首个敌人后重置存活时间为 pierce_duration
+          if not first_hit and proj and proj:is_exist() then
+            first_hit = true
+            pcall(proj.set_time, proj, pierce_duration)
+          end
+          local amount = damage_per_hit
+          if skill_damage_api.single(hit_unit, amount, skill.damage_type, {
+            particle = hit_particle,
             metric_scope = 'skill_framework',
             metric_key = skill.id,
-          },
-        })
-        cast_ctx.hits = hits
-        cast_ctx.hit_count = #hits
-        cast_ctx.total_damage = (damage_amount(skill, 'attack_ratio') or 0) * cast_ctx.hit_count
-        mark_damage_impact(cast_ctx)
-        fire_hook(skill, 'OnProjectileHit', cast_ctx)
-        fire_hook(skill, 'OnFinish', cast_ctx)
-      end)
-      return true, string.format('[%s] projectile.pierce 触发', skill.id)
+          }) then
+            cast_ctx.hit_count = (cast_ctx.hit_count or 0) + 1
+            cast_ctx.total_damage = (cast_ctx.total_damage or 0) + (amount or 0)
+            mark_damage_impact(cast_ctx)
+            fire_hook(skill, 'OnProjectileHit', cast_ctx)
+          end
+        end,
+        on_finish = function()
+          cleanup_proj()
+          fire_hook(skill, 'OnFinish', cast_ctx)
+        end,
+        on_break = function()
+          cleanup_proj()
+          fire_hook(skill, 'OnFinish', cast_ctx)
+        end,
+      })
+      return true, string.format('[%s] projectile.pierce(mover_line) 触发', skill.id)
     end
 
     if skill.sub_behavior == 'chain' then

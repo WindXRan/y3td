@@ -9,6 +9,7 @@
 /debug.log
 /*.log
 /y3/
+/lock/
 
 # Local temporary screenshots and recovery snapshots
 /tmp_*.png

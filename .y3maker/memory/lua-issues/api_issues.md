@@ -266,19 +266,4 @@ local M = {}
 
 ---
 
-## [2026-05-04] 纯 Lua Buff DOT 不要用 `tostring(unit.handle)` 当稳定运行时 key
-
-**现象**：技能命中后 `apply_buff` 日志正常，但 DOT 没有额外伤害跳字；日志里的 `unit.handle` 字符串带 Lua wrapper 地址。
-
-**根因**：同一个引擎单位可能被不同 Lua wrapper 包装，`tostring(unit.handle)` 包含 wrapper 地址，不适合作为跨 tick 的稳定索引；DOT 后续从 `enemy_info_map` 反查目标时可能找不到。GM/调试目标也不一定进入 `enemy_info_map`。
-
-**正解**：
-- Buff 实例索引优先用 `unit:get_id()`，fallback 才用 `tostring(unit.handle)`。
-- Buff 实例保存 `target = unit`，DOT/回血/过期还原优先使用活着的实例目标，再 fallback 反查表。
-- DOT 用 `source:damage({ target=unit, damage=..., type='法术', text_type='magic', text_track=934269508, common_attack=false, no_miss=true })`，并检查 `pcall` 返回值，失败时打印错误。
-
-**源码/API**：`Unit:get_id()` / `Unit:damage(data)` 位于 `maps/EntryMap/script/y3/object/editable_object/unit.lua`。
-
----
-
-*最后更新: 2026-05-04*
+*最后更新: 2026-04-20*
