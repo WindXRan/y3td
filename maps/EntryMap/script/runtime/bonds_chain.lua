@@ -336,7 +336,6 @@ local function ensure_runtime(state)
     state.bond_runtime = state.skill_runtime
   end
   state.bond_runtime = state.bond_runtime or M.create_runtime()
-  state.skill_runtime = state.bond_runtime
   state.bond_runtime.pool_node_ids = state.bond_runtime.pool_node_ids or {}
   state.bond_runtime.completed_root_sets = state.bond_runtime.completed_root_sets or {}
   state.bond_runtime.consumed_root_sets = state.bond_runtime.consumed_root_sets or {}
@@ -354,7 +353,6 @@ local function ensure_runtime(state)
     state.bond_runtime.modifier_effects_disabled = false
   end
   state.bond_runtime.state_ref = state
-  state.skill_runtime = state.bond_runtime
 
   -- 初始化时处理初始解锁的卡片
   local runtime = state.bond_runtime
