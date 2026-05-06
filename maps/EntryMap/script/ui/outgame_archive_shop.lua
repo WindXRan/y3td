@@ -875,6 +875,13 @@ local function refresh_selected_slot_state(shop, options)
   end
 end
 
+-- 将 tab 名映射到 content_node（网格配置名）
+local function get_content_node_for_tab(tab_name)
+  if not tab_name or tab_name == '' then
+    return 'grid_default'
+  end
+  return ArchiveTabDefinitions.get_content_node(tab_name) or 'grid_default'
+end
 local function resolve_active_group_key(shop, state, all_category)
   local section = tostring(state and state.archive_panel_section or '')
   -- 获取活跃 tab 名，再转为 content_node
@@ -1038,15 +1045,16 @@ local function build_content_groups(player)
       local base = table.concat({ panel_root, ARCHIVE_MAIN_PANEL, content_node }, '.')
       local root = resolve_ui(player, base)
       if is_ui_alive(root) then
+        local cell_base = base .. '.cell.bg'
         groups[#groups + 1] = {
           name = '',
           content_node = content_node,
           base = base,
           root = root,
-          icon = resolve_ui(player, base .. '.bg.image'),
-          label = resolve_ui(player, base .. '.bg.label'),
-          lv = resolve_ui(player, base .. '.bg.lv'),
-          num = resolve_ui(player, base .. '.bg.num'),
+          icon = resolve_ui(player, cell_base .. '.image'),
+          label = resolve_ui(player, cell_base .. '.label'),
+          lv = resolve_ui(player, cell_base .. '.lv'),
+          num = resolve_ui(player, cell_base .. '.num'),
         }
         break
       end
@@ -1055,13 +1063,6 @@ local function build_content_groups(player)
   return groups
 end
 
--- 将 tab 名映射到 content_node（网格配置名）
-local function get_content_node_for_tab(tab_name)
-  if not tab_name or tab_name == '' then
-    return 'grid_default'
-  end
-  return ArchiveTabDefinitions.get_content_node(tab_name) or 'grid_default'
-end
 
 local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_items, options)
   local section = tostring(state and state.archive_panel_section or '')
@@ -2001,7 +2002,7 @@ function M.ensure(ui, options)
   for _, group in ipairs(content_groups) do
     ui.shop.middle_groups[#ui.shop.middle_groups + 1] = group
     local entry = ui.shop.middle_groups[#ui.shop.middle_groups]
-    local click_target = resolve_ui(player, group.base .. '.bg') or group.root
+    local click_target = resolve_ui(player, group.base .. '.cell.bg') or group.root
     if is_ui_alive(click_target) then
       set_intercepts(click_target, true)
       click_target:add_fast_event('左键-按下', function()
