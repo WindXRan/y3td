@@ -125,7 +125,6 @@ M.battlefield_scene_config = {
     challenge_spawn_top = { x_min = 1580, x_max = 1850, y_min = 220, y_max = 420, z = 0 },
     challenge_spawn_mid = { x_min = 1620, x_max = 1890, y_min = -80, y_max = 120, z = 0 },
     challenge_spawn_bottom = { x_min = 1580, x_max = 1850, y_min = -420, y_max = -220, z = 0 },
-    challenge_treasure_elite_spawn = { x_min = 1640, x_max = 1780, y_min = -60, y_max = 60, z = 0 },
   },
   main_enemy_slow_zones = {
     { area_id = 'mid_slow_lane_outer',  speed_factor = 0.64 },

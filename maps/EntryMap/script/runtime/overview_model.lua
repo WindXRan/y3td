@@ -315,7 +315,7 @@ function M.create(env)
             title = '技能运行时',
             lines = build_skill_runtime_lines(),
           },
-          treasures = {
+          economy = {
             title = '经济与奖励',
             lines = build_economy_bonus_lines(),
           },
@@ -347,7 +347,7 @@ function M.create(env)
           title = '战术卡流派',
           lines = build_bond_overview_lines(),
         },
-        treasures = {
+        evolution = {
           title = '进化概览',
           lines = build_evolution_overview_lines(),
         },

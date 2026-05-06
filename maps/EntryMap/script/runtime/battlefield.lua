@@ -1190,13 +1190,7 @@ function M.create(env)
 
     if is_success then
       message(instance.def.name .. ' 成功。')
-      local handled = false
-      if env.handle_challenge_success then
-        handled = env.handle_challenge_success(instance) == true
-      end
-      if not handled then
-        env.award_rewards(instance.def.reward, instance.def.name .. ' 成功', false)
-      end
+      env.award_rewards(instance.def.reward, instance.def.name .. ' 成功', false)
     else
       cleanup_challenge_units(instance)
       message(instance.def.name .. ' 失败。')

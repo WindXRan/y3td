@@ -720,29 +720,6 @@ end
 
 local function build_choice_next_text(node_def)
   return ''
-  --[[
-  if not node_def or not node_def.next_ids or #node_def.next_ids == 0 then
-    return ''
-  end
-
-  local parts = {}
-  for _, next_id in ipairs(node_def.next_ids) do
-    local next_def = NODE_BY_ID[next_id]
-    if next_def then
-      local next_single = trim_inline_text(get_choice_single_text(next_def))
-      if next_single ~= '' then
-        parts[#parts + 1] = string.format('%s（%s）', next_def.display_name, next_single)
-      else
-        parts[#parts + 1] = next_def.display_name
-      end
-    end
-  end
-
-  if #parts == 0 then
-    return ''
-  end
-  return '后继：' .. table.concat(parts, '；')
-]]
 end
 
 local function build_choice_current_text(node_def)

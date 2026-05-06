@@ -26,7 +26,6 @@ function M.create(deps)
   local get_game_time = deps.get_game_time
   local has_card_effect = deps.has_card_effect
   local try_chance = deps.try_chance
-  local play_bond_sound = deps.play_bond_sound
   local play_particle_on_unit = deps.play_particle_on_unit
   local play_particle_on_point = deps.play_particle_on_point
   local play_impact_burst = deps.play_impact_burst
@@ -234,7 +233,6 @@ function M.create(deps)
     for index = 0, tick_count - 1 do
       wait_seconds(env, index * tick_interval, function()
         if index % 2 == 0 then
-          play_bond_sound(env, '游侠', 'impact', storm_center)
         end
         -- Tick 是否播放受击特效由 visual.hit_fx_mode 控制。
         bond_damage_area(storm_center, storm_radius, tick_damage, '物理', nil, nil, tick_emit_hit_fx)
@@ -323,14 +321,12 @@ function M.create(deps)
       local trigger_chance = rule_number(basic_rule.chance, 0.08)
       if try_chance(trigger_chance) then
         report_cast(1)
-        play_bond_sound(env, '神射手', 'cast', get_hero(env))
         local impact_point = get_unit_point_snapshot(target)
         perform_visual_delivery(env, target, visual_cfg, function()
           local impact_target = pick_impact_unit(env, impact_point, target)
           if not impact_target then
             return
           end
-          play_bond_sound(env, '神射手', 'impact', impact_target)
           play_particle_on_unit(env, impact_target, visual_cfg.particle_key, 0.9, 0.25)
           local amount = attack * rule_number(basic_rule.damage_attack_ratio, 1.2)
             + attack_speed * rule_number(basic_rule.damage_attack_speed_ratio, 0.5)
@@ -362,7 +358,6 @@ function M.create(deps)
       local trigger_chance = rule_number(basic_rule.chance, 0.08)
       if try_chance(trigger_chance) then
         report_cast(1)
-        play_bond_sound(env, '游侠', 'cast', get_hero(env))
         perform_visual_delivery(env, target, visual_cfg, function() end)
         return trigger_ranger_arrow_rain(env, target, visual_cfg, bond_damage_area, attack, basic_rule.arrow_rain)
       end
@@ -378,13 +373,11 @@ function M.create(deps)
         local blood_burst_radius = math.max(120, rule_number(basic_rule.burst_radius, 320))
         local blood_burst_ratio = math.max(0.20, rule_number(basic_rule.burst_damage_ratio, 0.45))
         local impact_point = get_unit_point_snapshot(target)
-        play_bond_sound(env, '狂战士', 'cast', get_hero(env))
         perform_visual_delivery(env, target, visual_cfg, function()
           local impact_target = pick_impact_unit(env, impact_point, target)
           if not impact_target then
             return
           end
-          play_bond_sound(env, '狂战士', 'impact', impact_target)
           play_particle_on_unit(env, impact_target, visual_cfg.particle_key, 1.1, 0.25)
           bond_damage_target(impact_target, amount, '物理')
           wait_seconds(env, blood_burst_delay, function()
@@ -405,14 +398,12 @@ function M.create(deps)
       if effect_state.counter >= hit_count_trigger then
         report_cast(1)
         effect_state.counter = 0
-        play_bond_sound(env, '剑魂', 'cast', get_hero(env))
         local impact_point = get_unit_point_snapshot(target)
         perform_visual_delivery(env, target, visual_cfg, function()
           local impact_target = pick_impact_unit(env, impact_point, target)
           if not impact_target then
             return
           end
-          play_bond_sound(env, '剑魂', 'impact', impact_target)
           play_impact_burst(env, impact_target, visual_cfg.particle_key, 1.0)
           local amount = attack * rule_number(basic_rule.damage_attack_ratio, 1.5)
           bond_damage_target(impact_target, amount, '物理')
@@ -452,7 +443,6 @@ function M.create(deps)
           rule_number(basic_rule.edge_scale_floor, 0.65),
           storm_scale * rule_number(basic_rule.edge_scale_ratio, 0.72)
         )
-        play_bond_sound(env, '剑宗', 'cast', get_hero(env))
         play_impact_burst(env, target, visual_cfg.particle_key, 1.05)
         perform_visual_delivery(env, target, visual_cfg, function() end)
         if play_particle_on_point and storm_point then
@@ -464,7 +454,6 @@ function M.create(deps)
         for index = 0, tick_count - 1 do
           wait_seconds(env, index * tick_interval, function()
             if index % 2 == 0 then
-              play_bond_sound(env, '剑宗', 'impact', storm_center)
             end
             -- 持续区域技能默认不按每个伤害Tick刷新整套视觉，改为可选低频脉冲。
             if fx_pulse_every > 0 and index > 0 and (index % fx_pulse_every == 0) then
@@ -506,14 +495,12 @@ function M.create(deps)
       local trigger_chance = rule_number(basic_rule.chance, 0.08)
       if try_chance(trigger_chance) then
         report_cast(1)
-        play_bond_sound(env, '战斗法师', 'cast', get_hero(env))
         local impact_point = get_unit_point_snapshot(target)
         local aoe_radius = math.max(80, rule_number(basic_rule.aoe_radius, tonumber(visual_cfg and visual_cfg.area_fx_base_radius) or 320))
         perform_visual_delivery(env, target, visual_cfg, function()
           local impact_anchor = impact_point or target
           local impact_target = pick_impact_unit(env, impact_point, target)
           if impact_target then
-            play_bond_sound(env, '战斗法师', 'impact', impact_target)
             play_particle_on_unit(env, impact_target, visual_cfg.particle_key, 1.0, 0.25)
           end
           bond_damage_area(
@@ -543,14 +530,12 @@ function M.create(deps)
       local now = get_game_time(env)
       if (effect_state.demon_until or 0) > now then
         report_cast(1)
-        play_bond_sound(env, '魔剑士', 'cast', get_hero(env))
         local impact_point = get_unit_point_snapshot(target)
         perform_visual_delivery(env, target, visual_cfg, function()
           local impact_target = pick_impact_unit(env, impact_point, target)
           if not impact_target then
             return
           end
-          play_bond_sound(env, '魔剑士', 'impact', impact_target)
           play_particle_on_unit(env, impact_target, visual_cfg.particle_key, 0.8, 0.20)
           local amount = attack * rule_number(basic_rule.demon_damage_attack_ratio, 2.0)
           bond_damage_target(impact_target, amount, '法术')
@@ -619,12 +604,10 @@ function M.create(deps)
       local splash_radius = math.max(80, rule_number(periodic_rule.splash_radius, 320))
       local splash_damage = attack * rule_number(periodic_rule.splash_damage_attack_ratio, 1.2)
       if target or impact_point then
-        play_bond_sound(env, '火法师', 'cast', get_hero(env))
         perform_visual_delivery(env, target, visual_cfg, function()
           local impact_anchor = impact_point or target
           local impact_target = pick_impact_unit(env, impact_point, target)
           if impact_target then
-            play_bond_sound(env, '火法师', 'impact', impact_target)
             play_particle_on_unit(env, impact_target, visual_cfg.particle_key, 1.25, 0.30)
             play_impact_burst(env, impact_target, visual_cfg.particle_key, 1.35)
             bond_damage_target(impact_target, main_damage, periodic_rule.damage_type or '法术')
@@ -650,7 +633,6 @@ function M.create(deps)
       if target then
         visual_cfg.motion_mode = 'instant'
         visual_cfg.delivery_mode = 'spawn_on_target'
-        play_bond_sound(env, bond_name, 'cast', get_hero(env))
         perform_visual_delivery(env, target, visual_cfg, function() end)
         local storm_point = nil
         if target.get_point then
@@ -737,9 +719,7 @@ function M.create(deps)
         local targets = env.get_enemies_in_range and env.get_enemies_in_range(hero, rule_number(periodic_rule.range, 1200), nil, target_count) or {}
         for _, target in ipairs(targets) do
           if target and target.is_exist and target:is_exist() then
-            play_bond_sound(env, '雷电法王', 'cast', get_hero(env))
             perform_visual_delivery(env, target, visual_cfg, function()
-              play_bond_sound(env, '雷电法王', 'impact', target)
               play_impact_burst(env, target, visual_cfg.particle_key, 1.05)
               hit = bond_damage_target(target, attack * damage_ratio, '法术') or hit
             end)

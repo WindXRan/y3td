@@ -55,9 +55,6 @@ function M.create(ctx)
     enter_battle_audio = function()
       return ctx.audio_system and ctx.audio_system.enter_battle and ctx.audio_system.enter_battle() or nil
     end,
-    disable_local_attack_preview = function()
-      return false
-    end,
     get_outgame_system = function()
       return ctx.get_outgame_system()
     end,

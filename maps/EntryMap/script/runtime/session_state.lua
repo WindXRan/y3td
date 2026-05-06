@@ -1,6 +1,4 @@
-﻿local EquipmentCatalog = require 'data.tables.economy.equipment_catalog'
-
-local M = {}
+﻿local M = {}
 
 function M.create(env)
   local STATE = env.STATE
@@ -34,26 +32,6 @@ function M.create(env)
   local set_battle_hud_visible = env.set_battle_hud_visible
   local refresh_runtime_hud = env.refresh_runtime_hud
   local enter_battle_audio = env.enter_battle_audio
-  local disable_local_attack_preview = env.disable_local_attack_preview
-
-  local function grant_equipment_drag_test_items(hero)
-    -- 关闭开局测试武器注入，避免和成长武器并存造成“多余武器槽位”。
-    if not hero then
-      return false
-    end
-    if hero.get_bar_cnt and hero.set_bar_cnt then
-      local target_bar_cnt = tonumber(EquipmentCatalog.bar_slot_count) or 6
-      local current_bar_cnt = tonumber(hero:get_bar_cnt()) or 0
-      if current_bar_cnt < target_bar_cnt then
-        hero:set_bar_cnt(target_bar_cnt)
-      end
-    end
-    return false
-  end
-
-  local function grant_test_attack_skills_on_stage_start()
-    return 0
-  end
 
   local function is_battle_active()
     return STATE.session_phase == 'battle' and STATE.game_finished ~= true
@@ -86,9 +64,6 @@ function M.create(env)
   local function reset_battle_state()
     destroy_choice_panel()
     cleanup_swallow_panel()
-    if disable_local_attack_preview then
-      disable_local_attack_preview()
-    end
     STATE.hero = nil
     STATE.hero_common_attack = nil
     STATE.hero_spawn_point = make_point(CONFIG.points.hero_spawn)
@@ -293,9 +268,6 @@ function M.create(env)
         STATE.hero:set_hp(hero_attr_system.get_attr(STATE.hero, '生命结算值'))
       end
     end
-    if STATE.hero then
-      grant_equipment_drag_test_items(STATE.hero)
-    end
     if hero_attr_system and STATE.hero then
       hero_attr_system.snapshot(STATE.hero, STATE)
       if hero_attr_system.log_snapshot then
@@ -309,14 +281,10 @@ function M.create(env)
     end
     initialize_hero_progression()
     setup_basic_attack_ability()
-    grant_test_attack_skills_on_stage_start()
     if not try_initialize_battle_ui() then
       return rollback_stage_start('战斗界面初始化失败，请稍后重试。')
     end
     try_enter_battle_audio()
-
-    if stage_def.content_source_stage_id and stage_def.content_source_stage_id ~= stage_def.stage_id then
-    end
 
     env.start_wave(1)
     return true

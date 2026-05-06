@@ -2131,10 +2131,6 @@ local function trigger_td_skills_on_hit(data)
   end
 end
 
-local function handle_challenge_success(instance)
-  return false
-end
-
 local function handle_battle_finished(result)
   if audio_system and audio_system.handle_battle_finished then
     audio_system.handle_battle_finished(result)
@@ -2296,9 +2292,6 @@ battlefield_system = BattlefieldSystem.create({
     return reward_system.handle_hero_be_hurt()
   end,
   on_hero_attr_changed = snapshot_hero_attrs,
-  handle_challenge_success = function(instance)
-    return handle_challenge_success(instance)
-  end,
   on_finish_game = function(result)
     return handle_battle_finished(result)
   end,

@@ -597,15 +597,6 @@ local function play_particle_on_point(env, point, effect_key, scale, time, heigh
   return nil
 end
 
-local function play_bond_sound(env, bond_name, stage, anchor)
-  -- 已按需求禁用羁绊音频调用链（audio.lua 相关）。
-  local state = env and env.STATE
-  if state and state.bond_debug_trace_enabled == true and env and env.message then
-    env.message(string.format('[bond_audio_trace] disabled bond=%s stage=%s', tostring(bond_name), tostring(stage)))
-  end
-  return nil
-end
-
 local function resolve_projectile_key(state, projectile_key)
   local forced = tonumber(state and state.debug_force_projectile_key) or 0
   if forced > 0 then
@@ -1314,7 +1305,6 @@ local function execute_projectile_pierce_template(env, target, visual_cfg, opts,
   local total_time = math.max(0.08, line_distance / projectile_speed)
   local projectile_life_time = math.max(total_time + 0.05, 0.10)
 
-  play_bond_sound(env, opts and opts.bond_name, 'cast', hero)
   local hit_radius = math.max(20, tonumber(opts and opts.hit_radius) or math.floor(pierce_width * 0.5))
   local hit_interval = math.max(0.02, tonumber(opts and opts.hit_interval) or 0.05)
   local hit_same = opts and opts.hit_same == true or false
@@ -1342,7 +1332,6 @@ local function execute_projectile_pierce_template(env, target, visual_cfg, opts,
       end
       hit_marks[uid] = true
       hit_count = hit_count + 1
-      play_bond_sound(env, opts and opts.bond_name, 'impact', unit)
       play_particle_on_unit(env, unit, visual_cfg.particle_key, tonumber(opts and opts.hit_fx_scale) or 0.9, tonumber(opts and opts.hit_fx_time) or 0.18)
       if on_tick_hit then
         on_tick_hit(unit)
@@ -1992,7 +1981,6 @@ local function execute_linear_bond_template(env, target, visual_cfg, opts, on_hi
   local direction = compute_direction_by_points(hero_point, target_point, 0)
   local impact_point = create_offset_point(env, hero_point, direction, line_distance, 0) or target_point
 
-  play_bond_sound(env, opts and opts.bond_name, 'cast', hero)
   launch_projectile_to_point(env, direction, line_distance, visual_cfg)
   play_particle_on_point(env, impact_point, visual_cfg.particle_key, tonumber(opts and opts.target_fx_scale) or 1.0, tonumber(opts and opts.target_fx_time) or 0.25, 20)
 
@@ -2000,7 +1988,6 @@ local function execute_linear_bond_template(env, target, visual_cfg, opts, on_hi
     local fallback_target = nil
     local line_units = safe_collect_units_in_line(env, hero_point, impact_point, line_distance, line_width, max_hits, fallback_target)
     for _, unit in ipairs(line_units) do
-      play_bond_sound(env, opts and opts.bond_name, 'impact', unit)
       play_particle_on_unit(env, unit, visual_cfg.particle_key, tonumber(opts and opts.hit_fx_scale) or 0.9, tonumber(opts and opts.hit_fx_time) or 0.18)
       if on_hit then
         on_hit(unit)
@@ -2137,7 +2124,6 @@ local BondModifierCoreEffects = BondModifierCoreEffectsFactory.create({
   get_game_time = get_game_time,
   has_card_effect = has_card_effect,
   try_chance = try_chance,
-  play_bond_sound = play_bond_sound,
   play_particle_on_unit = play_particle_on_unit,
   play_particle_on_point = play_particle_on_point,
   play_impact_burst = play_impact_burst,

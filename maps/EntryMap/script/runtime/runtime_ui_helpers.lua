@@ -65,7 +65,7 @@ return'bond_choice_3'end;
 local function a8(Z)return'4'end;
 local function a9(Q)if Q==nil then return''end;
 return tostring(Q):gsub('^%s+',''):gsub('%s+$','')end;
-local function aa(ab,ac)if ac=='treasure'and o then return o(ab)end;
+local function aa(ab,ac)
 if ac=='evolution'and q then return q(ab)end;
 if ab=='legendary'then return'��˵'end;
 if ab=='epic'then return'ʷʫ'end;
@@ -109,21 +109,6 @@ return as(ay and(ay.display_name or ay.id)or'',aA,ay and ay.summary or'',al(),ay
 local function aL(aM)local aI=d and(d.evolution_runtime)or nil;
 local aN=aI and aI.current_round or nil;
 return as(aM and aM.name or'δ����ר��',string.format('[%s] %s',aa(aM and aM.quality or nil,'evolution'),aN and aN.ui_title or'ר������'),aM and aM.summary or'',ai(aM and aM.hero_unit_id or nil),aM and aM.quality or'common')end;
-local function aO()local aI=d and d.treasure_runtime or nil;
-if not aI or not aI.active_slots then return 0 end;
-local aP=0;
-for aQ=1,3,1 do if aI.active_slots[aQ]then aP=aP+1 end end;
-return aP end;
-local function aR(aM)local az=aa(aM and aM.quality or nil,'treasure')local aS=aO()>=3 and'�����滻'or''
-return as(aM and aM.name or'δ��������',string.format('[%s] ����%s',az,aS),aM and aM.summary or'',ag(aM and aM.editor_item_key or nil),aM and aM.quality or'common')end;
-local function aT(aQ)local aI=d and d.treasure_runtime or nil;
-local aU=aI and aI.active_slots and aI.active_slots[aQ]or nil;
-local aV=p and p(aU)or nil;
-local aW=aI and aI.pending_replace_choice or nil;
-local ao=am(aV and aV.summary or'',2)if#ao==0 and n then ao=am(n(aQ),2)end;if#ao<2 and aW and aW.name and aW.name~=''then ao[#ao+1]='���룺'..tostring(aW.name)end;
-local az=aa(aV and aV.quality or nil,'treasure')
-local aA=az~=''and string.format('[%s] �滻λ %d',az,aQ)or string.format('�滻λ %d',aQ)
-return as(aV and aV.name or string.format('����λ %d',aQ),aA,ao,ag(aV and aV.editor_item_key or nil),aV and aV.quality or'common',aU~=nil)end;
 local function aX()if d.choice_panel_hidden==true then return nil end;
 local ac=i and i()or nil;
 if ac=='gear'then local aI=d and d.gear_state or nil;
@@ -139,13 +124,6 @@ if ac=='evolution'then local aI=d and(d.evolution_runtime)or nil;
 if not aI or aI.awaiting_choice~=true or not aI.current_choices or#aI.current_choices==0 then return nil end;
 local aY={}for aE,ay in ipairs(aI.current_choices)do aY[#aY+1]=aL(ay)end;
 return{kind='evolution',panel_name=a5(#aY),choices=aY,current_round=aI.current_round,can_refresh=false,disabled_refresh_text='��ǰ����ˢ��'}end;
-if ac=='treasure'then local aI=d and d.treasure_runtime or nil;
-if not aI then return nil end;
-if aI.awaiting_replace and aI.pending_replace_choice then local aY={}for aQ=1,3,1 do aY[#aY+1]=aT(aQ)end;
-return{kind='treasure_replace',panel_name=a5(#aY),choices=aY,current_round=aI.current_round,can_refresh=false,disabled_refresh_text='�ѽ����滻'}end;
-if not aI.awaiting_choice or not aI.current_choices or#aI.current_choices==0 then return nil end;
-local aY={}for aE,ay in ipairs(aI.current_choices)do aY[#aY+1]=aR(ay)end;
-return{kind=ac,panel_name=a5(#aY),choices=aY,current_round=aI.current_round,can_refresh=true}end;
 return nil end;
 local function b0(Z,af,ay)local b1=string.format('bond_choice_%s.cards_row.card_%d',a8(Z),af)local b2=a2(Z,b1)
 if not b2 then return end;
@@ -258,7 +236,7 @@ return a1 end;
 local function bs()a4()return nil end;
 local function bt()local bu=d.runtime_overview_mode;d.runtime_overview_mode='attr'local bq=h and h()or nil;d.runtime_overview_mode=bu;
 if not bq or not bq.sections then return'��������ݲ�����'end;
-local ao={}local bv={'summary','skills','bonds','treasures'}
+local ao={}local bv={'summary','skills','bonds','evolution','economy'}
 for aE,bw in ipairs(bv)do
 local bx=bq.sections[bw]
 if bx and bx.title and bx.lines and#bx.lines>0 then
