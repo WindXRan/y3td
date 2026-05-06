@@ -5,7 +5,7 @@ local RewardSystem = require 'runtime.rewards'
 math.randomseed(12345)
 
 local state = {
-  mark_runtime = nil,
+  evolution_runtime = nil,
   treasure_runtime = nil,
 }
 
@@ -23,8 +23,8 @@ local api = RewardSystem.create({
   collect_bond_route_tags = function() return {} end,
 })
 
-local runtime = api.create_mark_runtime()
-state.mark_runtime = runtime
+local runtime = api.create_evolution_runtime()
+state.evolution_runtime = runtime
 
 local picks = api.debug_pick_evolution_choices_for_rule('evolution_pool_global', 2)
 assert(#picks == 2, 'should return 2 evolution picks')
@@ -40,15 +40,15 @@ for _, def in ipairs(picks) do
 end
 assert(has_high_quality, 'global rule should guarantee at least one rare or epic pick')
 
-runtime.owned_mark_ids[picks[1].id] = true
+runtime.owned_evolution_ids[picks[1].id] = true
 local next_picks = api.debug_pick_evolution_choices_for_rule('evolution_pool_global', 2)
 for _, def in ipairs(next_picks) do
   assert(def.id ~= picks[1].id, 'owned evolutions should be excluded')
 end
 
-for _, def in pairs(api.MARK_DEFS) do
+for _, def in pairs(api.EVOLUTION_DEFS) do
   if def.quality == 'rare' or def.quality == 'epic' then
-    runtime.owned_mark_ids[def.id] = true
+    runtime.owned_evolution_ids[def.id] = true
   end
 end
 

@@ -5,7 +5,7 @@ local SkillDamageTemplates = require 'runtime.skill_damage_templates'
 local BondDrawConfig = require 'data.tables.bond.bond_effect_runtime_rules'
 local BondNodeObjects = require 'data.tables.bond.bond_nodes'
 local QualityImageTable = require 'data.tables.economy.quality_image_table'
-local EvolutionObjects = require 'data.tables.outgame.marks'
+local HeroEvolutionObjects = require 'data.tables.outgame.hero_evolutions'
 local ProgressionSystem = require 'runtime.progression'
 local BattlefieldSystem = require 'runtime.battlefield'
 local DebugToolsSystem = require 'runtime.debug_tools'
@@ -220,11 +220,11 @@ local function build_bottom_status_effect_entry(effect_def, snapshot)
       lines[#lines + 1] = tostring(meta.tip_text)
     end
   elseif effect_def.source_type == 'mark' then
-    local mark_def = EvolutionObjects.by_id and EvolutionObjects.by_id[effect_def.source_id] or nil
-    icon = mark_def and safe_get_unit_icon(mark_def.hero_unit_id) or nil
-    title = mark_def and mark_def.name or nil
-    if mark_def and mark_def.summary and mark_def.summary ~= '' then
-      lines[#lines + 1] = tostring(mark_def.summary)
+    local evolution_def = HeroEvolutionObjects.by_id and HeroEvolutionObjects.by_id[effect_def.source_id] or nil
+    icon = evolution_def and safe_get_unit_icon(evolution_def.hero_unit_id) or nil
+    title = evolution_def and evolution_def.name or nil
+    if evolution_def and evolution_def.summary and evolution_def.summary ~= '' then
+      lines[#lines + 1] = tostring(evolution_def.summary)
     end
   end
 
@@ -769,11 +769,9 @@ end
 
 local create_bond_env
 local award_rewards
-local show_mark_choices
-local show_treasure_choices
+local show_evolution_choices
 local show_attack_skill_loadout
 local emit_damage_debug_visual
-local try_open_queued_treasure_round
 local is_battle_active
 local reset_battle_state
 local reset_session_state
@@ -910,25 +908,14 @@ mainline_task_system = require('runtime.mainline_tasks').create({
   award_rewards = function(reward, source_text, silent)
     return award_rewards(reward, source_text, silent)
   end,
-  queue_treasure_round = function(source_type, source_name)
-    return reward_system.queue_treasure_round(source_type, source_name)
-  end,
   start_mainline_task_challenge = function(task)
     return battlefield_system and battlefield_system.start_mainline_task_challenge and
         battlefield_system.start_mainline_task_challenge(task) or nil
   end,
 })
 
-show_mark_choices = function()
+show_evolution_choices = function()
   return reward_system.show_evolution_choices()
-end
-
-show_treasure_choices = function()
-  return reward_system.show_treasure_choices()
-end
-
-try_open_queued_treasure_round = function()
-  return reward_system.try_process_reward_queue()
 end
 
 local function get_hero_progression_rules()
@@ -1075,16 +1062,16 @@ local function is_elite_runtime_enemy(info)
 end
 
 local function get_bond_runtime_bonus(key)
-  local mark_runtime = STATE.mark_runtime
-  local mark_bonus = 0
-  if mark_runtime and mark_runtime.applied and mark_runtime.applied.runtime then
-    mark_bonus = mark_runtime.applied.runtime[key] or 0
+  local evolution_runtime = STATE.evolution_runtime
+  local evolution_bonus = 0
+  if evolution_runtime and evolution_runtime.applied and evolution_runtime.applied.runtime then
+    evolution_bonus = evolution_runtime.applied.runtime[key] or 0
   end
-  return BondSystem.get_runtime_bonus(STATE, key) + mark_bonus
+  return BondSystem.get_runtime_bonus(STATE, key) + evolution_bonus
 end
 
 local function get_combat_bonus(key)
-  return get_bond_runtime_bonus(key) + reward_system.get_treasure_runtime_bonus(key)
+  return get_bond_runtime_bonus(key)
 end
 
 local function get_formula_damage_runtime()
@@ -1911,21 +1898,20 @@ heal_hero = function(amount)
 end
 
 award_rewards = function(reward, source_text, silent)
-  local final_reward = reward_system.build_reward_with_treasure_bonus(reward)
-  if not final_reward then
+  if not reward then
     return
   end
 
-  if final_reward.gold and final_reward.gold > 0 then
-    STATE.resources.gold = STATE.resources.gold + final_reward.gold
+  if reward.gold and reward.gold > 0 then
+    STATE.resources.gold = STATE.resources.gold + reward.gold
   end
 
-  if final_reward.wood and final_reward.wood > 0 then
-    STATE.resources.wood = STATE.resources.wood + final_reward.wood
+  if reward.wood and reward.wood > 0 then
+    STATE.resources.wood = STATE.resources.wood + reward.wood
   end
 
-  if final_reward.exp and final_reward.exp > 0 then
-    progression_system.grant_hero_exp(final_reward.exp)
+  if reward.exp and reward.exp > 0 then
+    progression_system.grant_hero_exp(reward.exp)
   end
 
   if silent then
@@ -1939,13 +1925,11 @@ local function update_passive_resources(dt)
     0,
     (rules.gold_per_sec or 0)
     + get_bond_runtime_bonus('gold_per_sec_bonus')
-    + reward_system.get_treasure_passive_income('gold')
   )
   local wood_per_sec = math.max(
     0,
     (rules.wood_per_sec or 0)
     + get_bond_runtime_bonus('wood_per_sec_bonus')
-    + reward_system.get_treasure_passive_income('wood')
   )
   if (gold_per_sec <= 0 and wood_per_sec <= 0) or not STATE.resources then
     return
@@ -2148,13 +2132,7 @@ local function trigger_td_skills_on_hit(data)
 end
 
 local function handle_challenge_success(instance)
-  if not instance or not instance.def or instance.def.id ~= 'treasure_trial' then
-    return false
-  end
-
-  award_rewards(instance.def.reward, instance.def.name .. ' 成功', false)
-  message('宝物功能已下线，本次不再发放宝物奖励。')
-  return true
+  return false
 end
 
 local function handle_battle_finished(result)
@@ -2342,13 +2320,6 @@ local function build_attack_skill_slot_text(slot)
   return attack_skills_system.build_attack_skill_slot_text(slot)
 end
 
-local function apply_treasure_bonus_to_attack_skill(skill_id, skill, bonus, direction)
-  if not reward_system or not reward_system.apply_treasure_bonus_to_attack_skill then
-    return nil
-  end
-  return reward_system.apply_treasure_bonus_to_attack_skill(skill_id, skill, bonus, direction)
-end
-
 show_attack_skill_loadout = function()
   return attack_skills_system.show_attack_skill_loadout()
 end
@@ -2358,21 +2329,21 @@ local function unlock_attack_skill(skill_id)
     return nil, nil, false
   end
   local skill, slot, is_new = attack_skills_system.unlock_attack_skill(skill_id)
-  if is_new and STATE.treasure_runtime and STATE.treasure_runtime.applied then
-    apply_treasure_bonus_to_attack_skill(
-      skill_id,
-      skill,
-      STATE.treasure_runtime.applied.attack_skill or {},
-      1
-    )
-  end
-  if is_new and STATE.mark_runtime and STATE.mark_runtime.applied then
-    apply_treasure_bonus_to_attack_skill(
-      skill_id,
-      skill,
-      STATE.mark_runtime.applied.attack_skill or {},
-      1
-    )
+  if is_new and STATE.evolution_runtime and STATE.evolution_runtime.applied then
+    local bonus = STATE.evolution_runtime.applied.attack_skill or {}
+    local factor = 1
+    if bonus.damage_ratio and bonus.damage_ratio ~= 0 then
+      skill.damage_ratio = math.max(0, (skill.damage_ratio or 0) + bonus.damage_ratio * factor)
+    end
+    if bonus.repeat_count and bonus.repeat_count ~= 0 then
+      skill.repeat_count = math.max(1, (skill.repeat_count or 1) + bonus.repeat_count * factor)
+    end
+    if bonus.range_bonus and bonus.range_bonus ~= 0 then
+      skill.range_bonus = math.max(0, (skill.range_bonus or 0) + bonus.range_bonus * factor)
+    end
+    if bonus.cooldown_reduction and bonus.cooldown_reduction ~= 0 then
+      skill.cooldown_reduction = math.max(0, (skill.cooldown_reduction or 0) + bonus.cooldown_reduction * factor)
+    end
   end
   return skill, slot, is_new
 end
@@ -2516,7 +2487,7 @@ local function get_pending_round_choice_kind()
   if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice and STATE.bond_runtime.current_choices then
     return 'bond'
   end
-  local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
+  local evolution_runtime = STATE.evolution_runtime
   if evolution_runtime and evolution_runtime.awaiting_choice and evolution_runtime.current_choices then
     return 'evolution'
   end
@@ -2533,7 +2504,7 @@ local function get_pending_round_choice_label(kind)
   if kind == 'attr' then
     return '属性四选一'
   end
-  if kind == 'evolution' or kind == 'mark' then
+  if kind == 'evolution' then
     return '猎手专精'
   end
   return '当前选择'
@@ -2551,16 +2522,10 @@ overview_model_system = OverviewModelSystem.create({
   get_hero_progress_text = progression_system.get_hero_progress_text,
   get_reward_queue_count = reward_system.get_reward_queue_count,
   get_reward_queue = reward_system.get_reward_queue,
-  get_mark_runtime = reward_system.get_evolution_runtime,
-  get_treasure_runtime = reward_system.get_treasure_runtime,
-  get_treasure_quality_label = reward_system.get_treasure_quality_label,
-  get_treasure_active_count = reward_system.get_treasure_active_count,
-  get_mark_active_count = reward_system.get_evolution_active_count,
-  build_treasure_slot_text = reward_system.build_treasure_slot_text,
-  build_mark_slot_text = reward_system.build_evolution_slot_text,
+  get_evolution_runtime = reward_system.get_evolution_runtime,
+  get_evolution_active_count = reward_system.get_evolution_active_count,
+  build_evolution_slot_text = reward_system.build_evolution_slot_text,
   get_bond_runtime_bonus = get_bond_runtime_bonus,
-  get_treasure_reward_ratio = reward_system.get_treasure_reward_ratio,
-  get_treasure_passive_income = reward_system.get_treasure_passive_income,
   attack_skill_slot_count = ATTACK_SKILL_SLOT_COUNT,
   build_attack_skill_slot_text = function(slot)
     return attack_skills_system.build_attack_skill_slot_text(slot)
@@ -2590,13 +2555,8 @@ local function show_pending_round_choice(kind)
   if current_kind == 'attr' then
     return runtime_hud_system and runtime_hud_system.refresh_hud and runtime_hud_system.refresh_hud() or nil
   end
-  if current_kind == 'evolution' or current_kind == 'mark' then
-    show_mark_choices()
-    return
-  end
-  if current_kind == 'treasure' then
-    message('宝物功能已下线。')
-    STATE.choice_panel_hidden = false
+  if current_kind == 'evolution' then
+    show_evolution_choices()
     return
   end
 end
@@ -2615,7 +2575,6 @@ end
 local function apply_bond_choice(index)
   BondSystem.apply_choice(create_bond_env(), index)
   STATE.choice_panel_hidden = false
-  try_open_queued_treasure_round()
 end
 
 local function apply_round_choice(index)
@@ -2631,7 +2590,6 @@ local function apply_round_choice(index)
         sync_gear_runtime_effects(STATE, STATE.hero, CONFIG.gear_upgrade_config)
       end
       STATE.choice_panel_hidden = false
-      try_open_queued_treasure_round()
       return true
     end
     return false
@@ -2641,7 +2599,6 @@ local function apply_round_choice(index)
     local ok = attr_choice_system and attr_choice_system.apply_choice and attr_choice_system.apply_choice(index) or false
     if ok then
       STATE.choice_panel_hidden = false
-      try_open_queued_treasure_round()
     end
     return ok
   end
@@ -2651,15 +2608,10 @@ local function apply_round_choice(index)
     return true
   end
 
-  if kind == 'evolution' or kind == 'mark' then
+  if kind == 'evolution' then
     reward_system.apply_evolution_choice(index)
     STATE.choice_panel_hidden = false
     return true
-  end
-
-  if kind == 'treasure' then
-    message('宝物功能已下线。')
-    return false
   end
 
   return false
@@ -2686,13 +2638,8 @@ local function refresh_current_choice()
     return BondSystem.refresh_choice(create_bond_env())
   end
 
-  if kind == 'evolution' or kind == 'mark' then
+  if kind == 'evolution' then
     message('当前猎手专精不支持刷新。')
-    return false
-  end
-
-  if kind == 'treasure' then
-    message('宝物功能已下线。')
     return false
   end
 
@@ -2903,10 +2850,6 @@ function RuntimeEntry.push_message_marquee(text, priority, opts)
 end
 
 local function try_start_challenge(challenge_id)
-  if challenge_id == 'treasure_trial' then
-    message('宝物挑战已下线。')
-    return false
-  end
   if not ensure_round_choice_available(nil) then
     return
   end
@@ -3028,15 +2971,6 @@ runtime_ui_helpers = RuntimeUIHelpers.create({
         and CONFIG.gear_upgrade_config.slots.weapon
         or nil
     return slot_cfg and slot_cfg.item_key or nil
-  end,
-  build_treasure_slot_text = function(slot)
-    return reward_system.build_treasure_slot_text(slot)
-  end,
-  get_treasure_quality_label = function(quality)
-    return reward_system.get_treasure_quality_label(quality)
-  end,
-  get_treasure_def = function(treasure_id)
-    return reward_system.get_treasure_def(treasure_id)
   end,
   get_evolution_quality_label = function(quality)
     return reward_system.get_evolution_quality_label(quality)
@@ -3424,8 +3358,8 @@ local function build_choice_list_cards()
     choices = STATE.attr_choice_runtime and STATE.attr_choice_runtime.current_choices or nil
   elseif kind == 'bond' then
     choices = STATE.bond_runtime and STATE.bond_runtime.current_choices or nil
-  elseif kind == 'evolution' or kind == 'mark' then
-    local evolution_runtime = STATE.evolution_runtime or STATE.mark_runtime
+  elseif kind == 'evolution' then
+    local evolution_runtime = STATE.evolution_runtime
     choices = evolution_runtime and evolution_runtime.current_choices or nil
   end
 

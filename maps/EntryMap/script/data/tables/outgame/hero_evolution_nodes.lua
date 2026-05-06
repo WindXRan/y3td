@@ -1,4 +1,4 @@
-﻿local helpers = require 'data.tables.helpers'
+local helpers = require 'data.tables.helpers'
 
 local list = {
   {
@@ -60,5 +60,3 @@ return {
   by_level = by_level,
   pool_rules_by_id = pool_rules_by_id,
 }
-
-

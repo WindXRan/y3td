@@ -113,7 +113,6 @@ function a.create(A)
   local E = A.message;
   local F = A.add_hero_attr_pack;
   local G = A.award_rewards;
-  local H = A.queue_treasure_round;
   local I = A.start_mainline_task_challenge;
   local J = {}
   local function K() return C.mainline_task_rewards and C.mainline_task_rewards.by_id or {} end;
@@ -234,8 +233,6 @@ function a.create(A)
 
     if a5.type == 'special' then
       local i = _(a0)
-      if a5.key == 'treasure_choice' then return string.format('获得 %s 次宝物', tostring(i)) end;
-
       if a5.key == 'hero_card' then return string.format('英雄卡 %s', a1(a0, false)) end
     end;
 
@@ -339,9 +336,7 @@ function a.create(A)
       elseif a5.type == 'resource' then
         ag[a5.key] = (ag[a5.key] or 0) + (tonumber(a5.value) or 0)
       elseif a5.type == 'special' then
-        if a5.key == 'treasure_choice' and H then
-          for Y = 1, tonumber(a5.value) or 0 do H('mainline_task', v(o)) end
-        elseif a5.key == 'hero_card' then
+        if a5.key == 'hero_card' then
           T.hero_card_count = (T.hero_card_count or 0) + (tonumber(a5.value) or 0)
           if E then E(string.format('%s：英雄卡 %+d。', v(o), tonumber(a5.value) or 0)) end
         end

@@ -38,8 +38,7 @@ local TRIGGER_LABELS = {
 
 local SOURCE_LABELS = {
   bond = '羁绊',
-  treasure = '宝物',
-  mark = '烙印/专精',
+  mark = '英雄进化',
 }
 
 local SOURCE_ID_LABELS = {
@@ -49,8 +48,8 @@ local SOURCE_ID_LABELS = {
   auto_rapid_overdrive = '疾速超载路线',
   auto_blood_demon_burst = '血魔爆裂路线',
   auto_charge_breaker_rally = '破军振奋路线',
-  war_god_mark = '战神烙印',
-  storm_mark = '风暴烙印',
+  war_god_mark = '战神进化',
+  storm_mark = '风暴进化',
 }
 
 local FUNCTION_HINTS = {

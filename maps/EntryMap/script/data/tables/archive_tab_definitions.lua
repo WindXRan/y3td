@@ -37,6 +37,17 @@ local DEFAULT_CONFIG = {
 }
 
 -- 从 CSV 加载配置
+local function split_pipe(raw)
+  local result = {}
+  for part in tostring(raw or ''):gmatch('[^|]+') do
+    local value = trim(part)
+    if value ~= '' then
+      result[#result + 1] = value
+    end
+  end
+  return result
+end
+
 local function load_from_csv()
   local rows = CsvLoader.read_rows_optional('data_csv/outgame/outgame_archive_tabs.csv')
 
@@ -44,6 +55,8 @@ local function load_from_csv()
   local primary_tabs = {}
   local valid_partitions_map = {}
   local valid_primary_tabs_map = {}
+  local secondary_tabs_map = {}
+  local render_configs = {}
 
   for _, row in ipairs(rows) do
     local type_name = trim(row.type)
@@ -60,6 +73,33 @@ local function load_from_csv()
           default_partition = trim(row.default_partition),
         }
         valid_primary_tabs_map[name] = true
+        local secondaries = split_pipe(row.secondary_tabs)
+        if #secondaries > 0 then
+          secondary_tabs_map[name] = secondaries
+        end
+        -- 解析渲染配置
+        local render_mode = trim(row.render_mode)
+        if render_mode == '' then
+          render_mode = 'group'
+        end
+        local label_mode = trim(row.label_mode)
+        if label_mode == '' then
+          label_mode = 'title'
+        end
+        local flags = {}
+        for flag in tostring(row.flags or ''):gmatch('[^|]+') do
+          local key = trim(flag)
+          if key ~= '' then
+            flags[key] = true
+          end
+        end
+        render_configs[name] = {
+          render_mode = render_mode,
+          label_mode = label_mode,
+          content_node = trim(row.content_node),
+          flags = flags,
+          tip_content = split_pipe(row.tip_content),
+        }
       end
     end
   end
@@ -76,6 +116,7 @@ local function load_from_csv()
         ['套装'] = true, ['地图等级'] = true, ['荣誉等级'] = true,
         ['成就'] = true, ['英雄图鉴'] = true, ['羁绊图鉴'] = true, ['称号'] = true,
       },
+      secondary_tabs_map = {},
     }
   end
 
@@ -93,11 +134,14 @@ local function load_from_csv()
     career_tabs = career_tabs,
     valid_partitions_map = valid_partitions_map,
     valid_primary_tabs_map = valid_primary_tabs_map,
+    secondary_tabs_map = secondary_tabs_map,
+    render_configs = render_configs,
   }
 end
 
 -- 加载配置
 local config = load_from_csv()
+local RENDER_CONFIGS = config.render_configs or {}
 
 -- 构建访问用的数据结构
 local PARTITION_LIST = config.partitions
@@ -112,9 +156,21 @@ for _, tab in ipairs(config.primary_tabs) do
   }
 end
 
+-- 从 CSV 加载二级页签配置
 local VALID_SECONDARY_TABS = {}
 for _, name in ipairs(PRIMARY_TAB_LIST) do
   VALID_SECONDARY_TABS[name] = {}
+end
+-- 将 CSV 中配置的二级页签列表填入校验表
+for primary_name, secondary_list in pairs(config.secondary_tabs_map) do
+  local target = VALID_SECONDARY_TABS[primary_name]
+  if not target then
+    target = {}
+    VALID_SECONDARY_TABS[primary_name] = target
+  end
+  for _, secondary_name in ipairs(secondary_list) do
+    target[secondary_name] = true
+  end
 end
 
 local CAREER_TABS = config.career_tabs
@@ -162,7 +218,7 @@ end
 function M.get_default_partition_for_primary(primary)
   local tab_def = VALID_PRIMARY_TABS[primary]
   if not tab_def then
-    return '商城'
+    return PARTITION_LIST[1] or '商城'
   end
   return tab_def.default_partition
 end
@@ -182,12 +238,50 @@ function M.get_career_tabs()
   return CAREER_TABS
 end
 
--- 为指定的一级页签添加合法的二级页签
+-- 获取某个一级页签下的二级页签列表（从 CSV 配置）
+function M.get_secondary_tabs_for_primary(primary)
+  return config.secondary_tabs_map[primary] or {}
+end
+
+-- 为指定的一级页签添加合法的二级页签（运行时动态追加）
 function M.add_valid_secondary_tab(primary, secondary)
   if not VALID_SECONDARY_TABS[primary] then
     VALID_SECONDARY_TABS[primary] = {}
   end
   VALID_SECONDARY_TABS[primary][secondary] = true
+end
+
+-- 获取一级页签的完整渲染配置
+function M.get_tab_render_config(primary)
+  return RENDER_CONFIGS[primary] or {
+    render_mode = 'group',
+    label_mode = 'title',
+    content_node = '通用内容',
+    flags = { icon = true },
+    tip_content = {},
+  }
+end
+
+-- 获取一级页签的渲染模式
+function M.get_render_mode(primary)
+  local cfg = RENDER_CONFIGS[primary]
+  return (cfg and cfg.render_mode) or 'group'
+end
+
+-- 获取一级页签的内容节点名
+function M.get_content_node(primary)
+  local cfg = RENDER_CONFIGS[primary]
+  local node = (cfg and cfg.content_node)
+  if node and node ~= '' then
+    return node
+  end
+  return '通用内容'
+end
+
+-- 获取一级页签的提示文本内容（多行）
+function M.get_tip_content(primary)
+  local cfg = RENDER_CONFIGS[primary]
+  return (cfg and cfg.tip_content) or {}
 end
 
 -- 导出数据结构供外部访问
@@ -197,6 +291,7 @@ M.VALID_PARTITIONS = VALID_PARTITIONS
 M.VALID_PRIMARY_TABS = VALID_PRIMARY_TABS
 M.VALID_SECONDARY_TABS = VALID_SECONDARY_TABS
 M.CAREER_TABS = CAREER_TABS
+M.RENDER_CONFIGS = RENDER_CONFIGS
 M._config = config
 
 return M

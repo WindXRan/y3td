@@ -2,10 +2,10 @@
 
 local CsvLoader = require 'data.csv_loader'
 local attreffect = require 'data.tables.skill.attreffect'
-local marks = require 'data.tables.outgame.marks'
+local hero_evolutions = require 'data.tables.outgame.hero_evolutions'
 
-assert(type(marks) == 'table', 'marks should return a table')
-assert(type(marks.list) == 'table', 'marks.list should be a table')
+assert(type(hero_evolutions) == 'table', 'hero_evolutions should return a table')
+assert(type(hero_evolutions.list) == 'table', 'hero_evolutions.list should be a table')
 assert(type(attreffect.list) == 'table', 'attreffect.list should be a table')
 
 local tag_rows = CsvLoader.read_rows('data_csv/mark_tags.csv')
@@ -21,12 +21,12 @@ assert(void_effects ~= nil, 'expected void_mark effect rows in attreffect')
 assert(void_effects.runtime['skill_damage_bonus'] == 0.28, 'expected void_mark skill damage bonus in attreffect')
 assert(void_effects.attack_skill['cooldown_reduction'] == 0.12, 'expected void_mark cooldown reduction in attreffect')
 
-local void_mark = marks.by_id['void_mark']
-assert(void_mark.bonuses.runtime['skill_damage_bonus'] == 0.28, 'expected marks object table to keep runtime bonus wiring')
-assert(void_mark.bonuses.attack_skill['cooldown_reduction'] == 0.12, 'expected marks object table to keep attack_skill wiring')
+local void_mark = hero_evolutions.by_id['void_mark']
+assert(void_mark.bonuses.runtime['skill_damage_bonus'] == 0.28, 'expected hero_evolutions object table to keep runtime bonus wiring')
+assert(void_mark.bonuses.attack_skill['cooldown_reduction'] == 0.12, 'expected hero_evolutions object table to keep attack_skill wiring')
 
 local seen_mark_ids = {}
-for _, mark in ipairs(marks.list) do
+for _, mark in ipairs(hero_evolutions.list) do
   assert(mark.id ~= nil and mark.id ~= '', 'expected mark id')
   assert(mark.order_index ~= nil and mark.order_index > 0, 'expected mark order_index')
   assert(seen_mark_ids[mark.id] == nil, 'expected unique mark id: ' .. tostring(mark.id))
@@ -61,6 +61,6 @@ for _, mark in ipairs(marks.list) do
   end
 end
 
-print('[OK] marks catalog consistency smoke passed')
+print('[OK] hero_evolutions catalog consistency smoke passed')
 
 

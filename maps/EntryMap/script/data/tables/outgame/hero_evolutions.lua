@@ -1,4 +1,4 @@
-﻿local AttrEffect = require 'data.tables.skill.attreffect'
+local AttrEffect = require 'data.tables.skill.attreffect'
 local HeroRoster = (require 'data.game_tables').hero_roster
 local helpers = require 'data.tables.helpers'
 
@@ -7,8 +7,8 @@ local hero_list = HeroRoster.list or {}
 
 local list = {}
 
-local function build_bonus_bucket(mark_id, bucket_name)
-  local source = bonus_groups[mark_id]
+local function build_bonus_bucket(evolution_id, bucket_name)
+  local source = bonus_groups[evolution_id]
   local bucket = source and source[bucket_name] or nil
   if not bucket then
     return nil
@@ -20,7 +20,7 @@ local function build_bonus_bucket(mark_id, bucket_name)
   return out
 end
 
-local function push_mark(index, hero_entry)
+local function push_evolution(index, hero_entry)
   local quality = 'common'
   if index >= 5 then
     quality = 'epic'
@@ -28,9 +28,9 @@ local function push_mark(index, hero_entry)
     quality = 'rare'
   end
 
-  local mark_id = string.format('mark_%s', tostring(hero_entry.id or index))
+  local evolution_id = string.format('mark_%s', tostring(hero_entry.id or index))
   list[#list + 1] = {
-    id = mark_id,
+    id = evolution_id,
     name = hero_entry.name or ('英雄专精' .. tostring(index)),
     quality = quality,
     pool_weight = quality == 'epic' and 20 or (quality == 'rare' and 35 or 45),
@@ -39,9 +39,9 @@ local function push_mark(index, hero_entry)
     summary = hero_entry.summary or '激活该英雄真身与专精效果。',
     tags = { 'hero_form', quality },
     bonuses = {
-      attr = build_bonus_bucket(mark_id, 'attr'),
-      runtime = build_bonus_bucket(mark_id, 'runtime'),
-      attack_skill = build_bonus_bucket(mark_id, 'attack_skill'),
+      attr = build_bonus_bucket(evolution_id, 'attr'),
+      runtime = build_bonus_bucket(evolution_id, 'runtime'),
+      attack_skill = build_bonus_bucket(evolution_id, 'attack_skill'),
     },
   }
 end
@@ -51,7 +51,7 @@ for index, hero_entry in ipairs(hero_list) do
     break
   end
   if hero_entry and hero_entry.id and hero_entry.unit_id then
-    push_mark(index, hero_entry)
+    push_evolution(index, hero_entry)
   end
 end
 
@@ -83,7 +83,3 @@ return {
   list = list,
   by_id = helpers.list_to_map(list),
 }
-
-
-
-

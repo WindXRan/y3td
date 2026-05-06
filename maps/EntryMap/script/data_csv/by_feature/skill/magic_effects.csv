@@ -1,4 +1,0 @@
-﻿id,scope,target_name,stack_duration,max_stacks,attack_per_stack,attack_speed_per_stack,enabled,notes
-__字段说明__,作用域,字段：target_name,字段：stack_duration,字段：max_stacks,字段：attack_per_stack,字段：attack_speed_per_stack,是否启用(1/0),备注
-stack_gale_bow,card_stack,疾风弓,5,10,0,5,1,疾风弓叠层参数
-stack_shadow_dance,card_stack,幻影剑舞,5,10,20,2,1,幻影剑舞叠层参数

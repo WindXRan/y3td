@@ -5,17 +5,13 @@ local ARCHIVE_PANEL_ROOTS = { 'ArchiveMain', 'ArchivePanel' }
 local ARCHIVE_MAIN_PANEL = '存档生涯商城'
 local ArchiveTabDefinitions = require 'data.tables.archive_tab_definitions'
 local ARCHIVE_CONTENT_SECTIONS = ArchiveTabDefinitions.get_valid_partitions()
-local ARCHIVE_GENERIC_CONTENT_GROUP = '通用内容'
+local ARCHIVE_GENERIC_CONTENT_GROUP = nil  -- 已改为 CSV content_node 驱动
 
 -- 使用静态定义的页签构建 ARCHIVE_GROUPS
 local static_primary_tabs = ArchiveTabDefinitions.get_valid_primary_tabs()
 local ARCHIVE_GROUPS = {}
 for _, name in ipairs(static_primary_tabs) do
-  local group = { name = name }
-  if name == '荣誉等级' then
-    group.aliases = { '荣誉等级', '典藏积分' }
-  end
-  ARCHIVE_GROUPS[#ARCHIVE_GROUPS + 1] = group
+  ARCHIVE_GROUPS[#ARCHIVE_GROUPS + 1] = { name = name }
 end
 
 local CAREER_TAB_LABELS = ArchiveTabDefinitions.get_career_tabs()
@@ -167,48 +163,32 @@ local SECONDARY_TAB_GRID_PATHS = {
 for _, path in ipairs(build_panel_paths('page2_grid')) do
   append_path(SECONDARY_TAB_GRID_PATHS, path)
 end
-local CAREER_TAB_DETAILS = {
-  ['成就'] = {
-    title = '成就总览',
-    owned = '完成你的阶段目标',
-    detail_title = '[进度说明]',
-    detail = '这里展示成就点、阶段奖励与最近完成记录。',
+
+local function get_career_tab_detail(tab_name)
+  local tip_lines = ArchiveTabDefinitions.get_tip_content(tab_name)
+  if #tip_lines >= 8 then
+    return {
+      title = tip_lines[1],
+      owned = tip_lines[2],
+      detail_title = tip_lines[3],
+      detail = tip_lines[4],
+      special_title = tip_lines[5],
+      special = tip_lines[6],
+      obtain_title = tip_lines[7],
+      obtain = tip_lines[8],
+    }
+  end
+  return {
+    title = tab_name,
+    owned = '查看详情',
+    detail_title = '[说明]',
+    detail = '这里展示' .. tab_name .. '相关内容。',
     special_title = '[当前状态]',
     special = '点击左侧页签切换不同生涯模块。',
     obtain_title = '[获取方式]',
-    obtain = '通关、累计养成与收集行为都会推进成就。',
-  },
-  ['英雄图鉴'] = {
-    title = '英雄图鉴',
-    owned = '已解锁英雄信息',
-    detail_title = '[图鉴说明]',
-    detail = '这里展示英雄解锁、星级与专精进度。',
-    special_title = '[当前状态]',
-    special = '选中英雄后可查看详细成长条目。',
-    obtain_title = '[获取方式]',
-    obtain = '通过关卡奖励、活动与商店兑换获取英雄。',
-  },
-  ['羁绊图鉴'] = {
-    title = '羁绊图鉴',
-    owned = '羁绊收集与激活',
-    detail_title = '[图鉴说明]',
-    detail = '这里展示羁绊激活条件、层级与效果说明。',
-    special_title = '[当前状态]',
-    special = '满足队伍条件后可在局内触发羁绊效果。',
-    obtain_title = '[获取方式]',
-    obtain = '通过收集对应英雄并达成编队条件激活。',
-  },
-  ['称号'] = {
-    title = '称号系统',
-    owned = '称号收集进度',
-    detail_title = '[称号说明]',
-    detail = '这里展示称号属性、佩戴状态与获取记录。',
-    special_title = '[当前状态]',
-    special = '佩戴中的称号会在局外信息中展示。',
-    obtain_title = '[获取方式]',
-    obtain = '通过成就节点、活动和挑战任务解锁称号。',
-  },
-}
+    obtain = '通过关卡奖励与活动解锁。',
+  }
+end
 local SLOT_BOUND = setmetatable({}, { __mode = 'k' })
 local SLOT_SPEC_KEY = setmetatable({}, { __mode = 'k' })
 
@@ -480,12 +460,13 @@ end
 
 local function resolve_partition_from_section(state)
   local section = tostring(state and state.archive_panel_section or '')
+  local partitions = ARCHIVE_CONTENT_SECTIONS
   if section == 'shop' then
-    return '商城'
+    return partitions[1]
   elseif section == 'archive' then
-    return '存档'
+    return partitions[2]
   elseif section == 'career' then
-    return '生涯'
+    return partitions[3]
   end
   return nil
 end
@@ -499,34 +480,19 @@ local function get_primary_tabs(state, options, specs)
     if not primary or primary == '' or seen[primary] == true then
       return
     end
-    if partition_expect and partition_expect ~= '' then
-      local has_match = false
-      for _, spec in ipairs(specs or {}) do
-        if spec.primary == primary and tostring(spec.partition or '') == partition_expect then
-          has_match = true
-          break
-        end
-      end
-      if not has_match then
-        return
-      end
-    end
     seen[primary] = true
     tabs[#tabs + 1] = primary
   end
 
-  for _, primary in ipairs(options.primary_tabs or {}) do
-    try_add(primary)
-  end
-  for _, spec in ipairs(specs or {}) do
-    if partition_expect and partition_expect ~= '' then
-      if tostring(spec.partition or '') == partition_expect then
-        try_add(spec.primary)
+  -- 只从 CSV 配表获取当前分区的一级页签
+  if partition_expect and partition_expect ~= '' then
+    for _, tab in ipairs(ArchiveTabDefinitions.get_valid_primary_tabs()) do
+      if ArchiveTabDefinitions.get_default_partition_for_primary(tab) == partition_expect then
+        try_add(tab)
       end
-    else
-      try_add(spec.primary)
     end
   end
+
   return tabs
 end
 
@@ -534,7 +500,7 @@ local function get_categories_for_primary(state, options, specs, primary)
   local categories = {}
   local seen = {}
   local all_category = get_all_category_label(options)
-  local partition_expect = resolve_partition_from_section(state)
+  -- 只从 CSV 配表获取二级页签
   local by_primary = options.categories_by_primary or {}
   for _, category in ipairs(by_primary[primary] or {}) do
     if category and category ~= '' and seen[category] ~= true then
@@ -542,23 +508,7 @@ local function get_categories_for_primary(state, options, specs, primary)
       categories[#categories + 1] = category
     end
   end
-  -- 始终合并 specs 里的真实分类，避免仅显示“全部”。
-  for _, spec in ipairs(specs or {}) do
-    local partition_ok = true
-    if partition_expect and partition_expect ~= '' then
-      partition_ok = tostring(spec.partition or '') == partition_expect
-    end
-    if partition_ok and spec.primary == primary then
-      local list = spec.categories or { spec.category }
-      for _, category in ipairs(list or {}) do
-        if category and category ~= '' and seen[category] ~= true then
-          seen[category] = true
-          categories[#categories + 1] = category
-        end
-      end
-    end
-  end
-  -- 约定：全量分类固定排在第一个（标签由配置给定）。
+  -- “全部” 始终排第一
   local all_index = nil
   for i, c in ipairs(categories) do
     if c == all_category then
@@ -619,14 +569,7 @@ end
 
 local function get_visible_items(state, specs)
   local section = tostring(state and state.archive_panel_section or '')
-  local partition_expect = nil
-  if section == 'shop' then
-    partition_expect = '商城'
-  elseif section == 'archive' then
-    partition_expect = '存档'
-  elseif section == 'career' then
-    partition_expect = '生涯'
-  end
+  local partition_expect = resolve_partition_from_section(state)
 
   local primary = get_primary(state)
   if section == 'career' then
@@ -875,7 +818,7 @@ local function refresh_tip(state, shop, spec)
 end
 
 local function normalize_key(text)
-  return tostring(text or ''):gsub('%s+', ''):gsub('商城', '')
+  return tostring(text or ''):gsub('%s+', '')
 end
 
 local function get_spec_owned_display(spec, fallback)
@@ -949,6 +892,10 @@ local function resolve_active_group_key(shop, state, all_category)
   if active_group_key == '' then
     active_group_key = normalize_key((shop.middle_groups and shop.middle_groups[1] and shop.middle_groups[1].name) or '')
   end
+  -- 单 group 模式：跳过 group name 存在性检查，直接返回已解析的 key
+  if #(shop.middle_groups or {}) <= 1 then
+    return active_group_key ~= '' and active_group_key or primary_group_key
+  end
   local group_exists = false
   for _, group in ipairs(shop.middle_groups or {}) do
     if normalize_key(group.name) == active_group_key then
@@ -976,31 +923,6 @@ local function resolve_active_group_key(shop, state, all_category)
 end
 
 local function get_group_template(options, group_name, visible_items)
-  -- 专门处理套装、地图等级、荣誉积分的渲染规则
-  local normalized_name = normalize_key(group_name)
-  if normalized_name == normalize_key('套装') then
-    return {
-      icon = true,
-      label = 'title',
-      suit = true,
-      show_equip_count = true,
-    }
-  elseif normalized_name == normalize_key('地图等级') then
-    return {
-      lv = true,
-      label = 'title',
-      map_level = true,
-      show_progress = true,
-    }
-  elseif normalized_name == normalize_key('荣誉等级') or normalized_name == normalize_key('典藏积分') then
-    return {
-      num = true,
-      label = 'title',
-      honor = true,
-      show_points = true,
-    }
-  end
-
   local mode = ''
   local first = type(visible_items) == 'table' and visible_items[1] or nil
   if first then
@@ -1017,17 +939,8 @@ local function get_group_template(options, group_name, visible_items)
   end
   local templates = options and options.group_templates or nil
   local template_name = group_name
-  if group_name == ARCHIVE_GENERIC_CONTENT_GROUP then
-    local state = options and options.state or nil
-    local section = tostring(state and state.archive_panel_section or '')
-    if section == 'career' then
-      template_name = tostring(state and state.archive_panel_career_tab or '')
-    else
-      template_name = tostring(state and get_primary(state) or '')
-    end
-    if template_name == '' and first then
-      template_name = tostring(first.primary or first.category or group_name)
-    end
+  if template_name == '' and first then
+    template_name = tostring(first.primary or first.category or group_name)
   end
   local tpl = templates and templates[template_name] or nil
   if type(tpl) ~= 'table' then
@@ -1037,8 +950,8 @@ local function get_group_template(options, group_name, visible_items)
 end
 
 local function is_catalog_spec(spec)
-  local primary = tostring(spec and spec.primary or '')
-  return primary == '英雄图鉴' or primary == '羁绊图鉴'
+  local primary = tostring(spec and spec.primary or "")
+  return ArchiveTabDefinitions.get_render_mode(primary) == "catalog"
 end
 
 local function find_best_spec(items, wanted_key)
@@ -1067,7 +980,7 @@ local function refresh_career_tip(state, shop)
       state.archive_panel_career_tab = tab
     end
   end
-  local detail = CAREER_TAB_DETAILS[tab] or CAREER_TAB_DETAILS[CAREER_TAB_LABELS[1]]
+  local detail = get_career_tab_detail(tab)
   set_visible(tip.root, true)
   set_text(tip.title, detail.title or '')
   set_text(tip.owned, detail.owned or '')
@@ -1108,86 +1021,95 @@ local function select_spec_by_group(options, group_name)
   return spec
 end
 
-local function find_generic_content_group(player)
-  for _, panel_root in ipairs(ARCHIVE_PANEL_ROOTS) do
-    local base = table.concat({ panel_root, ARCHIVE_MAIN_PANEL, '中间内容', ARCHIVE_GENERIC_CONTENT_GROUP }, '.')
-    local root = resolve_ui(player, base)
-    if is_ui_alive(root) then
-      return {
-        name = ARCHIVE_GENERIC_CONTENT_GROUP,
-        generic = true,
-        base = base,
-        root = root,
-        icon = resolve_ui(player, base .. '.bg.image'),
-        label = resolve_ui(player, base .. '.bg.label'),
-        lv = resolve_ui(player, base .. '.bg.lv'),
-        num = resolve_ui(player, base .. '.bg.num'),
-      }
+local function build_content_groups(player)
+  -- 所有 tab 共用一个 GridView，模板差异由 CSV flags 驱动
+  local grid_root, grid_base = resolve_ui_first(player, GRID_ROOT_PATHS)
+  if not is_ui_alive(grid_root) then
+    for _, panel_root in ipairs(ARCHIVE_PANEL_ROOTS) do
+      local sv_path = table.concat({ panel_root, ARCHIVE_MAIN_PANEL, 'scroll_view' }, '.')
+      local sv = resolve_ui(player, sv_path)
+      if is_ui_alive(sv) then
+        grid_base = sv_path .. '.ArchiveGridView.grid_view_1'
+        grid_root = resolve_ui(player, grid_base)
+        if is_ui_alive(grid_root) then
+          break
+        end
+      end
     end
   end
-  return nil
+  if not is_ui_alive(grid_root) then
+    return {}
+  end
+  return {{
+    name = '',
+    primary = '',
+    base = grid_base or '',
+    root = grid_root,
+    icon = resolve_ui(player, (grid_base or '') .. '.bg.image'),
+    label = resolve_ui(player, (grid_base or '') .. '.bg.label'),
+    lv = resolve_ui(player, (grid_base or '') .. '.bg.lv'),
+    num = resolve_ui(player, (grid_base or '') .. '.bg.num'),
+  }}
 end
 
 local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_items, options)
   local section = tostring(state and state.archive_panel_section or '')
   local in_shop_like_section = in_shop_section or section == 'archive' or section == 'career'
   local groups = shop.middle_groups or {}
+  if #groups == 0 then
+    return
+  end
   local all_category = get_all_category_label(options)
   local active_group_key = resolve_active_group_key(shop, state, all_category)
-  for _, group in ipairs(groups) do
-    local group_key = normalize_key(group.name)
-    local is_active_group = group.generic == true or (active_group_key ~= '' and group_key == active_group_key)
-    set_visible(group.root, in_shop_like_section and is_active_group)
-    if in_shop_like_section and is_active_group then
-      if group.generic == true then
-        set_visible(group.icon, false)
-        set_visible(group.lv, false)
-        set_visible(group.num, false)
-        set_visible(group.label, false)
-        goto continue_group
-      end
-      local spec = pick_group_spec(visible_items, group.name)
-      local tpl = get_group_template(options, group.name, visible_items)
-      local show_icon = tpl.icon == true
-      local show_lv = tpl.lv == true
-      local show_num = tpl.num == true
-      set_visible(group.icon, show_icon)
-      set_visible(group.lv, show_lv)
-      set_visible(group.num, show_num)
-      set_visible(group.label, true)
+  -- 单 group 模式下，用 active_group_key 作为模板名
+  local template_name = active_group_key
+  if template_name == '' then
+    template_name = groups[1].name
+  end
+  local group = groups[1]
+  local show_group = in_shop_like_section and active_group_key ~= ''
+  set_visible(group.root, show_group)
+  if show_group then
+    local spec = pick_group_spec(visible_items, template_name)
+    local tpl = get_group_template(options, template_name, visible_items)
+    local show_icon = tpl.icon == true
+    local show_lv = tpl.lv == true
+    local show_num = tpl.num == true
+    set_visible(group.icon, show_icon)
+    set_visible(group.lv, show_lv)
+    set_visible(group.num, show_num)
+    set_visible(group.label, true)
 
-      if show_icon and is_ui_alive(group.icon) then
-        local icon = spec and (spec.icon or spec.default_icon) or 906565
-        set_image(group.icon, icon)
-      end
-
-      if is_ui_alive(group.label) then
-        if show_icon then
-          set_text(group.label, spec and tostring(spec.title or group.name) or group.name)
-        elseif show_lv then
-          local quality = spec and tostring(spec.quality or '') or ''
-          set_text(group.label, quality ~= '' and ('品质 ' .. quality) or '地图等级')
-        elseif show_num then
-          set_text(group.label, spec and tostring(spec.title or group.name) or group.name)
-        else
-          set_text(group.label, group.name)
-        end
-      end
-
-      if show_lv and is_ui_alive(group.lv) then
-        local level_text = spec and tostring(spec.quality or '') or ''
-        set_text(group.lv, level_text ~= '' and level_text or 'LV.1')
-      end
-
-      if show_num and is_ui_alive(group.num) then
-        set_text(group.num, get_spec_owned_display(spec, #(visible_items or {})))
-      end
-    else
-      set_visible(group.icon, false)
-      set_visible(group.lv, false)
-      set_visible(group.num, false)
+    if show_icon and is_ui_alive(group.icon) then
+      local icon = spec and (spec.icon or spec.default_icon) or 906565
+      set_image(group.icon, icon)
     end
-    ::continue_group::
+
+    if is_ui_alive(group.label) then
+      if show_icon then
+        set_text(group.label, spec and tostring(spec.title or template_name) or template_name)
+      elseif show_lv then
+        local quality = spec and tostring(spec.quality or '') or ''
+        set_text(group.label, quality ~= '' and ('品质 ' .. quality) or '地图等级')
+      elseif show_num then
+        set_text(group.label, spec and tostring(spec.title or template_name) or template_name)
+      else
+        set_text(group.label, template_name)
+      end
+    end
+
+    if show_lv and is_ui_alive(group.lv) then
+      local level_text = spec and tostring(spec.quality or '') or ''
+      set_text(group.lv, level_text ~= '' and level_text or 'LV.1')
+    end
+
+    if show_num and is_ui_alive(group.num) then
+      set_text(group.num, get_spec_owned_display(spec, #(visible_items or {})))
+    end
+  else
+    set_visible(group.icon, false)
+    set_visible(group.lv, false)
+    set_visible(group.num, false)
   end
 end
 
@@ -1763,13 +1685,17 @@ local function refresh_group_dynamic_items(ui, shop, options, visible_items)
   end
   local active_group_key = resolve_active_group_key(shop, state, all_category)
   for _, group in ipairs(shop.middle_groups or {}) do
-    local active = group.generic == true or normalize_key(group.name) == active_group_key
+    -- 单 group 模式下动态更新 name 以匹配当前活跃页签的模板
+    if #(shop.middle_groups or {}) == 1 and active_group_key ~= "" then
+      group.name = active_group_key
+    end
+    local active = normalize_key(group.name) == active_group_key
     -- 列表项只受“分区+一级页签+二级页签”控制，不再按分组名二次过滤，
     -- 否则点击刷新后会出现同页签内商品被误隐藏的问题。
     local group_items = visible_items or {}
 
     local static_slot_count = count_static_slots(player, group, math.max(32, #group_items + 4))
-    local use_runtime_only = group.generic == true or static_slot_count <= 1
+    local use_runtime_only = static_slot_count <= 1
     local effective_static_slot_count = use_runtime_only and 0 or static_slot_count
     local overflow_count = math.max(0, #group_items - effective_static_slot_count)
     local need_runtime_creation = overflow_count > 0
@@ -1799,7 +1725,7 @@ local function refresh_group_dynamic_items(ui, shop, options, visible_items)
       clear_runtime_group_items(group)
     end
 
-    local max_slots = group.generic == true and math.max(1, static_slot_count) or math.max(12, effective_static_slot_count)
+    local max_slots = math.max(12, effective_static_slot_count)
     for i = 1, max_slots do
       local slot = resolve_group_slot(player, group.base, i)
       if is_ui_alive(slot and slot.root) then
@@ -2043,65 +1969,26 @@ function M.ensure(ui, options)
     middle_groups = {},
   }
 
-  local generic_group = find_generic_content_group(player)
-  if generic_group then
-    ui.shop.middle_groups[#ui.shop.middle_groups + 1] = generic_group
-  end
-
-  if not generic_group then
-    for _, group_def in ipairs(ARCHIVE_GROUPS) do
-      local name = group_def.name
-      local aliases = group_def.aliases or { name }
-      local base = nil
-      local root = nil
-      for _, alias in ipairs(aliases) do
-        for _, panel_root in ipairs(ARCHIVE_PANEL_ROOTS) do
-          for _, section_name in ipairs(ARCHIVE_CONTENT_SECTIONS) do
-            local one_base = table.concat({ panel_root, ARCHIVE_MAIN_PANEL, '中间内容', section_name, alias }, '.')
-            base = one_base
-            root = resolve_ui(player, one_base)
-            if is_ui_alive(root) then
-              break
-            end
-          end
-          if is_ui_alive(root) then
-            break
-          end
+  local content_groups = build_content_groups(player)
+  for _, group in ipairs(content_groups) do
+    ui.shop.middle_groups[#ui.shop.middle_groups + 1] = group
+    local entry = ui.shop.middle_groups[#ui.shop.middle_groups]
+    local click_target = resolve_ui(player, group.base .. '.bg') or group.root
+    if is_ui_alive(click_target) then
+      set_intercepts(click_target, true)
+      click_target:add_fast_event('左键-按下', function()
+        local section = tostring(options.state.archive_panel_section or '')
+        if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
+          return
         end
-        if is_ui_alive(root) then
-          break
+        if options.play_ui_click then
+          options.play_ui_click()
         end
-      end
-      if is_ui_alive(root) then
-        ui.shop.middle_groups[#ui.shop.middle_groups + 1] = {
-          name = name,
-          base = base,
-          root = root,
-          icon = resolve_ui(player, base .. '.bg.image'),
-          label = resolve_ui(player, base .. '.bg.label'),
-          lv = resolve_ui(player, base .. '.bg.lv'),
-          num = resolve_ui(player, base .. '.bg.num'),
-        }
-        local entry = ui.shop.middle_groups[#ui.shop.middle_groups]
-        local click_target = resolve_ui(player, base .. '.bg') or root
-        if is_ui_alive(click_target) then
-          set_intercepts(click_target, true)
-          click_target:add_fast_event('左键-按下', function()
-            local section = tostring(options.state.archive_panel_section or '')
-            if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
-              return
-            end
-            if options.play_ui_click then
-              options.play_ui_click()
-            end
-            select_spec_by_group(options, entry.name)
-            M.refresh(ui, options)
-          end)
-        end
-      end
+        select_spec_by_group(options, entry.name)
+        M.refresh(ui, options)
+      end)
     end
   end
-
   if is_ui_alive(grid) then
     hide_static_slots(player)
 

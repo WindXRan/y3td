@@ -3,6 +3,7 @@ local outgame_defs = require 'ui.outgame_defs'
 local ArchiveShop = require 'ui.outgame_archive_shop'
 local OutgameHeroGrowth = require 'runtime.outgame_hero_growth'
 local ArchiveRankingTabs = require 'data.tables.outgame.archive_ranking_tabs'
+local ArchiveTabDefinitions = require 'data.tables.archive_tab_definitions'
 
 local M = {}
 
@@ -1610,13 +1611,14 @@ function M.create(env)
         return get_top_entry_title_by_action('open_archive_ranking', '排行榜')
       end
       local section = tostring(STATE.archive_panel_section or '')
+      local partitions = ArchiveTabDefinitions.get_valid_partitions()
       if section == 'career' then
-        return get_top_entry_title_by_action('open_archive_career', '生涯')
+        return get_top_entry_title_by_action('open_archive_career', partitions[3] or '生涯')
       end
       if section == 'shop' then
-        return get_top_entry_title_by_action('open_archive_shop', '商城')
+        return get_top_entry_title_by_action('open_archive_shop', partitions[1] or '商城')
       end
-      return get_top_entry_title_by_action('open_archive', '存档')
+      return get_top_entry_title_by_action('open_archive', partitions[2] or '存档')
     end
     local selected_view_mode = get_selected_view_mode(profile)
     if selected_view_mode == VIEW_MODE_CULTIVATION then
@@ -1799,24 +1801,36 @@ function M.create(env)
     return '玩家'
   end
 
+  local DEFAULT_PRIMARY = ArchiveTabDefinitions.get_valid_primary_tabs()[1] or '商品'
+
+  local group_templates = {}
+  for _, name in ipairs(ArchiveTabDefinitions.get_valid_primary_tabs()) do
+    local cfg = ArchiveTabDefinitions.get_tab_render_config(name)
+    local flags = cfg.flags or {}
+    group_templates[name] = {
+      icon = flags.icon or false,
+      lv = flags.lv or false,
+      num = flags.num or false,
+      suit = flags.suit or false,
+      map_level = flags.map_level or false,
+      honor = flags.honor or false,
+      show_equip_count = flags.equip_count or false,
+      show_progress = flags.progress or false,
+      show_points = flags.points or false,
+      label = cfg.label_mode,
+    }
+  end
+
   local ARCHIVE_SHOP_OPTIONS = {
     state = STATE,
     player = env.get_player and env.get_player() or nil,
     specs = OUTGAME_DEFS.archive_shop_item_specs or {},
-    primary_tabs = OUTGAME_DEFS.archive_shop_primary_tabs or { OUTGAME_DEFS.archive_shop_primary_tab or '地图商城' },
-    primary_tab_label = OUTGAME_DEFS.archive_shop_primary_tab or '地图商城',
+    primary_tabs = OUTGAME_DEFS.archive_shop_primary_tabs or { OUTGAME_DEFS.archive_shop_primary_tab or DEFAULT_PRIMARY },
+    primary_tab_label = OUTGAME_DEFS.archive_shop_primary_tab or DEFAULT_PRIMARY,
     categories = OUTGAME_DEFS.archive_shop_categories or {},
     all_category_label = '全部',
     categories_by_primary = OUTGAME_DEFS.archive_shop_categories_by_primary or {},
-    group_templates = {
-      ['仓库'] = { icon = true, num = true, label = 'title' },
-      ['商品'] = { icon = true, label = 'title' },
-      ['皮肤'] = { icon = true, label = 'title' },
-      ['翅膀'] = { icon = true, label = 'title' },
-      ['地图等级'] = { lv = true, label = 'quality' },
-      ['荣誉等级'] = { num = true, label = 'title' },
-      ['典藏积分'] = { num = true, label = 'title' },
-    },
+    group_templates = group_templates,
     default_icon = OUTGAME_DEFS.archive_shop_default_icon or 906565,
     play_ui_click = play_ui_click,
   }

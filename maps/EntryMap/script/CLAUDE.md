@@ -21,11 +21,11 @@
 - 运行时总协调：`maps/EntryMap/script/runtime/boot.lua`
 - 配置汇总入口：`maps/EntryMap/script/config/entry_config.lua`
 - 羁绊主实现：`maps/EntryMap/script/runtime/bonds.lua`
-- 宝物/烙印：已下线（运行时空实现 `runtime/rewards_disabled.lua`）
+- 宝物系统：已下线（`runtime/rewards.lua` 保留兼容桩）
+- 英雄进化：运行时由 `runtime/rewards.lua` 实现，数据表 `data/tables/outgame/hero_evolutions.lua` 和 `hero_evolution_nodes.lua`
 
 ## 不要误判为主入口
 
-- `maps/EntryMap/script/可重载的代码.lua`：热重载示例
 - `global_script/global_main.lua`：项目级占位脚本
 - 根目录 `global_trigger`：不是当前玩法主入口
 - `maps/EntryMap/script/docs/design`：设计文档，不代表已实现事实
@@ -63,8 +63,9 @@
   - `maps/EntryMap/script/runtime/bonds.lua`
   - `maps/EntryMap/script/runtime/bonds_chain.lua`
   - `maps/EntryMap/script/runtime/bond_nodes.lua`
-- 宝物 / 烙印 / 奖励队列：
-  - 已下线；当前由 `maps/EntryMap/script/runtime/rewards_disabled.lua` 提供空实现兼容
+- 英雄进化 / 奖励队列：
+  - 由 `maps/EntryMap/script/runtime/rewards.lua` 提供实现
+  - 宝物系统已下线，保留空桩兼容
 - 配置：
   - `maps/EntryMap/script/config/entry_config.lua`
 - HUD / 调试：

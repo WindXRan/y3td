@@ -12,8 +12,7 @@ function M.create(env)
   local create_bond_runtime = env.create_bond_runtime
   local create_battle_event_feed_runtime = env.create_battle_event_feed_runtime
   local create_effect_debug_runtime = env.create_effect_debug_runtime
-  local create_mark_runtime = env.create_mark_runtime
-  local create_treasure_runtime = env.create_treasure_runtime
+  local create_evolution_runtime = env.create_evolution_runtime
   local create_skill_runtime = env.create_skill_runtime
   local create_attack_skill_state = env.create_attack_skill_state
   local reset_skill_framework_runtime = env.reset_skill_framework_runtime
@@ -113,8 +112,7 @@ function M.create(env)
     STATE.skill_runtime = STATE.bond_runtime
     STATE.battle_event_feed = create_battle_event_feed_runtime()
     STATE.effect_debug_runtime = create_effect_debug_runtime()
-    STATE.mark_runtime = create_mark_runtime()
-    STATE.treasure_runtime = create_treasure_runtime()
+    STATE.evolution_runtime = create_evolution_runtime()
     STATE.auto_active_effects = nil
     STATE.enemy_info_map = {}
     STATE.hero_progress = nil

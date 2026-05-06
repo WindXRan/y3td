@@ -1120,7 +1120,7 @@ hide_all_tips()end)end;
 bind_click_handler('gold_trial',resolve_combat_module_ui('challenge_row.gold_trial'),function()
 if I then I('gold_trial')end;
 refresh_hud()end)
-bind_click_handler('treasure_trial',resolve_combat_module_ui('challenge_row.treasure_trial'),function()
+bind_click_handler('wood_trial',resolve_combat_module_ui('challenge_row.treasure_trial'),function()
 if I then I('wood_trial')end;
 refresh_hud()end)
 bind_click_handler('battle_loadout_slot_1',resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_1'),function()

@@ -1,5 +1,6 @@
 ﻿local EditorJsonTable = require 'data.tables.editor_json_table'
 local CsvLoader = require 'data.csv_loader'
+local ArchiveTabDefinitions = require 'data.tables.archive_tab_definitions'
 
 local M = {}
 
@@ -174,23 +175,14 @@ end
 local function normalize_tab1(raw)
   local value = trim(raw)
   if value == '' then
-    return '商品'
+    return ArchiveTabDefinitions.get_valid_primary_tabs()[1] or '商品'
   end
-  local alias = {
-    ['商城道具'] = '商品',
-    ['地图商城'] = '商品',
-    ['商店'] = '商品',
-    ['典藏积分'] = '荣誉等级',
-  }
-  return alias[value] or value
+  return value
 end
 
 local function normalize_tab2(raw)
   local value = trim(raw)
-  if value == '' then
-    return ''
-  end
-  if value == '商城道具' or value == '商品' then
+  if value == '' or is_placeholder_text(value) then
     return ''
   end
   return value
@@ -198,16 +190,13 @@ end
 
 local function normalize_partition(raw_partition, tab1)
   local value = trim(raw_partition)
-  if value == '商城' or value == '存档' or value == '生涯' then
-    return value
+  local valid_partitions = ArchiveTabDefinitions.get_valid_partitions()
+  for _, p in ipairs(valid_partitions) do
+    if value == p then
+      return value
+    end
   end
-  if tab1 == '仓库' then
-    return '存档'
-  end
-  if tab1 == '成就' or tab1 == '英雄图鉴' or tab1 == '羁绊图鉴' or tab1 == '称号' or tab1 == '生涯' then
-    return '生涯'
-  end
-  return '商城'
+  return ArchiveTabDefinitions.get_default_partition_for_primary(tab1)
 end
 
 local function normalize_render_mode(raw)
@@ -231,7 +220,7 @@ end
 local function resolve_shop_tab1(row)
   local raw = resolve_primary_tab(row)
   if raw == '' or is_placeholder_text(raw) then
-    return '商品'
+    return ArchiveTabDefinitions.get_valid_primary_tabs()[1] or '商品'
   end
   return normalize_tab1(raw)
 end
@@ -282,7 +271,7 @@ local function append_csv_rows(target, csv_path, source_name, fallback_primary)
 end
 
 local source_rows = {}
-append_csv_rows(source_rows, 'data_csv/by_feature/economy/shangchengdaojv.csv', 'csv_shangchengdaojv_feature', '商城道具')
+append_csv_rows(source_rows, 'data_csv/by_feature/economy/shangchengdaojv.csv', 'csv_shangchengdaojv_feature', ArchiveTabDefinitions.get_valid_primary_tabs()[1] or '商品')
 -- 统一单源：商城数据只从 CSV 读取，避免旧编辑器表结构污染页签与标题字段。
 
 local primary_tab = ''
@@ -302,7 +291,7 @@ for index, source in ipairs(source_rows) do
   if name ~= '' and not is_placeholder_text(name) and name ~= '名称' then
     local primary = resolve_primary_tab(row)
     if primary == '' then
-      primary = source.fallback_primary or '地图商城'
+      primary = source.fallback_primary or (ArchiveTabDefinitions.get_valid_primary_tabs()[1] or '商品')
     end
     if primary_tab == '' and primary ~= '' then
       primary_tab = primary
@@ -416,7 +405,7 @@ M.by_key = by_key
 M.categories = categories
 M.default_icon = DEFAULT_ICON
 M.default_bg = DEFAULT_BG
-M.primary_tab = primary_tab ~= '' and primary_tab or '商品'
+M.primary_tab = primary_tab ~= '' and primary_tab or (ArchiveTabDefinitions.get_valid_primary_tabs()[1] or '商品')
 M.primary_tabs = primary_tabs
 M.categories_by_primary = categories_by_primary
 
