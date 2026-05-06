@@ -84,7 +84,6 @@ function M.create(env)
     if not STATE.bond_runtime then
         STATE.bond_runtime = create_bond_runtime()
     end
-    STATE.skill_runtime = STATE.bond_runtime
     STATE.battle_event_feed = create_battle_event_feed_runtime()
     STATE.effect_debug_runtime = create_effect_debug_runtime()
     STATE.evolution_runtime = create_evolution_runtime()

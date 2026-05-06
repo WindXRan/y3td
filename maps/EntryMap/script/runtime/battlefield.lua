@@ -875,7 +875,7 @@ function M.create(env)
       if grant_death_rewards then
         if info.kind == 'main' then
           env.award_rewards(env.build_reward_with_bond_bonus(info.reward), nil, true)
-          if STATE.skill_runtime.medbot_every > 0 and STATE.skill_runtime.medbot_heal > 0 then
+          if STATE.skill_runtime and STATE.skill_runtime.medbot_every and STATE.skill_runtime.medbot_every > 0 and STATE.skill_runtime.medbot_heal and STATE.skill_runtime.medbot_heal > 0 then
             STATE.skill_runtime.medbot_kills = STATE.skill_runtime.medbot_kills + 1
             if STATE.skill_runtime.medbot_kills >= STATE.skill_runtime.medbot_every then
               STATE.skill_runtime.medbot_kills = STATE.skill_runtime.medbot_kills - STATE.skill_runtime.medbot_every
@@ -927,7 +927,7 @@ function M.create(env)
         end
       end
 
-      if info.kind == 'main' and STATE.skill_runtime.bonus_gold_on_kill > 0 then
+      if info.kind == 'main' and STATE.skill_runtime and STATE.skill_runtime.bonus_gold_on_kill and STATE.skill_runtime.bonus_gold_on_kill > 0 then
         STATE.resources.gold = STATE.resources.gold + STATE.skill_runtime.bonus_gold_on_kill
       end
 

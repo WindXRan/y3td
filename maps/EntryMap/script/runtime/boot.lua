@@ -2047,6 +2047,9 @@ local function trigger_td_skills_on_hit(data)
   end
 
   local skill = STATE.skill_runtime
+  if not skill then
+    return
+  end
   local target = data.target_unit
   if not is_active_enemy(target) then
     return
@@ -2244,7 +2247,9 @@ battlefield_system = BattlefieldSystem.create({
     if audio_system and audio_system.handle_wave_started then
       audio_system.handle_wave_started(wave_index)
     end
-    return reward_system.handle_wave_started(wave_index)
+    if reward_system and reward_system.handle_wave_started then
+      return reward_system.handle_wave_started(wave_index)
+    end
   end,
   on_mainline_task_wave_started = function(wave_index)
     return mainline_task_system.handle_wave_started()
@@ -2262,7 +2267,9 @@ battlefield_system = BattlefieldSystem.create({
     if audio_system and audio_system.handle_boss_spawned then
       audio_system.handle_boss_spawned(boss_info)
     end
-    return reward_system.handle_boss_spawned()
+    if reward_system and reward_system.handle_boss_spawned then
+      return reward_system.handle_boss_spawned()
+    end
   end,
   on_boss_warning = function(wave, remain)
     if audio_system and audio_system.handle_boss_warning then
@@ -2274,7 +2281,9 @@ battlefield_system = BattlefieldSystem.create({
     if audio_system and audio_system.handle_challenge_started then
       audio_system.handle_challenge_started(instance)
     end
-    return reward_system.handle_challenge_started(instance)
+    if reward_system and reward_system.handle_challenge_started then
+      return reward_system.handle_challenge_started(instance)
+    end
   end,
   on_challenge_finished = function(instance, is_success)
     if audio_system and audio_system.handle_challenge_finished then
@@ -2283,13 +2292,17 @@ battlefield_system = BattlefieldSystem.create({
     if mainline_task_system and mainline_task_system.handle_challenge_finished then
       mainline_task_system.handle_challenge_finished(instance, is_success)
     end
-    return reward_system.handle_challenge_finished(instance, is_success)
+    if reward_system and reward_system.handle_challenge_finished then
+      return reward_system.handle_challenge_finished(instance, is_success)
+    end
   end,
   on_hero_be_hurt = function()
     if audio_system and audio_system.handle_hero_be_hurt then
       audio_system.handle_hero_be_hurt()
     end
-    return reward_system.handle_hero_be_hurt()
+    if reward_system and reward_system.handle_hero_be_hurt then
+      return reward_system.handle_hero_be_hurt()
+    end
   end,
   on_hero_attr_changed = snapshot_hero_attrs,
   on_finish_game = function(result)
