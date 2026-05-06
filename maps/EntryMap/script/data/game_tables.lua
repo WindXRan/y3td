@@ -255,7 +255,7 @@ for _, row in ipairs(roster_rows) do
     [string.lower(tostring(row.is_initial_hero or ''))] == true,
     skill_id = row.skill_id,
     summary = row.summary,
-    icon = row.icon,
+    icon = tonumber(row.icon),
     bg = row.bg,
   }
   hero_list[#hero_list + 1] = e

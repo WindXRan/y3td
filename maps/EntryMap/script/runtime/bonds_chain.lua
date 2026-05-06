@@ -97,7 +97,7 @@ local function get_node_theme_name(node_def, fallback)
 end
 
 -- 默认回退图标ID
-local DEFAULT_BOND_ICON = 134269625
+local DEFAULT_BOND_ICON = 131414
 
 -- 调试日志
 if log and log.debug then

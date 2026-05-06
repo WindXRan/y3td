@@ -56,7 +56,7 @@ for _, row in ipairs(node_rows) do
       next_ids = {},
       template = scope,
       quality = 'rare',
-      icon = tonumber(row.icon) or 134269625,
+      icon = tonumber(row.icon) or 131414,
       bg = row.bg ~= '' and tonumber(row.bg) or nil,
       editor_skill_id = node_id,
       editor_modifier_id = nil,

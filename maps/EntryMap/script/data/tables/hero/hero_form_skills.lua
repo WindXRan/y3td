@@ -964,6 +964,7 @@ end)
 
 local by_id = helpers.list_to_map(list)
 local by_hero_id = {}
+local by_roster_id = {}
 for _, skill in ipairs(list) do
   if skill.hero_id and skill.hero_id ~= '' then
     local icon = hero_icon_by_pinyin[skill.hero_id]
@@ -971,6 +972,15 @@ for _, skill in ipairs(list) do
       skill.icon = icon
     end
     by_hero_id[skill.hero_id] = skill
+    local hero_name = pinyin_to_name_map[skill.hero_id]
+    if hero_name then
+      for _, hero in ipairs(HeroRoster.list) do
+        if hero.name == hero_name then
+          by_roster_id[hero.id] = skill
+          break
+        end
+      end
+    end
   end
 end
 
@@ -978,6 +988,7 @@ return {
   list = list,
   by_id = by_id,
   by_hero_id = by_hero_id,
+  by_roster_id = by_roster_id,
 }
 
 
