@@ -25,6 +25,7 @@ local DEFAULT_CONFIG = {
     { name = '商品', default_partition = '商城' },
     { name = '皮肤', default_partition = '商城' },
     { name = '翅膀', default_partition = '商城' },
+    { name = '套装', default_partition = '商城' },
     { name = '地图等级', default_partition = '存档' },
     { name = '荣誉等级', default_partition = '存档' },
     { name = '成就', default_partition = '生涯' },
@@ -98,6 +99,8 @@ local function load_from_csv()
           content_node = trim(row.content_node),
           flags = flags,
           tip_content = split_pipe(row.tip_content),
+          content_template = trim(row.content_template),
+          content_list = trim(row.content_list),
         }
       end
     end
@@ -112,7 +115,7 @@ local function load_from_csv()
       valid_partitions_map = { ['商城'] = true, ['存档'] = true, ['生涯'] = true },
       valid_primary_tabs_map = {
         ['仓库'] = true, ['商品'] = true, ['皮肤'] = true, ['翅膀'] = true,
-        ['地图等级'] = true, ['荣誉等级'] = true,
+        ['套装'] = true, ['地图等级'] = true, ['荣誉等级'] = true,
         ['成就'] = true, ['英雄图鉴'] = true, ['羁绊图鉴'] = true, ['称号'] = true,
       },
       secondary_tabs_map = {},
@@ -258,6 +261,8 @@ function M.get_tab_render_config(primary)
     content_node = '通用内容',
     flags = { icon = true },
     tip_content = {},
+    content_template = '',
+    content_list = '',
   }
 end
 
@@ -275,6 +280,18 @@ function M.get_content_node(primary)
     return node
   end
   return '通用内容'
+end
+
+-- 获取一级页签的内容模板子节点名
+function M.get_content_template(primary)
+  local cfg = RENDER_CONFIGS[primary]
+  return (cfg and cfg.content_template) or ''
+end
+
+-- 获取一级页签的内容列表容器名
+function M.get_content_list(primary)
+  local cfg = RENDER_CONFIGS[primary]
+  return (cfg and cfg.content_list) or ''
 end
 
 -- 获取一级页签的提示文本内容（多行）

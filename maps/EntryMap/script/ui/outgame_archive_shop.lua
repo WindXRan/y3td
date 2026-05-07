@@ -875,59 +875,30 @@ local function refresh_selected_slot_state(shop, options)
   end
 end
 
--- 将 tab 名映射到 content_node（网格配置名）
-local function get_content_node_for_tab(tab_name)
-  if not tab_name or tab_name == '' then
-    return 'grid_default'
-  end
-  return ArchiveTabDefinitions.get_content_node(tab_name) or 'grid_default'
-end
-local function resolve_active_group_key(shop, state, all_category)
+local function resolve_active_group_key(shop, state)
   local section = tostring(state and state.archive_panel_section or '')
-  -- 获取活跃 tab 名，再转为 content_node
-  local active_tab = get_category(state)
   local primary_tab = get_primary(state)
   if section == 'career' then
-    active_tab = tostring(state and state.archive_panel_career_tab or CAREER_TAB_LABELS[1])
+    primary_tab = tostring(state and state.archive_panel_career_tab or CAREER_TAB_LABELS[1])
   end
-  if active_tab == '' or normalize_key(active_tab) == normalize_key(all_category) then
-    if section == 'career' then
-      active_tab = tostring(state and state.archive_panel_career_tab or CAREER_TAB_LABELS[1])
-    else
-      active_tab = primary_tab
-    end
+  local content_list = ArchiveTabDefinitions.get_content_list(primary_tab)
+  if content_list == '' then
+    content_list = (shop.middle_groups and shop.middle_groups[1] and shop.middle_groups[1].content_list) or ''
   end
-  local active_key = get_content_node_for_tab(active_tab)
-  local primary_key = get_content_node_for_tab(primary_tab)
-  if active_key == '' then
-    active_key = (shop.middle_groups and shop.middle_groups[1] and shop.middle_groups[1].content_node) or 'grid_default'
-  end
-  -- 检查 group 是否存在（按 content_node 匹配）
   if #(shop.middle_groups or {}) <= 1 then
-    return active_key ~= '' and active_key or primary_key
+    return content_list
   end
   local group_exists = false
   for _, group in ipairs(shop.middle_groups or {}) do
-    if normalize_key(group.content_node) == normalize_key(active_key) then
+    if normalize_key(group.content_list) == normalize_key(content_list) then
       group_exists = true
       break
     end
   end
   if not group_exists then
-    local primary_exists = false
-    for _, group in ipairs(shop.middle_groups or {}) do
-      if normalize_key(group.content_node) == normalize_key(primary_key) then
-        primary_exists = true
-        break
-      end
-    end
-    if primary_exists then
-      active_key = primary_key
-    else
-      active_key = (shop.middle_groups and shop.middle_groups[1] and shop.middle_groups[1].content_node) or 'grid_default'
-    end
+    content_list = (shop.middle_groups and shop.middle_groups[1] and shop.middle_groups[1].content_list) or ''
   end
-  return active_key
+  return content_list
 end
 
 local function get_group_template(options, group_name, visible_items)
@@ -1030,25 +1001,28 @@ local function select_spec_by_group(options, group_name)
 end
 
 local function build_content_groups(player)
-  -- 按 content_node 分组，相同网格配置的 tab 共用一个 GridView
-  local grid_map = {}
+  -- 按 content_list 分组，相同列表容器的 tab 共用一个 GridView
+  local list_map = {}
+  local template_map = {}
   local primary_tabs = ArchiveTabDefinitions.get_valid_primary_tabs()
   for _, primary in ipairs(primary_tabs) do
-    local content_node = ArchiveTabDefinitions.get_content_node(primary)
-    if content_node ~= '' and not grid_map[content_node] then
-      grid_map[content_node] = true
+    local content_list = ArchiveTabDefinitions.get_content_list(primary)
+    if content_list ~= '' and not list_map[content_list] then
+      list_map[content_list] = true
+      template_map[content_list] = ArchiveTabDefinitions.get_content_template(primary)
     end
   end
   local groups = {}
-  for content_node, _ in pairs(grid_map) do
+  for content_list, _ in pairs(list_map) do
+    local template_name = template_map[content_list] or '商品'
     for _, panel_root in ipairs(ARCHIVE_PANEL_ROOTS) do
-      local base = table.concat({ panel_root, '内容' }, '.')
+      local base = table.concat({ panel_root, '内容列表', content_list }, '.')
       local root = resolve_ui(player, base)
       if is_ui_alive(root) then
-        local cell_base = base .. '.商品'
+        local cell_base = table.concat({ panel_root, '内容模板', template_name }, '.')
         groups[#groups + 1] = {
           name = '',
-          content_node = content_node,
+          content_list = content_list,
           base = base,
           root = root,
           icon = resolve_ui(player, cell_base .. '.image'),
@@ -1072,7 +1046,7 @@ local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_
     return
   end
   local all_category = get_all_category_label(options)
-  local active_grid_key = resolve_active_group_key(shop, state, all_category)
+  local active_grid_key = resolve_active_group_key(shop, state)
   -- 获取活跃 tab 名作为模板查找 key
   local active_tab = get_primary(state)
   if section == 'career' then
@@ -1088,7 +1062,7 @@ local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_
   local template_name = active_tab ~= '' and active_tab or groups[1].name
 
   for _, group in ipairs(groups) do
-    local active = in_shop_like_section and normalize_key(group.content_node) == normalize_key(active_grid_key)
+    local active = in_shop_like_section and normalize_key(group.content_list) == normalize_key(active_grid_key)
     set_visible(group.root, active)
     if active then
       group.name = template_name
@@ -1721,7 +1695,7 @@ local function refresh_group_dynamic_items(ui, shop, options, visible_items)
   if not player then
     return
   end
-  local active_grid_key = resolve_active_group_key(shop, state, all_category)
+  local active_grid_key = resolve_active_group_key(shop, state)
   -- 获取活跃 tab 名作为模板查找 key
   local section = tostring(state and state.archive_panel_section or '')
   local active_tab = get_primary(state)
@@ -1730,7 +1704,7 @@ local function refresh_group_dynamic_items(ui, shop, options, visible_items)
   end
   local template_name = active_tab ~= '' and active_tab or ''
   for _, group in ipairs(shop.middle_groups or {}) do
-    local active = normalize_key(group.content_node) == normalize_key(active_grid_key)
+    local active = normalize_key(group.content_list) == normalize_key(active_grid_key)
     if active and template_name ~= '' then
       group.name = template_name
     end
