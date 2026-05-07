@@ -1042,7 +1042,7 @@ local function build_content_groups(player)
   local groups = {}
   for content_node, _ in pairs(grid_map) do
     for _, panel_root in ipairs(ARCHIVE_PANEL_ROOTS) do
-      local base = table.concat({ panel_root, ARCHIVE_MAIN_PANEL, content_node }, '.')
+      local base = table.concat({ panel_root, '内容列表', content_node }, '.')
       local root = resolve_ui(player, base)
       if is_ui_alive(root) then
         local cell_base = base .. '.cell.bg'
