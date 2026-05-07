@@ -1914,6 +1914,7 @@ function M.create(env)
         overlay = archive_main_overlay,
         window = archive_main_overlay,
         panel_main = resolve_ui_first({ 'ArchiveMain.存档生涯商城', 'ArchivePanel.存档生涯商城' }),
+        panel_content_list = resolve_ui_first({ 'ArchiveMain.内容列表', 'ArchivePanel.内容列表' }),
         panel_main_page_grid = resolve_ui_first({
           'ArchiveMain.存档生涯商城.page_grid',
           'ArchivePanel.存档生涯商城.page_grid',
@@ -2147,6 +2148,7 @@ function M.create(env)
     set_visible_if_alive(ui.overlay, STATE.archive_panel_visible == true and has_active_panel)
     set_visible_if_alive(ui.window, STATE.archive_panel_visible == true and has_active_panel)
     set_visible_if_alive(ui.panel_main, STATE.archive_panel_visible == true and show_main)
+    set_visible_if_alive(ui.panel_content_list, STATE.archive_panel_visible == true and show_main)
     set_visible_if_alive(ui.panel_ranking, STATE.archive_panel_visible == true and show_ranking)
     set_visible_if_alive(ui.panel_idle, STATE.archive_panel_visible == true and show_idle)
     set_visible_if_alive(ui.panel_start, STATE.archive_panel_visible == true and show_start)
