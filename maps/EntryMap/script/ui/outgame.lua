@@ -2150,10 +2150,7 @@ function M.create(env)
     set_visible_if_alive(ui.panel_main, STATE.archive_panel_visible == true and show_main)
     set_visible_if_alive(ui.panel_content_list, STATE.archive_panel_visible == true and show_main)
     if STATE.archive_panel_visible == true and show_main and is_ui_alive(ui.panel_content_list) then
-      pcall(function()
-        ui.root:remove_child(ui.panel_content_list)
-        ui.root:add_child(ui.panel_content_list)
-      end)
+      pcall(ui.panel_content_list.set_z_order, ui.panel_content_list, 999)
     end
     set_visible_if_alive(ui.panel_ranking, STATE.archive_panel_visible == true and show_ranking)
     set_visible_if_alive(ui.panel_idle, STATE.archive_panel_visible == true and show_idle)
