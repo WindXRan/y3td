@@ -2149,9 +2149,6 @@ function M.create(env)
     set_visible_if_alive(ui.window, STATE.archive_panel_visible == true and has_active_panel)
     set_visible_if_alive(ui.panel_main, STATE.archive_panel_visible == true and show_main)
     set_visible_if_alive(ui.panel_content_list, STATE.archive_panel_visible == true and show_main)
-    if STATE.archive_panel_visible == true and show_main and is_ui_alive(ui.panel_content_list) then
-      pcall(ui.panel_content_list.set_z_order, ui.panel_content_list, 999)
-    end
     set_visible_if_alive(ui.panel_ranking, STATE.archive_panel_visible == true and show_ranking)
     set_visible_if_alive(ui.panel_idle, STATE.archive_panel_visible == true and show_idle)
     set_visible_if_alive(ui.panel_start, STATE.archive_panel_visible == true and show_start)

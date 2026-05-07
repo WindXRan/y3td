@@ -1084,6 +1084,13 @@ local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_
   for _, group in ipairs(groups) do
     local active = in_shop_like_section and normalize_key(group.content_list) == normalize_key(active_grid_key)
     set_visible(group.root, active)
+    if active and group.root.set_z_order then
+      pcall(group.root.set_z_order, group.root, 9999)
+      local parent = group.root.get_parent and group.root:get_parent()
+      if parent and parent.set_z_order then
+        pcall(parent.set_z_order, parent, 9999)
+      end
+    end
     if active then
       group.name = template_name
       local spec = pick_group_spec(visible_items, template_name)
