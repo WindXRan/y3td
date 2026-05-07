@@ -432,7 +432,7 @@ local function create_runtime_secondary_tab(ui, options, category)
     set_intercepts(bg, true)
     bg:add_fast_event('左键-按下', function()
       local section = tostring(options.state.archive_panel_section or '')
-      if section ~= 'shop' and section ~= 'archive' then
+      if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
         return
       end
       if not entry.category then
@@ -2164,7 +2164,7 @@ function M.ensure(ui, options)
           set_intercepts(bg, true)
           bg:add_fast_event('左键-按下', function()
             local section = tostring(options.state.archive_panel_section or '')
-            if section ~= 'shop' and section ~= 'archive' then
+            if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
               return
             end
             if not entry.category then
