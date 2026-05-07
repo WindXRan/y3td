@@ -1042,10 +1042,10 @@ local function build_content_groups(player)
   local groups = {}
   for content_node, _ in pairs(grid_map) do
     for _, panel_root in ipairs(ARCHIVE_PANEL_ROOTS) do
-      local base = table.concat({ panel_root, '内容列表', content_node }, '.')
+      local base = table.concat({ panel_root, '内容' }, '.')
       local root = resolve_ui(player, base)
       if is_ui_alive(root) then
-        local cell_base = base .. '.cell.bg'
+        local cell_base = base .. '.商品'
         groups[#groups + 1] = {
           name = '',
           content_node = content_node,
@@ -1165,6 +1165,21 @@ local function resolve_group_slot(player, base, index)
           num = num,
         }
       end
+    end
+  end
+  -- 从 ArchiveMain.内容 的直接子节点读取静态槽位
+  local content_child_names = { '商品', '套装', '称号' }
+  local child_name = content_child_names[index]
+  if child_name then
+    local root = resolve_ui(player, base .. '.' .. child_name)
+    if is_ui_alive(root) then
+      return {
+        root = root,
+        icon = resolve_ui(player, base .. '.' .. child_name .. '.image'),
+        label = resolve_ui(player, base .. '.' .. child_name .. '.label'),
+        lv = resolve_ui(player, base .. '.' .. child_name .. '.lv'),
+        num = resolve_ui(player, base .. '.' .. child_name .. '.num'),
+      }
     end
   end
   return nil
