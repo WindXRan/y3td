@@ -432,7 +432,7 @@ local function create_runtime_secondary_tab(ui, options, category)
     set_intercepts(bg, true)
     bg:add_fast_event('左键-按下', function()
       local section = tostring(options.state.archive_panel_section or '')
-      if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
+      if not is_section_with_secondary_tabs(section) then
         return
       end
       if not entry.category then
@@ -452,6 +452,10 @@ local function create_runtime_secondary_tab(ui, options, category)
   shop.runtime_secondary_tabs[#shop.runtime_secondary_tabs + 1] = entry
   shop.secondary_tabs[#shop.secondary_tabs + 1] = entry
   return entry
+end
+
+local function is_section_with_secondary_tabs(section)
+  return section == 'shop' or section == 'archive' or section == 'career'
 end
 
 local function get_all_category_label(options)
@@ -1683,7 +1687,7 @@ local function bind_slot_click(slot, ui, options)
   set_intercepts(slot.root, true)
   slot.root:add_fast_event('左键-按下', function()
     local section = tostring(options.state.archive_panel_section or '')
-    if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
+    if not is_section_with_secondary_tabs(section) then
       return
     end
     local spec_key = SLOT_SPEC_KEY[slot.root]
@@ -1815,7 +1819,7 @@ local function schedule_next_tick_shop_refresh(ui, options, signature)
     end
     s.deferred_refresh_pending = false
     local section = tostring((options.state and options.state.archive_panel_section) or '')
-    if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
+    if not is_section_with_secondary_tabs(section) then
       return
     end
     M.refresh(ui, options)
@@ -2023,7 +2027,7 @@ function M.ensure(ui, options)
       set_intercepts(click_target, true)
       click_target:add_fast_event('左键-按下', function()
         local section = tostring(options.state.archive_panel_section or '')
-        if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
+        if not is_section_with_secondary_tabs(section) then
           return
         end
         if options.play_ui_click then
@@ -2164,7 +2168,7 @@ function M.ensure(ui, options)
           set_intercepts(bg, true)
           bg:add_fast_event('左键-按下', function()
             local section = tostring(options.state.archive_panel_section or '')
-            if section ~= 'shop' and section ~= 'archive' and section ~= 'career' then
+            if not is_section_with_secondary_tabs(section) then
               return
             end
             if not entry.category then
