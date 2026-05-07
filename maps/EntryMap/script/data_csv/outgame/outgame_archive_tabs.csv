@@ -3,10 +3,9 @@ type,name,default_partition,secondary_tabs,enabled,render_mode,label_mode,conten
 分区,存档,,,,,,,,
 分区,生涯,,,,,,,,
 一级页签,仓库,存档,,1,group,title,grid_default,icon,
-一级页签,商品,商城,UR|UB|全部,1,group,title,grid_default,icon,
+一级页签,商品,商城,UR|UB|套装|全部,1,group,title,grid_default,icon,
 一级页签,皮肤,商城,,1,group,title,grid_default,icon,
 一级页签,翅膀,商城,,1,group,title,grid_large,icon,
-一级页签,套装,存档,,1,group,title,grid_default,icon|suit|equip_count,
 一级页签,地图等级,商城,,1,group,title,grid_default,lv|map_level|progress,
 一级页签,荣誉等级,商城,,1,group,title,grid_default,num|honor|points,
 一级页签,成就,生涯,全部|通关成就|成长成就,1,group,title,grid_default,icon,成就总览|完成你的阶段目标|[进度说明]|这里展示成就点、阶段奖励与最近完成记录。|[当前状态]|点击左侧页签切换不同生涯模块。|[获取方式]|通关、累计养成与收集行为都会推进成就。
