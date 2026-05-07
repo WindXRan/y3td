@@ -86,18 +86,10 @@ local function load_from_csv()
         if label_mode == '' then
           label_mode = 'title'
         end
-        local flags = {}
-        for flag in tostring(row.flags or ''):gmatch('[^|]+') do
-          local key = trim(flag)
-          if key ~= '' then
-            flags[key] = true
-          end
-        end
         render_configs[name] = {
           render_mode = render_mode,
           label_mode = label_mode,
           content_node = trim(row.content_node),
-          flags = flags,
           tip_content = split_pipe(row.tip_content),
           content_template = trim(row.content_template),
           content_list = trim(row.content_list),
@@ -259,7 +251,6 @@ function M.get_tab_render_config(primary)
     render_mode = 'group',
     label_mode = 'title',
     content_node = '通用内容',
-    flags = { icon = true },
     tip_content = {},
     content_template = '',
     content_list = '',
