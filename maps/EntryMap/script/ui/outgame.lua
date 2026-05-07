@@ -2559,10 +2559,8 @@ function M.create(env)
 
   function api.open_save_panel()
     local profile = load_profile()
-    if STATE.archive_panel_section == nil or STATE.archive_panel_section == '' then
-      STATE.archive_panel_section = 'archive'
-      STATE.archive_ranking_visible = false
-    end
+    STATE.archive_panel_section = 'archive'
+    STATE.archive_ranking_visible = false
     if STATE.archive_panel_visible == true then
       if refresh_archive_panel_ui then
         refresh_archive_panel_ui(profile)
