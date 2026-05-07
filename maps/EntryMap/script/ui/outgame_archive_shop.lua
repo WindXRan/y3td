@@ -925,6 +925,10 @@ local function get_group_template(options, group_name, visible_items)
   if type(tpl) ~= 'table' then
     return { icon = true, label = 'title' }
   end
+  -- flags 已移除，所有字段为 false 时走默认渲染
+  if not tpl.icon and not tpl.lv and not tpl.num then
+    return { icon = true, label = 'title' }
+  end
   return tpl
 end
 
