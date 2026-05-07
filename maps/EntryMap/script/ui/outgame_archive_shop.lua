@@ -1017,6 +1017,10 @@ local function build_content_groups(player)
     end
   end
   local groups = {}
+  -- 如果新路径解析失败，回退到存档生涯商城.grid_default
+  local function try_fallback_base(panel_root)
+    return table.concat({ panel_root, '存档生涯商城', 'grid_default' }, '.')
+  end
   for content_list, _ in pairs(list_map) do
     local template_name = template_map[content_list] or '商品'
     for _, panel_root in ipairs(ARCHIVE_PANEL_ROOTS) do
@@ -1033,6 +1037,18 @@ local function build_content_groups(player)
           label = resolve_ui(player, cell_base .. '.label'),
           lv = resolve_ui(player, cell_base .. '.lv'),
           num = resolve_ui(player, cell_base .. '.num'),
+        }
+        break
+      end
+      -- 回退：尝试旧路径
+      local fallback_base = try_fallback_base(panel_root)
+      local fallback_root = resolve_ui(player, fallback_base)
+      if is_ui_alive(fallback_root) then
+        groups[#groups + 1] = {
+          name = '',
+          content_list = content_list,
+          base = fallback_base,
+          root = fallback_root,
         }
         break
       end
