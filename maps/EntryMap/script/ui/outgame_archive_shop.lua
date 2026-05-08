@@ -75,7 +75,8 @@ end
 local TIP_PANEL_ROOT_PATH = 'ArchiveMain.详情面板'
 local TIP_PANEL_LIST_PATH = TIP_PANEL_ROOT_PATH .. '.列表'
 local TIP_PANEL_LEGACY_SCROLL_PATH = TIP_PANEL_ROOT_PATH .. '.scroll_view'
-local TIP_PANEL_LEGACY_STATIC_NAMES = { '标题', '是否拥有', '详情效果标题', '详情效果内容', '特殊效果标题', '特殊效果内容', '获取方式标题', '获取方式内容' }
+local TIP_PANEL_LEGACY_STATIC_NAMES = { '标题', '副标题', '内容段1', '内容1', '内容段2', '内容2', '内容段3', '内容3', '内容段4', '内容4', '内容段5', '内容5' }
+local TIP_SEGMENT_COUNT = 5
 local TIP_BLOCK_STYLE = TipBlockStyle.STYLE
 local QUALITY_STYLE = {
   N = {
@@ -701,6 +702,21 @@ local function set_tip_node(nodes, name, text, color)
   if color then set_text_color(ui, color) end
 end
 
+local function apply_tip_segments(nodes, blocks)
+  for index = 1, TIP_SEGMENT_COUNT do
+    local block = blocks and blocks[index] or nil
+    local seg_title_name = '内容段' .. tostring(index)
+    local seg_body_name = '内容' .. tostring(index)
+    if block then
+      set_tip_node(nodes, seg_title_name, block.title or '', TIP_BLOCK_STYLE.normal.title_color)
+      set_tip_node(nodes, seg_body_name, block.body or '', TIP_BLOCK_STYLE[block.style or 'normal'].body_color)
+    else
+      set_tip_node(nodes, seg_title_name, '', nil)
+      set_tip_node(nodes, seg_body_name, '', nil)
+    end
+  end
+end
+
 local function refresh_tip(state, shop, spec)
   if not spec then return false end
   state.archive_panel_shop_item = spec.key
@@ -713,21 +729,24 @@ local function refresh_tip(state, shop, spec)
   local owned = build_owned_badge(spec)
 
   set_tip_node(tip.nodes, '标题', spec.title, quality.text_color)
-  set_tip_node(tip.nodes, '是否拥有', '当前选中 · ' .. quality.label .. ' · ' .. owned.text, owned.color)
+  set_tip_node(tip.nodes, '副标题', '当前选中 · ' .. quality.label .. ' · ' .. owned.text, owned.color)
 
-  local attr_text = table.concat(spec.attr_lines or {}, '\n')
-  if attr_text == '' then attr_text = '暂无属性' end
-  set_tip_node(tip.nodes, '详情效果标题', '[属性加成]', TIP_BLOCK_STYLE.normal.title_color)
-  set_tip_node(tip.nodes, '详情效果内容', attr_text, TIP_BLOCK_STYLE.attr.body_color)
+  local blocks = {
+    { title = '[属性加成]', body = table.concat(spec.attr_lines or {}, '\n'), style = 'attr' },
+  }
+  if blocks[1].body == '' then
+    blocks[1].body = '暂无属性'
+  end
 
   local effect = trim_text(spec.special_effect or '')
-  set_tip_node(tip.nodes, '特殊效果标题', effect ~= '' and '[特殊效果]' or '', TIP_BLOCK_STYLE.normal.title_color)
-  set_tip_node(tip.nodes, '特殊效果内容', effect ~= '' and effect or '', TIP_BLOCK_STYLE.highlight.body_color)
+  if effect ~= '' then
+    blocks[#blocks + 1] = { title = '[特殊效果]', body = effect, style = 'highlight' }
+  end
 
   local obtain = trim_text(spec.obtain or '')
-  set_tip_node(tip.nodes, '获取方式标题', '[获取方式]', TIP_BLOCK_STYLE.normal.title_color)
-  set_tip_node(tip.nodes, '获取方式内容', obtain ~= '' and obtain or '地图寻宝、积分商城', TIP_BLOCK_STYLE.normal.body_color)
+  blocks[#blocks + 1] = { title = '[获取方式]', body = obtain ~= '' and obtain or '地图寻宝、积分商城', style = 'normal' }
 
+  apply_tip_segments(tip.nodes, blocks)
   return true
 end
 
@@ -864,13 +883,19 @@ local function refresh_career_tip(state, shop)
   local detail = get_tab_tip_detail(tab, 'career')
   local nodes = tip.nodes
   set_tip_node(nodes, '标题', detail.title or '', { 255, 247, 232, 255 })
-  set_tip_node(nodes, '是否拥有', detail.owned or '', TIP_BLOCK_STYLE.normal.body_color)
-  set_tip_node(nodes, '详情效果标题', detail.detail_title or '', TIP_BLOCK_STYLE.normal.title_color)
-  set_tip_node(nodes, '详情效果内容', detail.detail or '', TIP_BLOCK_STYLE.normal.body_color)
-  set_tip_node(nodes, '特殊效果标题', detail.special_title or '', TIP_BLOCK_STYLE.normal.title_color)
-  set_tip_node(nodes, '特殊效果内容', detail.special or '', TIP_BLOCK_STYLE.normal.body_color)
-  set_tip_node(nodes, '获取方式标题', detail.obtain_title or '', TIP_BLOCK_STYLE.normal.title_color)
-  set_tip_node(nodes, '获取方式内容', detail.obtain or '', TIP_BLOCK_STYLE.normal.body_color)
+  set_tip_node(nodes, '副标题', detail.owned or '', TIP_BLOCK_STYLE.normal.body_color)
+
+  local blocks = {}
+  if (detail.detail or '') ~= '' then
+    blocks[#blocks + 1] = { title = detail.detail_title or '[说明]', body = detail.detail, style = 'normal' }
+  end
+  if (detail.special or '') ~= '' then
+    blocks[#blocks + 1] = { title = detail.special_title or '[当前状态]', body = detail.special, style = 'highlight' }
+  end
+  if (detail.obtain or '') ~= '' then
+    blocks[#blocks + 1] = { title = detail.obtain_title or '[获取方式]', body = detail.obtain, style = 'normal' }
+  end
+  apply_tip_segments(nodes, blocks)
 end
 
 local function refresh_tab_tip(state, shop, section)
@@ -892,13 +917,19 @@ local function refresh_tab_tip(state, shop, section)
   local detail = get_tab_tip_detail(tab, section)
   local nodes = tip.nodes
   set_tip_node(nodes, '标题', detail.title or '', { 255, 247, 232, 255 })
-  set_tip_node(nodes, '是否拥有', detail.owned or '', TIP_BLOCK_STYLE.normal.body_color)
-  set_tip_node(nodes, '详情效果标题', detail.detail_title or '', TIP_BLOCK_STYLE.normal.title_color)
-  set_tip_node(nodes, '详情效果内容', detail.detail or '', TIP_BLOCK_STYLE.normal.body_color)
-  set_tip_node(nodes, '特殊效果标题', detail.special_title or '', TIP_BLOCK_STYLE.normal.title_color)
-  set_tip_node(nodes, '特殊效果内容', detail.special or '', TIP_BLOCK_STYLE.normal.body_color)
-  set_tip_node(nodes, '获取方式标题', detail.obtain_title or '', TIP_BLOCK_STYLE.normal.title_color)
-  set_tip_node(nodes, '获取方式内容', detail.obtain or '', TIP_BLOCK_STYLE.normal.body_color)
+  set_tip_node(nodes, '副标题', detail.owned or '', TIP_BLOCK_STYLE.normal.body_color)
+
+  local blocks = {}
+  if (detail.detail or '') ~= '' then
+    blocks[#blocks + 1] = { title = detail.detail_title or '[说明]', body = detail.detail, style = 'normal' }
+  end
+  if (detail.special or '') ~= '' then
+    blocks[#blocks + 1] = { title = detail.special_title or '[当前状态]', body = detail.special, style = 'highlight' }
+  end
+  if (detail.obtain or '') ~= '' then
+    blocks[#blocks + 1] = { title = detail.obtain_title or '[获取方式]', body = detail.obtain, style = 'normal' }
+  end
+  apply_tip_segments(nodes, blocks)
 end
 
 local function clear_tip(tip)
