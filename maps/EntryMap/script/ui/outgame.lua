@@ -834,6 +834,144 @@ function M.create(env)
     return true
   end
 
+  local load_profile
+
+  local function archive_item_profile_key(spec)
+    if type(spec) ~= 'table' then
+      return ''
+    end
+    return table.concat({
+      tostring(spec.partition or ''),
+      tostring(spec.primary or spec.l1_tab or ''),
+      tostring(spec.title or spec.name or ''),
+    }, '|')
+  end
+
+  local function to_archive_integer(value)
+    local number = tonumber(value) or 0
+    return math.max(0, math.floor(number))
+  end
+
+  local function ensure_archive_item_entry(profile, spec)
+    if type(profile) ~= 'table' or type(spec) ~= 'table' then
+      return false
+    end
+    if type(profile.archive_items) ~= 'table' then
+      profile.archive_items = {}
+    end
+    local key = archive_item_profile_key(spec)
+    if key == '||' or key == '' then
+      return false
+    end
+    spec.archive_profile_key = key
+    local entry = profile.archive_items[key]
+    local dirty = false
+    if type(entry) ~= 'table' then
+      entry = {}
+      profile.archive_items[key] = entry
+      dirty = true
+    end
+    if entry.owned_text == nil then
+      entry.owned_text = tostring(spec.owned_text or '')
+      dirty = true
+    end
+    if spec.stackable == true then
+      local normalized = tostring(to_archive_integer(entry.owned_text))
+      if entry.owned_text ~= normalized then
+        entry.owned_text = normalized
+        dirty = true
+      end
+    end
+    if type(entry.runtime_level) ~= 'number' then
+      entry.runtime_level = to_archive_integer(entry.runtime_level)
+      dirty = true
+    end
+    if type(entry.runtime_reroll_count) ~= 'number' then
+      entry.runtime_reroll_count = to_archive_integer(entry.runtime_reroll_count)
+      dirty = true
+    end
+    if entry.runtime_equipped ~= true and entry.runtime_equipped ~= false then
+      entry.runtime_equipped = false
+      dirty = true
+    end
+    if entry.runtime_random_bonus ~= nil and type(entry.runtime_random_bonus) ~= 'string' then
+      entry.runtime_random_bonus = tostring(entry.runtime_random_bonus)
+      dirty = true
+    end
+    return dirty
+  end
+
+  local function ensure_archive_items_profile_defaults(profile)
+    local dirty = false
+    if type(profile.archive_items) ~= 'table' then
+      profile.archive_items = {}
+      dirty = true
+    end
+    for _, spec in ipairs(OUTGAME_DEFS.archive_shop_item_specs or {}) do
+      if spec.source == 'csv_shangchengdaojv_feature' then
+        if ensure_archive_item_entry(profile, spec) then
+          dirty = true
+        end
+      end
+    end
+    return dirty
+  end
+
+  local function apply_archive_item_profile_to_spec(profile, spec)
+    if type(profile) ~= 'table' or type(spec) ~= 'table' then
+      return
+    end
+    local key = spec.archive_profile_key or archive_item_profile_key(spec)
+    local entry = type(profile.archive_items) == 'table' and profile.archive_items[key] or nil
+    if type(entry) ~= 'table' then
+      return
+    end
+    spec.archive_profile_key = key
+    spec.owned_text = tostring(entry.owned_text or '')
+    spec.runtime_level = to_archive_integer(entry.runtime_level)
+    spec.runtime_reroll_count = to_archive_integer(entry.runtime_reroll_count)
+    spec.runtime_equipped = entry.runtime_equipped == true
+    spec.runtime_random_bonus = entry.runtime_random_bonus
+  end
+
+  local function sync_archive_shop_specs_from_profile(profile)
+    profile = profile or STATE.outgame_profile
+    if type(profile) ~= 'table' then
+      return
+    end
+    if ensure_archive_items_profile_defaults(profile) then
+      mark_profile_dirty()
+    end
+    for _, spec in ipairs(OUTGAME_DEFS.archive_shop_item_specs or {}) do
+      if spec.source == 'csv_shangchengdaojv_feature' then
+        apply_archive_item_profile_to_spec(profile, spec)
+      end
+    end
+  end
+
+  local function persist_archive_shop_specs_to_profile()
+    local profile = load_profile()
+    ensure_archive_items_profile_defaults(profile)
+    for _, spec in ipairs(OUTGAME_DEFS.archive_shop_item_specs or {}) do
+      if spec.source == 'csv_shangchengdaojv_feature' then
+        local key = spec.archive_profile_key or archive_item_profile_key(spec)
+        if key ~= '' and key ~= '||' then
+          local entry = profile.archive_items[key]
+          if type(entry) ~= 'table' then
+            entry = {}
+            profile.archive_items[key] = entry
+          end
+          entry.owned_text = tostring(spec.owned_text or '')
+          entry.runtime_level = to_archive_integer(spec.runtime_level)
+          entry.runtime_reroll_count = to_archive_integer(spec.runtime_reroll_count)
+          entry.runtime_equipped = spec.runtime_equipped == true
+          entry.runtime_random_bonus = spec.runtime_random_bonus
+        end
+      end
+    end
+    mark_profile_dirty()
+  end
+
   local function ensure_profile_defaults(profile)
     local dirty = false
     if type(profile.version) ~= 'number' then
@@ -861,6 +999,9 @@ function M.create(env)
       dirty = true
     end
     if hero_growth_api and hero_growth_api.ensure_profile_defaults and hero_growth_api.ensure_profile_defaults(profile) then
+      dirty = true
+    end
+    if ensure_archive_items_profile_defaults(profile) then
       dirty = true
     end
     for _, task_def in ipairs(DAILY_TASK_DEFS) do
@@ -896,7 +1037,7 @@ function M.create(env)
     return dirty
   end
 
-  local function load_profile()
+  load_profile = function()
     if STATE.outgame_profile then
       return STATE.outgame_profile
     end
@@ -1833,6 +1974,8 @@ function M.create(env)
     group_templates = group_templates,
     default_icon = OUTGAME_DEFS.archive_shop_default_icon or 906565,
     play_ui_click = play_ui_click,
+    message = message,
+    persist_archive_items_state = persist_archive_shop_specs_to_profile,
   }
 
   local function is_archive_panel_ui_alive(ui)
@@ -1860,11 +2003,13 @@ function M.create(env)
 
   local function refresh_archive_main_shop_items(ui)
     ARCHIVE_SHOP_OPTIONS.player = env.get_player and env.get_player() or ARCHIVE_SHOP_OPTIONS.player
+    sync_archive_shop_specs_from_profile(load_profile())
     return ArchiveShop.refresh(ui, ARCHIVE_SHOP_OPTIONS)
   end
 
   local function ensure_archive_main_shop_ui(ui)
     ARCHIVE_SHOP_OPTIONS.player = env.get_player and env.get_player() or ARCHIVE_SHOP_OPTIONS.player
+    sync_archive_shop_specs_from_profile(load_profile())
     return ArchiveShop.ensure(ui, ARCHIVE_SHOP_OPTIONS)
   end
 

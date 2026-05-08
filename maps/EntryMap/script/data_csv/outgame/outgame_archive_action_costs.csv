@@ -1,0 +1,4 @@
+tab,action,item_name,item_label,item_icon,base_cost,per_level,enabled
+套装,upgrade,强化石,强化石,134242447,100,25,1
+地图等级,upgrade,突破石,突破石,134242447,200,50,1
+荣誉等级,upgrade,重铸石,重铸石,134242447,300,75,1

@@ -321,4 +321,10 @@ function M.build_from_choice(choice, overrides)
   }
 end
 
+-- 生成统一 detail_blocks，供动态 tip 面板等场景直接使用
+function M.build_blocks(fields)
+  local TipBlockStyle = require 'data.tables.tip_block_style'
+  return TipBlockStyle.build_bond_blocks(M.build(fields))
+end
+
 return M

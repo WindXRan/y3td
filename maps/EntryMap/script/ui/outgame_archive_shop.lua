@@ -4,6 +4,8 @@ local DEFAULT_ICON = 906565
 local ARCHIVE_PANEL_ROOTS = { 'ArchiveMain', 'ArchivePanel' }
 local ARCHIVE_MAIN_PANEL = '存档生涯商城'
 local ArchiveTabDefinitions = require 'data.tables.archive_tab_definitions'
+local ArchiveActionCosts = require 'data.tables.outgame.archive_action_costs'
+local TipBlockStyle = require 'data.tables.tip_block_style'
 local ARCHIVE_CONTENT_SECTIONS = ArchiveTabDefinitions.get_valid_partitions()
 local ARCHIVE_GENERIC_CONTENT_GROUP = nil  -- 已改为 CSV content_node 驱动
 
@@ -47,19 +49,13 @@ for _, path in ipairs(build_panel_paths('文本详情.ArchiveGridView.grid_view_
   append_path(GRID_ROOT_PATHS, path)
 end
 local TIP_ROOT_PATHS = {
+  'ArchiveMain.layout_1.scroll_view_main.scroll_view_1.详情面板',
   'ArchiveMain.layout_1.scroll_view_main.scroll_view_1.ArchiveTips',
 }
-for _, path in ipairs(build_panel_paths('scroll_view.ArchiveTips')) do
-  append_path(TIP_ROOT_PATHS, path)
-end
-for _, path in ipairs(build_panel_paths('文本详情.ArchiveTips')) do
-  append_path(TIP_ROOT_PATHS, path)
-end
-for _, path in ipairs(build_panel_paths('scroll_view')) do
-  append_path(TIP_ROOT_PATHS, path)
-end
-for _, path in ipairs(build_panel_paths('文本详情')) do
-  append_path(TIP_ROOT_PATHS, path)
+for _, suffix in ipairs({ 'scroll_view.详情面板', '文本详情.详情面板', 'scroll_view.ArchiveTips', '文本详情.ArchiveTips', 'scroll_view', '文本详情' }) do
+  for _, path in ipairs(build_panel_paths(suffix)) do
+    append_path(TIP_ROOT_PATHS, path)
+  end
 end
 local TIP_SCROLL_PATHS = {
   'ArchiveMain.layout_1.scroll_view_main.scroll_view_1.ArchiveTips.scroll_view',
@@ -76,43 +72,11 @@ end
 for _, path in ipairs(build_panel_paths('scroll_view')) do
   append_path(TIP_SCROLL_PATHS, path)
 end
-local TIP_BLOCK_SLOTS = {
-  { title = 'detail_title', body = 'detail' },
-  { title = 'special_title', body = 'special' },
-  { title = 'obtain_title', body = 'obtain' },
-}
-local TIP_BLOCK_STYLE = {
-  normal = {
-    title_color = { 255, 232, 44, 255 },
-    body_color = { 178, 183, 194, 255 },
-    body_size = 14,
-  },
-  attr = {
-    title_color = { 255, 232, 44, 255 },
-    body_color = { 44, 255, 112, 255 },
-    body_size = 16,
-  },
-  highlight = {
-    title_color = { 255, 232, 44, 255 },
-    body_color = { 146, 219, 255, 255 },
-    body_size = 15,
-  },
-  cost = {
-    title_color = { 255, 232, 44, 255 },
-    body_color = { 255, 196, 92, 255 },
-    body_size = 15,
-  },
-  list = {
-    title_color = { 255, 232, 44, 255 },
-    body_color = { 220, 226, 238, 255 },
-    body_size = 14,
-  },
-  warning = {
-    title_color = { 255, 214, 72, 255 },
-    body_color = { 255, 118, 94, 255 },
-    body_size = 15,
-  },
-}
+local TIP_PANEL_ROOT_PATH = 'ArchiveMain.详情面板'
+local TIP_PANEL_LIST_PATH = TIP_PANEL_ROOT_PATH .. '.列表'
+local TIP_PANEL_LEGACY_SCROLL_PATH = TIP_PANEL_ROOT_PATH .. '.scroll_view'
+local TIP_PANEL_LEGACY_STATIC_NAMES = { '标题', '是否拥有', '详情效果标题', '详情效果内容', '特殊效果标题', '特殊效果内容', '获取方式标题', '获取方式内容' }
+local TIP_BLOCK_STYLE = TipBlockStyle.STYLE
 local QUALITY_STYLE = {
   N = {
     label = 'N',
@@ -163,8 +127,17 @@ local SECONDARY_TAB_GRID_PATHS = {
 for _, path in ipairs(build_panel_paths('page2_grid')) do
   append_path(SECONDARY_TAB_GRID_PATHS, path)
 end
+local ACTION_BUTTON_ROOT_PATH = 'ArchiveMain.按钮列表'
+local ACTION_BUTTON_LIST_PATH = ACTION_BUTTON_ROOT_PATH .. '.列表'
+local ACTION_BUTTON_WIDTH = 204
+local ACTION_BUTTON_HEIGHT = 68
+local ACTION_BUTTON_GAP = 8
+local ACTION_BUTTON_Z = 10080
+local ACTION_BUTTON_IMAGE = 132978
+local ACTION_COST_ICON_SIZE = 18
+local ACTION_COST_TEXT_WIDTH = 78
 
-local function get_career_tab_detail(tab_name)
+local function get_tab_tip_detail(tab_name, section)
   local tip_lines = ArchiveTabDefinitions.get_tip_content(tab_name)
   if #tip_lines >= 8 then
     return {
@@ -178,19 +151,30 @@ local function get_career_tab_detail(tab_name)
       obtain = tip_lines[8],
     }
   end
+  local detail_text = '这里展示' .. tab_name .. '相关内容。'
+  local special_text = '点击左侧页签切换不同模块。'
+  local obtain_text = '通过关卡奖励与活动解锁。'
+  if section == 'archive' then
+    detail_text = '这里展示' .. tab_name .. '相关的局外收藏、累计与解锁进度。'
+    special_text = '点击左侧按钮列表切换不同存档模块。'
+  elseif section == 'shop' then
+    detail_text = '这里展示' .. tab_name .. '相关商品与收藏内容。'
+    special_text = '点击左侧按钮列表切换不同商城模块。'
+  end
   return {
     title = tab_name,
     owned = '查看详情',
     detail_title = '[说明]',
-    detail = '这里展示' .. tab_name .. '相关内容。',
+    detail = detail_text,
     special_title = '[当前状态]',
-    special = '点击左侧页签切换不同生涯模块。',
+    special = special_text,
     obtain_title = '[获取方式]',
-    obtain = '通过关卡奖励与活动解锁。',
+    obtain = obtain_text,
   }
 end
 local SLOT_BOUND = setmetatable({}, { __mode = 'k' })
 local SLOT_SPEC_KEY = setmetatable({}, { __mode = 'k' })
+local get_visible_items
 
 local function is_ui_alive(ui)
   return ui and (not ui.is_removed or not ui:is_removed())
@@ -278,10 +262,38 @@ local function set_pos(ui, x, y)
   end
 end
 
+local function set_z_order(ui, z_order)
+  if is_ui_alive(ui) and ui.set_z_order and z_order then
+    ui:set_z_order(z_order)
+  end
+end
+
 local function set_intercepts(ui, intercepts)
   if is_ui_alive(ui) and ui.set_intercepts_operations then
     ui:set_intercepts_operations(intercepts == true)
   end
+end
+
+local function set_button_enable(ui, enabled)
+  if is_ui_alive(ui) and ui.set_button_enable then
+    ui:set_button_enable(enabled == true)
+  end
+end
+
+local function create_child(parent, ui_type)
+  if not (is_ui_alive(parent) and parent.create_child) then
+    return nil
+  end
+  local ok, child = pcall(parent.create_child, parent, ui_type)
+  if ok and is_ui_alive(child) then
+    return child
+  end
+  return nil
+end
+
+local function layout_ui(ui, x, y, width, height)
+  set_ui_size(ui, width, height)
+  set_pos(ui, x + width * 0.5, y + height * 0.5)
 end
 
 local function get_ui_child(ui, path)
@@ -366,20 +378,37 @@ local function collect_tab_paths(base_path, max_extra)
   return paths
 end
 
+local function hide_legacy_tip_scroll(player)
+  set_visible(resolve_ui(player, TIP_PANEL_LEGACY_SCROLL_PATH), true)
+  for _, path in ipairs(TIP_SCROLL_PATHS) do
+    set_visible(resolve_ui(player, path), false)
+  end
+end
+
 local function resolve_tip(player)
-  local _, tip_path = resolve_ui_first(player, TIP_SCROLL_PATHS)
-  tip_path = tip_path or TIP_SCROLL_PATHS[1]
-  return {
-    root = resolve_ui_first(player, TIP_ROOT_PATHS),
-    title = resolve_ui(player, tip_path .. '.标题'),
-    owned = resolve_ui(player, tip_path .. '.是否拥有'),
-    detail_title = resolve_ui(player, tip_path .. '.详情效果标题'),
-    detail = resolve_ui(player, tip_path .. '.详情效果内容'),
-    special_title = resolve_ui(player, tip_path .. '.特殊效果标题'),
-    special = resolve_ui(player, tip_path .. '.特殊效果内容'),
-    obtain_title = resolve_ui(player, tip_path .. '.获取方式标题'),
-    obtain = resolve_ui(player, tip_path .. '.获取方式内容'),
-  }
+  local root = resolve_ui(player, TIP_PANEL_ROOT_PATH)
+  if not is_ui_alive(root) then
+    root = resolve_ui_first(player, TIP_ROOT_PATHS)
+  end
+  if not is_ui_alive(root) then
+    return { root = nil, nodes = {} }
+  end
+  hide_legacy_tip_scroll(player)
+  set_visible(root, true)
+  -- 确保详情面板渲染在最上层，不被 layout 盖住
+  set_z_order(root, 10000)
+  local nodes = {}
+  for _, name in ipairs(TIP_PANEL_LEGACY_STATIC_NAMES) do
+    local ui = resolve_ui(player, TIP_PANEL_LIST_PATH .. '.' .. name)
+    if not is_ui_alive(ui) then
+      ui = resolve_ui(player, TIP_PANEL_ROOT_PATH .. '.' .. name)
+    end
+    if is_ui_alive(ui) then
+      set_visible(ui, true)
+    end
+    nodes[name] = ui
+  end
+  return { root = root, nodes = nodes }
 end
 
 local function get_primary(state)
@@ -571,7 +600,7 @@ local function ensure_selection(state, options, specs)
   return primary_tabs, categories
 end
 
-local function get_visible_items(state, specs)
+get_visible_items = function(state, specs)
   local section = tostring(state and state.archive_panel_section or '')
   local partition_expect = resolve_partition_from_section(state)
 
@@ -623,6 +652,13 @@ local function is_owned(spec)
 end
 
 local function build_owned_badge(spec)
+  if spec and spec.runtime_equipped == true then
+    return {
+      text = '已佩戴',
+      owned = true,
+      color = { 86, 232, 132, 255 },
+    }
+  end
   local raw = tostring((spec and spec.owned_text) or ''):gsub('^%s+', ''):gsub('%s+$', '')
   local owned = is_owned(spec)
   local text = raw
@@ -657,167 +693,41 @@ local function is_selected_spec(state, spec)
     and tostring(state and state.archive_panel_shop_item or '') == tostring(spec and spec.key or '')
 end
 
-local function build_fallback_tip_blocks(spec)
-  if spec and spec.is_suit then
-    local equip_lines = {}
-    for _, equip in ipairs(spec.equipment or {}) do
-      if equip.name and equip.name ~= '' then
-        table.insert(equip_lines, equip.slot .. ': ' .. equip.name)
-      end
-    end
-
-    local detail_text = ''
-    if spec.description and spec.description ~= '' then
-      detail_text = spec.description .. '\n\n'
-    end
-    detail_text = detail_text .. '套装效果: ' .. (spec.effects_summary or '暂无')
-    if #equip_lines > 0 then
-      detail_text = detail_text .. '\n\n套装装备:\n' .. table.concat(equip_lines, '\n')
-    end
-
-    return {
-      { title = '[套装详情]', body = detail_text },
-      { title = '[升级消耗]', body = spec.upgrade_cost_info or '升星石' },
-      { title = '[获取方式]', body = spec.obtain ~= '' and spec.obtain or '暂无' },
-    }
-  end
-
-  return {
-    { title = '[详情效果]', body = table.concat((spec and spec.attr_lines) or {}, '\n') },
-    { title = '[特殊效果]', body = spec and spec.special_effect ~= '' and spec.special_effect or '暂无' },
-    { title = '[获取方式]', body = spec and spec.obtain ~= '' and spec.obtain or '暂无' },
-  }
-end
-
-local function get_tip_blocks(spec)
-  if type(spec and spec.detail_blocks) == 'table' and #spec.detail_blocks > 0 then
-    return spec.detail_blocks
-  end
-  if type(spec and spec.description_blocks) == 'table' and #spec.description_blocks > 0 then
-    return spec.description_blocks
-  end
-  return build_fallback_tip_blocks(spec)
-end
-
-local function get_visible_tip_blocks(spec)
-  local source = get_tip_blocks(spec)
-  local result = {}
-  for _, block in ipairs(source or {}) do
-    local condition = tostring(block.visible or '')
-    local include = condition == '' or condition == 'always'
-    if condition == 'owned' then
-      include = is_owned(spec)
-    elseif condition == 'not_owned' or condition == 'unowned' then
-      include = not is_owned(spec)
-    end
-    if include then
-      result[#result + 1] = block
-    end
-  end
-  return result
-end
-
-local function fit_tip_blocks_to_slots(blocks)
-  local slot_count = #TIP_BLOCK_SLOTS
-  if #blocks <= slot_count then
-    return blocks
-  end
-  local result = {}
-  for index = 1, slot_count - 1 do
-    result[index] = blocks[index]
-  end
-  local merged_title = trim_text(blocks[slot_count] and blocks[slot_count].title) ~= '' and blocks[slot_count].title or '[更多说明]'
-  local merged_lines = {}
-  for index = slot_count, #blocks do
-    local block = blocks[index] or {}
-    local title = trim_text(block.title)
-    local body = trim_text(block.body)
-    if title ~= '' and not (index == slot_count and title == merged_title) then
-      merged_lines[#merged_lines + 1] = title
-    end
-    if body ~= '' then
-      merged_lines[#merged_lines + 1] = body
-    end
-  end
-  result[slot_count] = {
-    title = merged_title,
-    body = table.concat(merged_lines, '\n\n'),
-    style = (blocks[slot_count] and blocks[slot_count].style) or 'normal',
-  }
-  return result
-end
-
-local function apply_tip_blocks(tip, spec)
-  local blocks = fit_tip_blocks_to_slots(get_visible_tip_blocks(spec))
-  for index, slot in ipairs(TIP_BLOCK_SLOTS) do
-    local block = blocks[index] or {}
-    local title = trim_text(block.title)
-    local body = trim_text(block.body)
-    local visible = title ~= '' or body ~= ''
-    set_visible(tip[slot.title], visible)
-    set_visible(tip[slot.body], visible)
-    set_text(tip[slot.title], title)
-    set_text(tip[slot.body], body)
-  end
-end
-
-local function apply_tip_block_styles(tip, spec)
-  local blocks = fit_tip_blocks_to_slots(get_visible_tip_blocks(spec))
-  for index, slot in ipairs(TIP_BLOCK_SLOTS) do
-    local block = blocks[index] or {}
-    local style = TIP_BLOCK_STYLE[tostring(block.style or 'normal')] or TIP_BLOCK_STYLE.normal
-    set_font_size(tip[slot.title], 15)
-    set_text_color(tip[slot.title], style.title_color)
-    set_text_alignment(tip[slot.title], '左', '中')
-    set_font_size(tip[slot.body], style.body_size)
-    set_text_color(tip[slot.body], style.body_color)
-    set_text_alignment(tip[slot.body], '左', '上')
-  end
+local function set_tip_node(nodes, name, text, color)
+  local ui = nodes and nodes[name]
+  if not is_ui_alive(ui) then return end
+  set_visible(ui, text ~= '')
+  set_text(ui, text)
+  if color then set_text_color(ui, color) end
 end
 
 local function refresh_tip(state, shop, spec)
-  if not spec then
-    return false
-  end
+  if not spec then return false end
   state.archive_panel_shop_item = spec.key
-  local tip = shop.tip or {}
-  local quality_style = get_quality_style(spec.quality)
+  local tip = shop.tip
+  if not tip then return false end
 
   set_visible(tip.root, true)
-  set_text(tip.title, spec.title)
-  local owned_badge = build_owned_badge(spec)
-  set_text(tip.owned, '当前选中 · ' .. quality_style.label .. ' · ' .. owned_badge.text)
-  apply_tip_blocks(tip, spec)
+  set_z_order(tip.root, 10000)
+  local quality = get_quality_style(spec.quality)
+  local owned = build_owned_badge(spec)
 
-  set_font_size(tip.title, 24)
-  set_text_color(tip.title, quality_style.text_color)
-  set_text_alignment(tip.title, '左', '中')
+  set_tip_node(tip.nodes, '标题', spec.title, quality.text_color)
+  set_tip_node(tip.nodes, '是否拥有', '当前选中 · ' .. quality.label .. ' · ' .. owned.text, owned.color)
 
-  set_font_size(tip.owned, 14)
-  set_text_color(tip.owned, owned_badge.color)
-  set_text_alignment(tip.owned, '中', '中')
+  local attr_text = table.concat(spec.attr_lines or {}, '\n')
+  if attr_text == '' then attr_text = '暂无属性' end
+  set_tip_node(tip.nodes, '详情效果标题', '[属性加成]', TIP_BLOCK_STYLE.normal.title_color)
+  set_tip_node(tip.nodes, '详情效果内容', attr_text, TIP_BLOCK_STYLE.attr.body_color)
 
-  set_font_size(tip.detail_title, 15)
-  set_text_color(tip.detail_title, { 255, 232, 44, 255 })
-  set_text_alignment(tip.detail_title, '左', '中')
-  set_font_size(tip.detail, 16)
-  set_text_color(tip.detail, { 44, 255, 112, 255 })
-  set_text_alignment(tip.detail, '左', '上')
+  local effect = trim_text(spec.special_effect or '')
+  set_tip_node(tip.nodes, '特殊效果标题', effect ~= '' and '[特殊效果]' or '', TIP_BLOCK_STYLE.normal.title_color)
+  set_tip_node(tip.nodes, '特殊效果内容', effect ~= '' and effect or '', TIP_BLOCK_STYLE.highlight.body_color)
 
-  set_font_size(tip.special_title, 15)
-  set_text_color(tip.special_title, { 255, 232, 44, 255 })
-  set_text_alignment(tip.special_title, '左', '中')
-  set_font_size(tip.special, 15)
-  set_text_color(tip.special, { 146, 219, 255, 255 })
-  set_text_alignment(tip.special, '左', '上')
+  local obtain = trim_text(spec.obtain or '')
+  set_tip_node(tip.nodes, '获取方式标题', '[获取方式]', TIP_BLOCK_STYLE.normal.title_color)
+  set_tip_node(tip.nodes, '获取方式内容', obtain ~= '' and obtain or '地图寻宝、积分商城', TIP_BLOCK_STYLE.normal.body_color)
 
-  set_font_size(tip.obtain_title, 15)
-  set_text_color(tip.obtain_title, { 255, 232, 44, 255 })
-  set_text_alignment(tip.obtain_title, '左', '中')
-  set_font_size(tip.obtain, 14)
-  set_text_color(tip.obtain, { 178, 183, 194, 255 })
-  set_text_alignment(tip.obtain, '左', '上')
-  apply_tip_block_styles(tip, spec)
   return true
 end
 
@@ -906,20 +816,7 @@ local function resolve_active_group_key(shop, state)
 end
 
 local function get_group_template(options, group_name, visible_items)
-  local mode = ''
   local first = type(visible_items) == 'table' and visible_items[1] or nil
-  if first then
-    mode = tostring(first.render_mode or '')
-  end
-  if mode == 'icon_num' then
-    return { icon = true, num = true, label = false }
-  elseif mode == 'num' then
-    return { num = true, label = 'title' }
-  elseif mode == 'lv' then
-    return { lv = true, label = 'quality' }
-  elseif mode == 'icon' then
-    return { icon = true, label = 'title' }
-  end
   local templates = options and options.group_templates or nil
   local template_name = group_name
   if template_name == '' and first then
@@ -934,11 +831,6 @@ local function get_group_template(options, group_name, visible_items)
     return { icon = true, label = 'title' }
   end
   return tpl
-end
-
-local function is_catalog_spec(spec)
-  local primary = tostring(spec and spec.primary or "")
-  return ArchiveTabDefinitions.get_render_mode(primary) == "catalog"
 end
 
 local function find_best_spec(items, wanted_key)
@@ -960,6 +852,8 @@ local function refresh_career_tip(state, shop)
   if not tip then
     return
   end
+  set_visible(tip.root, true)
+  set_z_order(tip.root, 10000)
   local tab = tostring(state and state.archive_panel_career_tab or CAREER_TAB_LABELS[1])
   if tab == '' then
     tab = CAREER_TAB_LABELS[1]
@@ -967,16 +861,522 @@ local function refresh_career_tip(state, shop)
       state.archive_panel_career_tab = tab
     end
   end
-  local detail = get_career_tab_detail(tab)
+  local detail = get_tab_tip_detail(tab, 'career')
+  local nodes = tip.nodes
+  set_tip_node(nodes, '标题', detail.title or '', { 255, 247, 232, 255 })
+  set_tip_node(nodes, '是否拥有', detail.owned or '', TIP_BLOCK_STYLE.normal.body_color)
+  set_tip_node(nodes, '详情效果标题', detail.detail_title or '', TIP_BLOCK_STYLE.normal.title_color)
+  set_tip_node(nodes, '详情效果内容', detail.detail or '', TIP_BLOCK_STYLE.normal.body_color)
+  set_tip_node(nodes, '特殊效果标题', detail.special_title or '', TIP_BLOCK_STYLE.normal.title_color)
+  set_tip_node(nodes, '特殊效果内容', detail.special or '', TIP_BLOCK_STYLE.normal.body_color)
+  set_tip_node(nodes, '获取方式标题', detail.obtain_title or '', TIP_BLOCK_STYLE.normal.title_color)
+  set_tip_node(nodes, '获取方式内容', detail.obtain or '', TIP_BLOCK_STYLE.normal.body_color)
+end
+
+local function refresh_tab_tip(state, shop, section)
+  local tip = shop and shop.tip or nil
+  if not tip then
+    return
+  end
   set_visible(tip.root, true)
-  set_text(tip.title, detail.title or '')
-  set_text(tip.owned, detail.owned or '')
-  set_text(tip.detail_title, detail.detail_title or '')
-  set_text(tip.detail, detail.detail or '')
-  set_text(tip.special_title, detail.special_title or '')
-  set_text(tip.special, detail.special or '')
-  set_text(tip.obtain_title, detail.obtain_title or '')
-  set_text(tip.obtain, detail.obtain or '')
+  set_z_order(tip.root, 10000)
+  local tab = ''
+  if section == 'career' then
+    tab = tostring(state and state.archive_panel_career_tab or CAREER_TAB_LABELS[1])
+  else
+    tab = tostring(state and state.archive_panel_shop_primary or '')
+  end
+  if tab == '' then
+    return
+  end
+  local detail = get_tab_tip_detail(tab, section)
+  local nodes = tip.nodes
+  set_tip_node(nodes, '标题', detail.title or '', { 255, 247, 232, 255 })
+  set_tip_node(nodes, '是否拥有', detail.owned or '', TIP_BLOCK_STYLE.normal.body_color)
+  set_tip_node(nodes, '详情效果标题', detail.detail_title or '', TIP_BLOCK_STYLE.normal.title_color)
+  set_tip_node(nodes, '详情效果内容', detail.detail or '', TIP_BLOCK_STYLE.normal.body_color)
+  set_tip_node(nodes, '特殊效果标题', detail.special_title or '', TIP_BLOCK_STYLE.normal.title_color)
+  set_tip_node(nodes, '特殊效果内容', detail.special or '', TIP_BLOCK_STYLE.normal.body_color)
+  set_tip_node(nodes, '获取方式标题', detail.obtain_title or '', TIP_BLOCK_STYLE.normal.title_color)
+  set_tip_node(nodes, '获取方式内容', detail.obtain or '', TIP_BLOCK_STYLE.normal.body_color)
+end
+
+local function clear_tip(tip)
+  if not tip then
+    return
+  end
+  set_visible(tip.root, false)
+end
+
+local function get_active_action_tab(state)
+  local section = tostring(state and state.archive_panel_section or '')
+  if section == 'career' then
+    return tostring(state and state.archive_panel_career_tab or CAREER_TAB_LABELS[1] or '')
+  end
+  if section == 'archive' or section == 'shop' then
+    return tostring(state and state.archive_panel_shop_primary or '')
+  end
+  return ''
+end
+
+local function get_action_buttons_for_state(state)
+  local tab = get_active_action_tab(state)
+  if tab == '' then
+    return {}, ''
+  end
+  return ArchiveTabDefinitions.get_action_buttons(tab), tab
+end
+
+local function is_archive_stackable_cost_item(spec, item_name)
+  if not spec then
+    return false
+  end
+  if trim_text(spec.title or spec.name) ~= trim_text(item_name) then
+    return false
+  end
+  return spec.stackable == true
+    and trim_text(spec.partition) == '存档'
+    and trim_text(spec.primary or spec.l1_tab) == '仓库'
+end
+
+local function find_archive_cost_item(options, item_name)
+  for _, candidate in ipairs((options and options.specs) or {}) do
+    if is_archive_stackable_cost_item(candidate, item_name) then
+      return candidate
+    end
+  end
+  return nil
+end
+
+local function get_archive_item_amount(item_spec)
+  return math.max(0, tonumber(item_spec and item_spec.owned_text or 0) or 0)
+end
+
+local function spend_archive_item(item_spec, amount)
+  if not item_spec then
+    return false, 0
+  end
+  local cost = math.max(0, tonumber(amount) or 0)
+  local current = get_archive_item_amount(item_spec)
+  if current < cost then
+    return false, current
+  end
+  item_spec.owned_text = tostring(current - cost)
+  return true, current - cost
+end
+
+local function get_action_cost_context(options, spec, button_def)
+  local tab = get_active_action_tab(options and options.state or nil)
+  local action = tostring(button_def and button_def.action or '')
+  local current_level = math.max(0, tonumber(spec and spec.runtime_level or 0) or 0)
+  local cost_cfg = ArchiveActionCosts.get(tab, action)
+  if not cost_cfg then
+    return {
+      tab = tab,
+      action = action,
+      has_cost = false,
+      enough = true,
+      cost = 0,
+      owned = 0,
+    }
+  end
+  local cost_item = find_archive_cost_item(options, cost_cfg.item_name)
+  local cost = ArchiveActionCosts.get_cost(tab, action, current_level) or 0
+  local owned = get_archive_item_amount(cost_item)
+  return {
+    tab = tab,
+    action = action,
+    has_cost = cost > 0,
+    enough = owned >= cost,
+    cost = cost,
+    owned = owned,
+    item_name = cost_cfg.item_name,
+    item_label = cost_cfg.item_label,
+    item_icon = cost_cfg.item_icon,
+    item_spec = cost_item,
+  }
+end
+
+local function get_ui_name(ui)
+  if not (is_ui_alive(ui) and ui.get_name) then
+    return ''
+  end
+  local ok, name = pcall(ui.get_name, ui)
+  return ok and tostring(name or '') or ''
+end
+
+local function get_ui_children(ui)
+  if not (is_ui_alive(ui) and ui.get_childs) then
+    return {}
+  end
+  local ok, children = pcall(ui.get_childs, ui)
+  if ok and type(children) == 'table' then
+    return children
+  end
+  return {}
+end
+
+local function sort_action_button_entries(entries)
+  table.sort(entries, function(left, right)
+    return tostring(left.name or '') < tostring(right.name or '')
+  end)
+end
+
+local function style_action_button_entry(entry)
+  if not entry then
+    return
+  end
+  set_ui_size(entry.root, ACTION_BUTTON_WIDTH, ACTION_BUTTON_HEIGHT)
+  set_z_order(entry.root, ACTION_BUTTON_Z + 2)
+  set_image(entry.bg, ACTION_BUTTON_IMAGE)
+  set_font_size(entry.label, 18)
+  set_text_alignment(entry.label, '中', '中')
+  set_intercepts(entry.root, true)
+  set_ui_size(entry.cost_icon, ACTION_COST_ICON_SIZE, ACTION_COST_ICON_SIZE)
+  set_pos(entry.cost_icon, 62, 18)
+  set_z_order(entry.cost_icon, ACTION_BUTTON_Z + 3)
+  set_intercepts(entry.cost_icon, false)
+  set_ui_size(entry.cost_text, ACTION_COST_TEXT_WIDTH, 20)
+  set_pos(entry.cost_text, 112, 18)
+  set_z_order(entry.cost_text, ACTION_BUTTON_Z + 3)
+  set_font_size(entry.cost_text, 14)
+  set_text_alignment(entry.cost_text, '左', '中')
+  set_intercepts(entry.cost_text, false)
+end
+
+local function layout_action_button_slots(shop, visible_count)
+  local entries = (shop and shop.action_button_slots) or {}
+  local count = math.max(0, tonumber(visible_count) or 0)
+  if count <= 0 then
+    return
+  end
+  local list_height = count * ACTION_BUTTON_HEIGHT + math.max(0, count - 1) * ACTION_BUTTON_GAP
+  set_ui_size(shop.action_button_root, ACTION_BUTTON_WIDTH, list_height)
+  set_ui_size(shop.action_button_list, ACTION_BUTTON_WIDTH, list_height)
+  set_pos(shop.action_button_list, ACTION_BUTTON_WIDTH * 0.5, list_height * 0.5)
+  set_z_order(shop.action_button_root, ACTION_BUTTON_Z)
+  set_z_order(shop.action_button_list, ACTION_BUTTON_Z + 1)
+  for index, entry in ipairs(entries) do
+    if index <= count then
+      local y = list_height - (index - 0.5) * ACTION_BUTTON_HEIGHT - (index - 1) * ACTION_BUTTON_GAP
+      set_ui_size(entry.root, ACTION_BUTTON_WIDTH, ACTION_BUTTON_HEIGHT)
+      set_pos(entry.root, ACTION_BUTTON_WIDTH * 0.5, y)
+      set_z_order(entry.root, ACTION_BUTTON_Z + 2)
+      set_z_order(entry.cost_icon, ACTION_BUTTON_Z + 3)
+      set_z_order(entry.cost_text, ACTION_BUTTON_Z + 3)
+    end
+  end
+end
+
+local function create_action_button_entry(root, name, is_dynamic)
+  if not is_ui_alive(root) then
+    return nil
+  end
+  local label = get_ui_child(root, '文本') or get_ui_child(root, 'label') or root
+  local bg = get_ui_child(root, 'bg') or get_ui_child(root, '图片') or root
+  local cost_icon = get_ui_child(root, '消耗图标') or get_ui_child(root, 'icon') or create_child(root, '图片')
+  local cost_text = get_ui_child(root, '消耗文本') or get_ui_child(root, 'cost') or create_child(root, '文本')
+  local entry = {
+    root = root,
+    bg = bg,
+    label = label,
+    cost_icon = cost_icon,
+    cost_text = cost_text,
+    name = name or get_ui_name(root),
+    is_dynamic = is_dynamic == true,
+  }
+  style_action_button_entry(entry)
+  return entry
+end
+
+local dispatch_action_button
+local try_pay_action_cost
+local build_not_enough_message
+
+local function resolve_action_button_region(player)
+  local root = resolve_ui(player, ACTION_BUTTON_ROOT_PATH)
+  local list = resolve_ui(player, ACTION_BUTTON_LIST_PATH)
+  if not is_ui_alive(list) then
+    list = root
+  end
+  return root, list
+end
+
+local function collect_static_action_buttons(player, list)
+  local entries = {}
+  if not is_ui_alive(list) then
+    return entries
+  end
+  for index = 1, 12 do
+    local path = ACTION_BUTTON_LIST_PATH .. '.按钮' .. tostring(index)
+    local button = resolve_ui(player, path)
+    if is_ui_alive(button) then
+      entries[#entries + 1] = create_action_button_entry(button, '按钮' .. tostring(index), false)
+    end
+  end
+  if #entries > 0 then
+    return entries
+  end
+  for _, child in ipairs(get_ui_children(list)) do
+    local name = get_ui_name(child)
+    if name:find('按钮', 1, true) then
+      local entry = create_action_button_entry(child, name, false)
+      if entry then
+        entries[#entries + 1] = entry
+      end
+    end
+  end
+  sort_action_button_entries(entries)
+  return entries
+end
+
+local function bind_action_button_click(ui, options, entry)
+  if not (entry and is_ui_alive(entry.root) and entry.root.add_fast_event) or entry.bound == true then
+    return
+  end
+  entry.bound = true
+  entry.root:add_fast_event('左键-按下', function()
+    local button_def = entry.def
+    if not button_def then
+      return
+    end
+    local state = options and options.state or nil
+    local visible_items = get_visible_items(state, options and options.specs or {})
+    local spec = find_best_spec(visible_items, state and state.archive_panel_shop_item or nil)
+    if not spec then
+      if options and options.message then
+        options.message('请先选择一个条目。')
+      end
+      return
+    end
+    if options and options.play_ui_click then
+      options.play_ui_click()
+    end
+    local paid, cost_ctx = try_pay_action_cost(options, spec, button_def)
+    if not paid then
+      if options and options.message then
+        options.message(build_not_enough_message(cost_ctx))
+      end
+      M.refresh(ui, options)
+      return
+    end
+    local feedback = dispatch_action_button(options, spec, button_def and button_def.action or '')
+    if options and options.persist_archive_items_state then
+      options.persist_archive_items_state()
+    end
+    if options and options.message and feedback ~= '' then
+      options.message(feedback)
+    end
+    M.refresh(ui, options)
+  end)
+end
+
+local function ensure_action_button_slots(ui, options, wanted_count)
+  wanted_count = math.min(wanted_count, 2)
+  local shop = ui and ui.shop or nil
+  if not shop then
+    return {}
+  end
+  local needs_resolve = type(shop.action_button_slots) ~= 'table'
+    or (wanted_count > 0 and (#shop.action_button_slots == 0 or not is_ui_alive(shop.action_button_list)))
+  if needs_resolve then
+    local root, list = resolve_action_button_region(options and options.player or nil)
+    shop.action_button_root = root
+    shop.action_button_list = list
+    shop.action_button_slots = collect_static_action_buttons(options and options.player or nil, list)
+    shop.dynamic_action_buttons = {}
+    for _, entry in ipairs(shop.action_button_slots) do
+      bind_action_button_click(ui, options, entry)
+    end
+  end
+  set_z_order(shop.action_button_root, ACTION_BUTTON_Z)
+  set_z_order(shop.action_button_list, ACTION_BUTTON_Z + 1)
+  layout_action_button_slots(shop, wanted_count)
+  return shop.action_button_slots
+end
+
+local function ensure_owned_text_snapshot(spec)
+  if spec and spec.runtime_base_owned_text == nil then
+    spec.runtime_base_owned_text = spec.owned_text
+  end
+end
+
+local function restore_owned_text(spec)
+  if spec and spec.runtime_base_owned_text ~= nil then
+    spec.owned_text = spec.runtime_base_owned_text
+  end
+end
+
+local function handle_wear_action(options, spec)
+  local specs = options and options.specs or {}
+  ensure_owned_text_snapshot(spec)
+  local next_state = not (spec.runtime_equipped == true)
+  for _, other in ipairs(specs or {}) do
+    if other ~= spec and tostring(other.primary or '') == tostring(spec.primary or '') and other.runtime_equipped == true then
+      other.runtime_equipped = false
+      restore_owned_text(other)
+    end
+  end
+  spec.runtime_equipped = next_state
+  if next_state then
+    spec.owned_text = '已佩戴'
+    return '已佩戴：' .. tostring(spec.title or '')
+  end
+  restore_owned_text(spec)
+  return '已取消佩戴：' .. tostring(spec.title or '')
+end
+
+local function handle_upgrade_action(spec)
+  spec.runtime_level = (tonumber(spec.runtime_level or 0) or 0) + 1
+  return string.format('%s 升级到 Lv.%d', tostring(spec.title or '条目'), spec.runtime_level)
+end
+
+local function handle_reroll_action(spec)
+  spec.runtime_reroll_count = (tonumber(spec.runtime_reroll_count or 0) or 0) + 1
+  local pool = {
+    '攻击 +5',
+    '生命 +50',
+    '暴击 +2%',
+    '冷却 -1%',
+    '最终伤害 +1%',
+  }
+  local bonus = pool[((spec.runtime_reroll_count - 1) % #pool) + 1]
+  spec.runtime_random_bonus = bonus
+  local lines = {}
+  for _, line in ipairs(spec.attr_lines or {}) do
+    lines[#lines + 1] = line
+  end
+  if #lines == 0 then
+    lines[1] = bonus
+  else
+    lines[1] = bonus
+  end
+  spec.attr_lines = lines
+  return string.format('%s 获得新词条：%s', tostring(spec.title or '条目'), bonus)
+end
+
+local function handle_use_action(spec)
+  if spec and spec.stackable == true then
+    local current = get_archive_item_amount(spec)
+    if current <= 0 then
+      return string.format('%s数量不足。', tostring(spec.title or '道具'))
+    end
+    spec.owned_text = tostring(current - 1)
+    return string.format('已使用：%s，剩余 %d', tostring(spec.title or '道具'), current - 1)
+  end
+  return '已使用：' .. tostring(spec and spec.title or '')
+end
+
+local function handle_buy_action(spec)
+  if spec and spec.stackable == true then
+    local next_count = get_archive_item_amount(spec) + 1
+    spec.owned_text = tostring(next_count)
+    return string.format('已获得：%s x1，当前 %d', tostring(spec.title or '道具'), next_count)
+  end
+  if spec and is_owned(spec) then
+    return '已拥有：' .. tostring(spec.title or '')
+  end
+  if spec then
+    spec.owned_text = '已拥有'
+  end
+  return '已购买：' .. tostring(spec and spec.title or '')
+end
+
+dispatch_action_button = function(options, spec, action_name)
+  local action = tostring(action_name or '')
+  if action == 'wear' then
+    return handle_wear_action(options, spec)
+  end
+  if action == 'upgrade' then
+    return handle_upgrade_action(spec)
+  end
+  if action == 'reroll' then
+    return handle_reroll_action(spec)
+  end
+  if action == 'use' then
+    return handle_use_action(spec)
+  end
+  if action == 'buy' then
+    return handle_buy_action(spec)
+  end
+  return '未实现动作：' .. action
+end
+
+try_pay_action_cost = function(options, spec, button_def)
+  local ctx = get_action_cost_context(options, spec, button_def)
+  if not ctx.has_cost then
+    return true, ctx
+  end
+  if not ctx.enough then
+    return false, ctx
+  end
+  local ok, left = spend_archive_item(ctx.item_spec, ctx.cost)
+  ctx.owned = left or ctx.owned
+  ctx.enough = ok
+  return ok, ctx
+end
+
+build_not_enough_message = function(ctx)
+  return string.format(
+    '%s不足，升级需要 %d，当前只有 %d。',
+    tostring(ctx.item_label or ctx.item_name or '材料'),
+    tonumber(ctx.cost or 0) or 0,
+    tonumber(ctx.owned or 0) or 0
+  )
+end
+
+local function refresh_action_button_cost(entry, options, spec, button_def)
+  local ctx = get_action_cost_context(options, spec, button_def)
+  local visible = ctx.has_cost == true
+  set_visible(entry.cost_icon, visible)
+  set_visible(entry.cost_text, visible)
+  if not visible then
+    set_text(entry.cost_text, '')
+    return ctx
+  end
+  set_image(entry.cost_icon, ctx.item_icon)
+  set_text(entry.cost_text, string.format('%d/%d', ctx.owned or 0, ctx.cost or 0))
+  set_text_color(entry.cost_text, ctx.enough and { 112, 232, 136, 255 } or { 255, 104, 92, 255 })
+  return ctx
+end
+
+local function refresh_action_buttons(ui, options, visible_items)
+  local shop = ui and ui.shop or nil
+  if not shop then
+    return
+  end
+  local state = options and options.state or nil
+  local section = tostring(state and state.archive_panel_section or '')
+  local button_defs, tab_name = get_action_buttons_for_state(state)
+  local show = (section == 'archive' or section == 'shop' or section == 'career') and #button_defs > 0
+  local active_button_count = math.min(show and #button_defs or 0, 2)
+  local entries = ensure_action_button_slots(ui, options, active_button_count)
+  set_visible(shop.action_button_root, show)
+  set_visible(shop.action_button_list, show)
+  set_z_order(shop.action_button_root, ACTION_BUTTON_Z)
+  set_z_order(shop.action_button_list, ACTION_BUTTON_Z + 1)
+  layout_action_button_slots(shop, active_button_count)
+  shop.action_button_signature = section .. '|' .. tab_name .. '|' .. tostring(#button_defs)
+  local selected_spec = find_best_spec(visible_items, state and state.archive_panel_shop_item or nil)
+  for index, entry in ipairs(entries) do
+    local def = button_defs[index]
+    local visible = show and def ~= nil
+    local enabled = visible and selected_spec ~= nil
+    entry.def = visible and def or nil
+    style_action_button_entry(entry)
+    set_visible(entry.root, visible)
+    set_z_order(entry.root, ACTION_BUTTON_Z + 2)
+    if def then
+      set_text(entry.label, tostring(def.label or '操作'))
+    else
+      set_text(entry.label, '')
+    end
+    local cost_ctx = refresh_action_button_cost(entry, options, selected_spec, def)
+    set_button_enable(entry.bg, visible)
+    local enough = (not cost_ctx) or cost_ctx.enough == true
+    set_image_color(entry.bg, (enabled and enough) and { 183, 137, 48, 244 } or { 64, 68, 80, 230 })
+    set_text_color(entry.label, enabled and { 255, 247, 232, 255 } or { 170, 176, 188, 255 })
+  end
 end
 
 local function pick_group_spec(items, group_name)
@@ -992,6 +1392,62 @@ local function pick_group_spec(items, group_name)
     end
   end
   return items and items[1] or nil
+end
+
+local function resolve_content_template_name(group_name, spec)
+  local override = tostring(spec and spec.content_template or '')
+  if override ~= '' then
+    return override
+  end
+  local primary = tostring(spec and spec.primary or group_name or '')
+  local fallback = ArchiveTabDefinitions.get_content_template(primary)
+  if fallback ~= '' then
+    return fallback
+  end
+  return '商品'
+end
+
+local function resolve_group_template_refs(player, panel_root, template_name)
+  local candidates = {}
+  local wanted = tostring(template_name or '')
+  if wanted ~= '' then
+    candidates[#candidates + 1] = wanted
+  end
+  if wanted ~= '商品' then
+    candidates[#candidates + 1] = '商品'
+  end
+  for _, name in ipairs(candidates) do
+    local cell_base = table.concat({ panel_root, '内容模板', name }, '.')
+    local refs = {
+      template_name = name,
+      icon = resolve_ui(player, cell_base .. '.image'),
+      label = resolve_ui(player, cell_base .. '.label'),
+      lv = resolve_ui(player, cell_base .. '.lv'),
+      num = resolve_ui(player, cell_base .. '.num'),
+    }
+    if is_ui_alive(refs.icon) or is_ui_alive(refs.label) or is_ui_alive(refs.lv) or is_ui_alive(refs.num) then
+      return refs
+    end
+  end
+  return {
+    template_name = wanted ~= '' and wanted or '商品',
+    icon = nil,
+    label = nil,
+    lv = nil,
+    num = nil,
+  }
+end
+
+local function bind_group_content_template(player, group, template_name)
+  if not (player and group and group.panel_root) then
+    return
+  end
+  local refs = resolve_group_template_refs(player, group.panel_root, template_name)
+  group.current_content_template = refs.template_name
+  group.icon = refs.icon
+  group.label = refs.label
+  group.lv = refs.lv
+  group.num = refs.num
 end
 
 local function select_spec_by_group(options, group_name)
@@ -1031,16 +1487,18 @@ local function build_content_groups(player)
       local base = table.concat({ panel_root, '内容列表', content_list }, '.')
       local root = resolve_ui(player, base)
       if is_ui_alive(root) then
-        local cell_base = table.concat({ panel_root, '内容模板', template_name }, '.')
+        local refs = resolve_group_template_refs(player, panel_root, template_name)
         groups[#groups + 1] = {
           name = '',
           content_list = content_list,
+          panel_root = panel_root,
           base = base,
           root = root,
-          icon = resolve_ui(player, cell_base .. '.image'),
-          label = resolve_ui(player, cell_base .. '.label'),
-          lv = resolve_ui(player, cell_base .. '.lv'),
-          num = resolve_ui(player, cell_base .. '.num'),
+          icon = refs.icon,
+          label = refs.label,
+          lv = refs.lv,
+          num = refs.num,
+          current_content_template = refs.template_name,
         }
         break
       end
@@ -1083,7 +1541,7 @@ local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_
       active_tab = get_primary(state)
     end
   end
-  local template_name = active_tab ~= '' and active_tab or groups[1].name
+  local group_name = active_tab ~= '' and active_tab or groups[1].name
 
   for _, group in ipairs(groups) do
     local active = in_shop_like_section and normalize_key(group.content_list) == normalize_key(active_grid_key)
@@ -1096,9 +1554,10 @@ local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_
       end
     end
     if active then
-      group.name = template_name
-      local spec = pick_group_spec(visible_items, template_name)
-      local tpl = get_group_template(options, template_name, visible_items)
+      group.name = group_name
+      local spec = pick_group_spec(visible_items, group_name)
+      bind_group_content_template(options and options.player or nil, group, resolve_content_template_name(group_name, spec))
+      local tpl = get_group_template(options, group_name, visible_items)
       local show_icon = tpl.icon == true
       local show_lv = tpl.lv == true
       local show_num = tpl.num == true
@@ -1114,14 +1573,14 @@ local function refresh_middle_shop_groups(shop, state, in_shop_section, visible_
 
       if is_ui_alive(group.label) then
         if show_icon then
-          set_text(group.label, spec and tostring(spec.title or template_name) or template_name)
+          set_text(group.label, spec and tostring(spec.title or group_name) or group_name)
         elseif show_lv then
           local quality = spec and tostring(spec.quality or '') or ''
           set_text(group.label, quality ~= '' and ('品质 ' .. quality) or '地图等级')
         elseif show_num then
-          set_text(group.label, spec and tostring(spec.title or template_name) or template_name)
+          set_text(group.label, spec and tostring(spec.title or group_name) or group_name)
         else
-          set_text(group.label, template_name)
+          set_text(group.label, group_name)
         end
       end
 
@@ -1532,11 +1991,10 @@ local function create_runtime_group_item(group, spec, index, options, total)
         icon:set_image(spec.icon or spec.default_icon or DEFAULT_ICON)
       end
       if icon.set_ui_size then
-        local icon_size = is_catalog_spec(spec) and 56 or 52
-        icon:set_ui_size(icon_size, icon_size)
+        icon:set_ui_size(52, 52)
       end
       if icon.set_pos then
-        icon:set_pos(42, is_catalog_spec(spec) and 48 or 49)
+        icon:set_pos(42, 49)
       end
     end
     if tpl.label ~= false then
@@ -1936,43 +2394,30 @@ function M.refresh(ui, options)
   if in_shop_like_section then
     refresh_group_dynamic_items(ui, shop, options, visible_items)
   end
+  refresh_action_buttons(ui, options, visible_items)
 
   if shop.tip then
     local tip = shop.tip
-    set_visible(tip.root, in_shop_section or in_career_section)
+    set_visible(tip.root, in_shop_like_section)
+    set_z_order(tip.root, 10000)
     if in_shop_section or in_archive_section then
       local selected_spec = find_best_spec(visible_items, state.archive_panel_shop_item)
       if selected_spec then
         refresh_tip(state, shop, selected_spec)
       else
         state.archive_panel_shop_item = nil
-      end
-      if not selected_spec then
-        set_text(tip.title, '')
-        set_text(tip.owned, '')
-        set_text(tip.detail_title, '')
-        set_text(tip.detail, '')
-        set_text(tip.special_title, '')
-        set_text(tip.special, '')
-        set_text(tip.obtain_title, '')
-        set_text(tip.obtain, '')
+        refresh_tab_tip(state, shop, section)
       end
     elseif in_career_section then
       local selected_spec = find_best_spec(visible_items, state.archive_panel_shop_item)
       if selected_spec then
         refresh_tip(state, shop, selected_spec)
       else
+        state.archive_panel_shop_item = nil
         refresh_career_tip(state, shop)
       end
     else
-      set_text(tip.title, '')
-      set_text(tip.owned, '')
-      set_text(tip.detail_title, '')
-      set_text(tip.detail, '')
-      set_text(tip.special_title, '')
-      set_text(tip.special, '')
-      set_text(tip.obtain_title, '')
-      set_text(tip.obtain, '')
+      clear_tip(tip)
     end
   end
 
@@ -2016,6 +2461,11 @@ function M.ensure(ui, options)
     deferred_refresh_signature = nil,
     last_render_signature = nil,
     middle_groups = {},
+    action_button_root = nil,
+    action_button_list = nil,
+    action_button_slots = nil,
+    dynamic_action_buttons = {},
+    action_button_signature = nil,
   }
 
   local content_groups = build_content_groups(player)

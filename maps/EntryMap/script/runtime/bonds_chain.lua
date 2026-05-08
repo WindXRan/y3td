@@ -9,6 +9,7 @@ local BondModifierPool = require 'data.tables.bond.bond_modifier_pool'
 local BondModifierEffects = require 'runtime.bond_modifier_effects'
 local SkillRuntimeTuning = require 'data.tables.skill.skill_runtime_tuning'
 local SkillVisuals = require 'data.tables.skill.skill_visuals'
+local TipBlockStyle = require 'data.tables.tip_block_style'
 
 local NODE_LIST = BondNodes.list
 local NODE_BY_ID = BondNodes.by_id
@@ -1149,6 +1150,7 @@ local function build_owned_group_tip_payload(group_def)
     bonus_lines = tip_model.bonus_lines,
     effect_area_bonus_count = math.min(3, #tip_model.bonus_lines),
     tip_model = tip_model,
+    detail_blocks = TipBlockStyle.build_bond_blocks(tip_model),
   }
 end
 
@@ -1186,6 +1188,7 @@ local function build_owned_node_tip_payload(state, node_def)
     bonus_lines = tip_model.bonus_lines,
     effect_area_bonus_count = math.min(3, #tip_model.bonus_lines),
     tip_model = tip_model,
+    detail_blocks = TipBlockStyle.build_bond_blocks(tip_model),
   }
 end
 

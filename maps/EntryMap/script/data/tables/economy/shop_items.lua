@@ -1,6 +1,7 @@
 ﻿local EditorJsonTable = require 'data.tables.editor_json_table'
 local CsvLoader = require 'data.csv_loader'
 local ArchiveTabDefinitions = require 'data.tables.archive_tab_definitions'
+local TipBlockStyle = require 'data.tables.tip_block_style'
 
 local M = {}
 
@@ -199,22 +200,12 @@ local function normalize_partition(raw_partition, tab1)
   return ArchiveTabDefinitions.get_default_partition_for_primary(tab1)
 end
 
-local function normalize_render_mode(raw)
+local function normalize_content_template(raw)
   local value = trim(raw)
-  if value == '' then
+  if value == '' or is_placeholder_text(value) then
     return ''
   end
-  local alias = {
-    ['icon'] = 'icon',
-    ['图标'] = 'icon',
-    ['icon_num'] = 'icon_num',
-    ['图标+数量'] = 'icon_num',
-    ['num'] = 'num',
-    ['数量'] = 'num',
-    ['lv'] = 'lv',
-    ['等级'] = 'lv',
-  }
-  return alias[value] or ''
+  return value
 end
 
 local function resolve_shop_tab1(row)
@@ -332,6 +323,7 @@ for index, source in ipairs(source_rows) do
 
     local key = string.format('shop_item_%s_%03d_%03d', source.table_name or 'unknown', source.row_index or 0, index)
     local attr_lines = build_attr_lines(row.attr or row['属性'], row.value or row['数值'])
+    local detail_blocks = TipBlockStyle.build_shop_item_blocks(attr_lines, special_effect, obtain)
     local image_icon, image_bg = parse_icon_bg_from_image_field(row.image or row['图片'])
     local icon = read_first_number(row, { '图标', 'icon', 'Icon', 'ICON', 'icon_id', '图标ID', 'icon_id_res', '图片icon' })
       or image_icon
@@ -340,7 +332,7 @@ for index, source in ipairs(source_rows) do
       or image_bg
       or DEFAULT_BG
     local partition = normalize_partition(row.partition or row['分区'] or row['区域'] or '', tab1)
-    local render_mode = normalize_render_mode(row.render_mode or row['render_mode'] or row['渲染模式'])
+    local content_template = normalize_content_template(row.content_template or row['content_template'] or row['内容模板'])
 
     local spec = {
       key = key,
@@ -364,11 +356,12 @@ for index, source in ipairs(source_rows) do
       l2_tab = tab2,
       l2_tabs = tab2_list,
       partition = partition,
-      render_mode = render_mode,
+      content_template = content_template,
       primary = tab1,
       category = tab2,
       categories = tab2_list,
       attr_lines = attr_lines,
+      detail_blocks = detail_blocks,
       line_1 = attr_lines[1] or '暂无属性',
       line_2 = attr_lines[2] or special_effect,
       line_3 = obtain,
@@ -410,4 +403,3 @@ M.primary_tabs = primary_tabs
 M.categories_by_primary = categories_by_primary
 
 return M
-

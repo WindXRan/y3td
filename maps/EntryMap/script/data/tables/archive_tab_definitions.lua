@@ -48,6 +48,22 @@ local function split_pipe(raw)
   return result
 end
 
+local function parse_action_buttons(raw)
+  local result = {}
+  for _, part in ipairs(split_pipe(raw)) do
+    local label, action = tostring(part):match('^(.-)@([^@]+)$')
+    label = trim(label)
+    action = trim(action)
+    if label ~= '' then
+      result[#result + 1] = {
+        label = label,
+        action = action ~= '' and action or label,
+      }
+    end
+  end
+  return result
+end
+
 local function load_from_csv()
   local rows = CsvLoader.read_rows_optional('data_csv/outgame/outgame_archive_tabs.csv')
 
@@ -77,22 +93,17 @@ local function load_from_csv()
         if #secondaries > 0 then
           secondary_tabs_map[name] = secondaries
         end
-        -- 解析渲染配置
-        local render_mode = trim(row.render_mode)
-        if render_mode == '' then
-          render_mode = 'group'
-        end
         local label_mode = trim(row.label_mode)
         if label_mode == '' then
           label_mode = 'title'
         end
         render_configs[name] = {
-          render_mode = render_mode,
           label_mode = label_mode,
           content_node = trim(row.content_node),
           tip_content = split_pipe(row.tip_content),
           content_template = trim(row.content_template),
           content_list = trim(row.content_list),
+          action_buttons = parse_action_buttons(row.action_buttons),
         }
       end
     end
@@ -248,19 +259,13 @@ end
 -- 获取一级页签的完整渲染配置
 function M.get_tab_render_config(primary)
   return RENDER_CONFIGS[primary] or {
-    render_mode = 'group',
     label_mode = 'title',
     content_node = '通用内容',
     tip_content = {},
     content_template = '',
     content_list = '',
+    action_buttons = {},
   }
-end
-
--- 获取一级页签的渲染模式
-function M.get_render_mode(primary)
-  local cfg = RENDER_CONFIGS[primary]
-  return (cfg and cfg.render_mode) or 'group'
 end
 
 -- 获取一级页签的内容节点名
@@ -289,6 +294,11 @@ end
 function M.get_tip_content(primary)
   local cfg = RENDER_CONFIGS[primary]
   return (cfg and cfg.tip_content) or {}
+end
+
+function M.get_action_buttons(primary)
+  local cfg = RENDER_CONFIGS[primary]
+  return (cfg and cfg.action_buttons) or {}
 end
 
 -- 导出数据结构供外部访问
