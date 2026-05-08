@@ -441,6 +441,18 @@ function M.create(env)
   
     return table.concat(lines, '\n')
   end
+
+  local function disable_native_basic_attack_ability(ability)
+    if not ability or not ability:is_exist() then
+      return
+    end
+    pcall(function()
+      ability:stop_cast()
+    end)
+    pcall(function()
+      ability:disable()
+    end)
+  end
   
   local function sync_basic_attack_ability()
     if not STATE.hero or not STATE.hero:is_exist() then
@@ -462,6 +474,7 @@ function M.create(env)
     end
   
     local skill = get_basic_attack_skill()
+    disable_native_basic_attack_ability(ability)
     ability:set_range(get_current_basic_attack_range())
   
     if skill then
@@ -2374,7 +2387,6 @@ function M.create(env)
     if style_flags.multishot <= 0 then
       multishot_hit_particle = extra_hit_particle
     end
-    local damage_ability = STATE.hero_common_attack and STATE.hero_common_attack:is_exist() and STATE.hero_common_attack or nil
     local function with_projectile_key(base_vfx, projectile_key)
       if not base_vfx then
         return nil
@@ -2564,7 +2576,7 @@ function M.create(env)
           end
         end
       end
-    end, damage_ability)
+    end)
     if #multishot_targets > 0 and multishot_ratio > 0 then
       local multishot_audio_played = false
       for _, unit in ipairs(multishot_targets) do
@@ -2592,7 +2604,7 @@ function M.create(env)
             common_attack = false,
           })
           apply_armor_break_on_hit(unit)
-        end, damage_ability)
+        end)
       end
     end
     end)
@@ -2802,6 +2814,7 @@ function M.create(env)
     if STATE.basic_attack_enabled == false then
       return
     end
+    disable_native_basic_attack_ability(STATE.hero_common_attack)
   
     skill.cooldown_remaining = math.max(0, (skill.cooldown_remaining or 0) - dt)
     if skill.cooldown_remaining > 0 then
