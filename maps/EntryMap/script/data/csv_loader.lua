@@ -60,15 +60,15 @@ local function parse_csv_line_fast(line)
   local current = {}
 
   while i <= len do
-    local c = line:byte(i)
-    if c == 34 then
+    local c = line:sub(i, i)
+    if c == '"' then
       i = i + 1
       while i <= len do
-        local next_c = line:byte(i)
-        if next_c == 34 then
-          local peek = line:byte(i + 1)
-          if peek == 34 then
-            current[#current + 1] = 34
+        local next_c = line:sub(i, i)
+        if next_c == '"' then
+          local peek = line:sub(i + 1, i + 1)
+          if peek == '"' then
+            current[#current + 1] = '"'
             i = i + 2
           else
             break
@@ -79,12 +79,12 @@ local function parse_csv_line_fast(line)
         end
       end
       i = i + 1
-      if line:byte(i) == 44 then
+      if line:sub(i, i) == ',' then
         result[#result + 1] = table.concat(current)
         current = {}
         i = i + 1
       end
-    elseif c == 44 then
+    elseif c == ',' then
       result[#result + 1] = table.concat(current)
       current = {}
       i = i + 1

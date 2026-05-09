@@ -455,6 +455,9 @@ function M.create(env)
   end
 
   for _, stage_def in ipairs(STAGE_LIST) do
+    if not stage_def.stage_id then
+      goto continue
+    end
     local chapter_id = select(1, parse_stage_id(stage_def.stage_id))
     chapter_id = chapter_id or 1
     if not STAGES_BY_CHAPTER[chapter_id] then
@@ -463,6 +466,7 @@ function M.create(env)
     end
     STAGES_BY_CHAPTER[chapter_id][#STAGES_BY_CHAPTER[chapter_id] + 1] = stage_def
     MAX_CHAPTER_DIFFICULTY_COUNT = math.max(MAX_CHAPTER_DIFFICULTY_COUNT, #STAGES_BY_CHAPTER[chapter_id])
+    ::continue::
   end
   table.sort(CHAPTER_LIST)
 
@@ -522,7 +526,9 @@ function M.create(env)
         PAGES_BY_CHAPTER[chapter_id][#PAGES_BY_CHAPTER[chapter_id] + 1] = page_def
         MAX_CHAPTER_PAGE_COUNT = math.max(MAX_CHAPTER_PAGE_COUNT, #PAGES_BY_CHAPTER[chapter_id])
         for _, stage_def in ipairs(page_stages) do
-          PAGE_BY_STAGE_ID[stage_def.stage_id] = page_def
+          if stage_def.stage_id then
+            PAGE_BY_STAGE_ID[stage_def.stage_id] = page_def
+          end
         end
       end
     end

@@ -34,7 +34,6 @@ local RARITY_NAME_MAP = {
 local evolutions_by_id = hero_evolutions.by_id or {}
 local roster_by_unit_id = game_tables_hero_roster.by_unit_id or {}
 local form_skills_lookup = hero_form_skills.by_hero_id or {}
-local function is_ui_alive(u) return ui_root.is_alive(u) end;
 
 function M.create(params)
   local STATE = params.STATE;
@@ -66,21 +65,41 @@ function M.create(params)
   local get_bond_slot_icon_fn = params.get_bond_slot_icon;
   local get_status_effects_fn = params.get_bottom_status_effect_entries;
   local play_ui_click_fn = params.play_ui_click;
-  local safe_ui_call
-  local set_ui_visible
-  local set_ui_text
-  local set_ui_text_color
-  local set_ui_font_size
-  local set_ui_text_alignment
-  local set_ui_image
-  local set_ui_image_color
-  local set_ui_size
-  local set_ui_anchor
-  local set_ui_pos
-  local set_ui_progress
-  local bind_ui_model_unit
-  local apply_ui_model_camera
-  local set_ui_pos_percent
+  -- UI 工具函数层 (from ui.hud.hud_core)
+  local core = hud_core.create({
+    y3 = y3,
+    ui_root = ui_root,
+    STATE = STATE,
+    get_player_fn = get_player_fn,
+    HERO_MODEL_FRAME_SIZE = HERO_MODEL_FRAME_SIZE,
+    HERO_MODEL_CAMERA = HERO_MODEL_CAMERA,
+  })
+  local is_ui_alive = core.is_ui_alive
+  local get_player = core.get_player
+  local get_hud_state = core.get_hud_state
+  local ensure_ui_preferences = core.ensure_ui_preferences
+  local resolve_ui_node = core.resolve_ui_node
+  local resolve_first_ui_node = core.resolve_first_ui_node
+  local safe_ui_call = core.safe_ui_call
+  local set_ui_visible = core.set_ui_visible
+  local set_ui_text = core.set_ui_text
+  local set_ui_text_color = core.set_ui_text_color
+  local set_ui_font_size = core.set_ui_font_size
+  local set_ui_text_alignment = core.set_ui_text_alignment
+  local set_ui_image = core.set_ui_image
+  local set_ui_image_color = core.set_ui_image_color
+  local set_ui_size = core.set_ui_size
+  local set_ui_anchor = core.set_ui_anchor
+  local set_ui_pos = core.set_ui_pos
+  local set_ui_progress = core.set_ui_progress
+  local bind_ui_model_unit = core.bind_ui_model_unit
+  local apply_ui_model_camera = core.apply_ui_model_camera
+  local set_ui_pos_percent = core.set_ui_pos_percent
+  local format_short_number = core.format_short_number
+  local format_time_mmss = core.format_time_mmss
+  local normalize_percent_value = core.normalize_percent_value
+  local format_percent = core.format_percent
+  local format_percent_delta = core.format_percent_delta
   local toggle_big_cursor
   local toggle_damage_text_visible
   local toggle_hit_effects_visible
@@ -90,222 +109,6 @@ function M.create(params)
   local refresh_hud
   local set_hud_visible
   local show_runtime_tip_panel
-  local function get_player() return get_player_fn and get_player_fn() or nil end;
-
-  local function ensure_ui_preferences()
-    STATE.ui_preferences = STATE.ui_preferences or {}
-    local ui_prefs = STATE.ui_preferences;
-    if ui_prefs.hide_damage_text == nil then ui_prefs.hide_damage_text = false end;
-
-    if ui_prefs.hide_hit_effects == nil then ui_prefs.hide_hit_effects = false end;
-
-    if ui_prefs.big_cursor == nil then ui_prefs.big_cursor = false end;
-
-    if ui_prefs.soft_paused == nil then ui_prefs.soft_paused = false end;
-
-    return ui_prefs
-  end;
-
-  local function get_hud_state()
-    STATE.runtime_hud = STATE.runtime_hud or {
-      nodes = {},
-      bound_events = {},
-      visible = true,
-      attr_panel_visible = false,
-      tip_title_text = '',
-      tip_body_text = '',
-      tip_panel = nil,
-      tip_panel_title = nil,
-      tip_panel_body = nil,
-      tip_expires_at = 0,
-      hover_tip_panel = nil,
-      hover_tip_panel_icon_bg = nil,
-      hover_tip_panel_icon = nil,
-      hover_tip_panel_title = nil,
-      hover_tip_panel_subtitle = nil,
-      hover_tip_panel_body = nil,
-      hover_tip_visible = false,
-      bond_tip_panel = nil,
-      bond_tip_root = nil,
-      bond_tip_icon = nil,
-      bond_tip_title = nil,
-      bond_tip_have = nil,
-      bond_tip_swallow = nil,
-      bond_tip_detail_body = nil,
-      bond_tip_special_title = nil,
-      bond_tip_special_body = nil,
-      bond_tip_skill_title = nil,
-      bond_tip_skill_body = nil,
-      bond_tip_set_title = nil,
-      bond_tip_visible = false,
-      attr_panel = nil,
-      attr_panel_title = nil,
-      attr_panel_body = nil,
-      attr_panel_hint = nil,
-      big_cursor = nil,
-      hero_model_ui = nil,
-      buff_prefab = nil,
-      buff_prefab_root = nil,
-      buff_list_comp = nil
-    }
-    return STATE.runtime_hud
-  end;
-
-  local function resolve_ui_node(_)
-    local hud_state = get_hud_state()
-    local cached_node = hud_state.nodes[_]
-    if is_ui_alive(cached_node) then return cached_node end;
-
-    local player = get_player()
-    if not player then return nil end;
-
-    local u = ui_root.resolve_ui(y3, player, _)
-    hud_state.nodes[_] = u;
-    return u
-  end;
-
-  local function resolve_first_ui_node(name_list)
-    local hud_state = get_hud_state()
-    local cache_key = '__first__:' .. table.concat(name_list or {}, '|')
-    local cached_node = hud_state.nodes[cache_key]
-    if is_ui_alive(cached_node) then return cached_node end;
-
-    local player = get_player()
-    if not player then return nil end;
-
-    local u = ui_root.resolve_first_ui(y3, player, name_list)
-    hud_state.nodes[cache_key] = u;
-    return u
-  end;
-
-  local function safe_ui_call(u, method_name, ...)
-    if not is_ui_alive(u) then return false end;
-
-    local method = u[method_name]
-    if type(method) ~= 'function' then return false end;
-
-    return pcall(method, u, ...)
-  end;
-
-  local function set_ui_visible(u, visible)
-    safe_ui_call(u, 'set_visible',
-      visible == true)
-  end;
-
-  local function set_ui_text(u, text)
-    safe_ui_call(u, 'set_text', text or '')
-  end;
-
-  local function set_ui_text_color(u, color)
-    if color then safe_ui_call(u, 'set_text_color', color[1], color[2], color[3], color[4] or 255) end
-  end;
-
-  local function set_ui_font_size(u, font_size)
-    if font_size then safe_ui_call(u, 'set_font_size', font_size) end
-  end;
-
-  local function set_ui_text_alignment(u, h_align, v_align)
-    if h_align and v_align then safe_ui_call(u, 'set_text_alignment', h_align, v_align) end
-  end;
-
-  local function set_ui_image(u, image_id)
-    if image_id ~= nil then safe_ui_call(u, 'set_image', image_id) end
-  end;
-
-  local function set_ui_image_color(u, color)
-    if color then safe_ui_call(u, 'set_image_color', color[1], color[2], color[3], color[4] or 255) end
-  end;
-
-  local function set_ui_size(u, width, height)
-    if width and height then safe_ui_call(u, 'set_ui_size', width, height) end
-  end;
-
-  local function set_ui_anchor(u, ar, as)
-    if ar ~= nil and as ~= nil then safe_ui_call(u, 'set_anchor', ar, as) end
-  end;
-
-  local function set_ui_pos(u, ar, as)
-    if ar ~= nil and as ~= nil then safe_ui_call(u, 'set_pos', ar, as) end
-  end;
-
-  local function set_ui_progress(u, av, aw)
-    if not is_ui_alive(u) then return end;
-
-    local ax = math.max(1, math.floor((tonumber(aw) or 1) + 0.5))
-    local ay = math.max(0, math.min(ax, math.floor((tonumber(av) or 0) + 0.5)))
-    safe_ui_call(u, 'set_max_progress_bar_value', ax)
-    safe_ui_call(u, 'set_current_progress_bar_value', ay, 0)
-  end;
-
-  local function bind_ui_model_unit(u, aA, aB, aC, aD)
-    if aA and aA.is_exist and not aA:is_exist() then aA = nil end;
-
-    if not is_ui_alive(u) or not aA then return end;
-    safe_ui_call(u, 'set_ui_model_unit', aA,
-      aB == true,
-      aC == true,
-      aD == true)
-  end;
-
-  local function apply_ui_model_camera(u, aF)
-    if not is_ui_alive(u) or not aF then return end;
-
-    if aF.focus then safe_ui_call(u, 'set_ui_model_focus_pos', aF.focus[1], aF.focus[2], aF.focus[3]) end;
-
-    if aF.fov then safe_ui_call(u, 'change_showroom_fov', aF.fov) end;
-
-    if aF.camera_pos then safe_ui_call(u, 'change_showroom_cposition', aF.camera_pos[1], aF.camera_pos[2],
-        aF.camera_pos[3]) end;
-
-    if aF.camera_rot then safe_ui_call(u, 'change_showroom_crotation', aF.camera_rot[1], aF.camera_rot[2],
-        aF.camera_rot[3]) end;
-
-    if aF.background then safe_ui_call(u, 'set_show_room_background_color', aF.background[1], aF.background[2],
-        aF.background[3], aF.background[4] or 0) end
-  end;
-
-  local function set_ui_pos_percent(u, ar, as)
-    local player = get_player()
-    if not player or not is_ui_alive(u) or not GameAPI or not GameAPI.set_ui_comp_pos_percent then return end;
-    pcall(GameAPI.set_ui_comp_pos_percent, player.handle, u.handle, ar, as)
-  end;
-
-  local function format_short_number(aI)
-    local aJ = tonumber(aI) or 0;
-    local aK = math.abs(aJ)
-    if aK >= 1000000 then
-      local ac = string.format('%.1fm', aJ / 1000000)
-      return ac:gsub('%.0m$', 'm')
-    end;
-
-    if aK >= 10000 then
-      local ac = string.format('%.1fk', aJ / 1000)
-      return ac:gsub('%.0k$', 'k')
-    end;
-
-    return tostring(math.floor(aJ + 0.5))
-  end;
-
-  local function format_time_mmss(aM)
-    local aN = math.max(0, math.floor((tonumber(aM) or 0) + 0.5))
-    local aO = aN // 60;
-    local aP = aN % 60;
-    return string.format('%02d:%02d', aO, aP)
-  end;
-
-  local function normalize_percent_value(aI)
-    local aJ = tonumber(aI) or 0;
-    if math.abs(aJ) <= 1 then aJ = aJ * 100 end;
-
-    return aJ
-  end;
-
-  local function format_percent(aI) return string.format('%d%%', math.floor(normalize_percent_value(aI) + 0.5)) end;
-
-  local function format_percent_delta(aT, aU)
-    local aN = normalize_percent_value(aT) + normalize_percent_value(aU)
-    return string.format('%+d%%', math.floor(aN + (aN >= 0 and 0.5 or -0.5)))
-  end;
 
   local function format_signed_number(aI)
     local aJ = tonumber(aI) or 0;
@@ -981,17 +784,17 @@ function M.create(params)
     end
   end;
 
-  local function get_attr_row_components(cH)
+  local function get_attr_row_components(row_index)
     local row_name = ATTR_ROW_NAMES[row_index]
     if not row_name then return {} end;
 
-    local cJ = 'BattleBottomHUD.layout.left_station.player_attr_list.' .. cI;
+    local path = 'BattleBottomHUD.layout.left_station.player_attr_list.' .. row_name;
     return {
-      root = resolve_ui_node(cJ),
-      label = resolve_ui_node(cJ .. '.label'),
-      value = resolve_ui_node(cJ .. '.value'),
-      delta = resolve_ui_node(cJ .. '.delta'),
-      icon = resolve_ui_node(cJ .. '.icon')
+      root = resolve_ui_node(path),
+      label = resolve_ui_node(path .. '.label'),
+      value = resolve_ui_node(path .. '.value'),
+      delta = resolve_ui_node(path .. '.delta'),
+      icon = resolve_ui_node(path .. '.icon')
     }
   end;
 
@@ -1560,9 +1363,10 @@ function M.create(params)
       hide_all_tips()
     end)
     for bL = 1, 3 do
-      bind_hover_handlers('battle_consumable_hover_' .. tostring(bL),
-        resolve_ui_node(string.format('BattleBottomHUD.layout.right_station.consumable_panel.slot_%d', bL)), function()
-        show_consumable_tip(bL)
+      local slot_index = bL
+      bind_hover_handlers('battle_consumable_hover_' .. tostring(slot_index),
+        resolve_ui_node(string.format('BattleBottomHUD.layout.right_station.consumable_panel.slot_%d', slot_index)), function()
+        show_consumable_tip(slot_index)
       end, function()
         hide_all_tips()
       end)
@@ -1581,19 +1385,21 @@ function M.create(params)
       refresh_hud()
     end)
     for bL = 1, 6 do
-      bind_hover_handlers('battle_loadout_hover_' .. tostring(bL),
-        resolve_ui_node(string.format('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_%d', bL)),
+      local slot_index = bL
+      bind_hover_handlers('battle_loadout_hover_' .. tostring(slot_index),
+        resolve_ui_node(string.format('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_%d', slot_index)),
         function()
-          show_loadout_tip(bL)
+          show_loadout_tip(slot_index)
         end, function()
         hide_all_tips()
       end)
     end;
 
     for bL = 1, EVOLUTION_SLOT_COUNT do
-      bind_hover_handlers('battle_skill_hover_' .. tostring(bL),
-        resolve_combat_module_ui(string.format('skill_bar.skill_slot_%d', bL)), function()
-        show_evolution_tip(bL)
+      local slot_index = bL
+      bind_hover_handlers('battle_skill_hover_' .. tostring(slot_index),
+        resolve_combat_module_ui(string.format('skill_bar.skill_slot_%d', slot_index)), function()
+        show_evolution_tip(slot_index)
       end, function()
         hide_tip_panel()
       end)
@@ -1601,20 +1407,21 @@ function M.create(params)
 
     for slot_index = 1, BUFF_SLOT_COUNT do
       bind_hover_handlers('battle_buff_hover_' .. tostring(slot_index),
-        resolve_combat_module_ui(string.format('buff_row.buff_slot_%d', bL)), function()
-        show_buff_tip(bL)
+        resolve_combat_module_ui(string.format('buff_row.buff_slot_%d', slot_index)), function()
+        show_buff_tip(slot_index)
       end, function()
         hide_tip_panel()
       end)
     end;
 
     for bL = 1, BOND_CARD_SLOT_COUNT do
+      local card_index = bL
       local dA3 = string.format('BattleBottomHUD.layout.right_station.card_panel.card_slot_%d', bL)
       local dA4 = resolve_ui_node(dA3)
       local function show_bond_tip_for_slot()
         local hud_state = get_hud_state()
         hud_state.bond_tip_hover_token = (hud_state.bond_tip_hover_token or 0) + 1;
-        show_bond_slot_tip(bL)
+        show_bond_slot_tip(card_index)
       end;
       local function hide_bond_tip_after_delay() schedule_tip_hide(0.06) end;
       bind_hover_handlers('battle_bond_hover_' .. tostring(bL), dA4, show_bond_tip_for_slot, hide_bond_tip_after_delay)
@@ -1674,12 +1481,12 @@ function M.create(params)
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_swallow'),
       tostring(STATE.bond_runtime and table_count(STATE.bond_runtime.completed_root_sets) or 0))
     for row_index = 2, 4 do
-      set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_name_%d', cH)), '-')
-      set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_power_%d', cH)), '-')
-      set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_state_%d', cH)), '-')
-      set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_level_%d', cH)), '-')
-      set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_equip_%d', cH)), '-')
-      set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_swallow_%d', cH)), '-')
+      set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_name_%d', row_index)), '-')
+      set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_power_%d', row_index)), '-')
+      set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_state_%d', row_index)), '-')
+      set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_level_%d', row_index)), '-')
+      set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_equip_%d', row_index)), '-')
+      set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_swallow_%d', row_index)), '-')
     end
   end;
 
@@ -1734,13 +1541,13 @@ function M.create(params)
     local dH = get_hero_unit()
     local dI = resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_portrait')
     local model_ui = get_or_create_hero_model_ui()
-    local dJ = is_ui_alive(cR) and dH ~= nil; set_ui_visible(dI, not dJ)
+    local dJ = is_ui_alive(model_ui) and dH ~= nil; set_ui_visible(dI, not dJ)
     if dJ then
-      set_ui_visible(cR, true)
-      bind_ui_model_unit(cR, dH, false, true, true)
-      apply_ui_model_camera(cR, HERO_MODEL_CAMERA)
+      set_ui_visible(model_ui, true)
+      bind_ui_model_unit(model_ui, dH, false, true, true)
+      apply_ui_model_camera(model_ui, HERO_MODEL_CAMERA)
     else
-      set_ui_visible(cR, false)
+      set_ui_visible(model_ui, false)
       set_ui_image(dI, get_hero_icon())
     end;
     set_ui_text(resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_name'), get_hero_name())
@@ -1752,10 +1559,10 @@ function M.create(params)
     set_ui_visible(resolve_combat_module_ui('exp_bar'), true)
     local exp_progress = math.max(0, math.min(1, bf / math.max(1, bg)))
     local dL = has_pending_evolution_choice()
-    local bar_width = math.max(1, math.floor(EXP_BAR_MAX_WIDTH * dK + 0.5))
+    local bar_width = math.max(1, math.floor(EXP_BAR_MAX_WIDTH * exp_progress + 0.5))
     set_ui_text(resolve_combat_module_ui('exp_bar.level_label'), string.format('等级：%d', get_hero_level()))
-    set_ui_size(resolve_combat_module_ui('exp_bar.fill'), dM, EXP_BAR_HEIGHT)
-    set_ui_pos(resolve_combat_module_ui('exp_bar.fill'), o + dM / 2, 12)
+    set_ui_size(resolve_combat_module_ui('exp_bar.fill'), bar_width, EXP_BAR_HEIGHT)
+    set_ui_pos(resolve_combat_module_ui('exp_bar.fill'), EXP_BAR_X_OFFSET + bar_width / 2, 12)
     set_ui_image_color(resolve_combat_module_ui('exp_bar.fill'), dL and { 255, 177, 37, 255 } or { 210, 38, 178, 255 })
     set_ui_image_color(resolve_combat_module_ui('exp_bar.fill_glow'), dL and { 255, 191, 58, 150 } or { 255, 86, 220, 72 })
     set_ui_image_color(resolve_combat_module_ui('exp_bar.evolve_glow'), dL and { 255, 173, 45, 210 } or { 255, 173, 45, 0 })
