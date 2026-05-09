@@ -508,6 +508,17 @@ function M.create(env)
           pcall(proj.remove, proj)
         end
       end
+      local function cleanup_proj_after_first_hit()
+        if first_hit then
+          return
+        end
+        first_hit = true
+        if y3 and y3.ltimer and y3.ltimer.wait then
+          y3.ltimer.wait(2.5, cleanup_proj)
+        else
+          pcall(proj.set_time, proj, 2.5)
+        end
+      end
       pcall(proj.set_height, proj, proj_height)
       local fx_scale = impact_fx_scale(skill)
       spawn_particle(y3, cast_ctx.caster, visual_key(skill, 'cast'), fx_scale * 0.95, 0.20, 24)
@@ -529,10 +540,9 @@ function M.create(env)
             return
           end
           hit_units[hit_unit] = true
-          -- 命中首个敌人后重置存活时间为 pierce_duration
-          if not first_hit and proj and proj:is_exist() then
-            first_hit = true
-            pcall(proj.set_time, proj, pierce_duration)
+          -- 命中首个敌人后继续保留 2.5 秒再清理。
+          if proj and proj:is_exist() then
+            cleanup_proj_after_first_hit()
           end
           local amount = damage_per_hit
           if skill_damage_api.single(hit_unit, amount, skill.damage_type, {
