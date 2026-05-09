@@ -26,29 +26,6 @@ local get_hero_attr
 local get_attack_value
 local get_max_hp_value
 
--- 热更早期兜底：旧闭包可能在本文件完成加载前按全局名调用。
-if type(_G.get_hero) ~= 'function' then
-  _G.get_hero = function(env)
-    local hero = env and env.STATE and env.STATE.hero
-    if hero and hero.is_exist and hero:is_exist() then
-      return hero
-    end
-    return nil
-  end
-end
-if type(_G.get_hero_attr) ~= 'function' then
-  _G.get_hero_attr = function(env, name)
-    local hero = env and env.STATE and env.STATE.hero
-    if not hero or not hero.is_exist or not hero:is_exist() then
-      return 0
-    end
-    local hero_attr_system = env and env.hero_attr_system
-    if hero_attr_system and hero_attr_system.get_attr then
-      return tonumber(hero_attr_system.get_attr(hero, name)) or 0
-    end
-    return tonumber(hero:get_attr(name)) or 0
-  end
-end
 
 local BOND_NAME_ALIASES = {
   ['冰法'] = '冰霜法师',

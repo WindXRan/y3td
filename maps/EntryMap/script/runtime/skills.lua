@@ -344,22 +344,4 @@ end
 M.PATTERN_TO_BASE = PATTERN_TO_BASE
 M.PATTERN_SUB_BEHAVIOR = PATTERN_SUB_BEHAVIOR
 
--- ===== 同事兼容接口 =====
--- 框架技能系统迁移中。以下别名供历史调用兼容，底层复用上述构建链路。
-function M.build_unique_skill(id, visual)
-  return M.build_framework_skill(id, visual)
-end
-
-function M.list_unique_skill_ids()
-  return M.list_framework_skill_ids()
-end
-
-function M.build_unique_skill_variant(id, tier, visual)
-  return M.build_framework_skill_tier(id, tier, visual)
-end
-
-function M.list_unique_tiers()
-  return M.list_framework_tiers()
-end
-
 return M

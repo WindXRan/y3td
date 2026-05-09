@@ -40,6 +40,7 @@ function M.create(ctx)
       use_attr_diamond = ctx.use_attr_diamond,
       show_debug_hotkey_help = ctx.show_debug_hotkey_help,
       debug_actions_system = ctx.debug_actions_system,
+      show_debug_tip_example = ctx.show_debug_tip_example,
       debug_tools_system = ctx.debug_tools_system,
       gm_bond_effects_system = ctx.gm_bond_effects_system,
       toggle_fixed_camera = ctx.RuntimeEntry.toggle_fixed_camera,
@@ -53,6 +54,9 @@ function M.create(ctx)
       input_events_system = input_events_system,
       hero_selection_range_system = ctx.hero_selection_range_system,
     })
+    if ctx.growth_weapon_item_tip_system and ctx.growth_weapon_item_tip_system.bind then
+      ctx.growth_weapon_item_tip_system.bind()
+    end
   end
 
   local build_runtime_loops_env = function()

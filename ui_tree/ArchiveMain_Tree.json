@@ -26,6 +26,111 @@
       ]
     },
     {
+      "name": "内容",
+      "uid": "1c5c838b-616e-4d63-b786-54d5b7a784dd",
+      "type": 7,
+      "children": [
+        {
+          "name": "商品",
+          "uid": "0430a1e8-7bdb-4c29-9d16-09e3b06e4ca5",
+          "type": 4,
+          "children": [
+            {
+              "name": "image",
+              "uid": "20ac0716-6adc-4d5b-b50e-3b40e76ddfc9",
+              "type": 4
+            },
+            {
+              "name": "label",
+              "uid": "2d542e01-4073-4da4-9b69-be9fb300a934",
+              "type": 3
+            },
+            {
+              "name": "num",
+              "uid": "53f86c1d-92ef-4900-b7b7-a00577b74b8f",
+              "type": 3
+            },
+            {
+              "name": "lv",
+              "uid": "41c9476b-eb69-479e-ad3f-69db00b93b76",
+              "type": 3
+            }
+          ]
+        },
+        {
+          "name": "套装",
+          "uid": "cb6f9767-cb2a-402c-92c1-d1e0493e5064",
+          "type": 4,
+          "children": [
+            {
+              "name": "image",
+              "uid": "dd48693b-1311-45be-a9b8-5cc5fa41c22b",
+              "type": 4
+            },
+            {
+              "name": "label",
+              "uid": "39267034-db46-4c9d-8443-b1b111b00efb",
+              "type": 3
+            },
+            {
+              "name": "num",
+              "uid": "7681a329-74f2-49ba-b3b4-7117cdbff3ac",
+              "type": 3
+            },
+            {
+              "name": "lv",
+              "uid": "aeae53cb-cafe-4c2a-b910-4ae42c6b0990",
+              "type": 3
+            }
+          ]
+        },
+        {
+          "name": "称号",
+          "uid": "cde2062c-d89e-44e8-b5e3-0904fe317146",
+          "type": 4,
+          "children": [
+            {
+              "name": "image",
+              "uid": "5a0c04bd-2168-4de5-ade1-5c668421aebd",
+              "type": 4
+            },
+            {
+              "name": "label",
+              "uid": "510d625d-0ea2-4b27-be93-86dfdd00c6cf",
+              "type": 3
+            },
+            {
+              "name": "num",
+              "uid": "c2b271de-0bbd-42b3-9361-5dd38d2d6160",
+              "type": 3
+            },
+            {
+              "name": "lv",
+              "uid": "36702a48-50fc-4ffa-bcf6-dde50dd23aca",
+              "type": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "内容列表",
+      "uid": "2fa18792-824a-492b-8164-3122bc4f0a43",
+      "type": 7,
+      "children": [
+        {
+          "name": "100X7",
+          "uid": "d884d932-b6d3-48a1-b2ca-9f4ce1a08cbc",
+          "type": 25
+        },
+        {
+          "name": "200X3",
+          "uid": "b717158a-0f6c-4e00-a275-49b87bc31785",
+          "type": 25
+        }
+      ]
+    },
+    {
       "name": "存档生涯商城",
       "uid": "c069d6ec-f249-4d8c-85ce-1ed86869a539",
       "type": 7,
@@ -198,47 +303,6 @@
           ]
         },
         {
-          "name": "中间内容",
-          "uid": "2fa18792-824a-492b-8164-3122bc4f0a43",
-          "type": 7,
-          "children": [
-            {
-              "name": "通用内容",
-              "uid": "d884d932-b6d3-48a1-b2ca-9f4ce1a08cbc",
-              "type": 25,
-              "children": [
-                {
-                  "name": "bg",
-                  "uid": "213de56e-e548-4788-a439-659767532c4d",
-                  "type": 4,
-                  "children": [
-                    {
-                      "name": "image",
-                      "uid": "82fe91fd-4b16-45b2-a9e3-486097960b86",
-                      "type": 4
-                    },
-                    {
-                      "name": "label",
-                      "uid": "42c0ffcf-c09c-4f1a-9211-575d91ac4c1d",
-                      "type": 3
-                    },
-                    {
-                      "name": "num",
-                      "uid": "33a2f40b-98b0-48ed-9a5a-4310f4864d2e",
-                      "type": 3
-                    },
-                    {
-                      "name": "lv",
-                      "uid": "9dc5b4bc-36ad-436a-922a-5fef18482204",
-                      "type": 3
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
           "name": "scroll_view",
           "uid": "fe9e2c2c-7dca-4aec-ba75-08e2fec1e489",
           "type": 10,
@@ -282,6 +346,109 @@
               "name": "获取方式内容",
               "uid": "04b17be3-6925-4914-af97-dcdda0130a68",
               "type": 3
+            }
+          ]
+        },
+        {
+          "name": "grid_default",
+          "uid": "c9b3c697-1bc1-4778-8e60-c1fd137c5a58",
+          "type": 25,
+          "children": [
+            {
+              "name": "cell",
+              "uid": "d231dd1a-ec53-4309-9643-b35ff390b25e",
+              "type": 7,
+              "children": [
+                {
+                  "name": "bg",
+                  "uid": "76e249c8-1835-46ef-bbe9-af13a4034f0a",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "image",
+                      "uid": "ee945999-4cb8-4115-bd83-d293389bf8fc",
+                      "type": 4
+                    },
+                    {
+                      "name": "label",
+                      "uid": "4494a92f-b3f3-4a2b-875c-54ae99edc82e",
+                      "type": 3
+                    },
+                    {
+                      "name": "lv",
+                      "uid": "f161d440-3fae-4559-9583-bafab53fc062",
+                      "type": 3
+                    },
+                    {
+                      "name": "num",
+                      "uid": "f4c37085-09e0-4350-9bda-2e5c78cb9fd5",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "grid_large",
+          "uid": "ec3c45b1-9e1b-47a9-a1af-9bbe6603c4a5",
+          "type": 25,
+          "children": [
+            {
+              "name": "cell",
+              "uid": "ddd749e8-3e12-44d2-baaf-e52979154018",
+              "type": 7,
+              "children": [
+                {
+                  "name": "bg",
+                  "uid": "ff9a98fc-58a9-40d1-9131-4f0d048334a7",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "image",
+                      "uid": "970452d4-d8c7-409c-bf22-374f05c21fe1",
+                      "type": 4
+                    },
+                    {
+                      "name": "label",
+                      "uid": "ba13f7cb-afa8-47f1-82a2-01420de1ce41",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "grid_catalog",
+          "uid": "7d1b5605-10d4-4d0d-98fd-cf5f80834c3d",
+          "type": 25,
+          "children": [
+            {
+              "name": "cell",
+              "uid": "ace7287a-260c-4f8c-bde9-4c08063f444d",
+              "type": 7,
+              "children": [
+                {
+                  "name": "bg",
+                  "uid": "67008ce8-702d-4188-aa00-51323d4fd962",
+                  "type": 4,
+                  "children": [
+                    {
+                      "name": "image",
+                      "uid": "e0390474-974a-4584-8e55-6c773d4455df",
+                      "type": 4
+                    },
+                    {
+                      "name": "label",
+                      "uid": "283fc7a8-ae57-4676-ab13-107505515a4c",
+                      "type": 3
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }

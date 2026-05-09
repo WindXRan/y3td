@@ -56,14 +56,13 @@
     }, 
     "describe": 134270815, 
     "key": 134270815, 
-    "md5": "0d8e50773b3b080cf856865501a1aa54", 
     "model_id": 134270815, 
     "name": "\u5c4f\u969c", 
     "res_identify": "", 
     "res_type": "kkres", 
     "scale": 1.0, 
     "source_effect": [
-        134270815
+        104279
     ], 
     "sub_type": "effect", 
     "uid": 134270815, 

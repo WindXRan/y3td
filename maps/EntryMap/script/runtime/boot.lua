@@ -42,28 +42,30 @@ local BootCore = require 'runtime.boot_core'
 local BootDevCommands = require 'runtime.boot_dev_commands'
 local BootBootstrapSequence = require 'runtime.boot_bootstrap_sequence'
 local RuntimeEntry = {}
+RuntimeEntry._services = {}
 local projectile_create_original = nil
 local projectile_override_hook_installed = false
 local helper_signals_started = false
-heal_hero = nil
-progression_system = nil
-battlefield_system = nil
-debug_tools_system = nil
-debug_actions_system = nil
-gm_bond_effects_system = nil
-runtime_hud_system = nil
-overview_model_system = nil
-outgame_system = nil
-reward_system = nil
-attr_choice_system = nil
-audio_system = nil
-hero_selection_range_system = nil
-skill_framework_system = nil
-sample_skills_system = nil
-message = nil
-ensure_round_choice_available = nil
-get_enemies_in_range = nil
-deal_skill_damage = nil
+-- Service references (also accessible via RuntimeEntry._services for discoverability)
+heal_hero = nil; RuntimeEntry._services.heal_hero = nil
+progression_system = nil; RuntimeEntry._services.progression_system = nil
+battlefield_system = nil; RuntimeEntry._services.battlefield_system = nil
+debug_tools_system = nil; RuntimeEntry._services.debug_tools_system = nil
+debug_actions_system = nil; RuntimeEntry._services.debug_actions_system = nil
+gm_bond_effects_system = nil; RuntimeEntry._services.gm_bond_effects_system = nil
+runtime_hud_system = nil; RuntimeEntry._services.runtime_hud_system = nil
+overview_model_system = nil; RuntimeEntry._services.overview_model_system = nil
+outgame_system = nil; RuntimeEntry._services.outgame_system = nil
+reward_system = nil; RuntimeEntry._services.reward_system = nil
+attr_choice_system = nil; RuntimeEntry._services.attr_choice_system = nil
+audio_system = nil; RuntimeEntry._services.audio_system = nil
+hero_selection_range_system = nil; RuntimeEntry._services.hero_selection_range_system = nil
+skill_framework_system = nil; RuntimeEntry._services.skill_framework_system = nil
+sample_skills_system = nil; RuntimeEntry._services.sample_skills_system = nil
+message = nil; RuntimeEntry._services.message = nil
+ensure_round_choice_available = nil; RuntimeEntry._services.ensure_round_choice_available = nil
+get_enemies_in_range = nil; RuntimeEntry._services.get_enemies_in_range = nil
+deal_skill_damage = nil; RuntimeEntry._services.deal_skill_damage = nil
 local hero_attr_system = HeroAttrSystem.create()
 do
   local ratio = CONFIG
@@ -81,39 +83,6 @@ local function trace_boot(message)
   end
 end
 
--- 兼容旧热更闭包：部分历史逻辑会按全局名调用这两个函数。
-if type(_G.collect_units_in_line) ~= 'function' then
-  _G.collect_units_in_line = function(_, _, _, _, _, _, fallback_target)
-    if fallback_target and fallback_target.is_exist and fallback_target:is_exist() then
-      return { fallback_target }
-    end
-    return {}
-  end
-end
-if type(_G.get_hero) ~= 'function' then
-  _G.get_hero = function(env)
-    local hero = env and env.STATE and env.STATE.hero
-    if hero and hero.is_exist and hero:is_exist() then
-      return hero
-    end
-    return nil
-  end
-end
-if type(_G.get_hero_attr) ~= 'function' then
-  _G.get_hero_attr = function(env, name)
-    local hero = env and env.STATE and env.STATE.hero
-    if hero and hero.is_exist and hero:is_exist() then
-      local hero_attr_system = env and env.hero_attr_system
-      if hero_attr_system and hero_attr_system.get_attr then
-        return tonumber(hero_attr_system.get_attr(hero, name)) or 0
-      end
-      if hero.get_attr then
-        return tonumber(hero:get_attr(name)) or 0
-      end
-    end
-    return 0
-  end
-end
 
 local function ensure_helper_signals()
   if helper_signals_started or not y3.game.is_debug_mode() then
@@ -253,6 +222,7 @@ local function build_bottom_status_effect_entry(effect_def, snapshot)
     modifier_key = tonumber(effect_def.modifier_key) or nil,
     tip_title = tostring(title or '魔法效果'),
     tip_text = table.concat(lines, '\n'),
+    tip_contents = #lines > 0 and { '[效果详情]\n' .. table.concat(lines, '\n') } or {},
   }
 end
 
@@ -303,6 +273,7 @@ local function build_runtime_bond_status_entries(limit, taken_modifier_keys)
             modifier_key = modifier_key,
             tip_title = tostring(title),
             tip_text = table.concat(lines, '\n'),
+            tip_contents = #lines > 0 and { '[效果详情]\n' .. table.concat(lines, '\n') } or {},
           }
         end
       end
@@ -399,6 +370,7 @@ local function build_hero_buff_status_entries(limit, taken_modifier_keys)
         modifier_key = modifier_key,
         tip_title = group.title,
         tip_text = table.concat(lines, '\n'),
+        tip_contents = #lines > 0 and { '[效果详情]\n' .. table.concat(lines, '\n') } or {},
       }
     end
   end
@@ -1267,9 +1239,9 @@ get_enemies_on_line = function(origin_point, impact_point, max_distance, line_wi
   local line_shape = y3.shape.create_rectangle_shape(width * 2, segment_length, direction)
   local candidates = {}
   local picked = y3.selector.create()
-    :is_enemy(get_player())
-    :in_shape(segment_center, line_shape)
-    :pick()
+      :is_enemy(get_player())
+      :in_shape(segment_center, line_shape)
+      :pick()
 
   for _, unit in ipairs(picked) do
     if unit ~= except_unit and is_active_enemy(unit) then
@@ -1285,7 +1257,8 @@ get_enemies_on_line = function(origin_point, impact_point, max_distance, line_wi
     return a.projection < b.projection
   end)
 
-  local limit = normalized_max_hits and math.min(math.max(1, math.floor(normalized_max_hits)), #candidates) or #candidates
+  local limit = normalized_max_hits and math.min(math.max(1, math.floor(normalized_max_hits)), #candidates) or
+      #candidates
   for index = 1, limit, 1 do
     result[#result + 1] = candidates[index].unit
   end
@@ -2990,6 +2963,9 @@ runtime_ui_helpers = RuntimeUIHelpers.create({
   build_bond_swallow_panel_model = function(state, selected_root_index)
     return BondSystem.build_bond_swallow_panel_model(state, selected_root_index)
   end,
+  build_growth_weapon_tip_payload = function()
+    return GearUpgrades.build_tip_payload(STATE, 'weapon', CONFIG.gear_upgrade_config, y3.item)
+  end,
 })
 
 gm_bond_effects_system = GmBondEffectsSystem.create({
@@ -3068,7 +3044,8 @@ gm_bond_effects_system = GmBondEffectsSystem.create({
           defs[#defs + 1] = {
             id = def.id,
             name = def.name or def.id,
-            desc = string.format('%s/%s·范围%d', def.pattern or '', def.sub_behavior or '', def.hit_model and def.hit_model.radius or 0),
+            desc = string.format('%s/%s·范围%d', def.pattern or '', def.sub_behavior or '',
+              def.hit_model and def.hit_model.radius or 0),
             pattern = def.pattern,
             sub_behavior = def.sub_behavior,
             target_mode = def.target_mode,
@@ -3240,196 +3217,196 @@ end
 
 runtime_ui_helpers.__raw_refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel
 runtime_ui_helpers.refresh_choice_panel = (function()
-local function set_ui_visible(ui, visible)
-  if ui and (not ui.is_removed or not ui:is_removed()) and ui.set_visible then
-    ui:set_visible(visible == true)
-  end
-end
-
-local function set_ui_image(ui, image)
-  if ui and (not ui.is_removed or not ui:is_removed()) and ui.set_image and image and image ~= 0 then
-    ui:set_image(image)
-  end
-end
-
-local function apply_bond_choice_quality_frames()
-  local bond_runtime = STATE.bond_runtime
-  local choices = bond_runtime and bond_runtime.current_choices or nil
-  if not choices or #choices == 0 or STATE.choice_panel_hidden == true then
-    return
-  end
-  local player = get_player()
-  if not player then
-    return
-  end
-  local panel_name = 'BondChoice4'
-  local panel_index = '4'
-  for index = 1, 4 do
-    local path = string.format(
-      '%s.bond_choice_%s.cards_row.card_%d.icon_frame_%d',
-      panel_name,
-      panel_index,
-      index,
-      index
-    )
-    local ok, frame = pcall(y3.ui.get_ui, player, path)
-    if ok and frame then
-      local choice = choices[index]
-      local image = choice and resolve_quality_frame_image(choice.quality) or nil
-      set_ui_visible(frame, image ~= nil)
-      set_ui_image(frame, image)
+  local function set_ui_visible(ui, visible)
+    if ui and (not ui.is_removed or not ui:is_removed()) and ui.set_visible then
+      ui:set_visible(visible == true)
     end
   end
-end
 
-local function resolve_choice_panel_card(scroll, index)
-  if not scroll then
+  local function set_ui_image(ui, image)
+    if ui and (not ui.is_removed or not ui:is_removed()) and ui.set_image and image and image ~= 0 then
+      ui:set_image(image)
+    end
+  end
+
+  local function apply_bond_choice_quality_frames()
+    local bond_runtime = STATE.bond_runtime
+    local choices = bond_runtime and bond_runtime.current_choices or nil
+    if not choices or #choices == 0 or STATE.choice_panel_hidden == true then
+      return
+    end
+    local player = get_player()
+    if not player then
+      return
+    end
+    local panel_name = 'BondChoice4'
+    local panel_index = '4'
+    for index = 1, 4 do
+      local path = string.format(
+        '%s.bond_choice_%s.cards_row.card_%d.icon_frame_%d',
+        panel_name,
+        panel_index,
+        index,
+        index
+      )
+      local ok, frame = pcall(y3.ui.get_ui, player, path)
+      if ok and frame then
+        local choice = choices[index]
+        local image = choice and resolve_quality_frame_image(choice.quality) or nil
+        set_ui_visible(frame, image ~= nil)
+        set_ui_image(frame, image)
+      end
+    end
+  end
+
+  local function resolve_choice_panel_card(scroll, index)
+    if not scroll then
+      return nil
+    end
+    local names
+    if index == 1 then
+      names = { 'Card1', 'Card_1' }
+    elseif index == 2 then
+      names = { 'Card2', 'Card_2' }
+    elseif index == 3 then
+      names = { 'Card3', 'Card_3' }
+    else
+      names = { 'Card4', 'Card_4' }
+    end
+    for _, name in ipairs(names) do
+      local card = nil
+      if scroll and scroll.get_child then
+        local ok, child = pcall(scroll.get_child, scroll, name)
+        if ok then
+          card = child
+        end
+      end
+      if card then
+        return card
+      end
+    end
     return nil
   end
-  local names
-  if index == 1 then
-    names = { 'Card1', 'Card_1' }
-  elseif index == 2 then
-    names = { 'Card2', 'Card_2' }
-  elseif index == 3 then
-    names = { 'Card3', 'Card_3' }
-  else
-    names = { 'Card4', 'Card_4' }
-  end
-  for _, name in ipairs(names) do
-    local card = nil
-    if scroll and scroll.get_child then
-      local ok, child = pcall(scroll.get_child, scroll, name)
-      if ok then
-        card = child
-      end
-    end
-    if card then
-      return card
-    end
-  end
-  return nil
-end
 
-local function resolve_ui_child(parent, child_name)
-  if not parent or not child_name or not parent.get_child then
+  local function resolve_ui_child(parent, child_name)
+    if not parent or not child_name or not parent.get_child then
+      return nil
+    end
+    local ok, child = pcall(parent.get_child, parent, child_name)
+    if ok then
+      return child
+    end
     return nil
   end
-  local ok, child = pcall(parent.get_child, parent, child_name)
-  if ok then
-    return child
-  end
-  return nil
-end
 
-local function ensure_choice_list_choice_panel()
-  local player = get_player()
-  if not player then
-    return nil, nil, nil
-  end
-  local ok_root, root = pcall(y3.ui.get_ui, player, 'Choice_Panel')
-  if not ok_root or not root then
-    return nil, nil, nil
-  end
-  local ok_scroll, scroll = pcall(y3.ui.get_ui, player, 'Choice_Panel.ChoiceList.scroll_view')
-  if not ok_scroll or not scroll then
-    return nil, nil, nil
-  end
-  return root, scroll, player
-end
-
-local choice_click_bound = setmetatable({}, { __mode = 'k' })
-local function bind_choice_click_target(target, index)
-  if not target or not target.add_fast_event then
-    return
-  end
-  if choice_click_bound[target] then
-    return
-  end
-  choice_click_bound[target] = true
-  if target.set_intercepts_operations then
-    target:set_intercepts_operations(true)
-  end
-  target:add_fast_event('左键-点击', function()
-    apply_round_choice(index)
-  end)
-end
-
-local function build_choice_list_cards()
-  local kind = get_pending_round_choice_kind()
-  local choices = nil
-  if kind == 'gear' then
-    choices = STATE.gear_state and STATE.gear_state.current_choices or nil
-  elseif kind == 'attr' then
-    choices = STATE.attr_choice_runtime and STATE.attr_choice_runtime.current_choices or nil
-  elseif kind == 'bond' then
-    choices = STATE.bond_runtime and STATE.bond_runtime.current_choices or nil
-  elseif kind == 'evolution' then
-    local evolution_runtime = STATE.evolution_runtime
-    choices = evolution_runtime and evolution_runtime.current_choices or nil
+  local function ensure_choice_list_choice_panel()
+    local player = get_player()
+    if not player then
+      return nil, nil, nil
+    end
+    local ok_root, root = pcall(y3.ui.get_ui, player, 'Choice_Panel')
+    if not ok_root or not root then
+      return nil, nil, nil
+    end
+    local ok_scroll, scroll = pcall(y3.ui.get_ui, player, 'Choice_Panel.ChoiceList.scroll_view')
+    if not ok_scroll or not scroll then
+      return nil, nil, nil
+    end
+    return root, scroll, player
   end
 
-  local root, scroll, player = ensure_choice_list_choice_panel()
-  if not root or not scroll then
-    return
+  local choice_click_bound = setmetatable({}, { __mode = 'k' })
+  local function bind_choice_click_target(target, index)
+    if not target or not target.add_fast_event then
+      return
+    end
+    if choice_click_bound[target] then
+      return
+    end
+    choice_click_bound[target] = true
+    if target.set_intercepts_operations then
+      target:set_intercepts_operations(true)
+    end
+    target:add_fast_event('左键-点击', function()
+      apply_round_choice(index)
+    end)
   end
 
-  local is_visible = choices and #choices > 0 and STATE.choice_panel_hidden ~= true
-  set_ui_visible(root, is_visible)
+  local function build_choice_list_cards()
+    local kind = get_pending_round_choice_kind()
+    local choices = nil
+    if kind == 'gear' then
+      choices = STATE.gear_state and STATE.gear_state.current_choices or nil
+    elseif kind == 'attr' then
+      choices = STATE.attr_choice_runtime and STATE.attr_choice_runtime.current_choices or nil
+    elseif kind == 'bond' then
+      choices = STATE.bond_runtime and STATE.bond_runtime.current_choices or nil
+    elseif kind == 'evolution' then
+      local evolution_runtime = STATE.evolution_runtime
+      choices = evolution_runtime and evolution_runtime.current_choices or nil
+    end
 
-  local old_choice_panels = { 'BondChoice2', 'BondChoice3', 'BondChoice4', 'ChoiceList' }
-  if player then
-    for _, panel_name in ipairs(old_choice_panels) do
-      local ok_old, old_panel = pcall(y3.ui.get_ui, player, panel_name)
-      if ok_old and old_panel then
-        set_ui_visible(old_panel, false)
+    local root, scroll, player = ensure_choice_list_choice_panel()
+    if not root or not scroll then
+      return
+    end
+
+    local is_visible = choices and #choices > 0 and STATE.choice_panel_hidden ~= true
+    set_ui_visible(root, is_visible)
+
+    local old_choice_panels = { 'BondChoice2', 'BondChoice3', 'BondChoice4', 'ChoiceList' }
+    if player then
+      for _, panel_name in ipairs(old_choice_panels) do
+        local ok_old, old_panel = pcall(y3.ui.get_ui, player, panel_name)
+        if ok_old and old_panel then
+          set_ui_visible(old_panel, false)
+        end
       end
+    end
+
+    for index = 1, 4 do
+      local card = resolve_choice_panel_card(scroll, index)
+      local choice = choices and choices[index] or nil
+      set_ui_visible(card, is_visible and choice ~= nil)
+
+      if card and is_visible and choice then
+        local title = resolve_ui_child(card, 'title')
+        if title and title.set_text then
+          title:set_text(tostring(choice.pretty_display_name or choice.display_name or choice.title_text or choice.name or
+            '候选'))
+        end
+
+        local subtitle = resolve_ui_child(card, 'sub_title')
+        if subtitle and subtitle.set_text then
+          subtitle:set_text(tostring(choice.bond_root_name or choice.bond_name or choice.tag or choice.quality or kind or
+            '候选'))
+        end
+
+        local desc = resolve_ui_child(card, 'desc')
+        if desc and desc.set_text then
+          desc:set_text(tostring(choice.desc_text or choice.summary or choice.effect_body_text or ''))
+        end
+
+        local icon = resolve_ui_child(card, 'image_2_1')
+        if icon and icon.set_image then
+          icon:set_image(choice.ui_icon or choice.icon or 999)
+        end
+
+        local click_image = resolve_ui_child(card, 'image_2')
+        bind_choice_click_target(click_image or card, index)
+      end
+    end
+
+    if root.set_z_order then
+      root:set_z_order(9600)
     end
   end
 
-  for index = 1, 4 do
-    local card = resolve_choice_panel_card(scroll, index)
-    local choice = choices and choices[index] or nil
-    set_ui_visible(card, is_visible and choice ~= nil)
-
-    if card and is_visible and choice then
-      local title = resolve_ui_child(card, 'title')
-      if title and title.set_text then
-        title:set_text(tostring(choice.pretty_display_name or choice.display_name or choice.title_text or choice.name or
-          '候选'))
-      end
-
-      local subtitle = resolve_ui_child(card, 'sub_title')
-      if subtitle and subtitle.set_text then
-        subtitle:set_text(tostring(choice.bond_root_name or choice.bond_name or choice.tag or choice.quality or kind or
-          '候选'))
-      end
-
-      local desc = resolve_ui_child(card, 'desc')
-      if desc and desc.set_text then
-        desc:set_text(tostring(choice.desc_text or choice.summary or choice.effect_body_text or ''))
-      end
-
-      local icon = resolve_ui_child(card, 'image_2_1')
-      if icon and icon.set_image then
-        icon:set_image(choice.ui_icon or choice.icon or 999)
-      end
-
-      local click_image = resolve_ui_child(card, 'image_2')
-      bind_choice_click_target(click_image or card, index)
-    end
+  return function(...)
+    -- 选择面板统一走 ChoiceList 动态卡片链路，不再依赖旧 BondChoice2/3/4 渲染。
+    build_choice_list_cards()
+    return nil
   end
-
-  if root.set_z_order then
-    root:set_z_order(9600)
-  end
-end
-
-return function(...)
-  -- 选择面板统一走 ChoiceList 动态卡片链路，不再依赖旧 BondChoice2/3/4 渲染。
-  build_choice_list_cards()
-  return nil
-end
 end)()
 
 runtime_ui_helpers.install_panel_systems()
@@ -3504,6 +3481,15 @@ is_battle_active = RuntimeEntry._session_bundle.is_battle_active
 reset_battle_state = RuntimeEntry._session_bundle.reset_battle_state
 reset_session_state = RuntimeEntry._session_bundle.reset_session_state
 
+local growth_weapon_item_tip_system = require('ui.growth_weapon_item_tip').create({
+  STATE = STATE,
+  y3 = y3,
+  get_player = get_player,
+  build_growth_weapon_tip_payload = function(slot)
+    return GearUpgrades.build_tip_payload(STATE, slot or 'weapon', CONFIG.gear_upgrade_config)
+  end,
+})
+
 RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({
   RuntimeEntry = RuntimeEntry,
   BootInput = BootInput,
@@ -3530,6 +3516,7 @@ RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({
   battlefield_system = battlefield_system,
   hero_selection_range_system = hero_selection_range_system,
   outgame_system = outgame_system,
+  growth_weapon_item_tip_system = growth_weapon_item_tip_system,
   get_player = get_player,
   is_battle_active = function()
     return is_battle_active()
@@ -3545,6 +3532,7 @@ RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({
   open_runtime_save_panel = open_runtime_save_panel,
   use_attr_diamond = use_attr_diamond,
   show_debug_hotkey_help = show_debug_hotkey_help,
+  show_debug_tip_example = runtime_hud_system and runtime_hud_system.show_debug_tip_example,
   update_passive_resources = update_passive_resources,
   update_bond_effects = update_bond_effects,
   update_auto_active_effects = update_auto_active_effects,
@@ -3577,6 +3565,28 @@ function RuntimeEntry.bootstrap()
   end
 
   RuntimeEntry.run_bootstrap_sequence()
+end
+
+RuntimeEntry.sync_services = function()
+  RuntimeEntry._services.heal_hero = heal_hero
+  RuntimeEntry._services.progression_system = progression_system
+  RuntimeEntry._services.battlefield_system = battlefield_system
+  RuntimeEntry._services.debug_tools_system = debug_tools_system
+  RuntimeEntry._services.debug_actions_system = debug_actions_system
+  RuntimeEntry._services.gm_bond_effects_system = gm_bond_effects_system
+  RuntimeEntry._services.runtime_hud_system = runtime_hud_system
+  RuntimeEntry._services.overview_model_system = overview_model_system
+  RuntimeEntry._services.outgame_system = outgame_system
+  RuntimeEntry._services.reward_system = reward_system
+  RuntimeEntry._services.attr_choice_system = attr_choice_system
+  RuntimeEntry._services.audio_system = audio_system
+  RuntimeEntry._services.hero_selection_range_system = hero_selection_range_system
+  RuntimeEntry._services.skill_framework_system = skill_framework_system
+  RuntimeEntry._services.sample_skills_system = sample_skills_system
+  RuntimeEntry._services.message = message
+  RuntimeEntry._services.ensure_round_choice_available = ensure_round_choice_available
+  RuntimeEntry._services.get_enemies_in_range = get_enemies_in_range
+  RuntimeEntry._services.deal_skill_damage = deal_skill_damage
 end
 
 return RuntimeEntry

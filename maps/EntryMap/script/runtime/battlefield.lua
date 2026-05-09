@@ -59,7 +59,9 @@ function M.create(env)
     return nil, unit_or_err
   end
 
-  local function refresh_legacy_challenge_summary()
+  -- 根据 per-challenge map 同步聚合缓存字段 (STATE.challenge_charges / challenge_recover_elapsed)
+  -- 外部读取方依赖这两个聚合值；每次 per-challenge 数据变更后调用以保持缓存一致。
+  local function sync_challenge_summary_cache()
     local total_charges = 0
     local min_remain = nil
     local has_partial = false
@@ -95,7 +97,7 @@ function M.create(env)
   local function set_challenge_charge_count(challenge_id, value)
     STATE.challenge_charge_map = STATE.challenge_charge_map or {}
     STATE.challenge_charge_map[challenge_id] = math.max(0, tonumber(value) or 0)
-    refresh_legacy_challenge_summary()
+    sync_challenge_summary_cache()
   end
 
   local function get_challenge_recover_elapsed(challenge_id)
@@ -108,7 +110,7 @@ function M.create(env)
   local function set_challenge_recover_elapsed(challenge_id, value)
     STATE.challenge_recover_elapsed_map = STATE.challenge_recover_elapsed_map or {}
     STATE.challenge_recover_elapsed_map[challenge_id] = math.max(0, tonumber(value) or 0)
-    refresh_legacy_challenge_summary()
+    sync_challenge_summary_cache()
   end
 
   local function has_unit_data(unit_id)

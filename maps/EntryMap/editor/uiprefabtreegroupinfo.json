@@ -2,7 +2,120 @@
  {
   "name": "code_ui_custom_panel_tree", 
   "key": 2147483647, 
-  "group": []
+  "group": [
+   {
+    "__tuple__": true, 
+    "items": [
+     "c71b7d74-d29b-4f4b-a28d-d21136d8375d", 
+     "ArchiveDaoJv"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "c026a7e2-ff60-4990-9d37-c25056fe3be9", 
+     "ArchiveGridView"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "ebd32c2a-e631-4537-8d7d-896fa500486f", 
+     "ArchivePageOne"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "28a9fe87-d81f-467c-bfac-9033f63bbaa6", 
+     "ArchivePageTwo"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "73717f53-39ae-4c28-b3a4-319af9cd011d", 
+     "ArchiveTips"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "5de61ab1-67fb-431f-982e-aefdba5c6c4b", 
+     "AttrTips"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "6895eb5a-bd61-4e7e-87a7-e4e01228fee4", 
+     "BondTips"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "be45132f-cfca-472a-acb9-5ea26ce7e22f", 
+     "bufflist"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "5db0740f-bc1a-48ea-a62c-cf71dc1776fe", 
+     "Card"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "a2082192-b8a2-40f2-a3c7-a47acd74468b", 
+     "ChoiceList"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "998bdd57-43a9-44cb-8d86-0df7438f5783", 
+     "ErrorTips"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "f5ba61dc-e816-4726-9b3b-ce61092b4991", 
+     "heromodel"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "cf7c8fc6-5af7-4cf1-870f-02cb315bc8eb", 
+     "level"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "acdea87a-588a-479b-8b12-b6b45dd900c3", 
+     "mode"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "c7542150-049d-4a6d-aa97-ed40ab30b8ba", 
+     "skill_btn"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "d44c56fc-8a15-452a-bca2-687dc9b240e7", 
+     "YangChengIcon"
+    ]
+   }
+  ]
  }, 
  {
   "name": "code_ui_preset_panel_tree", 

@@ -14,9 +14,11 @@ local SCRIPT_ROOT = get_script_root()
 local warned_missing_paths = {}
 local warned_invalid_paths = {}
 
+local file_cache = {}
+
 local function is_absolute_path(path)
   return path:match('^%a:[/\\]') ~= nil
-    or path:match('^[/\\][/\\]') ~= nil
+      or path:match('^[/\\][/\\]') ~= nil
 end
 
 local function resolve_path(path)
@@ -29,45 +31,14 @@ local function resolve_path(path)
   return SCRIPT_ROOT .. '/' .. path
 end
 
-local function split_csv_line(line)
-  local result = {}
-  local buffer = {}
-  local in_quotes = false
-  local i = 1
-
-  while i <= #line do
-    local char = line:sub(i, i)
-    if char == '"' then
-      local next_char = line:sub(i + 1, i + 1)
-      if in_quotes and next_char == '"' then
-        buffer[#buffer + 1] = '"'
-        i = i + 1
-      else
-        in_quotes = not in_quotes
-      end
-    elseif char == ',' and not in_quotes then
-      result[#result + 1] = table.concat(buffer)
-      buffer = {}
-    else
-      buffer[#buffer + 1] = char
-    end
-    i = i + 1
-  end
-
-  result[#result + 1] = table.concat(buffer)
-  return result
-end
-
 local function strip_utf8_bom(value)
   if type(value) ~= 'string' then
     return value
   end
-  -- 移除多个 UTF-8 BOM 头
-  local result = value
-  while result:sub(1, 3) == '\239\187\191' do
-    result = result:sub(4)
+  if value:sub(1, 3) == '\239\187\191' then
+    return value:sub(4)
   end
-  return result
+  return value
 end
 
 local function warn_once(registry, key, message)
@@ -82,16 +53,81 @@ local function warn_once(registry, key, message)
   end
 end
 
+local function parse_csv_line_fast(line)
+  local result = {}
+  local len = #line
+  local i = 1
+  local current = {}
+
+  while i <= len do
+    local c = line:byte(i)
+    if c == 34 then
+      i = i + 1
+      while i <= len do
+        local next_c = line:byte(i)
+        if next_c == 34 then
+          local peek = line:byte(i + 1)
+          if peek == 34 then
+            current[#current + 1] = 34
+            i = i + 2
+          else
+            break
+          end
+        else
+          current[#current + 1] = next_c
+          i = i + 1
+        end
+      end
+      i = i + 1
+      if line:byte(i) == 44 then
+        result[#result + 1] = table.concat(current)
+        current = {}
+        i = i + 1
+      end
+    elseif c == 44 then
+      result[#result + 1] = table.concat(current)
+      current = {}
+      i = i + 1
+    else
+      current[#current + 1] = c
+      i = i + 1
+    end
+  end
+
+  if #current > 0 then
+    result[#result + 1] = table.concat(current)
+  end
+
+  for j = 1, #result do
+    result[j] = result[j] and result[j]:gsub('^%s+', ''):gsub('%s+$', '') or ''
+  end
+
+  return result
+end
+
 local function read_rows_safe(path, optional)
   local resolved = resolve_path(path)
+
+  if file_cache[resolved] then
+    local cached = file_cache[resolved]
+    local copy = {}
+    for i, row in ipairs(cached) do
+      local row_copy = {}
+      for k, v in pairs(row) do
+        row_copy[k] = v
+      end
+      copy[i] = row_copy
+    end
+    return copy
+  end
+
   local file, err = io.open(resolved, 'r')
   if not file then
     if not optional then
-      local level = 'required'
       warn_once(
         warned_missing_paths,
         resolved,
-        string.format('[csv] %s file missing, fallback to empty rows: %s (%s)', level, resolved, tostring(err))
+        string.format('[csv] required file missing: %s (%s)', resolved, tostring(err))
       )
     end
     return {}
@@ -99,22 +135,29 @@ local function read_rows_safe(path, optional)
 
   local headers = nil
   local rows = {}
+  local line_num = 0
 
   for line in file:lines() do
+    line_num = line_num + 1
     line = strip_utf8_bom(line:gsub('\r$', ''))
-    if line ~= '' then
+
+    if line ~= '' and not line:match('^%s*#') then
       if not headers then
-        headers = split_csv_line(line)
+        headers = parse_csv_line_fast(line)
       else
-        local values = split_csv_line(line)
+        local values = parse_csv_line_fast(line)
         local row = {}
-        for index, header in ipairs(headers) do
-          row[header] = values[index] or ''
+        local header_len = #headers
+
+        for index = 1, header_len do
+          row[headers[index]] = values[index] or ''
         end
-        local first_header = headers[1]
-        local first_value = first_header and tostring(row[first_header] or '') or ''
-        if first_value ~= '__字段说明__' then
-          rows[#rows + 1] = row
+
+        if header_len > 0 then
+          local first_value = tostring(row[headers[1]] or '')
+          if first_value ~= '__字段说明__' and first_value ~= '' then
+            rows[#rows + 1] = row
+          end
         end
       end
     end
@@ -124,15 +167,16 @@ local function read_rows_safe(path, optional)
 
   if not headers then
     if not optional then
-      local level = 'required'
       warn_once(
         warned_invalid_paths,
         resolved,
-        string.format('[csv] %s file invalid (missing headers), fallback to empty rows: %s', level, resolved)
+        string.format('[csv] file invalid (missing headers): %s', resolved)
       )
     end
     return {}
   end
+
+  file_cache[resolved] = rows
 
   return rows
 end
@@ -156,6 +200,103 @@ function M.group_by(rows, key_field)
     grouped[key][#grouped[key] + 1] = row
   end
   return grouped
+end
+
+function M.to_number(value, default)
+  if value == nil or value == '' then
+    return default
+  end
+  local num = tonumber(value)
+  return num ~= nil and num or default
+end
+
+function M.to_number_list(value, sep)
+  if value == nil or value == '' then
+    return {}
+  end
+  sep = sep or '[|,]'
+  local result = {}
+  for part in tostring(value):gmatch('[^' .. sep .. ']+') do
+    local num = tonumber(part)
+    if num then
+      result[#result + 1] = num
+    end
+  end
+  return result
+end
+
+function M.to_string_list(value, sep)
+  if value == nil or value == '' then
+    return {}
+  end
+  sep = sep or '[|,]'
+  local result = {}
+  for part in tostring(value):gmatch('[^' .. sep .. ']+') do
+    part = part:gsub('^%s+', ''):gsub('%s+$', '')
+    if part ~= '' then
+      result[#result + 1] = part
+    end
+  end
+  return result
+end
+
+function M.to_boolean(value)
+  if value == nil or value == '' then
+    return false
+  end
+  local lower = string.lower(tostring(value))
+  return lower == 'true' or lower == '1' or lower == 'yes'
+end
+
+function M.list_to_map(list, key)
+  local map = {}
+  key = key or 'id'
+  for _, row in ipairs(list or {}) do
+    local k = row and row[key]
+    if k ~= nil and k ~= '' then
+      map[k] = row
+    end
+  end
+  return map
+end
+
+function M.clear_cache()
+  file_cache = {}
+end
+
+function M.get_cache_info()
+  local info = {
+    cached_files = {},
+    total_rows = 0
+  }
+  for path, rows in pairs(file_cache) do
+    info.cached_files[#info.cached_files + 1] = path
+    info.total_rows = info.total_rows + #rows
+  end
+  return info
+end
+
+function M.process_rows(csv_path, order_key, builder, optional)
+  local rows = optional and M.read_rows_optional(csv_path) or M.read_rows(csv_path)
+  local list = {}
+
+  for _, row in ipairs(rows) do
+    local ok, result = pcall(builder, row)
+    if ok then
+      list[#list + 1] = result
+    else
+      warn_once(warned_invalid_paths, csv_path,
+        string.format('[csv] row processing failed in %s: %s', csv_path, tostring(result)))
+    end
+  end
+
+  if order_key then
+    table.sort(list, function(a, b)
+      return (a[order_key] or 0) < (b[order_key] or 0)
+    end)
+  end
+
+  return { list = list, by_id = M.list_to_map(list) }
 end
 
 return M

@@ -22,6 +22,7 @@ local function load_runtime()
   runtime_load_attempted = true
 
   local ok, result = xpcall(function()
+    require 'runtime.compat'
     return require 'runtime.boot'
   end, debug.traceback)
 

@@ -1,70 +1,71 @@
-local a = require 'ui.ui_root'
-local b = require 'data.tables.outgame.hero_evolutions'
-local c = (require 'data.game_tables').hero_roster
-local d = require 'data.tables.hero.hero_form_skills'
-local e = {}
-local f = 8;
-local g = 8;
-local h = 5;
-local i = 5;
-local j = { 'battle_power_row', 'hero_attack_row', 'hero_defense_row', 'hero_power_row', 'hero_intelligence_row',
+local ui_root = require 'ui.ui_root'
+local hero_evolutions = require 'data.tables.outgame.hero_evolutions'
+local game_tables_hero_roster = (require 'data.game_tables').hero_roster
+local hero_form_skills = require 'data.tables.hero.hero_form_skills'
+local hud_core = require 'ui.hud.hud_core'
+local M = {}
+local DEFAULT_TIP_DURATION = 8;
+local BOND_CARD_SLOT_COUNT = 8;
+local EVOLUTION_SLOT_COUNT = 5;
+local BUFF_SLOT_COUNT = 5;
+local ATTR_ROW_NAMES = { 'battle_power_row', 'hero_attack_row', 'hero_defense_row', 'hero_power_row', 'hero_intelligence_row',
   'hero_agility_row' }
-local k = {
+local HERO_MODEL_FRAME_SIZE = {
   width = 108,
   height = 122,
   x = 92,
   y = 142
 }
-local l = {
+local HERO_MODEL_CAMERA = {
   focus = { 0, 0, 88 },
   fov = 32,
   camera_pos = { 156, -108, 88 },
   camera_rot = { 0, 0, 0 },
   background = { 0, 0, 0, 0 }
 }
-local m = 260;
-local n = 12;
-local o = 122;
-local p = {
+local EXP_BAR_MAX_WIDTH = 260;
+local EXP_BAR_HEIGHT = 12;
+local EXP_BAR_X_OFFSET = 122;
+local RARITY_NAME_MAP = {
   common = '普通',
   rare = '稀有',
   epic = '史诗'
 }
-local q = b.by_id or {}
-local r = c.by_unit_id or {}
-local s = d.by_hero_id or {}
-local function is_ui_alive(u) return a.is_alive(u) end;
+local evolutions_by_id = hero_evolutions.by_id or {}
+local roster_by_unit_id = game_tables_hero_roster.by_unit_id or {}
+local form_skills_lookup = hero_form_skills.by_hero_id or {}
+local function is_ui_alive(u) return ui_root.is_alive(u) end;
 
-function e.create(v)
-  local w = v.STATE;
-  local x = v.CONFIG or {}
-  local bond_label_cfg = (x.bond_skill_runtime_tuning and x.bond_skill_runtime_tuning.labels)
-      or (x.skill_runtime_tuning and x.skill_runtime_tuning.bond and x.skill_runtime_tuning.bond.labels)
+function M.create(params)
+  local STATE = params.STATE;
+  local CONFIG = params.CONFIG or {}
+  local bond_label_cfg = (CONFIG.bond_skill_runtime_tuning and CONFIG.bond_skill_runtime_tuning.labels)
+      or (CONFIG.skill_runtime_tuning and CONFIG.skill_runtime_tuning.bond and CONFIG.skill_runtime_tuning.bond.labels)
       or {}
-  local bond_ui_cfg = (x.bond_skill_runtime_tuning and x.bond_skill_runtime_tuning.ui)
-      or (x.skill_runtime_tuning and x.skill_runtime_tuning.bond and x.skill_runtime_tuning.bond.ui)
+  local bond_ui_cfg = (CONFIG.bond_skill_runtime_tuning and CONFIG.bond_skill_runtime_tuning.ui)
+      or (CONFIG.skill_runtime_tuning and CONFIG.skill_runtime_tuning.bond and CONFIG.skill_runtime_tuning.bond.ui)
       or {}
   local bond_skill_label = tostring(bond_ui_cfg.hud_skill_title or bond_label_cfg.effect_name or '羁绊技能')
-  local y = v.y3;
-  local z = math.max(1, tonumber(v.attack_skill_slot_count) or 5)
-  local A = v.get_player;
-  local B = v.hero_attr_system;
-  local C = v.message or function() end;
+  local y3 = params.y3;
+  local skill_slot_count = math.max(1, tonumber(params.attack_skill_slot_count) or 5)
+  local get_player_fn = params.get_player;
+  local hero_attr_system_ref = params.hero_attr_system;
+  local message_fn = params.message or function() end;
 
-  local E = v.try_bond_draw;
-  local G = v.try_evolution_entry;
-  local H = nil;
-  local I = v.try_start_challenge;
-  local J = v.open_save_panel;
-  local K = v.try_upgrade_growth_weapon;
-  local L = v.show_runtime_status;
-  local M = v.build_runtime_attr_dialog_chunks;
-  local N = v.build_growth_weapon_tip_payload;
-  local O = v.build_bond_slot_tip_payload;
-  local P = math.max(0, tonumber(v.bond_draw_cost) or 100)
-  local Q = v.get_bond_slot_icon;
-  local R = v.get_bottom_status_effect_entries;
-  local S = v.play_ui_click;
+  local try_bond_draw = params.try_bond_draw;
+  local try_evolution_entry = params.try_evolution_entry;
+  local mainline_task_system = nil;
+  local try_start_challenge = params.try_start_challenge;
+  local open_save_panel = params.open_save_panel;
+  local try_upgrade_growth_weapon = params.try_upgrade_growth_weapon;
+  local show_runtime_status = params.show_runtime_status;
+  local build_runtime_attr_dialog_chunks = params.build_runtime_attr_dialog_chunks;
+  local build_growth_weapon_tip_payload = params.build_growth_weapon_tip_payload;
+  local build_bond_slot_tip_payload = params.build_bond_slot_tip_payload;
+  local bond_draw_cost = math.max(0, tonumber(params.bond_draw_cost) or 100)
+  local get_bond_slot_icon_fn = params.get_bond_slot_icon;
+  local get_status_effects_fn = params.get_bottom_status_effect_entries;
+  local play_ui_click_fn = params.play_ui_click;
   local safe_ui_call
   local set_ui_visible
   local set_ui_text
@@ -89,24 +90,24 @@ function e.create(v)
   local refresh_hud
   local set_hud_visible
   local show_runtime_tip_panel
-  local function get_player() return A and A() or nil end;
+  local function get_player() return get_player_fn and get_player_fn() or nil end;
 
   local function ensure_ui_preferences()
-    w.ui_preferences = w.ui_preferences or {}
-    local X = w.ui_preferences;
-    if X.hide_damage_text == nil then X.hide_damage_text = false end;
+    STATE.ui_preferences = STATE.ui_preferences or {}
+    local ui_prefs = STATE.ui_preferences;
+    if ui_prefs.hide_damage_text == nil then ui_prefs.hide_damage_text = false end;
 
-    if X.hide_hit_effects == nil then X.hide_hit_effects = false end;
+    if ui_prefs.hide_hit_effects == nil then ui_prefs.hide_hit_effects = false end;
 
-    if X.big_cursor == nil then X.big_cursor = false end;
+    if ui_prefs.big_cursor == nil then ui_prefs.big_cursor = false end;
 
-    if X.soft_paused == nil then X.soft_paused = false end;
+    if ui_prefs.soft_paused == nil then ui_prefs.soft_paused = false end;
 
-    return X
+    return ui_prefs
   end;
 
   local function get_hud_state()
-    w.runtime_hud = w.runtime_hud or {
+    STATE.runtime_hud = STATE.runtime_hud or {
       nodes = {},
       bound_events = {},
       visible = true,
@@ -147,76 +148,76 @@ function e.create(v)
       buff_prefab_root = nil,
       buff_list_comp = nil
     }
-    return w.runtime_hud
+    return STATE.runtime_hud
   end;
 
   local function resolve_ui_node(_)
-    local a0 = get_hud_state()
-    local a1 = a0.nodes[_]
-    if is_ui_alive(a1) then return a1 end;
+    local hud_state = get_hud_state()
+    local cached_node = hud_state.nodes[_]
+    if is_ui_alive(cached_node) then return cached_node end;
 
-    local a2 = get_player()
-    if not a2 then return nil end;
+    local player = get_player()
+    if not player then return nil end;
 
-    local u = a.resolve_ui(y, a2, _)
-    a0.nodes[_] = u;
+    local u = ui_root.resolve_ui(y3, player, _)
+    hud_state.nodes[_] = u;
     return u
   end;
 
-  local function resolve_first_ui_node(a4)
-    local a0 = get_hud_state()
-    local a5 = '__first__:' .. table.concat(a4 or {}, '|')
-    local a1 = a0.nodes[a5]
-    if is_ui_alive(a1) then return a1 end;
+  local function resolve_first_ui_node(name_list)
+    local hud_state = get_hud_state()
+    local cache_key = '__first__:' .. table.concat(name_list or {}, '|')
+    local cached_node = hud_state.nodes[cache_key]
+    if is_ui_alive(cached_node) then return cached_node end;
 
-    local a2 = get_player()
-    if not a2 then return nil end;
+    local player = get_player()
+    if not player then return nil end;
 
-    local u = a.resolve_first_ui(y, a2, a4)
-    a0.nodes[a5] = u;
+    local u = ui_root.resolve_first_ui(y3, player, name_list)
+    hud_state.nodes[cache_key] = u;
     return u
   end;
 
-  local function safe_ui_call(u, a7, ...)
+  local function safe_ui_call(u, method_name, ...)
     if not is_ui_alive(u) then return false end;
 
-    local a8 = u[a7]
-    if type(a8) ~= 'function' then return false end;
+    local method = u[method_name]
+    if type(method) ~= 'function' then return false end;
 
-    return pcall(a8, u, ...)
+    return pcall(method, u, ...)
   end;
 
-  local function set_ui_visible(u, aa)
+  local function set_ui_visible(u, visible)
     safe_ui_call(u, 'set_visible',
-      aa == true)
+      visible == true)
   end;
 
-  local function set_ui_text(u, ac)
-    safe_ui_call(u, 'set_text', ac or '')
+  local function set_ui_text(u, text)
+    safe_ui_call(u, 'set_text', text or '')
   end;
 
-  local function set_ui_text_color(u, ae)
-    if ae then safe_ui_call(u, 'set_text_color', ae[1], ae[2], ae[3], ae[4] or 255) end
+  local function set_ui_text_color(u, color)
+    if color then safe_ui_call(u, 'set_text_color', color[1], color[2], color[3], color[4] or 255) end
   end;
 
-  local function set_ui_font_size(u, ag)
-    if ag then safe_ui_call(u, 'set_font_size', ag) end
+  local function set_ui_font_size(u, font_size)
+    if font_size then safe_ui_call(u, 'set_font_size', font_size) end
   end;
 
-  local function set_ui_text_alignment(u, ai, aj)
-    if ai and aj then safe_ui_call(u, 'set_text_alignment', ai, aj) end
+  local function set_ui_text_alignment(u, h_align, v_align)
+    if h_align and v_align then safe_ui_call(u, 'set_text_alignment', h_align, v_align) end
   end;
 
-  local function set_ui_image(u, al)
-    if al ~= nil then safe_ui_call(u, 'set_image', al) end
+  local function set_ui_image(u, image_id)
+    if image_id ~= nil then safe_ui_call(u, 'set_image', image_id) end
   end;
 
-  local function set_ui_image_color(u, ae)
-    if ae then safe_ui_call(u, 'set_image_color', ae[1], ae[2], ae[3], ae[4] or 255) end
+  local function set_ui_image_color(u, color)
+    if color then safe_ui_call(u, 'set_image_color', color[1], color[2], color[3], color[4] or 255) end
   end;
 
-  local function set_ui_size(u, ao, ap)
-    if ao and ap then safe_ui_call(u, 'set_ui_size', ao, ap) end
+  local function set_ui_size(u, width, height)
+    if width and height then safe_ui_call(u, 'set_ui_size', width, height) end
   end;
 
   local function set_ui_anchor(u, ar, as)
@@ -264,9 +265,9 @@ function e.create(v)
   end;
 
   local function set_ui_pos_percent(u, ar, as)
-    local a2 = get_player()
-    if not a2 or not is_ui_alive(u) or not GameAPI or not GameAPI.set_ui_comp_pos_percent then return end;
-    pcall(GameAPI.set_ui_comp_pos_percent, a2.handle, u.handle, ar, as)
+    local player = get_player()
+    if not player or not is_ui_alive(u) or not GameAPI or not GameAPI.set_ui_comp_pos_percent then return end;
+    pcall(GameAPI.set_ui_comp_pos_percent, player.handle, u.handle, ar, as)
   end;
 
   local function format_short_number(aI)
@@ -322,21 +323,21 @@ function e.create(v)
   end;
 
   local function get_hero_attr(b1, b2)
-    if not w.hero or not w.hero.is_exist or not w.hero:is_exist() then return 0 end;
+    if not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then return 0 end;
 
-    local aI = B and B.get_attr(w.hero, b1) or w.hero:get_attr(b1)
+    local aI = hero_attr_system_ref and hero_attr_system_ref.get_attr(STATE.hero, b1) or STATE.hero:get_attr(b1)
     aI = tonumber(aI) or 0;
     if aI ~= 0 or not b2 then return aI end;
 
-    local b3 = B and B.get_attr(w.hero, b2) or w.hero:get_attr(b2)
+    local b3 = hero_attr_system_ref and hero_attr_system_ref.get_attr(STATE.hero, b2) or STATE.hero:get_attr(b2)
     return tonumber(b3) or 0
   end;
 
-  local function get_hero_level() return math.max(1, math.floor(tonumber(w.hero_progress and w.hero_progress.level) or 1)) end;
+  local function get_hero_level() return math.max(1, math.floor(tonumber(STATE.hero_progress and STATE.hero_progress.level) or 1)) end;
 
   local function get_hero_name()
-    if w.hero and w.hero.get_name and w.hero:is_exist() then
-      local b1 = w.hero:get_name()
+    if STATE.hero and STATE.hero.get_name and STATE.hero:is_exist() then
+      local b1 = STATE.hero:get_name()
       if b1 and b1 ~= '' then return b1 end
     end;
 
@@ -344,27 +345,27 @@ function e.create(v)
   end;
 
   local function get_hero_icon()
-    if w.hero and w.hero.get_icon and w.hero:is_exist() then return w.hero:get_icon() end;
+    if STATE.hero and STATE.hero.get_icon and STATE.hero:is_exist() then return STATE.hero:get_icon() end;
 
     return nil
   end;
 
   local function get_unit_type_icon(b8)
-    if b8 and y and y.unit and y.unit.get_icon_by_key then return y.unit.get_icon_by_key(b8) end;
+    if b8 and y3 and y3.unit and y3.unit.get_icon_by_key then return y3.unit.get_icon_by_key(b8) end;
 
     return nil
   end;
 
   local function get_hero_unit()
-    if w.hero and w.hero.is_exist and w.hero:is_exist() then return w.hero end;
+    if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() then return STATE.hero end;
 
     return nil
   end;
 
   local function get_player_name()
-    local a2 = get_player()
-    if a2 and a2.get_name then
-      local b1 = a2:get_name()
+    local player = get_player()
+    if player and player.get_name then
+      local b1 = player:get_name()
       if b1 and b1 ~= '' then return b1 end
     end;
 
@@ -372,37 +373,37 @@ function e.create(v)
   end;
 
   local function get_hero_hp_info()
-    local bc = w.hero and w.hero.is_exist and w.hero:is_exist()
-        and (tonumber(w.hero:get_hp()) or 0) or 0;
+    local bc = STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist()
+        and (tonumber(STATE.hero:get_hp()) or 0) or 0;
     local bd = math.max(1, get_hero_attr('生命结算值', '生命'))
     return bc, bd
   end;
 
   local function get_hero_exp_info()
-    local bf = tonumber(w.hero_progress and w.hero_progress.exp) or 0;
-    local bg = tonumber(w.hero_progress and w.hero_progress.exp_to_next) or 1;
+    local bf = tonumber(STATE.hero_progress and STATE.hero_progress.exp) or 0;
+    local bg = tonumber(STATE.hero_progress and STATE.hero_progress.exp_to_next) or 1;
     if bg <= 0 then bg = math.max(1, bf) end;
 
     return bf, bg
   end;
 
   local function has_pending_evolution_choice()
-    local a0 = w.evolution_runtime;
-    return a0 and a0.awaiting_choice == true and a0.current_choices and #a0.current_choices > 0 or false
+    local evo_runtime = STATE.evolution_runtime;
+    return evo_runtime and evo_runtime.awaiting_choice == true and evo_runtime.current_choices and #evo_runtime.current_choices > 0 or false
   end;
 
-  local function get_weapon_level() return w.gear_state and w.gear_state.items and w.gear_state.items.weapon and
-    w.gear_state.items.weapon.level or 0 end;
+  local function get_weapon_level() return STATE.gear_state and STATE.gear_state.items and STATE.gear_state.items.weapon and
+    STATE.gear_state.items.weapon.level or 0 end;
 
   local function get_weapon_item_key()
-    local bk = x.gear_upgrade_config and x.gear_upgrade_config.slots and x.gear_upgrade_config.slots.weapon or nil;
+    local bk = CONFIG.gear_upgrade_config and CONFIG.gear_upgrade_config.slots and CONFIG.gear_upgrade_config.slots.weapon or nil;
     return bk and bk.item_key or nil
   end;
 
   local function bk_icon_fallback()
     local item_key = get_weapon_item_key()
-    if item_key and y and y.item and y.item.get_icon_id_by_key then
-      local ok, icon = pcall(y.item.get_icon_id_by_key, item_key)
+    if item_key and y3 and y3.item and y3.item.get_icon_id_by_key then
+      local ok, icon = pcall(y3.item.get_icon_id_by_key, item_key)
       if ok and icon and tonumber(icon) and tonumber(icon) ~= 0 then
         return icon
       end
@@ -411,10 +412,10 @@ function e.create(v)
   end;
 
   local function get_hero_item_by_slot(bm)
-    if not w.hero or not w.hero.is_exist or not w.hero:is_exist() or not w.hero.get_item_by_slot then return nil end;
+    if not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() or not STATE.hero.get_item_by_slot then return nil end;
 
     local bn,
-    bo = pcall(w.hero.get_item_by_slot, w.hero, '物品栏', bm)
+    bo = pcall(STATE.hero.get_item_by_slot, STATE.hero, '物品栏', bm)
     if not bn then return nil end;
 
     return bo
@@ -478,7 +479,7 @@ function e.create(v)
   end;
 
   local function append_line(bE, ac)
-    local aI = tostring(ac or '')
+    local aI = tostring(text or '')
     if aI ~= '' then bE[#bE + 1] = aI end
   end;
 
@@ -488,7 +489,7 @@ function e.create(v)
   end;
 
   local function append_multiline_text(bE, ac)
-    local aI = tostring(ac or '')
+    local aI = tostring(text or '')
     if aI == '' then return end;
 
     for bv in aI:gmatch('[^\n]+') do append_line(bE, bv) end
@@ -549,7 +550,7 @@ function e.create(v)
       if ok then
         bs = payload
       elseif C then
-        C(string.format('[runtime_hud] build_bond_slot_tip_payload(%s) failed: %s', tostring(bL), tostring(payload)))
+        message_fn(string.format('[runtime_hud] build_bond_slot_tip_payload(%s) failed: %s', tostring(bL), tostring(payload)))
       end
     end;
     if not bs then return nil end;
@@ -595,7 +596,7 @@ function e.create(v)
 
   local function build_draw_tooltip()
     local bt = { '[左键点击]', string.format('本次消耗 %d 个木材', P), string.format('当前拥有 %s 木材',
-      format_short_number(w.resources and w.resources.wood or 0)), '', '抽取流派卡牌，相同流派会自动收录进卡册。' }
+      format_short_number(STATE.resources and STATE.resources.wood or 0)), '', '抽取流派卡牌，相同流派会自动收录进卡册。' }
     return {
       title = '抽卡 - [快捷键：F]',
       subtitle = '',
@@ -665,184 +666,184 @@ function e.create(v)
     return nil
   end;
 
-  local function build_attack_skill_entry(bX, bY)
-    if not bX then return nil end;
+  local function build_attack_skill_entry(slot_data, slot_index)
+    if not slot_data then return nil end;
 
-    local bt = {}
-    if bX.summary and bX.summary ~= '' then bt[#bt + 1] = tostring(bX.summary) end;
+    local tip_lines = {}
+    if slot_data.summary and slot_data.summary ~= '' then tip_lines[#tip_lines + 1] = tostring(slot_data.summary) end;
 
-    local bZ = tonumber(bX.damage_ratio) or 0;
-    if bZ > 0 then bt[#bt + 1] = string.format('倍率：%.0f%%', bZ * 100) end;
+    local damage_ratio = tonumber(slot_data.damage_ratio) or 0;
+    if damage_ratio > 0 then tip_lines[#tip_lines + 1] = string.format('倍率：%.0f%%', damage_ratio * 100) end;
 
-    local b_ = math.max(0, tonumber(bX.cast_range or 0) + tonumber(bX.range_bonus or 0))
-    if b_ > 0 then bt[#bt + 1] = string.format('射程：%d', math.floor(b_ + 0.5)) end;
+    local cast_range = math.max(0, tonumber(slot_data.cast_range or 0) + tonumber(slot_data.range_bonus or 0))
+    if cast_range > 0 then tip_lines[#tip_lines + 1] = string.format('射程：%d', math.floor(cast_range + 0.5)) end;
 
-    local c0 = tonumber(bX.base_cooldown) or 0;
-    if c0 > 0 and bX.id ~= 'basic_attack' then bt[#bt + 1] = string.format('基础冷却：%.1fs', c0) end;
+    local base_cooldown = tonumber(slot_data.base_cooldown) or 0;
+    if base_cooldown > 0 and slot_data.id ~= 'basic_attack' then tip_lines[#tip_lines + 1] = string.format('基础冷却：%.1fs', base_cooldown) end;
 
-    if bX.id == 'basic_attack' then bt[#bt + 1] = string.format('攻速：%s', format_short_number(get_hero_attr('攻击速度'))) end;
+    if slot_data.id == 'basic_attack' then tip_lines[#tip_lines + 1] = string.format('攻速：%s', format_short_number(get_hero_attr('攻击速度'))) end;
 
-    local c1 = tonumber(bX.cooldown_remaining) or 0;
+    local cooldown_remaining = tonumber(slot_data.cooldown_remaining) or 0;
     return {
-      id = tostring(bX.id or 'skill_' .. tostring(bY)),
-      name = tostring(bX.name or bX.id or '技能' .. tostring(bY)),
-      icon = bX.ui_icon or bX.icon,
-      key = bY == 1 and '普' or tostring(bY),
-      cooldown_text = c1 > 0 and string.format('%.1fs', c1) or '就绪',
-      legacy_cooldown_text = c1 > 0 and string.format('%.1f', c1) or '',
-      badge_text = bX.level and 'Lv.' .. tostring(bX.level) or '',
+      id = tostring(slot_data.id or 'skill_' .. tostring(slot_index)),
+      name = tostring(slot_data.name or slot_data.id or '技能' .. tostring(slot_index)),
+      icon = slot_data.ui_icon or slot_data.icon,
+      key = slot_index == 1 and '普' or tostring(slot_index),
+      cooldown_text = cooldown_remaining > 0 and string.format('%.1fs', cooldown_remaining) or '就绪',
+      legacy_cooldown_text = cooldown_remaining > 0 and string.format('%.1f', cooldown_remaining) or '',
+      badge_text = slot_data.level and 'Lv.' .. tostring(slot_data.level) or '',
       stack_text = '',
-      tip_title = tostring(bX.name or bX.id or '技能'),
-      tip_text = #bt > 0 and table.concat(bt, '\n') or '当前没有技能说明。'
+      tip_title = tostring(slot_data.name or slot_data.id or '技能'),
+      tip_text = #tip_lines > 0 and table.concat(tip_lines, '\n') or '当前没有技能说明。'
     }
   end;
 
-  local function build_hero_form_skill_entry(bY)
-    local c3 = w.hero_form_skills_system;
-    if not c3 or not c3.get_active_skill then return nil end;
+  local function build_hero_form_skill_entry(slot_index)
+    local form_skills_system = STATE.hero_form_skills_system;
+    if not form_skills_system or not form_skills_system.get_active_skill then return nil end;
 
-    local bX = c3.get_active_skill()
-    if not bX then return nil end;
+    local active_skill = form_skills_system.get_active_skill()
+    if not active_skill then return nil end;
 
-    local c4 = c3.get_active_entry and c3.get_active_entry() or nil;
-    local a0 = w.hero_form_skill_runtime or {}
-    local c1 = tonumber(a0.cooldowns and a0.cooldowns[bX.id]) or 0;
-    local c5 = tonumber(a0.counters and a0.counters[bX.id]) or 0;
-    local c6 = math.max(0, math.floor(tonumber(bX.trigger_value) or 0))
-    local bt = {}
-    if c4 and c4.title and c4.title ~= '' then bt[#bt + 1] = '专精：' .. tostring(c4.title) end;
+    local active_entry = form_skills_system.get_active_entry and form_skills_system.get_active_entry() or nil;
+    local form_skill_runtime = STATE.hero_form_skill_runtime or {}
+    local cooldown_remaining = tonumber(form_skill_runtime.cooldowns and form_skill_runtime.cooldowns[active_skill.id]) or 0;
+    local counter_val = tonumber(form_skill_runtime.counters and form_skill_runtime.counters[active_skill.id]) or 0;
+    local trigger_max = math.max(0, math.floor(tonumber(active_skill.trigger_value) or 0))
+    local tip_lines = {}
+    if active_entry and active_entry.title and active_entry.title ~= '' then tip_lines[#tip_lines + 1] = '专精：' .. tostring(active_entry.title) end;
 
-    if bX.subtitle and bX.subtitle ~= '' then bt[#bt + 1] = tostring(bX.subtitle) end;
+    if active_skill.subtitle and active_skill.subtitle ~= '' then tip_lines[#tip_lines + 1] = tostring(active_skill.subtitle) end;
 
-    if bX.summary and bX.summary ~= '' then bt[#bt + 1] = tostring(bX.summary) end;
+    if active_skill.summary and active_skill.summary ~= '' then tip_lines[#tip_lines + 1] = tostring(active_skill.summary) end;
 
-    if bX.item_desc and bX.item_desc ~= '' then bt[#bt + 1] = tostring(bX.item_desc) end;
+    if active_skill.item_desc and active_skill.item_desc ~= '' then tip_lines[#tip_lines + 1] = tostring(active_skill.item_desc) end;
 
-    if tonumber(bX.cooldown) and tonumber(bX.cooldown) > 0 then bt[#bt + 1] = string.format('冷却：%.1fs',
-        tonumber(bX.cooldown)) end;
+    if tonumber(active_skill.cooldown) and tonumber(active_skill.cooldown) > 0 then tip_lines[#tip_lines + 1] = string.format('冷却：%.1fs',
+        tonumber(active_skill.cooldown)) end;
 
     return {
-      id = tostring(bX.id or 'form_skill_' .. tostring(bY)),
-      name = tostring(bX.name or '猎手专精'),
-      icon = bX.ui_icon or bX.icon or get_hero_icon(),
+      id = tostring(active_skill.id or 'form_skill_' .. tostring(slot_index)),
+      name = tostring(active_skill.name or '猎手专精'),
+      icon = active_skill.ui_icon or active_skill.icon or get_hero_icon(),
       key = '专',
-      cooldown_text = c1 > 0 and string.format('%.1fs', c1) or '就绪',
-      legacy_cooldown_text = c1 > 0 and string.format('%.1f', c1) or '',
-      badge_text = c4 and c4.rarity or '',
-      stack_text = c6 > 1 and string.format('%d/%d', math.min(c5, c6), c6) or '',
-      tip_title = tostring(bX.name or '猎手专精'),
-      tip_text = #bt > 0 and table.concat(bt, '\n') or '当前没有专精说明。'
+      cooldown_text = cooldown_remaining > 0 and string.format('%.1fs', cooldown_remaining) or '就绪',
+      legacy_cooldown_text = cooldown_remaining > 0 and string.format('%.1f', cooldown_remaining) or '',
+      badge_text = active_entry and active_entry.rarity or '',
+      stack_text = trigger_max > 1 and string.format('%d/%d', math.min(counter_val, trigger_max), trigger_max) or '',
+      tip_title = tostring(active_skill.name or '猎手专精'),
+      tip_text = #tip_lines > 0 and table.concat(tip_lines, '\n') or '当前没有专精说明。'
     }
   end;
 
-  local function normalize_rarity_display(c8) return p[c8] or '普通' end;
+  local function normalize_rarity_display(rarity_key) return RARITY_NAME_MAP[rarity_key] or '普通' end;
 
-  local function get_evolution_runtime() return w.evolution_runtime end;
+  local function get_evolution_runtime() return STATE.evolution_runtime end;
 
-  local function get_hero_roster_by_unit(cb)
-    local cc = cb and cb.hero_unit_id or nil;
-    if cc == nil then return nil end;
+  local function get_hero_roster_by_unit(unit_def)
+    local hero_unit_id = unit_def and unit_def.hero_unit_id or nil;
+    if hero_unit_id == nil then return nil end;
 
-    return r[cc]
+    return roster_by_unit_id[hero_unit_id]
   end;
 
-  local function get_form_skill_and_roster_entry(cb)
-    local c4 = get_hero_roster_by_unit(cb)
-    if not c4 then return nil, nil end;
+  local function get_form_skill_and_roster_entry(unit_def)
+    local roster_entry = get_hero_roster_by_unit(unit_def)
+    if not roster_entry then return nil, nil end;
 
-    return s[c4.id], c4
+    return form_skills_lookup[roster_entry.id], roster_entry
   end;
 
-  local function build_evolution_skill_entry(cb, bY)
-    if not cb then return nil end;
+  local function build_evolution_skill_entry(evo_def, slot_index)
+    if not evo_def then return nil end;
 
-    local bX, c4 = get_form_skill_and_roster_entry(cb)
-    local cf = c4 and c4.name or cb.name or '专精' .. tostring(bY)
-    local cg = c4 and c4.title or bX and bX.subtitle or '英雄真身'
-    local ch = bX and bX.summary or c4 and c4.summary or cb.summary or ''
-    local bt = { string.format('[%s] %s', normalize_rarity_display(cb.quality), cg) }
-    if bX and bX.name and bX.name ~= '' then bt[#bt + 1] = '技能：' .. tostring(bX.name) end;
+    local form_skill_entry, roster_entry = get_form_skill_and_roster_entry(evo_def)
+    local display_name = roster_entry and roster_entry.name or evo_def.name or '专精' .. tostring(slot_index)
+    local display_title = roster_entry and roster_entry.title or form_skill_entry and form_skill_entry.subtitle or '英雄真身'
+    local description = form_skill_entry and form_skill_entry.summary or roster_entry and roster_entry.summary or evo_def.summary or ''
+    local tip_lines = { string.format('[%s] %s', normalize_rarity_display(evo_def.quality), display_title) }
+    if form_skill_entry and form_skill_entry.name and form_skill_entry.name ~= '' then tip_lines[#tip_lines + 1] = '技能：' .. tostring(form_skill_entry.name) end;
 
-    if ch ~= '' then bt[#bt + 1] = tostring(ch) end;
+    if description ~= '' then tip_lines[#tip_lines + 1] = tostring(description) end;
 
-    local icon_from_skill = bX and bX.icon
+    local icon_from_skill = form_skill_entry and form_skill_entry.icon
     return {
-      id = tostring(cb.id or 'evolution_' .. tostring(bY)),
-      name = tostring(cf),
-      icon = icon_from_skill or c4.icon or get_unit_type_icon(cb.hero_unit_id) or get_hero_icon(),
-      key = tostring(bY),
+      id = tostring(evo_def.id or 'evolution_' .. tostring(slot_index)),
+      name = tostring(display_name),
+      icon = icon_from_skill or roster_entry.icon or get_unit_type_icon(evo_def.hero_unit_id) or get_hero_icon(),
+      key = tostring(slot_index),
       cooldown_text = '',
       legacy_cooldown_text = '',
-      badge_text = normalize_rarity_display(cb.quality),
+      badge_text = normalize_rarity_display(evo_def.quality),
       stack_text = '',
-      tip_title = string.format('%s·%s', tostring(cf), tostring(cg)),
-      tip_text = table.concat(bt, '\n')
+      tip_title = string.format('%s·%s', tostring(display_name), tostring(display_title)),
+      tip_text = table.concat(tip_lines, '\n')
     }
   end;
 
-  local function get_skill_slot_entries(cj)
-    local ck = {}
-    local cl = w.attack_skill_state and w.attack_skill_state.slots or nil;
-    for bL = 1, math.min(z, cj or z) do
-      local bX = cl and cl[bL] or nil;
-      if bX then ck[#ck + 1] = build_attack_skill_entry(bX, bL) end
+  local function get_skill_slot_entries(max_slots)
+    local entries = {}
+    local skill_slots = STATE.attack_skill_state and STATE.attack_skill_state.slots or nil;
+    for slot_index = 1, math.min(skill_slot_count, max_slots or skill_slot_count) do
+      local slot_data = skill_slots and skill_slots[slot_index] or nil;
+      if slot_data then entries[#entries + 1] = build_attack_skill_entry(slot_data, slot_index) end
     end;
-    if #ck < cj then
-      local cm = build_hero_form_skill_entry(#ck + 1)
-      if cm then ck[#ck + 1] = cm end
+    if #entries < max_slots then
+      local form_entry = build_hero_form_skill_entry(#entries + 1)
+      if form_entry then entries[#entries + 1] = form_entry end
     end;
 
-    return ck
+    return entries
   end;
 
-  local function get_evolution_slot_entries(cj)
-    local ck = {}
-    local co = math.max(1, tonumber(cj) or h)
-    local a0 = get_evolution_runtime()
-    local cp = a0 and (a0.ordered_evolution_ids) or nil;
-    for bL = 1, co, 1 do
-      local cq = cp and cp[bL] or nil;
-      local cb = cq and q[cq] or nil;
-      if cb then
-        local c4 = build_evolution_skill_entry(cb, bL)
-        if c4 then ck[#ck + 1] = c4 end
+  local function get_evolution_slot_entries(count)
+    local entries = {}
+    local max_count = math.max(1, tonumber(count) or EVOLUTION_SLOT_COUNT)
+    local evo_runtime = get_evolution_runtime()
+    local evolution_ids = evo_runtime and (evo_runtime.ordered_evolution_ids) or nil;
+    for bL = 1, max_count, 1 do
+      local evo_id = evolution_ids and evolution_ids[bL] or nil;
+      local evo_def = evo_id and evolutions_by_id[evo_id] or nil;
+      if evo_def then
+        local entry = build_evolution_skill_entry(evo_def, bL)
+        if entry then entries[#entries + 1] = entry end
       end
     end;
 
-    return ck
+    return entries
   end;
 
   local function get_skill_entry_by_slot(bL)
-    if bL < 1 or bL > z then return nil end;
+    if bL < 1 or bL > skill_slot_count then return nil end;
 
-    local cl = w.attack_skill_state and w.attack_skill_state.slots or nil;
-    local bX = cl and cl[bL] or nil;
-    return build_attack_skill_entry(bX, bL)
+    local skill_slots = STATE.attack_skill_state and STATE.attack_skill_state.slots or nil;
+    local slot_data = skill_slots and skill_slots[bL] or nil;
+    return build_attack_skill_entry(slot_data, bL)
   end;
 
   local function get_pending_choice_status()
-    if w.gear_state and w.gear_state.awaiting_choice and w.gear_state.current_choices then return '武器待选',
+    if STATE.gear_state and STATE.gear_state.awaiting_choice and STATE.gear_state.current_choices then return '武器待选',
           '成长武器词缀候选已出现，请点击面板完成选择。' end;
 
-    if w.bond_runtime and w.bond_runtime.awaiting_choice and w.bond_runtime.current_choices then return '流派待选',
+    if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice and STATE.bond_runtime.current_choices then return '流派待选',
           '流派候选已生成，请点击面板完成选择。' end;
 
-    local ct = w.evolution_runtime;
+    local ct = STATE.evolution_runtime;
     if ct and ct.awaiting_choice and ct.current_choices then return '英雄功能提示', '进阶已迁移到新英雄功能，请打开英雄图鉴查看。' end;
 
     return nil, nil
   end;
 
   local function get_current_tip_text()
-    local a0 = get_hud_state()
-    if a0.tip_panel and a0.tip_expires_at and a0.tip_expires_at > (w.runtime_elapsed or 0) then return
-      a0.tip_title_text ~= '' and a0.tip_title_text or '系统提示', a0.tip_body_text or '' end;
+    local hud_state = get_hud_state()
+    if hud_state.tip_panel and hud_state.tip_expires_at and hud_state.tip_expires_at > (STATE.runtime_elapsed or 0) then return
+      hud_state.tip_title_text ~= '' and hud_state.tip_title_text or '系统提示', hud_state.tip_body_text or '' end;
 
     local cv,
     cw = get_pending_choice_status()
-    if cv and cw then return cv, cw end;
+    if choice_label and choice_hint then return choice_label, choice_hint end;
 
-    local ck = w.battle_event_feed and w.battle_event_feed.entries or nil;
+    local ck = STATE.battle_event_feed and STATE.battle_event_feed.entries or nil;
     if ck and #ck > 0 then
       local c4 = ck[#ck]
       if c4 and c4.text and c4.text ~= '' then
@@ -865,11 +866,11 @@ function e.create(v)
     local X = ensure_ui_preferences()
     local cv,
     a_ = get_pending_choice_status()
-    if cv then return '状态：' .. cv end;
+    if choice_label then return '状态：' .. cv end;
 
-    local cy = X.hide_damage_text and '跳字关' or '跳字开'
-    local cz = X.hide_hit_effects and '特效关' or '特效开'
-    local cA = X.soft_paused and '已暂停' or '进行中'
+    local damage_text_status = X.hide_damage_text and '跳字关' or '跳字开'
+    local hit_effects_status = X.hide_hit_effects and '特效关' or '特效开'
+    local pause_status = X.soft_paused and '已暂停' or '进行中'
     return string.format('状态：%s | %s | %s', cA, cy, cz)
   end;
 
@@ -880,91 +881,91 @@ function e.create(v)
       '\n') end;
 
   local function resolve_static_ui_panels()
-    local a0 = get_hud_state()
-    a0.attr_panel = resolve_first_ui_node({ 'BattleBottomHUD.layout.attr_panel',
+    local hud_state = get_hud_state()
+    hud_state.attr_panel = resolve_first_ui_node({ 'BattleBottomHUD.layout.attr_panel',
       'BattleBottomHUD.layout.right_station.attr_panel' })
-    a0.attr_panel_title = resolve_first_ui_node({ 'BattleBottomHUD.layout.attr_panel.title',
+    hud_state.attr_panel_title = resolve_first_ui_node({ 'BattleBottomHUD.layout.attr_panel.title',
       'BattleBottomHUD.layout.right_station.attr_panel.title' })
-    a0.attr_panel_body = resolve_first_ui_node({ 'BattleBottomHUD.layout.attr_panel.body',
+    hud_state.attr_panel_body = resolve_first_ui_node({ 'BattleBottomHUD.layout.attr_panel.body',
       'BattleBottomHUD.layout.right_station.attr_panel.body' })
-    a0.attr_panel_hint = resolve_first_ui_node({ 'BattleBottomHUD.layout.attr_panel.hint',
+    hud_state.attr_panel_hint = resolve_first_ui_node({ 'BattleBottomHUD.layout.attr_panel.hint',
       'BattleBottomHUD.layout.right_station.attr_panel.hint' })
-    set_ui_visible(a0.attr_panel, false)
-    safe_ui_call(a0.attr_panel, 'set_intercepts_operations', true)
-    set_ui_text_alignment(a0.attr_panel_title, '左', '中')
-    set_ui_text_alignment(a0.attr_panel_body, '左', '中')
-    set_ui_text_alignment(a0.attr_panel_hint, '右', '中')
-    if a0.bound_events.static_attr_panel_close ~= a0.attr_panel and is_ui_alive(a0.attr_panel) then
-      a0.bound_events.static_attr_panel_close = a0.attr_panel; a0.attr_panel:add_fast_event('左键-点击', function()
-        local cE = get_hud_state()
-        cE.attr_panel_visible = false; set_ui_visible(cE.attr_panel, false)
+    set_ui_visible(hud_state.attr_panel, false)
+    safe_ui_call(hud_state.attr_panel, 'set_intercepts_operations', true)
+    set_ui_text_alignment(hud_state.attr_panel_title, '左', '中')
+    set_ui_text_alignment(hud_state.attr_panel_body, '左', '中')
+    set_ui_text_alignment(hud_state.attr_panel_hint, '右', '中')
+    if hud_state.bound_events.static_attr_panel_close ~= hud_state.attr_panel and is_ui_alive(hud_state.attr_panel) then
+      hud_state.bound_events.static_attr_panel_close = hud_state.attr_panel; hud_state.attr_panel:add_fast_event('左键-点击', function()
+        local hud_state_inner = get_hud_state()
+        hud_state_inner.attr_panel_visible = false; set_ui_visible(hud_state_inner.attr_panel, false)
       end)
     end;
-    a0.tip_panel = resolve_first_ui_node({ 'BattleBottomHUD.layout.tip_panel',
+    hud_state.tip_panel = resolve_first_ui_node({ 'BattleBottomHUD.layout.tip_panel',
       'BattleBottomHUD.layout.right_station.tip_panel' })
-    a0.tip_panel_title = resolve_first_ui_node({ 'BattleBottomHUD.layout.tip_panel.title',
+    hud_state.tip_panel_title = resolve_first_ui_node({ 'BattleBottomHUD.layout.tip_panel.title',
       'BattleBottomHUD.layout.right_station.tip_panel.title' })
-    a0.tip_panel_body = resolve_first_ui_node({ 'BattleBottomHUD.layout.tip_panel.body',
+    hud_state.tip_panel_body = resolve_first_ui_node({ 'BattleBottomHUD.layout.tip_panel.body',
       'BattleBottomHUD.layout.right_station.tip_panel.body' })
-    a0.tip_panel_hint = resolve_first_ui_node({ 'BattleBottomHUD.layout.tip_panel.hint',
+    hud_state.tip_panel_hint = resolve_first_ui_node({ 'BattleBottomHUD.layout.tip_panel.hint',
       'BattleBottomHUD.layout.right_station.tip_panel.hint' })
-    set_ui_visible(a0.tip_panel, false)
-    safe_ui_call(a0.tip_panel, 'set_intercepts_operations', true)
-    set_ui_text_alignment(a0.tip_panel_title, '左', '中')
-    set_ui_text_alignment(a0.tip_panel_body, '左', '中')
-    set_ui_text_alignment(a0.tip_panel_hint, '右', '中')
-    if a0.bound_events.static_tip_panel_close ~= a0.tip_panel and is_ui_alive(a0.tip_panel) then
-      a0.bound_events.static_tip_panel_close = a0.tip_panel; a0.tip_panel:add_fast_event('左键-点击', function()
-        local cE = get_hud_state()
-        cE.tip_expires_at = 0; set_ui_visible(cE.tip_panel, false)
+    set_ui_visible(hud_state.tip_panel, false)
+    safe_ui_call(hud_state.tip_panel, 'set_intercepts_operations', true)
+    set_ui_text_alignment(hud_state.tip_panel_title, '左', '中')
+    set_ui_text_alignment(hud_state.tip_panel_body, '左', '中')
+    set_ui_text_alignment(hud_state.tip_panel_hint, '右', '中')
+    if hud_state.bound_events.static_tip_panel_close ~= hud_state.tip_panel and is_ui_alive(hud_state.tip_panel) then
+      hud_state.bound_events.static_tip_panel_close = hud_state.tip_panel; hud_state.tip_panel:add_fast_event('左键-点击', function()
+        local hud_state_inner = get_hud_state()
+        hud_state_inner.tip_expires_at = 0; set_ui_visible(hud_state_inner.tip_panel, false)
       end)
     end;
-    a0.hover_tip_panel = resolve_first_ui_node({ 'BattleBottomHUD.layout.right_station.hover_tip_panel',
+    hud_state.hover_tip_panel = resolve_first_ui_node({ 'BattleBottomHUD.layout.right_station.hover_tip_panel',
       'BattleBottomHUD.layout.hover_tip_panel' })
-    a0.hover_tip_panel_icon_bg = resolve_first_ui_node({ 'BattleBottomHUD.layout.right_station.hover_tip_panel.icon_bg',
+    hud_state.hover_tip_panel_icon_bg = resolve_first_ui_node({ 'BattleBottomHUD.layout.right_station.hover_tip_panel.icon_bg',
       'BattleBottomHUD.layout.hover_tip_panel.icon_bg' })
-    a0.hover_tip_panel_icon = resolve_first_ui_node({ 'BattleBottomHUD.layout.right_station.hover_tip_panel.icon',
+    hud_state.hover_tip_panel_icon = resolve_first_ui_node({ 'BattleBottomHUD.layout.right_station.hover_tip_panel.icon',
       'BattleBottomHUD.layout.hover_tip_panel.icon' })
-    a0.hover_tip_panel_title = resolve_first_ui_node({ 'BattleBottomHUD.layout.right_station.hover_tip_panel.title',
+    hud_state.hover_tip_panel_title = resolve_first_ui_node({ 'BattleBottomHUD.layout.right_station.hover_tip_panel.title',
       'BattleBottomHUD.layout.hover_tip_panel.title' })
-    a0.hover_tip_panel_subtitle = resolve_first_ui_node({ 'BattleBottomHUD.layout.right_station.hover_tip_panel.subtitle',
+    hud_state.hover_tip_panel_subtitle = resolve_first_ui_node({ 'BattleBottomHUD.layout.right_station.hover_tip_panel.subtitle',
       'BattleBottomHUD.layout.hover_tip_panel.subtitle' })
-    a0.hover_tip_panel_body = resolve_first_ui_node({ 'BattleBottomHUD.layout.right_station.hover_tip_panel.body',
+    hud_state.hover_tip_panel_body = resolve_first_ui_node({ 'BattleBottomHUD.layout.right_station.hover_tip_panel.body',
       'BattleBottomHUD.layout.hover_tip_panel.body' })
-    set_ui_visible(a0.hover_tip_panel, false)
-    safe_ui_call(a0.hover_tip_panel, 'set_intercepts_operations', false)
-    set_ui_text_alignment(a0.hover_tip_panel_title, '左', '中')
-    set_ui_text_alignment(a0.hover_tip_panel_subtitle, '左', '中')
-    set_ui_text_alignment(a0.hover_tip_panel_body, '左', '中')
-    a0.bond_tip_root = resolve_ui_node('TipsPanel')
-    a0.bond_tip_panel = resolve_first_ui_node({ 'TipsPanel.详情面板', '详情面板' })
-    a0.bond_tip_title = resolve_first_ui_node({ 'TipsPanel.详情面板.列表.标题', '详情面板.列表.标题' })
-    a0.bond_tip_subtitle = resolve_first_ui_node({ 'TipsPanel.详情面板.列表.副标题', '详情面板.列表.副标题' })
-    a0.bond_tip_contents = {}
+    set_ui_visible(hud_state.hover_tip_panel, false)
+    safe_ui_call(hud_state.hover_tip_panel, 'set_intercepts_operations', false)
+    set_ui_text_alignment(hud_state.hover_tip_panel_title, '左', '中')
+    set_ui_text_alignment(hud_state.hover_tip_panel_subtitle, '左', '中')
+    set_ui_text_alignment(hud_state.hover_tip_panel_body, '左', '中')
+    hud_state.bond_tip_root = resolve_ui_node('TipsPanel')
+    hud_state.bond_tip_panel = resolve_first_ui_node({ 'TipsPanel.详情面板', '详情面板' })
+    hud_state.bond_tip_title = resolve_first_ui_node({ 'TipsPanel.详情面板.列表.标题', '详情面板.列表.标题' })
+    hud_state.bond_tip_subtitle = resolve_first_ui_node({ 'TipsPanel.详情面板.列表.副标题', '详情面板.列表.副标题' })
+    hud_state.bond_tip_contents = {}
     for i = 1, 5 do
-      a0.bond_tip_contents[i] = resolve_first_ui_node({ 'TipsPanel.详情面板.列表.内容' .. tostring(i), '详情面板.列表.内容' .. tostring(i) })
+      hud_state.bond_tip_contents[i] = resolve_first_ui_node({ 'TipsPanel.详情面板.列表.内容' .. tostring(i), '详情面板.列表.内容' .. tostring(i) })
     end
-    a0.bond_tip_bottom = resolve_first_ui_node({ 'TipsPanel.详情面板.列表.底部内容', '详情面板.列表.底部内容' })
-    a0.bond_tip_icon = resolve_first_ui_node({ 'TipsPanel.详情面板.图标.图标', '详情面板.图标.图标' })
-    a0.bond_tip_icon_name = resolve_first_ui_node({ 'TipsPanel.详情面板.图标.名称', '详情面板.图标.名称' })
-    if not is_ui_alive(a0.bond_tip_panel) then
-      local cE = a0.bond_tip_root or resolve_ui_node('TipsPanel')
-      if is_ui_alive(cE) then a0.bond_tip_panel = a.resolve_child(cE, '详情面板') end
+    hud_state.bond_tip_bottom = resolve_first_ui_node({ 'TipsPanel.详情面板.列表.底部内容', '详情面板.列表.底部内容' })
+    hud_state.bond_tip_icon = resolve_first_ui_node({ 'TipsPanel.详情面板.图标.图标', '详情面板.图标.图标' })
+    hud_state.bond_tip_icon_name = resolve_first_ui_node({ 'TipsPanel.详情面板.图标.名称', '详情面板.图标.名称' })
+    if not is_ui_alive(hud_state.bond_tip_panel) then
+      local cE = hud_state.bond_tip_root or resolve_ui_node('TipsPanel')
+      if is_ui_alive(cE) then hud_state.bond_tip_panel = ui_root.resolve_child(cE, '详情面板') end
     end;
-    if is_ui_alive(a0.bond_tip_panel) then
-      if not is_ui_alive(a0.bond_tip_title) then a0.bond_tip_title = a.resolve_child(a0.bond_tip_panel, '列表.标题') end;
-      if not is_ui_alive(a0.bond_tip_subtitle) then a0.bond_tip_subtitle = a.resolve_child(a0.bond_tip_panel, '列表.副标题') end;
-      if not is_ui_alive(a0.bond_tip_bottom) then a0.bond_tip_bottom = a.resolve_child(a0.bond_tip_panel, '列表.底部内容') end;
+    if is_ui_alive(hud_state.bond_tip_panel) then
+      if not is_ui_alive(hud_state.bond_tip_title) then hud_state.bond_tip_title = ui_root.resolve_child(hud_state.bond_tip_panel, '列表.标题') end;
+      if not is_ui_alive(hud_state.bond_tip_subtitle) then hud_state.bond_tip_subtitle = ui_root.resolve_child(hud_state.bond_tip_panel, '列表.副标题') end;
+      if not is_ui_alive(hud_state.bond_tip_bottom) then hud_state.bond_tip_bottom = ui_root.resolve_child(hud_state.bond_tip_panel, '列表.底部内容') end;
       for i = 1, 5 do
-        if not is_ui_alive(a0.bond_tip_contents[i]) then a0.bond_tip_contents[i] = a.resolve_child(a0.bond_tip_panel, '列表.内容' .. tostring(i)) end;
+        if not is_ui_alive(hud_state.bond_tip_contents[i]) then hud_state.bond_tip_contents[i] = ui_root.resolve_child(hud_state.bond_tip_panel, '列表.内容' .. tostring(i)) end;
       end
-      if not is_ui_alive(a0.bond_tip_icon) then a0.bond_tip_icon = a.resolve_child(a0.bond_tip_panel, '图标.图标') end;
-      if not is_ui_alive(a0.bond_tip_icon_name) then a0.bond_tip_icon_name = a.resolve_child(a0.bond_tip_panel, '图标.名称') end;
+      if not is_ui_alive(hud_state.bond_tip_icon) then hud_state.bond_tip_icon = ui_root.resolve_child(hud_state.bond_tip_panel, '图标.图标') end;
+      if not is_ui_alive(hud_state.bond_tip_icon_name) then hud_state.bond_tip_icon_name = ui_root.resolve_child(hud_state.bond_tip_panel, '图标.名称') end;
     end;
-    set_ui_visible(a0.bond_tip_panel, false)
-    if not is_ui_alive(a0.big_cursor) then
-      local a2 = get_player()
-      local cF = a2 and a.get_overlay_parent(y, a2) or nil;
+    set_ui_visible(hud_state.bond_tip_panel, false)
+    if not is_ui_alive(hud_state.big_cursor) then
+      local player = get_player()
+      local cF = player and ui_root.get_overlay_parent(y3, player) or nil;
       if not cF then return end;
 
       local ac = cF:create_child('文本')
@@ -976,13 +977,13 @@ function e.create(v)
       ac:set_z_order(9380)
       ac:set_intercepts_operations(false)
       safe_ui_call(ac, 'set_follow_mouse', true, 12, -10)
-      a0.big_cursor = ac; set_ui_visible(ac, false)
+      hud_state.big_cursor = ac; set_ui_visible(ac, false)
     end
   end;
 
   local function get_attr_row_components(cH)
-    local cI = j[cH]
-    if not cI then return {} end;
+    local row_name = ATTR_ROW_NAMES[row_index]
+    if not row_name then return {} end;
 
     local cJ = 'BattleBottomHUD.layout.left_station.player_attr_list.' .. cI;
     return {
@@ -997,28 +998,28 @@ function e.create(v)
   local function reset_tip_state() return end;
 
   local function set_bond_tip_root_visible(dA0)
-    local a0 = get_hud_state()
-    if not is_ui_alive(a0.bond_tip_root) then a0.bond_tip_root = resolve_ui_node('TipsPanel') end;
-    if not is_ui_alive(a0.bond_tip_root) then return end;
-    set_ui_visible(a0.bond_tip_root, dA0 == true or w.attr_tips_panel_visible == true)
+    local hud_state = get_hud_state()
+    if not is_ui_alive(hud_state.bond_tip_root) then hud_state.bond_tip_root = resolve_ui_node('TipsPanel') end;
+    if not is_ui_alive(hud_state.bond_tip_root) then return end;
+    set_ui_visible(hud_state.bond_tip_root, dA0 == true or STATE.attr_tips_panel_visible == true)
   end;
 
   local function hide_all_tips()
-    local a0 = get_hud_state()
-    a0.hover_tip_visible = false; a0.bond_tip_visible = false; set_ui_visible(a0.hover_tip_panel, false)
-    set_ui_visible(a0.bond_tip_panel, false)
+    local hud_state = get_hud_state()
+    hud_state.hover_tip_visible = false; hud_state.bond_tip_visible = false; set_ui_visible(hud_state.hover_tip_panel, false)
+    set_ui_visible(hud_state.bond_tip_panel, false)
     set_bond_tip_root_visible(false)
   end;
 
   local function schedule_tip_hide(dA0)
-    local a0 = get_hud_state()
-    a0.bond_tip_hover_token = (a0.bond_tip_hover_token or 0) + 1;
-    local dA1 = a0.bond_tip_hover_token;
-    if not dA0 or dA0 <= 0 or not y or not y.ltimer or not y.ltimer.wait then
+    local hud_state = get_hud_state()
+    hud_state.bond_tip_hover_token = (hud_state.bond_tip_hover_token or 0) + 1;
+    local dA1 = hud_state.bond_tip_hover_token;
+    if not dA0 or dA0 <= 0 or not y3 or not y3.ltimer or not y3.ltimer.wait then
       hide_all_tips()
       return
     end;
-    y.ltimer.wait(dA0, function()
+    y3.ltimer.wait(dA0, function()
       local dA2 = get_hud_state()
       if dA2.bond_tip_hover_token == dA1 then hide_all_tips() end
     end)
@@ -1030,39 +1031,39 @@ function e.create(v)
       return
     end;
     ensure_hud()
-    local a0 = get_hud_state()
+    local hud_state = get_hud_state()
     reset_tip_state()
-    a0.bond_tip_visible = false; set_ui_visible(a0.bond_tip_panel, false)
+    hud_state.bond_tip_visible = false; set_ui_visible(hud_state.bond_tip_panel, false)
     set_bond_tip_root_visible(false)
-    if not is_ui_alive(a0.hover_tip_panel) then
+    if not is_ui_alive(hud_state.hover_tip_panel) then
       local dA3 = tostring(bs.title or '说明')
       local dA4 = tostring(bs.body or '')
       local dA5 = tostring(bs.subtitle or '')
       if dA5 ~= '' then
         if dA4 ~= '' then dA4 = dA5 .. '\n' .. dA4 else dA4 = dA5 end
       end;
-      a0.tip_expires_at = math.huge;
-      a0.tip_title_text = dA3;
-      a0.tip_body_text = dA4;
-      set_ui_text(a0.tip_panel_title, dA3)
-      set_ui_text(a0.tip_panel_body, dA4)
-      set_ui_visible(a0.tip_panel, a0.visible ~= false)
+      hud_state.tip_expires_at = math.huge;
+      hud_state.tip_title_text = dA3;
+      hud_state.tip_body_text = dA4;
+      set_ui_text(hud_state.tip_panel_title, dA3)
+      set_ui_text(hud_state.tip_panel_body, dA4)
+      set_ui_visible(hud_state.tip_panel, hud_state.visible ~= false)
       return
     end;
-    a0.hover_tip_visible = true; set_ui_text(a0.hover_tip_panel_title, bs.title or '说明')
-    set_ui_text(a0.hover_tip_panel_subtitle, bs.subtitle or '')
-    set_ui_text(a0.hover_tip_panel_body, bs.body or '')
-    set_ui_font_size(a0.hover_tip_panel_title, 16)
-    set_ui_font_size(a0.hover_tip_panel_subtitle, 13)
-    set_ui_font_size(a0.hover_tip_panel_body, 14)
-    set_ui_text_color(a0.hover_tip_panel_title, { 204, 226, 255, 255 })
-    set_ui_text_color(a0.hover_tip_panel_subtitle, { 255, 213, 96, 255 })
-    set_ui_text_color(a0.hover_tip_panel_body, { 222, 232, 244, 255 })
-    set_ui_visible(a0.hover_tip_panel_subtitle, bs.subtitle ~= nil and bs.subtitle ~= '')
-    set_ui_visible(a0.hover_tip_panel_icon_bg, bs.icon ~= nil)
-    set_ui_visible(a0.hover_tip_panel_icon, bs.icon ~= nil)
-    set_ui_image(a0.hover_tip_panel_icon, bs.icon)
-    set_ui_visible(a0.hover_tip_panel, a0.visible ~= false)
+    hud_state.hover_tip_visible = true; set_ui_text(hud_state.hover_tip_panel_title, bs.title or '说明')
+    set_ui_text(hud_state.hover_tip_panel_subtitle, bs.subtitle or '')
+    set_ui_text(hud_state.hover_tip_panel_body, bs.body or '')
+    set_ui_font_size(hud_state.hover_tip_panel_title, 16)
+    set_ui_font_size(hud_state.hover_tip_panel_subtitle, 13)
+    set_ui_font_size(hud_state.hover_tip_panel_body, 14)
+    set_ui_text_color(hud_state.hover_tip_panel_title, { 204, 226, 255, 255 })
+    set_ui_text_color(hud_state.hover_tip_panel_subtitle, { 255, 213, 96, 255 })
+    set_ui_text_color(hud_state.hover_tip_panel_body, { 222, 232, 244, 255 })
+    set_ui_visible(hud_state.hover_tip_panel_subtitle, bs.subtitle ~= nil and bs.subtitle ~= '')
+    set_ui_visible(hud_state.hover_tip_panel_icon_bg, bs.icon ~= nil)
+    set_ui_visible(hud_state.hover_tip_panel_icon, bs.icon ~= nil)
+    set_ui_image(hud_state.hover_tip_panel_icon, bs.icon)
+    set_ui_visible(hud_state.hover_tip_panel, hud_state.visible ~= false)
   end;
 
   -- 通用详情面板渲染：{ title, subtitle, icon, icon_name, contents={...}, bottom }
@@ -1072,20 +1073,20 @@ function e.create(v)
       return
     end;
     ensure_hud()
-    local a0 = get_hud_state()
+    local hud_state = get_hud_state()
     reset_tip_state()
-    if not is_ui_alive(a0.bond_tip_panel) or not is_ui_alive(a0.bond_tip_title) then resolve_static_ui_panels() end;
-    if not is_ui_alive(a0.bond_tip_panel) or not is_ui_alive(a0.bond_tip_title) then
+    if not is_ui_alive(hud_state.bond_tip_panel) or not is_ui_alive(hud_state.bond_tip_title) then resolve_static_ui_panels() end;
+    if not is_ui_alive(hud_state.bond_tip_panel) or not is_ui_alive(hud_state.bond_tip_title) then
       show_hover_tip_payload({ title = dP.title, subtitle = dP.subtitle, body = dP.bottom or '' })
       return
     end;
 
-    a0.hover_tip_visible = false; set_ui_visible(a0.hover_tip_panel, false)
-    a0.bond_tip_visible = true
-    set_ui_text(a0.bond_tip_title, tostring(dP.title or ''))
-    set_ui_text(a0.bond_tip_subtitle, tostring(dP.subtitle or ''))
+    hud_state.hover_tip_visible = false; set_ui_visible(hud_state.hover_tip_panel, false)
+    hud_state.bond_tip_visible = true
+    set_ui_text(hud_state.bond_tip_title, tostring(dP.title or ''))
+    set_ui_text(hud_state.bond_tip_subtitle, tostring(dP.subtitle or ''))
 
-    local contents = a0.bond_tip_contents or {}
+    local contents = hud_state.bond_tip_contents or {}
     local payload_contents = dP.contents or {}
     for i = 1, 5 do
       local text = tostring(payload_contents[i] or '')
@@ -1094,16 +1095,16 @@ function e.create(v)
     end
 
     local bottom_text = tostring(dP.bottom or '')
-    set_ui_text(a0.bond_tip_bottom, bottom_text)
-    set_ui_visible(a0.bond_tip_bottom, bottom_text ~= '')
+    set_ui_text(hud_state.bond_tip_bottom, bottom_text)
+    set_ui_visible(hud_state.bond_tip_bottom, bottom_text ~= '')
 
-    set_ui_visible(a0.bond_tip_icon, dP.icon ~= nil)
-    if dP.icon then set_ui_image(a0.bond_tip_icon, dP.icon) end;
-    set_ui_text(a0.bond_tip_icon_name, tostring(dP.icon_name or ''))
-    set_ui_visible(a0.bond_tip_icon_name, true)
+    set_ui_visible(hud_state.bond_tip_icon, dP.icon ~= nil)
+    if dP.icon then set_ui_image(hud_state.bond_tip_icon, dP.icon) end;
+    set_ui_text(hud_state.bond_tip_icon_name, tostring(dP.icon_name or ''))
+    set_ui_visible(hud_state.bond_tip_icon_name, true)
 
-    set_ui_visible(a0.bond_tip_panel, a0.visible ~= false)
-    set_bond_tip_root_visible(a0.visible ~= false)
+    set_ui_visible(hud_state.bond_tip_panel, hud_state.visible ~= false)
+    set_bond_tip_root_visible(hud_state.visible ~= false)
   end;
 
   local function show_bond_tip_payload(bs)
@@ -1151,8 +1152,8 @@ function e.create(v)
     cO) end;
 
   local function get_or_create_hero_model_ui()
-    local a0 = get_hud_state()
-    if is_ui_alive(a0.hero_model_ui) then return a0.hero_model_ui end;
+    local hud_state = get_hud_state()
+    if is_ui_alive(hud_state.hero_model_ui) then return hud_state.hero_model_ui end;
 
     local cQ = resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel')
     if not is_ui_alive(cQ) or type(cQ.create_child) ~= 'function' then return nil end;
@@ -1160,20 +1161,20 @@ function e.create(v)
     local bn,
     cR = pcall(cQ.create_child, cQ, '模型')
     if not bn or not is_ui_alive(cR) then return nil end;
-    a0.hero_model_ui = cR; set_ui_anchor(cR, 0.5, 0.5)
-    set_ui_size(cR, k.width, k.height)
-    set_ui_pos(cR, k.x, k.y)
+    hud_state.hero_model_ui = cR; set_ui_anchor(cR, 0.5, 0.5)
+    set_ui_size(cR, HERO_MODEL_FRAME_SIZE.width, HERO_MODEL_FRAME_SIZE.height)
+    set_ui_pos(cR, HERO_MODEL_FRAME_SIZE.x, HERO_MODEL_FRAME_SIZE.y)
     set_ui_visible(cR, true)
-    apply_ui_model_camera(cR, l)
+    apply_ui_model_camera(cR, HERO_MODEL_CAMERA)
     return cR
   end;
 
   local function bind_click_handler(cT, u, cU)
-    local a0 = get_hud_state()
-    if a0.bound_events[cT] == u and is_ui_alive(u) then return end;
+    local hud_state = get_hud_state()
+    if hud_state.bound_events[cT] == u and is_ui_alive(u) then return end;
 
     if not is_ui_alive(u) or not u.add_fast_event then return end;
-    a0.bound_events[cT] = u; safe_ui_call(u, 'set_intercepts_operations', true)
+    hud_state.bound_events[cT] = u; safe_ui_call(u, 'set_intercepts_operations', true)
     u:add_fast_event('左键-点击', function()
       if S then S() end;
       cU()
@@ -1181,11 +1182,11 @@ function e.create(v)
   end;
 
   local function bind_hover_handlers(cT, u, cW, cX)
-    local a0 = get_hud_state()
-    if a0.bound_events[cT] == u and is_ui_alive(u) then return end;
+    local hud_state = get_hud_state()
+    if hud_state.bound_events[cT] == u and is_ui_alive(u) then return end;
 
     if not is_ui_alive(u) or not u.add_fast_event then return end;
-    a0.bound_events[cT] = u; safe_ui_call(u, 'set_intercepts_operations', true)
+    hud_state.bound_events[cT] = u; safe_ui_call(u, 'set_intercepts_operations', true)
     u:add_fast_event('鼠标-移入', function()
       if cW then cW(u) end
     end)
@@ -1195,41 +1196,41 @@ function e.create(v)
   end;
 
   local function hide_tip_panel()
-    local a0 = get_hud_state()
-    a0.tip_expires_at = 0; set_ui_visible(a0.tip_panel, false)
+    local hud_state = get_hud_state()
+    hud_state.tip_expires_at = 0; set_ui_visible(hud_state.tip_panel, false)
   end;
 
   local function show_tip_panel(ac, c_, bz)
     ensure_hud()
-    local a0 = get_hud_state()
-    local d0 = tonumber(c_)
-    if d0 ~= nil and d0 <= 0 then a0.tip_expires_at = math.huge else a0.tip_expires_at = (w.runtime_elapsed or 0) +
-      math.max(1, d0 or f) end;
-    a0.tip_title_text = bz or '系统提示'
-    a0.tip_body_text = tostring(ac or '')
-    set_ui_text(a0.tip_panel_title, bz or '系统提示')
-    set_ui_text(a0.tip_panel_body, tostring(ac or ''))
-    set_ui_visible(a0.tip_panel, a0.visible ~= false)
+    local hud_state = get_hud_state()
+    local duration = tonumber(c_)
+    if d0 ~= nil and d0 <= 0 then hud_state.tip_expires_at = math.huge else hud_state.tip_expires_at = (STATE.runtime_elapsed or 0) +
+      math.max(1, d0 or DEFAULT_TIP_DURATION) end;
+    hud_state.tip_title_text = bz or '系统提示'
+    hud_state.tip_body_text = tostring(text or '')
+    set_ui_text(hud_state.tip_panel_title, bz or '系统提示')
+    set_ui_text(hud_state.tip_panel_body, tostring(text or ''))
+    set_ui_visible(hud_state.tip_panel, hud_state.visible ~= false)
   end;
 
   local function refresh_tip_panel_visibility()
-    local a0 = get_hud_state()
-    local d2 = a0.tip_expires_at and a0.tip_expires_at > (w.runtime_elapsed or 0)
-    set_ui_visible(a0.tip_panel, a0.visible ~= false and d2)
+    local hud_state = get_hud_state()
+    local d2 = hud_state.tip_expires_at and hud_state.tip_expires_at > (STATE.runtime_elapsed or 0)
+    set_ui_visible(hud_state.tip_panel, hud_state.visible ~= false and d2)
   end;
 
   local function refresh_hover_tip_visibility()
-    local a0 = get_hud_state()
+    local hud_state = get_hud_state()
     reset_tip_state()
-    set_ui_visible(a0.hover_tip_panel, a0.visible ~= false and a0.hover_tip_visible == true)
-    set_ui_visible(a0.bond_tip_panel, a0.visible ~= false and a0.bond_tip_visible == true)
+    set_ui_visible(hud_state.hover_tip_panel, hud_state.visible ~= false and hud_state.hover_tip_visible == true)
+    set_ui_visible(hud_state.bond_tip_panel, hud_state.visible ~= false and hud_state.bond_tip_visible == true)
   end;
 
   local function toggle_big_cursor()
     local X = ensure_ui_preferences()
     X.big_cursor = not X.big_cursor;
-    local a0 = get_hud_state()
-    set_ui_visible(a0.big_cursor, a0.visible ~= false and X.big_cursor)
+    local hud_state = get_hud_state()
+    set_ui_visible(hud_state.big_cursor, hud_state.visible ~= false and X.big_cursor)
     show_tip_panel(X.big_cursor and '大鼠标已开启，鼠标位置会显示辅助圈。' or '大鼠标已关闭。', 4, '鼠标辅助')
   end;
 
@@ -1248,19 +1249,19 @@ function e.create(v)
     local X = ensure_ui_preferences()
     X.soft_paused = not X.soft_paused;
     if X.soft_paused then
-      y.game.enable_soft_pause()
+      y3.game.enable_soft_pause()
       show_tip_panel('对局已暂停，再点一次继续。', 4, '战斗控制')
     else
-      y.game.resume_soft_pause()
+      y3.game.resume_soft_pause()
       show_tip_panel('对局已继续。', 4, '战斗控制')
     end
   end;
 
   local function toggle_runtime_attr_panel()
     ensure_hud()
-    local a0 = get_hud_state()
-    a0.attr_panel_visible = not a0.attr_panel_visible;
-    if a0.attr_panel_visible then
+    local hud_state = get_hud_state()
+    hud_state.attr_panel_visible = not hud_state.attr_panel_visible;
+    if hud_state.attr_panel_visible then
       local d9 = M and M() or {
         string.format('等级：%d', get_hero_level()),
         string.format('攻击：%s', format_short_number(get_hero_attr('攻击结算值', '攻击'))),
@@ -1269,11 +1270,11 @@ function e.create(v)
         string.format('智力：%s', format_short_number(get_hero_attr('最终智力', '智力'))),
         string.format('敏捷：%s', format_short_number(get_hero_attr('最终敏捷', '敏捷'))),
       }
-      set_ui_text(a0.attr_panel_title, '属性总览')
-      set_ui_text(a0.attr_panel_body, table.concat(d9, '\n\n'))
+      set_ui_text(hud_state.attr_panel_title, '属性总览')
+      set_ui_text(hud_state.attr_panel_body, table.concat(chunks, '\n\n'))
     end;
-    set_ui_visible(a0.attr_panel, a0.visible ~= false and a0.attr_panel_visible)
-    return a0.attr_panel_visible
+    set_ui_visible(hud_state.attr_panel, hud_state.visible ~= false and hud_state.attr_panel_visible)
+    return hud_state.attr_panel_visible
   end;
 
   local function set_static_labels()
@@ -1366,7 +1367,7 @@ function e.create(v)
   end;
 
   local function show_evolution_tip(bm)
-    local c4 = get_evolution_slot_entries(h)[bm]
+    local c4 = get_evolution_slot_entries(EVOLUTION_SLOT_COUNT)[bm]
     if not c4 then
       hide_all_tips()
       return
@@ -1381,7 +1382,7 @@ function e.create(v)
   end;
 
   local function show_buff_tip(bm)
-    local ck = R and R(z) or {}
+    local ck = get_status_effects_fn and get_status_effects_fn(skill_slot_count) or {}
     local c4 = ck[bm]
     if not c4 then
       hide_all_tips()
@@ -1448,37 +1449,37 @@ function e.create(v)
   end;
 
   local function ensure_buff_prefab()
-    local a0 = get_hud_state()
-    local a2 = get_player()
-    if not a2 or not y or not y.ui_prefab or type(y.ui_prefab.create) ~= 'function' then return end;
+    local hud_state = get_hud_state()
+    local player = get_player()
+    if not player or not y3 or not y3.ui_prefab or type(y3.ui_prefab.create) ~= 'function' then return end;
     local buff_parent = resolve_combat_module_ui('buff_row') or
     resolve_ui_node('BattleBottomHUD.layout.center_hub.combat_module')
 
-    if not is_ui_alive(a0.buff_prefab_root) then
-      local ok, prefab = pcall(y.ui_prefab.create, a2, 'bufflist', buff_parent)
+    if not is_ui_alive(hud_state.buff_prefab_root) then
+      local ok, prefab = pcall(y3.ui_prefab.create, player, 'bufflist', buff_parent)
       if ok and prefab then
         local root = prefab.get_child and prefab:get_child() or nil
         if is_ui_alive(root) then
-          a0.buff_prefab = prefab
-          a0.buff_prefab_root = root
-          a0.buff_list_comp = a.resolve_child(root, 'buff_list') or a.resolve_child(root, 'bufflist')
+          hud_state.buff_prefab = prefab
+          hud_state.buff_prefab_root = root
+          hud_state.buff_list_comp = ui_root.resolve_child(root, 'buff_list') or ui_root.resolve_child(root, 'bufflist')
           safe_ui_call(root, 'set_z_order', 9570)
           safe_ui_call(root, 'set_intercepts_operations', false)
-          set_ui_visible(root, a0.visible ~= false)
+          set_ui_visible(root, hud_state.visible ~= false)
         end
       end
     end
   end;
 
   local function refresh_buff_list()
-    local a0 = get_hud_state()
+    local hud_state = get_hud_state()
     local hero = get_hero_unit()
-    if is_ui_alive(a0.buff_list_comp) then
-      if hero and a0.buff_list_comp.set_buff_on_ui then
-        pcall(a0.buff_list_comp.set_buff_on_ui, a0.buff_list_comp, hero)
-        set_ui_visible(a0.buff_prefab_root, a0.visible ~= false)
+    if is_ui_alive(hud_state.buff_list_comp) then
+      if hero and hud_state.buff_list_comp.set_buff_on_ui then
+        pcall(hud_state.buff_list_comp.set_buff_on_ui, hud_state.buff_list_comp, hero)
+        set_ui_visible(hud_state.buff_prefab_root, hud_state.visible ~= false)
       else
-        set_ui_visible(a0.buff_prefab_root, false)
+        set_ui_visible(hud_state.buff_prefab_root, false)
       end
     end
   end;
@@ -1589,7 +1590,7 @@ function e.create(v)
       end)
     end;
 
-    for bL = 1, h do
+    for bL = 1, EVOLUTION_SLOT_COUNT do
       bind_hover_handlers('battle_skill_hover_' .. tostring(bL),
         resolve_combat_module_ui(string.format('skill_bar.skill_slot_%d', bL)), function()
         show_evolution_tip(bL)
@@ -1598,8 +1599,8 @@ function e.create(v)
       end)
     end;
 
-    for bL = 1, i do
-      bind_hover_handlers('battle_buff_hover_' .. tostring(bL),
+    for slot_index = 1, BUFF_SLOT_COUNT do
+      bind_hover_handlers('battle_buff_hover_' .. tostring(slot_index),
         resolve_combat_module_ui(string.format('buff_row.buff_slot_%d', bL)), function()
         show_buff_tip(bL)
       end, function()
@@ -1607,12 +1608,12 @@ function e.create(v)
       end)
     end;
 
-    for bL = 1, g do
+    for bL = 1, BOND_CARD_SLOT_COUNT do
       local dA3 = string.format('BattleBottomHUD.layout.right_station.card_panel.card_slot_%d', bL)
       local dA4 = resolve_ui_node(dA3)
       local function show_bond_tip_for_slot()
-        local a0 = get_hud_state()
-        a0.bond_tip_hover_token = (a0.bond_tip_hover_token or 0) + 1;
+        local hud_state = get_hud_state()
+        hud_state.bond_tip_hover_token = (hud_state.bond_tip_hover_token or 0) + 1;
         show_bond_slot_tip(bL)
       end;
       local function hide_bond_tip_after_delay() schedule_tip_hide(0.06) end;
@@ -1636,43 +1637,43 @@ function e.create(v)
   end;
 
   local function refresh_top_bar()
-    set_ui_text(resolve_ui_node('top.top.金币.image_3.label_2'), format_short_number(w.resources and w.resources.gold or 0))
-    set_ui_text(resolve_ui_node('top.top.木材.image_3.label_2'), format_short_number(w.resources and w.resources.wood or 0))
-    set_ui_text(resolve_ui_node('top.top.人口.image_3.label_2'), format_short_number(w.total_kills or 0))
+    set_ui_text(resolve_ui_node('top.top.金币.image_3.label_2'), format_short_number(STATE.resources and STATE.resources.gold or 0))
+    set_ui_text(resolve_ui_node('top.top.木材.image_3.label_2'), format_short_number(STATE.resources and STATE.resources.wood or 0))
+    set_ui_text(resolve_ui_node('top.top.人口.image_3.label_2'), format_short_number(STATE.total_kills or 0))
     set_ui_text(resolve_ui_node('top.top.金币.delta'), string.format('+%s/s', format_short_number(get_hero_attr('每秒金币'))))
     set_ui_text(resolve_ui_node('top.top.木材.delta'), string.format('+%s/s', format_short_number(get_hero_attr('每秒木材'))))
-    set_ui_text(resolve_ui_node('top.top.人口.delta'), string.format('敌 %d', math.max(0, tonumber(w.total_enemy_alive) or 0)))
+    set_ui_text(resolve_ui_node('top.top.人口.delta'), string.format('敌 %d', math.max(0, tonumber(STATE.total_enemy_alive) or 0)))
     local dt,
     du = get_current_tip_text()
     set_ui_text(resolve_ui_node('top.top.system_notice.notice_title'), dt)
     set_ui_text(resolve_ui_node('top.top.system_notice.notice_text'), du)
-    local dv = w.current_stage_def and (w.current_stage_def.display_label or w.current_stage_def.display_name) or '当前章节'
-    local dw = w.current_mode_def and w.current_mode_def.display_name or '战斗模式'
-    local dx = w.active_wave and w.active_wave.wave and w.active_wave.wave.name or
-    (w.current_wave_index and w.current_wave_index > 0 and string.format('第%d波', w.current_wave_index) or '未开始')
-    local dy = ({ get_pending_choice_status() })[1] or (w.session_phase == 'battle' and '战斗中' or '准备中')
+    local dv = STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) or '当前章节'
+    local dw = STATE.current_mode_def and STATE.current_mode_def.display_name or '战斗模式'
+    local dx = STATE.active_wave and STATE.active_wave.wave and STATE.active_wave.wave.name or
+    (STATE.current_wave_index and STATE.current_wave_index > 0 and string.format('第%d波', STATE.current_wave_index) or '未开始')
+    local dy = ({ get_pending_choice_status() })[1] or (STATE.session_phase == 'battle' and '战斗中' or '准备中')
     local dz;
-    if w.active_wave and w.active_wave.wave and w.active_wave.wave.boss_spawn_sec and w.active_wave.boss_spawned ~= true then
-      dz = string.format('Boss %.1fs', math.max(0, (w.active_wave.wave.boss_spawn_sec or 0) -
-      (w.active_wave.elapsed or 0)))
+    if STATE.active_wave and STATE.active_wave.wave and STATE.active_wave.wave.boss_spawn_sec and STATE.active_wave.boss_spawned ~= true then
+      dz = string.format('Boss %.1fs', math.max(0, (STATE.active_wave.wave.boss_spawn_sec or 0) -
+      (STATE.active_wave.elapsed or 0)))
     else
-      dz = string.format('敌人 %d', math.max(0, tonumber(w.total_enemy_alive) or 0))
+      dz = string.format('敌人 %d', math.max(0, tonumber(STATE.total_enemy_alive) or 0))
     end;
     set_ui_text(resolve_ui_node('top.tophud.layout_2.curlevel'), dv)
     set_ui_text(resolve_ui_node('top.tophud.layout_2.curlevel_sub'), dw)
-    set_ui_text(resolve_ui_node('top.tophud.layout_2.gametime'), format_time_mmss(w.runtime_elapsed or 0))
+    set_ui_text(resolve_ui_node('top.tophud.layout_2.gametime'), format_time_mmss(STATE.runtime_elapsed or 0))
     set_ui_text(resolve_ui_node('top.tophud.layout_2.wave'), dx)
     set_ui_text(resolve_ui_node('top.tophud.layout_2.phase_text'), dy)
     set_ui_text(resolve_ui_node('top.tophud.layout_2.threat_text'), dz)
     set_ui_text(resolve_ui_node('top.top.scoreboard.title'), '玩家状态')
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_name'), get_player_name())
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_power'), format_short_number(get_hero_attr('攻击结算值', '攻击')))
-    set_ui_text(resolve_ui_node('top.top.scoreboard.player_state'), w.session_phase == 'battle' and '战斗中' or '局外')
+    set_ui_text(resolve_ui_node('top.top.scoreboard.player_state'), STATE.session_phase == 'battle' and '战斗中' or '局外')
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_level'), tostring(get_hero_level()))
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_equip'), '0')
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_swallow'),
-      tostring(w.bond_runtime and table_count(w.bond_runtime.completed_root_sets) or 0))
-    for cH = 2, 4 do
+      tostring(STATE.bond_runtime and table_count(STATE.bond_runtime.completed_root_sets) or 0))
+    for row_index = 2, 4 do
       set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_name_%d', cH)), '-')
       set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_power_%d', cH)), '-')
       set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_state_%d', cH)), '-')
@@ -1732,12 +1733,12 @@ function e.create(v)
     bg = get_hero_exp_info()
     local dH = get_hero_unit()
     local dI = resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_portrait')
-    local cR = get_or_create_hero_model_ui()
+    local model_ui = get_or_create_hero_model_ui()
     local dJ = is_ui_alive(cR) and dH ~= nil; set_ui_visible(dI, not dJ)
     if dJ then
       set_ui_visible(cR, true)
       bind_ui_model_unit(cR, dH, false, true, true)
-      apply_ui_model_camera(cR, l)
+      apply_ui_model_camera(cR, HERO_MODEL_CAMERA)
     else
       set_ui_visible(cR, false)
       set_ui_image(dI, get_hero_icon())
@@ -1749,11 +1750,11 @@ function e.create(v)
       string.format('%s/%s', format_short_number(bc), format_short_number(bd)))
     set_ui_text_alignment(resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_text'), '中', '中')
     set_ui_visible(resolve_combat_module_ui('exp_bar'), true)
-    local dK = math.max(0, math.min(1, bf / math.max(1, bg)))
+    local exp_progress = math.max(0, math.min(1, bf / math.max(1, bg)))
     local dL = has_pending_evolution_choice()
-    local dM = math.max(1, math.floor(m * dK + 0.5))
+    local bar_width = math.max(1, math.floor(EXP_BAR_MAX_WIDTH * dK + 0.5))
     set_ui_text(resolve_combat_module_ui('exp_bar.level_label'), string.format('等级：%d', get_hero_level()))
-    set_ui_size(resolve_combat_module_ui('exp_bar.fill'), dM, n)
+    set_ui_size(resolve_combat_module_ui('exp_bar.fill'), dM, EXP_BAR_HEIGHT)
     set_ui_pos(resolve_combat_module_ui('exp_bar.fill'), o + dM / 2, 12)
     set_ui_image_color(resolve_combat_module_ui('exp_bar.fill'), dL and { 255, 177, 37, 255 } or { 210, 38, 178, 255 })
     set_ui_image_color(resolve_combat_module_ui('exp_bar.fill_glow'), dL and { 255, 191, 58, 150 } or { 255, 86, 220, 72 })
@@ -1771,23 +1772,23 @@ function e.create(v)
   end;
 
   local function refresh_challenge_row()
-    local dP = w.challenge_charge_map and w.challenge_charge_map.gold_trial or w.challenge_charges or 0;
-    local dQ = w.challenge_charge_map and w.challenge_charge_map.wood_trial or w.challenge_charges or 0; set_ui_text(
+    local dP = STATE.challenge_charge_map and STATE.challenge_charge_map.gold_trial or STATE.challenge_charges or 0;
+    local dQ = STATE.challenge_charge_map and STATE.challenge_charge_map.wood_trial or STATE.challenge_charges or 0; set_ui_text(
     resolve_combat_module_ui('challenge_row.gold_trial.title'), '金币挑战')
     set_ui_text(resolve_combat_module_ui('challenge_row.gold_trial.count'), tostring(math.max(0, tonumber(dP) or 0)))
     set_ui_text(resolve_combat_module_ui('challenge_row.treasure_trial.title'), '木材挑战')
     set_ui_text(resolve_combat_module_ui('challenge_row.treasure_trial.count'), tostring(math.max(0, tonumber(dQ) or 0)))
     set_ui_text(resolve_combat_module_ui('challenge_row.climb_layer.title'), '当前波次')
     set_ui_text(resolve_combat_module_ui('challenge_row.climb_layer.count'),
-      tostring(math.max(0, tonumber(w.current_wave_index) or 0)))
+      tostring(math.max(0, tonumber(STATE.current_wave_index) or 0)))
     set_ui_text(resolve_combat_module_ui('challenge_row.realm_progress.title'), '存活敌人')
     set_ui_text(resolve_combat_module_ui('challenge_row.realm_progress.count'),
-      tostring(math.max(0, tonumber(w.total_enemy_alive) or 0)))
+      tostring(math.max(0, tonumber(STATE.total_enemy_alive) or 0)))
   end;
 
   local function refresh_skill_bar()
-    local ck = get_evolution_slot_entries(h)
-    for bL = 1, h do
+    local ck = get_evolution_slot_entries(EVOLUTION_SLOT_COUNT)
+    for bL = 1, EVOLUTION_SLOT_COUNT do
       local cJ = string.format('skill_bar.skill_slot_%d', bL)
       local c4 = ck[bL]
       local dS = resolve_combat_module_ui(cJ)
@@ -1800,17 +1801,17 @@ function e.create(v)
   end;
 
   local function refresh_buff_row()
-    local ck = R and R(i) or {}
-    for bL = 1, i do
-      local cJ = string.format('buff_row.buff_slot_%d', bL)
-      local c4 = ck[bL]
-      local dS = resolve_combat_module_ui(cJ)
-      local dr = resolve_combat_module_ui(cJ .. '.icon')
-      set_ui_visible(dS, c4 ~= nil)
-      set_ui_visible(dr, c4 ~= nil and c4.icon ~= nil)
-      set_ui_image(dr, c4 and c4.icon or nil)
-      set_ui_image_color(dr, { 255, 255, 255, 255 })
-      if not c4 or not c4.icon then set_ui_image(dr, nil) end
+    local entries = get_status_effects_fn and get_status_effects_fn(BUFF_SLOT_COUNT) or {}
+    for slot_index = 1, BUFF_SLOT_COUNT do
+      local slot_path = string.format('buff_row.buff_slot_%d', slot_index)
+      local entry = entries[slot_index]
+      local slot_ui = resolve_combat_module_ui(slot_path)
+      local slot_icon = resolve_combat_module_ui(slot_path .. '.icon')
+      set_ui_visible(slot_ui, entry ~= nil)
+      set_ui_visible(slot_icon, entry ~= nil and entry.icon ~= nil)
+      set_ui_image(slot_icon, entry and entry.icon or nil)
+      set_ui_image_color(slot_icon, { 255, 255, 255, 255 })
+      if not entry or not entry.icon then set_ui_image(slot_icon, nil) end
     end
   end;
 
@@ -1827,23 +1828,23 @@ function e.create(v)
   end;
 
   local function refresh_bond_card_panel()
-    for bL = 1, g do
-      local cJ = string.format('BattleBottomHUD.layout.right_station.card_panel.card_slot_%d', bL)
-      local dr = resolve_ui_node(cJ .. '.icon')
-      local dq = Q and Q(bL) or nil; set_ui_visible(resolve_ui_node(cJ), bL <= 7 or bL == 8)
-      if dq then
-        set_ui_visible(dr, true)
-        set_ui_image(dr, dq)
+    for slot_index = 1, BOND_CARD_SLOT_COUNT do
+      local slot_path = string.format('BattleBottomHUD.layout.right_station.card_panel.card_slot_%d', slot_index)
+      local icon_ui = resolve_ui_node(slot_path .. '.icon')
+      local icon_id = get_bond_slot_icon_fn and get_bond_slot_icon_fn(slot_index) or nil; set_ui_visible(resolve_ui_node(slot_path), slot_index <= 7 or slot_index == 8)
+      if icon_id then
+        set_ui_visible(icon_ui, true)
+        set_ui_image(icon_ui, icon_id)
       else
-        set_ui_visible(dr, false)
-        set_ui_image(dr, nil)
+        set_ui_visible(icon_ui, false)
+        set_ui_image(icon_ui, nil)
       end
     end
   end;
 
   refresh_hud = function()
     ensure_hud()
-    local a0 = get_hud_state()
+    local hud_state = get_hud_state()
     ensure_buff_prefab()
     refresh_buff_list()
     set_static_labels()
@@ -1856,32 +1857,32 @@ function e.create(v)
     refresh_status_text()
     refresh_bond_card_panel()
     refresh_loadout_row()
-    set_ui_visible(a0.big_cursor, a0.visible ~= false and ensure_ui_preferences().big_cursor)
-    set_ui_visible(a0.attr_panel, a0.visible ~= false and a0.attr_panel_visible)
-    set_ui_visible(a0.buff_prefab_root, a0.visible ~= false)
+    set_ui_visible(hud_state.big_cursor, hud_state.visible ~= false and ensure_ui_preferences().big_cursor)
+    set_ui_visible(hud_state.attr_panel, hud_state.visible ~= false and hud_state.attr_panel_visible)
+    set_ui_visible(hud_state.buff_prefab_root, hud_state.visible ~= false)
     refresh_tip_panel_visibility()
     refresh_hover_tip_visibility()
-    return a0
+    return hud_state
   end;
 
-  local function set_hud_visible(aa)
-    local a0 = get_hud_state()
-    a0.visible = aa == true; set_ui_visible(resolve_ui_node('top'), aa)
-    set_ui_visible(resolve_ui_node('BattleBottomHUD'), aa)
+  local function set_hud_visible(visible)
+    local hud_state = get_hud_state()
+    hud_state.visible = visible == true; set_ui_visible(resolve_ui_node('top'), visible)
+    set_ui_visible(resolve_ui_node('BattleBottomHUD'), visible)
     set_ui_visible(resolve_ui_node('GameHUD'), false)
     set_ui_visible(resolve_ui_node('bottom_bg'), false)
-    set_ui_visible(a0.attr_panel,
-      aa == true and a0.attr_panel_visible)
-    set_ui_visible(a0.tip_panel,
-      aa == true and a0.tip_expires_at > (w.runtime_elapsed or 0))
-    set_ui_visible(a0.hover_tip_panel,
-      aa == true and a0.hover_tip_visible == true)
-    set_ui_visible(a0.bond_tip_panel,
-      aa == true and a0.bond_tip_visible == true)
-    set_bond_tip_root_visible(aa == true and a0.bond_tip_visible == true)
-    set_ui_visible(a0.big_cursor,
-      aa == true and ensure_ui_preferences().big_cursor)
-    set_ui_visible(a0.buff_prefab_root, aa == true)
+    set_ui_visible(hud_state.attr_panel,
+      visible == true and hud_state.attr_panel_visible)
+    set_ui_visible(hud_state.tip_panel,
+      visible == true and hud_state.tip_expires_at > (STATE.runtime_elapsed or 0))
+    set_ui_visible(hud_state.hover_tip_panel,
+      visible == true and hud_state.hover_tip_visible == true)
+    set_ui_visible(hud_state.bond_tip_panel,
+      visible == true and hud_state.bond_tip_visible == true)
+    set_bond_tip_root_visible(visible == true and hud_state.bond_tip_visible == true)
+    set_ui_visible(hud_state.big_cursor,
+      visible == true and ensure_ui_preferences().big_cursor)
+    set_ui_visible(hud_state.buff_prefab_root, visible == true)
   end;
 
   -- public api alias
@@ -1915,4 +1916,4 @@ function e.create(v)
   }
 end;
 
-return e
+return M

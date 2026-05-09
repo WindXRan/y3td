@@ -6,7 +6,42 @@ local SkillDamageTemplateConfig = require 'data.tables.skill.skill_damage_templa
 
 local M = {}
 
+--- attack_skills.create(env) — 攻击技能运行时系统入口
+--
+-- 必填字段 (缺少会导致明确错误):
+--   env.STATE         — 全局运行时状态表
+--   env.y3            — Y3 引擎 API
+--   env.hero_attr_system — 英雄属性系统实例
+--   env.get_player()  — 获取当前玩家单位
+--   env.get_enemies_in_range(center, radius, except, max) — 范围索敌
+--   env.deal_skill_damage(target, amount, damage, visual)   — 伤害结算
+--
+-- 可选但有默认值的字段:
+--   env.CONFIG        — 总配置表 (默认 {})
+--   env.attack_skill_slot_count — 技能槽数量 (默认 5)
+--   env.message()     — 日志/调试消息输出 (默认 noop)
+--   env.reserve_formula_damage() — 伤害公式预留 (默认 false)
+--
+-- 可选但强烈建议提供的字段 (功能开关):
+--   env.ATTACK_SKILL_DEFS, env.ATTACK_SKILL_BLUEPRINTS, env.ATTACK_SKILL_VFX
+--   env.skill_framework, env.round_number
+--   env.get_damage_bonus_multiplier, env.get_bond_runtime_bonus
+--   env.create_attack_skill_instance, env.is_active_enemy
+--   env.try_trigger_hunter_first_hit, env.notify_bond_attack_skill_cast
+--   env.notify_auto_active_basic_attack, env.notify_auto_active_skill_cast
+--   env.play_basic_attack_sound, env.play_attack_skill_sound
+--   env.get_hero_point
+--
+-- 返回值: 包含攻击技能全部公共方法的 table
+-- 调用方: runtime/boot.lua (attack_skills_system 变量)
 function M.create(env)
+  if not env or not env.STATE or not env.y3 or not env.hero_attr_system then
+    error('[attack_skills] 缺少必填字段: STATE, y3, hero_attr_system')
+  end
+  if not env.get_player or not env.get_enemies_in_range or not env.deal_skill_damage then
+    error('[attack_skills] 缺少必填字段: get_player, get_enemies_in_range, deal_skill_damage')
+  end
+
   local STATE = env.STATE
   local CONFIG = env.CONFIG or {}
   local ATTACK_SKILL_RUNTIME_TUNING =

@@ -1412,15 +1412,52 @@ local function build_choice_preview_segments(choice)
   return parts
 end
 
+-- choice entry 工厂：保证所有 choice entry 返回统一的字段结构。
+local CHOICE_ENTRY_DEFAULTS = {
+  index = 0,
+  node_id = nil,
+  display_name = '',
+  pretty_display_name = '',
+  quality = 'rare',
+  ui_icon = nil,
+  icon = nil,
+  title_text = '',
+  subtitle_text = '',
+  bond_root_name = '',
+  bond_root_progress_text = '',
+  progress_text = '',
+  current_text = '',
+  advanced_text = '',
+  next_text = '',
+  desc_text = '',
+  value_text = '',
+  effect_title = '',
+  effect_text = '',
+  body_blocks = {},
+  effect_color_mode = 'auto',
+}
+
+local function new_choice_entry(fields)
+  local entry = {}
+  for k, v in pairs(CHOICE_ENTRY_DEFAULTS) do
+    entry[k] = v
+  end
+  if fields then
+    for k, v in pairs(fields) do
+      entry[k] = v
+    end
+  end
+  return entry
+end
+
 local function build_group_choice_entry(group_def, index)
   local themed_name = get_group_choice_theme_name(group_def)
   local title_text = string.format('%s (未开悟)', themed_name)
   local current_text = get_group_choice_desc(group_def)
   local effect_text = string.format('感应后开启[%s]道统根脉。', themed_name)
 
-  return {
+  return new_choice_entry({
     index = index,
-    node_id = nil,
     group_choice_id = group_def.id,
     group_id = group_def.group_id,
     display_name = group_def.display_name,
@@ -1434,18 +1471,11 @@ local function build_group_choice_entry(group_def, index)
     bond_root_progress_text = '未开悟',
     progress_text = '未开悟',
     current_text = current_text,
-    advanced_text = '',
-    next_text = '',
-    desc_text = table.concat({
-      current_text,
-      effect_text,
-    }, '\n'),
+    desc_text = table.concat({ current_text, effect_text }, '\n'),
     value_text = current_text,
-    effect_title = '',
     effect_text = effect_text,
     body_blocks = build_choice_body_blocks(nil, nil, current_text, '', '', effect_text),
-    effect_color_mode = 'auto',
-  }
+  })
 end
 
 local function is_modifier_pool_enabled()
@@ -1522,10 +1552,10 @@ local function build_modifier_choice_entry(state, card, index)
   local current_text = card and card.desc or ''
   local set_name = card and card.bond_name or '技能'
   local effect_text = get_modifier_bond_activation_text(card and card.bond_name, card and card.activation_desc or '')
+  local effect_title = effect_text ~= '' and string.format('集齐[%s]激活：', set_name) or ''
 
-  return {
+  return new_choice_entry({
     index = index,
-    node_id = nil,
     modifier_card_id = card.id,
     display_name = card.name,
     pretty_display_name = card.name,
@@ -1536,18 +1566,13 @@ local function build_modifier_choice_entry(state, card, index)
     subtitle_text = card.name,
     bond_root_name = set_name,
     bond_root_progress_text = string.format('%d/%d', owned_count, total_count),
-    progress_text = '',
     current_text = current_text,
-    advanced_text = '',
-    next_text = '',
     desc_text = current_text,
     value_text = trim_choice_prefix(current_text),
-    effect_title = effect_text ~= '' and string.format('集齐[%s]激活：', set_name) or '',
+    effect_title = effect_title,
     effect_text = effect_text,
-    body_blocks = build_choice_body_blocks(state, nil, current_text, '',
-      effect_text ~= '' and string.format('集齐[%s]激活：', set_name) or '', effect_text),
-    effect_color_mode = 'auto',
-  }
+    body_blocks = build_choice_body_blocks(state, nil, current_text, '', effect_title, effect_text),
+  })
 end
 
 local function collect_merged_bonus_packs(pack_map)
@@ -2875,7 +2900,7 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
         effect_text = display_effect_text,
         effect_body_text = display_effect_body,
       })
-      card_entries[#card_entries + 1] = {
+      card_entries[#card_entries + 1] = new_choice_entry({
         index = index,
         modifier_card_id = card.id,
         display_name = card.name,
@@ -2897,7 +2922,7 @@ function M.build_bond_swallow_panel_model(state, selected_root_index)
         bond_root_progress_text = selected and selected.progress_text or '',
         title_text = string.format('%s (%s)', card.bond_name or '技能', selected and selected.progress_text or '0/0'),
         tip_model = tip_model,
-      }
+      })
     end
 
     local consumed_count = 0

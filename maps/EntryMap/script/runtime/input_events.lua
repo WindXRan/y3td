@@ -15,6 +15,7 @@ function M.create(env)
   local apply_round_choice = env.apply_round_choice
   local show_runtime_status = env.show_runtime_status
   local show_debug_hotkey_help = env.show_debug_hotkey_help
+  local show_debug_tip_example = env.show_debug_tip_example
   local debug_actions_system = env.debug_actions_system
   local gm_bond_effects_system = env.gm_bond_effects_system
   local toggle_talk_input = env.toggle_talk_input
@@ -137,6 +138,18 @@ function M.create(env)
         toggle_fixed_camera()
       end
     end)
+
+    -- 调试 tip 示例：1-5 直接显示不同 tip
+    local function register_tip_debug_key(key_name, index)
+      y3.game:event('键盘-按下', y3.const.KeyboardKey[key_name], function()
+        if show_debug_tip_example then show_debug_tip_example(index) end
+      end)
+    end
+    register_tip_debug_key('KEY_1', 1)
+    register_tip_debug_key('KEY_2', 2)
+    register_tip_debug_key('KEY_3', 3)
+    register_tip_debug_key('KEY_4', 4)
+    register_tip_debug_key('KEY_5', 5)
   end
 
   local function register_debug_hotkeys()

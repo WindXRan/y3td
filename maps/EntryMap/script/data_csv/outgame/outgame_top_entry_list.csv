@@ -1,8 +1,0 @@
-按钮,标题,动作,显示,enabled
-开始,选择难度,start_stage,1,1
-存档,存档,open_archive,1,1
-生涯,生涯,open_archive_career,1,1
-商城,商城,open_archive_shop,1,1
-排行,排行榜,open_archive_ranking,1,1
-挂机,挂机,switch_cultivation,1,1
-战令,战令,open_battlepass,1,1
