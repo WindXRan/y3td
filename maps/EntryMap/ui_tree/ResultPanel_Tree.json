@@ -1,0 +1,50 @@
+{
+  "name": "ResultPanel",
+  "uid": "1ee880c1-3601-41e5-a9d9-81423f477e67",
+  "type": 2,
+  "children": [
+    {
+      "name": "title_TEXT",
+      "uid": "8709f76e-7e87-4dda-bd06-4db4711d09f2",
+      "type": 3,
+      "children": []
+    },
+    {
+      "name": "wave_stat_TEXT",
+      "uid": "fc181916-450b-4d6c-9912-12ea27448f79",
+      "type": 3,
+      "children": []
+    },
+    {
+      "name": "gold_stat_TEXT",
+      "uid": "d2f7f457-e3b8-4060-8b82-eedf4e6c802a",
+      "type": 3,
+      "children": []
+    },
+    {
+      "name": "kills_stat_TEXT",
+      "uid": "0b15d535-8004-4b71-9faf-26220138a834",
+      "type": 3,
+      "children": []
+    },
+    {
+      "name": "hp_stat_TEXT",
+      "uid": "095a7d6f-fdd3-444f-827d-e156cff69109",
+      "type": 3,
+      "children": []
+    },
+    {
+      "name": "return_btn",
+      "uid": "d7886b61-242f-42a9-ba97-e9ac52af1b9a",
+      "type": 4,
+      "children": [
+        {
+          "name": "return_btn_text",
+          "uid": "c0ab680c-0135-4ea1-863f-5c9de2b7e988",
+          "type": 3,
+          "children": []
+        }
+      ]
+    }
+  ]
+}

@@ -56,6 +56,7 @@ gm_bond_effects_system = nil; RuntimeEntry._services.gm_bond_effects_system = ni
 runtime_hud_system = nil; RuntimeEntry._services.runtime_hud_system = nil
 overview_model_system = nil; RuntimeEntry._services.overview_model_system = nil
 outgame_system = nil; RuntimeEntry._services.outgame_system = nil
+result_panel_system = nil; RuntimeEntry._services.result_panel_system = nil
 reward_system = nil; RuntimeEntry._services.reward_system = nil
 attr_choice_system = nil; RuntimeEntry._services.attr_choice_system = nil
 audio_system = nil; RuntimeEntry._services.audio_system = nil
@@ -551,9 +552,9 @@ function RuntimeEntry.apply_fixed_camera_mode(enabled)
       return false
     end
     if y3.camera.set_tps_follow_unit then
-      y3.camera.set_tps_follow_unit(player, STATE.hero, 1, 0, -60, 0, 0, 220, 1800)
+      y3.camera.set_tps_follow_unit(player, STATE.hero, 1, 0, -60, 300, 0, 220, 1800)
     elseif y3.camera.set_camera_follow_unit then
-      y3.camera.set_camera_follow_unit(player, STATE.hero, 0, 0, 220)
+      y3.camera.set_camera_follow_unit(player, STATE.hero, 300, 0, 220)
     end
     if y3.camera.disable_camera_move then
       y3.camera.disable_camera_move(player)
@@ -2115,12 +2116,31 @@ local function handle_battle_finished(result)
     battlefield_system.cleanup_battle_units()
   end
   set_battle_hud_visible(false)
-  reset_battle_state()
-  STATE.session_phase = 'outgame'
-  STATE.game_finished = true
-  STATE.last_battle_result = result
-  if outgame_system then
-    outgame_system.enter_outgame(result)
+
+  local function finish_outgame_transition()
+    reset_battle_state()
+    STATE.session_phase = 'outgame'
+    STATE.game_finished = true
+    STATE.last_battle_result = result
+    if outgame_system then
+      outgame_system.enter_outgame(result)
+    end
+    if result_panel_system then
+      result_panel_system.hide()
+    end
+  end
+
+  if result_panel_system then
+    local gold = STATE.resources and STATE.resources.gold or 0
+    local hp = STATE.hero and STATE.hero:is_exist() and STATE.hero:get_hp() or 0
+    result_panel_system.show({
+      is_win = result.is_win,
+      reached_wave_index = result.reached_wave_index,
+      gold = gold,
+      hp = hp,
+    }, finish_outgame_transition)
+  else
+    finish_outgame_transition()
   end
 end
 
@@ -3490,6 +3510,11 @@ local growth_weapon_item_tip_system = require('ui.growth_weapon_item_tip').creat
   end,
 })
 
+result_panel_system = require('ui.result_panel').create({
+  y3 = y3,
+  get_player = get_player,
+})
+
 RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({
   RuntimeEntry = RuntimeEntry,
   BootInput = BootInput,
@@ -3517,6 +3542,7 @@ RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({
   hero_selection_range_system = hero_selection_range_system,
   outgame_system = outgame_system,
   growth_weapon_item_tip_system = growth_weapon_item_tip_system,
+  result_panel_system = result_panel_system,
   get_player = get_player,
   is_battle_active = function()
     return is_battle_active()

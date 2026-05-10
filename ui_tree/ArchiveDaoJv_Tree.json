@@ -1,0 +1,29 @@
+{
+  "name": "ArchiveDaoJv",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "btn",
+      "uid": "1a45d21f-1a9c-47b6-936f-626381363f5d",
+      "type": 1,
+      "children": [
+        {
+          "name": "bg",
+          "uid": "bf8a48e1-4e11-4558-bfee-82197eaf8cfe",
+          "type": 4
+        },
+        {
+          "name": "icon",
+          "uid": "62c306f1-cd89-4812-9660-5f1d0482bf23",
+          "type": 4
+        },
+        {
+          "name": "name",
+          "uid": "8d4e4578-a387-4bfa-b5ae-3eb259e89143",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}

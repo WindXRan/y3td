@@ -6,13 +6,21 @@
 
 - 始终使用中文回复用户。
 - 以 `maps/EntryMap/script` 下的实现为准，不以设计稿、旧入口或占位文件为准。
-- 功能实现状态优先看 `maps/EntryMap/script/docs/开发进度与计划/开发进度与计划.md`，再回到 `maps/EntryMap/script/*.lua` 核对。
+- 功能实现状态优先看 `maps/EntryMap/script/docs/总册/08-现状审查与执行案.md`，再回到 `maps/EntryMap/script/*.lua` 核对。
+- Loop 自主开发任务队列：`maps/EntryMap/script/docs/总册/LOOP_TASKS.md`
+- 设计文档：`maps/EntryMap/script/docs/总册/`
 
 ## 开发偏好
 
-- 当用户没有另行要求时，开发以速度优先，优先选择最短路径完成需求。
-- 当用户没有明确要求时，默认不主动编写测试用例、回归脚本或额外验证脚本。
-- 如果修改风险较高、影响面较大，或用户明确要求测试，再补充最小必要验证。
+### 自主模式
+- **全自动执行**：收到需求后直接分析、实现、验证，不需要请示"是否开始"、"是否继续"。
+- **选择最短路径**：当用户没有另行要求时，开发以速度优先，优先选择最短路径完成需求。
+- **默认不写测试**：当用户没有明确要求时，默认不主动编写测试用例、回归脚本或额外验证脚本。
+- **自己判断架构**：对于有明确答案的技术选择（如 bug 修复、单文件改动），直接动手。只在以下情况停下来问用户：
+  - 涉及多系统架构变更，有多种合理方案
+  - 破坏性操作（删文件、force push、reset --hard）
+  - 用户要求本身有歧义，需要澄清
+- **做完就汇报**：实现完成后一句话总结改动点，不等用户追问。
 
 ## 项目主线
 
@@ -109,3 +117,36 @@
   - UI 读哪个 runtime
 - 尽量使用 `y3` 封装，不直接调用 CAPI
 - 当前实现已经按模块拆分，不要回退成单文件堆积
+
+## .y3maker 辅助体系
+
+项目在 `maps/EntryMap/.y3maker/` 下有完整的辅助体系，开发时必须主动参考：
+
+### 规则文件
+- `maps/EntryMap/.y3maker/rules/rules.mdc` — 核心规则索引、技能路由、Lua 强制规则、核心禁令
+- `maps/EntryMap/.y3maker/rules/api-safety.mdc` — API 白名单规则、常见 API 错误速查
+- `maps/EntryMap/.y3maker/rules/ui-rules.mdc` — Y3 UI 坐标系（原点左下角）、官方组件（type 17/18/20）、字段规范
+- `maps/EntryMap/.y3maker/rules/mcp-rules.mdc` — MCP 熔断规则、热更+保存流程（先热更等 3 秒再保存）
+- `maps/EntryMap/.y3maker/rules/memory.mdc` — 记忆系统规则
+
+### 错题集（写 Lua 前必读）
+- `maps/EntryMap/.y3maker/memory/lua-issues/api_issues.md` — 12 条已验证的 API 错误用法 vs 正确用法
+- `maps/EntryMap/.y3maker/memory/lua-issues/trace_issues.md` — 运行期 Trace 问题归档
+
+### 知识库
+- `maps/EntryMap/.y3maker/knowledge/` — Y3 引擎知识（UI 系统 / 核心系统 / 物编系统）
+- `maps/EntryMap/.y3maker/knowledge/UI系统/03-官方组件.md` — UI 开发前必读
+
+### 自定义技能
+- `maps/EntryMap/.y3maker/skills/` — y3-lua-pipeline / y3-ui-pipeline / y3-obj-gen / y3-auto-test 等 9 个技能
+
+### 强制规则
+- 写 Lua 代码前必须先读 `api_issues.md` 和 `trace_issues.md`
+- 写 UI 路径前必须先查 `ui_tree/*.json` 确认控件层级
+- API 使用必须可追溯到 `y3-lua-pipeline/SKILL.md` 或 `references/`，禁止臆造 API
+
+## 代码风格
+
+- `ui/runtime_hud.lua` 中存在两种风格混写：早期的混淆风格（`aJ`, `bL`, `c4`, `dS`, `dr` 等短变量名 + `end;`）和后来的可读风格（`slot_index`, `slot_path`, `entry` 等语义化命名 + `end`）
+- 新增代码一律使用可读风格：语义化变量名，不带分号结尾
+- 不要批量重命名混淆变量，除非明确在做该段的完整重构

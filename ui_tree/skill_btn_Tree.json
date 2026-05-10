@@ -1,0 +1,93 @@
+{
+  "name": "skill_btn",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "skill_btn_1",
+      "uid": "10c7287e-4f6b-4f9b-8334-ad91091b8d87",
+      "type": 17,
+      "children": [
+        {
+          "name": "skill_icon_img",
+          "uid": "cee7e4cc-3598-490b-8505-f0981901dafe",
+          "type": 4
+        },
+        {
+          "name": "skill_frame_img",
+          "uid": "21253404-5075-487b-bac0-124efedfefa6",
+          "type": 4
+        },
+        {
+          "name": "skill_cd_progress",
+          "uid": "2434fef1-0ad1-4702-a151-aff57b058b3a",
+          "type": 5
+        },
+        {
+          "name": "skill_cd_label",
+          "uid": "738e006c-418c-49f5-a798-5bd2a8becd54",
+          "type": 3
+        },
+        {
+          "name": "skill_stack_label",
+          "uid": "2312fad5-e3a3-4bea-8a07-5b6048740b9e",
+          "type": 3
+        },
+        {
+          "name": "skill_upgrade_btn",
+          "uid": "2e894e0c-d14d-4527-a09d-c85193b1b25a",
+          "type": 1
+        },
+        {
+          "name": "skill_shortcut_label",
+          "uid": "845bb47f-0916-4fc6-b2f4-c8fcc768d812",
+          "type": 3
+        },
+        {
+          "name": "skill_level_label",
+          "uid": "4b8d6c43-3b21-4dba-8790-f82ff30cc5b3",
+          "type": 3
+        },
+        {
+          "name": "skill_consume_mask_img",
+          "uid": "ef8a3038-6e2a-41be-9346-e60bf7fe6c46",
+          "type": 4
+        },
+        {
+          "name": "skill_disable_img",
+          "uid": "5928dc2e-5981-46df-8495-6ada28d014a2",
+          "type": 4,
+          "children": [
+            {
+              "name": "skill_frame_img",
+              "uid": "1ccbe48e-29bf-48ac-8ed6-b4457bfff3ad",
+              "type": 4
+            }
+          ]
+        },
+        {
+          "name": "skill_charge_progress",
+          "uid": "aab14369-9164-4027-bebc-f2d16cd7eeba",
+          "type": 42,
+          "children": [
+            {
+              "name": "progress_bg_img",
+              "uid": "985bee97-cf75-4d75-8dbd-6a910345e4e6",
+              "type": 4
+            },
+            {
+              "name": "progress_bar_img",
+              "uid": "08970e71-d879-43a3-ad17-7e97b3c71a3b",
+              "type": 40
+            },
+            {
+              "name": "progress_percent_label",
+              "uid": "608dd627-eab8-4b10-bc9e-9a34a0fccfe8",
+              "type": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

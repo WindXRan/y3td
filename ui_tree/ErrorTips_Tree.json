@@ -1,0 +1,17 @@
+{
+  "name": "ErrorTips",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "image",
+      "uid": "c7652827-37be-485f-998d-8e5f246c6120",
+      "type": 4
+    },
+    {
+      "name": "text",
+      "uid": "b5e02e87-b489-4e0a-bcb9-768710392846",
+      "type": 3
+    }
+  ]
+}

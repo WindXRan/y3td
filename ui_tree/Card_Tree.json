@@ -1,0 +1,32 @@
+{
+  "name": "Card",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "image",
+      "uid": "f99f1cc6-ae0c-4b91-a80b-bdc3e78687d5",
+      "type": 4
+    },
+    {
+      "name": "image_2_1",
+      "uid": "20e1f19a-58dd-49b7-bc7f-6afaf19fd8c7",
+      "type": 4
+    },
+    {
+      "name": "desc",
+      "uid": "ef3ef6b9-5ade-4f2d-bcb8-168e619d2a0e",
+      "type": 3
+    },
+    {
+      "name": "title",
+      "uid": "02f5f3f9-c82b-432b-839e-1d1d07c64e62",
+      "type": 3
+    },
+    {
+      "name": "sub_title",
+      "uid": "69fce89b-5b57-4751-860a-140854b7a038",
+      "type": 3
+    }
+  ]
+}

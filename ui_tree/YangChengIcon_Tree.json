@@ -1,0 +1,22 @@
+{
+  "name": "YangChengIcon",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "bg",
+      "uid": "9fd414e3-a786-4e9f-b84d-266eca1497cd",
+      "type": 4
+    },
+    {
+      "name": "icon",
+      "uid": "bb7e8d47-8b7b-419f-ba55-8a9d8f170a5b",
+      "type": 4
+    },
+    {
+      "name": "name",
+      "uid": "d2b83610-f02f-442b-b6b9-80eb83421c7e",
+      "type": 3
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "ArchivePageOne",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "button",
+      "uid": "3c924113-e108-4435-803b-eedc9e423256",
+      "type": 1
+    },
+    {
+      "name": "label",
+      "uid": "f2bc05a9-fa68-4157-bcf1-824dfc95f460",
+      "type": 3
+    }
+  ]
+}

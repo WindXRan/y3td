@@ -1,0 +1,131 @@
+{
+  "name": "AttrTips",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "labelPrefab",
+      "uid": "99add722-8b4b-4534-b53b-367393daaf49",
+      "type": 3
+    },
+    {
+      "name": "grid_view",
+      "uid": "40925224-1061-427b-af8b-43041dd8389f",
+      "type": 25,
+      "children": [
+        {
+          "name": "labelPrefab_1",
+          "uid": "1654eeb9-e6fa-48a7-891f-ad352f04c21b",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_2",
+          "uid": "9bedfe6a-015a-4f59-b3f3-be388d10657d",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_3",
+          "uid": "d8586a6b-a707-403f-a01f-d7a80ed69efe",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_1_4_1",
+          "uid": "47c93cd8-a8a4-43fe-8932-e3b76755f957",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_1_1",
+          "uid": "da02450f-ba2e-4760-bbbe-5d1a542fe0aa",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_1_2",
+          "uid": "bbefcd8d-f57d-44e0-83c0-311b0f97a179",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_1_3",
+          "uid": "ab4b8b5f-5252-486b-a94e-398726c19242",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_2_3",
+          "uid": "a5950558-43bb-4f1b-bac8-005d8b330fc7",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_3_3",
+          "uid": "202b4ae2-7ff8-4f7d-a3df-05d005e8be35",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_2_2",
+          "uid": "07216106-cb04-44b4-84df-6d1019281b25",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_3_2",
+          "uid": "c13272f3-869d-40c6-9368-ff8ecf9586f4",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_2_1",
+          "uid": "de42ea9e-36ee-4197-96f0-50a7c1b80de4",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_3_1",
+          "uid": "a2c45afa-6f06-4d45-abf5-9474a4193cb2",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_2_4_1",
+          "uid": "1750dabc-afcd-47c4-a313-1e88bbc455bd",
+          "type": 3
+        },
+        {
+          "name": "labelPrefab_3_4_1",
+          "uid": "68336368-1831-4591-ab01-5119c3dcbb8b",
+          "type": 3
+        }
+      ]
+    },
+    {
+      "name": "scroll_view_2",
+      "uid": "c10a785a-3ee4-4699-a76d-7e9a19f71dcb",
+      "type": 10,
+      "children": [
+        {
+          "name": "label",
+          "uid": "5071888d-8e82-4334-b061-bdba940cd1fa",
+          "type": 3
+        },
+        {
+          "name": "label_4",
+          "uid": "a0ae9bc9-ef5d-4dca-ae29-3ad026f350f4",
+          "type": 3
+        },
+        {
+          "name": "label_5",
+          "uid": "ae3695f1-afda-4529-8ac3-5d744735fe72",
+          "type": 3
+        },
+        {
+          "name": "label_6",
+          "uid": "3b928e0a-1fb9-4289-aa9f-932d8722b688",
+          "type": 3
+        },
+        {
+          "name": "label_7",
+          "uid": "6e974174-4f0e-4f90-8ab3-04e7812a291f",
+          "type": 3
+        },
+        {
+          "name": "label_8",
+          "uid": "f6c224e7-f267-417d-9e35-ab9c93b27e2a",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}

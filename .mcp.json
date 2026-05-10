@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "y3-helper": {
+      "type": "url",
+      "url": "http://127.0.0.1:8766/mcp",
+      "timeout": 60
+    },
+    "y3editor": {
+      "type": "url",
+      "url": "http://127.0.0.1:8765/mcp",
+      "timeout": 60
+    },
+    "y3runtime": {
+      "type": "url",
+      "url": "http://127.0.0.1:8767/mcp",
+      "timeout": 60
+    }
+  }
+}

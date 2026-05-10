@@ -1,0 +1,54 @@
+{
+  "name": "ArchiveTips",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "scroll_view",
+      "uid": "c66a43a1-3511-4bda-838e-61a32988ca8e",
+      "type": 10,
+      "children": [
+        {
+          "name": "标题",
+          "uid": "c5b40204-5f3d-4302-b35d-9170bc607163",
+          "type": 3
+        },
+        {
+          "name": "是否拥有",
+          "uid": "4ee31e16-e684-4d15-99cf-c8fcc083d344",
+          "type": 3
+        },
+        {
+          "name": "详情效果标题",
+          "uid": "677552d0-f9cd-4820-a7bb-4de5a3c8305f",
+          "type": 3
+        },
+        {
+          "name": "详情效果内容",
+          "uid": "16ab6231-9f45-48ed-82e9-a07c75c31d44",
+          "type": 3
+        },
+        {
+          "name": "特殊效果标题",
+          "uid": "98c39b9e-975e-46f9-a79d-892d5bf4effc",
+          "type": 3
+        },
+        {
+          "name": "特殊效果内容",
+          "uid": "ea8b09b1-0e39-4858-9224-6462b329d1de",
+          "type": 3
+        },
+        {
+          "name": "获取方式标题",
+          "uid": "70c1abe7-8946-4db7-9813-f0f4b328bbe8",
+          "type": 3
+        },
+        {
+          "name": "获取方式内容",
+          "uid": "77ecea7c-4921-4743-9c66-09d169a8d882",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}

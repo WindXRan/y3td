@@ -1,0 +1,17 @@
+{
+  "name": "mode",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "button",
+      "uid": "dbd0f6c5-2f02-4103-96d2-1116822d889b",
+      "type": 1
+    },
+    {
+      "name": "name",
+      "uid": "84d4f23f-4d83-434f-b7d9-827d32729a39",
+      "type": 3
+    }
+  ]
+}

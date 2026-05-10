@@ -1,0 +1,57 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git pull *)",
+      "Bash(git restore *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(git ls-tree *)",
+      "Bash(git diff-tree *)",
+      "Bash(git show *)",
+      "Bash(git reset *)",
+      "Bash(git stash *)",
+      "Bash(ls *)",
+      "Bash(wc *)",
+      "Bash(mkdir *)",
+      "Bash(rm -rf y3-helper/plugin/)",
+      "Bash(python -c ' *)",
+      "Bash(python *)",
+      "Bash(luac -p *)",
+      "Bash(case *)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Read(//c/Y3TD/y3td/**)",
+      "Read(//c/Users/**)",
+      "Edit(//c/Y3TD/y3td/maps/EntryMap/**/*.lua)",
+      "Edit(//c/Y3TD/y3td/maps/EntryMap/**/*.md)",
+      "Edit(//c/Y3TD/y3td/maps/EntryMap/**/*.json)",
+      "Edit(//c/Y3TD/y3td/CLAUDE.md)",
+      "Write(//c/Y3TD/y3td/maps/EntryMap/**/*.lua)",
+      "Write(//c/Y3TD/y3td/maps/EntryMap/**/*.md)",
+      "Write(//c/Y3TD/y3td/maps/EntryMap/**/*.json)",
+      "Write(//c/Y3TD/y3td/CLAUDE.md)",
+      "Agent(//c/Y3TD/y3td/**)"
+    ],
+    "additionalDirectories": [
+      "C:\\Y3TD\\y3td\\maps\\EntryMap\\script\\y3-helper\\plugin"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "case \"${CLAUDE_TOOL_EDIT_FILE_PATH}\" in *.lua) luac -p \"${CLAUDE_TOOL_EDIT_FILE_PATH}\" 2>&1 || true ;; esac"
+          }
+        ]
+      }
+    ]
+  }
+}

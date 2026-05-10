@@ -1,0 +1,12 @@
+{
+  "name": "ArchiveGridView",
+  "uid": "",
+  "type": 7,
+  "children": [
+    {
+      "name": "grid_view_1",
+      "uid": "5380ac88-992a-4772-ad18-85d5518e3069",
+      "type": 25
+    }
+  ]
+}
