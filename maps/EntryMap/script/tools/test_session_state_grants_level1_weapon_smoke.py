@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import subprocess
@@ -55,7 +55,6 @@ def main() -> None:
         "  create_battle_event_feed_runtime = function() return {} end, "
         "  create_effect_debug_runtime = function() return {} end, "
         "  create_mark_runtime = function() return {} end, "
-        "  create_treasure_runtime = function() return {} end, "
         "  create_skill_runtime = function() return {} end, "
         "  create_attack_skill_state = function() return {} end, "
         "  destroy_choice_panel = function() end, "

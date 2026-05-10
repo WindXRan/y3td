@@ -6,7 +6,6 @@ math.randomseed(12345)
 
 local state = {
   evolution_runtime = nil,
-  treasure_runtime = nil,
 }
 
 local api = RewardSystem.create({

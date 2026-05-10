@@ -214,7 +214,7 @@ local bk={
 }
 for aE,a3 in ipairs(bk)do t(a.resolve_ui(e,a0,a3),false)end
 end;
-return end;t(bj,false)local bl={'GameHUD.main','GameHUD','bottom_bg.bottom_bg','bottom_bg'}for aE,a3 in ipairs(bl)do t(a.resolve_ui(e,a0,a3),false)end end;
+return end;t(bj,false)local bl={'GameHUD.main','bottom_bg.bottom_bg','bottom_bg'}for aE,a3 in ipairs(bl)do t(a.resolve_ui(e,a0,a3),false)end end;
 local function bm()local bn=g and g()or nil;
 return bn and bn.ensure_hud and bn.ensure_hud()or nil end;
 local function bo()local bn=g and g()or nil;

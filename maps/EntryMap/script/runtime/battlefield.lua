@@ -308,12 +308,27 @@ function M.create(env)
     return scale_enemy_count(base_count, get_enemy_batch_scale())
   end
 
+  local function get_monster_type_config(info)
+    if CONFIG and CONFIG.monster_type_config then
+      local monster_type = CONFIG.monster_type_config.resolve_type(info)
+      return CONFIG.monster_type_config.get_config(monster_type)
+    end
+    return nil
+  end
+
   local function get_enemy_spawn_speed_factor(info)
     local kind = info and info.kind or 'main'
     local factor = ENEMY_BASE_SPEED_FACTORS[kind]
     if factor == nil then
       factor = ENEMY_BASE_SPEED_FACTORS.main
     end
+    
+    -- 应用怪物类型配置的移动速度缩放
+    local type_config = get_monster_type_config(info)
+    if type_config and type_config.move_speed_scale then
+      factor = factor * type_config.move_speed_scale
+    end
+    
     factor = factor * (tonumber(CONFIG.enemy_move_speed_scale) or 1.0)
     return math.max(0.05, tonumber(factor) or 1)
   end
@@ -480,60 +495,75 @@ function M.create(env)
   local function resolve_enemy_hit_reaction_profile(info, hit)
     local is_boss = is_boss_runtime_enemy(info)
     local is_elite = is_elite_runtime_enemy(info)
+    local type_config = get_monster_type_config(info)
+    local hit_config = type_config and type_config.hit_reaction
+    
+    local heavy_threshold = hit_config and hit_config.heavy_hit_threshold or (is_boss and 0.08 or 0.12)
+    local medium_threshold = hit_config and hit_config.medium_hit_threshold or (is_boss and 0.025 or 0.04)
+    local effect_scale = type_config and type_config.visual and type_config.visual.effect_scale or 1.0
+    
     local damage = hit and hit.damage or 0
     local damage_ratio = hit and hit.damage_ratio or 0
 
     if (hit and hit.is_critical)
-      or damage_ratio >= (is_boss and 0.08 or 0.12)
+      or damage_ratio >= heavy_threshold
       or damage >= (is_boss and 120 or 80)
     then
+      local shove_dist = hit_config and hit_config.shove_distance
+      if shove_dist == nil then
+        shove_dist = is_boss and 0 or (is_elite and 18 or 26)
+      end
       return {
         hit_kind = 'heavy',
         min_interval = is_boss and 0.09 or 0.07,
         burst_effect = 102702,
-        burst_scale = is_boss and 0.90 or (is_elite and 0.82 or 0.72),
+        burst_scale = (is_boss and 0.90 or (is_elite and 0.82 or 0.72)) * effect_scale,
         burst_time = is_boss and 0.26 or 0.22,
         burst_height = is_boss and 32 or 26,
         burst_color = is_boss and { 255, 52, 42, 228 } or { 255, 42, 30, 220 },
         burst_anim_speed = 1.22,
-        shock_scale = is_boss and 0.76 or 0.68,
+        shock_scale = (is_boss and 0.76 or 0.68) * effect_scale,
         shock_time = is_boss and 0.30 or 0.24,
-        mist_scale = is_boss and 0.72 or 0.60,
+        mist_scale = (is_boss and 0.72 or 0.60) * effect_scale,
         mist_time = is_boss and 0.36 or 0.28,
         mist_distance = is_boss and 76 or 62,
         mist_speed = is_boss and 760 or 680,
-        trail_scale = is_boss and 0.56 or 0.46,
+        trail_scale = (is_boss and 0.56 or 0.46) * effect_scale,
         trail_time = is_boss and 0.34 or 0.28,
         trail_distance = is_boss and 88 or 72,
         trail_speed = is_boss and 880 or 760,
-        shove_distance = is_boss and 0 or (is_elite and 18 or 26),
+        shove_distance = shove_dist,
         shove_speed = is_elite and 940 or 1080,
         shove_interval = 0.18,
       }
     end
 
     if is_elite
-      or damage_ratio >= (is_boss and 0.025 or 0.04)
+      or damage_ratio >= medium_threshold
       or damage >= (is_boss and 42 or 22)
     then
+      local shove_dist = hit_config and hit_config.shove_distance
+      if shove_dist == nil then
+        shove_dist = is_boss and 0 or (is_elite and 10 or 16)
+      end
       return {
         hit_kind = 'medium',
         min_interval = is_boss and 0.075 or 0.055,
         burst_effect = 102706,
-        burst_scale = is_boss and 0.72 or (is_elite and 0.62 or 0.54),
+        burst_scale = (is_boss and 0.72 or (is_elite and 0.62 or 0.54)) * effect_scale,
         burst_time = is_boss and 0.22 or 0.18,
         burst_height = is_boss and 24 or 20,
         burst_color = is_boss and { 228, 40, 34, 212 } or { 212, 30, 28, 196 },
         burst_anim_speed = 1.18,
-        mist_scale = is_boss and 0.56 or 0.44,
+        mist_scale = (is_boss and 0.56 or 0.44) * effect_scale,
         mist_time = is_boss and 0.28 or 0.22,
         mist_distance = is_boss and 52 or 42,
         mist_speed = is_boss and 620 or 520,
-        trail_scale = is_boss and 0.40 or 0.32,
+        trail_scale = (is_boss and 0.40 or 0.32) * effect_scale,
         trail_time = is_boss and 0.24 or 0.20,
         trail_distance = is_boss and 54 or 46,
         trail_speed = is_boss and 620 or 560,
-        shove_distance = is_boss and 0 or (is_elite and 10 or 16),
+        shove_distance = shove_dist,
         shove_speed = 820,
         shove_interval = 0.14,
       }
@@ -543,12 +573,12 @@ function M.create(env)
       hit_kind = 'light',
       min_interval = 0.04,
       burst_effect = 102706,
-      burst_scale = is_boss and 0.48 or (is_elite and 0.42 or 0.34),
+      burst_scale = (is_boss and 0.48 or (is_elite and 0.42 or 0.34)) * effect_scale,
       burst_time = is_boss and 0.16 or 0.12,
       burst_height = is_boss and 18 or 14,
       burst_color = { 182, 24, 24, 172 },
       burst_anim_speed = 1.10,
-      mist_scale = is_boss and 0.34 or 0.26,
+      mist_scale = (is_boss and 0.34 or 0.26) * effect_scale,
       mist_time = 0.14,
       mist_distance = is_boss and 30 or 24,
       mist_speed = 380,
@@ -702,13 +732,36 @@ function M.create(env)
   end
 
   local function resolve_enemy_death_reaction_profile(info)
-    if info and info.kind == 'boss' then
+    local type_config = get_monster_type_config(info)
+    local death_config = type_config and type_config.death_reaction
+    local is_boss = is_boss_runtime_enemy(info)
+    
+    local effect_scale = 1.0
+    if type_config and type_config.visual then
+      effect_scale = type_config.visual.effect_scale or 1.0
+    end
+    
+    if death_config then
+      return {
+        corpse_distance = death_config.corpse_distance or (is_boss and 96 or 160),
+        corpse_speed = death_config.corpse_speed or (is_boss and 680 or 920),
+        remove_delay = death_config.remove_delay or (is_boss and 1.30 or 1.00),
+        effect_id = 100031, -- 资源库标签：嗜血
+        effect_scale = (death_config.effect_scale or (is_boss and 1.26 or 0.96)) * effect_scale,
+        effect_time = is_boss and 0.72 or 0.56,
+        effect_height = is_boss and 18 or 14,
+        effect_anim_speed = is_boss and 1.18 or 1.10,
+        effect_color = is_boss and { 232, 36, 32, 224 } or { 220, 30, 26, 210 },
+      }
+    end
+
+    if is_boss then
       return {
         corpse_distance = 96,
         corpse_speed = 680,
         remove_delay = 1.30,
         effect_id = 100031, -- 资源库标签：嗜血
-        effect_scale = 1.26,
+        effect_scale = 1.26 * effect_scale,
         effect_time = 0.72,
         effect_height = 18,
         effect_anim_speed = 1.18,
@@ -721,7 +774,7 @@ function M.create(env)
       corpse_speed = 920,
       remove_delay = 1.00,
       effect_id = 100031, -- 资源库标签：嗜血
-      effect_scale = 0.96,
+      effect_scale = 0.96 * effect_scale,
       effect_time = 0.56,
       effect_height = 14,
       effect_anim_speed = 1.10,
@@ -793,6 +846,17 @@ function M.create(env)
       end)
     end
 
+    if y3 and y3.particle then
+      pcall(y3.particle.create, {
+        type = 104062,
+        target = death_point,
+        angle = death_angle,
+        scale = 1.0,
+        time = 0.6,
+        height = 0,
+      })
+    end
+
     return profile.remove_delay or 0.55
   end
 
@@ -847,7 +911,22 @@ function M.create(env)
       info.owner.alive_count = (info.owner.alive_count or 0) + 1
     end
 
+    -- 立即应用血条
     CustomHealthBars.apply_enemy(env, info)
+    
+    -- 延迟再次应用血条，确保单位完全初始化
+    if y3 and y3.game and y3.game.wait then
+      y3.game.wait(0.05, function()
+        if info and info.alive and info.unit then
+          local unit_valid = pcall(function()
+            return info.unit.is_exist and info.unit:is_exist()
+          end)
+          if unit_valid then
+            CustomHealthBars.apply_enemy(env, info)
+          end
+        end
+      end)
+    end
 
     function info.remove_runtime(grant_death_rewards)
       if not info.alive then
@@ -875,8 +954,15 @@ function M.create(env)
       end
 
       if grant_death_rewards then
+        local scaled_reward = info.reward
+        -- 应用怪物类型配置的奖励缩放
+        if scaled_reward and CONFIG and CONFIG.monster_type_config then
+          local monster_type = CONFIG.monster_type_config.resolve_type(info)
+          scaled_reward = CONFIG.monster_type_config.apply_reward_scaling(scaled_reward, monster_type)
+        end
+        
         if info.kind == 'main' then
-          env.award_rewards(env.build_reward_with_bond_bonus(info.reward), nil, true)
+          env.award_rewards(env.build_reward_with_bond_bonus(scaled_reward), nil, true)
           if STATE.skill_runtime and STATE.skill_runtime.medbot_every and STATE.skill_runtime.medbot_every > 0 and STATE.skill_runtime.medbot_heal and STATE.skill_runtime.medbot_heal > 0 then
             STATE.skill_runtime.medbot_kills = STATE.skill_runtime.medbot_kills + 1
             if STATE.skill_runtime.medbot_kills >= STATE.skill_runtime.medbot_every then
@@ -885,9 +971,9 @@ function M.create(env)
             end
           end
         elseif info.kind == 'boss' then
-          env.award_rewards(env.build_reward_with_bond_bonus(info.reward), get_boss_name(info.wave), false)
-        elseif info.kind == 'challenge' and info.reward then
-          env.award_rewards(env.build_reward_with_bond_bonus(info.reward), nil, true)
+          env.award_rewards(env.build_reward_with_bond_bonus(scaled_reward), get_boss_name(info.wave), false)
+        elseif info.kind == 'challenge' and scaled_reward then
+          env.award_rewards(env.build_reward_with_bond_bonus(scaled_reward), nil, true)
         end
       end
 
@@ -983,31 +1069,6 @@ function M.create(env)
     local spawn_spec = build_enemy_spawn_spec(unit_id, info)
     local runtime_unit_id = spawn_spec.create_unit_id
     local spawn_point = random_point_in_area(area_id)
-    local hero = STATE.hero
-    if hero and hero.is_exist and hero:is_exist() and hero.get_point and spawn_point then
-      local hero_point = hero:get_point()
-      if hero_point and y3 and y3.point and y3.point.create then
-        -- 刷怪距离不再跟英雄攻击范围绑定，避免攻击范围成长后刷到视野外。
-        local ring_inner = 320
-        local ring_outer = 520
-        -- 保持“敌人从右侧来”的体验：限制在英雄右侧扇形区域刷怪。
-        local angle = (math.random() * 1.2) - 0.6
-        local distance = ring_inner + math.random() * math.max(1, ring_outer - ring_inner)
-        local hx = hero_point.get_x and hero_point:get_x() or 0
-        local hy = hero_point.get_y and hero_point:get_y() or 0
-        local hz = hero_point.get_z and hero_point:get_z() or 0
-        local px = hx + math.cos(angle) * distance
-        local py = hy + math.sin(angle) * distance
-        if px <= hx + ring_inner * 0.4 then
-          px = hx + ring_inner * 0.4 + math.random() * math.max(1, ring_outer - ring_inner * 0.4)
-        end
-        local pz = (spawn_point.get_z and spawn_point:get_z()) or hz
-        local ok_ring, ring_point = pcall(y3.point.create, px, py, pz)
-        if ok_ring and ring_point then
-          spawn_point = ring_point
-        end
-      end
-    end
     local ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), runtime_unit_id, spawn_point, facing or 180.0)
     if (not ok or not unit_or_err) and runtime_unit_id ~= ENEMY_RUNTIME_FALLBACK_UNIT_ID then
       ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), ENEMY_RUNTIME_FALLBACK_UNIT_ID, spawn_point, facing or 180.0)
@@ -1028,11 +1089,26 @@ function M.create(env)
     end
     local unit = unit_or_err
     apply_enemy_model_profile(unit, spawn_spec)
-    if info and info.attr_overrides then
+    
+    -- 应用属性缩放
+    local scaled_attrs = info and info.attr_overrides
+    if scaled_attrs and CONFIG and CONFIG.monster_type_config then
+      local monster_type = CONFIG.monster_type_config.resolve_type(info)
+      scaled_attrs = CONFIG.monster_type_config.apply_attr_scaling(scaled_attrs, monster_type)
+    end
+    
+    if scaled_attrs then
+      set_attr_pack(unit, scaled_attrs)
+    elseif info and info.attr_overrides then
       set_attr_pack(unit, info.attr_overrides)
     end
+    
     if info and info.spawn_hp ~= nil then
       unit:set_hp(info.spawn_hp)
+    elseif scaled_attrs and scaled_attrs['生命'] ~= nil then
+      unit:set_hp(scaled_attrs['生命'])
+    elseif scaled_attrs and scaled_attrs['最大生命'] ~= nil then
+      unit:set_hp(scaled_attrs['最大生命'])
     elseif info and info.attr_overrides and info.attr_overrides['生命'] ~= nil then
       unit:set_hp(info.attr_overrides['生命'])
     elseif info and info.attr_overrides and info.attr_overrides['最大生命'] ~= nil then
@@ -1593,6 +1669,7 @@ function M.create(env)
   end
 
   function api.cleanup_battle_units()
+    api.destroy_debug_spawn_areas()
     local infos = {}
     if STATE.enemy_info_map then
       for _, info in pairs(STATE.enemy_info_map) do
@@ -1702,7 +1779,7 @@ function M.create(env)
       target = unit,
       damage = 99999999,
       type = '真实伤害',
-      text_type = is_damage_text_hidden() and nil or 'magic',
+      text_type = is_damage_text_hidden() and nil or '法术',
       text_track = 934269508,
       common_attack = false,
       no_miss = true,
@@ -1718,6 +1795,45 @@ function M.create(env)
   api.get_current_wave = get_current_wave
   api.get_boss_name = get_boss_name
   api.finish_game = finish_game
+
+  local debug_spawn_areas = {}
+
+  function api.create_debug_spawn_areas()
+    if not y3 or not y3.area or not y3.point then
+      return
+    end
+    api.destroy_debug_spawn_areas()
+    local spawn_keys = {
+      'main_spawn_wave_1', 'main_spawn_wave_2', 'main_spawn_wave_3', 'main_spawn_wave_4', 'main_spawn_wave_5',
+      'boss_spawn_wave_1', 'boss_spawn_wave_2', 'boss_spawn_wave_3', 'boss_spawn_wave_4', 'boss_spawn_wave_5',
+      'challenge_spawn_top', 'challenge_spawn_mid', 'challenge_spawn_bottom',
+    }
+    local player = env.get_player and env.get_player()
+    for _, key in ipairs(spawn_keys) do
+      local area_def = CONFIG.areas and CONFIG.areas[key]
+      if area_def then
+        local cx = (area_def.x_min + area_def.x_max) / 2
+        local cy = (area_def.y_min + area_def.y_max) / 2
+        local w = area_def.x_max - area_def.x_min
+        local h = area_def.y_max - area_def.y_min
+        local ok, area = pcall(y3.area.create_rectangle_area, y3.point.create(cx, cy, area_def.z or 0), w, h)
+        if ok and area then
+          pcall(area.set_collision, area, true, true, true)
+          if player then
+            pcall(area.set_visible, area, player, true, true)
+          end
+          debug_spawn_areas[#debug_spawn_areas + 1] = area
+        end
+      end
+    end
+  end
+
+  function api.destroy_debug_spawn_areas()
+    for _, area in ipairs(debug_spawn_areas) do
+      pcall(area.remove, area)
+    end
+    debug_spawn_areas = {}
+  end
 
   return api
 end

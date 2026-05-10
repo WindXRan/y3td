@@ -636,18 +636,6 @@
               "type": 4
             },
             {
-              "name": "center_rim",
-              "uid": "23a5f61a-c5f7-43c2-862c-6e2178913601",
-              "type": 7,
-              "children": [
-                {
-                  "name": "center_rim_bg",
-                  "uid": "99cc68e6-6294-4172-a585-183c7baffdf4",
-                  "type": 4
-                }
-              ]
-            },
-            {
               "name": "curlevel",
               "uid": "254242af-f52f-4a51-b8ea-8088a94fda44",
               "type": 3

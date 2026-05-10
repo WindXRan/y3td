@@ -27,6 +27,7 @@ function M.create(ctx)
     battlefield_system = ctx.battlefield_system,
     get_player = ctx.get_player,
     get_enemy_player = ctx.get_enemy_player,
+    enforce_runtime_ui_phase = ctx.enforce_runtime_ui_phase,
     create_hero = function()
       local hero = ctx.battlefield_system.create_hero(ctx.ATTACK_SKILL_DEFS.basic_attack.base_range or 250)
       if ctx.STATE.fixed_camera_enabled == true then
@@ -59,7 +60,7 @@ function M.create(ctx)
       return ctx.get_outgame_system()
     end,
     start_wave = function(index)
-      return ctx.RuntimeEntry.start_wave(index)
+      return ctx.battlefield_system.start_wave(index)
     end,
   })
 

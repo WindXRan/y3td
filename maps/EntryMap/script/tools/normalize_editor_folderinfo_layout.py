@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
@@ -8,7 +8,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 FOLDERINFO_PROJECTILE = ROOT / "editor" / "folderinfo" / "folderinfo_projectile_all.json"
-FOLDERINFO_ITEM = ROOT / "editor" / "folderinfo" / "folderinfo_editor_item.json"
 
 PROJECTILE_ROOT_UID = "AtkProjRoot20260418"
 PROJECTILE_ROOT_NAME = "技能投射物"
@@ -30,10 +29,6 @@ PROJECTILE_SKILL_FOLDERS = [
     (201364752, "AtkProjDemonSeal20260418", "镇魔封印"),
     (201364753, "AtkProjFlyingSwords20260418", "飞剑穿梭"),
 ]
-
-ITEM_ROOT_UID = "entry_runtime_item_root"
-TREASURE_ITEM_IDS = [201390200 + index for index in range(1, 23)]
-
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -86,37 +81,8 @@ def ensure_projectile_layout() -> None:
     dump_json(FOLDERINFO_PROJECTILE, data)
 
 
-def ensure_item_layout() -> None:
-    data = load_json(FOLDERINFO_ITEM)
-    folders = data.setdefault("f", [])
-    mappings = data.setdefault("d", {})
-
-    folder_by_uid = {}
-    for entry in folders:
-        if isinstance(entry, dict) and entry.get("__tuple__") is True:
-            items = entry.get("items", [])
-            if isinstance(items, list) and len(items) >= 3:
-                folder_by_uid[items[2]] = entry
-
-    root_folder = folder_by_uid.get(ITEM_ROOT_UID)
-    if root_folder is None:
-        root_folder = tuple_entry(["/2147483647", 3, ITEM_ROOT_UID, "EntryRuntime道具"])
-        folders.append(root_folder)
-    else:
-        root_folder["items"][0] = "/2147483647"
-        root_folder["items"][1] = 3
-        root_folder["items"][2] = ITEM_ROOT_UID
-        root_folder["items"][3] = "EntryRuntime道具"
-
-    for order, item_id in enumerate(TREASURE_ITEM_IDS):
-        mappings[str(item_id)] = tuple_entry([ITEM_ROOT_UID, order])
-
-    dump_json(FOLDERINFO_ITEM, data)
-
-
 def main() -> None:
     ensure_projectile_layout()
-    ensure_item_layout()
     print("folderinfo layout normalized")
 
 

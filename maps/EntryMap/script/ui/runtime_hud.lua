@@ -26,6 +26,12 @@ local HERO_MODEL_CAMERA = {
 local EXP_BAR_MAX_WIDTH = 260;
 local EXP_BAR_HEIGHT = 12;
 local EXP_BAR_X_OFFSET = 122;
+local DETAIL_TIP_WIDTH = 360;
+local DETAIL_TIP_CONTENT_WIDTH = 322;
+local DETAIL_TIP_MIN_HEIGHT = 176;
+local DETAIL_TIP_MAX_HEIGHT = 424;
+local DETAIL_TIP_LINE_HEIGHT = 17;
+local DETAIL_TIP_CONTENT_GAP = 8;
 local RARITY_NAME_MAP = {
   common = '普通',
   rare = '稀有',
@@ -282,7 +288,7 @@ function M.create(params)
   end;
 
   local function append_line(bE, ac)
-    local aI = tostring(text or '')
+    local aI = tostring(ac or '')
     if aI ~= '' then bE[#bE + 1] = aI end
   end;
 
@@ -292,14 +298,14 @@ function M.create(params)
   end;
 
   local function append_multiline_text(bE, ac)
-    local aI = tostring(text or '')
+    local aI = tostring(ac or '')
     if aI == '' then return end;
 
     for bv in aI:gmatch('[^\n]+') do append_line(bE, bv) end
   end;
 
   local function build_weapon_tooltip()
-    local bs = N and N() or nil;
+    local bs = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil;
     if not bs then return nil end;
 
     local attr_lines = bs.attr_lines or {}
@@ -348,11 +354,11 @@ function M.create(params)
 
   local function build_bond_slot_tooltip(bL)
     local bs = nil
-    if O then
-      local ok, payload = pcall(O, bL)
+    if build_bond_slot_tip_payload then
+      local ok, payload = pcall(build_bond_slot_tip_payload, bL)
       if ok then
         bs = payload
-      elseif C then
+      else
         message_fn(string.format('[runtime_hud] build_bond_slot_tip_payload(%s) failed: %s', tostring(bL), tostring(payload)))
       end
     end;
@@ -740,30 +746,52 @@ function M.create(params)
     set_ui_text_alignment(hud_state.hover_tip_panel_title, '左', '中')
     set_ui_text_alignment(hud_state.hover_tip_panel_subtitle, '左', '中')
     set_ui_text_alignment(hud_state.hover_tip_panel_body, '左', '中')
-    hud_state.bond_tip_root = resolve_ui_node('TipsPanel')
-    hud_state.bond_tip_panel = resolve_first_ui_node({ 'TipsPanel.详情面板', '详情面板' })
-    hud_state.bond_tip_title = resolve_first_ui_node({ 'TipsPanel.详情面板.列表.标题', '详情面板.列表.标题' })
-    hud_state.bond_tip_subtitle = resolve_first_ui_node({ 'TipsPanel.详情面板.列表.副标题', '详情面板.列表.副标题' })
+    hud_state.bond_tip_root = resolve_first_ui_node({ 'BattleDetailTipsPanel', 'TipsPanel' })
+    hud_state.bond_tip_uses_dedicated_root = is_ui_alive(resolve_ui_node('BattleDetailTipsPanel'))
+    hud_state.bond_tip_panel = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel', 'TipsPanel.详情面板', '详情面板' })
+    hud_state.bond_tip_panel_bg = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel.panel_bg' })
+    hud_state.bond_tip_panel_edge = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel.panel_edge' })
+    hud_state.bond_tip_title_bar = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel.title_bar' })
+    hud_state.bond_tip_divider_top = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel.divider_top' })
+    hud_state.bond_tip_divider_bottom = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel.divider_bottom' })
+    hud_state.bond_tip_icon_box = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel.icon_box' })
+    hud_state.bond_tip_icon_bg = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel.icon_box.icon_bg' })
+    hud_state.bond_tip_title = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel.title', 'TipsPanel.详情面板.列表.标题', '详情面板.列表.标题' })
+    hud_state.bond_tip_subtitle = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel.subtitle', 'TipsPanel.详情面板.列表.副标题', '详情面板.列表.副标题' })
     hud_state.bond_tip_contents = {}
     for i = 1, 5 do
-      hud_state.bond_tip_contents[i] = resolve_first_ui_node({ 'TipsPanel.详情面板.列表.内容' .. tostring(i), '详情面板.列表.内容' .. tostring(i) })
+      hud_state.bond_tip_contents[i] = resolve_first_ui_node({
+        'BattleDetailTipsPanel.detail_panel.content_' .. tostring(i),
+        'TipsPanel.详情面板.列表.内容' .. tostring(i),
+        '详情面板.列表.内容' .. tostring(i)
+      })
     end
-    hud_state.bond_tip_bottom = resolve_first_ui_node({ 'TipsPanel.详情面板.列表.底部内容', '详情面板.列表.底部内容' })
-    hud_state.bond_tip_icon = resolve_first_ui_node({ 'TipsPanel.详情面板.图标.图标', '详情面板.图标.图标' })
-    hud_state.bond_tip_icon_name = resolve_first_ui_node({ 'TipsPanel.详情面板.图标.名称', '详情面板.图标.名称' })
+    hud_state.bond_tip_bottom = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel.bottom', 'TipsPanel.详情面板.列表.底部内容', '详情面板.列表.底部内容' })
+    hud_state.bond_tip_icon = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel.icon_box.icon', 'TipsPanel.详情面板.图标.图标', '详情面板.图标.图标' })
+    hud_state.bond_tip_icon_name = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel.icon_name', 'TipsPanel.详情面板.图标.名称', '详情面板.图标.名称' })
     if not is_ui_alive(hud_state.bond_tip_panel) then
-      local cE = hud_state.bond_tip_root or resolve_ui_node('TipsPanel')
+      local cE = hud_state.bond_tip_root or resolve_first_ui_node({ 'BattleDetailTipsPanel', 'TipsPanel' })
       if is_ui_alive(cE) then hud_state.bond_tip_panel = ui_root.resolve_child(cE, '详情面板') end
     end;
     if is_ui_alive(hud_state.bond_tip_panel) then
-      if not is_ui_alive(hud_state.bond_tip_title) then hud_state.bond_tip_title = ui_root.resolve_child(hud_state.bond_tip_panel, '列表.标题') end;
-      if not is_ui_alive(hud_state.bond_tip_subtitle) then hud_state.bond_tip_subtitle = ui_root.resolve_child(hud_state.bond_tip_panel, '列表.副标题') end;
-      if not is_ui_alive(hud_state.bond_tip_bottom) then hud_state.bond_tip_bottom = ui_root.resolve_child(hud_state.bond_tip_panel, '列表.底部内容') end;
+      safe_ui_call(hud_state.bond_tip_panel, 'set_follow_mouse', true, 16, 12)
+      safe_ui_call(hud_state.bond_tip_panel, 'set_intercepts_operations', false)
+      safe_ui_call(hud_state.bond_tip_panel, 'set_z_order', 9900)
+      if not is_ui_alive(hud_state.bond_tip_title) then hud_state.bond_tip_title = ui_root.resolve_child(hud_state.bond_tip_panel, 'title') or ui_root.resolve_child(hud_state.bond_tip_panel, '列表.标题') end;
+      if not is_ui_alive(hud_state.bond_tip_subtitle) then hud_state.bond_tip_subtitle = ui_root.resolve_child(hud_state.bond_tip_panel, 'subtitle') or ui_root.resolve_child(hud_state.bond_tip_panel, '列表.副标题') end;
+      if not is_ui_alive(hud_state.bond_tip_bottom) then hud_state.bond_tip_bottom = ui_root.resolve_child(hud_state.bond_tip_panel, 'bottom') or ui_root.resolve_child(hud_state.bond_tip_panel, '列表.底部内容') end;
+      if not is_ui_alive(hud_state.bond_tip_panel_bg) then hud_state.bond_tip_panel_bg = ui_root.resolve_child(hud_state.bond_tip_panel, 'panel_bg') end;
+      if not is_ui_alive(hud_state.bond_tip_panel_edge) then hud_state.bond_tip_panel_edge = ui_root.resolve_child(hud_state.bond_tip_panel, 'panel_edge') end;
+      if not is_ui_alive(hud_state.bond_tip_title_bar) then hud_state.bond_tip_title_bar = ui_root.resolve_child(hud_state.bond_tip_panel, 'title_bar') end;
+      if not is_ui_alive(hud_state.bond_tip_divider_top) then hud_state.bond_tip_divider_top = ui_root.resolve_child(hud_state.bond_tip_panel, 'divider_top') end;
+      if not is_ui_alive(hud_state.bond_tip_divider_bottom) then hud_state.bond_tip_divider_bottom = ui_root.resolve_child(hud_state.bond_tip_panel, 'divider_bottom') end;
+      if not is_ui_alive(hud_state.bond_tip_icon_box) then hud_state.bond_tip_icon_box = ui_root.resolve_child(hud_state.bond_tip_panel, 'icon_box') end;
+      if not is_ui_alive(hud_state.bond_tip_icon_bg) then hud_state.bond_tip_icon_bg = ui_root.resolve_child(hud_state.bond_tip_panel, 'icon_box.icon_bg') end;
       for i = 1, 5 do
-        if not is_ui_alive(hud_state.bond_tip_contents[i]) then hud_state.bond_tip_contents[i] = ui_root.resolve_child(hud_state.bond_tip_panel, '列表.内容' .. tostring(i)) end;
+        if not is_ui_alive(hud_state.bond_tip_contents[i]) then hud_state.bond_tip_contents[i] = ui_root.resolve_child(hud_state.bond_tip_panel, 'content_' .. tostring(i)) or ui_root.resolve_child(hud_state.bond_tip_panel, '列表.内容' .. tostring(i)) end;
       end
-      if not is_ui_alive(hud_state.bond_tip_icon) then hud_state.bond_tip_icon = ui_root.resolve_child(hud_state.bond_tip_panel, '图标.图标') end;
-      if not is_ui_alive(hud_state.bond_tip_icon_name) then hud_state.bond_tip_icon_name = ui_root.resolve_child(hud_state.bond_tip_panel, '图标.名称') end;
+      if not is_ui_alive(hud_state.bond_tip_icon) then hud_state.bond_tip_icon = ui_root.resolve_child(hud_state.bond_tip_panel, 'icon_box.icon') or ui_root.resolve_child(hud_state.bond_tip_panel, '图标.图标') end;
+      if not is_ui_alive(hud_state.bond_tip_icon_name) then hud_state.bond_tip_icon_name = ui_root.resolve_child(hud_state.bond_tip_panel, 'icon_name') or ui_root.resolve_child(hud_state.bond_tip_panel, '图标.名称') end;
     end;
     set_ui_visible(hud_state.bond_tip_panel, false)
     if not is_ui_alive(hud_state.big_cursor) then
@@ -802,14 +830,19 @@ function M.create(params)
 
   local function set_bond_tip_root_visible(dA0)
     local hud_state = get_hud_state()
-    if not is_ui_alive(hud_state.bond_tip_root) then hud_state.bond_tip_root = resolve_ui_node('TipsPanel') end;
+    if not is_ui_alive(hud_state.bond_tip_root) then hud_state.bond_tip_root = resolve_first_ui_node({ 'BattleDetailTipsPanel', 'TipsPanel' }) end;
     if not is_ui_alive(hud_state.bond_tip_root) then return end;
-    set_ui_visible(hud_state.bond_tip_root, dA0 == true or STATE.attr_tips_panel_visible == true)
+    if hud_state.bond_tip_uses_dedicated_root == true then
+      set_ui_visible(hud_state.bond_tip_root, dA0 == true)
+    else
+      set_ui_visible(hud_state.bond_tip_root, dA0 == true or STATE.attr_tips_panel_visible == true)
+    end
   end;
 
   local function hide_all_tips()
     local hud_state = get_hud_state()
-    hud_state.hover_tip_visible = false; hud_state.bond_tip_visible = false; set_ui_visible(hud_state.hover_tip_panel, false)
+    hud_state.hover_tip_visible = false; hud_state.bond_tip_visible = false; hud_state.active_tip_kind = nil
+    set_ui_visible(hud_state.hover_tip_panel, false)
     set_ui_visible(hud_state.bond_tip_panel, false)
     set_bond_tip_root_visible(false)
   end;
@@ -827,6 +860,134 @@ function M.create(params)
       if dA2.bond_tip_hover_token == dA1 then hide_all_tips() end
     end)
   end;
+
+  local function split_non_empty_tip_lines(text, max_lines)
+    local lines = {}
+    local value = tostring(text or ''):gsub('\r', '')
+    for line in value:gmatch('[^\n]+') do
+      local trimmed = line:gsub('^%s+', ''):gsub('%s+$', '')
+      if trimmed ~= '' then
+        lines[#lines + 1] = trimmed
+        if max_lines and #lines >= max_lines then
+          return lines
+        end
+      end
+    end
+    return lines
+  end
+
+  local function join_or_default(lines, fallback)
+    local result = {}
+    for _, line in ipairs(lines or {}) do
+      local text = tostring(line or '')
+      if text ~= '' then result[#result + 1] = text end
+    end
+    if #result == 0 then return fallback or '' end
+    return table.concat(result, '\n')
+  end
+
+  local function clamp_number(value, min_value, max_value)
+    value = tonumber(value) or min_value
+    if value < min_value then return min_value end
+    if value > max_value then return max_value end
+    return value
+  end
+
+  local function estimate_text_units(text)
+    local value = tostring(text or '')
+    local units = 0
+    for i = 1, #value do
+      local byte = value:byte(i)
+      if byte == 9 then
+        units = units + 4
+      else
+        units = units + 1
+      end
+    end
+    return units
+  end
+
+  local function estimate_tip_line_count(text)
+    local value = tostring(text or ''):gsub('\r', '')
+    if value == '' then return 0 end
+
+    local total = 0
+    for line in value:gmatch('([^\n]*)\n?') do
+      if line == '' then
+        total = total + 1
+      else
+        total = total + math.max(1, math.ceil(estimate_text_units(line) / 46))
+      end
+      if total > 40 then return total end
+    end
+    return math.max(1, total)
+  end
+
+  local function set_detail_tip_node_layout(node, y, height)
+    set_ui_size(node, DETAIL_TIP_CONTENT_WIDTH, height)
+    set_ui_pos(node, DETAIL_TIP_WIDTH / 2, y)
+  end
+
+  local function apply_detail_tip_auto_layout(hud_state, payload_contents, bottom_text)
+    if not hud_state.bond_tip_uses_dedicated_root then return end
+
+    local rows = {}
+    local content_height = 0
+    for i = 1, 5 do
+      local text = tostring(payload_contents[i] or '')
+      if text ~= '' then
+        local line_count = estimate_tip_line_count(text)
+        local height = clamp_number(line_count * DETAIL_TIP_LINE_HEIGHT + 4, 24, 94)
+        rows[i] = height
+        content_height = content_height + height + DETAIL_TIP_CONTENT_GAP
+      else
+        rows[i] = 0
+      end
+    end
+
+    local bottom_height = 0
+    if tostring(bottom_text or '') ~= '' then
+      bottom_height = clamp_number(estimate_tip_line_count(bottom_text) * 15 + 4, 20, 46)
+      content_height = content_height + bottom_height + 8
+    end
+    if content_height > 0 then content_height = content_height - DETAIL_TIP_CONTENT_GAP end
+
+    local panel_height = clamp_number(96 + content_height + 18, DETAIL_TIP_MIN_HEIGHT, DETAIL_TIP_MAX_HEIGHT)
+    set_ui_size(hud_state.bond_tip_panel, DETAIL_TIP_WIDTH, panel_height)
+    set_ui_size(hud_state.bond_tip_panel_bg, DETAIL_TIP_WIDTH, panel_height)
+    set_ui_pos(hud_state.bond_tip_panel_bg, DETAIL_TIP_WIDTH / 2, panel_height / 2)
+    set_ui_size(hud_state.bond_tip_panel_edge, DETAIL_TIP_WIDTH - 4, panel_height - 4)
+    set_ui_pos(hud_state.bond_tip_panel_edge, DETAIL_TIP_WIDTH / 2, panel_height / 2)
+    set_ui_size(hud_state.bond_tip_title_bar, DETAIL_TIP_WIDTH - 24, 42)
+    set_ui_pos(hud_state.bond_tip_title_bar, DETAIL_TIP_WIDTH / 2, panel_height - 33)
+    set_ui_size(hud_state.bond_tip_divider_top, DETAIL_TIP_CONTENT_WIDTH, 1)
+    set_ui_pos(hud_state.bond_tip_divider_top, DETAIL_TIP_WIDTH / 2, panel_height - 67)
+    set_ui_size(hud_state.bond_tip_divider_bottom, DETAIL_TIP_CONTENT_WIDTH, 1)
+    set_ui_pos(hud_state.bond_tip_divider_bottom, DETAIL_TIP_WIDTH / 2, 38)
+    set_ui_pos(hud_state.bond_tip_icon_box, 42, panel_height - 33)
+    set_ui_pos(hud_state.bond_tip_icon_bg, 23, 23)
+    set_ui_pos(hud_state.bond_tip_icon, 23, 23)
+    set_ui_pos(hud_state.bond_tip_title, 205, panel_height - 24)
+    set_ui_pos(hud_state.bond_tip_subtitle, 205, panel_height - 45)
+    set_ui_pos(hud_state.bond_tip_icon_name, DETAIL_TIP_WIDTH / 2, panel_height - 78)
+
+    local y = panel_height - 104
+    for i = 1, 5 do
+      local height = rows[i] or 0
+      if height > 0 then
+        set_detail_tip_node_layout(hud_state.bond_tip_contents[i], y - height / 2, height)
+        y = y - height - DETAIL_TIP_CONTENT_GAP
+      else
+        set_detail_tip_node_layout(hud_state.bond_tip_contents[i], y, 1)
+      end
+    end
+
+    if bottom_height > 0 then
+      set_detail_tip_node_layout(hud_state.bond_tip_bottom, math.max(20, y - bottom_height / 2), bottom_height)
+    else
+      set_detail_tip_node_layout(hud_state.bond_tip_bottom, 20, 1)
+    end
+  end
 
   local function show_hover_tip_payload(bs)
     if not bs then
@@ -880,7 +1041,10 @@ function M.create(params)
     reset_tip_state()
     if not is_ui_alive(hud_state.bond_tip_panel) or not is_ui_alive(hud_state.bond_tip_title) then resolve_static_ui_panels() end;
     if not is_ui_alive(hud_state.bond_tip_panel) or not is_ui_alive(hud_state.bond_tip_title) then
-      show_hover_tip_payload({ title = dP.title, subtitle = dP.subtitle, body = dP.bottom or '' })
+      local fallback_lines = {}
+      append_lines(fallback_lines, dP.contents or {})
+      if dP.bottom and dP.bottom ~= '' then fallback_lines[#fallback_lines + 1] = tostring(dP.bottom) end
+      show_hover_tip_payload({ title = dP.title, subtitle = dP.subtitle, body = table.concat(fallback_lines, '\n') })
       return
     end;
 
@@ -898,13 +1062,15 @@ function M.create(params)
     end
 
     local bottom_text = tostring(dP.bottom or '')
+    apply_detail_tip_auto_layout(hud_state, payload_contents, bottom_text)
+
     set_ui_text(hud_state.bond_tip_bottom, bottom_text)
     set_ui_visible(hud_state.bond_tip_bottom, bottom_text ~= '')
 
     set_ui_visible(hud_state.bond_tip_icon, dP.icon ~= nil)
     if dP.icon then set_ui_image(hud_state.bond_tip_icon, dP.icon) end;
     set_ui_text(hud_state.bond_tip_icon_name, tostring(dP.icon_name or ''))
-    set_ui_visible(hud_state.bond_tip_icon_name, true)
+    set_ui_visible(hud_state.bond_tip_icon_name, tostring(dP.icon_name or '') ~= '')
 
     set_ui_visible(hud_state.bond_tip_panel, hud_state.visible ~= false)
     set_bond_tip_root_visible(hud_state.visible ~= false)
@@ -1007,12 +1173,12 @@ function M.create(params)
     ensure_hud()
     local hud_state = get_hud_state()
     local duration = tonumber(c_)
-    if d0 ~= nil and d0 <= 0 then hud_state.tip_expires_at = math.huge else hud_state.tip_expires_at = (STATE.runtime_elapsed or 0) +
-      math.max(1, d0 or DEFAULT_TIP_DURATION) end;
+    if duration ~= nil and duration <= 0 then hud_state.tip_expires_at = math.huge else hud_state.tip_expires_at = (STATE.runtime_elapsed or 0) +
+      math.max(1, duration or DEFAULT_TIP_DURATION) end;
     hud_state.tip_title_text = bz or '系统提示'
-    hud_state.tip_body_text = tostring(text or '')
+    hud_state.tip_body_text = tostring(ac or '')
     set_ui_text(hud_state.tip_panel_title, bz or '系统提示')
-    set_ui_text(hud_state.tip_panel_body, tostring(text or ''))
+    set_ui_text(hud_state.tip_panel_body, tostring(ac or ''))
     set_ui_visible(hud_state.tip_panel, hud_state.visible ~= false)
   end;
 
@@ -1027,6 +1193,7 @@ function M.create(params)
     reset_tip_state()
     set_ui_visible(hud_state.hover_tip_panel, hud_state.visible ~= false and hud_state.hover_tip_visible == true)
     set_ui_visible(hud_state.bond_tip_panel, hud_state.visible ~= false and hud_state.bond_tip_visible == true)
+    set_bond_tip_root_visible(hud_state.visible ~= false and hud_state.bond_tip_visible == true)
   end;
 
   local function toggle_big_cursor()
@@ -1101,7 +1268,7 @@ function M.create(params)
   end;
 
   local function show_weapon_tip()
-    local bs = N and N() or nil;
+    local bs = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil;
     if not bs then
       hide_all_tips()
       return
@@ -1118,23 +1285,21 @@ function M.create(params)
       end
     end
 
-    local payload = {
+    show_detail_payload({
       title = tostring(bs.title_text or '成长武器'),
       subtitle = tostring(bs.subtitle_text or ''),
-      body = tostring(bs.cost_text or ''),
       icon = bs.icon_res,
-      tip_model = {
-        item_name_text = tostring(bs.title_text or '成长武器'),
-        quality_text = tostring(bs.subtitle_text or ''),
-        effect_body_text = tostring(bs.cost_text or ''),
-        set_title_text = '当前属性增幅',
-        set_body_lines = #attr_lines > 0 and attr_lines or { '当前无直接属性增幅' },
-        bonus_lines = #affix_lines > 0 and affix_lines or { '暂无词缀' },
-        icon_res = bs.icon_res
-      }
-    }
-
-    show_bond_tip_payload(payload)
+      icon_name = '成长武器',
+      contents = {
+        tostring(bs.cost_text or ''),
+        '[当前属性增幅]\n' .. join_or_default(attr_lines, '当前无直接属性增幅'),
+        join_or_default(affix_lines, '暂无词缀'),
+        '每 10 级会进入一次词缀选择，选择完成后可继续升级。',
+      },
+      bottom = '悬停装备栏成长武器时实时读取当前等级、费用、属性和词缀。'
+    })
+    local hud_state = get_hud_state()
+    hud_state.active_tip_kind = 'weapon'
   end;
 
   local function show_slot_item_tip(bm)
@@ -1151,6 +1316,33 @@ function M.create(params)
       return
     end;
     hide_tip_panel()
+  end;
+
+  local function show_hero_skill_tip(bm, cj)
+    local c4 = get_evolution_slot_entries(EVOLUTION_SLOT_COUNT)[bm]
+    if not c4 then
+      local ck = get_skill_slot_entries(cj or EVOLUTION_SLOT_COUNT)
+      c4 = ck[bm]
+    end
+    if not c4 then
+      hide_all_tips()
+      return
+    end;
+
+    local tip_lines = split_non_empty_tip_lines(c4.tip_text or '', 4)
+    show_detail_payload({
+      title = tostring(c4.tip_title or c4.name or '英雄技能'),
+      subtitle = tostring(c4.badge_text or c4.quality or c4.cooldown_text or ''),
+      icon = c4.icon,
+      icon_name = tostring(c4.name or ''),
+      contents = {
+        join_or_default({ tip_lines[1], tip_lines[2] }, '当前没有技能说明。'),
+        join_or_default({ tip_lines[3], tip_lines[4] }, ''),
+        c4.cooldown_text and c4.cooldown_text ~= '' and ('状态：' .. tostring(c4.cooldown_text)) or '',
+        c4.stack_text and c4.stack_text ~= '' and ('计数：' .. tostring(c4.stack_text)) or '',
+      },
+      bottom = c4.key and ('技能位：' .. tostring(c4.key)) or ''
+    })
   end;
 
   local function show_skill_tip(bm, cj)
@@ -1201,7 +1393,16 @@ function M.create(params)
   end;
 
   local function show_loadout_tip(bm)
-    show_hover_tip_payload(build_slot_tooltip(bm))
+    if bm == 1 and build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() then
+      show_weapon_tip()
+      return
+    end
+    local bs = build_slot_tooltip(bm)
+    if bs and bs.tip_model then
+      show_weapon_tip()
+      return
+    end
+    show_hover_tip_payload(bs)
   end;
 
   local function show_bond_slot_tip(bm)
@@ -1234,7 +1435,7 @@ function M.create(params)
   end;
 
   local function refresh_loadout_row()
-    local dp = N and N() or nil; set_ui_text(
+    local dp = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil; set_ui_text(
     resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), '物品栏')
     set_ui_size(resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), 92, 17)
     set_ui_text_alignment(resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), '中', '中')
@@ -1399,9 +1600,9 @@ function M.create(params)
       local slot_index = bL
       bind_hover_handlers('battle_skill_hover_' .. tostring(slot_index),
         resolve_combat_module_ui(string.format('skill_bar.skill_slot_%d', slot_index)), function()
-        show_evolution_tip(slot_index)
+        show_hero_skill_tip(slot_index)
       end, function()
-        hide_tip_panel()
+        hide_all_tips()
       end)
     end;
 
@@ -1410,7 +1611,7 @@ function M.create(params)
         resolve_combat_module_ui(string.format('buff_row.buff_slot_%d', slot_index)), function()
         show_buff_tip(slot_index)
       end, function()
-        hide_tip_panel()
+        hide_all_tips()
       end)
     end;
 
@@ -1669,6 +1870,9 @@ function M.create(params)
     set_ui_visible(hud_state.buff_prefab_root, hud_state.visible ~= false)
     refresh_tip_panel_visibility()
     refresh_hover_tip_visibility()
+    if hud_state.bond_tip_visible and hud_state.active_tip_kind == 'weapon' then
+      show_weapon_tip()
+    end
     return hud_state
   end;
 
@@ -1676,7 +1880,7 @@ function M.create(params)
     local hud_state = get_hud_state()
     hud_state.visible = visible == true; set_ui_visible(resolve_ui_node('top'), visible)
     set_ui_visible(resolve_ui_node('BattleBottomHUD'), visible)
-    set_ui_visible(resolve_ui_node('GameHUD'), false)
+    set_ui_visible(resolve_ui_node('GameHUD'), visible)
     set_ui_visible(resolve_ui_node('bottom_bg'), false)
     set_ui_visible(hud_state.attr_panel,
       visible == true and hud_state.attr_panel_visible)

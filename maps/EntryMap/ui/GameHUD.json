@@ -15,7 +15,7 @@
                             "anim_type": 0, 
                             "comp": "54182739-d294-4dbd-9d3e-6800c3becd7d", 
                             "ease_type": 0, 
-                            "name": "Show_1", 
+                            "name": "Show_11", 
                             "open_timeline": true, 
                             "type": 2
                         }
@@ -53,8 +53,7 @@
             "suspend_picture": 133775, 
             "swallow_touches": true, 
             "type": 1, 
-            "uid": "4dd8ae57-0c79-4ab4-9d24-04c80b8f39de", 
-            "visible": false
+            "uid": "4dd8ae57-0c79-4ab4-9d24-04c80b8f39de"
         }, 
         {
             "children": [], 
@@ -90,7 +89,7 @@
                             "anim_type": 0, 
                             "comp": "a06c0e95-daa5-4976-9d46-d3e9ebd1db0f", 
                             "ease_type": 0, 
-                            "name": "BackToHall_1", 
+                            "name": "BackToHall_11", 
                             "open_timeline": true, 
                             "type": 5
                         }
@@ -127,8 +126,7 @@
             }, 
             "suspend_picture": 903407, 
             "type": 1, 
-            "uid": "a06c0e95-daa5-4976-9d46-d3e9ebd1db0f", 
-            "visible": false
+            "uid": "a06c0e95-daa5-4976-9d46-d3e9ebd1db0f"
         }
     ], 
     "name": "GameHUD", 
@@ -137,6 +135,6 @@
     "type": 2, 
     "ui_anims": [], 
     "uid": "ba9bec29-6a9d-47f3-a343-e4fe081e58dc", 
-    "visible": false, 
+    "visible": true, 
     "zorder": 530
 }

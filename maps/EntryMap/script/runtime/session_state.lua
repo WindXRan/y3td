@@ -1,4 +1,4 @@
-﻿local M = {}
+local M = {}
 
 function M.create(env)
   local STATE = env.STATE
@@ -32,6 +32,7 @@ function M.create(env)
   local set_battle_hud_visible = env.set_battle_hud_visible
   local refresh_runtime_hud = env.refresh_runtime_hud
   local enter_battle_audio = env.enter_battle_audio
+  local enforce_runtime_ui_phase = env.enforce_runtime_ui_phase
 
   local function is_battle_active()
     return STATE.session_phase == 'battle' and STATE.game_finished ~= true
@@ -64,6 +65,9 @@ function M.create(env)
   local function reset_battle_state()
     destroy_choice_panel()
     cleanup_swallow_panel()
+    if battlefield_system and battlefield_system.destroy_debug_spawn_areas then
+      battlefield_system.destroy_debug_spawn_areas()
+    end
     STATE.hero = nil
     STATE.hero_common_attack = nil
     STATE.hero_spawn_point = make_point(CONFIG.points.hero_spawn)
@@ -121,6 +125,7 @@ function M.create(env)
     STATE.game_finished = false
     STATE.runtime_ui_fault_logged = false
     STATE.runtime_ui_fault_message = nil
+    STATE._battle_hud_visible_cached = nil
   end
 
   local function reset_session_state()
@@ -145,6 +150,9 @@ function M.create(env)
     STATE.game_finished = true
     STATE.events_registered = STATE.events_registered or false
     STATE.dev_commands_registered = STATE.dev_commands_registered or false
+    if enforce_runtime_ui_phase then
+      enforce_runtime_ui_phase(false)
+    end
   end
 
   local function show_stage_start_error(text)
@@ -193,6 +201,9 @@ function M.create(env)
     STATE.current_mode_def = nil
     STATE.last_battle_result = nil
     STATE.game_finished = true
+    if enforce_runtime_ui_phase then
+      enforce_runtime_ui_phase(false)
+    end
     return show_stage_start_error(text)
   end
 
@@ -250,11 +261,17 @@ function M.create(env)
     STATE.current_stage_def = stage_def
     STATE.current_mode_def = mode_def
     STATE.last_battle_result = nil
+    if enforce_runtime_ui_phase then
+      enforce_runtime_ui_phase(true)
+    end
 
     get_player():set_hostility(get_enemy_player(), true)
     get_enemy_player():set_hostility(get_player(), true)
 
     STATE.hero = create_hero()
+    if battlefield_system and battlefield_system.create_debug_spawn_areas then
+      battlefield_system.create_debug_spawn_areas()
+    end
     if ensure_gear_runtime then
       ensure_gear_runtime(STATE, CONFIG.gear_upgrade_config)
     end

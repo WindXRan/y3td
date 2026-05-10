@@ -24,6 +24,44 @@ local TEXT_PREFIX = {
   challenge = '挑战',
 }
 
+local function get_monster_type_health_bar_config(info, role)
+  local bar_config = nil
+  if info then
+    local CONFIG = rawget(_G, 'CONFIG')
+    if CONFIG and CONFIG.monster_type_config then
+      local monster_type = CONFIG.monster_type_config.resolve_type(info)
+      local config = CONFIG.monster_type_config.get_config(monster_type)
+      bar_config = config and config.health_bar or nil
+    end
+  end
+
+  if bar_config then
+    return bar_config
+  end
+
+  if role == 'hero' then
+    return {
+      bar_type = BLOOD_BAR_TYPE.hero,
+      color = COLOR.hero,
+      name_prefix = TEXT_PREFIX.hero,
+      name_font_size = 14,
+      show_text = true,
+      show_name = true,
+    }
+  elseif role == 'challenge' then
+    return {
+      bar_type = BLOOD_BAR_TYPE.challenge,
+      color = COLOR.challenge,
+      name_prefix = TEXT_PREFIX.challenge,
+      name_font_size = 14,
+      show_text = true,
+      show_name = true,
+    }
+  end
+
+  return nil
+end
+
 local PROGRESS_NODES = {
   'hp',
   'HP',
@@ -121,11 +159,13 @@ local function resolve_role(info)
   return 'main'
 end
 
-local function format_hp_text(role, current_hp, max_hp)
-  return string.format('%s  %.0f / %.0f', TEXT_PREFIX[role] or TEXT_PREFIX.main, current_hp, max_hp)
+local function format_hp_text(role, current_hp, max_hp, info)
+  local bar_config = get_monster_type_health_bar_config(info, role)
+  local prefix = bar_config and bar_config.name_prefix or TEXT_PREFIX[role] or TEXT_PREFIX.main
+  return string.format('%s  %.0f / %.0f', prefix, current_hp, max_hp)
 end
 
-function M.apply_unit(env, unit, role, max_hp)
+function M.apply_unit(env, unit, role, max_hp, info)
   if not unit then
     return
   end
@@ -143,21 +183,28 @@ function M.apply_unit(env, unit, role, max_hp)
   max_hp = tonumber(max_hp) or get_max_hp(y3, env and env.hero_attr_system or nil, unit, role)
   max_hp = math.max(1, max_hp)
   local progress = math.max(0, math.min(1, current_hp / max_hp))
-  local text = format_hp_text(role, current_hp, max_hp)
-  local color = COLOR[role] or COLOR.main
-  local prefix = TEXT_PREFIX[role] or TEXT_PREFIX.main
 
-  -- 设置血条类型和显示方式
-  safe_call(unit, 'set_blood_bar_type', BLOOD_BAR_TYPE[role] or BLOOD_BAR_TYPE.main)
-  safe_call(unit, 'set_health_bar_display', 2)
+  local bar_config = get_monster_type_health_bar_config(info, role)
+  local text = format_hp_text(role, current_hp, max_hp, info)
+  local color = bar_config and bar_config.color or COLOR[role] or COLOR.main
+  local prefix = bar_config and bar_config.name_prefix or TEXT_PREFIX[role] or TEXT_PREFIX.main
+  local font_size = bar_config and bar_config.name_font_size or (role == 'boss' and 16 or 13)
+  local bar_type = bar_config and bar_config.bar_type or BLOOD_BAR_TYPE[role] or BLOOD_BAR_TYPE.main
+  local show_text = bar_config == nil or (bar_config and bar_config.show_text ~= false)
+  local show_name = bar_config == nil or (bar_config and bar_config.show_name ~= false)
 
-  -- 设置billboard可见
-  if gameapi then
-    pcall(gameapi.set_billboard_visible, unit.handle, 'root', true)
-    pcall(gameapi.set_billboard_visible, unit.handle, 'main', true)
+  if unit.set_health_bar_display then
+    unit:set_health_bar_display(2)
   end
 
-  -- 设置血条属性
+  safe_call(unit, 'set_blood_bar_type', bar_type)
+
+  if gameapi and unit.handle then
+    pcall(gameapi.set_billboard_visible, unit.handle, 'root', true)
+    pcall(gameapi.set_billboard_visible, unit.handle, 'main', true)
+    pcall(gameapi.set_billboard_visible, unit.handle, 'hp', true)
+  end
+
   if unit.handle then
     if unit.handle.api_set_hp_bar_show_type then
       pcall(unit.handle.api_set_hp_bar_show_type, unit.handle, 2)
@@ -166,30 +213,45 @@ function M.apply_unit(env, unit, role, max_hp)
       pcall(unit.handle.api_set_hp_color, unit.handle, color)
     end
     if unit.handle.api_set_bar_text_visible then
-      pcall(unit.handle.api_set_bar_text_visible, unit.handle, true)
+      pcall(unit.handle.api_set_bar_text_visible, unit.handle, show_text)
     end
     if unit.handle.api_set_bar_name_visible then
-      pcall(unit.handle.api_set_bar_name_visible, unit.handle, true)
+      pcall(unit.handle.api_set_bar_name_visible, unit.handle, show_name)
     end
     if unit.handle.api_set_bar_name then
       pcall(unit.handle.api_set_bar_name, unit.handle, prefix)
     end
     if unit.handle.api_set_bar_name_font_size then
-      pcall(unit.handle.api_set_bar_name_font_size, unit.handle, role == 'boss' and 16 or 13)
+      pcall(unit.handle.api_set_bar_name_font_size, unit.handle, font_size)
+    end
+    if unit.handle.api_set_hp_bar_visible then
+      pcall(unit.handle.api_set_hp_bar_visible, unit.handle, true)
     end
   end
 
-  -- 更新所有进度条节点
+  local progress_set = false
   for _, node_name in ipairs(PROGRESS_NODES) do
     if safe_call(unit, 'set_billboard_progress', node_name, progress, nil, 0.08) then
+      progress_set = true
       break
     end
   end
 
-  -- 更新所有文本节点
-  for _, node_name in ipairs(TEXT_NODES) do
-    if safe_call(unit, 'set_blood_bar_text', node_name, text, nil, 'DFPYuanW7-GB') then
-      break
+  if not progress_set then
+    safe_call(unit, 'set_billboard_progress', 'hp_bar', progress, nil, 0.08)
+  end
+
+  local text_set = false
+  if show_text then
+    for _, node_name in ipairs(TEXT_NODES) do
+      if safe_call(unit, 'set_blood_bar_text', node_name, text, nil, 'DFPYuanW7-GB') then
+        text_set = true
+        break
+      end
+    end
+
+    if not text_set then
+      safe_call(unit, 'set_blood_bar_text', 'text', text, nil, 'DFPYuanW7-GB')
     end
   end
 end
@@ -199,15 +261,16 @@ function M.apply_enemy(env, info)
     return
   end
   local role = resolve_role(info)
-  M.apply_unit(env, info.unit, role, info.max_hp)
+  M.apply_unit(env, info.unit, role, info.max_hp, info)
 end
 
 function M.apply_hero(env, hero)
-  M.apply_unit(env, hero, 'hero')
+  local hero_info = { kind = 'hero' }
+  M.apply_unit(env, hero, 'hero', nil, hero_info)
 end
 
 local LAST_REFRESH_TIME = 0
-local REFRESH_INTERVAL = 0.5 -- 每0.5秒刷新一次
+local REFRESH_INTERVAL = 0.5
 
 function M.refresh_all(env)
   local current_time = 0

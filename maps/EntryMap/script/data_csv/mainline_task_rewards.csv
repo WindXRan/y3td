@@ -9,7 +9,8 @@ __字段说明__,字段：chapter_id,排序,字段：title_text,字段：objecti
 1-7,1,7,主线1-7,击杀恶魔守卫,3,60,134278989,challenge_spawn_mid,false,,,
 1-8,1,8,主线1-8,击杀痛苦女王,3,60,134278989,challenge_spawn_mid,false,,,
 1-9,1,9,主线1-9,击杀恶魔术士,3,60,134278989,challenge_spawn_mid,false,,,
-1-10,1,10,主线1-10,击杀末日守卫,1,60,134278989,challenge_spawn_mid,true,special,treasure_choice,1
+1-10,1,10,主线1-10,击杀末日守卫,1,60,134278989,challenge_spawn_mid,true,,,
+
 2-1,2,1,主线2-1,击杀小鬼,3,60,134278989,challenge_spawn_mid,false,,,
 2-2,2,2,主线2-2,击杀虚空行者,3,60,134278989,challenge_spawn_mid,false,,,
 2-3,2,3,主线2-3,击杀地狱犬,3,60,134278989,challenge_spawn_mid,false,,,
@@ -19,7 +20,7 @@ __字段说明__,字段：chapter_id,排序,字段：title_text,字段：objecti
 2-7,2,7,主线2-7,击杀石像鬼,3,60,134278989,challenge_spawn_mid,false,,,
 2-8,2,8,主线2-8,击杀标枪手,3,60,134278989,challenge_spawn_mid,false,,,
 2-9,2,9,主线2-9,击杀巨魔,3,60,134278989,challenge_spawn_mid,false,,,
-2-10,2,10,主线2-10,击杀暴君,1,60,134278989,challenge_spawn_mid,true,special,treasure_choice,1
+2-10,2,10,主线2-10,击杀暴君,1,60,134278989,challenge_spawn_mid,true,,,
 3-1,3,1,主线3-1,击杀小鬼,3,60,134278989,challenge_spawn_mid,false,,,
 3-2,3,2,主线3-2,击杀虚空行者,3,60,134278989,challenge_spawn_mid,false,,,
 3-3,3,3,主线3-3,击杀地狱犬,3,60,134278989,challenge_spawn_mid,false,,,
@@ -29,4 +30,4 @@ __字段说明__,字段：chapter_id,排序,字段：title_text,字段：objecti
 3-7,3,7,主线3-7,击杀恶魔守卫,3,60,134278989,challenge_spawn_mid,false,,,
 3-8,3,8,主线3-8,击杀痛苦女王,3,60,134278989,challenge_spawn_mid,false,,,
 3-9,3,9,主线3-9,击杀恶魔术士,3,60,134278989,challenge_spawn_mid,false,,,
-3-10,3,10,主线3-10,击杀末日守卫,1,60,134278989,challenge_spawn_mid,true,special,treasure_choice,1
+3-10,3,10,主线3-10,击杀末日守卫,1,60,134278989,challenge_spawn_mid,true,,,

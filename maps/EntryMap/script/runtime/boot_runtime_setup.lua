@@ -36,7 +36,7 @@ function M.create(ctx)
       open_save_panel = function()
         return ctx.open_runtime_save_panel()
       end,
-      try_upgrade_growth_weapon = ctx.BattleEventPrompts.try_upgrade_growth_weapon,
+      try_upgrade_growth_weapon = ctx.try_upgrade_growth_weapon,
       use_attr_diamond = ctx.use_attr_diamond,
       show_debug_hotkey_help = ctx.show_debug_hotkey_help,
       debug_actions_system = ctx.debug_actions_system,
@@ -136,6 +136,10 @@ function M.create(ctx)
       -- 仅在明确进入局外流程时再调用 enter_outgame()。
       if ctx.outgame_system.set_ui_visible then
         ctx.outgame_system.set_ui_visible(false)
+      end
+      -- 确保启动时隐藏局内UI
+      if ctx.enforce_runtime_ui_phase then
+        ctx.enforce_runtime_ui_phase(false)
       end
     end,
   })

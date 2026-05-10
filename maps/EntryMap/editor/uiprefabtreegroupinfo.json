@@ -83,13 +83,6 @@
    {
     "__tuple__": true, 
     "items": [
-     "f5ba61dc-e816-4726-9b3b-ce61092b4991", 
-     "heromodel"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
      "cf7c8fc6-5af7-4cf1-870f-02cb315bc8eb", 
      "level"
     ]
@@ -106,13 +99,6 @@
     "items": [
      "c7542150-049d-4a6d-aa97-ed40ab30b8ba", 
      "skill_btn"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "d44c56fc-8a15-452a-bca2-687dc9b240e7", 
-     "YangChengIcon"
     ]
    }
   ]

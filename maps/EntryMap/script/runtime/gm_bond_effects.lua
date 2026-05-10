@@ -14,6 +14,22 @@ local BOND_GM_ACTIVATION_TAB = tostring(BOND_GM_TEXT.activation_tab or '技能�
 local BOND_GM_MODE_ACTIVATION = tostring(BOND_GM_TEXT.mode_activation or '技能系统')
 local BOND_GM_CMD_ACTIVATE_DESC = tostring(BOND_GM_TEXT.cmd_activate_desc or '立即激活指定技能系统：.egmbondeffect <技能名>')
 local BOND_GM_CMD_TEST_DESC = tostring(BOND_GM_TEXT.cmd_test_desc or '运行技能系统自动化自检：.egmbondtest')
+
+local GM_SHORTCUTS = {
+  { key = 'F1', action = '显示帮助' },
+  { key = 'Ctrl+W', action = '直接胜利' },
+  { key = 'Ctrl+L', action = '直接失败' },
+  { key = 'Ctrl+G', action = 'GM面板' },
+}
+
+local function show_shortcut_help()
+  local lines = { '=== GM 快捷键 ===' }
+  for _, shortcut in ipairs(GM_SHORTCUTS) do
+    lines[#lines + 1] = string.format('%s: %s', shortcut.key, shortcut.action)
+  end
+  return table.concat(lines, '\n')
+end
+
 function M.create(env)
   local STATE = env.STATE
   local y3 = env.y3
@@ -39,6 +55,8 @@ function M.create(env)
   local get_sample_skill_defs = env.get_sample_skill_defs
   local cast_sample_skill = env.cast_sample_skill
   local cast_next_sample_skill = env.cast_next_sample_skill
+  local debug_end_battle_win = env.debug_end_battle_win
+  local debug_end_battle_lose = env.debug_end_battle_lose
 
   local function trim(text)
     return tostring(text or ''):gsub('^%s+', ''):gsub('%s+$', '')
@@ -544,11 +562,11 @@ function M.create(env)
     STATE.gm_bond_ui = ui
 
     local toggle_button = parent:create_child('按钮')
-    toggle_button:set_ui_size(120, 34)
+    toggle_button:set_ui_size(80, 34)
     toggle_button:set_relative_parent_pos('顶部', 18)
     toggle_button:set_relative_parent_pos('右侧', 170)
-    toggle_button:set_text('技能GM')
-    toggle_button:set_font_size(15)
+    toggle_button:set_text('GM')
+    toggle_button:set_font_size(16)
     if toggle_button.set_image then
       toggle_button:set_image(999)
     end
@@ -574,30 +592,49 @@ function M.create(env)
     ui.panel = panel
 
     create_rect(panel, 16, 504, 948, 42, { 20, 38, 58, 230 })
-    create_text(panel, '技能 / 特殊效果 GM', 30, 512, 250, 28, 23, { 245, 248, 255, 255 })
-    create_text(panel, BOND_GM_PANEL_INTRO, 300, 514, 640, 22, 14, { 160, 186, 214, 255 })
-    create_button(panel, '主动技能', 672, 508, 134, 30, function()
-      ui.encyclopedia_visible = false
-      ui.active_skills_visible = true
-      ui.active_skills_page = 1
-      refresh_active_skills_overlay()
-    end, { 56, 86, 126, 235 })
-    create_button(panel, '技能大全', 816, 508, 134, 30, function()
-      ui.active_skills_visible = false
-      ui.encyclopedia_mode = 'activation'
-      ui.encyclopedia_visible = true
-      ui.encyclopedia_page = 1
+    create_text(panel, 'GM 控制台', 30, 512, 150, 28, 23, { 245, 248, 255, 255 })
+    create_text(panel, '快捷键 Ctrl+G 打开/关闭 | Ctrl+W 胜利 | Ctrl+L 失败', 180, 514, 500, 22, 14, { 160, 186, 214, 255 })
+    
+    create_button(panel, '帮助', 816, 508, 134, 30, function()
+      debug_message(show_shortcut_help())
     end, { 56, 86, 126, 235 })
 
-    create_rect(panel, 16, 282, 450, 212, { 14, 27, 42, 235 })
-    create_text(panel, '单技能按钮（全量直达）', 28, 468, 300, 22, 17, { 245, 248, 255, 255 })
+    create_rect(panel, 16, 282, 300, 212, { 14, 27, 42, 235 })
+    create_text(panel, '游戏控制', 28, 468, 200, 22, 17, { 245, 248, 255, 255 })
+    
+    create_button(panel, '直接胜利', 24, 444, 134, 40, function()
+      if debug_end_battle_win then
+        debug_end_battle_win()
+      else
+        debug_message('游戏结束功能未初始化')
+      end
+    end, { 88, 132, 92, 235 })
+    
+    create_button(panel, '直接失败', 168, 444, 134, 40, function()
+      if debug_end_battle_lose then
+        debug_end_battle_lose()
+      else
+        debug_message('游戏结束功能未初始化')
+      end
+    end, { 132, 92, 88, 235 })
+    
+    create_button(panel, 'N0全开', 24, 396, 134, 40, function()
+      apply_n0_mode('all')
+    end, { 64, 96, 132, 235 })
+    
+    create_button(panel, 'N0关闭', 168, 396, 134, 40, function()
+      apply_n0_mode('none')
+    end, { 70, 92, 116, 235 })
+
+    create_rect(panel, 330, 282, 634, 212, { 14, 27, 42, 235 })
+    create_text(panel, '单技能按钮（全量直达）', 342, 468, 300, 22, 17, { 245, 248, 255, 255 })
     for i = 1, 44 do
       local row = math.floor((i - 1) / 4)
       local col = (i - 1) % 4
       ui.bond_buttons[i] = create_button(
         panel,
         '',
-        24 + col * 106,
+        338 + col * 106,
         444 - row * 18,
         100,
         16,
@@ -614,31 +651,8 @@ function M.create(env)
       )
     end
 
-    create_rect(panel, 482, 282, 482, 212, { 14, 27, 42, 235 })
-    create_text(panel, '单卡列表（选中技能）', 496, 468, 230, 22, 17, { 245, 248, 255, 255 })
-    for i = 1, 12 do
-      local row = math.floor((i - 1) / 2)
-      local col = (i - 1) % 2
-      ui.card_buttons[i] = create_button(
-        panel,
-        '',
-        492 + col * 236,
-        434 - row * 30,
-        226,
-        26,
-        function()
-          local bond = select(1, get_selected_bond(ui))
-          if not bond then
-            return
-          end
-          ui.selected_card_index_by_bond[bond.bond_name] = i
-        end,
-        { 32, 60, 90, 230 }
-      )
-    end
-
-    create_rect(panel, 16, 16, 640, 250, { 14, 27, 42, 235 })
-    ui.status_text = create_text(panel, '', 28, 30, 616, 226, 14, { 233, 239, 248, 255 })
+    create_rect(panel, 16, 16, 948, 250, { 14, 27, 42, 235 })
+    ui.status_text = create_text(panel, '', 28, 30, 916, 226, 14, { 233, 239, 248, 255 })
 
     create_button(panel, '获得选中单卡特殊效果', 672, 206, 278, 40, function()
       local bond = select(1, get_selected_bond(ui))
@@ -668,11 +682,7 @@ function M.create(env)
       execute_activate_bond(bond.bond_name, false)
     end, { 100, 82, 126, 235 })
 
-    ui.n0_all_button = create_button(panel, 'N0全开（立即生效）', 672, 50, 278, 40, function()
-      apply_n0_mode('all')
-    end, { 64, 96, 132, 235 })
-
-    ui.force_effect_button = create_button(panel, '', 672, 258, 278, 40, function()
+    ui.force_effect_button = create_button(panel, '', 672, 50, 278, 40, function()
       if not set_force_special_effects_100 then
         debug_message('未注入特殊效果100%开关回调。')
         return
@@ -682,21 +692,18 @@ function M.create(env)
       debug_message(string.format('特殊效果100%%触发：%s', not current and '开启' or '关闭'))
     end, { 88, 108, 62, 235 })
 
-    ui.projectile_override_button = create_button(panel, '', 672, 310, 278, 40, function()
-      if debug_toggle_global_projectile_override then
-        debug_toggle_global_projectile_override(DEFAULT_DEBUG_PROJECTILE_KEY)
-      else
-        debug_message('未注入投射物覆盖回调。')
-      end
-    end, { 96, 106, 132, 235 })
-
-    ui.n0_none_button = create_button(panel, 'N0灵/零技能（立即生效）', 16, 4, 640, 40, function()
-      apply_n0_mode('none')
-    end, { 70, 92, 116, 235 })
-
-    create_button(panel, '关闭', 672, 4, 278, 40, function()
-      ui.visible = false
-    end, { 96, 76, 88, 235 })
+    create_button(panel, '主动技能', 672, 508, 134, 30, function()
+      ui.encyclopedia_visible = false
+      ui.active_skills_visible = true
+      ui.active_skills_page = 1
+      refresh_active_skills_overlay()
+    end, { 56, 86, 126, 235 })
+    create_button(panel, '技能大全', 816, 508, 134, 30, function()
+      ui.active_skills_visible = false
+      ui.encyclopedia_mode = 'activation'
+      ui.encyclopedia_visible = true
+      ui.encyclopedia_page = 1
+    end, { 56, 86, 126, 235 })
 
     local encyclopedia_mask = parent:create_child('图片')
     encyclopedia_mask:set_image(999)
@@ -882,6 +889,7 @@ function M.create(env)
     if not player then
       return
     end
+    
     ui.top_shortcut_bound_paths = ui.top_shortcut_bound_paths or {}
     local bound_any = false
     local paths = {
@@ -905,6 +913,47 @@ function M.create(env)
       else
         bound_any = true
       end
+    end
+    
+    if not ui.keyboard_bound then
+      local global_panel = UiRoot.get_overlay_parent(y3, player)
+      if global_panel and global_panel.add_event then
+        global_panel:add_event('键盘-按下', function(key_data)
+          if not key_data or not key_data.key then
+            return false
+          end
+          local key = key_data.key
+          local ctrl = key_data.ctrl
+          
+          if ctrl and key == 'G' then
+            ui.visible = not ui.visible
+            if refresh_board then
+              refresh_board()
+            end
+            return true
+          end
+          
+          if ctrl and key == 'W' then
+            if debug_end_battle_win then
+              debug_end_battle_win()
+              return true
+            end
+          end
+          
+          if ctrl and key == 'L' then
+            if debug_end_battle_lose then
+              debug_end_battle_lose()
+              return true
+            end
+          end
+          
+          return false
+        end)
+        ui.keyboard_bound = true
+        bound_any = true
+      end
+    else
+      bound_any = true
     end
     ui.top_shortcut_bound = bound_any
   end

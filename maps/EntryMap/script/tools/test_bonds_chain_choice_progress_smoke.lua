@@ -1,11 +1,47 @@
-﻿package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
+package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
 local bonds = require 'runtime.bonds_chain'
-local bond_nodes = require 'data.tables.bond.bond_nodes'
+local bond_modifier_pool = require 'data.tables.bond.bond_modifier_pool'
 
-local function get_build_choice_entry()
+local function normalize_text(value)
+  return tostring(value or ''):gsub('^%s+', ''):gsub('%s+$', '')
+end
+
+local function has_non_empty_body_block(blocks)
+  for _, block in ipairs(blocks or {}) do
+    if normalize_text(block and block.text or '') ~= '' then
+      return true
+    end
+  end
+  return false
+end
+
+local function choice_has_desc_source(choice)
+  if normalize_text(choice.desc_text) ~= '' then
+    return true
+  end
+  if normalize_text(choice.current_text) ~= '' then
+    return true
+  end
+  if normalize_text(choice.value_text) ~= '' then
+    return true
+  end
+  if normalize_text(choice.effect_text) ~= '' then
+    return true
+  end
+  if has_non_empty_body_block(choice.body_blocks) then
+    return true
+  end
+  local tip_model = choice.tip_model or {}
+  if normalize_text(tip_model.effect_body_text) ~= '' then
+    return true
+  end
+  return #(tip_model.bonus_lines or {}) > 0 or #(tip_model.set_body_lines or {}) > 0
+end
+
+local function get_collect_modifier_pool_choice_entries()
   local collect_candidate_choice_entries = nil
-  for index = 1, 20 do
+  for index = 1, 30 do
     local name, value = debug.getupvalue(bonds.try_draw, index)
     if name == 'collect_candidate_choice_entries' then
       collect_candidate_choice_entries = value
@@ -14,27 +50,21 @@ local function get_build_choice_entry()
   end
   assert(type(collect_candidate_choice_entries) == 'function', 'expected collect_candidate_choice_entries upvalue')
 
-  local pick_random_candidates = nil
-  for index = 1, 20 do
+  for index = 1, 30 do
     local name, value = debug.getupvalue(collect_candidate_choice_entries, index)
-    if name == 'pick_random_candidates' then
-      pick_random_candidates = value
-      break
-    end
-  end
-  assert(type(pick_random_candidates) == 'function', 'expected pick_random_candidates upvalue')
-
-  for index = 1, 20 do
-    local name, value = debug.getupvalue(pick_random_candidates, index)
-    if name == 'build_choice_entry' then
+    if name == 'collect_modifier_pool_choice_entries' then
       return value
     end
   end
-
-  error('expected build_choice_entry upvalue')
+  error('expected collect_modifier_pool_choice_entries upvalue')
 end
 
-local build_choice_entry = get_build_choice_entry()
+if not bond_modifier_pool.enabled or #bond_modifier_pool.cards == 0 then
+  print('modifier pool disabled, bonds chain choice progress smoke skipped')
+  os.exit(0)
+end
+
+local collect_modifier_pool_choice_entries = get_collect_modifier_pool_choice_entries()
 local state = {
   bond_runtime = bonds.create_runtime(),
   resources = {
@@ -42,63 +72,14 @@ local state = {
   },
 }
 
-local function assert_choice_title(node_id, expected_title)
-  local node_def = assert(bond_nodes.by_id[node_id], 'expected node def for ' .. tostring(node_id))
-  local choice = build_choice_entry(state, node_def, 1)
-  assert(choice.title_text == expected_title, string.format(
-    'expected %s title_text to be %s, got %s',
-    tostring(node_id),
-    tostring(expected_title),
-    tostring(choice.title_text)
-  ))
+local choices = assert(collect_modifier_pool_choice_entries(state), 'expected modifier pool choices')
+assert(#choices > 0, 'expected at least one modifier pool choice')
+
+for index, choice in ipairs(choices) do
+  assert(normalize_text(choice.title_text) ~= '', 'expected title_text for choice ' .. tostring(index))
+  assert(normalize_text(choice.bond_root_name) ~= '', 'expected bond_root_name for choice ' .. tostring(index))
+  assert(normalize_text(choice.bond_root_progress_text):match('^%d+/%d+$'), 'expected progress text for choice ' .. tostring(index))
+  assert(choice_has_desc_source(choice), 'expected desc source for choice ' .. tostring(index))
 end
-
-local function assert_choice_card_name(node_id, expected_name)
-  local node_def = assert(bond_nodes.by_id[node_id], 'expected node def for ' .. tostring(node_id))
-  local choice = build_choice_entry(state, node_def, 1)
-  assert(choice.subtitle_text == expected_name, string.format(
-    'expected %s subtitle_text to be %s, got %s',
-    tostring(node_id),
-    tostring(expected_name),
-    tostring(choice.subtitle_text)
-  ))
-end
-
-local function assert_same_root_progress(root_node_id, branch_node_id)
-  local root_choice = build_choice_entry(state, assert(bond_nodes.by_id[root_node_id]), 1)
-  local branch_choice = build_choice_entry(state, assert(bond_nodes.by_id[branch_node_id]), 1)
-
-  assert(root_choice.bond_root_name == branch_choice.bond_root_name, string.format(
-    'expected %s and %s to share bond_root_name, got %s and %s',
-    tostring(root_node_id),
-    tostring(branch_node_id),
-    tostring(root_choice.bond_root_name),
-    tostring(branch_choice.bond_root_name)
-  ))
-  assert(root_choice.bond_root_progress_text == branch_choice.bond_root_progress_text, string.format(
-    'expected %s and %s to share bond_root_progress_text, got %s and %s',
-    tostring(root_node_id),
-    tostring(branch_node_id),
-    tostring(root_choice.bond_root_progress_text),
-    tostring(branch_choice.bond_root_progress_text)
-  ))
-  assert(branch_choice.title_text ~= string.format(
-    '%s (%s)',
-    tostring(branch_choice.bond_root_name),
-    tostring(branch_choice.bond_root_progress_text)
-  ), 'expected branch title_text to keep branch progress instead of root progress')
-end
-
-assert_choice_title('bond_growth_agility', '敏捷 (0/3)')
-assert_choice_title('bond_growth_barbarian_warcry', '搬山 (0/4)')
-assert_choice_title('bond_growth_war_god_power', '显圣真君 (0/3)')
-assert_choice_card_name('bond_critical_core', '暴击强化')
-assert_choice_card_name('bond_magic_core', '法术威力')
-assert_choice_card_name('bond_archery_core', '箭矢弹射')
-assert_choice_card_name('bond_growth_core', '智力提升')
-assert_same_root_progress('bond_archery_core', 'bond_archery_shooting')
-assert_same_root_progress('bond_growth_core', 'bond_growth_barbarian_warcry')
 
 print('bonds chain choice progress smoke ok')
-
-

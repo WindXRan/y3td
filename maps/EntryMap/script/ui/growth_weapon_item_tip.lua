@@ -58,15 +58,8 @@ function M.create(env)
       return
     end
     bound = true
-    for slot = 1, 6 do
-      local child_name = string.format('main.inventory.equip_slot_bg_%d', slot)
-      root:on_event(child_name, '鼠标-移入', function(ui, local_player)
-        show(ui, local_player, slot)
-      end)
-      root:on_event(child_name, '鼠标-移出', function()
-        hide()
-      end)
-    end
+    -- The runtime HUD owns loadout hover tips now. The old GameHUD inventory
+    -- paths no longer exist in the battle HUD, so keep this module inert.
   end
 
   return {

@@ -1,4 +1,4 @@
-﻿package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
+package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
 local MainlineTaskRuntime = require 'runtime.mainline_tasks'
 
@@ -26,7 +26,6 @@ local state = {
 }
 
 local rewards = {}
-local treasures = 0
 local messages = {}
 local started_instances = {}
 
@@ -46,9 +45,6 @@ local api = MainlineTaskRuntime.create({
   end,
   award_rewards = function(reward)
     rewards.resource = reward
-  end,
-  queue_treasure_round = function()
-    treasures = treasures + 1
   end,
   start_mainline_task_challenge = function(task)
     local instance = {
@@ -146,16 +142,6 @@ local percent_summary = api.get_current_task_summary()
 assert(percent_summary.reward_line_texts[1] == '物理伤害 +3%', 'expected pct rewards to render with a percent sign')
 assert(percent_summary.reward_line_texts[2] == '魔法伤害 +3%', 'expected secondary pct rewards to render with a percent sign')
 
-state.mainline_task_runtime.active_task_id = '4-10'
-state.mainline_task_runtime.last_result = 'none'
-state.mainline_task_runtime.last_result_reason = nil
-state.mainline_task_runtime.state = 'idle'
-state.mainline_task_runtime.active_challenge = nil
-local mixed_reward_summary = api.get_current_task_summary()
-assert(mixed_reward_summary.reward_line_texts[1] == '木材 +100', 'expected resource rewards to render with readable localized text')
-assert(mixed_reward_summary.reward_line_texts[2] == '获得 1 次宝物', 'expected treasure choice rewards to render with readable acquisition text')
-assert(#mixed_reward_summary.reward_line_texts == 2, 'expected 4-10 to render two reward lines')
-
 state.mainline_task_runtime.active_task_id = '3-10'
 state.mainline_task_runtime.last_result = 'none'
 state.mainline_task_runtime.last_result_reason = nil
@@ -196,7 +182,6 @@ local final_task_api = MainlineTaskRuntime.create({
   message = function() end,
   add_hero_attr_pack = function() end,
   award_rewards = function() end,
-  queue_treasure_round = function() end,
   start_mainline_task_challenge = function(task)
     return {
       id = 'mainline_task:' .. tostring(task.id),
@@ -217,13 +202,11 @@ api.apply_task_rewards({
   reward_lines = {
     { type = 'attr', key = 'hp', value = 100 },
     { type = 'resource', key = 'wood', value = 50 },
-    { type = 'special', key = 'treasure_choice', value = 1 },
   }
 })
 
 assert(rewards.attr['生命'] == 100, 'expected attr reward to map to hero attr pack')
 assert(rewards.resource.wood == 50, 'expected resource reward to map to reward pack')
-assert(treasures == 1, 'expected treasure special reward to queue treasure round')
 
 print('[OK] mainline task runtime smoke passed')
 

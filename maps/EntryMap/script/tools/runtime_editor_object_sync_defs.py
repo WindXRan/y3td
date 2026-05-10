@@ -18,7 +18,6 @@ REGISTRY_PATH = ROOT / "script" / "data" / "object_tables" / "runtime_editor_ids
 ATTACK_SKILLS_LUA = ROOT / "script" / "data" / "object_tables" / "attack_skills.lua"
 RUNTIME_ATTACK_SKILLS = ROOT / "script" / "runtime" / "attack_skills.lua"
 RUNTIME_AUTO_EFFECTS = ROOT / "script" / "runtime" / "auto_active_effects.lua"
-TREASURE_COMPAT = ROOT / "script" / "data" / "object_tables" / "treasure_catalog_compat.lua"
 SYNC_RUNTIME_EDITOR_OBJECTS = ROOT / "script" / "tools" / "sync_runtime_editor_objects.py"
 
 ABILITY_IDS = [
@@ -121,19 +120,5 @@ EQUIPMENT_REQUIRED_KV_KEYS = [
     "entry_attr_pack",
     "entry_active_ability",
     "entry_passive_abilities",
-    "entry_handler",
-]
-
-TREASURE_ITEM_IDS = [201390200 + index for index in range(1, 23)]
-
-TREASURE_REQUIRED_KV_KEYS = [
-    "entry_item_kind",
-    "entry_runtime_treasure_id",
-    "entry_quality",
-    "entry_category",
-    "entry_summary",
-    "entry_duration",
-    "entry_effects",
-    "entry_set",
     "entry_handler",
 ]

@@ -10,7 +10,7 @@ local config = {
   slots = {
     weapon = {
       slot = 'weapon',
-      display_name = '³É³¤ÎäÆ÷',
+      display_name = 'æˆé•¿æ­¦å™¨',
       max_level = 100,
       affix_choice_count = 3,
       item_key = 100001,
@@ -24,7 +24,7 @@ local config = {
 local fake_item_api = {
   get_name_by_key = function(item_key)
     assert(item_key == 100001, 'expected growth weapon item key')
-    return 'ºé»ÄÖ®ÈĞ'
+    return 'æ´ªè’ä¹‹åˆƒ'
   end,
   get_icon_id_by_key = function(item_key)
     assert(item_key == 100001, 'expected growth weapon item key')
@@ -32,15 +32,15 @@ local fake_item_api = {
   end,
   attr_pick_by_key = function(item_key)
     assert(item_key == 100001, 'expected growth weapon item key')
-    return { 'ÎïÀí¹¥»÷', '±©»÷ÂÊ', 'ÒÆ¶¯ËÙ¶È', 'Î´ÊÕÂ¼ÊôĞÔ' }
+    return { 'ç‰©ç†æ”»å‡»', 'æš´å‡»ç‡', 'ç§»åŠ¨é€Ÿåº¦', 'æœªæ”¶å½•å±æ€§' }
   end,
   get_attribute_by_key = function(item_key, key)
     assert(item_key == 100001, 'expected growth weapon item key')
     local values = {
-      ['ÎïÀí¹¥»÷'] = 31,
-      ['±©»÷ÂÊ'] = 0.25,
-      ['ÒÆ¶¯ËÙ¶È'] = 0,
-      ['Î´ÊÕÂ¼ÊôĞÔ'] = 777,
+      ['ç‰©ç†æ”»å‡»'] = 31,
+      ['æš´å‡»ç‡'] = 0.25,
+      ['ç§»åŠ¨é€Ÿåº¦'] = 0,
+      ['æœªæ”¶å½•å±æ€§'] = 777,
     }
     return values[key] or 0
   end,
@@ -50,15 +50,15 @@ gear.ensure_runtime(state, config)
 local payload = gear.build_tip_payload(state, 'weapon', config, fake_item_api)
 
 assert(payload ~= nil, 'expected payload')
-assert(payload.title_text == 'ºé»ÄÖ®ÈĞ', 'expected item name as title')
-assert(payload.subtitle_text == '³É³¤ÎäÆ÷ Lv.1', 'expected level subtitle')
-assert(payload.cost_text == 'Éı¼¶ËùĞè£º100 ½ğ±Ò', 'expected upgrade cost text')
+assert(payload.title_text == 'æ´ªè’ä¹‹åˆƒ', 'expected item name as title')
+assert(payload.subtitle_text == 'æˆé•¿æ­¦å™¨ Lv.1', 'expected level subtitle')
+assert(payload.cost_text == 'å‡çº§æ‰€éœ€ï¼š100 é‡‘å¸', 'expected upgrade cost text')
 assert(payload.icon_res == 123456, 'expected item icon')
 assert(type(payload.attr_lines) == 'table' and #payload.attr_lines == 2, 'expected exactly two direct attr lines')
-assert(payload.attr_lines[1] == 'ÎïÀí¹¥»÷ +31', 'expected flat attack line')
-assert(payload.attr_lines[2] == '±©»÷ÂÊ +25%', 'expected crit ratio formatted as percent')
+assert(payload.attr_lines[1] == 'ç‰©ç†æ”»å‡» +31', 'expected flat attack line')
+assert(payload.attr_lines[2] == 'æš´å‡»ç‡ +25%', 'expected crit ratio formatted as percent')
 assert(type(payload.affix_lines) == 'table' and type(payload.affix_lines[1]) == 'table', 'expected structured affix rows')
-assert(payload.affix_lines[1].title == 'µ±Ç°´Ê×º', 'expected equipment template to label the affix section')
-assert(payload.affix_lines[1].body == 'ÔİÎŞ´Ê×º', 'expected empty affix fallback body')
+assert(payload.affix_lines[1].title == 'å½“å‰è¯ç¼€', 'expected equipment template to label the affix section')
+assert(payload.affix_lines[1].body == 'æš‚æ— è¯ç¼€', 'expected empty affix fallback body')
 
 print('[OK] growth weapon tip payload smoke passed')

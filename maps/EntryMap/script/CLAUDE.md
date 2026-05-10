@@ -29,8 +29,7 @@
 - 运行时总协调：`maps/EntryMap/script/runtime/boot.lua`
 - 配置汇总入口：`maps/EntryMap/script/config/entry_config.lua`
 - 羁绊主实现：`maps/EntryMap/script/runtime/bonds.lua`
-- 宝物系统：已下线（`runtime/rewards.lua` 保留兼容桩）
-- 英雄进化：运行时由 `runtime/rewards.lua` 实现，数据表 `data/tables/outgame/hero_evolutions.lua` 和 `hero_evolution_nodes.lua`
+- 奖励系统：运行时由 `runtime/rewards.lua` 实现，包含英雄进阶功能
 
 ## 不要误判为主入口
 
@@ -73,7 +72,6 @@
   - `maps/EntryMap/script/runtime/bond_nodes.lua`
 - 英雄进化 / 奖励队列：
   - 由 `maps/EntryMap/script/runtime/rewards.lua` 提供实现
-  - 宝物系统已下线，保留空桩兼容
 - 配置：
   - `maps/EntryMap/script/config/entry_config.lua`
 - HUD / 调试：

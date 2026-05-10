@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 
@@ -67,8 +67,7 @@ def get_first_visible_stage_effect(effect_field):
     return 0
 
 
-def treasure_runtime_id(item_id: int) -> str:
-    return f"ITEM_{item_id - 201390200:03d}"
+
 
 
 def load_sync_module():
@@ -273,55 +272,16 @@ def main():
         "chain lightning projectile should expose short strike delay"
     )
 
-    for item_id in TREASURE_ITEM_IDS:
-        path = ITEM_DIR / f"{item_id}.json"
-        runtime_id = treasure_runtime_id(item_id)
-        assert path.exists(), f"missing treasure editor item: {path}"
-        data = load_json(path)
-        assert data["key"] == item_id, f"treasure item {item_id} key mismatch"
-        assert data["uid"] == str(item_id), f"treasure item {item_id} uid mismatch"
-        assert isinstance(data.get("kv"), dict), f"treasure item {item_id} should expose kv manifest"
-        for kv_key in TREASURE_REQUIRED_KV_KEYS:
-            assert kv_key in data["kv"], f"treasure item {item_id} missing kv field {kv_key}"
-            assert_editor_kv_entry(data["kv"], kv_key, f"treasure item {item_id}")
-        assert kv_value(data["kv"]["entry_item_kind"]) == "treasure", f"treasure item {item_id} kind mismatch"
-        assert kv_value(data["kv"]["entry_runtime_treasure_id"]) == runtime_id, f"treasure item {item_id} runtime id mismatch"
-        assert kv_value(data["kv"]["entry_handler"]) == "runtime.rewards", f"treasure item {item_id} handler mismatch"
-        assert len(data["kv"]) <= 9, f"treasure item {item_id} kv should stay compact"
-        assert language.get(str(data["name"])), f"treasure item {item_id} missing name language"
-        assert language.get(str(data["description"])), f"treasure item {item_id} missing description language"
-        assert str(item_id) in item_folderinfo["d"], f"treasure item {item_id} missing folder mapping"
-        description = language[str(data["description"])]
-        assert f"运行时宝物ID：{runtime_id}" in description, f"treasure item {item_id} description should include runtime id"
-        assert f"宝物物编ID：{item_id}" in description, f"treasure item {item_id} description should include editor id"
 
-    item_004 = load_json(ITEM_DIR / "201390204.json")["kv"]
-    assert kv_value(item_004["entry_duration"]) == "timed:30s:immediate", "ITEM_004 should expose compact timed duration"
-    assert "temporary_buff:物理暴击:add:0.5:30s" in kv_value(item_004["entry_effects"]), "ITEM_004 should expose crit effect summary"
-
-    item_010 = load_json(ITEM_DIR / "201390210.json")["kv"]
-    assert "refresh_count:skill_refresh_free:add:1:instant" in kv_value(item_010["entry_effects"]), "ITEM_010 should expose refresh summary"
-    assert kv_value(item_010["entry_set"]) == "", "ITEM_010 should not expose set summary"
-
-    item_012 = load_json(ITEM_DIR / "201390212.json")["kv"]
-    assert "mechanic_toggle:randomize_base_stats:set:1:instant" in kv_value(item_012["entry_effects"]), "ITEM_012 should expose mechanic summary"
-
-    item_015 = load_json(ITEM_DIR / "201390215.json")["kv"]
-    assert "暴伤(2件)" in kv_value(item_015["entry_set"]), "ITEM_015 should expose set name"
-    assert "ratio_bonus:物理暴击:add:0.05" in kv_value(item_015["entry_set"]), "ITEM_015 should expose set effect summary"
 
     registry_text = REGISTRY_PATH.read_text(encoding="utf-8")
     attack_skill_loader = ATTACK_SKILLS_LUA.read_text(encoding="utf-8")
     runtime_attack_skills = RUNTIME_ATTACK_SKILLS.read_text(encoding="utf-8")
     runtime_auto_effects = RUNTIME_AUTO_EFFECTS.read_text(encoding="utf-8")
-    treasure_compat = TREASURE_COMPAT.read_text(encoding="utf-8")
 
     assert_contains(registry_text, "basic_attack = 201390001", "registry missing basic_attack id")
     assert_contains(registry_text, "projectile = {", "registry missing projectile section")
     assert_contains(registry_text, "fireball = 201364749", "registry missing fireball projectile id")
-    assert_contains(registry_text, "treasure = {", "registry missing treasure section")
-    assert_contains(registry_text, "ITEM_004 = 201390204", "registry missing ITEM_004 editor item id")
-    assert_contains(registry_text, "ITEM_022 = 201390222", "registry missing ITEM_022 editor item id")
     assert_contains(registry_text, "fighting_spirit_field = 201365014", "registry missing fighting_spirit_field id")
     assert_contains(attack_skill_loader, "local editor_ability_key = RuntimeEditorIds.ability[row.id]", "attack skill loader should expose editor ability key")
     assert_contains(attack_skill_loader, "local editor_projectile_key = RuntimeEditorIds.projectile and RuntimeEditorIds.projectile[row.id] or nil", "attack skill loader should expose editor projectile key")
@@ -337,8 +297,6 @@ def main():
     assert_contains(runtime_attack_skills, "ATTACK_STATUS_MODIFIER_KEYS", "runtime attack skills should consume status modifier ids")
     assert_contains(runtime_auto_effects, "MODIFIER_KEYS.rapid_overdrive", "runtime auto effects should consume rapid overdrive modifier id")
     assert_contains(runtime_auto_effects, "MODIFIER_KEYS.charge_breaker_rally", "runtime auto effects should consume charge breaker rally modifier id")
-    assert_contains(treasure_compat, "local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'", "treasure compat should load runtime editor ids")
-    assert_contains(treasure_compat, "editor_item_key = RuntimeEditorIds.treasure and RuntimeEditorIds.treasure[item.id] or nil", "treasure compat should expose editor item key")
 
     print("runtime editor object sync checks passed")
 
