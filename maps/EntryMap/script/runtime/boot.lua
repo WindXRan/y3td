@@ -1364,9 +1364,9 @@ attack_skills_system = BootCombatSetup.create_attack_skills_system({
   play_attack_skill_sound = play_attack_skill_sound,
 })
 
-local auto_active_effects_system = BootCombatSetup.create_auto_active_effects_system({
-  BootServices.attack_skills_system_setter(attack_skills_system),
+BootServices.attack_skills_system_setter(attack_skills_system)
 
+local auto_active_effects_system = BootCombatSetup.create_auto_active_effects_system({
   STATE = STATE,
   CONFIG = CONFIG,
   y3 = y3,
@@ -1381,6 +1381,8 @@ local auto_active_effects_system = BootCombatSetup.create_auto_active_effects_sy
   deal_skill_damage = deal_skill_damage,
   heal_hero = heal_hero,
 })
+
+BootServices.auto_active_effects_system_setter(auto_active_effects_system)
 
 local effect_debug_system = BootCombatSetup.create_effect_debug_system({
   STATE = STATE,
@@ -1520,6 +1522,8 @@ local runtime_ui_helpers = BootUISetup.create_runtime_ui_helpers({
   get_runtime_overview_model = get_runtime_overview_model,
 })
 
+BootServices.runtime_ui_helpers_setter(runtime_ui_helpers)
+
 local growth_weapon_item_tip_system = BootUISetup.create_growth_weapon_item_tip_system({
   STATE = STATE,
   CONFIG = CONFIG,
@@ -1531,6 +1535,8 @@ local result_panel_system = BootUISetup.create_result_panel_system({
   y3 = y3,
   get_player = get_player,
 })
+
+BootServices.result_panel_system_setter(result_panel_system)
 
 local debug_actions_system = BootDebugSetup.create_debug_actions_system({
   STATE = STATE,
@@ -1595,6 +1601,8 @@ local battle_auto_acceptance_system = BootDebugSetup.create_battle_auto_acceptan
   create_bond_env = create_bond_env,
 })
 
+BootServices.battle_auto_acceptance_system_setter(battle_auto_acceptance_system)
+
 BootServices.heal_hero_setter(heal_hero)
 BootServices.progression_system_setter(progression_system)
 BootServices.battlefield_system_setter(battlefield_system)
@@ -1608,8 +1616,7 @@ BootServices.attr_choice_system_setter(attr_choice_system)
 BootServices.audio_system_setter(audio_system)
 BootServices.skill_framework_system_setter(skill_framework_system)
 BootServices.sample_skills_system_setter(sample_skills_system)
-BootServices
-    .message_setter(message)
+BootServices.message_setter(message)
 BootServices.ensure_round_choice_available_setter(ensure_round_choice_available)
 BootServices.get_enemies_in_range_setter(get_enemies_in_range)
 BootServices.deal_skill_damage_setter(deal_skill_damage)
@@ -1674,6 +1681,7 @@ local is_battle_active = RuntimeEntry._session_bundle.is_battle_active
 local reset_battle_state = RuntimeEntry._session_bundle.reset_battle_state
 local reset_session_state = RuntimeEntry._session_bundle.reset_session_state
 
+BootServices.outgame_system_setter(outgame_system)
 BootServices.hero_selection_range_system_setter(hero_selection_range_system)
 
 RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({

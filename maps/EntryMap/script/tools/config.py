@@ -14,6 +14,7 @@
 import os
 import json
 import glob
+import re
 
 
 # 配置文件路径（保存用户手动指定的路径）
@@ -144,6 +145,92 @@ def get_game_exe_from_editor(editor_path):
     return None
 
 
+def get_common_game_exe_candidates():
+    """返回常见的游戏可执行文件候选路径"""
+    candidates = []
+
+    env_game_exe = os.environ.get('Y3_GAME_EXE')
+    if env_game_exe:
+        candidates.append(env_game_exe)
+
+    for env_name in ('ProgramFiles', 'ProgramFiles(x86)'):
+        base_dir = os.environ.get(env_name)
+        if not base_dir:
+            continue
+        candidates.append(
+            os.path.join(
+                base_dir,
+                'y3',
+                'games',
+                '2.0',
+                'game',
+                'Engine',
+                'Binaries',
+                'Win64',
+                'Game_x64h.exe',
+            )
+        )
+
+    candidates.append(r'C:\Program Files\y3\games\2.0\game\Engine\Binaries\Win64\Game_x64h.exe')
+
+    unique = []
+    for path in candidates:
+        normalized = os.path.normpath(path)
+        if normalized not in unique:
+            unique.append(normalized)
+    return unique
+
+
+def read_game_exe_from_launch_bat():
+    """从已生成的 launch_game.bat 回推游戏路径"""
+    bat_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'launch_game.bat')
+    if not os.path.exists(bat_path):
+        return None
+
+    try:
+        with open(bat_path, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+    except OSError:
+        return None
+
+    match = re.search(r'cd\s+/d\s+"([^"]+)"', content, re.IGNORECASE)
+    if not match:
+        return None
+
+    game_dir = match.group(1).strip()
+    if not game_dir:
+        return None
+
+    game_exe = os.path.join(game_dir, 'Game_x64h.exe')
+    if os.path.exists(game_exe):
+        return game_exe
+    return None
+
+
+def detect_game_exe(script_path, editor_path=None):
+    """按优先级检测游戏可执行文件"""
+    if editor_path:
+        game_exe = get_game_exe_from_editor(editor_path)
+        if game_exe:
+            return game_exe, 'editor_path'
+
+    env_editor_path = os.environ.get('Y3_EDITOR_PATH')
+    if env_editor_path:
+        game_exe = get_game_exe_from_editor(env_editor_path)
+        if game_exe:
+            return game_exe, 'env:Y3_EDITOR_PATH'
+
+    game_exe = read_game_exe_from_launch_bat()
+    if game_exe:
+        return game_exe, 'launch_game.bat'
+
+    for candidate in get_common_game_exe_candidates():
+        if os.path.exists(candidate):
+            return candidate, 'common_path'
+
+    return None, None
+
+
 def auto_detect_config(script_path_override=None):
     """自动检测所有配置
 
@@ -192,14 +279,23 @@ def auto_detect_config(script_path_override=None):
     editor_path = read_y3_helper_config(script_path)
     if editor_path:
         config['editor_path'] = editor_path
-        game_exe = get_game_exe_from_editor(editor_path)
-        if game_exe:
-            config['game_exe'] = game_exe
-        else:
-            config['errors'].append('从编辑器路径无法找到 Game_x64h.exe')
     else:
-        config['errors'].append('无法从 .vscode/settings.json 读取 Y3-Helper.EditorPath')
-        config['errors'].append('请在 VSCode/Cursor 中打开项目，Y3 Helper 会自动写入此配置')
+        env_editor_path = os.environ.get('Y3_EDITOR_PATH')
+        if env_editor_path:
+            config['editor_path'] = env_editor_path
+
+    game_exe, source = detect_game_exe(script_path, editor_path=config.get('editor_path'))
+    if game_exe:
+        config['game_exe'] = game_exe
+        if not editor_path:
+            config['errors'].append(f'未找到 .vscode/settings.json，已回退使用 {source} 定位 Game_x64h.exe')
+    else:
+        if editor_path:
+            config['errors'].append('从编辑器路径无法找到 Game_x64h.exe')
+        else:
+            config['errors'].append('无法从 .vscode/settings.json 读取 Y3-Helper.EditorPath')
+            config['errors'].append('也未能从环境变量、launch_game.bat 或常见安装目录定位 Game_x64h.exe')
+            config['errors'].append('请在 VSCode/Cursor 中打开项目，或设置 Y3_EDITOR_PATH / Y3_GAME_EXE')
 
     return config
 

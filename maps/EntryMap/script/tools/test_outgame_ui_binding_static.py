@@ -48,7 +48,7 @@ def main() -> None:
         if panel_json.exists():
             assert_contains(panel_json.read_text(encoding='utf-8'), '"visible": false', f'{panel_name} 根节点默认应隐藏，避免进局外遮挡大厅')
 
-    for panel_name in ('GameHUD', 'top', 'BattleBottomHUD', 'CommonTip', 'SceneUI'):
+    for panel_name in ('GameHUD', 'top', 'BattleBottomHUD', 'CommonTip', 'SceneUI', 'BattleDetailTipsPanel'):
         assert_contains(content, f"'{panel_name}'", f'进入局外时应隐藏 {panel_name}')
         panel_json = ROOT / 'ui' / f'{panel_name}.json'
         assert_contains(panel_json.read_text(encoding='utf-8'), '"visible": false', f'{panel_name} 根节点默认应隐藏，避免自动创建时遮挡大厅')

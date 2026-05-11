@@ -396,6 +396,7 @@ function M.create(env)
     local overlay_paths = {
       'Choice_Panel',
       'BondSwallowPanel',
+      'BattleDetailTipsPanel',
       'panel_1',
       'CommonTip',
       'SceneUI',
