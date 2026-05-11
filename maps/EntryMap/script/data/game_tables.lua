@@ -123,6 +123,7 @@ M.battlefield_scene_config = {
     mid_slow_lane_outer = { x_min = -220, x_max = 260, y_min = -520, y_max = 520, z = 0 },
     mid_slow_lane_inner = { x_min = -760, x_max = 40, y_min = -420, y_max = 420, z = 0 },
     hero_front_slow_lane = { x_min = -1220, x_max = -700, y_min = -320, y_max = 320, z = 0 },
+    extended_slow_zone = { x_min = 300, x_max = 600, y_min = -400, y_max = 400, z = 0 },
     challenge_spawn_top = { x_min = 500, x_max = 1100, y_min = 220, y_max = 420, z = 0 },
     challenge_spawn_mid = { x_min = 500, x_max = 1100, y_min = -80, y_max = 120, z = 0 },
     challenge_spawn_bottom = { x_min = 500, x_max = 1100, y_min = -420, y_max = -220, z = 0 },
@@ -131,6 +132,7 @@ M.battlefield_scene_config = {
     { area_id = 'mid_slow_lane_outer',  speed_factor = 0.64 },
     { area_id = 'mid_slow_lane_inner',  speed_factor = 0.46 },
     { area_id = 'hero_front_slow_lane', speed_factor = 0.30 },
+    { area_id = 'extended_slow_zone',   speed_factor = 0.55 },
   },
   save_slots = { outgame_profile = 1 },
 }

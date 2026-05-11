@@ -28,6 +28,8 @@ local progression_system
 local reward_system
 local attr_choice_system
 local audio_system
+local attack_skills_system
+local effect_debug_system
 local mainline_task_system
 
 local function trace_boot(message)
@@ -286,7 +288,13 @@ local design_seconds = function(seconds)
 end
 
 local get_area = function(area_id)
-  return debug_tools_system and debug_tools_system.get_area(area_id)
+  if debug_tools_system and debug_tools_system.get_area then
+    local area = debug_tools_system.get_area(area_id)
+    if area then
+      return area
+    end
+  end
+  return CONFIG and CONFIG.areas and CONFIG.areas[area_id]
 end
 
 local random_point_in_area = function(area_id)
@@ -794,7 +802,14 @@ audio_system = AudioSystem.create({
   STATE = STATE,
   y3 = y3,
   get_player = get_player,
-  trace = function() end,
+  trace = function(msg)
+    if log and log.info then
+      log.info(msg)
+    else
+      print(msg)
+    end
+  end,
+  debug_missing_audio = true,
 })
 
 mainline_task_system = require('runtime.mainline_tasks').create({
@@ -1321,7 +1336,7 @@ local sample_skills_system = BootCombatSetup.create_sample_skills_system({
 
 BootCombatSetup.register_generated_skills(skill_framework_system)
 
-local attack_skills_system = BootCombatSetup.create_attack_skills_system({
+attack_skills_system = BootCombatSetup.create_attack_skills_system({
   STATE = STATE,
   CONFIG = CONFIG,
   y3 = y3,
@@ -1350,6 +1365,8 @@ local attack_skills_system = BootCombatSetup.create_attack_skills_system({
 })
 
 local auto_active_effects_system = BootCombatSetup.create_auto_active_effects_system({
+  BootServices.attack_skills_system_setter(attack_skills_system),
+
   STATE = STATE,
   CONFIG = CONFIG,
   y3 = y3,
@@ -1371,6 +1388,8 @@ local effect_debug_system = BootCombatSetup.create_effect_debug_system({
   y3 = y3,
   auto_active_effects_system = auto_active_effects_system,
 })
+
+BootServices.effect_debug_system_setter(effect_debug_system)
 
 STATE.hero_form_skills_system = BootCombatSetup.create_hero_form_skills_system({
   STATE = STATE,

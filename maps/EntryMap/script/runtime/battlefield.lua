@@ -1032,6 +1032,23 @@ function M.create(env)
   end
 
   local function get_main_enemy_slow_factor(info)
+    if not info or not info.unit or not info.unit.is_exist or not info.unit:is_exist() then
+      return 1
+    end
+    local unit_point = info.unit:get_point()
+    if not unit_point then
+      return 1
+    end
+    local slow_zones = CONFIG.main_enemy_slow_zones
+    if not slow_zones then
+      return 1
+    end
+    for _, zone in ipairs(slow_zones) do
+      local area = CONFIG.areas and CONFIG.areas[zone.area_id]
+      if area and is_point_in_area(unit_point, area) then
+        return zone.speed_factor or 1
+      end
+    end
     return 1
   end
 
