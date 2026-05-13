@@ -1,0 +1,12 @@
+{
+    "Y3-Helper.EditorPath": "D:\\Program Files\\y3\\games\\2.0\\game\\Editor.exe",
+    "Y3-Helper.WorkspacePath": "d:\\project\\_codex_y3td_push",
+    "Lua.workspace.library": [
+        "${workspaceFolder}/y3",
+        "${workspaceFolder}/runtime"
+    ],
+    "Lua.diagnostics.disable": [
+        "lowercase-global"
+    ],
+    "files.encoding": "utf-8"
+}

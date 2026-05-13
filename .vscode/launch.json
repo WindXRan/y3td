@@ -8,7 +8,7 @@
       "type": "y3lua",
       "request": "launch",
       "name": "Debug",
-      "program": "${workspaceFolder}/maps/EntryMap/script/entry_objects/bonds/catalog/guardian.lua"
+      "program": "${workspaceFolder}/maps/EntryMap/script/main.lua"
     }
   ]
 }

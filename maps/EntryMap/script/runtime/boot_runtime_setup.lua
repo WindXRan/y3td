@@ -99,6 +99,7 @@ function M.create(ctx)
       emit_damage_debug = function(visual)
         ctx.emit_damage_debug_visual(visual, nil)
       end,
+      reward_system = ctx.reward_system,
     }
   end
 
@@ -145,6 +146,7 @@ function M.create(ctx)
   })
 
   return {
+    bootstrap = run_bootstrap_sequence,
     input_events_system = input_events_system,
     runtime_loops_system = runtime_loops_system,
     register_runtime_events = register_runtime_events,
