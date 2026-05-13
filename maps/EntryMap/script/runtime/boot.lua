@@ -1245,8 +1245,8 @@ local play_enemy_death_sound = function(unit, info, death_point)
   if not death_point or not y3 or not y3.sound then return nil end
   local player = get_player()
   if not player then return nil end
-  local death_id = is_boss and 134257420 or 134257799
-  local ok, sound = pcall(y3.sound.play_3d, player, death_id, death_point, { ensure = true, height = 0 })
+  local death_id = is_boss and 134257420 or 134278073
+  local ok, sound = pcall(y3.sound.play_3d, player, death_id, death_point, { ensure = true, height = 0, volume = 100 })
   if ok and sound then return sound end
   return nil
 end

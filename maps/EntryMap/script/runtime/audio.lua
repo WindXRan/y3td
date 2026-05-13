@@ -117,7 +117,7 @@ local AUDIO_SCENES = {
     { LOCAL_AUDIO_IDS.burst, LOCAL_AUDIO_IDS.bgm_alt }, { '126040', '126780', '104675' }
   ),
   basic_attack = prepend_audio_ids({ LOCAL_AUDIO_IDS.attack, LOCAL_AUDIO_IDS.attack_alt }, { '123160', '125770' }),
-  enemy_death_heavy = prepend_audio_ids({ LOCAL_AUDIO_IDS.impact }, { '126040', '125775' }),
+  enemy_death_heavy = prepend_audio_ids({ 134278073, LOCAL_AUDIO_IDS.impact }, { '126040', '125775' }),
   enemy_death_burst = prepend_audio_ids({ LOCAL_AUDIO_IDS.burst }, { '126054', '126042' }),
 }
 
@@ -371,7 +371,8 @@ function M.create(params)
     local result = {}
     for _, alias_name in ipairs(alias_names) do
       local ok, key = pcall(y3.game.str_to_audio_key, alias_name)
-      if ok and key then result[#result + 1] = key end
+      local numeric_key = ok and tonumber(key) or nil
+      if numeric_key then result[#result + 1] = numeric_key end
     end
     runtime.key_alias_cache[cache_key] = #result > 0 and result or false
     if runtime.key_alias_cache[cache_key] == false then return {} end
@@ -391,12 +392,13 @@ function M.create(params)
       return numeric_id
     end
     local ok, key = pcall(y3.game.str_to_audio_key, cache_key)
-    if not ok or not key then
+    local numeric_key = ok and tonumber(key) or nil
+    if not numeric_key then
       runtime.key_cache[cache_key] = false
       return nil
     end
-    runtime.key_cache[cache_key] = key
-    return key
+    runtime.key_cache[cache_key] = numeric_key
+    return numeric_key
   end
 
   -- 解析候选列表（每个 ID 尝试直接解析 + 别名解析）
@@ -410,6 +412,14 @@ function M.create(params)
       if seen[k] then return end
       seen[k] = true
       result[#result + 1] = key
+      if GameAPI and GameAPI.int_transform_sound_type then
+        local ok, transformed_key = pcall(GameAPI.int_transform_sound_type, key)
+        local numeric_transformed_key = ok and tonumber(transformed_key) or nil
+        if numeric_transformed_key and not seen[tostring(numeric_transformed_key)] then
+          seen[tostring(numeric_transformed_key)] = true
+          result[#result + 1] = numeric_transformed_key
+        end
+      end
     end
     for _, audio_id in ipairs(normalized) do
       local direct_key = resolve_single_audio_key(audio_id)

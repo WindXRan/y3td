@@ -100,8 +100,8 @@ function Resolve-GameExe {
     if ($env:ProgramFiles) {
         $candidates += (Join-Path $env:ProgramFiles "y3\games\2.0\game\Engine\Binaries\Win64\Game_x64h.exe")
     }
-    if ($env:'ProgramFiles(x86)') {
-        $candidates += (Join-Path $env:'ProgramFiles(x86)' "y3\games\2.0\game\Engine\Binaries\Win64\Game_x64h.exe")
+    if (${env:ProgramFiles(x86)}) {
+        $candidates += (Join-Path ${env:ProgramFiles(x86)} "y3\games\2.0\game\Engine\Binaries\Win64\Game_x64h.exe")
     }
     $candidates += "C:\Program Files\y3\games\2.0\game\Engine\Binaries\Win64\Game_x64h.exe"
 
@@ -173,7 +173,7 @@ Write-Host "[OK] Game EXE Source: $($gameResolution.Source)"
 
 # 构建启动参数（注意路径中的反斜杠需要转义）
 $escapedProjectPath = $projectPath -replace '\\', '\\\\'
-$pythonArgs = "type@editor_game,subtype@editor_game,editor_map_path@$escapedProjectPath,level_id@$levelId,release@true,lua_dummy@space,lua_wait_debugger@true"
+$pythonArgs = "type@editor_game,subtype@editor_game,editor_map_path@$escapedProjectPath,level_id@$levelId,release@true,lua_dummy@space,lua_wait_debugger@false"
 
 # 切换到游戏目录并启动
 $gameWorkDir = Split-Path -Parent $gameExe
