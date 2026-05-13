@@ -1,0 +1,23 @@
+{
+  "skill_name": "sync-y3maker-to-claude",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "这个项目根目录有 .y3maker，我想迁移成 Claude Code 能直接用的 .claude/skills 和项目级 MCP 配置。先帮我 dry-run 看看会改什么。",
+      "expected_output": "Skill should run inventory and apply --dry-run with --mcp-scope project if MCP exists or ask the user to choose scope; it should not modify .y3maker and should summarize planned .claude/.mcp.json outputs.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我之前已经把 .y3maker 同步到 .claude 了，现在 .y3maker 里有更新。请安全地重复同步，不要覆盖我手改过的 .claude 内容。",
+      "expected_output": "Skill should use manifest-based apply, report created/updated/adopted/blocked/orphaned, preserve blocked local edits, and run verify before claiming completion.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "只把 .y3maker 的旧 MCP 配置迁移到 Claude Code，其他内容先不动；我想知道 project/user/skip 的区别。",
+      "expected_output": "Skill should explain Claude Code MCP scopes, require an explicit choice, and avoid writing MCP config without user selection. It should recommend project .mcp.json for shared project MCP and user ~/.claude.json for private config.",
+      "files": []
+    }
+  ]
+}
