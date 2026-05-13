@@ -1,0 +1,32 @@
+key,zh_CN,en_US
+__字段说明__,文本键,中文文本,英文文本
+ui_title_main,主界面,Main Menu
+ui_title_battle,战斗,Battle
+ui_title_hero,英雄,Hero
+ui_title_skill,技能,Skill
+ui_title_bond,羁绊,Bond
+ui_title_shop,商店,Shop
+ui_title_settings,设置,Settings
+ui_btn_start,开始游戏,Start Game
+ui_btn_continue,继续游戏,Continue
+ui_btn_restart,重新开始,Restart
+ui_btn_quit,退出游戏,Quit Game
+ui_btn_buy,购买,Buy
+ui_btn_sell,出售,Sell
+ui_btn_upgrade,升级,Upgrade
+ui_btn_equip,装备,Equip
+ui_btn_unequip,卸下,Unequip
+ui_msg_victory,胜利！,Victory!
+ui_msg_defeat,失败,Defeat
+ui_msg_low_hp,生命值过低！,Low HP!
+ui_msg_level_up,升级！,Level Up!
+ui_msg_gold,金币,Gold
+ui_msg_wood,木材,Wood
+ui_msg_exp,经验,Experience
+ui_msg_hp,生命,HP
+ui_msg_attack,攻击,Attack
+ui_msg_defense,防御,Defense
+ui_tip_skill_cooldown,技能冷却中,Skill on cooldown
+ui_tip_not_enough_gold,金币不足,Not enough gold
+ui_tip_not_enough_wood,木材不足,Not enough wood
+ui_tip_max_level,已达最高等级,Max level reached

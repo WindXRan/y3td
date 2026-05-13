@@ -5,9 +5,14 @@ local GameTables = require 'data.game_tables'
 local BondNodes = require 'data.tables.bond.bond_nodes'
 local BondModifierPool = require 'data.tables.bond.bond_modifier_pool'
 local ArchiveTabDefinitions = require 'data.tables.archive_tab_definitions'
+local IconResolver = require 'data.tables.icon_resolver'
 
 local function trim(value)
   return tostring(value or ''):gsub('^%s+', ''):gsub('%s+$', '')
+end
+
+local function resolve_display_icon(...)
+  return IconResolver.pick(...)
 end
 
 local function normalize_quality(value, fallback)
@@ -119,9 +124,9 @@ local function build_archive_shop_specs(shop_items)
         node = 'hero_catalog_' .. id,
         index = tonumber(hero.order_index) or 0,
         title = name,
-        icon = hero_icon or shop_items.default_icon or 906565,
+        icon = resolve_display_icon(hero_icon, hero_bg, shop_items.default_icon, 906565),
         bg = hero_bg or resolve_bg_by_quality(quality, shop_items.default_bg),
-        default_icon = shop_items.default_icon or 906565,
+        default_icon = resolve_display_icon(shop_items.default_icon, hero_bg, 906565),
         default_bg = shop_items.default_bg or 131166,
         attr_text = trim(hero.title),
         value_text = trim(hero.rarity),
@@ -173,9 +178,9 @@ local function build_archive_shop_specs(shop_items)
       node = 'bond_catalog_' .. id,
       index = tonumber(spec.index) or tonumber(spec.tier) or 0,
       title = title,
-      icon = bond_icon or shop_items.default_icon or 906565,
+      icon = resolve_display_icon(bond_icon, bond_bg, shop_items.default_icon, 906565),
       bg = bond_bg or resolve_bg_by_quality(quality, shop_items.default_bg),
-      default_icon = shop_items.default_icon or 906565,
+      default_icon = resolve_display_icon(shop_items.default_icon, bond_bg, 906565),
       default_bg = shop_items.default_bg or 131166,
       attr_text = condition,
       value_text = required_count and tostring(required_count) or '',

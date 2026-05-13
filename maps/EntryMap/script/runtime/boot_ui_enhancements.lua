@@ -1,5 +1,6 @@
 local CONFIG = require 'config.entry_config'
 local QualityImageTable = require 'data.tables.economy.quality_image_table'
+local IconResolver = require 'data.tables.icon_resolver'
 local BootHelpers = require 'runtime.boot_helpers'
 local BondSystem = require 'runtime.bonds_chain'
 
@@ -7,6 +8,10 @@ local M = {}
 
 local STATE = nil
 local CONFIG_TABLE = nil
+
+local function resolve_display_icon(...)
+  return IconResolver.pick(...)
+end
 
 function M.set_dependencies(state, config)
   STATE = state
@@ -255,7 +260,7 @@ end
 
 local card_positions = setmetatable({}, { __mode = 'k' })
 
-local function apply_choice_card_style(card, selected, quality)
+local function apply_choice_card_style(card, selected, quality, skip_icon_color)
   if not card then
     return
   end
@@ -267,7 +272,9 @@ local function apply_choice_card_style(card, selected, quality)
   local subtitle = resolve_ui_child(card, 'sub_title')
   local desc = resolve_ui_child(card, 'desc')
   set_ui_image_color(bg, style.bg)
-  set_ui_image_color(icon, style.icon)
+  if not skip_icon_color then
+    set_ui_image_color(icon, style.icon)
+  end
   set_ui_text_color(title, style.title)
   set_ui_text_color(subtitle, style.subtitle)
   set_ui_text_color(desc, style.desc)
@@ -521,9 +528,14 @@ local function ensure_choice_selected_index(kind, choices, is_visible)
     return nil
   end
   local selected_index = tonumber(STATE.choice_panel_selected_index)
-  if STATE.choice_panel_selected_kind ~= kind or not selected_index or selected_index < 1 or selected_index > #choices then
-    selected_index = 1
-    STATE.choice_panel_selected_index = '1'
+  -- 只要选中的索引在有效范围内，就保留选中状态
+  -- 不要求 choice_panel_selected_kind 必须匹配，这样避免状态被不必要地重置
+  if not selected_index or selected_index < 1 or selected_index > #choices then
+    STATE.choice_panel_selected_index = nil
+    STATE.choice_panel_selected_kind = nil
+  end
+  -- 同时确保 kind 被正确设置
+  if selected_index and selected_index >= 1 and selected_index <= #choices then
     STATE.choice_panel_selected_kind = kind
   end
   return selected_index
@@ -536,11 +548,12 @@ refresh_choice_selected_styles = function()
   end
   local kind, choices = get_choice_panel_choices()
   local selected_index = tonumber(STATE.choice_panel_selected_index)
+  local skip_icon_color = (kind == 'evolution')
   for index = 1, 4 do
     local card = resolve_choice_panel_card(scroll, index)
     local choice = choices and choices[index] or nil
     local quality = choice and choice.quality or nil
-    apply_choice_card_style(card, selected_index == index, quality)
+    apply_choice_card_style(card, selected_index == index, quality, skip_icon_color)
   end
 end
 
@@ -590,7 +603,19 @@ local function build_choice_list_cards()
 
       local icon = resolve_ui_child(card, 'image_2_1')
       if icon and icon.set_image then
-        local icon_id = choice.ui_icon or choice.icon
+        local icon_id
+        if kind == 'evolution' then
+          icon_id = resolve_display_icon(
+            choice.icon_res,
+            choice.ui_icon,
+            choice.icon,
+            choice.bg,
+            nil,
+            nil
+          )
+        else
+          icon_id = resolve_display_icon(choice.icon_res, choice.ui_icon, choice.icon, choice.bg)
+        end
         if icon_id and icon_id ~= 0 and icon_id ~= '' then
           icon:set_image(icon_id)
         else
@@ -600,7 +625,8 @@ local function build_choice_list_cards()
 
       local click_image = resolve_ui_child(card, 'image_2')
       bind_choice_click_target(click_image or card, index)
-      apply_choice_card_style(card, selected_index == index, choice.quality)
+      local skip_icon_color = (kind == 'evolution')
+      apply_choice_card_style(card, selected_index == index, choice.quality, skip_icon_color)
     end
   end
 

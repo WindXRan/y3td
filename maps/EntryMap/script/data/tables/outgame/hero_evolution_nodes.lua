@@ -1,44 +1,7 @@
+local CsvLoader = require 'data.csv_loader'
 local helpers = require 'data.tables.helpers'
 
-local list = {
-  {
-    id = 'evolution_node_lv10',
-    trigger_level = 10,
-    choice_count = 2,
-    pool_rule_id = 'evolution_pool_global',
-    queue_priority = 95,
-    ui_title = '英雄进阶',
-  },
-  {
-    id = 'evolution_node_lv20',
-    trigger_level = 20,
-    choice_count = 2,
-    pool_rule_id = 'evolution_pool_global',
-    queue_priority = 95,
-    ui_title = '英雄进阶',
-  },
-  {
-    id = 'evolution_node_lv30',
-    trigger_level = 30,
-    choice_count = 2,
-    pool_rule_id = 'evolution_pool_global',
-    queue_priority = 95,
-    ui_title = '英雄进阶',
-  },
-  {
-    id = 'evolution_node_lv40',
-    trigger_level = 40,
-    choice_count = 2,
-    pool_rule_id = 'evolution_pool_global',
-    queue_priority = 95,
-    ui_title = '英雄进阶',
-  },
-}
-
-local by_level = {}
-for _, node in ipairs(list) do
-  by_level[node.trigger_level] = node
-end
+local CSV_PATH = 'data_csv/outgame/hero_evolution_nodes.csv'
 
 local pool_rules_by_id = {
   evolution_pool_global = {
@@ -53,6 +16,36 @@ local pool_rules_by_id = {
     enabled = true,
   },
 }
+
+local function build_from_csv_row(row)
+  return {
+    id = row.id,
+    trigger_level = CsvLoader.to_number(row.trigger_level, 0),
+    choice_count = CsvLoader.to_number(row.choice_count, 2),
+    pool_rule_id = row.pool_rule_id ~= '' and row.pool_rule_id or 'evolution_pool_global',
+    queue_priority = CsvLoader.to_number(row.queue_priority, 95),
+    ui_title = row.ui_title ~= '' and row.ui_title or '英雄进阶',
+  }
+end
+
+local function load_from_csv()
+  local rows = CsvLoader.read_rows(CSV_PATH)
+  local list = {}
+  for _, row in ipairs(rows) do
+    local node = build_from_csv_row(row)
+    if node.id and node.id ~= '' then
+      list[#list + 1] = node
+    end
+  end
+  return list
+end
+
+local list = load_from_csv()
+
+local by_level = {}
+for _, node in ipairs(list) do
+  by_level[node.trigger_level] = node
+end
 
 return {
   list = list,

@@ -150,6 +150,28 @@ function M.resolve_damage_text_type(damage_form, visual)
   return '法术'
 end
 
+function M.resolve_damage_text_track(damage_type, is_critical, fallback_track)
+  if M.is_damage_text_hidden() then
+    return nil
+  end
+
+  if is_critical then
+    if damage_type == '物理' or damage_type == '物理伤害' then
+      return y3.const.FloatTextJumpType["物理暴击_中上"] or fallback_track or 934300033
+    elseif damage_type == '法术' or damage_type == '魔法伤害' then
+      return y3.const.FloatTextJumpType["魔法暴击_中上"] or fallback_track or 934500033
+    end
+  else
+    if damage_type == '物理' or damage_type == '物理伤害' then
+      return y3.const.FloatTextJumpType["伤害_中上"] or fallback_track or 934269508
+    elseif damage_type == '法术' or damage_type == '魔法伤害' then
+      return y3.const.FloatTextJumpType["魔法伤害_中上"] or fallback_track or 934400033
+    end
+  end
+
+  return fallback_track or 934269508
+end
+
 function M.get_target_hp_ratio(target)
   if not target or not target:is_exist() then
     return 1
@@ -535,12 +557,16 @@ function M.deal_skill_damage(target, amount, damage, visual)
       source = 'skill',
       damage_meta = damage_meta,
     })
+    local damage_type_str = M.resolve_damage_text_type(damage_meta.damage_form, visual)
+    local is_crit = STATE.current_damage_is_critical or false
+    STATE.current_damage_is_critical = nil
+    local text_track = M.resolve_damage_text_track(damage_type_str, is_crit, 934269508)
     STATE.hero:damage({
       target = target,
       damage = final_damage,
       type = damage_meta.damage_type or '法术',
-      text_type = M.resolve_runtime_text_type(M.resolve_damage_text_type(damage_meta.damage_form, visual)),
-      text_track = visual and visual.text_track or 934269508,
+      text_type = M.resolve_runtime_text_type(damage_type_str),
+      text_track = text_track,
       particle = hit_effect_enabled and visual and visual.particle or nil,
       socket = hit_effect_enabled and visual and visual.socket or '',
       pos_socket = hit_effect_enabled and visual and visual.pos_socket or '',
@@ -711,7 +737,9 @@ function M.create_bond_env()
         log.info('[entry_runtime] ' .. tostring(text))
       end
       if STATE.session_phase == 'battle' then
-        BattleEventPrompts.push_battle_event(text)
+        if BattleEventPrompts and BattleEventPrompts.push_battle_event then
+          BattleEventPrompts.push_battle_event(text)
+        end
         return
       end
       BootHelpers.get_player():display_message(text)
@@ -831,19 +859,38 @@ function M.apply_formula_damage_override(data)
     return false
   end
 
+  local source_unit = data.source_unit
+  local is_from_hero = source_unit and STATE.hero and source_unit == STATE.hero
+  local is_critical = false
+
+  if is_from_hero and hero_attr_system then
+    local crit_chance = hero_attr_system.get_attr(source_unit, '物理暴击') or 0
+    crit_chance = crit_chance / 100
+    if crit_chance > 0 and math.random() < crit_chance then
+      is_critical = true
+      local crit_damage = hero_attr_system.get_attr(source_unit, '物理暴伤') or 150
+      crit_damage = crit_damage / 100
+      final_damage = final_damage * crit_damage
+    end
+  end
+
+  if is_critical then
+    STATE.current_damage_is_critical = true
+  end
+
   local ok = pcall(function()
     damage_instance:set_damage(final_damage)
+    if is_critical and damage_instance.set_critical then
+      damage_instance:set_critical(true)
+    end
   end)
   return ok == true
 end
 
-function M.handle_bond_enemy_kill(info, auto_active_effects_system, hero_form_skills_system)
+function M.handle_bond_enemy_kill(info, auto_active_effects_system)
   BondSystem.handle_enemy_kill(M.create_bond_env(), info)
   if auto_active_effects_system then
     auto_active_effects_system.handle_enemy_kill(info)
-  end
-  if hero_form_skills_system then
-    hero_form_skills_system.handle_enemy_kill(info)
   end
 end
 

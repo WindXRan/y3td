@@ -6,7 +6,6 @@ local bond_modifier_pool = require 'data.tables.bond.bond_modifier_pool'
 print('=== Testing build_modifier_choice_entry icon functionality ===\n')
 
 local state = {
-  hero_form_skill_runtime = nil,
   resources = {
     wood = 0,
   },
@@ -15,7 +14,6 @@ local state = {
 
 -- 确保 runtime 被初始化
 local runtime = bonds.create_runtime()
-state.hero_form_skill_runtime = runtime
 state[getmetatable(bonds) and 'bond_runtime' or 'bond_runtime'] = runtime -- 兼容可能的其他字段名
 
 if not bond_modifier_pool.enabled or #bond_modifier_pool.cards == 0 then

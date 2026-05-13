@@ -100,7 +100,7 @@ M.battle_base_config = {
     main_stat_attack_ratio = 0.5,
   },
   hero_level_progression = hero_level_progression,
-  resource_rules = { gold_per_sec = 2, initial_gold = 0, initial_wood = 0, wood_per_sec = 1 },
+  resource_rules = { gold_per_sec = 2, initial_gold = 0, initial_wood = 500, wood_per_sec = 1 },
   challenge_rules = { initial_charges = 1, max_charges = 3, recover_sec = 105 },
 }
 
@@ -259,6 +259,11 @@ for _, row in ipairs(roster_rows) do
     summary = row.summary,
     icon = tonumber(row.icon),
     bg = row.bg,
+    talent_skill = row.talent_skill or row.summary or '',
+    star_effect = row.star_effect or '',
+    awaken_effect = row.awaken_effect or '',
+    hero_model = to_optional_number(row.hero_model) or to_optional_number(row.model_id),
+    skill_icon = to_optional_number(row.skill_icon) or tonumber(row.icon),
   }
   hero_list[#hero_list + 1] = e
   if e.is_initial_hero and not initial then initial = e end

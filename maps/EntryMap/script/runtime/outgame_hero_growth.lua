@@ -1,11 +1,15 @@
 local HeroRoster = (require 'data.game_tables').hero_roster
-local HeroList = require 'data.tables.hero.herolist'
+local IconResolver = require 'data.tables.icon_resolver'
 
 local M = {}
 
 local STAR_COSTS = { 100, 200, 300 }
 local MAX_STAR = 3
 local AWAKEN_COST = 1
+
+local function resolve_display_icon(...)
+  return IconResolver.pick(...)
+end
 
 local function normalize_text(text)
   local value = tostring(text or '')
@@ -23,23 +27,21 @@ local function build_growth_defs()
   local by_hero_id = {}
   local by_hero_name = {}
 
-  local herolist_by_name = HeroList.by_hero_name or {}
   for _, roster in ipairs(HeroRoster.list or {}) do
     local hero_id = tostring(roster.id or '')
     local hero_name = tostring(roster.name or '')
     if hero_id ~= '' and hero_name ~= '' then
-      local extra = herolist_by_name[hero_name] or {}
       local def = {
         hero_id = hero_id,
         hero_name = hero_name,
         order_index = tonumber(roster.order_index) or 0,
         unit_id = roster.unit_id,
         skill_key = roster.skill_id or hero_name,
-        talent_skill = extra.talent_skill or roster.summary or '',
-        star_effect = normalize_text(extra.star_effect or ''),
-        awaken_effect = normalize_text(extra.awaken_effect or ''),
-        hero_model = extra.hero_model or roster.model_id,
-        hero_icon = extra.skill_icon or roster.icon,
+        talent_skill = roster.talent_skill or roster.summary or '',
+        star_effect = normalize_text(roster.star_effect or ''),
+        awaken_effect = normalize_text(roster.awaken_effect or ''),
+        hero_model = roster.hero_model or roster.model_id,
+        hero_icon = resolve_display_icon(roster.skill_icon, roster.icon, roster.bg),
       }
       list[#list + 1] = def
       by_hero_id[hero_id] = def

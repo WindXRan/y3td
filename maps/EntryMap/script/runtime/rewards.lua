@@ -1,7 +1,6 @@
 local HeroEvolutionObjects = require 'data.tables.outgame.hero_evolutions'
 local HeroEvolutionNodeObjects = require 'data.tables.outgame.hero_evolution_nodes'
 local HeroRoster = (require 'data.game_tables').hero_roster
-local HeroFormSkills = require 'data.tables.hero.hero_form_skills'
 
 local M = {}
 
@@ -16,7 +15,6 @@ local EVOLUTION_DEFS = HeroEvolutionObjects.by_id
 local EVOLUTION_NODES_BY_LEVEL = HeroEvolutionNodeObjects.by_level
 local EVOLUTION_POOL_RULES = HeroEvolutionNodeObjects.pool_rules_by_id or {}
 local HERO_ROSTER_BY_UNIT_ID = HeroRoster.by_unit_id or {}
-local HERO_FORM_SKILLS_BY_HERO_ID = HeroFormSkills.by_hero_id or {}
 
 local function get_evolution_hero_entry(def)
   local unit_id = def and def.hero_unit_id or nil
@@ -24,14 +22,6 @@ local function get_evolution_hero_entry(def)
     return nil
   end
   return HERO_ROSTER_BY_UNIT_ID[unit_id]
-end
-
-local function get_evolution_hero_skill(def)
-  local entry = get_evolution_hero_entry(def)
-  if not entry then
-    return nil, nil
-  end
-  return HERO_FORM_SKILLS_BY_HERO_ID[entry.id], entry
 end
 
 local function get_evolution_display_name(def)
@@ -46,30 +36,19 @@ local function get_evolution_display_name(def)
 end
 
 local function get_evolution_display_role(def)
-  local skill, entry = get_evolution_hero_skill(def)
+  local entry = get_evolution_hero_entry(def)
   if entry and entry.title and entry.title ~= '' then
     return entry.title
-  end
-  if skill and skill.subtitle and skill.subtitle ~= '' then
-    return skill.subtitle
   end
   return '英雄真身'
 end
 
 local function get_evolution_display_summary(def)
-  local skill, entry = get_evolution_hero_skill(def)
-  if skill and skill.summary and skill.summary ~= '' then
-    return skill.summary
-  end
+  local entry = get_evolution_hero_entry(def)
   if entry and entry.summary and entry.summary ~= '' then
     return entry.summary
   end
   return def and def.summary or ''
-end
-
-local function get_evolution_skill_name(def)
-  local skill = get_evolution_hero_skill(def)
-  return skill and skill.name or nil
 end
 
 local function add_bonus_pack(target, pack)
@@ -606,7 +585,7 @@ function M.create(env)
     runtime.awaiting_choice = false
     runtime.current_choices = nil
     runtime.current_round = nil
-    STATE.choice_panel_hidden = false
+    STATE.choice_panel_hidden = true
 
     apply_evolution_hero_form(def)
     api.sync_evolution_effects()

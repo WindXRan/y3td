@@ -3,32 +3,32 @@ local M = {}
 M.DAILY_TASK_DEFS = {
   {
     key = 'clear_any_1',
-    title = '首次通关任意难度',
-    reward = '奖励：金币+500',
+    title = 'Clear any stage once',
+    reward = 'Reward: Gold 500',
     target = 1,
   },
   {
     key = 'clear_any_3',
-    title = '通关3次任意难度',
-    reward = '奖励：强化石+3',
+    title = 'Clear any stage 3 times',
+    reward = 'Reward: Upgrade Stone +3',
     target = 3,
   },
   {
     key = 'online_60',
-    title = '累计在线60分钟',
-    reward = '奖励：木材+30',
+    title = 'Stay online for 60 minutes',
+    reward = 'Reward: Wood 30',
     target = 60,
   },
   {
     key = 'online_120',
-    title = '累计在线120分钟',
-    reward = '奖励：泡点+300',
+    title = 'Stay online for 120 minutes',
+    reward = 'Reward: Essence 300',
     target = 120,
   },
   {
     key = 'online_300',
-    title = '累计在线300分钟',
-    reward = '奖励：重铸石+3',
+    title = 'Stay online for 300 minutes',
+    reward = 'Reward: Heavy Forging Stone +3',
     target = 300,
   },
 }

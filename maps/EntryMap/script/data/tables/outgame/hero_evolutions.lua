@@ -1,11 +1,42 @@
 local AttrEffect = require 'data.tables.skill.attreffect'
 local HeroRoster = (require 'data.game_tables').hero_roster
+local CsvLoader = require 'data.csv_loader'
 local helpers = require 'data.tables.helpers'
 
 local bonus_groups = AttrEffect.by_source.mark or {}
 local hero_list = HeroRoster.list or {}
+local hero_list_by_name = {}
+for _, hero in ipairs(hero_list) do
+  if hero.name then
+    hero_list_by_name[hero.name] = hero
+  end
+end
 
-local list = {}
+local quality_rules = CsvLoader.read_rows('data_csv/outgame/hero_evolution_rules.csv')
+
+local quality_by_threshold = {}
+for _, rule in ipairs(quality_rules) do
+  local threshold = tonumber(rule.quality_threshold) or 0
+  quality_by_threshold[threshold] = {
+    quality = rule.quality,
+    pool_weight = tonumber(rule.base_pool_weight) or 0,
+  }
+end
+
+local sorted_thresholds = {}
+for threshold in pairs(quality_by_threshold) do
+  sorted_thresholds[#sorted_thresholds + 1] = threshold
+end
+table.sort(sorted_thresholds, function(a, b) return a > b end)
+
+local function get_quality_by_index(index)
+  for _, threshold in ipairs(sorted_thresholds) do
+    if index >= threshold then
+      return quality_by_threshold[threshold]
+    end
+  end
+  return quality_by_threshold[sorted_thresholds[#sorted_thresholds]] or { quality = 'common', pool_weight = 45 }
+end
 
 local function build_bonus_bucket(evolution_id, bucket_name)
   local source = bonus_groups[evolution_id]
@@ -21,23 +52,29 @@ local function build_bonus_bucket(evolution_id, bucket_name)
 end
 
 local function push_evolution(index, hero_entry)
-  local quality = 'common'
-  if index >= 5 then
-    quality = 'epic'
-  elseif index >= 3 then
-    quality = 'rare'
-  end
+  local quality_info = get_quality_by_index(index)
 
   local evolution_id = string.format('mark_%s', tostring(hero_entry.id or index))
-  list[#list + 1] = {
+
+  local hero_name = hero_entry.name
+  local hero_info = hero_list_by_name[hero_name] or {}
+  local skill_icon = hero_info.skill_icon
+  local hero_icon = hero_entry.icon
+  local hero_bg = hero_entry.bg
+
+  return {
     id = evolution_id,
     name = hero_entry.name or ('英雄专精' .. tostring(index)),
-    quality = quality,
-    pool_weight = quality == 'epic' and 20 or (quality == 'rare' and 35 or 45),
+    quality = quality_info.quality,
+    pool_weight = quality_info.pool_weight,
     order_index = index,
     hero_unit_id = hero_entry.unit_id,
     summary = hero_entry.summary or '激活该英雄真身与专精效果。',
-    tags = { 'hero_form', quality },
+    tags = { 'hero_form', quality_info.quality },
+    icon = skill_icon or hero_icon,
+    ui_icon = skill_icon or hero_icon,
+    icon_res = skill_icon,
+    bg = hero_bg,
     bonuses = {
       attr = build_bonus_bucket(evolution_id, 'attr'),
       runtime = build_bonus_bucket(evolution_id, 'runtime'),
@@ -46,21 +83,24 @@ local function push_evolution(index, hero_entry)
   }
 end
 
+local list = {}
+
 for index, hero_entry in ipairs(hero_list) do
   if index > 8 then
     break
   end
   if hero_entry and hero_entry.id and hero_entry.unit_id then
-    push_evolution(index, hero_entry)
+    list[#list + 1] = push_evolution(index, hero_entry)
   end
 end
 
 if #list < 2 then
   for index = #list + 1, 2 do
+    local quality_info = get_quality_by_index(index)
     list[#list + 1] = {
       id = string.format('mark_fallback_%d', index),
       name = string.format('英雄专精 %d', index),
-      quality = index == 2 and 'rare' or 'common',
+      quality = quality_info.quality,
       pool_weight = 30,
       order_index = index,
       hero_unit_id = 100001 + index,
@@ -82,4 +122,5 @@ end)
 return {
   list = list,
   by_id = helpers.list_to_map(list),
+  quality_rules = quality_rules,
 }

@@ -151,8 +151,27 @@ function M.create(ctx)
 
   local function bind_ui_model_unit(u, aA, aB, aC, aD)
     if aA and aA.is_exist and not aA:is_exist() then aA = nil end;
-    if not is_ui_alive(u) or not aA then return end;
-    safe_ui_call(u, 'set_ui_model_unit', aA, aB == true, aC == true, aD == true)
+    if not is_ui_alive(u) or not aA then return false end;
+    
+    local success = false
+    
+    if type(u.set_ui_model_unit) == 'function' then
+        local ok, err = pcall(u.set_ui_model_unit, u, aA, aB == true, aC == true, aD == true)
+        if ok then success = true end
+    end
+    
+    if not success and y3 and y3.unit and y3.unit.get_model_by_key and aA.get_key then
+        local unit_key = aA:get_key()
+        local model_id = y3.unit.get_model_by_key(unit_key)
+        if model_id and model_id ~= 0 then
+            if type(u.set_ui_model) == 'function' then
+                local ok, err = pcall(u.set_ui_model, u, model_id)
+                if ok then success = true end
+            end
+        end
+    end
+    
+    return success
   end;
 
   local function apply_ui_model_camera(u, aF)

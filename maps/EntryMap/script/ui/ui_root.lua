@@ -1,11 +1,11 @@
 local M = {}
 
 local function resolve_ui(y3, player, path)
-  local ok, ui = pcall(y3.ui.get_ui, player, path)
-  if not ok or not ui then
+  local py_ui = GameAPI.get_comp_by_absolute_path(player.handle, path)
+  if not py_ui then
     return nil
   end
-  return ui
+  return y3.ui.get_by_handle(player, py_ui)
 end
 
 local function resolve_first_ui(y3, player, paths)

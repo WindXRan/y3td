@@ -8,6 +8,7 @@ local GearUpgrades = require 'runtime.gear_upgrades'
 local AttrChoices = require 'runtime.attr_choices'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
 local AudioSystem = require 'runtime.audio'
+local AudioResources = require 'data.tables.audio_resources'
 local BootCore = require 'runtime.boot_core'
 local BootCombat = require 'runtime.boot_combat'
 local BootHelpers = require 'runtime.boot_helpers'
@@ -35,6 +36,8 @@ local mainline_task_system
 local function trace_boot(message)
   return BootHelpers.trace_boot(message)
 end
+
+local AUDIO_SCENES = AudioResources.AUDIO_SCENES or {}
 
 local function ensure_helper_signals()
   if helper_signals_started or not y3.game.is_debug_mode() then
@@ -426,9 +429,6 @@ local update_auto_active_effects = function(dt)
   if auto_active_effects_system then
     auto_active_effects_system.update(dt)
   end
-  if STATE.hero_form_skills_system then
-    STATE.hero_form_skills_system.update(dt)
-  end
 end
 
 local update_buff_system = function(dt)
@@ -600,7 +600,7 @@ local award_rewards = function(reward, source_text, silent)
 end
 
 local handle_bond_enemy_kill = function(info)
-  return BootCombat.handle_bond_enemy_kill(info, auto_active_effects_system, STATE.hero_form_skills_system)
+  return BootCombat.handle_bond_enemy_kill(info, auto_active_effects_system)
 end
 
 local handle_bond_hero_pre_hurt = function(data)
@@ -924,8 +924,16 @@ local ensure_round_choice_available = function(allowed_kind)
 end
 
 local apply_bond_choice = function(index)
-  BondSystem.apply_choice(create_bond_env(), index)
-  STATE.choice_panel_hidden = false
+  local result = BondSystem.apply_choice(create_bond_env(), index)
+  if result == 'replace' then
+    STATE.choice_panel_hidden = false
+    local runtime_hud_system = BootServices.get_service('runtime_hud_system')
+    if runtime_hud_system and runtime_hud_system.show_bond_replacement_panel then
+      runtime_hud_system.show_bond_replacement_panel()
+    end
+    return
+  end
+  STATE.choice_panel_hidden = true
 end
 
 local apply_round_choice = function(index)
@@ -940,7 +948,7 @@ local apply_round_choice = function(index)
       if STATE.hero and sync_gear_runtime_effects then
         sync_gear_runtime_effects(STATE, STATE.hero, CONFIG.gear_upgrade_config)
       end
-      STATE.choice_panel_hidden = false
+      STATE.choice_panel_hidden = true
       return true
     end
     return false
@@ -949,19 +957,20 @@ local apply_round_choice = function(index)
   if kind == 'attr' then
     local ok = attr_choice_system and attr_choice_system.apply_choice and attr_choice_system.apply_choice(index) or false
     if ok then
-      STATE.choice_panel_hidden = false
+      STATE.choice_panel_hidden = true
     end
     return ok
   end
 
   if kind == 'bond' then
     apply_bond_choice(index)
+    STATE.choice_panel_hidden = true
     return true
   end
 
   if kind == 'evolution' then
     reward_system.apply_evolution_choice(index)
-    STATE.choice_panel_hidden = false
+    STATE.choice_panel_hidden = true
     return true
   end
 
@@ -1133,18 +1142,12 @@ local notify_auto_active_basic_attack = function(target)
   if auto_active_effects_system then
     auto_active_effects_system.handle_basic_attack_cast(target)
   end
-  if STATE.hero_form_skills_system then
-    STATE.hero_form_skills_system.handle_basic_attack_cast(target)
-  end
 end
 
 local notify_auto_active_skill_cast = function(skill, target)
   local auto_active_effects_system = BootServices.get_service('auto_active_effects_system')
   if auto_active_effects_system then
     auto_active_effects_system.handle_attack_skill_cast(skill, target)
-  end
-  if STATE.hero_form_skills_system then
-    STATE.hero_form_skills_system.handle_attack_skill_cast(skill, target)
   end
 end
 
@@ -1245,7 +1248,9 @@ local play_enemy_death_sound = function(unit, info, death_point)
   if not death_point or not y3 or not y3.sound then return nil end
   local player = get_player()
   if not player then return nil end
-  local death_id = is_boss and 134257420 or 134278073
+  local death_scene = is_boss and AUDIO_SCENES.boss_death_heavy or AUDIO_SCENES.enemy_death_heavy
+  local death_id = type(death_scene) == 'table' and tonumber(death_scene[1]) or nil
+  if not death_id then return nil end
   local ok, sound = pcall(y3.sound.play_3d, player, death_id, death_point, { ensure = true, height = 0, volume = 100 })
   if ok and sound then return sound end
   return nil
@@ -1392,22 +1397,6 @@ local effect_debug_system = BootCombatSetup.create_effect_debug_system({
 })
 
 BootServices.effect_debug_system_setter(effect_debug_system)
-
-STATE.hero_form_skills_system = BootCombatSetup.create_hero_form_skills_system({
-  STATE = STATE,
-  y3 = y3,
-  message = message,
-  round_number = round_number,
-  hero_attr_system = hero_attr_system,
-  is_active_enemy = is_active_enemy,
-  get_enemies_in_range = get_enemies_in_range,
-  get_enemy_runtime_info = get_enemy_runtime_info,
-  is_boss_runtime_enemy = is_boss_runtime_enemy,
-  is_elite_runtime_enemy = is_elite_runtime_enemy,
-  deal_skill_damage = deal_skill_damage,
-  heal_hero = heal_hero,
-  play_skill_sound = play_skill_sound,
-})
 
 local battlefield_system = BootCombatSetup.create_battlefield_system({
   STATE = STATE,

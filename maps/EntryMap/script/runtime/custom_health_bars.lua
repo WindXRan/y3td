@@ -206,6 +206,9 @@ function M.apply_unit(env, unit, role, max_hp, info)
   end
 
   if unit.handle then
+    if unit.handle.api_set_blood_bar_show_type then
+      pcall(unit.handle.api_set_blood_bar_show_type, unit.handle, 2)
+    end
     if unit.handle.api_set_hp_bar_show_type then
       pcall(unit.handle.api_set_hp_bar_show_type, unit.handle, 2)
     end
@@ -226,6 +229,9 @@ function M.apply_unit(env, unit, role, max_hp, info)
     end
     if unit.handle.api_set_hp_bar_visible then
       pcall(unit.handle.api_set_hp_bar_visible, unit.handle, true)
+    end
+    if unit.handle.api_set_blood_bar_visible then
+      pcall(unit.handle.api_set_blood_bar_visible, unit.handle, true)
     end
   end
 

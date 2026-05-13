@@ -337,10 +337,16 @@ local function ensure_choice_selected_index(kind, choices, is_visible)
         return nil
     end
     local selected_index = tonumber(STATE.choice_panel_selected_index)
-    if STATE.choice_panel_selected_kind ~= kind or not selected_index or selected_index < 1 or selected_index > #choices then
+    -- 只要选中的索引在有效范围内，就保留选中状态
+    -- 不要求 choice_panel_selected_kind 必须匹配，这样避免状态被不必要地重置
+    if not selected_index or selected_index < 1 or selected_index > #choices then
         selected_index = nil
         STATE.choice_panel_selected_index = nil
         STATE.choice_panel_selected_kind = nil
+    end
+    -- 同时确保 kind 被正确设置
+    if selected_index and selected_index >= 1 and selected_index <= #choices then
+        STATE.choice_panel_selected_kind = kind
     end
     return selected_index
 end
@@ -365,39 +371,39 @@ local choice_click_bound = setmetatable({}, { __mode = 'k' })
 local refresh_choice_selected_styles
 
 local function bind_choice_click_target(target, index)
-    if not target or not target.add_fast_event then
-        return
+  if not target or not target.add_fast_event then
+    return
+  end
+  if choice_click_bound[target] then
+    return
+  end
+  choice_click_bound[target] = true
+  if target.set_intercepts_operations then
+    target:set_intercepts_operations(true)
+  end
+  target:add_fast_event('左键-点击', function()
+    STATE.choice_panel_selected_index = index
+    if refresh_choice_selected_styles then
+      refresh_choice_selected_styles()
     end
-    if choice_click_bound[target] then
-        return
+    if STATE.apply_round_choice then
+      STATE.apply_round_choice(index)
     end
-    choice_click_bound[target] = true
-    if target.set_intercepts_operations then
-        target:set_intercepts_operations(true)
+  end)
+  target:add_fast_event('鼠标-移入', function()
+    STATE.choice_panel_selected_index = index
+    if refresh_choice_selected_styles then
+      refresh_choice_selected_styles()
     end
-    target:add_fast_event('左键-点击', function()
-        STATE.choice_panel_selected_index = index
-        if refresh_choice_selected_styles then
-            refresh_choice_selected_styles()
-        end
-        if STATE.apply_round_choice then
-            STATE.apply_round_choice(index)
-        end
-    end)
-    target:add_fast_event('鼠标-移入', function()
-        STATE.choice_panel_selected_index = index
-        if refresh_choice_selected_styles then
-            refresh_choice_selected_styles()
-        end
-    end)
-    target:add_fast_event('鼠标-移出', function()
-        if STATE.choice_panel_selected_index == index then
-            STATE.choice_panel_selected_index = nil
-        end
-        if refresh_choice_selected_styles then
-            refresh_choice_selected_styles()
-        end
-    end)
+  end)
+  target:add_fast_event('鼠标-移出', function()
+    if STATE.choice_panel_selected_index == index then
+      STATE.choice_panel_selected_index = nil
+    end
+    if refresh_choice_selected_styles then
+      refresh_choice_selected_styles()
+    end
+  end)
 end
 
 refresh_choice_selected_styles = function()

@@ -187,7 +187,6 @@ function M.create(args)
       runtime_attr_tab_selected = 'summary',
       hero_attr_runtime = nil,
       attr_choice_runtime = nil,
-      hero_form_skill_runtime = nil,
       gm_ui = nil,
       session_phase = 'outgame',
       outgame_profile = nil,

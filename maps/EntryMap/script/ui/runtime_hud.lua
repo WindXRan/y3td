@@ -1,7 +1,7 @@
 local ui_root = require 'ui.ui_root'
 local hero_evolutions = require 'data.tables.outgame.hero_evolutions'
 local game_tables_hero_roster = (require 'data.game_tables').hero_roster
-local hero_form_skills = require 'data.tables.hero.hero_form_skills'
+local IconResolver = require 'data.tables.icon_resolver'
 local hud_core = require 'ui.hud.hud_core'
 local M = {}
 local DEFAULT_TIP_DURATION = 8;
@@ -39,7 +39,10 @@ local RARITY_NAME_MAP = {
 }
 local evolutions_by_id = hero_evolutions.by_id or {}
 local roster_by_unit_id = game_tables_hero_roster.by_unit_id or {}
-local form_skills_lookup = hero_form_skills.by_hero_id or {}
+
+local function resolve_display_icon(...)
+  return IconResolver.pick(...)
+end
 
 function M.create(params)
   local STATE = params.STATE;
@@ -71,7 +74,12 @@ function M.create(params)
   local get_bond_slot_icon_fn = params.get_bond_slot_icon;
   local get_status_effects_fn = params.get_bottom_status_effect_entries;
   local play_ui_click_fn = params.play_ui_click;
-  -- UI 工具函数层 (from ui.hud.hud_core)
+  local BondSystem = params.BondSystem;
+  local create_bond_env = params.create_bond_env;
+  local apply_bond_replacement_fn = params.apply_bond_replacement;
+  local cancel_bond_replacement_fn = params.cancel_bond_replacement;
+  local get_bond_replacement_info_fn = params.get_bond_replacement_info;
+  -- UI 工具函数 (from ui.hud.hud_core)
   local core = hud_core.create({
     y3 = y3,
     ui_root = ui_root,
@@ -240,7 +248,7 @@ function M.create(params)
   end;
 
   local function format_gear_upgrade_tip(bs)
-    if not bs then return '当前没有成长武器数据。' end;
+    if not bs then return '当前没有成长武器数据' end;
 
     local bt = {}
     if bs.subtitle_text and bs.subtitle_text ~= '' then bt[#bt + 1] = tostring(bs.subtitle_text) end;
@@ -264,7 +272,7 @@ function M.create(params)
         if bx.body and bx.body ~= '' then bt[#bt + 1] = tostring(bx.body) end
       end
     end;
-    if #bt == 0 then return '当前没有成长武器数据。' end;
+    if #bt == 0 then return '当前没有成长武器数据' end;
 
     return table.concat(bt, '\n')
   end;
@@ -278,11 +286,11 @@ function M.create(params)
     if bA and bA ~= '' then bt[#bt + 1] = tostring(bA) end;
 
     local bB = bo.get_stack and tonumber(bo:get_stack()) or 0;
-    if bB and bB > 1 then bt[#bt + 1] = string.format('层数：%d', bB) end;
+    if bB and bB > 1 then bt[#bt + 1] = string.format('层数%d', bB) end;
 
     local bC = bo.get_charge and tonumber(bo:get_charge()) or 0;
-    if bC and bC > 0 then bt[#bt + 1] = string.format('充能：%d', bC) end;
-    if #bt == 0 then bt[#bt + 1] = '当前没有额外说明。' end;
+    if bC and bC > 0 then bt[#bt + 1] = string.format('充能%d', bC) end;
+    if #bt == 0 then bt[#bt + 1] = '当前没有额外说明' end;
 
     return tostring(bz), table.concat(bt, '\n')
   end;
@@ -371,7 +379,7 @@ function M.create(params)
 
     local bO = tostring(bM.set_name_text or '')
     local bP = tostring(bM.progress_text or '')
-    if bO ~= '' or bP ~= '' then bN[#bN + 1] = '流派：' .. bO .. bP end;
+    if bO ~= '' or bP ~= '' then bN[#bN + 1] = '流派' .. bO .. bP end;
 
     local bt = {}
     if bM.bonus_lines and #bM.bonus_lines > 0 then
@@ -388,11 +396,11 @@ function M.create(params)
     if bM.set_body_lines and #bM.set_body_lines > 0 then
       if #bt > 0 then bt[#bt + 1] = '' end;
 
-      local bQ = tostring(bM.set_title_text or ''):gsub('：+$', '')
+      local bQ = tostring(bM.set_title_text or ''):gsub(', ')
       bt[#bt + 1] = '[' .. (bQ ~= '' and bQ or bond_skill_label) .. ']'
       append_lines(bt, bM.set_body_lines)
     end;
-    if #bt == 0 then bt[#bt + 1] = '当前没有流派说明。' end;
+    if #bt == 0 then bt[#bt + 1] = '当前没有流派说明' end;
 
     return {
       title = bz,
@@ -404,8 +412,8 @@ function M.create(params)
   end;
 
   local function build_draw_tooltip()
-    local bt = { '[左键点击]', string.format('本次消耗 %d 个木材', P), string.format('当前拥有 %s 木材',
-      format_short_number(STATE.resources and STATE.resources.wood or 0)), '', '抽取流派卡牌，相同流派会自动收录进卡册。' }
+    local bt = { '[左键点击]', string.format('本次消耗%d 个木材', P), string.format('当前拥有 %s 木材',
+      format_short_number(STATE.resources and STATE.resources.wood or 0)), '', '抽取流派卡牌，相同流派会自动收录进卡册' }
     return {
       title = '抽卡 - [快捷键：F]',
       subtitle = '',
@@ -415,7 +423,7 @@ function M.create(params)
   end;
 
   local function build_hero_catalog_tooltip()
-    local bt = { '[左键点击]', '打开英雄图鉴面板。', '可查看英雄定位、核心技能与星级。' }
+    local bt = { '[左键点击]', '打开英雄图鉴面板', '可查看英雄定位、核心技能与星级' }
     return {
       title = '如何变强',
       subtitle = '',
@@ -425,7 +433,7 @@ function M.create(params)
   end;
 
   local function build_evolution_entry_tooltip()
-    local bt = { '[左键点击]', '已改为新英雄功能入口。', '请点击“如何变强”进入英雄图鉴。' }
+    local bt = { '[左键点击]', '已改为新英雄功能入口，请点击"如何变强"进入英雄图鉴' }
     return {
       title = '英雄进阶入口 - [快捷键：H]',
       subtitle = '',
@@ -435,7 +443,7 @@ function M.create(params)
   end;
 
   local function build_save_panel_tooltip()
-    local bt = { '[左键点击]', '打开存档面板；如果当前没有可打开的存档界面，则显示运行时状态。' }
+    local bt = { '[左键点击]', '打开存档面板；如果当前没有可打开的存档界面，则显示运行时状态' }
     return {
       title = '存档 - [快捷键：P]',
       subtitle = '',
@@ -449,7 +457,7 @@ function M.create(params)
       return {
         title = '属性宝石',
         subtitle = '类型：消耗品',
-        body = table.concat({ '[点击使用]', '可选择一条随机属性强化。', '英雄每升 5 级，或完成宝石挑战时，可获得 1 颗。' }, '\n'),
+        body = table.concat({ '[点击使用]', '可选择一条随机属性强化，英雄每升 5 级，或完成宝石挑战时，可获得 1 颗' }, '\n'),
         icon = 300540000
       }
     end;
@@ -458,7 +466,7 @@ function M.create(params)
       return {
         title = '快捷道具 2',
         subtitle = '特殊栏位',
-        body = '当前用于特殊功能扩展。',
+        body = '当前用于特殊功能扩展',
         icon = nil
       }
     end;
@@ -467,7 +475,7 @@ function M.create(params)
       return {
         title = '快捷道具 3',
         subtitle = '特殊栏位',
-        body = '当前用于特殊功能扩展。',
+        body = '当前用于特殊功能扩展',
         icon = nil
       }
     end;
@@ -482,66 +490,26 @@ function M.create(params)
     if slot_data.summary and slot_data.summary ~= '' then tip_lines[#tip_lines + 1] = tostring(slot_data.summary) end;
 
     local damage_ratio = tonumber(slot_data.damage_ratio) or 0;
-    if damage_ratio > 0 then tip_lines[#tip_lines + 1] = string.format('倍率：%.0f%%', damage_ratio * 100) end;
+    if damage_ratio > 0 then tip_lines[#tip_lines + 1] = string.format('倍率%.0f%%', damage_ratio * 100) end;
 
     local cast_range = math.max(0, tonumber(slot_data.cast_range or 0) + tonumber(slot_data.range_bonus or 0))
-    if cast_range > 0 then tip_lines[#tip_lines + 1] = string.format('射程：%d', math.floor(cast_range + 0.5)) end;
+    if cast_range > 0 then tip_lines[#tip_lines + 1] = string.format('射程%d', math.floor(cast_range + 0.5)) end;
 
     local base_cooldown = tonumber(slot_data.base_cooldown) or 0;
-    if base_cooldown > 0 and slot_data.id ~= 'basic_attack' then tip_lines[#tip_lines + 1] = string.format('基础冷却：%.1fs', base_cooldown) end;
-
-    if slot_data.id == 'basic_attack' then tip_lines[#tip_lines + 1] = string.format('攻速：%s', format_short_number(get_hero_attr('攻击速度'))) end;
+    if base_cooldown > 0 then tip_lines[#tip_lines + 1] = string.format('基础冷却%.1fs', base_cooldown) end;
 
     local cooldown_remaining = tonumber(slot_data.cooldown_remaining) or 0;
     return {
       id = tostring(slot_data.id or 'skill_' .. tostring(slot_index)),
       name = tostring(slot_data.name or slot_data.id or '技能' .. tostring(slot_index)),
-      icon = slot_data.ui_icon or slot_data.icon,
-      key = slot_index == 1 and '普' or tostring(slot_index),
+      icon = resolve_display_icon(slot_data.icon_res, slot_data.ui_icon, slot_data.icon, slot_data.bg),
+      key = tostring(slot_index),
       cooldown_text = cooldown_remaining > 0 and string.format('%.1fs', cooldown_remaining) or '就绪',
       legacy_cooldown_text = cooldown_remaining > 0 and string.format('%.1f', cooldown_remaining) or '',
       badge_text = slot_data.level and 'Lv.' .. tostring(slot_data.level) or '',
       stack_text = '',
       tip_title = tostring(slot_data.name or slot_data.id or '技能'),
-      tip_text = #tip_lines > 0 and table.concat(tip_lines, '\n') or '当前没有技能说明。'
-    }
-  end;
-
-  local function build_hero_form_skill_entry(slot_index)
-    local form_skills_system = STATE.hero_form_skills_system;
-    if not form_skills_system or not form_skills_system.get_active_skill then return nil end;
-
-    local active_skill = form_skills_system.get_active_skill()
-    if not active_skill then return nil end;
-
-    local active_entry = form_skills_system.get_active_entry and form_skills_system.get_active_entry() or nil;
-    local form_skill_runtime = STATE.hero_form_skill_runtime or {}
-    local cooldown_remaining = tonumber(form_skill_runtime.cooldowns and form_skill_runtime.cooldowns[active_skill.id]) or 0;
-    local counter_val = tonumber(form_skill_runtime.counters and form_skill_runtime.counters[active_skill.id]) or 0;
-    local trigger_max = math.max(0, math.floor(tonumber(active_skill.trigger_value) or 0))
-    local tip_lines = {}
-    if active_entry and active_entry.title and active_entry.title ~= '' then tip_lines[#tip_lines + 1] = '专精：' .. tostring(active_entry.title) end;
-
-    if active_skill.subtitle and active_skill.subtitle ~= '' then tip_lines[#tip_lines + 1] = tostring(active_skill.subtitle) end;
-
-    if active_skill.summary and active_skill.summary ~= '' then tip_lines[#tip_lines + 1] = tostring(active_skill.summary) end;
-
-    if active_skill.item_desc and active_skill.item_desc ~= '' then tip_lines[#tip_lines + 1] = tostring(active_skill.item_desc) end;
-
-    if tonumber(active_skill.cooldown) and tonumber(active_skill.cooldown) > 0 then tip_lines[#tip_lines + 1] = string.format('冷却：%.1fs',
-        tonumber(active_skill.cooldown)) end;
-
-    return {
-      id = tostring(active_skill.id or 'form_skill_' .. tostring(slot_index)),
-      name = tostring(active_skill.name or '猎手专精'),
-      icon = active_skill.ui_icon or active_skill.icon or get_hero_icon(),
-      key = '专',
-      cooldown_text = cooldown_remaining > 0 and string.format('%.1fs', cooldown_remaining) or '就绪',
-      legacy_cooldown_text = cooldown_remaining > 0 and string.format('%.1f', cooldown_remaining) or '',
-      badge_text = active_entry and active_entry.rarity or '',
-      stack_text = trigger_max > 1 and string.format('%d/%d', math.min(counter_val, trigger_max), trigger_max) or '',
-      tip_title = tostring(active_skill.name or '猎手专精'),
-      tip_text = #tip_lines > 0 and table.concat(tip_lines, '\n') or '当前没有专精说明。'
+      tip_text = #tip_lines > 0 and table.concat(tip_lines, '\n') or '当前没有技能说明'
     }
   end;
 
@@ -556,30 +524,31 @@ function M.create(params)
     return roster_by_unit_id[hero_unit_id]
   end;
 
-  local function get_form_skill_and_roster_entry(unit_def)
-    local roster_entry = get_hero_roster_by_unit(unit_def)
-    if not roster_entry then return nil, nil end;
-
-    return form_skills_lookup[roster_entry.id], roster_entry
+  local function get_hero_roster_and_entry(unit_def)
+    return get_hero_roster_by_unit(unit_def)
   end;
 
   local function build_evolution_skill_entry(evo_def, slot_index)
     if not evo_def then return nil end;
 
-    local form_skill_entry, roster_entry = get_form_skill_and_roster_entry(evo_def)
+    local roster_entry = get_hero_roster_and_entry(evo_def)
     local display_name = roster_entry and roster_entry.name or evo_def.name or '专精' .. tostring(slot_index)
-    local display_title = roster_entry and roster_entry.title or form_skill_entry and form_skill_entry.subtitle or '英雄真身'
-    local description = form_skill_entry and form_skill_entry.summary or roster_entry and roster_entry.summary or evo_def.summary or ''
+    local display_title = roster_entry and roster_entry.title or '英雄真身'
+    local description = roster_entry and roster_entry.summary or evo_def.summary or ''
     local tip_lines = { string.format('[%s] %s', normalize_rarity_display(evo_def.quality), display_title) }
-    if form_skill_entry and form_skill_entry.name and form_skill_entry.name ~= '' then tip_lines[#tip_lines + 1] = '技能：' .. tostring(form_skill_entry.name) end;
 
     if description ~= '' then tip_lines[#tip_lines + 1] = tostring(description) end;
 
-    local icon_from_skill = form_skill_entry and form_skill_entry.icon
     return {
       id = tostring(evo_def.id or 'evolution_' .. tostring(slot_index)),
       name = tostring(display_name),
-      icon = icon_from_skill or roster_entry.icon or get_unit_type_icon(evo_def.hero_unit_id) or get_hero_icon(),
+      icon = resolve_display_icon(
+        roster_entry and roster_entry.skill_icon or nil,
+        roster_entry and roster_entry.icon or nil,
+        roster_entry and roster_entry.bg or nil,
+        get_unit_type_icon(evo_def.hero_unit_id),
+        get_hero_icon()
+      ),
       key = tostring(slot_index),
       cooldown_text = '',
       legacy_cooldown_text = '',
@@ -595,12 +564,9 @@ function M.create(params)
     local skill_slots = STATE.attack_skill_state and STATE.attack_skill_state.slots or nil;
     for slot_index = 1, math.min(skill_slot_count, max_slots or skill_slot_count) do
       local slot_data = skill_slots and skill_slots[slot_index] or nil;
-      if slot_data then entries[#entries + 1] = build_attack_skill_entry(slot_data, slot_index) end
+      if slot_data and slot_data.id ~= 'basic_attack' then entries[#entries + 1] = build_attack_skill_entry(slot_data, slot_index) end
     end;
-    if #entries < max_slots then
-      local form_entry = build_hero_form_skill_entry(#entries + 1)
-      if form_entry then entries[#entries + 1] = form_entry end
-    end;
+    
 
     return entries
   end;
@@ -627,18 +593,19 @@ function M.create(params)
 
     local skill_slots = STATE.attack_skill_state and STATE.attack_skill_state.slots or nil;
     local slot_data = skill_slots and skill_slots[bL] or nil;
+    if slot_data and slot_data.id == 'basic_attack' then return nil end;
     return build_attack_skill_entry(slot_data, bL)
   end;
 
   local function get_pending_choice_status()
     if STATE.gear_state and STATE.gear_state.awaiting_choice and STATE.gear_state.current_choices then return '武器待选',
-          '成长武器词缀候选已出现，请点击面板完成选择。' end;
+          '成长武器词缀候选已出现，请点击面板完成选择' end;
 
     if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice and STATE.bond_runtime.current_choices then return '流派待选',
-          '流派候选已生成，请点击面板完成选择。' end;
+          '流派候选已生成，请点击面板完成选择' end;
 
     local ct = STATE.evolution_runtime;
-    if ct and ct.awaiting_choice and ct.current_choices then return '英雄功能提示', '进阶已迁移到新英雄功能，请打开英雄图鉴查看。' end;
+    if ct and ct.awaiting_choice and ct.current_choices then return '英雄功能提示', '进阶已迁移到新英雄功能，请打开英雄图鉴查看' end;
 
     return nil, nil
   end;
@@ -668,7 +635,7 @@ function M.create(params)
       end
     end;
 
-    return '操作提示', 'F 抽卡，如何变强查看英雄图鉴，H 查看英雄功能，P 打开存档。'
+    return '操作提示', 'F 抽卡，如何变强查看英雄图鉴，H 查看英雄功能，P 打开存档'
   end;
 
   local function get_status_bar_text()
@@ -686,7 +653,7 @@ function M.create(params)
   local function get_station_hint_text() return '按F抽卡；点击如何变强查看英雄图鉴' end;
 
   local function get_hotkey_help_text() return table.concat(
-    { 'F / 抽卡：流派三选一', '如何变强：查看英雄图鉴', 'H / 英雄功能：查看图鉴与成长', 'Q / W / E：试炼入口', 'TAB / T：属性面板', 'SPACE：打印状态概览', 'P：打开存档' },
+    { 'F / 抽卡：流派三选一', '如何变强：查看英雄图鉴', 'H / 英雄功能：查看图鉴与成长', 'Q / W / E：试炼入口', 'TAB / T：属性面板', 'SPACE：打印状态概况', 'P：打开存档' },
       '\n') end;
 
   local function resolve_static_ui_panels()
@@ -701,9 +668,9 @@ function M.create(params)
       'BattleBottomHUD.layout.right_station.attr_panel.hint' })
     set_ui_visible(hud_state.attr_panel, false)
     safe_ui_call(hud_state.attr_panel, 'set_intercepts_operations', true)
-    set_ui_text_alignment(hud_state.attr_panel_title, '左', '中')
-    set_ui_text_alignment(hud_state.attr_panel_body, '左', '中')
-    set_ui_text_alignment(hud_state.attr_panel_hint, '右', '中')
+    set_ui_text_alignment(hud_state.attr_panel_title, ', ')
+    set_ui_text_alignment(hud_state.attr_panel_body, ', ')
+    set_ui_text_alignment(hud_state.attr_panel_hint, ', ')
     if hud_state.bound_events.static_attr_panel_close ~= hud_state.attr_panel and is_ui_alive(hud_state.attr_panel) then
       hud_state.bound_events.static_attr_panel_close = hud_state.attr_panel; hud_state.attr_panel:add_fast_event('左键-点击', function()
         local hud_state_inner = get_hud_state()
@@ -720,9 +687,9 @@ function M.create(params)
       'BattleBottomHUD.layout.right_station.tip_panel.hint' })
     set_ui_visible(hud_state.tip_panel, false)
     safe_ui_call(hud_state.tip_panel, 'set_intercepts_operations', true)
-    set_ui_text_alignment(hud_state.tip_panel_title, '左', '中')
-    set_ui_text_alignment(hud_state.tip_panel_body, '左', '中')
-    set_ui_text_alignment(hud_state.tip_panel_hint, '右', '中')
+    set_ui_text_alignment(hud_state.tip_panel_title, ', ')
+    set_ui_text_alignment(hud_state.tip_panel_body, ', ')
+    set_ui_text_alignment(hud_state.tip_panel_hint, ', ')
     if hud_state.bound_events.static_tip_panel_close ~= hud_state.tip_panel and is_ui_alive(hud_state.tip_panel) then
       hud_state.bound_events.static_tip_panel_close = hud_state.tip_panel; hud_state.tip_panel:add_fast_event('左键-点击', function()
         local hud_state_inner = get_hud_state()
@@ -743,9 +710,9 @@ function M.create(params)
       'BattleBottomHUD.layout.hover_tip_panel.body' })
     set_ui_visible(hud_state.hover_tip_panel, false)
     safe_ui_call(hud_state.hover_tip_panel, 'set_intercepts_operations', false)
-    set_ui_text_alignment(hud_state.hover_tip_panel_title, '左', '中')
-    set_ui_text_alignment(hud_state.hover_tip_panel_subtitle, '左', '中')
-    set_ui_text_alignment(hud_state.hover_tip_panel_body, '左', '中')
+    set_ui_text_alignment(hud_state.hover_tip_panel_title, ', ')
+    set_ui_text_alignment(hud_state.hover_tip_panel_subtitle, ', ')
+    set_ui_text_alignment(hud_state.hover_tip_panel_body, ', ')
     hud_state.bond_tip_root = resolve_first_ui_node({ 'BattleDetailTipsPanel', 'TipsPanel' })
     hud_state.bond_tip_uses_dedicated_root = is_ui_alive(resolve_ui_node('BattleDetailTipsPanel'))
     hud_state.bond_tip_panel = resolve_first_ui_node({ 'BattleDetailTipsPanel.detail_panel', 'TipsPanel.详情面板', '详情面板' })
@@ -801,10 +768,10 @@ function M.create(params)
 
       local ac = cF:create_child('文本')
       ac:set_ui_size(60, 60)
-      ac:set_text('◎')
+      ac:set_text('')
       ac:set_font_size(28)
       ac:set_text_color(255, 233, 158, 235)
-      ac:set_text_alignment('中', '中')
+      ac:set_text_alignment('', '')
       ac:set_z_order(9380)
       ac:set_intercepts_operations(false)
       safe_ui_call(ac, 'set_follow_mouse', true, 12, -10)
@@ -1103,7 +1070,7 @@ function M.create(params)
     end
 
     show_detail_payload({
-      title = tostring(bM.item_name_text or bs.title or '羁绊卡'),
+      title = tostring(bM.item_name_text or bs.title or '羁绊'),
       subtitle = tostring(bM.quality_text or ''),
       icon = bM.icon_res,
       icon_name = tostring(bM.item_name_text or bM.set_name_text or ''),
@@ -1135,8 +1102,14 @@ function M.create(params)
     set_ui_pos(cR, HERO_MODEL_FRAME_SIZE.x, HERO_MODEL_FRAME_SIZE.y)
     set_ui_visible(cR, true)
     apply_ui_model_camera(cR, HERO_MODEL_CAMERA)
+    
+    local hero_unit = get_hero_unit()
+    if hero_unit then
+        bind_ui_model_unit(cR, hero_unit, false, true, true)
+    end
+    
     return cR
-  end;
+end;
 
   local function bind_click_handler(cT, u, cU)
     local hud_state = get_hud_state()
@@ -1201,17 +1174,17 @@ function M.create(params)
     X.big_cursor = not X.big_cursor;
     local hud_state = get_hud_state()
     set_ui_visible(hud_state.big_cursor, hud_state.visible ~= false and X.big_cursor)
-    show_tip_panel(X.big_cursor and '大鼠标已开启，鼠标位置会显示辅助圈。' or '大鼠标已关闭。', 4, '鼠标辅助')
+    show_tip_panel(X.big_cursor and '大鼠标已开启，鼠标位置会显示辅助圈' or '大鼠标已关闭', 4, '鼠标辅助')
   end;
 
   local function toggle_damage_text_visible()
     local X = ensure_ui_preferences()
-    X.hide_damage_text = not X.hide_damage_text; show_tip_panel(X.hide_damage_text and '已屏蔽跳字。' or '已恢复跳字显示。', 4, '本地显示')
+    X.hide_damage_text = not X.hide_damage_text; show_tip_panel(X.hide_damage_text and '已屏蔽跳字' or '已恢复跳字显示', 4, '本地显示')
   end;
 
   local function toggle_hit_effects_visible()
     local X = ensure_ui_preferences()
-    X.hide_hit_effects = not X.hide_hit_effects; show_tip_panel(X.hide_hit_effects and '已屏蔽局内技能特效。' or '已恢复局内技能特效。', 4,
+    X.hide_hit_effects = not X.hide_hit_effects; show_tip_panel(X.hide_hit_effects and '已屏蔽局内技能特效' or '已恢复局内技能特效', 4,
       '本地显示')
   end;
 
@@ -1220,10 +1193,10 @@ function M.create(params)
     X.soft_paused = not X.soft_paused;
     if X.soft_paused then
       y3.game.enable_soft_pause()
-      show_tip_panel('对局已暂停，再点一次继续。', 4, '战斗控制')
+      show_tip_panel('对局已暂停，再点一次继续', 4, '战斗控制')
     else
       y3.game.resume_soft_pause()
-      show_tip_panel('对局已继续。', 4, '战斗控制')
+      show_tip_panel('对局已继续', 4, '战斗控制')
     end
   end;
 
@@ -1233,12 +1206,12 @@ function M.create(params)
     hud_state.attr_panel_visible = not hud_state.attr_panel_visible;
     if hud_state.attr_panel_visible then
       local d9 = M and M() or {
-        string.format('等级：%d', get_hero_level()),
-        string.format('攻击：%s', format_short_number(get_hero_attr('攻击结算值', '攻击'))),
-        string.format('护甲：%s', format_short_number(get_hero_attr('护甲结算值', '护甲'))),
-        string.format('力量：%s', format_short_number(get_hero_attr('最终力量', '力量'))),
-        string.format('智力：%s', format_short_number(get_hero_attr('最终智力', '智力'))),
-        string.format('敏捷：%s', format_short_number(get_hero_attr('最终敏捷', '敏捷'))),
+        string.format('等级%d', get_hero_level()),
+        string.format('攻击%s', format_short_number(get_hero_attr('攻击结算值', '攻击'))),
+        string.format('护甲%s', format_short_number(get_hero_attr('护甲结算值', '护甲'))),
+        string.format('力量%s', format_short_number(get_hero_attr('最终力量', '力量'))),
+        string.format('智力%s', format_short_number(get_hero_attr('最终智力', '智力'))),
+        string.format('敏捷%s', format_short_number(get_hero_attr('最终敏捷', '敏捷'))),
       }
       set_ui_text(hud_state.attr_panel_title, '属性总览')
       set_ui_text(hud_state.attr_panel_body, table.concat(chunks, '\n\n'))
@@ -1261,10 +1234,10 @@ function M.create(params)
     set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.reward_button.button'), '如何变强')
     set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.kill_reward_button.button'), '杀敌')
     set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.fish_button.button'), '钓鱼')
-    set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.draw_button.hotkey'), '')
-    set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.reward_button.hotkey'), '')
-    set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.kill_reward_button.hotkey'), '')
-    set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.fish_button.hotkey'), '')
+    set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.draw_button.hotkey'), 'F')
+    set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.reward_button.hotkey'), 'H')
+    set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.kill_reward_button.hotkey'), 'G')
+    set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.fish_button.hotkey'), 'B')
   end;
 
   local function show_weapon_tip()
@@ -1294,9 +1267,9 @@ function M.create(params)
         tostring(bs.cost_text or ''),
         '[当前属性增幅]\n' .. join_or_default(attr_lines, '当前无直接属性增幅'),
         join_or_default(affix_lines, '暂无词缀'),
-        '每 10 级会进入一次词缀选择，选择完成后可继续升级。',
+        '10 级会进入一次词缀选择，选择完成后可继续升级',
       },
-      bottom = '悬停装备栏成长武器时实时读取当前等级、费用、属性和词缀。'
+      bottom = '悬停装备栏成长武器时实时读取当前等级、费用、属性和词缀'
     })
     local hud_state = get_hud_state()
     hud_state.active_tip_kind = 'weapon'
@@ -1321,27 +1294,27 @@ function M.create(params)
   local function show_hero_skill_tip(bm, cj)
     local c4 = get_evolution_slot_entries(EVOLUTION_SLOT_COUNT)[bm]
     if not c4 then
-      local ck = get_skill_slot_entries(cj or EVOLUTION_SLOT_COUNT)
-      c4 = ck[bm]
-    end
-    if not c4 then
+      hide_all_tips()
+      return
+    end;
+    if not c4.tip_text or c4.tip_text == '' then
       hide_all_tips()
       return
     end;
 
-    local tip_lines = split_non_empty_tip_lines(c4.tip_text or '', 4)
+    local tip_lines = split_non_empty_tip_lines(c4.tip_text, 4)
     show_detail_payload({
       title = tostring(c4.tip_title or c4.name or '英雄技能'),
       subtitle = tostring(c4.badge_text or c4.quality or c4.cooldown_text or ''),
       icon = c4.icon,
       icon_name = tostring(c4.name or ''),
       contents = {
-        join_or_default({ tip_lines[1], tip_lines[2] }, '当前没有技能说明。'),
+        join_or_default({ tip_lines[1], tip_lines[2] }, '当前没有技能说明'),
         join_or_default({ tip_lines[3], tip_lines[4] }, ''),
         c4.cooldown_text and c4.cooldown_text ~= '' and ('状态：' .. tostring(c4.cooldown_text)) or '',
         c4.stack_text and c4.stack_text ~= '' and ('计数：' .. tostring(c4.stack_text)) or '',
       },
-      bottom = c4.key and ('技能位：' .. tostring(c4.key)) or ''
+      bottom = c4.key and ('技能位置：' .. tostring(c4.key)) or ''
     })
   end;
 
@@ -1352,12 +1325,16 @@ function M.create(params)
       hide_all_tips()
       return
     end;
+    if not c4.tip_text or c4.tip_text == '' then
+      hide_all_tips()
+      return
+    end;
     show_detail_payload({
       title = tostring(c4.tip_title or c4.name or '技能'),
       subtitle = tostring(c4.badge_text or ''),
       icon = c4.icon,
       icon_name = tostring(c4.name or ''),
-      contents = { tostring(c4.tip_text or '') },
+      contents = { tostring(c4.tip_text) },
     })
   end;
 
@@ -1411,7 +1388,7 @@ function M.create(params)
       show_bond_tip_payload(bs)
       return
     end;
-    show_hover_tip_payload({ title = '羁绊位 ' .. tostring(bm), subtitle = '', body = '当前槽位暂无羁绊说明。', icon = nil })
+    show_hover_tip_payload({ title = '羁绊' .. tostring(bm), subtitle = '', body = '当前槽位暂无羁绊说明', icon = nil })
   end;
 
   local function show_draw_button_tip()
@@ -1438,7 +1415,7 @@ function M.create(params)
     local dp = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil; set_ui_text(
     resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), '物品栏')
     set_ui_size(resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), 92, 17)
-    set_ui_text_alignment(resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), '中', '中')
+    set_ui_text_alignment(resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), ', ')
     for bL = 1, 6 do
       local cJ = string.format('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_%d', bL)
       local bo = get_hero_item_by_slot(bL)
@@ -1633,7 +1610,7 @@ function M.create(params)
       bind_hover_handlers('battle_bond_hover_bg_' .. tostring(bL),
         resolve_ui_node(dA3 .. '.card_slot_' .. tostring(bL) .. '_bg'), show_bond_tip_for_slot, hide_bond_tip_after_delay)
       bind_click_handler('battle_bond_slot_' .. tostring(bL), dA4, function()
-        show_tip_panel('bond_progress 功能已移除。', 4, '提示')
+        show_tip_panel('bond_progress 功能已移除', 4, '提示')
       end)
     end;
     bind_click_handler('battle_exp_bar_evolve', resolve_combat_module_ui('exp_bar.evolve_click_area'), function()
@@ -1650,7 +1627,7 @@ function M.create(params)
     set_ui_text(resolve_ui_node('top.top.人口.image_3.label_2'), format_short_number(STATE.total_kills or 0))
     set_ui_text(resolve_ui_node('top.top.金币.delta'), string.format('+%s/s', format_short_number(get_hero_attr('每秒金币'))))
     set_ui_text(resolve_ui_node('top.top.木材.delta'), string.format('+%s/s', format_short_number(get_hero_attr('每秒木材'))))
-    set_ui_text(resolve_ui_node('top.top.人口.delta'), string.format('敌 %d', math.max(0, tonumber(STATE.total_enemy_alive) or 0)))
+    set_ui_text(resolve_ui_node('top.top.人口.delta'), string.format('%d', math.max(0, tonumber(STATE.total_enemy_alive) or 0)))
     local dt,
     du = get_current_tip_text()
     set_ui_text(resolve_ui_node('top.top.system_notice.notice_title'), dt)
@@ -1658,7 +1635,7 @@ function M.create(params)
     local dv = STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) or '当前章节'
     local dw = STATE.current_mode_def and STATE.current_mode_def.display_name or '战斗模式'
     local dx = STATE.active_wave and STATE.active_wave.wave and STATE.active_wave.wave.name or
-    (STATE.current_wave_index and STATE.current_wave_index > 0 and string.format('第%d波', STATE.current_wave_index) or '未开始')
+    (STATE.current_wave_index and STATE.current_wave_index > 0 and string.format('%d', STATE.current_wave_index) or '未开始')
     local dy = ({ get_pending_choice_status() })[1] or (STATE.session_phase == 'battle' and '战斗中' or '准备中')
     local dz;
     if STATE.active_wave and STATE.active_wave.wave and STATE.active_wave.wave.boss_spawn_sec and STATE.active_wave.boss_spawned ~= true then
@@ -1676,7 +1653,7 @@ function M.create(params)
     set_ui_text(resolve_ui_node('top.top.scoreboard.title'), '玩家状态')
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_name'), get_player_name())
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_power'), format_short_number(get_hero_attr('攻击结算值', '攻击')))
-    set_ui_text(resolve_ui_node('top.top.scoreboard.player_state'), STATE.session_phase == 'battle' and '战斗中' or '局外')
+    set_ui_text(resolve_ui_node('top.top.scoreboard.player_state'), STATE.session_phase == 'battle' and '战斗中' or '局中')
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_level'), tostring(get_hero_level()))
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_equip'), '0')
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_swallow'),
@@ -1742,26 +1719,34 @@ function M.create(params)
     local dH = get_hero_unit()
     local dI = resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_portrait')
     local model_ui = get_or_create_hero_model_ui()
-    local dJ = is_ui_alive(model_ui) and dH ~= nil; set_ui_visible(dI, not dJ)
-    if dJ then
-      set_ui_visible(model_ui, true)
-      bind_ui_model_unit(model_ui, dH, false, true, true)
-      apply_ui_model_camera(model_ui, HERO_MODEL_CAMERA)
-    else
-      set_ui_visible(model_ui, false)
-      set_ui_image(dI, get_hero_icon())
+    
+    local model_bound = false
+    if is_ui_alive(model_ui) and dH ~= nil then
+        local ok = bind_ui_model_unit(model_ui, dH, false, true, true)
+        if ok then
+            apply_ui_model_camera(model_ui, HERO_MODEL_CAMERA)
+            set_ui_visible(model_ui, true)
+            set_ui_visible(dI, false)
+            model_bound = true
+        end
+    end
+    
+    if not model_bound then
+        set_ui_visible(model_ui, false)
+        set_ui_visible(dI, true)
+        set_ui_image(dI, get_hero_icon())
     end;
     set_ui_text(resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_name'), get_hero_name())
-    set_ui_text_alignment(resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_name'), '中', '中')
+    set_ui_text_alignment(resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_name'), ', ')
     set_ui_progress(resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_fill'), bc, bd)
     set_ui_text(resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_text'),
       string.format('%s/%s', format_short_number(bc), format_short_number(bd)))
-    set_ui_text_alignment(resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_text'), '中', '中')
+    set_ui_text_alignment(resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_hp_text'), ', ')
     set_ui_visible(resolve_combat_module_ui('exp_bar'), true)
     local exp_progress = math.max(0, math.min(1, bf / math.max(1, bg)))
     local dL = has_pending_evolution_choice()
     local bar_width = math.max(1, math.floor(EXP_BAR_MAX_WIDTH * exp_progress + 0.5))
-    set_ui_text(resolve_combat_module_ui('exp_bar.level_label'), string.format('等级：%d', get_hero_level()))
+    set_ui_text(resolve_combat_module_ui('exp_bar.level_label'), string.format('等级%d', get_hero_level()))
     set_ui_size(resolve_combat_module_ui('exp_bar.fill'), bar_width, EXP_BAR_HEIGHT)
     set_ui_pos(resolve_combat_module_ui('exp_bar.fill'), EXP_BAR_X_OFFSET + bar_width / 2, 12)
     set_ui_image_color(resolve_combat_module_ui('exp_bar.fill'), dL and { 255, 177, 37, 255 } or { 210, 38, 178, 255 })
@@ -1770,8 +1755,8 @@ function M.create(params)
     set_ui_text_color(resolve_combat_module_ui('exp_bar.evolve_text'), dL and { 255, 226, 58, 255 } or { 255, 226, 58, 0 })
     set_ui_visible(resolve_combat_module_ui('exp_bar.evolve_click_area'), dL)
     set_ui_text(resolve_combat_module_ui('exp_bar.exp_text'),
-      dL and '' or string.format('%s/%s', format_short_number(bf), format_short_number(bg)))
-    set_ui_text_alignment(resolve_combat_module_ui('exp_bar.exp_text'), '中', '中')
+      dL and '进化' or string.format('%s/%s', format_short_number(bf), format_short_number(bg)))
+    set_ui_text_alignment(resolve_combat_module_ui('exp_bar.exp_text'), ', ')
   end;
 
   local function hide_challenge_row()
@@ -1830,9 +1815,9 @@ function M.create(params)
   local function refresh_status_text()
     set_ui_visible(resolve_combat_module_ui('status_text'), true)
     set_ui_text(resolve_combat_module_ui('status_text'), '状态：')
-    set_ui_text_alignment(resolve_combat_module_ui('status_text'), '左', '中')
+    set_ui_text_alignment(resolve_combat_module_ui('status_text'), ', ')
     set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.station_hint'), get_station_hint_text())
-    set_ui_text_alignment(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.station_hint'), '中', '中')
+    set_ui_text_alignment(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.station_hint'), ', ')
   end;
 
   local function refresh_bond_card_panel()
@@ -1899,6 +1884,98 @@ function M.create(params)
   -- public api alias
   show_runtime_tip_panel = show_tip_panel
 
+  local BOND_REPLACEMENT_PANEL = 'BondReplacementPanel'
+  local bond_replacement_visible = false
+
+  local function show_bond_replacement_panel()
+    if not get_bond_replacement_info_fn then
+      message_fn('羁绊替换系统未初始化')
+      return
+    end
+    local info = get_bond_replacement_info_fn(STATE)
+    if not info or not info.awaiting then
+      message_fn('当前没有待处理的羁绊替换')
+      return
+    end
+    bond_replacement_visible = true
+    local player = get_player()
+    if not player then return end
+    local ok_panel, panel = pcall(y3.ui.get_ui, player, BOND_REPLACEMENT_PANEL)
+    if not ok_panel or not panel then
+      message_fn('未找到羁绊替换面板：' .. BOND_REPLACEMENT_PANEL)
+      return
+    end
+    set_ui_visible(panel, true)
+    local new_card = info.new_card
+    local title_text = string.format('选择要替换的羁绊（获得：%s）', new_card.name or '未知卡牌')
+    local desc_text = string.format('羁绊已满，请选择要替换的羁绊：\n新羁绊：%s %s', new_card.name or '', new_card.bond_name or '')
+    local title_ui = nil
+    local desc_ui = nil
+    local ok_title, t = pcall(y3.ui.get_ui, player, BOND_REPLACEMENT_PANEL .. '.title_text')
+    if ok_title and t then title_ui = t end
+    local ok_desc, d = pcall(y3.ui.get_ui, player, BOND_REPLACEMENT_PANEL .. '.desc_text')
+    if ok_desc and d then desc_ui = d end
+    if title_ui then set_ui_text(title_ui, title_text) end
+    if desc_ui then set_ui_text(desc_ui, desc_text) end
+    local options = info.options or {}
+    for slot_index = 1, 8 do
+      local option = options[slot_index]
+      local slot_path = string.format('%s.option_%d', BOND_REPLACEMENT_PANEL, slot_index)
+      local ok_slot, slot_ui = pcall(y3.ui.get_ui, player, slot_path)
+      if ok_slot and slot_ui then
+        if option then
+          set_ui_visible(slot_ui, true)
+          local icon_path = string.format('%s.option_icon_%d', slot_path, slot_index)
+          local name_path = string.format('%s.option_name_%d', slot_path, slot_index)
+          local ok_icon, icon_ui = pcall(y3.ui.get_ui, player, icon_path)
+          local ok_name, name_ui = pcall(y3.ui.get_ui, player, name_path)
+          if ok_icon and icon_ui and option.icon then
+            set_ui_image(icon_ui, option.icon)
+          end
+          if ok_name and name_ui then
+            set_ui_text(name_ui, option.display_name or '')
+          end
+          local click_handler = nil
+          click_handler = function()
+            if apply_bond_replacement_fn then
+              local env = create_bond_env and create_bond_env() or { STATE = STATE }
+              local ok = apply_bond_replacement_fn(env, slot_index)
+              if ok then
+                bond_replacement_visible = false
+                set_ui_visible(panel, false)
+                message_fn(string.format('已替换羁绊：%s %s', option.display_name, new_card.name))
+                if refresh_hud then refresh_hud() end
+              end
+            end
+          end
+          local ok_bind, _ = pcall(function()
+            slot_ui:set_intercepts_operations(true)
+            slot_ui:add_fast_event('左键-点击', click_handler)
+          end)
+        else
+          set_ui_visible(slot_ui, false)
+        end
+      end
+    end
+    local cancel_path = BOND_REPLACEMENT_PANEL .. '.cancel_btn'
+    local ok_cancel, cancel_ui = pcall(y3.ui.get_ui, player, cancel_path)
+    if ok_cancel and cancel_ui then
+      local cancel_handler = function()
+        if cancel_bond_replacement_fn then
+          local env = create_bond_env and create_bond_env() or { STATE = STATE }
+          cancel_bond_replacement_fn(env)
+        end
+        bond_replacement_visible = false
+        set_ui_visible(panel, false)
+        message_fn('已取消羁绊替换')
+      end
+      local ok_bind, _ = pcall(function()
+        cancel_ui:set_intercepts_operations(true)
+        cancel_ui:add_fast_event('左键-点击', cancel_handler)
+      end)
+    end
+  end
+
   return {
     ensure_hud = ensure_hud,
     refresh_hud = refresh_hud,
@@ -1923,7 +2000,8 @@ function M.create(params)
     toggle_big_cursor = toggle_big_cursor,
     toggle_damage_text_visible = toggle_damage_text_visible,
     toggle_hit_effects_visible = toggle_hit_effects_visible,
-    toggle_soft_pause = toggle_soft_pause
+    toggle_soft_pause = toggle_soft_pause,
+    show_bond_replacement_panel = show_bond_replacement_panel
   }
 end;
 

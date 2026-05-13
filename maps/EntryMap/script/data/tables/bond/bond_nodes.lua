@@ -30,13 +30,32 @@ local function parse_attr_json(attr_json_str)
   if not attr_json_str or attr_json_str == '' then
     return {}
   end
-  local ok, result = pcall(function()
-    return assert(loadstring('return ' .. attr_json_str))()
-  end)
-  if ok and result then
-    return result
+
+  local str = tostring(attr_json_str)
+  local result = {}
+  
+  local function parse_value(v)
+    v = v:gsub('^%s+', ''):gsub('%s+$', '')
+    local num = tonumber(v)
+    if num then return num end
+    if v == 'true' then return true end
+    if v == 'false' then return false end
+    if v == 'nil' then return nil end
+    return v
   end
-  return {}
+
+  str = str:gsub('^%s*%{', ''):gsub('%}%s*$', '')
+  
+  for pair in str:gmatch('([^,]+)') do
+    local key, value = pair:match('^%s*([^%s=]+)%s*=%s*(.-)%s*$')
+    if key and value then
+      key = key:gsub('^[\'"](.-)[\'"]$', '%1'):gsub('^%s+', ''):gsub('%s+$', '')
+      value = value:gsub('^[\'"](.-)[\'"]$', '%1')
+      result[key] = parse_value(value)
+    end
+  end
+
+  return result
 end
 
 for _, row in ipairs(node_rows) do
@@ -91,8 +110,6 @@ for _, row in ipairs(node_rows) do
     end
   end
 end
-
-
 
 local M = {
   list = list,

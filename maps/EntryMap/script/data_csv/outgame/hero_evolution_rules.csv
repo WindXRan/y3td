@@ -1,0 +1,5 @@
+id,name,quality,quality_threshold,base_pool_weight
+__字段说明__,品质名称,品质标识,品质阈值索引,基础权重
+common,普通,common,1,45
+rare,稀有,rare,3,35
+epic,史诗,epic,5,20

@@ -63,7 +63,7 @@ function M.create(env)
   end
 
   local function reset_battle_state()
-    destroy_choice_panel()
+    pcall(destroy_choice_panel)
     cleanup_swallow_panel()
     if battlefield_system and battlefield_system.destroy_debug_spawn_areas then
       battlefield_system.destroy_debug_spawn_areas()
@@ -129,7 +129,7 @@ function M.create(env)
   end
 
   local function reset_session_state()
-    destroy_choice_panel()
+    pcall(destroy_choice_panel)
     reset_battle_state()
     STATE.session_phase = 'outgame'
     STATE.outgame_profile = nil

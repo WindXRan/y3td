@@ -51,6 +51,20 @@
      "7af338d9-0c03-4594-bf76-c4a3aa20942a", 
      "BattleDetailTipsPanel"
     ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "a1b2c3d4-e5f6-7890-1234-567890abcdef", 
+     "ResultPanel"
+    ]
+   }, 
+   {
+    "__tuple__": true, 
+    "items": [
+     "8ca37985-07d2-401b-8544-6cc46951caad", 
+     "BondReplacementPanel"
+    ]
    }
   ]
  }, 

@@ -23,11 +23,8 @@ def main() -> None:
     content = OUTGAME_LUA.read_text(encoding='utf-8')
     session_state = SESSION_STATE_LUA.read_text(encoding='utf-8')
 
-    assert_contains(content, "for index = 1, 5 do", 'outgame 应绑定左侧 5 条任务槽位')
-    assert_contains(content, ".大厅.layout.left.task_%d", 'outgame 应从静态画板读取任务节点')
     assert_contains(content, ".大厅.layout.footer.slot_%d", 'outgame 应从静态画板读取底部玩家槽位')
     assert_contains(content, "resolve_outgame_ui(base_path .. '.avatar')", 'outgame 应绑定底部玩家头像节点')
-    assert_contains(content, 'refresh_daily_rows(ui, profile, selected_stage_id)', 'outgame 应刷新左侧任务区')
     assert_contains(content, 'refresh_reward_card(ui, profile, selected_stage_id)', 'outgame 应刷新奖励卡片')
     assert_contains(content, 'refresh_footer(ui, profile)', 'outgame 应刷新底部玩家位')
     assert_contains(content, 'set_image_url_if_alive(slot.avatar, payload_value, payload_aid)', 'outgame 应支持平台头像 url 刷新')

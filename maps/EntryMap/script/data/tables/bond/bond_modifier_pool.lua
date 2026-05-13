@@ -3,6 +3,8 @@ local BondSkillTextTemplates = require 'data.tables.bond.bond_skill_text_templat
 local CsvLoader = require 'data.csv_loader'
 local SkillVisuals = require 'data.tables.skill.skill_visuals'
 
+CsvLoader.clear_cache()
+
 local M = {}
 
 local ATTR_ALIASES = {
@@ -134,15 +136,10 @@ local function resolve_visual_icon(skill_id, bond_name, fallback)
   if param_icon and param_icon > 0 then
     return param_icon
   end
-  if fallback and tonumber(fallback) and tonumber(fallback) > 0 then
-    return tonumber(fallback)
+  if fallback and fallback > 0 then
+    return fallback
   end
-  local visual = SkillVisuals.get_by_skill_id(skill_id) or SkillVisuals.get_by_bond_name(bond_name)
-  local visual_icon = visual and visual.icon_key
-  if visual_icon and tonumber(visual_icon) and tonumber(visual_icon) > 0 then
-    return tonumber(visual_icon)
-  end
-  return fallback
+  error(string.format('Missing icon for skill_id=%s, bond_name=%s. Please configure ui_icon or icon in bond_skill_params.csv', tostring(skill_id), tostring(bond_name)))
 end
 
 local function normalize_quality(value)

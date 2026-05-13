@@ -160,24 +160,6 @@ function M.create_effect_debug_system(deps)
     })
 end
 
-function M.create_hero_form_skills_system(deps)
-    return require('runtime.hero_form_skills').create({
-        STATE = deps.STATE,
-        y3 = deps.y3,
-        message = deps.message,
-        round_number = deps.round_number,
-        hero_attr_system = deps.hero_attr_system,
-        is_active_enemy = deps.is_active_enemy,
-        get_enemies_in_range = deps.get_enemies_in_range,
-        get_enemy_runtime_info = deps.get_enemy_runtime_info,
-        is_boss_runtime_enemy = deps.is_boss_runtime_enemy,
-        is_elite_runtime_enemy = deps.is_elite_runtime_enemy,
-        deal_skill_damage = deps.deal_skill_damage,
-        heal_hero = deps.heal_hero,
-        play_skill_sound = deps.play_skill_sound,
-    })
-end
-
 function M.create_battlefield_system(deps)
     return BattlefieldSystem.create({
         STATE = deps.STATE,

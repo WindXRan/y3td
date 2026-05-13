@@ -248,6 +248,11 @@ function M.create(env)
   end
 
   local function refresh()
+    local panel = get_panel()
+    if not is_alive(panel) then
+      return false
+    end
+
     local attr_lines = build_attr_lines()
     local grid = get_attr_grid()
     if is_alive(grid) then
@@ -262,13 +267,31 @@ function M.create(env)
     for index, path in ipairs(RULE_LABEL_PATHS) do
       set_text(get_child(path), rule_lines[index] or '')
     end
+    return true
   end
 
   local function set_panel_visible(visible)
     STATE.attr_tips_panel_visible = visible == true
-    set_visible(get_root(), STATE.attr_tips_panel_visible)
-    set_visible(get_panel(), STATE.attr_tips_panel_visible)
-    if STATE.attr_tips_panel_visible then
+
+    -- UI controls may not exist yet during early bootstrap. Avoid resolving
+    -- editor-placed UI before the interface is initialized.
+    local root = is_alive(nodes.root) and nodes.root or nil
+    local panel = is_alive(nodes.panel) and nodes.panel or nil
+
+    if not STATE.attr_tips_panel_visible and not root and not panel then
+      return STATE.attr_tips_panel_visible
+    end
+
+    if not root then
+      root = get_root()
+    end
+    if not panel then
+      panel = get_panel()
+    end
+
+    set_visible(root, STATE.attr_tips_panel_visible)
+    set_visible(panel, STATE.attr_tips_panel_visible)
+    if STATE.attr_tips_panel_visible and is_alive(panel) then
       refresh()
     end
     return STATE.attr_tips_panel_visible
@@ -278,7 +301,6 @@ function M.create(env)
     if STATE.attr_tips_panel_visible == nil then
       STATE.attr_tips_panel_visible = false
     end
-    set_panel_visible(STATE.attr_tips_panel_visible)
   end
 
   return {

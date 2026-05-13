@@ -1,0 +1,10 @@
+id,name,description,type,target_count,reward_gold,reward_wood,reward_exp,reward_item,icon,priority
+__字段说明__,任务ID,任务名称,任务描述,任务类型,目标数量,金币奖励,木材奖励,经验奖励,物品奖励,图标ID,优先级
+daily_001,击杀普通怪物,击杀100只普通怪物,kill_normal,100,500,200,1000,,131414,1
+daily_002,击杀精英怪物,击杀10只精英怪物,kill_elite,10,300,100,500,,131415,2
+daily_003,击杀BOSS,击杀1只BOSS,kill_boss,1,1000,500,2000,,131416,3
+daily_004,完成挑战,完成3次挑战,complete_challenge,3,400,150,800,,131417,2
+daily_005,通关关卡,通关2个关卡,complete_stage,2,600,300,1200,,131418,2
+daily_006,升级英雄,将任意英雄升级到5级,level_up_hero,5,300,200,600,,131419,3
+daily_007,使用技能,释放50次技能,use_skill,50,200,100,400,,131420,4
+daily_008,收集资源,收集1000金币,collect_gold,1000,200,150,300,,131421,4

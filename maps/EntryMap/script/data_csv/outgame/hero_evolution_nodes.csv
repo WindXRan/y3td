@@ -1,0 +1,7 @@
+id,trigger_level,choice_count,pool_rule_id,queue_priority,ui_title
+__字段说明__,触发等级,选择数量,池子规则ID,队列优先级,界面标题
+evolution_node_lv2,2,2,evolution_pool_global,95,英雄进阶
+evolution_node_lv10,10,2,evolution_pool_global,95,英雄进阶
+evolution_node_lv20,20,2,evolution_pool_global,95,英雄进阶
+evolution_node_lv30,30,2,evolution_pool_global,95,英雄进阶
+evolution_node_lv40,40,2,evolution_pool_global,95,英雄进阶

@@ -1505,17 +1505,36 @@ function M.create(env)
       return
     end
 
-    -- 受击特效全局禁用：普攻/技能仅保留伤害，不挂命中特效。
     local hit_effect_enabled = false
     local final_damage = compute_basic_attack_final_damage(skill, target, amount)
     if final_damage <= 0 then
       return
     end
+
+    local is_critical = false
+    if hero_attr_system then
+      local crit_chance = hero_attr_system.get_attr(STATE.hero, '物理暴击') or 0
+      crit_chance = crit_chance / 100
+      if crit_chance > 0 and math.random() < crit_chance then
+        is_critical = true
+        local crit_damage_ratio = (hero_attr_system.get_attr(STATE.hero, '物理暴伤') or 150) / 100
+        final_damage = final_damage * crit_damage_ratio
+      end
+    end
+
+    if is_critical then
+      STATE.current_damage_is_critical = true
+    end
+
     show_damage_area_indicator(get_unit_point_snapshot(target), get_damage_debug_radius(skill, options), 0.22)
     reserve_formula_damage(target, final_damage, {
       source = 'basic_attack',
       skill_id = skill and skill.id or nil,
     })
+    local text_type_str = options and options.text_type or '物理'
+    local text_track = is_critical
+      and (y3.const.FloatTextJumpType["物理暴击_中上"] or 934300033)
+      or 934269508
     STATE.hero:damage({
       target = target,
       damage = final_damage,
@@ -1525,8 +1544,8 @@ function M.create(env)
           and STATE.hero_common_attack:is_exist()
           and STATE.hero_common_attack
           or nil,
-      text_type = resolve_runtime_text_type(options and options.text_type or '物理'),
-      text_track = options and options.text_track or 934269508,
+      text_type = resolve_runtime_text_type(text_type_str),
+      text_track = text_track,
       particle = hit_effect_enabled and options and options.particle or nil,
       socket = hit_effect_enabled and options and options.socket or '',
       pos_socket = hit_effect_enabled and options and options.pos_socket or '',

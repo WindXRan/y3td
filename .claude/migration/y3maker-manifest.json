@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "migrated_at": "2026-05-13T13:00:00+08:00",
+  "type": "initial",
+  "source": ".y3maker/",
+  "target": ".claude/",
+  "mcp_scope": "project",
+  "summary": {
+    "knowledge": { "count": 30, "status": "created" },
+    "memory": { "count": 8, "status": "created" },
+    "rules": { "count": 7, "status": "created" },
+    "skills": {
+      "count": 10,
+      "status": "created",
+      "list": [
+        "sync-y3maker-to-claude",
+        "y3-auto-test",
+        "y3-env-setup",
+        "y3-game-spec",
+        "y3-gen-terrain-from-image",
+        "y3-lua-pipeline",
+        "y3-lua-review",
+        "y3-obj-edit",
+        "y3-ui-generator",
+        "y3-ui-pipeline"
+      ]
+    },
+    "mcp": {
+      "status": "created",
+      "file": ".mcp.json",
+      "servers": ["y3-helper", "y3editor", "y3runtime"]
+    }
+  },
+  "normalizations": [
+    "<agent>/ → .claude/",
+    "<codemaker> → .claude",
+    ".codemaker/ → .claude/"
+  ],
+  "blocked": [],
+  "orphaned": [],
+  "notes": "Manual migration executed because Node.js is not installed. All path references normalized. MCP type fixed from 'url' to 'streamableHttp' in .mcp.json."
+}

@@ -44,7 +44,7 @@ function M.create(env)
     [VIEW_MODE_MAINLINE] = '主线模式',
     [VIEW_MODE_CULTIVATION] = '打鱼模式',
   }
-  local DAILY_TASK_DEFS = OutgameUIConfig.DAILY_TASK_DEFS
+  local DAILY_TASK_DEFS = OutgameUIConfig.DAILY_TASK_DEFS or {}
   local COLOR = OutgameUIConfig.COLOR
 
   local api = {}
@@ -956,25 +956,11 @@ function M.create(env)
       profile.hero_attr_bonus_stats = {}
       dirty = true
     end
-    if type(profile.daily_tasks) ~= 'table' then
-      profile.daily_tasks = {}
-      dirty = true
-    end
-    if type(profile.daily_tasks.progress) ~= 'table' then
-      profile.daily_tasks.progress = {}
-      dirty = true
-    end
     if hero_growth_api and hero_growth_api.ensure_profile_defaults and hero_growth_api.ensure_profile_defaults(profile) then
       dirty = true
     end
     if ensure_archive_items_profile_defaults(profile) then
       dirty = true
-    end
-    for _, task_def in ipairs(DAILY_TASK_DEFS) do
-      if profile.daily_tasks.progress[task_def.key] == nil then
-        profile.daily_tasks.progress[task_def.key] = 0
-        dirty = true
-      end
     end
     if profile.selected_view_mode ~= VIEW_MODE_MAINLINE and profile.selected_view_mode ~= VIEW_MODE_CULTIVATION then
       profile.selected_view_mode = VIEW_MODE_MAINLINE
@@ -1314,60 +1300,6 @@ function M.create(env)
       return '尚未获得局外属性奖励'
     end
     return table.concat(parts, ' / ')
-  end
-
-  local function get_daily_task_value(profile, task_def)
-    local daily_tasks = profile and profile.daily_tasks or nil
-    local progress = daily_tasks and daily_tasks.progress or nil
-    if type(progress) == 'table' and progress[task_def.key] ~= nil then
-      return math.max(0, tonumber(progress[task_def.key]) or 0)
-    end
-
-    return 0
-  end
-
-  local function build_daily_task_rows(profile, selected_stage_id)
-    local rows = {}
-    for _, task_def in ipairs(DAILY_TASK_DEFS) do
-      local value = math.min(get_daily_task_value(profile, task_def), task_def.target)
-      local completed = value >= task_def.target
-      rows[#rows + 1] = {
-        title = task_def.title,
-        reward = task_def.reward,
-        progress = string.format('(%d/%d)', value, task_def.target),
-        status = completed and '完成' or '',
-      }
-    end
-    return rows
-  end
-
-  local function refresh_daily_rows(ui, profile, selected_stage_id)
-    local rows = build_daily_task_rows(profile, selected_stage_id)
-    for index, row_ui in ipairs(ui.daily_rows or {}) do
-      local row = rows[index]
-      set_visible_if_alive(row_ui.root, row ~= nil)
-      if row then
-        set_text_if_alive(row_ui.title, row.title)
-        set_text_if_alive(row_ui.reward, row.reward)
-        set_text_if_alive(row_ui.progress, row.progress)
-        set_text_if_alive(row_ui.status, row.status)
-        set_visible_if_alive(row_ui.status_bg, row.status ~= '')
-        set_visible_if_alive(row_ui.status, row.status ~= '')
-
-        local status_bg = COLOR.available_bg
-        local status_text = COLOR.available_text
-        if row.status == '完成' or row.status == '已满' or row.status == '已通关' or row.status == '已记录' then
-          status_bg = COLOR.cleared_bg
-          status_text = COLOR.cleared_text
-        elseif row.status == '未解锁' or row.status == '待开始' then
-          status_bg = COLOR.locked_bg
-          status_text = COLOR.locked_text
-        end
-        set_image_color_if_alive(row_ui.bg, theme.palette.panel)
-        set_image_color_if_alive(row_ui.status_bg, status_bg)
-        set_text_color_if_alive(row_ui.status, status_text)
-      end
-    end
   end
 
   local function refresh_reward_card(ui, profile, selected_stage_id)
@@ -2098,14 +2030,24 @@ function M.create(env)
     if not is_archive_panel_ui_alive(ui) then
       return
     end
-    local visible = STATE.session_phase == 'outgame' and STATE.archive_panel_visible ~= true
+    local visible = false
     set_visible_if_alive(ui.enter_panel_root, visible)
     set_visible_if_alive(ui.enter_panel_icon, visible)
+    set_visible_if_alive(ui.enter_panel_bg, visible)
+    set_visible_if_alive(ui.enter_panel_name, visible)
   end
 
   set_archive_panel_visible = function(visible)
     visible = visible == true
-    local ui = ensure_archive_panel_ui()
+    local ui = STATE.archive_panel_ui
+    if not visible and not is_archive_panel_ui_alive(ui) then
+      STATE.archive_panel_visible = false
+      STATE.archive_panel_hidden_non_outgame = false
+      return true
+    end
+    if visible or not is_archive_panel_ui_alive(ui) then
+      ui = ensure_archive_panel_ui()
+    end
     if visible then
       if not is_archive_panel_ui_alive(ui) then
         return false
@@ -2396,23 +2338,6 @@ function M.create(env)
         end
       end
 
-      local daily_rows = {}
-      for index = 1, 5 do
-        local base_path = string.format('.大厅.layout.left.task_%d', index)
-        local row_root = resolve_outgame_ui(base_path)
-        if is_ui_alive(row_root) then
-          daily_rows[#daily_rows + 1] = {
-            root = row_root,
-            bg = resolve_outgame_ui(base_path .. '.bg'),
-            title = resolve_outgame_ui(base_path .. '.title'),
-            reward = resolve_outgame_ui(base_path .. '.reward'),
-            progress = resolve_outgame_ui(base_path .. '.progress'),
-            status_bg = resolve_outgame_ui(base_path .. '.status_bg'),
-            status = resolve_outgame_ui(base_path .. '.status'),
-          }
-        end
-      end
-
       local player_slots = {}
       for index = 1, 4 do
         local base_path = string.format('.大厅.layout.footer.slot_%d', index)
@@ -2440,9 +2365,6 @@ function M.create(env)
         mode_panel = mode_panel,
         mode_slots = mode_slots,
         left_panel = resolve_outgame_ui('.大厅.layout.left'),
-        left_title = resolve_outgame_ui('.大厅.layout.left.task_title'),
-        left_rule = resolve_outgame_ui('.大厅.layout.left.task_line'),
-        daily_rows = daily_rows,
         reward_card = resolve_outgame_ui('.大厅.layout.left.reward_group.reward_card_bg'),
         reward_title = resolve_outgame_ui('.大厅.layout.left.reward_group.reward_title'),
         reward_code = resolve_outgame_ui('.大厅.layout.left.reward_group.reward_code'),
@@ -2593,9 +2515,6 @@ function M.create(env)
       set_text_if_alive(ui.detail_title, "请选择关卡")
       set_text_if_alive(ui.detail_hint, "请选择关卡")
       
-      set_text_if_alive(ui.left_title, '每日任务（周末双倍）')
-      set_text_if_alive(ui.left_rule, '（每日任务获得的资源，不计算每日上限）')
-      refresh_daily_rows(ui, profile, nil)
       refresh_reward_card(ui, profile, nil)
       refresh_footer(ui, profile)
       
@@ -2642,9 +2561,6 @@ function M.create(env)
     set_text_if_alive(ui.detail_title, detail_title)
     set_text_if_alive(ui.detail_status, detail_status)
     set_text_if_alive(ui.detail_hint, detail_hint)
-    set_text_if_alive(ui.left_title, '每日任务（周末双倍）')
-    set_text_if_alive(ui.left_rule, '（每日任务获得的资源，不计算每日上限）')
-    refresh_daily_rows(ui, profile, selected_stage_id)
     refresh_reward_card(ui, profile, selected_stage_id)
     refresh_footer(ui, profile)
 
@@ -2702,7 +2618,10 @@ function M.create(env)
     if visible ~= true and STATE.session_phase == 'outgame' then
       set_archive_panel_visible(false)
     end
-    local archive_ui = ensure_archive_panel_ui()
+    local archive_ui = STATE.archive_panel_ui
+    if visible == true and not is_archive_panel_ui_alive(archive_ui) then
+      archive_ui = ensure_archive_panel_ui()
+    end
     if is_archive_panel_ui_alive(archive_ui) then
       refresh_archive_enter_panel_visible(archive_ui)
     end

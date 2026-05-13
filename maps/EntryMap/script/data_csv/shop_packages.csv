@@ -1,0 +1,3 @@
+id,name,description,price_gold,price_wood,price_gem,contents,icon,bundle_type,limited_stock,daily_limit
+__字段说明__,礼包ID,礼包名称,礼包描述,金币价格,木材价格,宝石价格,内容物(物品ID|数量),图标ID,礼包类型,限购数量,每日限购
+pkg_001,新手礼包,适合新手的入门礼包,500,0,0,gold|10

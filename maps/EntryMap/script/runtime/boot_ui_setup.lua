@@ -42,6 +42,11 @@ function M.create_runtime_hud_system(deps)
             return deps.BootHelpers.get_bottom_status_effect_entries(max_slots, deps.STATE, deps.auto_active_effects_system)
         end,
         play_ui_click = deps.play_ui_click,
+        BondSystem = BondSystem,
+        create_bond_env = deps.create_bond_env,
+        apply_bond_replacement = BondSystem.apply_bond_replacement,
+        cancel_bond_replacement = BondSystem.cancel_bond_replacement,
+        get_bond_replacement_info = BondSystem.get_bond_replacement_info,
     })
 end
 

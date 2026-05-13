@@ -1,4 +1,4 @@
-﻿local BondModifierPool = require 'data.tables.bond.bond_modifier_pool'
+local BondModifierPool = require 'data.tables.bond.bond_modifier_pool'
 
 local M = {}
 
@@ -489,12 +489,7 @@ function M.create(env)
       end
     end
 
-    if STATE and STATE.hero_form_skill_runtime and STATE.hero_form_skill_runtime.cooldowns then
-      for skill_id in pairs(STATE.hero_form_skill_runtime.cooldowns) do
-        STATE.hero_form_skill_runtime.cooldowns[skill_id] = 0
-      end
     end
-  end
 
   local function spawn_dummy_targets(runtime)
     local enemy_player = get_enemy_player and get_enemy_player() or nil

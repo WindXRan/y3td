@@ -1,0 +1,12 @@
+id,name,r,g,b,a
+__字段说明__,颜色标识,红色分量,绿色分量,蓝色分量,透明度
+selected_bg,选中背景,84,138,226,255
+selected_text,选中文字,245,248,255,255
+available_bg,可用背景,40,58,92,236
+available_text,可用文字,220,232,246,255
+locked_bg,锁定背景,34,38,48,214
+locked_text,锁定文字,164,172,186,255
+cleared_bg,已通关背景,58,100,82,232
+cleared_text,已通关文字,232,246,238,255
+start_ready_bg,开始准备背景,82,132,96,236
+start_locked_bg,开始锁定背景,58,62,72,214
