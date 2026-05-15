@@ -7,6 +7,7 @@ local RewardSystem = require 'runtime.rewards'
 local GearUpgrades = require 'runtime.gear_upgrades'
 local AttrChoices = require 'runtime.attr_choices'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
+local HeroModel = require 'runtime.hero_model'
 local AudioSystem = require 'runtime.audio'
 local AudioResources = require 'data.tables.audio_resources'
 local BootCore = require 'runtime.boot_core'
@@ -143,10 +144,11 @@ function RuntimeEntry.apply_fixed_camera_mode(enabled)
     if not RuntimeEntry.has_valid_hero() then
       return false
     end
+    -- TPS 第三人称跟随英雄
     if y3.camera.set_tps_follow_unit then
       y3.camera.set_tps_follow_unit(player, STATE.hero, 0, 0, -60, 300, 0, 220, 1800)
     elseif y3.camera.set_camera_follow_unit then
-      y3.camera.set_camera_follow_unit(player, STATE.hero, 300, 0, 220)
+      y3.camera.set_camera_follow_unit(player, STATE.hero, 0, 0, 220)
     end
     if y3.camera.disable_camera_move then
       y3.camera.disable_camera_move(player)
@@ -166,6 +168,9 @@ function RuntimeEntry.apply_fixed_camera_mode(enabled)
     if y3.camera.set_distance then
       y3.camera.set_distance(player, 1800, 0)
     end
+    if player.set_mouse_wheel then
+      player:set_mouse_wheel(false)
+    end
     return true
   end
 
@@ -180,6 +185,9 @@ function RuntimeEntry.apply_fixed_camera_mode(enabled)
   end
   if y3.camera.set_moving_with_mouse then
     y3.camera.set_moving_with_mouse(player, true)
+  end
+  if player.set_mouse_wheel then
+    player:set_mouse_wheel(true)
   end
   return true
 end
@@ -277,6 +285,12 @@ do
     HeroAttrSystem.set_main_stat_attack_ratio(ratio)
   end
 end
+
+local hero_model = HeroModel.create({
+  STATE = STATE,
+  CONFIG = CONFIG,
+  y3 = y3,
+})
 
 local make_point = function(data)
   return BootHelpers.make_point(data)
@@ -411,12 +425,6 @@ local create_bond_env = function()
     reserve_formula_damage = BootCombat.reserve_formula_damage,
     basic_attack_damage_type = ATTACK_SKILL_DEFS.basic_attack.damage_type,
     get_player = get_player,
-    report_auto_acceptance_event = function(payload)
-      local battle_auto_acceptance_system = BootServices.get_service('battle_auto_acceptance_system')
-      if battle_auto_acceptance_system and battle_auto_acceptance_system.record_event then
-        battle_auto_acceptance_system.record_event(payload)
-      end
-    end,
   }
 end
 
@@ -788,6 +796,7 @@ reward_system = RewardSystem.create({
   round_number = round_number,
   y3 = y3,
   hero_attr_system = hero_attr_system,
+  hero_model = hero_model,
   add_attr_pack = add_hero_attr_pack,
   sync_basic_attack_ability = sync_basic_attack_ability,
   setup_basic_attack_ability = setup_basic_attack_ability,
@@ -888,7 +897,7 @@ local get_pending_round_choice_label = function(kind)
     return '属性四选一'
   end
   if kind == 'evolution' then
-    return '猎手专精'
+    return '英雄'
   end
   return '当前选择'
 end
@@ -1126,14 +1135,6 @@ local is_debug_effect_mounted = function(effect_id)
 end
 
 local notify_bond_attack_skill_cast = function(skill, target)
-  local battle_auto_acceptance_system = BootServices.get_service('battle_auto_acceptance_system')
-  if battle_auto_acceptance_system and battle_auto_acceptance_system.record_event and skill then
-    battle_auto_acceptance_system.record_event({
-      scope = 'attack_skill',
-      key = tostring(skill.id or skill.name or 'unknown'),
-      cast = 1,
-    })
-  end
   return BondSystem.notify_attack_skill_cast(create_bond_env(), skill, target)
 end
 
@@ -1302,6 +1303,7 @@ end
 
 local td_damage_api = BootCombatSetup.create_damage_templates({
   y3 = y3,
+  STATE = STATE,
   deal_skill_damage = deal_skill_damage,
   emit_damage_debug_visual = emit_damage_debug_visual,
   get_enemies_in_range = get_enemies_in_range,
@@ -1339,7 +1341,7 @@ local sample_skills_system = BootCombatSetup.create_sample_skills_system({
   launch_projectile_from_hero = launch_projectile_from_hero,
 })
 
-BootCombatSetup.register_generated_skills(skill_framework_system)
+BootCombatSetup.register_generated_skills(skill_framework_system, AttackSkillObjects)
 
 attack_skills_system = BootCombatSetup.create_attack_skills_system({
   STATE = STATE,
@@ -1406,6 +1408,7 @@ local battlefield_system = BootCombatSetup.create_battlefield_system({
   design_seconds = design_seconds,
   random_point_in_area = random_point_in_area,
   hero_attr_system = hero_attr_system,
+  hero_model = hero_model,
   set_attr_pack = set_attr_pack,
   add_attr_pack = add_attr_pack,
   get_player = get_player,
@@ -1445,6 +1448,7 @@ local overview_model_system = BootUISetup.create_overview_model_system({
   CONFIG = CONFIG,
   round_number = round_number,
   hero_attr_system = hero_attr_system,
+  hero_model = hero_model,
   get_current_wave = get_current_wave,
   get_boss_name = get_boss_name,
   get_pending_round_choice_kind = get_pending_round_choice_kind,
@@ -1470,6 +1474,7 @@ local runtime_hud_system = BootUISetup.create_runtime_hud_system({
   ATTACK_SKILL_SLOT_COUNT = ATTACK_SKILL_SLOT_COUNT,
   get_player = get_player,
   hero_attr_system = hero_attr_system,
+  hero_model = hero_model,
   mainline_task_system = mainline_task_system,
   message = message,
   try_bond_draw = try_bond_draw,
@@ -1587,7 +1592,6 @@ local battle_auto_acceptance_system = BootDebugSetup.create_battle_auto_acceptan
   message = message,
   get_enemy_player = get_enemy_player,
   battlefield_system = battlefield_system,
-  create_bond_env = create_bond_env,
 })
 
 BootServices.battle_auto_acceptance_system_setter(battle_auto_acceptance_system)
@@ -1693,8 +1697,8 @@ RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create({
   gm_bond_effects_system = gm_bond_effects_system,
   audio_system = audio_system,
   hero_attr_system = hero_attr_system,
-  battle_auto_acceptance_system = battle_auto_acceptance_system,
   battlefield_system = battlefield_system,
+  battle_auto_acceptance_system = battle_auto_acceptance_system,
   hero_selection_range_system = hero_selection_range_system,
   outgame_system = outgame_system,
   growth_weapon_item_tip_system = growth_weapon_item_tip_system,

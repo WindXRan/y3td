@@ -11,6 +11,7 @@ function M.create(ctx)
   local get_player_fn = ctx.get_player_fn
   local HERO_MODEL_FRAME_SIZE = ctx.HERO_MODEL_FRAME_SIZE
   local HERO_MODEL_CAMERA = ctx.HERO_MODEL_CAMERA
+  local hero_model = ctx.hero_model
 
   local function is_ui_alive(u) return ui_root.is_alive(u) end;
 
@@ -149,28 +150,65 @@ function M.create(ctx)
     safe_ui_call(u, 'set_current_progress_bar_value', ay, 0)
   end;
 
-  local function bind_ui_model_unit(u, aA, aB, aC, aD)
-    if aA and aA.is_exist and not aA:is_exist() then aA = nil end;
-    if not is_ui_alive(u) or not aA then return false end;
-    
-    local success = false
-    
-    if type(u.set_ui_model_unit) == 'function' then
-        local ok, err = pcall(u.set_ui_model_unit, u, aA, aB == true, aC == true, aD == true)
-        if ok then success = true end
+  local function bind_ui_model_unit(u, aA, aB, aC, aD, aE, aF)
+    print('[hud_core] bind_ui_model_unit called')
+
+    if aA and aA.is_exist and not aA:is_exist() then
+        print('[hud_core] unit is not exist, setting to nil')
+        aA = nil
+    end;
+
+    if not is_ui_alive(u) then
+        print('[hud_core] ui not alive, returning false')
+        return false
     end
-    
-    if not success and y3 and y3.unit and y3.unit.get_model_by_key and aA.get_key then
+
+    if not aA then
+        print('[hud_core] unit is nil, returning false')
+        return false
+    end
+
+    local success = false
+
+    -- 方式一：通过 hero_model 模块（优先用 set_ui_model_id 显式设置模型ID，再 bind unit）
+    if hero_model and type(hero_model.bind_ui_model) == 'function' then
+        print('[hud_core] trying hero_model.bind_ui_model')
+        success = hero_model.bind_ui_model(u, aA, aB, aC, aD, aE, aF)
+        print('[hud_core] hero_model.bind_ui_model result:', success)
+    end
+
+    -- 方式二：直接绑定单位对象（回退）
+    if not success and type(u.set_ui_model_unit) == 'function' then
+        print('[hud_core] trying set_ui_model_unit fallback')
+        local ok = pcall(u.set_ui_model_unit, u, aA, aB == true, aC == true, aD == true)
+        if ok then
+            success = true
+            print('[hud_core] set_ui_model_unit succeeded')
+        end
+    end
+
+    -- 方式三：回退－通过模型ID设置（Y3 API: set_ui_model_id）
+    if not success and y3 and aA.get_key then
+        print('[hud_core] trying fallback: model ID binding')
         local unit_key = aA:get_key()
-        local model_id = y3.unit.get_model_by_key(unit_key)
-        if model_id and model_id ~= 0 then
-            if type(u.set_ui_model) == 'function' then
-                local ok, err = pcall(u.set_ui_model, u, model_id)
-                if ok then success = true end
-            end
+        local model_id = nil
+
+        local evo_runtime = STATE.evolution_runtime
+        if evo_runtime and evo_runtime.active_form_model_id then
+            model_id = evo_runtime.active_form_model_id
+        end
+
+        if (not model_id or model_id == 0) and y3.unit and y3.unit.get_model_by_key then
+            model_id = y3.unit.get_model_by_key(unit_key)
+        end
+
+        if model_id and model_id ~= 0 and type(u.set_ui_model_id) == 'function' then
+            local ok = pcall(u.set_ui_model_id, u, model_id)
+            if ok then success = true end
         end
     end
     
+    print('[hud_core] bind_ui_model_unit returning:', success)
     return success
   end;
 

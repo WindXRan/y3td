@@ -9,6 +9,7 @@ function M.create(env)
   local design_seconds = env.design_seconds
   local random_point_in_area = env.random_point_in_area
   local hero_attr_system = env.hero_attr_system
+  local hero_model = env.hero_model
   local set_attr_pack = env.set_attr_pack
   local add_attr_pack = env.add_attr_pack
   local play_enemy_death_sound = env.play_enemy_death_sound
@@ -229,6 +230,7 @@ function M.create(env)
   local function is_active_enemy(unit)
     return unit
       and unit:is_exist()
+      and unit ~= STATE.hero
       and STATE.all_enemies
       and unit:is_in_group(STATE.all_enemies)
   end
@@ -1251,6 +1253,49 @@ function M.create(env)
     return instance
   end
 
+  local function spawn_n0_debug_dummies()
+    if not is_n0_stage_active() then
+      return
+    end
+    if STATE.n0_dummies_spawned then
+      return
+    end
+    STATE.n0_dummies_spawned = true
+    STATE.n0_dummy_units = {}
+
+    local spawn_area_id = 'main_spawn_wave_1'
+    local area_def = CONFIG.areas and CONFIG.areas[spawn_area_id]
+    if not area_def then
+      return
+    end
+
+    local cx = math.floor((area_def.x_min + area_def.x_max) / 2)
+    local cy = math.floor((area_def.y_min + area_def.y_max) / 2)
+    local z = area_def.z or 0
+    local player = env.get_enemy_player()
+    local fallback_id = ENEMY_RUNTIME_FALLBACK_UNIT_ID
+
+    local dummy_specs = {
+      { kind = 'main',      name = '普通靶子', offset_y = -150, is_elite = false },
+      { kind = 'main',      name = '精英靶子', offset_y = -50,  is_elite = true  },
+      { kind = 'boss',      name = 'Boss靶子', offset_y = 50,   is_elite = false },
+      { kind = 'challenge', name = '挑战靶子', offset_y = 150,  is_elite = false },
+    }
+
+    for _, spec in ipairs(dummy_specs) do
+      local point = y3.point.create(cx, cy + spec.offset_y, z)
+      local ok, unit = pcall(y3.unit.create_unit, player, fallback_id, point, 180.0)
+      if ok and unit then
+        local actual_max_hp = tonumber(unit:get_attr('最大生命')) or tonumber(unit:get_attr('生命')) or 1000
+        unit:set_hp(actual_max_hp)
+        unit:set_attr('移动速度', 0)
+        local info = { kind = spec.kind, is_elite = spec.is_elite or nil }
+        CustomHealthBars.apply_unit(env, unit, spec.kind, nil, info)
+        STATE.n0_dummy_units[#STATE.n0_dummy_units + 1] = unit
+      end
+    end
+  end
+
   function api.start_wave(index)
     local wave = CONFIG.waves[index]
     if not wave or STATE.game_finished or STATE.session_phase ~= 'battle' then
@@ -1272,6 +1317,10 @@ function M.create(env)
 
     if env.on_wave_started then
       env.on_wave_started(index)
+    end
+
+    if is_n0_mainline_spawn_disabled() then
+      spawn_n0_debug_dummies()
     end
   end
 
@@ -1409,6 +1458,7 @@ function M.create(env)
       return
     end
     if is_n0_mainline_spawn_disabled() then
+      CustomHealthBars.refresh_all(env)
       return
     end
 
@@ -1596,10 +1646,20 @@ function M.create(env)
         tostring(hero_create_err)
       ))
     end
-    -- 应用英雄模型替换
-    local hero_model_id = CONFIG.hero_model_id or tonumber(CONFIG.unit_ids.hero_model)
-    if hero_model_id and hero.replace_model then
-      pcall(hero.replace_model, hero, hero_model_id)
+    -- 应用英雄模型替换（通过 hero_model 模块解析正确的模型ID）
+    if hero_model then
+      local initial_hero = (CONFIG.GameTables and CONFIG.GameTables.hero_roster and CONFIG.GameTables.hero_roster.initial_hero)
+      local hero_name = initial_hero and initial_hero.name or nil
+      local hero_id = initial_hero and initial_hero.id or nil
+      local ok = hero_model.apply_hero_model(hero, { hero_name = hero_name, hero_id = hero_id })
+      if ok then
+        local model_id = hero_model.resolve_model_id({ hero_name = hero_name, hero_id = hero_id, unit = hero })
+        print('[Battlefield] Hero model applied: ' .. tostring(model_id))
+      else
+        print('[Battlefield] Hero model application failed, using template default')
+      end
+    else
+      print('[Battlefield] hero_model module not available')
     end
     if player and player.select_unit then
       player:select_unit(hero)
@@ -1630,7 +1690,6 @@ function M.create(env)
     if hero_attr_system and hero_attr_system.log_snapshot then
       hero_attr_system.log_snapshot(hero, 'create_hero_after_rebuild')
     end
-    hero:set_hp(hero_attr_system.get_attr(hero, '生命结算值'))
     STATE.hero_common_attack = hero:get_common_attack()
     local spawn_hp = resolve_hero_spawn_hp(hero)
     hero:set_hp(spawn_hp)
@@ -1662,6 +1721,39 @@ function M.create(env)
     end)
 
     hero:event('单位-受到伤害前', function(_, data)
+      local source_unit = data.source_unit
+      local damage_instance = data.damage_instance
+      
+      if source_unit and source_unit == hero then
+        if damage_instance and damage_instance.set_damage then
+          pcall(function() damage_instance:set_damage(0) end)
+        end
+        if log and log.info then
+          log.info('[battlefield] 拦截英雄自伤')
+        end
+        return
+      end
+      
+      local is_enemy = false
+      if source_unit then
+        local ok, result = pcall(function()
+          return source_unit:is_enemy(BootHelpers.get_player())
+        end)
+        if ok and result then
+          is_enemy = true
+        end
+      end
+      
+      if not is_enemy then
+        if damage_instance and damage_instance.set_damage then
+          pcall(function() damage_instance:set_damage(0) end)
+        end
+        if log and log.info then
+          log.info('[battlefield] 拦截非敌人来源伤害')
+        end
+        return
+      end
+      
       if env.on_hero_before_hurt then
         env.on_hero_before_hurt(data)
       end
@@ -1704,6 +1796,14 @@ function M.create(env)
     if STATE.hero and STATE.hero:is_exist() then
       STATE.hero:remove()
     end
+
+    if STATE.n0_dummy_units then
+      for _, unit in ipairs(STATE.n0_dummy_units) do
+        pcall(unit.remove, unit)
+      end
+      STATE.n0_dummy_units = nil
+    end
+    STATE.n0_dummies_spawned = nil
   end
 
   function api.validate_config()
@@ -1796,6 +1896,7 @@ function M.create(env)
       target = unit,
       damage = 99999999,
       type = '真实伤害',
+      source_unit = STATE.hero,
       text_type = is_damage_text_hidden() and nil or '法术',
       text_track = 934269508,
       common_attack = false,

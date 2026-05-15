@@ -43,6 +43,14 @@ local function get_evolution_display_role(def)
   return '英雄真身'
 end
 
+local function get_evolution_skill_name(def)
+  local entry = get_evolution_hero_entry(def)
+  if entry and entry.talent_skill and entry.talent_skill ~= '' then
+    return entry.talent_skill
+  end
+  return nil
+end
+
 local function get_evolution_display_summary(def)
   local entry = get_evolution_hero_entry(def)
   if entry and entry.summary and entry.summary ~= '' then
@@ -68,6 +76,7 @@ function M.create(env)
   local y3 = env.y3
   local add_attr_pack = env.add_attr_pack
   local hero_attr_system = env.hero_attr_system
+  local hero_model = env.hero_model
   local sync_basic_attack_ability = env.sync_basic_attack_ability
 
   local api = {
@@ -441,8 +450,8 @@ function M.create(env)
       return nil
     end
 
-    local model_id = y3.unit.get_model_by_key(target_unit_id)
-    if model_id == nil or model_id == 0 then
+    local ok, model_id = pcall(y3.unit.get_model_by_key, target_unit_id)
+    if not ok or model_id == nil or model_id == 0 then
       return nil
     end
     return model_id
@@ -470,21 +479,44 @@ function M.create(env)
   end
 
   local function apply_evolution_hero_form(def)
-    local runtime = api.get_evolution_runtime()
     local hero = STATE.hero
-    local target_unit_id = def and def.hero_unit_id
-    local target_model_id = resolve_evolution_target_model_id(target_unit_id)
-    if not hero or not hero:is_exist() or not target_unit_id or not target_model_id then
-      if target_unit_id then
-        message(string.format(
-          '警告：真身 %s 缺少英雄模型资源 %s，已跳过形态替换。',
-          tostring(get_evolution_display_name(def)),
-          tostring(target_unit_id)
-        ))
-      end
+    if not hero or not hero:is_exist() then
       return false
     end
 
+    local target_unit_id = def and def.hero_unit_id
+    if not target_unit_id then
+      message(string.format(
+        '警告：真身 %s 缺少英雄单位ID，已跳过形态替换。',
+        tostring(get_evolution_display_name(def))
+      ))
+      return false
+    end
+
+    -- 优先使用 hero_model 模块（支持英雄库配置查找）
+    if hero_model and hero_model.apply_evolution_model then
+      local ok = hero_model.apply_evolution_model(hero, def)
+      if not ok then
+        message(string.format(
+          '警告：真身 %s 替换英雄模型失败。',
+          tostring(get_evolution_display_name(def))
+        ))
+      end
+      return ok
+    end
+
+    -- 回退：直接使用单位键解析模型
+    local target_model_id = resolve_evolution_target_model_id(target_unit_id)
+    if not target_model_id then
+      message(string.format(
+        '警告：真身 %s 缺少英雄模型资源 %s，已跳过形态替换。',
+        tostring(get_evolution_display_name(def)),
+        tostring(target_unit_id)
+      ))
+      return false
+    end
+
+    local runtime = api.get_evolution_runtime()
     if runtime.active_form_model_id
       and runtime.active_form_model_id ~= target_model_id
       and hero.cancel_replace_model then
@@ -690,7 +722,11 @@ function M.create(env)
     if not try_process_reward_queue() and api.get_reward_queue_count() > 0 then
       message(string.format('%s 已加入待处理奖励队列。', node.ui_title or '英雄进阶'))
     end
+
     return true
+  end
+
+  function api.handle_hero_be_hurt()
   end
 
 

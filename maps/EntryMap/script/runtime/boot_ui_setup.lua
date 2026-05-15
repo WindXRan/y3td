@@ -15,6 +15,7 @@ function M.create_runtime_hud_system(deps)
         attack_skill_slot_count = deps.ATTACK_SKILL_SLOT_COUNT,
         get_player = deps.get_player,
         hero_attr_system = deps.hero_attr_system,
+        hero_model = deps.hero_model,
         mainline_task_system = deps.mainline_task_system,
         message = deps.message,
         try_bond_draw = deps.try_bond_draw,

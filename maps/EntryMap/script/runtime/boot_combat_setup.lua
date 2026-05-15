@@ -169,6 +169,7 @@ function M.create_battlefield_system(deps)
         design_seconds = deps.design_seconds,
         random_point_in_area = deps.random_point_in_area,
         hero_attr_system = deps.hero_attr_system,
+        hero_model = deps.hero_model,
         set_attr_pack = deps.set_attr_pack,
         add_attr_pack = deps.add_attr_pack,
         get_player = deps.get_player,
@@ -200,6 +201,7 @@ end
 function M.create_damage_templates(deps)
     return SkillDamageTemplates.create({
         y3 = deps.y3,
+        STATE = deps.STATE,
         deal_skill_damage = function(target, amount, damage_meta, visual)
             return deps.deal_skill_damage(target, amount, damage_meta, visual)
         end,
@@ -212,10 +214,30 @@ function M.create_damage_templates(deps)
     })
 end
 
-function M.register_generated_skills(skill_framework_system)
+function M.register_generated_skills(skill_framework_system, AttackSkillObjects)
     local generated_api = GeneratedSkills.create(skill_framework_system)
-    local count = generated_api.register_all()
+    local count, defs = generated_api.register_all()
     print('[boot] 批量注册技能完成: ' .. tostring(count) .. ' 个')
+    
+    if AttackSkillObjects and AttackSkillObjects.vfx_by_id then
+      for _, def in ipairs(defs) do
+        if def.id and def.visual then
+          if not AttackSkillObjects.vfx_by_id[def.id] then
+            AttackSkillObjects.vfx_by_id[def.id] = {}
+          end
+          -- 映射技能框架的视觉配置键名到攻击技能系统的键名
+          local visual = def.visual
+          local vfx = AttackSkillObjects.vfx_by_id[def.id]
+          if visual.cast then vfx.cast_particle = visual.cast end
+          if visual.impact then vfx.impact_particle = visual.impact end
+          if visual.hit then vfx.hit_particle = visual.hit end
+          if visual.projectile_key then vfx.projectile_key = visual.projectile_key end
+          if visual.projectile_height then vfx.projectile_height = visual.projectile_height end
+          if visual.projectile_time then vfx.projectile_time = visual.projectile_time end
+          if visual.warning then vfx.warning_particle = visual.warning end
+        end
+      end
+    end
 end
 
 return M

@@ -17,9 +17,9 @@ local HERO_MODEL_FRAME_SIZE = {
   y = 142
 }
 local HERO_MODEL_CAMERA = {
-  focus = { 0, 0, 88 },
-  fov = 32,
-  camera_pos = { 156, -108, 88 },
+  focus = { 0, 0, 1.0 },
+  fov = 20,
+  camera_pos = { 0, -0.2, 2.5 },
   camera_rot = { 0, 0, 0 },
   background = { 0, 0, 0, 0 }
 }
@@ -38,7 +38,6 @@ local RARITY_NAME_MAP = {
   epic = '史诗'
 }
 local evolutions_by_id = hero_evolutions.by_id or {}
-local roster_by_unit_id = game_tables_hero_roster.by_unit_id or {}
 
 local function resolve_display_icon(...)
   return IconResolver.pick(...)
@@ -79,6 +78,7 @@ function M.create(params)
   local apply_bond_replacement_fn = params.apply_bond_replacement;
   local cancel_bond_replacement_fn = params.cancel_bond_replacement;
   local get_bond_replacement_info_fn = params.get_bond_replacement_info;
+  local hero_model = params.hero_model
   -- UI 工具函数 (from ui.hud.hud_core)
   local core = hud_core.create({
     y3 = y3,
@@ -87,6 +87,9 @@ function M.create(params)
     get_player_fn = get_player_fn,
     HERO_MODEL_FRAME_SIZE = HERO_MODEL_FRAME_SIZE,
     HERO_MODEL_CAMERA = HERO_MODEL_CAMERA,
+    hero_roster = game_tables_hero_roster,
+    CONFIG = CONFIG,
+    hero_model = hero_model,
   })
   local is_ui_alive = core.is_ui_alive
   local get_player = core.get_player
@@ -153,6 +156,11 @@ function M.create(params)
   local function get_hero_level() return math.max(1, math.floor(tonumber(STATE.hero_progress and STATE.hero_progress.level) or 1)) end;
 
   local function get_hero_name()
+    local initial_hero = game_tables_hero_roster.initial_hero
+    if initial_hero and initial_hero.name then
+      return initial_hero.name
+    end
+    
     if STATE.hero and STATE.hero.get_name and STATE.hero:is_exist() then
       local b1 = STATE.hero:get_name()
       if b1 and b1 ~= '' then return b1 end
@@ -176,6 +184,21 @@ function M.create(params)
   local function get_hero_unit()
     if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() then return STATE.hero end;
 
+    return nil
+  end;
+
+  local function get_hero_real_model_id()
+    if hero_model and hero_model.get_active_model_id then
+      return hero_model.get_active_model_id()
+    end
+    local evo_runtime = STATE.evolution_runtime
+    if evo_runtime and evo_runtime.active_form_model_id then
+      return evo_runtime.active_form_model_id
+    end
+    local initial_hero = game_tables_hero_roster.initial_hero
+    if initial_hero and initial_hero.model_id then
+      return initial_hero.model_id
+    end
     return nil
   end;
 
@@ -499,12 +522,18 @@ function M.create(params)
     if base_cooldown > 0 then tip_lines[#tip_lines + 1] = string.format('基础冷却%.1fs', base_cooldown) end;
 
     local cooldown_remaining = tonumber(slot_data.cooldown_remaining) or 0;
+    local cooldown_text = '就绪'
+    if cooldown_remaining > 0 then
+      cooldown_text = string.format('%.1fs', cooldown_remaining)
+    elseif cooldown_remaining < 0 then
+      cooldown_text = '就绪'
+    end
     return {
       id = tostring(slot_data.id or 'skill_' .. tostring(slot_index)),
       name = tostring(slot_data.name or slot_data.id or '技能' .. tostring(slot_index)),
       icon = resolve_display_icon(slot_data.icon_res, slot_data.ui_icon, slot_data.icon, slot_data.bg),
       key = tostring(slot_index),
-      cooldown_text = cooldown_remaining > 0 and string.format('%.1fs', cooldown_remaining) or '就绪',
+      cooldown_text = cooldown_text,
       legacy_cooldown_text = cooldown_remaining > 0 and string.format('%.1f', cooldown_remaining) or '',
       badge_text = slot_data.level and 'Lv.' .. tostring(slot_data.level) or '',
       stack_text = '',
@@ -517,15 +546,8 @@ function M.create(params)
 
   local function get_evolution_runtime() return STATE.evolution_runtime end;
 
-  local function get_hero_roster_by_unit(unit_def)
-    local hero_unit_id = unit_def and unit_def.hero_unit_id or nil;
-    if hero_unit_id == nil then return nil end;
-
-    return roster_by_unit_id[hero_unit_id]
-  end;
-
   local function get_hero_roster_and_entry(unit_def)
-    return get_hero_roster_by_unit(unit_def)
+    return game_tables_hero_roster.initial_hero
   end;
 
   local function build_evolution_skill_entry(evo_def, slot_index)
@@ -533,7 +555,7 @@ function M.create(params)
 
     local roster_entry = get_hero_roster_and_entry(evo_def)
     local display_name = roster_entry and roster_entry.name or evo_def.name or '专精' .. tostring(slot_index)
-    local display_title = roster_entry and roster_entry.title or '英雄真身'
+    local display_title = '英雄真身'
     local description = roster_entry and roster_entry.summary or evo_def.summary or ''
     local tip_lines = { string.format('[%s] %s', normalize_rarity_display(evo_def.quality), display_title) }
 
@@ -1087,29 +1109,25 @@ function M.create(params)
   local function resolve_combat_module_ui(cO) return resolve_ui_node('BattleBottomHUD.layout.center_hub.combat_module.' ..
     cO) end;
 
-  local function get_or_create_hero_model_ui()
+    local function get_or_create_hero_model_ui()
     local hud_state = get_hud_state()
-    if is_ui_alive(hud_state.hero_model_ui) then return hud_state.hero_model_ui end;
+    if is_ui_alive(hud_state.hero_model_ui) then
+        print('[HUD] hero_model_ui already exists')
+        return hud_state.hero_model_ui
+    end;
 
-    local cQ = resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel')
-    if not is_ui_alive(cQ) or type(cQ.create_child) ~= 'function' then return nil end;
+    -- use existing hero_model control from UI template, don't create new one
+    local cR = resolve_ui_node('BattleBottomHUD.layout.center_hub.hero_panel.hero_model')
+    if not is_ui_alive(cR) then
+        print('[HUD] hero_model node not found in UI tree')
+        return nil
+    end;
 
-    local bn,
-    cR = pcall(cQ.create_child, cQ, '模型')
-    if not bn or not is_ui_alive(cR) then return nil end;
-    hud_state.hero_model_ui = cR; set_ui_anchor(cR, 0.5, 0.5)
-    set_ui_size(cR, HERO_MODEL_FRAME_SIZE.width, HERO_MODEL_FRAME_SIZE.height)
-    set_ui_pos(cR, HERO_MODEL_FRAME_SIZE.x, HERO_MODEL_FRAME_SIZE.y)
-    set_ui_visible(cR, true)
-    apply_ui_model_camera(cR, HERO_MODEL_CAMERA)
-    
-    local hero_unit = get_hero_unit()
-    if hero_unit then
-        bind_ui_model_unit(cR, hero_unit, false, true, true)
-    end
-    
+    print('[HUD] found existing hero_model_ui')
+    hud_state.hero_model_ui = cR
     return cR
-end;
+  end;
+
 
   local function bind_click_handler(cT, u, cU)
     local hud_state = get_hud_state()
@@ -1721,14 +1739,26 @@ end;
     local model_ui = get_or_create_hero_model_ui()
     
     local model_bound = false
+    
     if is_ui_alive(model_ui) and dH ~= nil then
-        local ok = bind_ui_model_unit(model_ui, dH, false, true, true)
-        if ok then
+        print('[HUD] model_ui alive:', is_ui_alive(model_ui))
+        print('[HUD] dH:', dH)
+        print('[HUD] dH.is_exist:', dH.is_exist and dH:is_exist())
+        
+        local initial_hero = game_tables_hero_roster.initial_hero
+        local hero_name = initial_hero and initial_hero.name or nil
+        local hero_id = initial_hero and initial_hero.id or nil
+        local bind_ok = bind_ui_model_unit(model_ui, dH, false, true, true, hero_name, hero_id)
+        print('[HUD] bind_ui_model_unit result:', bind_ok)
+        
+        if bind_ok then
             apply_ui_model_camera(model_ui, HERO_MODEL_CAMERA)
             set_ui_visible(model_ui, true)
             set_ui_visible(dI, false)
             model_bound = true
         end
+    else
+        print('[HUD] model_ui alive:', is_ui_alive(model_ui), 'dH:', dH)
     end
     
     if not model_bound then
