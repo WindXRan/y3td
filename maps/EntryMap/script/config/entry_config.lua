@@ -81,11 +81,18 @@ local M = {
 
   unit_ids = {
     hero = battlefield_unit_config.fixed_unit_ids.hero,
+    hero_model = battlefield_unit_config.fixed_model_ids.hero,  -- 新增：英雄模型ID
     main_monsters = {},
     bosses = {},
   },
   hero_fallback_unit_id = battlefield_unit_config.fixed_unit_ids.hero,
   fixed_enemy_spawn_unit_id = battlefield_unit_config.fixed_unit_ids.enemy,
+  
+  -- 调试：打印配置加载情况
+  _debug = {
+    fixed_unit_ids_hero = battlefield_unit_config.fixed_unit_ids.hero,
+    fixed_model_ids_hero = battlefield_unit_config.fixed_model_ids.hero,
+  },
 
   points = battlefield_scene.points,
 

@@ -13,14 +13,12 @@ local SKILL_DAMAGE_REENTRANT_GUARD_LIMIT = 96
 local STATE = nil
 local hero_attr_system = nil
 local battlefield_system = nil
-local battle_auto_acceptance_system = nil
 local BattleEventPrompts = nil
 
-function M.set_dependencies(state, attr_system, bf_system, ba_system, prompts)
+function M.set_dependencies(state, attr_system, bf_system, prompts)
   STATE = state
   hero_attr_system = attr_system
   battlefield_system = bf_system
-  battle_auto_acceptance_system = ba_system
   BattleEventPrompts = prompts
 end
 
@@ -38,7 +36,7 @@ function M.get_enemies_in_range(center, radius, except_unit, max_count)
   local picked = selector:pick()
 
   for _, unit in ipairs(picked) do
-    if unit ~= except_unit and M.is_active_enemy(unit) then
+    if unit ~= except_unit and unit ~= STATE.hero and M.is_active_enemy(unit) then
       result[#result + 1] = unit
     end
   end
@@ -144,10 +142,10 @@ function M.resolve_damage_text_type(damage_form, visual)
   end
 
   if damage_form == 'weapon' then
-    return '物理'
+    return 'physics'
   end
 
-  return '法术'
+  return 'magic'
 end
 
 function M.resolve_damage_text_track(damage_type, is_critical, fallback_track)
@@ -156,15 +154,15 @@ function M.resolve_damage_text_track(damage_type, is_critical, fallback_track)
   end
 
   if is_critical then
-    if damage_type == '物理' or damage_type == '物理伤害' then
+    if damage_type == 'physics' or damage_type == '物理伤害' then
       return y3.const.FloatTextJumpType["物理暴击_中上"] or fallback_track or 934300033
-    elseif damage_type == '法术' or damage_type == '魔法伤害' then
+    elseif damage_type == 'magic' or damage_type == '魔法伤害' then
       return y3.const.FloatTextJumpType["魔法暴击_中上"] or fallback_track or 934500033
     end
   else
-    if damage_type == '物理' or damage_type == '物理伤害' then
+    if damage_type == 'physics' or damage_type == '物理伤害' then
       return y3.const.FloatTextJumpType["伤害_中上"] or fallback_track or 934269508
-    elseif damage_type == '法术' or damage_type == '魔法伤害' then
+    elseif damage_type == 'magic' or damage_type == '魔法伤害' then
       return y3.const.FloatTextJumpType["魔法伤害_中上"] or fallback_track or 934400033
     end
   end
@@ -529,7 +527,16 @@ function M.deal_skill_damage(target, amount, damage, visual)
   end
 
   local ok, err = pcall(function()
-    if not STATE.hero or not STATE.hero:is_exist() or not M.can_receive_skill_damage(target) then
+    if not STATE.hero or not STATE.hero:is_exist() then
+      return
+    end
+    if target == STATE.hero then
+      if log and log.info then
+        log.info('[entry_runtime] deal_skill_damage: 跳过对英雄自身的伤害')
+      end
+      return
+    end
+    if not M.can_receive_skill_damage(target) then
       return
     end
 
@@ -545,7 +552,11 @@ function M.deal_skill_damage(target, amount, damage, visual)
         target_multiplier = target_multiplier,
       })
     else
-      final_damage = amount
+      local hero_multiplier = 1
+      if hero_attr_system and hero_attr_system.get_damage_multiplier then
+        hero_multiplier = hero_attr_system.get_damage_multiplier(STATE.hero, damage_meta and damage_meta.damage_form, 'skill') or 1
+      end
+      final_damage = amount * hero_multiplier * target_multiplier
     end
     if final_damage <= 0 then
       return
@@ -565,6 +576,7 @@ function M.deal_skill_damage(target, amount, damage, visual)
       target = target,
       damage = final_damage,
       type = damage_meta.damage_type or '法术',
+      source_unit = STATE.hero,
       text_type = M.resolve_runtime_text_type(damage_type_str),
       text_track = text_track,
       particle = hit_effect_enabled and visual and visual.particle or nil,
@@ -574,24 +586,6 @@ function M.deal_skill_damage(target, amount, damage, visual)
       no_miss = true,
     })
     M.emit_skill_hit_feedback(target, final_damage, hp_before)
-
-    if battle_auto_acceptance_system and battle_auto_acceptance_system.record_damage then
-      local scope = visual and visual.metric_scope or nil
-      local key = visual and visual.metric_key or nil
-      if (not scope or scope == '') and type(damage) == 'table' then
-        scope = 'attack_skill'
-        key = tostring(damage.id or damage.name or damage.damage_label or 'unknown')
-      elseif (not scope or scope == '') and type(damage) == 'string' then
-        scope = 'damage_type'
-        key = damage
-      end
-      battle_auto_acceptance_system.record_damage({
-        scope = scope or 'unknown',
-        key = key or 'unknown',
-        hit = 1,
-        damage = final_damage,
-      })
-    end
 
     if not (visual and visual.skip_hunter_first_hit) then
       M.try_trigger_hunter_first_hit(target)
@@ -608,18 +602,22 @@ function M.can_receive_skill_damage(target)
   if not target or not target.is_exist or not target:is_exist() then
     return false
   end
+  
   if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and target == STATE.hero then
     return false
   end
+  
   if M.is_active_enemy(target) then
     return true
   end
+  
   if STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and STATE.hero.is_enemy then
     local ok, is_enemy_to_hero = pcall(STATE.hero.is_enemy, STATE.hero, target)
     if ok and is_enemy_to_hero == true then
       return true
     end
   end
+  
   return false
 end
 
@@ -671,6 +669,9 @@ function M.spawn_particle(_, point, effect_id, scale, duration, height)
 end
 
 function M.launch_projectile_from_hero(projectile_key, target, end_point, angle, time, height, on_finish)
+  if projectile_key == 134232384 then
+    print('[DEBUG] launch_projectile_from_hero called for ice_bird: projectile_key=', projectile_key, 'time=', time, 'height=', height, 'target exists:', target and target.is_exist and target:is_exist(), 'STATE.hero exists:', STATE.hero and STATE.hero:is_exist())
+  end
   if not projectile_key or not STATE.hero or not STATE.hero:is_exist() then
     if on_finish then on_finish(nil) end
     return nil
@@ -684,6 +685,9 @@ function M.launch_projectile_from_hero(projectile_key, target, end_point, angle,
     time = time or 0.92,
     remove_immediately = true,
   })
+  if projectile_key == 134232384 then
+    print('[DEBUG] ice_bird projectile create result: ok=', ok, 'proj=', proj)
+  end
   if not ok or not proj then
     if on_finish then on_finish(nil) end
     return nil
@@ -692,8 +696,11 @@ function M.launch_projectile_from_hero(projectile_key, target, end_point, angle,
     pcall(proj.set_height, proj, height)
   end
   local dest = (target and target:is_exist() and target) or end_point
+  if projectile_key == 134232384 then
+    print('[DEBUG] ice_bird dest: ', dest, 'is unit:', dest and dest.is_exist ~= nil, 'is point:', dest and type(dest) == 'table' and dest.x)
+  end
   if dest then
-    pcall(proj.mover_target, proj, {
+    local mover_ok, mover_err = pcall(proj.mover_target, proj, {
       target = dest,
       speed = 1500,
       target_distance = 36,
@@ -701,12 +708,18 @@ function M.launch_projectile_from_hero(projectile_key, target, end_point, angle,
       face_angle = true,
       on_finish = function()
         local impact_pt = proj and proj:is_exist() and proj:get_point()
+        if projectile_key == 134232384 then
+          print('[DEBUG] ice_bird projectile on_finish called: impact_pt=', impact_pt)
+        end
         if proj and proj:is_exist() then
           proj:remove()
         end
         if on_finish then on_finish(impact_pt) end
       end,
     })
+    if projectile_key == 134232384 then
+      print('[DEBUG] ice_bird mover_target result: ok=', mover_ok, 'err=', mover_err)
+    end
   elseif on_finish then
     on_finish(nil)
   end
@@ -761,11 +774,6 @@ function M.create_bond_env()
     reserve_formula_damage = M.reserve_formula_damage,
     basic_attack_damage_type = STATE and STATE.ATTACK_SKILL_DEFS and STATE.ATTACK_SKILL_DEFS.basic_attack.damage_type or '物理',
     get_player = BootHelpers.get_player,
-    report_auto_acceptance_event = function(payload)
-      if battle_auto_acceptance_system and battle_auto_acceptance_system.record_event then
-        battle_auto_acceptance_system.record_event(payload)
-      end
-    end,
   }
 end
 
@@ -868,9 +876,8 @@ function M.apply_formula_damage_override(data)
     crit_chance = crit_chance / 100
     if crit_chance > 0 and math.random() < crit_chance then
       is_critical = true
-      local crit_damage = hero_attr_system.get_attr(source_unit, '物理暴伤') or 150
-      crit_damage = crit_damage / 100
-      final_damage = final_damage * crit_damage
+      local crit_damage_bonus = hero_attr_system.get_attr(source_unit, '物理暴伤') or 0
+      final_damage = final_damage * (1 + crit_damage_bonus / 100)
     end
   end
 
@@ -895,23 +902,49 @@ function M.handle_bond_enemy_kill(info, auto_active_effects_system)
 end
 
 function M.handle_bond_hero_pre_hurt(data)
-  if data and STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() then
-    local source = data.source_unit
-    if source and source == STATE.hero then
-      local damage_instance = data.damage_instance
-      if damage_instance and damage_instance.set_damage then
-        pcall(function()
-          damage_instance:set_damage(0)
-        end)
-      end
-      if STATE and STATE.debug_self_damage_guard == true then
-        if log and log.info then
-          log.info('[entry_runtime] [DEBUG] 已拦截主角自伤。')
-        end
-      end
-      return
-    end
+  if not data or not STATE.hero or not STATE.hero:is_exist() then
+    BondSystem.notify_hero_pre_hurt(M.create_bond_env(), data)
+    return
   end
+  
+  local source_unit = data.source_unit
+  local damage_instance = data.damage_instance
+  local target_unit = data.target_unit or data.unit
+  
+  if target_unit ~= STATE.hero then
+    BondSystem.notify_hero_pre_hurt(M.create_bond_env(), data)
+    return
+  end
+  
+  if source_unit and source_unit == STATE.hero then
+    if damage_instance and damage_instance.set_damage then
+      pcall(function()
+        damage_instance:set_damage(0)
+      end)
+    end
+    if log and log.info then
+      log.info('[entry_runtime] 拦截主角自伤 - source_unit匹配')
+    end
+    return
+  end
+  
+  local source_is_enemy = false
+  if source_unit and M.is_active_enemy(source_unit) then
+    source_is_enemy = true
+  end
+  
+  if not source_is_enemy then
+    if damage_instance and damage_instance.set_damage then
+      pcall(function()
+        damage_instance:set_damage(0)
+      end)
+    end
+    if log and log.info then
+      log.info('[entry_runtime] 拦截主角自伤 - source_unit不是敌人')
+    end
+    return
+  end
+  
   BondSystem.notify_hero_pre_hurt(M.create_bond_env(), data)
 end
 
@@ -959,20 +992,24 @@ function M.trigger_td_skills_on_hit(data)
   end
 
   if skill.normal_attack_bonus_ratio > 0 then
-    M.deal_skill_damage(target, data.damage * skill.normal_attack_bonus_ratio, { damage_type = '物理', text_type = '物理' })
+    M.deal_skill_damage(target, data.damage * skill.normal_attack_bonus_ratio, { damage_type = '物理', text_type = 'physics' })
   end
 
   if skill.splash_ratio > 0 then
     local enemies = M.get_enemies_in_range(target, skill.splash_radius, target)
     for _, enemy in ipairs(enemies) do
-      M.deal_skill_damage(enemy, data.damage * skill.splash_ratio, { damage_type = '物理', text_type = '物理' })
+      if enemy ~= STATE.hero then
+        M.deal_skill_damage(enemy, data.damage * skill.splash_ratio, { damage_type = '物理', text_type = 'physics' })
+      end
     end
   end
 
   if skill.chain_bounces > 0 and skill.chain_chance > 0 and math.random() <= skill.chain_chance then
     local chain_enemies = M.get_enemies_in_range(chain_center, skill.chain_radius, target, skill.chain_bounces)
     for _, enemy in ipairs(chain_enemies) do
-      M.deal_skill_damage(enemy, data.damage * skill.chain_ratio, basic_attack_def)
+      if enemy ~= STATE.hero then
+        M.deal_skill_damage(enemy, data.damage * skill.chain_ratio, basic_attack_def)
+      end
     end
   end
 
@@ -991,7 +1028,9 @@ function M.trigger_td_skills_on_hit(data)
       bond_chain_bounces
     )
     for _, enemy in ipairs(bond_chain_enemies) do
-      M.deal_skill_damage(enemy, data.damage * bond_chain_ratio, basic_attack_def)
+      if enemy ~= STATE.hero then
+        M.deal_skill_damage(enemy, data.damage * bond_chain_ratio, basic_attack_def)
+      end
     end
   end
 

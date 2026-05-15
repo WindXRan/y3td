@@ -84,6 +84,7 @@ function M.create(ctx)
         end
         return nil
       end,
+      
       ensure_runtime_hud = ctx.runtime_ui_helpers.ensure_runtime_hud,
       ensure_choice_panel = ctx.runtime_ui_helpers.ensure_choice_panel,
       set_battle_hud_visible = ctx.set_battle_hud_visible,

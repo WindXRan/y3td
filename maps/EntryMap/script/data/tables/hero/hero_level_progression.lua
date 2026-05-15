@@ -1,6 +1,6 @@
 local CsvLoader = require 'data.csv_loader'
 
-local rows = CsvLoader.read_rows('data_csv/hero_level_progression.csv')
+local rows = CsvLoader.read_rows({path = 'data_csv/hero_level_progression.csv'})
 
 local list = {}
 local by_level = {}

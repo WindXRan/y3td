@@ -29,7 +29,7 @@ local function build_from_csv_row(row)
 end
 
 local function load_from_csv()
-  local rows = CsvLoader.read_rows(CSV_PATH)
+  local rows = CsvLoader.read_rows({path = CSV_PATH})
   local list = {}
   for _, row in ipairs(rows) do
     local node = build_from_csv_row(row)

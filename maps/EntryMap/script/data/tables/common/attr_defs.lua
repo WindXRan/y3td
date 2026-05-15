@@ -17,7 +17,7 @@ local function to_boolean(value)
   return nil
 end
 
-local rows = CsvLoader.read_rows('data_csv/by_feature/common/attr_defs.csv')
+local rows = CsvLoader.read_rows({path = 'data_csv/by_feature/common/attr_defs.csv'})
 
 local list = {}
 local by_name = {}

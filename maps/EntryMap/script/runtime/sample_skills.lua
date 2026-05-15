@@ -211,14 +211,6 @@ function M.create(env)
     return rows
   end
 
-  function api.run_framework_auto_acceptance()
-    local ids = {}
-    for _, def in ipairs(defs) do
-      ids[#ids + 1] = def.id
-    end
-    return true, ids
-  end
-
   return api
 end
 

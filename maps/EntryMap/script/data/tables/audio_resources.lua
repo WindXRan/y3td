@@ -5,7 +5,7 @@ local function read_audio_rows()
   if not ok or not CsvLoader or not CsvLoader.read_rows then
     return {}
   end
-  local rows_ok, rows = pcall(CsvLoader.read_rows, 'data_csv/audio.csv')
+  local rows_ok, rows = pcall(CsvLoader.read_rows, {path = 'data_csv/audio.csv'})
   if rows_ok and type(rows) == 'table' then
     return rows
   end

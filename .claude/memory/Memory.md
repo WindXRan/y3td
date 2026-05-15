@@ -69,14 +69,14 @@
 - **决策**：把可行性审查从 Step 9 单点检查改为「Step 1.5 + 每步实时审查」+ 严格化引擎能力红线
 - **背景**：用户测试塔防生成时发现 ① 审查太晚导致 8 步白问 ② 审查太松导致兽人必须死(3D)被判通过
 - **落地**：
-  - 新建 `.codemaker/skills/y3-game-spec/feasibility-redlines.md`（176 行红线清单）
+  - 新建 `.claude/skills/y3-game-spec/feasibility-redlines.md`（176 行红线清单）
   - 改造 `game-design-guide.md`（673→1025 行）：移除模板体系、新增 Step 1.5 红线校验、新增「实时红线审查模板」、Step 9 改为跨步冲突+复审、补齐策划案模板章节
   - 改造 `SKILL.md`：新增红线机制相关核心禁令
 - **重要纪律**（新增到经验沉淀）：
   - 改写超过 200 行的文件**必须**用 `replace_in_file`，**禁止**用 `edit_file`（本次发生过 edit_file 把整个 912 行文件清空的事故）
   - 引擎能力红线（视角/操作/物理类）一律不允许"勉强凑活"，命中即驳回并提供 ≥2 个 Y3 可行替代方案
 - **救场记录**：edit_file 清空文件后，通过 `svn revert` 还原到 r752168 版本（673 行），再通过 10 次 replace_in_file 增量重建到 1025 行
-- **session 报告**：`.codemaker/memory/sessions/session-2026.04.20-17.03-spec流程红线机制改造/report.md`
+- **session 报告**：`.claude/memory/sessions/session-2026.04.20-17.03-spec流程红线机制改造/report.md`
 
 ### 2026-03-26：制定变更记录规则
 - **决策**：所有重要变更必须记录到记忆系统

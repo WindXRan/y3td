@@ -24,7 +24,7 @@ local function parse_enabled(v)
   return s == '' or s == '1' or s == 'true'
 end
 
-for _, row in ipairs(CsvLoader.read_rows_optional('data_csv/skill_visuals.csv')) do
+for _, row in ipairs(CsvLoader.read_rows_optional({path = 'data_csv/skill_visuals.csv'})) do
   if parse_enabled(row.enabled) then
     local skill_id = trim(row.skill_id)
     local bond_name = trim(row.bond_name)

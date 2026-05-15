@@ -556,6 +556,74 @@ function M.create()
     return initial_values
   end
 
+  function api.get_damage_multiplier(unit, damage_form, damage_kind, element)
+    if not unit then
+      return 1
+    end
+    local multiplier = 1
+    if damage_kind == 'normal_attack' then
+      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(unit, '普攻伤害增幅')))
+    elseif damage_kind == 'skill' then
+      multiplier = multiplier * (1 + normalize_ratio(api.get_attr(unit, '技能伤害增幅')))
+    end
+    multiplier = multiplier * (1 + normalize_ratio(api.get_attr(unit, '最终伤害增幅')))
+    return multiplier
+  end
+
+  function api.compute_damage(unit, base_damage, damage_meta, context)
+    if not unit then
+      return base_damage or 0
+    end
+    local target_multiplier = context and context.target_multiplier or 1
+    local hero_multiplier = api.get_damage_multiplier(
+      unit,
+      damage_meta and damage_meta.damage_form,
+      context and context.damage_kind,
+      damage_meta and damage_meta.element
+    )
+    return (base_damage or 0) * hero_multiplier * target_multiplier
+  end
+
+  function api.log_snapshot(unit, event_name, extra_info, state)
+    if not unit then
+      return
+    end
+    local snapshot = api.snapshot(unit, state or {})
+    print(string.format('[hero_attr_system] snapshot [%s]%s', 
+      tostring(event_name), 
+      extra_info and (' ' .. tostring(extra_info)) or ''
+    ))
+  end
+
+  function api.tick_per_second_growth(unit, delta_time, state)
+    if not unit or not state then
+      return
+    end
+    local attack_per_second = api.get_attr(unit, '每秒攻击')
+    if attack_per_second ~= 0 then
+      api.add_attr(unit, '攻击', attack_per_second * delta_time)
+    end
+    local gold_per_second = api.get_attr(unit, '每秒金币')
+    if gold_per_second ~= 0 then
+      state.resources = state.resources or { gold = 0, wood = 0 }
+      state.resources.gold = (state.resources.gold or 0) + gold_per_second * delta_time
+    end
+  end
+
+  function api.apply_kill_growth(unit, state)
+    if not unit then
+      return
+    end
+    local kill_attack = api.get_attr(unit, '杀敌攻击')
+    if kill_attack ~= 0 then
+      api.add_attr(unit, '攻击', kill_attack)
+    end
+    local kill_hp = api.get_attr(unit, '杀敌生命')
+    if kill_hp ~= 0 then
+      api.add_attr(unit, '生命', kill_hp)
+    end
+  end
+
   return api
 end
 
@@ -565,6 +633,10 @@ end
 
 function M.get_registered_attr_count()
   return #_attr_registration_order
+end
+
+function M.set_main_stat_attack_ratio(ratio)
+  MAIN_STAT_ATTACK_RATIO = tonumber(ratio) or 0.5
 end
 
 function M.dump_unregistered_attrs()

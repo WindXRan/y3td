@@ -893,7 +893,7 @@ def discover_mcp_url(override_url=None):
 
     # 尝试从 mcp_settings.json 读取
     candidates = [
-        os.path.join(".codemaker", "mcp_settings.json"),
+        os.path.join(".claude", "mcp_settings.json"),
         os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "mcp_settings.json"),
     ]
     for settings_path in candidates:

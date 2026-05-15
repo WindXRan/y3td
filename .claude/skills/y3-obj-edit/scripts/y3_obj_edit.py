@@ -10,7 +10,7 @@ import mmh3
 # 脚本所在目录
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SKILL_DIR = os.path.dirname(SCRIPT_DIR)
-CODEMAKER_DIR = os.path.dirname(os.path.dirname(SKILL_DIR))  # .codemaker
+CODEMAKER_DIR = os.path.dirname(os.path.dirname(SKILL_DIR))  # .claude
 PROJECT_ROOT = os.path.dirname(CODEMAKER_DIR)  # 项目根目录
 TEMPLATE_DIR = os.path.join(SKILL_DIR, "data")
 

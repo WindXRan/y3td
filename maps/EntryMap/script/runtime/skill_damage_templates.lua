@@ -54,16 +54,19 @@ function M.create(env)
     if not is_valid_entity(target) then
       return false
     end
+    
     if env and env.STATE and env.STATE.hero and is_valid_entity(env.STATE.hero)
       and target == env.STATE.hero then
       return false
     end
+    
     local enemy_ok = is_active_enemy(target)
     if not enemy_ok and env and env.STATE and env.STATE.hero and is_valid_entity(env.STATE.hero)
       and env.STATE.hero.is_enemy then
       local ok, is_enemy_to_hero = pcall(env.STATE.hero.is_enemy, env.STATE.hero, target)
       enemy_ok = ok and is_enemy_to_hero == true
     end
+    
     return enemy_ok
   end
 

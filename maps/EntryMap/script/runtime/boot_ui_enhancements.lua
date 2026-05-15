@@ -459,7 +459,7 @@ local function normalize_kind_display(kind)
     gear = '武器词条',
     bond = '羁绊',
     attr = '属性',
-    evolution = '专精',
+    evolution = '英雄',
   }
   return mapping[kind] or kind
 end

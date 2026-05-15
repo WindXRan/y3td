@@ -41,7 +41,7 @@ local function find_shop_item(item_name)
   return nil
 end
 
-local rows = CsvLoader.read_rows_optional('data_csv/outgame/outgame_archive_action_costs.csv')
+local rows = CsvLoader.read_rows_optional({path = 'data_csv/outgame/outgame_archive_action_costs.csv'})
 local by_key = {}
 
 for _, row in ipairs(rows) do

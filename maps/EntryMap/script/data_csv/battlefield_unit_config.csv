@@ -1,0 +1,4 @@
+type,unit_id,model_id,description
+__字段说明__,类型,单位ID,模型ID,说明
+hero,134245850,3001,英雄单位ID
+enemy,134278989,134278989,敌方单位ID

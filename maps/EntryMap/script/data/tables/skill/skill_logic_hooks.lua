@@ -13,7 +13,7 @@ local function is_enabled(raw)
   return s == '' or s == '1' or s == 'true'
 end
 
-for _, row in ipairs(CsvLoader.read_rows_optional('data_csv/skill_logic_hooks.csv')) do
+for _, row in ipairs(CsvLoader.read_rows_optional({path = 'data_csv/skill_logic_hooks.csv'})) do
   if is_enabled(row.enabled) then
     local key = trim(row.hook_key)
     if key ~= '' then

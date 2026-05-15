@@ -595,15 +595,15 @@ local function decode_params_json(raw, skill_id)
 end
 
 local function apply_bond_skill_rows()
-  local skill_rows = CsvLoader.read_rows_optional('data_csv/by_feature/bond/bond_skills.csv')
-  local param_rows = CsvLoader.read_rows_optional('data_csv/by_feature/bond/bond_skill_params.csv')
-  if #skill_rows <= 0 then
-    warn('bond_skills.csv missing/empty, keep lua fallback rules')
+  local skill_rows = CsvLoader.read_rows_optional({path = 'data_csv/by_feature/bond/bond_skills.csv'})
+  local params_by_id = CsvLoader.read_rows_as_map_optional({path = 'data_csv/by_feature/bond/bond_skill_params.csv'})
+
+  if #skill_rows <= 0 and not next(params_by_id) then
+    warn('bond_skills.csv and bond_skill_params.csv both missing/empty, keep lua fallback rules')
     return
   end
 
   local skills_by_id = {}
-  local use_legacy_param_rows = false
   for _, row in ipairs(skill_rows) do
     if is_enabled(row.enabled) then
       local skill_id = trim(row.skill_id)
@@ -635,54 +635,12 @@ local function apply_bond_skill_rows()
           local decoded = decode_params_json(row.params_json, skill_id)
           if decoded then
             skills_by_id[skill_id].params = merge_table({}, decoded)
-          else
-            use_legacy_param_rows = true
-          end
-        end
-      end
-    end
-  end
-
-  if use_legacy_param_rows then
-    local use_long_param_rows = (#param_rows > 0 and param_rows[1].param_key ~= nil)
-    if use_long_param_rows then
-      for _, row in ipairs(param_rows) do
-        if is_enabled(row.enabled) then
-          local skill_id = trim(row.skill_id)
-          local param_key = trim(row.param_key)
-          local value_type = string.lower(trim(row.value_type))
-          local meta = skills_by_id[skill_id]
-          if skill_id == '' or param_key == '' then
-            warn('skip param row with empty skill_id/param_key')
-          elseif not meta then
-            warn(string.format('orphan param row: skill_id=%s key=%s', skill_id, param_key))
-          elseif not VALID_VALUE_TYPES[value_type] then
-            warn(string.format('invalid value_type(%s) for skill_id=%s key=%s', value_type, skill_id, param_key))
-          else
-            local typed, err = to_typed_value(row.param_value, value_type)
-            if err then
-              warn(string.format('param parse error: skill_id=%s key=%s err=%s', skill_id, param_key, err))
-            elseif typed ~= nil then
-              set_deep(meta.params, param_key, typed)
-            end
-          end
-        end
-      end
-    else
-      for _, row in ipairs(param_rows) do
-        if is_enabled(row.enabled) then
-          local skill_id = trim(row.skill_id)
-          local meta = skills_by_id[skill_id]
-          if skill_id == '' then
-            -- skip
-          elseif not meta then
-            warn(string.format('orphan wide param row: skill_id=%s', skill_id))
-          else
-            for key, raw in pairs(row) do
-              if key ~= 'skill_id' and key ~= 'enabled' and key ~= '字段中文说明' then
-                local typed = to_auto_typed_value(raw)
+          elseif params_by_id[skill_id] then
+            for key, value in pairs(params_by_id[skill_id]) do
+              if key ~= 'skill_id' and key ~= 'enabled' and key ~= '__字段说明__' then
+                local typed = to_auto_typed_value(value)
                 if typed ~= nil then
-                  set_deep(meta.params, key, typed)
+                  set_deep(skills_by_id[skill_id].params, key, typed)
                 end
               end
             end

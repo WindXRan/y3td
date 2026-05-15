@@ -99,27 +99,22 @@ local function read_first(row, keys, fallback)
   return fallback
 end
 
-local function read_param_rows_by_skill_id()
-  local result = {}
-  for _, row in ipairs(CsvLoader.read_rows_optional('data_csv/by_feature/bond/bond_skill_params.csv')) do
-    local skill_id = trim(row.skill_id)
-    if skill_id ~= '' and skill_id ~= '__字段说明__' then
-      result[skill_id] = row
-    end
-  end
-  return result
-end
-
-local PARAM_BY_SKILL_ID = read_param_rows_by_skill_id()
+local PARAM_BY_SKILL_ID = CsvLoader.read_rows_as_map_optional({path = 'data_csv/by_feature/bond/bond_skill_params.csv'})
 
 local function read_param_text(skill_id, key)
   local row = PARAM_BY_SKILL_ID[trim(skill_id)]
-  return row and trim(row[key]) or ''
+  if row and type(row) == 'table' then
+    local value = row[key]
+    if value ~= nil then
+      return tostring(value)
+    end
+  end
+  return ''
 end
 
 local function read_param_number(skill_id, keys)
   local row = PARAM_BY_SKILL_ID[trim(skill_id)]
-  if not row then
+  if not row or type(row) ~= 'table' then
     return nil
   end
   for _, key in ipairs(keys or {}) do
@@ -217,6 +212,7 @@ local function build_card(row, index)
     icon = icon,
     quality = quality,
     initially_unlocked = to_bool(read_first(row, { 'initially_unlocked', '是否初始解锁' }, '')),
+    ghost_card = false,
   }
 end
 
@@ -251,9 +247,10 @@ local function is_enabled(raw)
   return value == '' or value == '1' or value == 'true'
 end
 
+local next_index = #cards + 1
+
 local function build_fallback_cards_from_bond_skills()
-  local rows = CsvLoader.read_rows_optional('data_csv/by_feature/bond/bond_skills.csv')
-  local next_index = #cards + 1
+  local rows = CsvLoader.read_rows_optional({path = 'data_csv/by_feature/bond/bond_skills.csv'})
   local bond_card_count = {}
   for _, row in ipairs(rows) do
     if is_enabled(row.enabled) then
@@ -296,6 +293,7 @@ local function build_fallback_cards_from_bond_skills()
           bg = csv_bg,
           quality = 'SR',
           initially_unlocked = true,
+          ghost_card = false,
         }
         cards[#cards + 1] = card
         card_by_id[card.id] = card
@@ -317,24 +315,63 @@ end
 
 build_fallback_cards_from_bond_skills()
 
+local ACTIVATION_CARD_NAMES = {
+  ['枪炮师'] = '能量光波',
+  ['神射手'] = '穿云箭',
+  ['游侠'] = '毒箭雨',
+  ['狂战士'] = '血爆斩',
+  ['剑魂'] = '剑气斩',
+  ['剑宗'] = '万剑诀',
+  ['龙骑士'] = '火龙冲击',
+  ['战斗法师'] = '战枪爆裂',
+  ['魔剑士'] = '暗能斩',
+  ['火法师'] = '烈焰风暴',
+  ['冰霜法师'] = '暴风雪',
+  ['猎人'] = '自然召唤',
+  ['雷电法王'] = '引雷咒',
+  ['骷髅法师'] = '亡灵复苏',
+  ['基础'] = '基础精通',
+  ['刀锋战士'] = '刀锋之舞',
+  ['全能骑士'] = '神圣光环',
+}
+
+local function get_activation_card_name(bond_name)
+  return ACTIVATION_CARD_NAMES[bond_name] or (bond_name .. '·核心技能')
+end
+
 local activation_effects = {}
 for bond_name, bond_cards in pairs(cards_by_bond) do
   local first_card = bond_cards[1]
   local bond_skill = bond_skill_by_bond[bond_name] or {}
   local desc = trim(bond_skill.summary) ~= '' and trim(bond_skill.summary) or (first_card and first_card.activation_desc or '')
-  activation_effects[#activation_effects + 1] = {
+  local activation_card = {
+    index = next_index,
     id = 'initial_bond_set_' .. bond_name,
+    name = get_activation_card_name(bond_name),
     bond_name = bond_name,
-    required_count = first_card and first_card.required_count or #bond_cards,
-    name = bond_name,
     desc = desc,
+    raw_attr_text = '',
+    raw_value_text = '',
+    attr_pack = {},
+    attr_lines = {},
+    condition_text = string.format('集齐 %d 个同技能卡牌', first_card and first_card.required_count or #bond_cards),
+    required_count = first_card and first_card.required_count or #bond_cards,
+    activation_desc = desc,
+    extra_skill_desc = '',
     icon = resolve_visual_icon(bond_skill.skill_id, bond_name, first_card and first_card.icon or nil),
     bg = first_card and first_card.bg,
     quality = first_card and first_card.quality or 'SR',
     archetype = trim(bond_skill.archetype) ~= '' and trim(bond_skill.archetype) or trim(bond_skill.trigger_kind),
     damage_type = trim(bond_skill.damage_type),
     source_skill_id = bond_skill.skill_id,
+    initially_unlocked = true,
+    ghost_card = true,
   }
+  activation_effects[#activation_effects + 1] = activation_card
+  cards[#cards + 1] = activation_card
+  card_by_id[activation_card.id] = activation_card
+  cards_by_bond[bond_name][#cards_by_bond[bond_name] + 1] = activation_card
+  next_index = next_index + 1
 end
 table.sort(activation_effects, function(a, b)
   return tostring(a.bond_name) < tostring(b.bond_name)

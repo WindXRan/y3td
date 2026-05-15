@@ -28,7 +28,7 @@ local function put_spec(target, field, state_key, value)
   target[bucket_key][state_key] = value
 end
 
-local rows = CsvLoader.read_rows_optional('data_csv/outgame/outgame_detail_config.csv')
+local rows = CsvLoader.read_rows_optional({path = 'data_csv/outgame/outgame_detail_config.csv'})
 
 local list = {}
 local by_id = {}

@@ -12,7 +12,7 @@ for _, hero in ipairs(hero_list) do
   end
 end
 
-local quality_rules = CsvLoader.read_rows('data_csv/outgame/hero_evolution_rules.csv')
+local quality_rules = CsvLoader.read_rows({path = 'data_csv/outgame/hero_evolution_rules.csv'})
 
 local quality_by_threshold = {}
 for _, rule in ipairs(quality_rules) do
@@ -89,29 +89,8 @@ for index, hero_entry in ipairs(hero_list) do
   if index > 8 then
     break
   end
-  if hero_entry and hero_entry.id and hero_entry.unit_id then
+  if hero_entry and hero_entry.id then
     list[#list + 1] = push_evolution(index, hero_entry)
-  end
-end
-
-if #list < 2 then
-  for index = #list + 1, 2 do
-    local quality_info = get_quality_by_index(index)
-    list[#list + 1] = {
-      id = string.format('mark_fallback_%d', index),
-      name = string.format('英雄专精 %d', index),
-      quality = quality_info.quality,
-      pool_weight = 30,
-      order_index = index,
-      hero_unit_id = 100001 + index,
-      summary = '激活该英雄真身与专精效果。',
-      tags = { 'hero_form' },
-      bonuses = {
-        attr = nil,
-        runtime = nil,
-        attack_skill = nil,
-      },
-    }
   end
 end
 

@@ -3791,7 +3791,7 @@
                                         "__tuple__": true, 
                                         "items": [
                                             0.0, 
-                                            1.3727, 
+                                            0.9565, 
                                             3.0
                                         ]
                                     }, 
@@ -3801,8 +3801,15 @@
                                         "__tuple__": true, 
                                         "items": [
                                             0.0, 
-                                            1.3727, 
+                                            0.9565, 
                                             0.01
+                                        ]
+                                    }, 
+                                    "model": {
+                                        "__tuple__": true, 
+                                        "items": [
+                                            "editor_model", 
+                                            100030
                                         ]
                                     }, 
                                     "name": "hero_model", 

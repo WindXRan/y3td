@@ -21,7 +21,7 @@ local default_list = {
   { tab = 3, title = '杀敌排行榜[R]', list_node = '排行榜列表_1_2', enabled = true },
 }
 
-local rows = CsvLoader.read_rows_optional('data_csv/outgame/outgame_archive_ranking_tabs.csv')
+local rows = CsvLoader.read_rows_optional({path = 'data_csv/outgame/outgame_archive_ranking_tabs.csv'})
 local list = {}
 
 for row_index, row in ipairs(rows) do

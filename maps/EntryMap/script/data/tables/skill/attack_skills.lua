@@ -1,12 +1,10 @@
-﻿local CsvLoader = require 'data.csv_loader'
+local CsvLoader = require 'data.csv_loader'
 local helpers = require 'data.tables.helpers'
 local SecondBatchBlueprints = require 'data.tables.skill.attack_skill_second_batch_blueprints'
 local SkillTaxonomy = require 'data.tables.skill.attack_skill_taxonomy'
 local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
 local BondEffectRuntimeRules = require 'data.tables.bond.bond_effect_runtime_rules'
 local Json = require 'y3.tools.json'
-
-local skill_rows = CsvLoader.read_rows_optional('data_csv/attack_skills.csv')
 
 local OPTIONAL_NUMBER_FIELDS = {
   default_slot = true,
@@ -175,9 +173,6 @@ local function get_editor_object_data(table_name, object_key)
     return nil
   end
 
-  -- Runtime-generated manifests are synced into editor_table first.
-  -- Prefer the local JSON so gameplay sees the latest generated values
-  -- even if the editor object pool or GMP has not been hotfixed yet.
   local local_json_data = load_editor_json(table_name, object_key)
   if local_json_data then
     return local_json_data
@@ -288,7 +283,7 @@ local function normalize_vfx(result)
   return result
 end
 
-local function build_vfx(ability_key, projectile_key)
+local function build_vfx_from_editor(ability_key, projectile_key)
   local result = {}
   local ability_data = get_editor_object_data('abilityall', ability_key)
   apply_manifest_vfx(result, get_editor_kv('projectileall', projectile_key))
@@ -337,31 +332,68 @@ local function apply_taxonomy(def, skill_id)
   return def
 end
 
+local skill_rows = CsvLoader.read_rows_optional({path = 'data_csv/attack_skills.csv'})
+local vfx_rows = CsvLoader.read_rows_optional({path = 'data_csv/attack_skill_vfx.csv'})
+local csv_vfx_by_id = {}
+for _, row in ipairs(vfx_rows) do
+  if row.id and row.id ~= '' and row.id ~= '__字段说明__' then
+    local vfx = {}
+    for field_name, _ in pairs(OPTIONAL_VFX_NUMBER_FIELDS) do
+      local value = to_optional_number(row[field_name])
+      if value ~= nil then
+        vfx[field_name] = value
+      end
+    end
+    csv_vfx_by_id[row.id] = normalize_vfx(vfx)
+  end
+end
+
+local function build_vfx(skill_id, ability_key, projectile_key)
+  local csv_vfx = csv_vfx_by_id[skill_id]
+  if csv_vfx and next(csv_vfx) then
+    if csv_vfx.projectile_key then
+      return csv_vfx
+    end
+    local editor_vfx = build_vfx_from_editor(ability_key, projectile_key)
+    local result = {}
+    for k, v in pairs(editor_vfx) do
+      result[k] = v
+    end
+    for k, v in pairs(csv_vfx) do
+      result[k] = v
+    end
+    return result
+  end
+  return build_vfx_from_editor(ability_key, projectile_key)
+end
+
 local list = {}
 for _, row in ipairs(skill_rows) do
-  local damage_form, element, damage_label = build_damage_meta(row)
-  local editor_ability_key = RuntimeEditorIds.ability[row.id]
-  local editor_projectile_key = RuntimeEditorIds.projectile and RuntimeEditorIds.projectile[row.id] or nil
-  local def = {
-    id = row.id,
-    name = row.name,
-    summary = row.summary,
-    damage_type = row.damage_type,
-    damage_form = damage_form,
-    element = element,
-    damage_label = damage_label,
-    editor_ability_key = editor_ability_key,
-    editor_projectile_key = editor_projectile_key,
-    vfx = build_vfx(editor_ability_key, editor_projectile_key),
-  }
+  if row.id and row.id ~= '' and row.id ~= '__字段说明__' then
+    local damage_form, element, damage_label = build_damage_meta(row)
+    local editor_ability_key = RuntimeEditorIds.ability[row.id]
+    local editor_projectile_key = RuntimeEditorIds.projectile and RuntimeEditorIds.projectile[row.id] or nil
+    local def = {
+      id = row.id,
+      name = row.name,
+      summary = row.summary,
+      damage_type = row.damage_type,
+      damage_form = damage_form,
+      element = element,
+      damage_label = damage_label,
+      editor_ability_key = editor_ability_key,
+      editor_projectile_key = editor_projectile_key,
+      vfx = build_vfx(row.id, editor_ability_key, editor_projectile_key),
+    }
 
-  for field_name, _ in pairs(OPTIONAL_NUMBER_FIELDS) do
-    def[field_name] = to_optional_number(row[field_name])
+    for field_name, _ in pairs(OPTIONAL_NUMBER_FIELDS) do
+      def[field_name] = to_optional_number(row[field_name])
+    end
+
+    apply_taxonomy(def, row.id)
+
+    list[#list + 1] = def
   end
-
-  apply_taxonomy(def, row.id)
-
-  list[#list + 1] = def
 end
 
 local defs_by_id = helpers.list_to_map(list)
@@ -397,7 +429,7 @@ for _, blueprint in ipairs(SecondBatchBlueprints.list or {}) do
       base_bounce = blueprint.base and blueprint.base.bounce or 0,
       evolution_name = blueprint.evolution and blueprint.evolution.name or nil,
       evolution_summary = blueprint.evolution and blueprint.evolution.summary or nil,
-      vfx = build_vfx(editor_ability_key, editor_projectile_key),
+      vfx = build_vfx(blueprint.id, editor_ability_key, editor_projectile_key),
     }
     apply_taxonomy(defs_by_id[blueprint.id], blueprint.id)
     vfx_by_id[blueprint.id] = defs_by_id[blueprint.id].vfx
@@ -407,7 +439,7 @@ end
 if not defs_by_id.basic_attack then
   local fallback_basic_editor_ability_key = RuntimeEditorIds.ability and RuntimeEditorIds.ability.basic_attack or nil
   local fallback_basic_editor_projectile_key = RuntimeEditorIds.projectile and RuntimeEditorIds.projectile.basic_attack or nil
-  local fallback_basic_vfx = build_vfx(fallback_basic_editor_ability_key, fallback_basic_editor_projectile_key)
+  local fallback_basic_vfx = build_vfx('basic_attack', fallback_basic_editor_ability_key, fallback_basic_editor_projectile_key)
   local profile = type(BondEffectRuntimeRules.basic_attack_profile) == 'table' and BondEffectRuntimeRules.basic_attack_profile or {}
   local fallback_basic_def = {
     id = 'basic_attack',
@@ -430,8 +462,6 @@ if not defs_by_id.basic_attack then
     archetype = profile.archetype,
     vfx = fallback_basic_vfx,
   }
-  -- 普攻运行时分发依赖 taxonomy（尤其 cast_family=basic_projectile），
-  -- CSV 缺失时也必须补齐，否则不会进入普攻施法/索敌链路。
   defs_by_id.basic_attack = apply_taxonomy(fallback_basic_def, 'basic_attack')
   vfx_by_id.basic_attack = defs_by_id.basic_attack.vfx
 end
@@ -443,6 +473,3 @@ return {
   blueprints = SecondBatchBlueprints,
   blueprint_by_id = helpers.list_to_map(SecondBatchBlueprints.list),
 }
-
-
-

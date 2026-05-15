@@ -15,6 +15,7 @@ function M.create(env)
   local update_buff_system = env.update_buff_system
   local update_mainline_task = env.update_mainline_task
   local update_battle_auto_acceptance = env.update_battle_auto_acceptance
+  
   local ensure_runtime_hud = env.ensure_runtime_hud
   local ensure_choice_panel = env.ensure_choice_panel
   local set_battle_hud_visible = env.set_battle_hud_visible
@@ -31,6 +32,7 @@ function M.create(env)
   local hero_attr_system = env.hero_attr_system
   local skill_damage_api = SkillDamageTemplates.create({
     y3 = y3,
+    STATE = STATE,
     deal_skill_damage = function(target, amount, damage_meta, visual)
       deal_skill_damage(target, amount, damage_meta, visual)
     end,
@@ -146,9 +148,6 @@ function M.create(env)
       end
       if outgame_system then
         outgame_system.refresh_ui()
-      end
-      if update_battle_auto_acceptance then
-        update_battle_auto_acceptance(0.25)
       end
     end)
 

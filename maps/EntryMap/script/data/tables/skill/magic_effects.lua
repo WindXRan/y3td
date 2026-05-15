@@ -1,6 +1,6 @@
 local CsvLoader = require 'data.csv_loader'
 
-local rows = CsvLoader.read_rows_optional('data_csv/magic_effects.csv')
+local rows = CsvLoader.read_rows_optional({path = 'data_csv/magic_effects.csv'})
 
 local M = {
   list = {},

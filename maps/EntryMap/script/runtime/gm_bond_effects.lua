@@ -44,9 +44,7 @@ function M.create(env)
   local set_force_special_effects_100 = env.set_force_special_effects_100
   local is_force_special_effects_100 = env.is_force_special_effects_100
   local run_bond_self_test = env.run_bond_self_test
-  local set_n0_activation_mode = env.set_n0_activation_mode
-  local set_n0_single_bond_name = env.set_n0_single_bond_name
-  local restart_n0_auto_acceptance = env.restart_n0_auto_acceptance
+  
   local debug_set_global_projectile_override = env.debug_set_global_projectile_override
   local debug_clear_global_projectile_override = env.debug_clear_global_projectile_override
   local debug_toggle_global_projectile_override = env.debug_toggle_global_projectile_override
@@ -65,7 +63,7 @@ function M.create(env)
   local function build_skill_bond_lookup()
     local by_skill_id = {}
     local by_skill_name = {}
-    local ok, rows = pcall(CsvLoader.read_rows_optional, 'data_csv/by_feature/bond/bond_skills.csv')
+    local ok, rows = pcall(CsvLoader.read_rows_optional, {path = 'data_csv/by_feature/bond/bond_skills.csv'})
     if not ok or type(rows) ~= 'table' then
       return by_skill_id, by_skill_name
     end
@@ -89,7 +87,7 @@ function M.create(env)
 
   local function build_fallback_skill_entries()
     local rows = {}
-    local ok, data = pcall(CsvLoader.read_rows_optional, 'data_csv/by_feature/bond/bond_skills.csv')
+    local ok, data = pcall(CsvLoader.read_rows_optional, {path = 'data_csv/by_feature/bond/bond_skills.csv'})
     if ok and type(data) == 'table' then
       rows = data
     end
@@ -193,25 +191,16 @@ function M.create(env)
   end
 
   local function get_n0_mode_and_single_bond()
-    local n0_runtime = STATE and STATE.battle_auto_acceptance or nil
     local stage_def = STATE and STATE.current_stage_def or nil
     local mode = normalize_n0_mode(
-      (n0_runtime and n0_runtime.activation_mode_override)
-      or (stage_def and stage_def.n0_activation_mode)
+      (stage_def and stage_def.n0_activation_mode)
       or 'all'
     )
-    local single_bond_name = trim(
-      (n0_runtime and n0_runtime.single_bond_name_override)
-      or (stage_def and stage_def.n0_single_bond)
-    )
+    local single_bond_name = trim(stage_def and stage_def.n0_single_bond or '')
     return mode, single_bond_name
   end
 
   local function apply_n0_mode(mode, bond_name)
-    if not set_n0_activation_mode then
-      debug_message('未注入 N0 模式控制回调。')
-      return false
-    end
     local resolved_mode = normalize_n0_mode(mode)
     local resolved_bond_name = trim(bond_name)
 
@@ -219,19 +208,6 @@ function M.create(env)
       if resolved_bond_name == '' then
         debug_message('单技能模式需要指定技能名。')
         return false
-      end
-      if not set_n0_single_bond_name then
-        debug_message('未注入 N0 单技能回调。')
-        return false
-      end
-    end
-
-    set_n0_activation_mode(resolved_mode)
-    if set_n0_single_bond_name then
-      if resolved_mode == 'single' then
-        set_n0_single_bond_name(resolved_bond_name)
-      else
-        set_n0_single_bond_name('')
       end
     end
 
@@ -241,10 +217,6 @@ function M.create(env)
       clear_active_modifier_bond_effects()
     end
 
-    local restarted = false
-    if restart_n0_auto_acceptance then
-      restarted = restart_n0_auto_acceptance() == true
-    end
     local mode_label_map = {
       all = '全开',
       single = '单技能',
@@ -252,10 +224,9 @@ function M.create(env)
     }
     local mode_label = mode_label_map[resolved_mode] or resolved_mode
     debug_message(string.format(
-      'N0 模式已切换：%s%s%s',
+      'N0 模式已切换：%s%s',
       mode_label,
-      resolved_mode == 'single' and string.format('（%s）', resolved_bond_name) or '',
-      restarted and '（当前战斗已立即生效）' or '（下一次 N0 战斗生效）'
+      resolved_mode == 'single' and string.format('（%s）', resolved_bond_name) or ''
     ))
     return true
   end

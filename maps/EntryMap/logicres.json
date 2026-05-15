@@ -21,7 +21,7 @@
             "ortho_scale": 1, 
             "pitch": 0.9773843811168246, 
             "placed_lock": false, 
-            "placed_visibility": true, 
+            "placed_visibility": false, 
             "roll": 0.0, 
             "set_camera_conf_realtime": null, 
             "type": 32768, 

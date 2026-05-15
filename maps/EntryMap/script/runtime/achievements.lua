@@ -8,7 +8,7 @@ local listeners = {}
 local trigger_handlers = {}
 
 local function load_achievements()
-  local rows = CsvLoader.read_rows('data_csv/by_feature/economy/shangchengdaojv.csv')
+  local rows = CsvLoader.read_rows({path = 'data_csv/by_feature/economy/shangchengdaojv.csv'})
   local achievement_id = 1
   for _, row in ipairs(rows) do
     if row.partition == '生涯' and row.tab1 == '成就' and row.trigger_type then

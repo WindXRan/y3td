@@ -169,10 +169,10 @@ function M.create(env)
     elseif pending_kind == 'evolution' then
       local runtime = get_evolution_runtime()
       local choice_count = runtime and runtime.current_choices and #runtime.current_choices or 0
-      local pick_text = choice_count > 0 and string.format('英雄专精%d选1', choice_count) or '英雄专精抉择'
+      local pick_text = choice_count > 0 and string.format('英雄%d选1', choice_count) or '英雄选择'
       lines[#lines + 1] = string.format(
         '当前待选：%s · %s',
-        runtime.current_round and runtime.current_round.ui_title or '专精进阶',
+        runtime.current_round and runtime.current_round.ui_title or '英雄进阶',
         pick_text
       )
     else

@@ -63,7 +63,7 @@ local function build_reward(row, prefix)
 end
 
 local function process_csv_rows(csv_path, order_key, builder)
-  local rows = CsvLoader.read_rows(csv_path)
+  local rows = CsvLoader.read_rows({path = csv_path})
   local list = {}
   for _, row in ipairs(rows) do
     list[#list + 1] = builder(row)
@@ -74,74 +74,150 @@ local function process_csv_rows(csv_path, order_key, builder)
   return { list = list, by_id = list_to_map(list) }
 end
 
+local function to_boolean(value)
+  if value == nil or value == '' then
+    return false
+  end
+  return value == 'true' or value == 'TRUE' or value == '1'
+end
+
+local function to_number(value, default)
+  local num = tonumber(value)
+  if num == nil then
+    return default
+  end
+  return num
+end
+
 M.battle_base_config = {
-  global_rules = {
-    debug_time_scale_debug = 0.2,
-    debug_time_scale_release = 1.0,
-    enemy_player_id = 31,
-    enemy_move_speed_scale = 0.48,
-    enemy_spawn_batch_scale = 1.5,
-    enemy_alive_cap_scale = 1.5,
-    player_id = 1,
-    total_enemy_soft_cap_scale = 1.5,
-    total_enemy_soft_cap = 40,
-  },
+  global_rules = {},
   hero_init_stats = hero_attr_config.hero_init_stats,
   debug_hero_bonus_stats = hero_attr_config.debug_hero_bonus_stats,
   debug_apply_hero_bonus_on_spawn = false,
-  progression_rules = {
-    engine_exp_cap_level = 1,
-    max_level = 60,
-    post_cap_exp_base = 320,
-    post_cap_exp_step = 55,
-    hero_level_attack_growth = 6,
-    hero_level_hp_growth = 60,
-    hero_level_all_attr_growth = 2,
-    main_stat_attack_ratio = 0.5,
-  },
+  progression_rules = {},
   hero_level_progression = hero_level_progression,
-  resource_rules = { gold_per_sec = 2, initial_gold = 0, initial_wood = 500, wood_per_sec = 1 },
-  challenge_rules = { initial_charges = 1, max_charges = 3, recover_sec = 105 },
+  resource_rules = {},
+  challenge_rules = {},
 }
+
+local base_config_rows = CsvLoader.read_rows({path = 'data_csv/battle_base_config.csv'})
+for _, row in ipairs(base_config_rows) do
+  local key = row['key']
+  if key and key ~= '' and key ~= '__字段说明__' then
+    local value = row['value']
+    if key == 'debug_time_scale_debug' then
+      M.battle_base_config.global_rules.debug_time_scale_debug = to_number(value, 0.2)
+    elseif key == 'debug_time_scale_release' then
+      M.battle_base_config.global_rules.debug_time_scale_release = to_number(value, 1.0)
+    elseif key == 'enemy_player_id' then
+      M.battle_base_config.global_rules.enemy_player_id = to_number(value, 31)
+    elseif key == 'enemy_move_speed_scale' then
+      M.battle_base_config.global_rules.enemy_move_speed_scale = to_number(value, 0.48)
+    elseif key == 'enemy_spawn_batch_scale' then
+      M.battle_base_config.global_rules.enemy_spawn_batch_scale = to_number(value, 1.5)
+    elseif key == 'enemy_alive_cap_scale' then
+      M.battle_base_config.global_rules.enemy_alive_cap_scale = to_number(value, 1.5)
+    elseif key == 'player_id' then
+      M.battle_base_config.global_rules.player_id = to_number(value, 1)
+    elseif key == 'total_enemy_soft_cap_scale' then
+      M.battle_base_config.global_rules.total_enemy_soft_cap_scale = to_number(value, 1.5)
+    elseif key == 'total_enemy_soft_cap' then
+      M.battle_base_config.global_rules.total_enemy_soft_cap = to_number(value, 40)
+    elseif key == 'debug_apply_hero_bonus_on_spawn' then
+      M.battle_base_config.debug_apply_hero_bonus_on_spawn = to_boolean(value)
+    elseif key == 'engine_exp_cap_level' then
+      M.battle_base_config.progression_rules.engine_exp_cap_level = to_number(value, 1)
+    elseif key == 'max_level' then
+      M.battle_base_config.progression_rules.max_level = to_number(value, 60)
+    elseif key == 'post_cap_exp_base' then
+      M.battle_base_config.progression_rules.post_cap_exp_base = to_number(value, 320)
+    elseif key == 'post_cap_exp_step' then
+      M.battle_base_config.progression_rules.post_cap_exp_step = to_number(value, 55)
+    elseif key == 'hero_level_attack_growth' then
+      M.battle_base_config.progression_rules.hero_level_attack_growth = to_number(value, 6)
+    elseif key == 'hero_level_hp_growth' then
+      M.battle_base_config.progression_rules.hero_level_hp_growth = to_number(value, 60)
+    elseif key == 'hero_level_all_attr_growth' then
+      M.battle_base_config.progression_rules.hero_level_all_attr_growth = to_number(value, 2)
+    elseif key == 'main_stat_attack_ratio' then
+      M.battle_base_config.progression_rules.main_stat_attack_ratio = to_number(value, 0.5)
+    elseif key == 'gold_per_sec' then
+      M.battle_base_config.resource_rules.gold_per_sec = to_number(value, 2)
+    elseif key == 'initial_gold' then
+      M.battle_base_config.resource_rules.initial_gold = to_number(value, 0)
+    elseif key == 'initial_wood' then
+      M.battle_base_config.resource_rules.initial_wood = to_number(value, 500)
+    elseif key == 'wood_per_sec' then
+      M.battle_base_config.resource_rules.wood_per_sec = to_number(value, 1)
+    elseif key == 'challenge_initial_charges' then
+      M.battle_base_config.challenge_rules.initial_charges = to_number(value, 1)
+    elseif key == 'challenge_max_charges' then
+      M.battle_base_config.challenge_rules.max_charges = to_number(value, 3)
+    elseif key == 'challenge_recover_sec' then
+      M.battle_base_config.challenge_rules.recover_sec = scale(to_number(value, 105))
+    end
+  end
+end
 
 M.battlefield_scene_config = {
-  points = {
-    hero_spawn = { x = -1200, y = 0, z = 0 },
-    defense_point = { x = -1050, y = 0, z = 0 },
-  },
-  areas = {
-    main_spawn_wave_1 = { x_min = 500, x_max = 1100, y_min = -340, y_max = 340, z = 0 },
-    main_spawn_wave_2 = { x_min = 500, x_max = 1100, y_min = -340, y_max = 340, z = 0 },
-    main_spawn_wave_3 = { x_min = 500, x_max = 1100, y_min = -340, y_max = 340, z = 0 },
-    main_spawn_wave_4 = { x_min = 500, x_max = 1100, y_min = -340, y_max = 340, z = 0 },
-    main_spawn_wave_5 = { x_min = 500, x_max = 1100, y_min = -340, y_max = 340, z = 0 },
-    boss_spawn_wave_1 = { x_min = 400, x_max = 900, y_min = -90, y_max = 90, z = 0 },
-    boss_spawn_wave_2 = { x_min = 400, x_max = 900, y_min = -110, y_max = 110, z = 0 },
-    boss_spawn_wave_3 = { x_min = 400, x_max = 900, y_min = -130, y_max = 130, z = 0 },
-    boss_spawn_wave_4 = { x_min = 400, x_max = 900, y_min = -150, y_max = 150, z = 0 },
-    boss_spawn_wave_5 = { x_min = 400, x_max = 900, y_min = -170, y_max = 170, z = 0 },
-    mid_slow_lane_outer = { x_min = -220, x_max = 260, y_min = -520, y_max = 520, z = 0 },
-    mid_slow_lane_inner = { x_min = -760, x_max = 40, y_min = -420, y_max = 420, z = 0 },
-    hero_front_slow_lane = { x_min = -1220, x_max = -700, y_min = -320, y_max = 320, z = 0 },
-    extended_slow_zone = { x_min = 300, x_max = 600, y_min = -400, y_max = 400, z = 0 },
-    challenge_spawn_top = { x_min = 500, x_max = 1100, y_min = 220, y_max = 420, z = 0 },
-    challenge_spawn_mid = { x_min = 500, x_max = 1100, y_min = -80, y_max = 120, z = 0 },
-    challenge_spawn_bottom = { x_min = 500, x_max = 1100, y_min = -420, y_max = -220, z = 0 },
-  },
-  main_enemy_slow_zones = {
-    { area_id = 'mid_slow_lane_outer',  speed_factor = 0.64 },
-    { area_id = 'mid_slow_lane_inner',  speed_factor = 0.46 },
-    { area_id = 'hero_front_slow_lane', speed_factor = 0.30 },
-    { area_id = 'extended_slow_zone',   speed_factor = 0.55 },
-  },
-  save_slots = { outgame_profile = 1 },
+  points = {},
+  areas = {},
+  main_enemy_slow_zones = {},
+  save_slots = {},
 }
+
+local scene_rows = CsvLoader.read_rows({path = 'data_csv/battlefield_scene_config.csv'})
+for _, row in ipairs(scene_rows) do
+  local type = row['type']
+  local id = row['id']
+  if type and type ~= '' and type ~= '__字段说明__' then
+    if type == 'point' then
+      M.battlefield_scene_config.points[id] = {
+        x = to_number(row['x'], 0),
+        y = to_number(row['y'], 0),
+        z = to_number(row['z'], 0),
+      }
+    elseif type == 'area' then
+      M.battlefield_scene_config.areas[id] = {
+        x_min = to_number(row['x_min'], 0),
+        x_max = to_number(row['x_max'], 0),
+        y_min = to_number(row['y_min'], 0),
+        y_max = to_number(row['y_max'], 0),
+        z = to_number(row['z'], 0),
+      }
+    elseif type == 'slow_zone' then
+      M.battlefield_scene_config.main_enemy_slow_zones[#M.battlefield_scene_config.main_enemy_slow_zones + 1] = {
+        area_id = id,
+        speed_factor = to_number(row['speed_factor'], 1.0),
+      }
+    elseif type == 'save_slot' then
+      M.battlefield_scene_config.save_slots[id] = to_number(row['x'], 1)
+    end
+  end
+end
 
 M.battlefield_unit_config = {
-  fixed_unit_ids = { hero = 134245850, enemy = 134278989 },
+  fixed_unit_ids = {},
+  fixed_model_ids = {},  -- 新增：存储模型ID
 }
 
--- waves
+local unit_rows = CsvLoader.read_rows({path = 'data_csv/battlefield_unit_config.csv'})
+print('[game_tables] Loaded battlefield_unit_config.csv rows:', #unit_rows)
+for _, row in ipairs(unit_rows) do
+  local type = row['type']
+  local unit_id = to_number(row['unit_id'])
+  local model_id = to_number(row['model_id'])  -- 新增：读取模型ID
+  print('[game_tables] Processing unit row:', type, unit_id, model_id)
+  if type and type ~= '' and type ~= '__字段说明__' then
+    M.battlefield_unit_config.fixed_unit_ids[type] = unit_id
+    if model_id then
+      M.battlefield_unit_config.fixed_model_ids[type] = model_id  -- 新增：存储模型ID
+      print('[game_tables] Set fixed_model_ids[' .. type .. '] =', model_id)
+    end
+  end
+end
+print('[game_tables] battlefield_unit_config:', M.battlefield_unit_config)
+
 M.waves = process_csv_rows('data_csv/waves.csv', 'index', function(row)
   local seg = {}
   for i = 1, 3 do
@@ -180,7 +256,6 @@ M.waves = process_csv_rows('data_csv/waves.csv', 'index', function(row)
   }
 end)
 
--- challenges
 M.challenges = process_csv_rows('data_csv/challenges.csv', 'order_index', function(row)
   local count = tonumber(row.batch_count) or 0
   return {
@@ -211,7 +286,6 @@ M.challenges = process_csv_rows('data_csv/challenges.csv', 'order_index', functi
   }
 end)
 
--- stages / modes
 M.stages = process_csv_rows('data_csv/stages.csv', 'order_index', function(row)
   return {
     id = row.id,
@@ -241,8 +315,7 @@ M.stage_modes = process_csv_rows('data_csv/stage_modes.csv', 'order_index', func
   }
 end)
 
--- hero roster
-local roster_rows = CsvLoader.read_rows('data_csv/hero_roster.csv')
+local roster_rows = CsvLoader.read_rows({path = 'data_csv/hero_roster.csv'})
 local hero_list, initial = {}, nil
 for _, row in ipairs(roster_rows) do
   local e = {
@@ -250,20 +323,14 @@ for _, row in ipairs(roster_rows) do
     order_index = tonumber(row.order_index) or 0,
     rarity = row.rarity,
     name = row.name,
-    title = row.title,
-    unit_id = to_optional_number(row.unit_id),
     model_id = to_optional_number(row.model_id),
     is_initial_hero = ({ ['1'] = true, ['true'] = true, ['yes'] = true })
     [string.lower(tostring(row.is_initial_hero or ''))] == true,
     skill_id = row.skill_id,
     summary = row.summary,
-    icon = tonumber(row.icon),
     bg = row.bg,
     talent_skill = row.talent_skill or row.summary or '',
-    star_effect = row.star_effect or '',
-    awaken_effect = row.awaken_effect or '',
-    hero_model = to_optional_number(row.hero_model) or to_optional_number(row.model_id),
-    skill_icon = to_optional_number(row.skill_icon) or tonumber(row.icon),
+    icon = to_optional_number(row.icon),
   }
   hero_list[#hero_list + 1] = e
   if e.is_initial_hero and not initial then initial = e end
@@ -273,16 +340,13 @@ table.sort(hero_list,
     if (a.order_index or 0) == (b.order_index or 0) then return tostring(a.id or '') < tostring(b.id or '') end
     return (a.order_index or 0) < (b.order_index or 0)
   end)
-if not initial then for _, e in ipairs(hero_list) do if e.unit_id ~= nil then
+if not initial then for _, e in ipairs(hero_list) do if e.is_initial_hero then
       initial = e
       break
     end end end
-local by_unit_id = {}
-for _, e in ipairs(hero_list) do if e.unit_id ~= nil then by_unit_id[e.unit_id] = e end end
-M.hero_roster = { list = hero_list, by_id = list_to_map(hero_list), by_unit_id = by_unit_id, initial_hero = initial }
+M.hero_roster = { list = hero_list, by_id = list_to_map(hero_list), initial_hero = initial }
 
--- mainline task rewards
-local reward_rows = CsvLoader.read_rows('data_csv/mainline_task_rewards.csv')
+local reward_rows = CsvLoader.read_rows({path = 'data_csv/mainline_task_rewards.csv'})
 local effect_rows = AttrEffect.by_source.mainline_task or {}
 local csv_by_id = list_to_map(reward_rows)
 local LEGACY_ATTR = { ['生命'] = 'hp', ['生命恢复'] = 'hp_regen', ['护甲'] = 'armor', ['格挡'] = 'block', ['攻击'] = 'attack',

@@ -1,132 +1,83 @@
+local CsvLoader = require 'data.csv_loader'
+local helpers = require 'data.tables.helpers'
+
 local M = {}
 
-local MONSTER_TYPE_CONFIG = {
-  normal = {
-    name = '普通怪物',
-    type = 'main',
-    
-    hp_scale = 1.0,
-    attack_scale = 1.0,
-    armor_scale = 1.0,
-    move_speed_scale = 1.0,
-    
-    reward_gold_scale = 1.0,
-    reward_wood_scale = 1.0,
-    reward_exp_scale = 1.0,
-    
-    visual = {
-      model_scale = 1.0,
-      health_bar_width = 1.0,
-      effect_scale = 1.0,
-    },
-    
-    health_bar = {
-      bar_type = 0x0050002,
-      color = '#E35A5A',
-      name_prefix = '敌人',
-      name_font_size = 13,
-      show_text = true,
-      show_name = true,
-    },
-    
-    hit_reaction = {
-      heavy_hit_threshold = 0.12,
-      medium_hit_threshold = 0.04,
-      shove_distance = 26,
-    },
-    
-    death_reaction = {
-      corpse_distance = 160,
-      corpse_speed = 920,
-      remove_delay = 1.0,
-      effect_scale = 0.96,
-    },
-  },
-  
-  elite = {
-    name = '精英怪物',
-    type = 'elite',
-    
-    hp_scale = 3.0,
-    attack_scale = 2.0,
-    armor_scale = 2.0,
-    move_speed_scale = 0.85,
-    
-    reward_gold_scale = 3.0,
-    reward_wood_scale = 3.0,
-    reward_exp_scale = 3.0,
-    
-    visual = {
-      model_scale = 1.3,
-      health_bar_width = 1.5,
-      effect_scale = 1.2,
-    },
-    
-    health_bar = {
-      bar_type = 0x0050003,
-      color = '#F0B84E',
-      name_prefix = '精英',
-      name_font_size = 14,
-      show_text = true,
-      show_name = true,
-    },
-    
-    hit_reaction = {
-      heavy_hit_threshold = 0.10,
-      medium_hit_threshold = 0.035,
-      shove_distance = 18,
-    },
-    
-    death_reaction = {
-      corpse_distance = 120,
-      corpse_speed = 780,
-      remove_delay = 1.2,
-      effect_scale = 1.15,
-    },
-  },
-  
-  boss = {
-    name = 'Boss',
-    type = 'boss',
-    
-    hp_scale = 15.0,
-    attack_scale = 5.0,
-    armor_scale = 4.0,
-    move_speed_scale = 0.7,
-    
-    reward_gold_scale = 10.0,
-    reward_wood_scale = 10.0,
-    reward_exp_scale = 10.0,
-    
-    visual = {
-      model_scale = 1.8,
-      health_bar_width = 2.5,
-      effect_scale = 1.5,
-    },
-    
-    health_bar = {
-      bar_type = 0x0060002,
-      color = '#D953FF',
-      name_prefix = '首领',
-      name_font_size = 18,
-      show_text = true,
-      show_name = true,
-    },
-    
-    hit_reaction = {
-      heavy_hit_threshold = 0.08,
-      medium_hit_threshold = 0.025,
-      shove_distance = 0,
-    },
-    
-    death_reaction = {
-      corpse_distance = 96,
-      corpse_speed = 680,
-      remove_delay = 1.3,
-      effect_scale = 1.26,
-    },
-  },
-}
+local function to_number(value)
+  if value == nil or value == '' then
+    return nil
+  end
+  return tonumber(value)
+end
+
+local function to_boolean(value)
+  if value == nil or value == '' then
+    return false
+  end
+  return value == 'true' or value == 'TRUE' or value == '1'
+end
+
+local function parse_color(color_str)
+  return color_str or '#FFFFFF'
+end
+
+local function parse_hex_number(hex_str)
+  if not hex_str or hex_str == '' then
+    return nil
+  end
+  local hex = hex_str:gsub('^0x', '')
+  return tonumber(hex, 16)
+end
+
+local MONSTER_TYPE_CONFIG = {}
+
+local rows = CsvLoader.read_rows({path = 'data_csv/monster_types.csv'})
+for _, row in ipairs(rows) do
+  local id = row['id']
+  if id and id ~= '' and id ~= '__字段说明__' then
+    MONSTER_TYPE_CONFIG[id] = {
+      name = row['name'] or id,
+      type = row['type'] or 'main',
+      
+      hp_scale = to_number(row['hp_scale']) or 1.0,
+      attack_scale = to_number(row['attack_scale']) or 1.0,
+      armor_scale = to_number(row['armor_scale']) or 1.0,
+      move_speed_scale = to_number(row['move_speed_scale']) or 1.0,
+      
+      reward_gold_scale = to_number(row['reward_gold_scale']) or 1.0,
+      reward_wood_scale = to_number(row['reward_wood_scale']) or 1.0,
+      reward_exp_scale = to_number(row['reward_exp_scale']) or 1.0,
+      
+      visual = {
+        model_scale = to_number(row['model_scale']) or 1.0,
+        health_bar_width = to_number(row['health_bar_width']) or 1.0,
+        effect_scale = to_number(row['effect_scale']) or 1.0,
+      },
+      
+      health_bar = {
+        bar_type = parse_hex_number(row['health_bar_type']) or 0x0050002,
+        color = parse_color(row['health_bar_color']),
+        name_prefix = row['name_prefix'] or '敌人',
+        name_font_size = to_number(row['name_font_size']) or 13,
+        show_text = to_boolean(row['show_text']),
+        show_name = to_boolean(row['show_name']),
+      },
+      
+      hit_reaction = {
+        heavy_hit_threshold = to_number(row['heavy_hit_threshold']) or 0.12,
+        medium_hit_threshold = to_number(row['medium_hit_threshold']) or 0.04,
+        shove_distance = to_number(row['shove_distance']) or 26,
+      },
+      
+      death_reaction = {
+        corpse_distance = to_number(row['corpse_distance']) or 160,
+        corpse_speed = to_number(row['corpse_speed']) or 920,
+        remove_delay = to_number(row['remove_delay']) or 1.0,
+        effect_scale = to_number(row['death_effect_scale']) or 0.96,
+      },
+    }
+  end
+end
 
 local function get_monster_type_config(monster_type)
   local t = monster_type or 'normal'
@@ -141,7 +92,7 @@ local function resolve_monster_type(info)
     return 'boss'
   end
   if info and info.kind == 'challenge' then
-    return 'normal'
+    return 'challenge'
   end
   if info and info.is_elite then
     return 'elite'

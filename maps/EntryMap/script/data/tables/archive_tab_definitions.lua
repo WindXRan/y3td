@@ -65,7 +65,7 @@ local function parse_action_buttons(raw)
 end
 
 local function load_from_csv()
-  local rows = CsvLoader.read_rows_optional('data_csv/outgame/outgame_archive_tabs.csv')
+  local rows = CsvLoader.read_rows_optional({path = 'data_csv/outgame/outgame_archive_tabs.csv'})
 
   local partitions = {}
   local primary_tabs = {}

@@ -246,15 +246,7 @@ function M.create(deps)
       return false
     end
     bond_name = normalize_bond_name(bond_name)
-    local function report_cast(count)
-      if env and env.report_auto_acceptance_event then
-        env.report_auto_acceptance_event({
-          scope = 'bond',
-          key = bond_name,
-          cast = tonumber(count) or 1,
-        })
-      end
-    end
+    
     local function bond_damage_target(unit, amount, damage_type)
       return damage_target(env, unit, amount, damage_type, { scope = 'bond', key = bond_name })
     end
@@ -275,7 +267,7 @@ function M.create(deps)
       rule_number(
         basic_rule and basic_rule.line_aoe_radius,
         rule_number(
-          basic_rule and basic_rule.line and basic_rule.line.width,
+          basic_rule and basic_rule.line_width,
           math.floor(rule_number(visual_cfg and visual_cfg.area_fx_base_radius, 220) * 0.70)
         )
       )
@@ -564,15 +556,7 @@ function M.create(deps)
 
   function api.trigger_modifier_periodic_effect(env, runtime, bond_name, effect_state, dt)
     bond_name = normalize_bond_name(bond_name)
-    local function report_cast(count)
-      if env and env.report_auto_acceptance_event then
-        env.report_auto_acceptance_event({
-          scope = 'bond',
-          key = bond_name,
-          cast = tonumber(count) or 1,
-        })
-      end
-    end
+    
     local function bond_damage_target(unit, amount, damage_type)
       return damage_target(env, unit, amount, damage_type, { scope = 'bond', key = bond_name })
     end

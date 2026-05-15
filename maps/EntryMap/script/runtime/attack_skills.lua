@@ -2,7 +2,6 @@ local PresentationProfiles = require 'data.tables.skill.attack_skill_presentatio
 local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
 local SkillRuntimeTuning = require 'data.tables.skill.skill_runtime_tuning'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
-local SkillDamageTemplateConfig = require 'data.tables.skill.skill_damage_templates'
 
 local M = {}
 
@@ -51,12 +50,11 @@ function M.create(env)
       or {}
   local ATTACK_SKILL_DEPRECATED = CONFIG.attack_skill_deprecated == true
   local VISUAL_TUNING = ATTACK_SKILL_RUNTIME_TUNING.visual or {}
-  local DEBUG_TUNING = ATTACK_SKILL_RUNTIME_TUNING.debug or {}
   local PROJECTILE_TUNING = ATTACK_SKILL_RUNTIME_TUNING.projectile or {}
   local COOLDOWN_TUNING = ATTACK_SKILL_RUNTIME_TUNING.cooldown or {}
   local SEARCH_TUNING = ATTACK_SKILL_RUNTIME_TUNING.search or {}
-  local DAMAGE_TEMPLATE_MAP = SkillDamageTemplateConfig.cast_family_map or {}
-  local DEFAULT_DAMAGE_TEMPLATE_ID = SkillDamageTemplateConfig.default_template_id or 'single'
+  local DAMAGE_TEMPLATE_MAP = SkillDamageTemplates.cast_family_map or {}
+  local DEFAULT_DAMAGE_TEMPLATE_ID = SkillDamageTemplates.default_template_id or 'single'
   local y3 = env.y3
   local ATTACK_SKILL_SLOT_COUNT = math.max(1, tonumber(env.attack_skill_slot_count) or 5)
   local round_number = env.round_number
@@ -85,9 +83,6 @@ function M.create(env)
   local skill_framework = env.skill_framework
   local ATTACK_STATUS_MODIFIER_KEYS = RuntimeEditorIds.modifier.attack_status or {}
   local VISUAL_ANIMATION_SPEED = tonumber(VISUAL_TUNING.animation_speed) or 0.5
-  local DAMAGE_AREA_DEBUG_EFFECT_ID = tonumber(DEBUG_TUNING.damage_area_effect_id) or 101492
-  local DAMAGE_AREA_DEBUG_HEIGHT = tonumber(DEBUG_TUNING.damage_area_height) or 8
-  local DAMAGE_AREA_DEBUG_SCALE_BASE = tonumber(DEBUG_TUNING.damage_area_scale_base) or 110
   local get_skill_damage_template_id
 
   local function scale_visual_duration(seconds)
@@ -115,78 +110,7 @@ function M.create(env)
     return get_ui_preferences().hide_hit_effects == true
   end
 
-  local function should_show_damage_area_debug()
-    if STATE and STATE.debug_show_damage_area == true then
-      return true
-    end
-    return y3 and y3.game and y3.game.is_debug_mode and y3.game.is_debug_mode() or false
-  end
-
-  local function show_damage_area_indicator(center, radius, duration)
-    if not should_show_damage_area_debug() or not center or (tonumber(radius) or 0) <= 0 then
-      return
-    end
-    local scale = math.max(0.6, (tonumber(radius) or 0) / DAMAGE_AREA_DEBUG_SCALE_BASE)
-    local forced = tonumber(STATE and STATE.debug_force_projectile_key) or 0
-    local key = forced > 0 and math.floor(forced) or 201392033
-    pcall(y3.projectile.create, {
-      key = key,
-      target = center,
-      socket = 'origin',
-      owner = STATE and STATE.hero or nil,
-      angle = 0,
-      time = duration or 0.35,
-      remove_immediately = true,
-    })
-  end
-
-  local function show_line_area_indicator(start_point, end_point, half_width, duration)
-    if not should_show_damage_area_debug() then
-      return
-    end
-    if not start_point or not end_point or not start_point.get_distance_with then
-      return
-    end
-    local distance = tonumber(start_point:get_distance_with(end_point)) or 0
-    if distance <= 0 then
-      return
-    end
-    local angle = start_point.get_angle_with and start_point:get_angle_with(end_point) or 0
-    local step = math.max(80, tonumber(half_width) or 80)
-    local count = math.max(1, math.floor(distance / step))
-    for i = 0, count do
-      local ratio = count > 0 and (i / count) or 0
-      local offset = distance * ratio
-      local point = nil
-      if y3.point and y3.point.get_point_offset_vector then
-        point = y3.point.get_point_offset_vector(start_point, angle, offset)
-      end
-      show_damage_area_indicator(point or start_point, half_width, duration or 0.30)
-    end
-  end
-
-  local function get_damage_debug_radius(skill, options)
-    if options and options.debug_radius and tonumber(options.debug_radius) then
-      return math.max(40, tonumber(options.debug_radius))
-    end
-    if type(skill) == 'table' then
-      local radius = tonumber(skill.base_explosion_radius) or tonumber(skill.explosion_radius) or
-      tonumber(skill.base_radius)
-      if radius and radius > 0 then
-        return math.max(40, radius)
-      end
-    end
-    return 70
-  end
-
-  local raw_deal_skill_damage = deal_skill_damage
-  deal_skill_damage = function(unit, amount, skill, options)
-    if unit and unit.is_exist and unit:is_exist() then
-      local point = get_unit_point_snapshot(unit)
-      show_damage_area_indicator(point, get_damage_debug_radius(skill, options), 0.28)
-    end
-    return raw_deal_skill_damage(unit, amount, skill, options)
-  end
+  -- deal_skill_damage is passed from env, no need to wrap
 
   local function resolve_runtime_text_type(text_type)
     if is_damage_text_hidden() then
@@ -334,151 +258,6 @@ function M.create(env)
     return math.max(1, round_number(range))
   end
 
-  local function get_basic_attack_animation_names()
-    if STATE.basic_attack_animation_names then
-      return STATE.basic_attack_animation_names
-    end
-
-    local names = {}
-    if STATE.hero and STATE.hero:is_exist() then
-      local hero_key = STATE.hero:get_key()
-      local editor_unit = hero_key and y3.object.unit[hero_key] or nil
-      local animation_items = editor_unit
-          and editor_unit.data
-          and editor_unit.data.simple_common_atk
-          and editor_unit.data.simple_common_atk.ability_animations
-          and editor_unit.data.simple_common_atk.ability_animations.items
-          or nil
-      if type(animation_items) == 'table' then
-        for _, name in ipairs(animation_items) do
-          if type(name) == 'string' and name ~= '' then
-            names[#names + 1] = name
-          end
-        end
-      end
-    end
-
-    if #names == 0 then
-      names[1] = 'attack1'
-    end
-
-    STATE.basic_attack_animation_names = names
-    return names
-  end
-
-  local function play_basic_attack_animation()
-    if not STATE.hero or not STATE.hero:is_exist() then
-      return
-    end
-
-    local names = get_basic_attack_animation_names()
-    if #names == 0 then
-      return
-    end
-
-    STATE.basic_attack_animation_index = (STATE.basic_attack_animation_index or 0) + 1
-    local index = ((STATE.basic_attack_animation_index - 1) % #names) + 1
-    local animation_name = names[index]
-    if animation_name and animation_name ~= '' then
-      STATE.hero:play_animation(animation_name, 1.0, nil, nil, false, true)
-    end
-  end
-
-  local function build_basic_attack_ability_description(skill)
-    if not skill then
-      return '当前普攻技能。'
-    end
-
-    local lines = {
-      string.format('当前普攻：造成 %.0f%% 攻击的物理伤害。', (skill.damage_ratio or 0) * 100),
-      string.format('当前射程：%d。', get_current_basic_attack_range()),
-    }
-
-    local multishot_count, multishot_ratio = get_basic_attack_multishot_bonus()
-    local runtime_chain_count, runtime_chain_chance, runtime_chain_ratio = get_basic_attack_runtime_chain_stats()
-    local bonus_chain_count, bonus_chain_ratio = get_basic_attack_bonus_chain_stats()
-
-    local runtime = STATE.skill_runtime or {}
-    local normal_attack_bonus_ratio = tonumber(runtime.normal_attack_bonus_ratio) or 0
-    local splash_ratio = tonumber(runtime.splash_ratio) or 0
-    local splash_radius = tonumber(runtime.splash_radius) or 0
-
-    if normal_attack_bonus_ratio > 0 then
-      lines[#lines + 1] = string.format(
-        '额外追伤：%.0f%% 攻击。',
-        normal_attack_bonus_ratio * 100
-      )
-    end
-
-    if splash_ratio > 0 then
-      lines[#lines + 1] = string.format(
-        '溅射：%.0f%% 攻击，半径 %d。',
-        splash_ratio * 100,
-        round_number(splash_radius)
-      )
-    end
-
-    if runtime_chain_count > 0 and runtime_chain_chance > 0 and runtime_chain_ratio > 0 then
-      lines[#lines + 1] = string.format(
-        '弹射：%.0f%% 概率弹射 %d 个目标，造成 %.0f%% %s伤害。',
-        runtime_chain_chance * 100,
-        runtime_chain_count,
-        runtime_chain_ratio * 100,
-        skill.damage_label or '额外'
-      )
-    end
-
-    if multishot_count > 0 and multishot_ratio > 0 then
-      lines[#lines + 1] = string.format(
-        '多重：额外命中 %d 个目标，造成 %.0f%% 伤害。',
-        multishot_count,
-        multishot_ratio * 100
-      )
-    end
-
-    if get_effective_skill_value(skill, 'explosion_ratio') > 0 and get_effective_skill_value(skill, 'explosion_radius') > 0 then
-      lines[#lines + 1] = string.format(
-        '剑爆：命中后炸裂，对半径 %d 范围造成 %.0f%% 伤害。',
-        round_number(get_effective_skill_value(skill, 'explosion_radius')),
-        get_effective_skill_value(skill, 'explosion_ratio') * 100
-      )
-    end
-
-    if bonus_chain_count > 0 and bonus_chain_ratio > 0 then
-      lines[#lines + 1] = string.format(
-        '月刃：命中后额外弹射 %d 个目标，造成 %.0f%% 伤害。',
-        bonus_chain_count,
-        bonus_chain_ratio * 100
-      )
-    end
-
-    local execute_threshold = tonumber(runtime.execute_threshold) or 0
-    if execute_threshold > 0 then
-      lines[#lines + 1] = string.format(
-        '处决：目标生命低于 %.0f%% 时立即击杀。',
-        execute_threshold * 100
-      )
-    end
-
-    if get_effective_skill_value(skill, 'split_count') > 0 then
-      lines[#lines + 1] = string.format(
-        '分裂：额外命中 %d 个目标，造成 %.0f%% 伤害。',
-        round_number(get_effective_skill_value(skill, 'split_count')),
-        get_effective_skill_value(skill, 'split_ratio') * 100
-      )
-    end
-
-    if get_effective_skill_value(skill, 'armor_break_ratio') > 0 then
-      lines[#lines + 1] = string.format(
-        '破甲：命中附加 %.0f%% 破甲，持续 %.1f 秒。',
-        get_effective_skill_value(skill, 'armor_break_ratio') * 100,
-        get_effective_skill_value(skill, 'armor_break_duration')
-      )
-    end
-
-    return table.concat(lines, '\n')
-  end
-
   local function disable_native_basic_attack_ability(ability)
     if not ability or not ability:is_exist() then
       return
@@ -516,7 +295,6 @@ function M.create(env)
 
     if skill then
       ability:set_name(skill.name)
-      ability:set_description(build_basic_attack_ability_description(skill))
     end
 
     return ability
@@ -1526,7 +1304,6 @@ function M.create(env)
       STATE.current_damage_is_critical = true
     end
 
-    show_damage_area_indicator(get_unit_point_snapshot(target), get_damage_debug_radius(skill, options), 0.22)
     reserve_formula_damage(target, final_damage, {
       source = 'basic_attack',
       skill_id = skill and skill.id or nil,
@@ -1728,7 +1505,6 @@ function M.create(env)
     if not center or radius <= 0 then
       return {}
     end
-    show_damage_area_indicator(center, radius, 0.40)
     return skill_damage_api.area(center, radius, amount, skill, {
       visual = options,
       except_unit = options and options.except_unit or nil,
@@ -1883,12 +1659,6 @@ function M.create(env)
         apply_generic_skill_statuses(skill, target)
       end
       if origin_point and center then
-        show_line_area_indicator(
-          origin_point,
-          center,
-          math.max(60, (skill.pierce_width or 110)),
-          0.35
-        )
         for _, unit in ipairs(deal_line_skill_damage(
           origin_point,
           center,
@@ -1954,7 +1724,6 @@ function M.create(env)
           if not context.origin_point or not context.impact_point then
             return false
           end
-          show_line_area_indicator(context.origin_point, context.impact_point, context.line_width, 0.24)
           play_skill_particle_on_point(skill, context.impact_point, 'sustain', 12)
           play_skill_audio(skill, 'tick', context.impact_point)
           return true
@@ -2490,7 +2259,9 @@ function M.create(env)
       end
     end
     play_skill_particle_on_unit(skill, STATE.hero, 'cast')
-    play_basic_attack_animation()
+    if STATE.hero and STATE.hero:is_exist() then
+      STATE.hero:play_animation('attack1', 1.0, nil, nil, false, true)
+    end
     if play_basic_attack_sound then
       play_basic_attack_sound(STATE.hero)
     end
@@ -2909,23 +2680,6 @@ function M.create(env)
     update_active_skills(dt)
   end
 
-  local function debug_cast_basic_attack_once()
-    local skill = get_basic_attack_skill()
-    if not skill or not STATE.hero or not STATE.hero:is_exist() then
-      return false, '普攻能力未就绪'
-    end
-    if STATE.basic_attack_enabled == false then
-      return false, '普攻已被禁止'
-    end
-    local target = pick_skill_target(skill)
-    if not target then
-      return false, '未找到普攻目标'
-    end
-    cast_attack_skill_once(skill, target)
-    skill.cooldown_remaining = get_basic_attack_interval(skill)
-    return true, '已施放普攻能力'
-  end
-
   return {
     get_basic_attack_skill = get_basic_attack_skill,
     get_current_basic_attack_range = get_current_basic_attack_range,
@@ -2939,7 +2693,6 @@ function M.create(env)
     show_attack_skill_loadout = show_attack_skill_loadout,
     unlock_attack_skill = unlock_attack_skill,
     get_skill_damage_template_id = get_skill_damage_template_id,
-    debug_cast_basic_attack_once = debug_cast_basic_attack_once,
     update_enemy_statuses = update_enemy_statuses,
     set_active_skill_ids = set_active_skill_ids,
     get_active_skill_ids = get_active_skill_ids,

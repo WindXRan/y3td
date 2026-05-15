@@ -1,4 +1,4 @@
-﻿local EditorJsonTable = require 'data.tables.editor_json_table'
+local EditorJsonTable = require 'data.tables.editor_json_table'
 local CsvLoader = require 'data.csv_loader'
 local ArchiveTabDefinitions = require 'data.tables.archive_tab_definitions'
 local TipBlockStyle = require 'data.tables.tip_block_style'
@@ -250,7 +250,7 @@ local function append_source_rows(target, table_name, fallback_primary)
 end
 
 local function append_csv_rows(target, csv_path, source_name, fallback_primary)
-  local rows = CsvLoader.read_rows_optional(csv_path)
+  local rows = CsvLoader.read_rows_optional({path = csv_path})
   for index, row in ipairs(rows or {}) do
     target[#target + 1] = {
       row = row,

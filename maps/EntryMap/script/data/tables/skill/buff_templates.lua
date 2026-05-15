@@ -1,6 +1,6 @@
 local CsvLoader = require 'data.csv_loader'
 
-local rows = CsvLoader.read_rows_optional('data_csv/buff_templates.csv')
+local rows = CsvLoader.read_rows_optional({path = 'data_csv/buff_templates.csv'})
 
 local M = {
   list = {},

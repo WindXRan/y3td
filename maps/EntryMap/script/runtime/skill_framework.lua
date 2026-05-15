@@ -429,7 +429,11 @@ function M.create(env)
       local center = impact_point or hero_point
       local fx_scale = impact_fx_scale(skill)
       local impact_delay = resolve_impact_delay(skill)
-      spawn_particle(y3, cast_ctx.caster, visual_key(skill, 'cast'), fx_scale * 0.95, 0.20, 24)
+      local cast_particle = visual_key(skill, 'cast')
+      if skill.id == 'ice_bird' then
+        print('[DEBUG] ice_bird cast_particle:', cast_particle, 'caster:', cast_ctx.caster, 'caster.is_exist:', cast_ctx.caster and cast_ctx.caster.is_exist and cast_ctx.caster:is_exist())
+      end
+      spawn_particle(y3, cast_ctx.caster, cast_particle, fx_scale * 0.95, 0.20, 24)
       fire_hook(skill, 'OnSpellStart', cast_ctx)
       local function do_impact(impact_pt)
         local pt = impact_pt
@@ -454,6 +458,9 @@ function M.create(env)
         fire_hook(skill, 'OnFinish', cast_ctx)
       end
       local proj_key = visual_key(skill, 'projectile_key')
+      if skill.id == 'ice_bird' then
+        print('[DEBUG] ice_bird execute_projectile: proj_key=', proj_key, 'impact_delay=', impact_delay, 'launch_projectile_from_hero=', launch_projectile_from_hero)
+      end
       if proj_key and launch_projectile_from_hero then
         launch_projectile_from_hero(proj_key, target, center, nil, impact_delay, visual_key(skill, 'projectile_height'), do_impact)
       elseif impact_delay > 0 then
@@ -987,6 +994,9 @@ function M.create(env)
 
   function api.register(def)
     local skill = normalize_skill(def)
+    if skill.id == 'ice_bird' then
+      print('[DEBUG] ice_bird register: projectile_key=', skill.visual and skill.visual.projectile_key)
+    end
     apply_production_limits(skill)
     local visual_ok, visual_reason = validate_visual_config(skill)
     if not visual_ok then

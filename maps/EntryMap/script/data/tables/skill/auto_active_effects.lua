@@ -1,8 +1,8 @@
-﻿local CsvLoader = require 'data.csv_loader'
+local CsvLoader = require 'data.csv_loader'
 local helpers = require 'data.tables.helpers'
 
-local effect_rows = CsvLoader.read_rows_optional('data_csv/auto_active_effects.csv')
-local attr_rows = CsvLoader.read_rows_optional('data_csv/auto_active_effect_attr.csv')
+local effect_rows = CsvLoader.read_rows_optional({path = 'data_csv/auto_active_effects.csv'})
+local attr_rows = CsvLoader.read_rows_optional({path = 'data_csv/auto_active_effect_attr.csv'})
 local attr_groups = CsvLoader.group_by(attr_rows, 'effect_id')
 
 local OPTIONAL_NUMBER_FIELDS = {

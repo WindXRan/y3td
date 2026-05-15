@@ -323,6 +323,12 @@
         "item_key": 134239301, 
         "prop_key": "name"
     }, 
+    "819085813": {
+        "editor_type": "projectile_all", 
+        "index_type": "object_editor", 
+        "item_key": 134232384, 
+        "prop_key": "desc"
+    }, 
     "822788965": {
         "editor_type": "editor_unit", 
         "index_type": "object_editor", 
@@ -472,5 +478,11 @@
         "index_type": "object_editor", 
         "item_key": 134259567, 
         "prop_key": "name"
+    }, 
+    "lib_fire_mid": {
+        "editor_type": "projectile_all", 
+        "index_type": "object_editor", 
+        "item_key": 201392012, 
+        "prop_key": "desc"
     }
 }

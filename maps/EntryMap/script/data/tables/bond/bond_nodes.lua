@@ -1,6 +1,6 @@
 local CsvLoader = require 'data.csv_loader'
 
-local node_rows = CsvLoader.read_rows_optional('data_csv/by_feature/bond/bond_skills.csv')
+local node_rows = CsvLoader.read_rows_optional({path = 'data_csv/by_feature/bond/bond_skills.csv'})
 
 local list = {}
 local by_id = {}

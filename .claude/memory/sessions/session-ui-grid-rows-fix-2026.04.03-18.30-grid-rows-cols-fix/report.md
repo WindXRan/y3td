@@ -47,4 +47,4 @@
    - 列表格式增加 `direction=xxx`
 
 ## 影响文件
-- `.codemaker/skills/y3-ui-generator/SKILL.md` — 行列识别规则、属性表、示例
+- `.claude/skills/y3-ui-generator/SKILL.md` — 行列识别规则、属性表、示例

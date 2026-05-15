@@ -1,7 +1,7 @@
 local CsvLoader = require 'data.csv_loader'
 local HeroAttrDefs = require 'runtime.hero_attr_defs'
 
-local rows = CsvLoader.read_rows_optional('data_csv/attreffect.csv')
+local rows = CsvLoader.read_rows_optional({path = 'data_csv/attreffect.csv'})
 
 local VALID_EFFECT_KINDS = {
   attr = true,

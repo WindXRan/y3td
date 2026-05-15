@@ -42,7 +42,7 @@ local default_list = {
   { id = 'battlepass', slot = 7, label = '战令', title = '战令',     action = 'open_battlepass',       visible_in_outgame = true, visible_in_battle = true },
 }
 
-local rows = CsvLoader.read_rows_optional('data_csv/outgame/outgame_top_entry_list.csv')
+local rows = CsvLoader.read_rows_optional({path = 'data_csv/outgame/outgame_top_entry_list.csv'})
 local list = {}
 
 for row_index, row in ipairs(rows) do

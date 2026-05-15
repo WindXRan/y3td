@@ -245,26 +245,6 @@ function M.create_gm_bond_effects_system(deps)
             end
             return false, '普攻能力系统未初始化。'
         end,
-        set_n0_activation_mode = function(mode)
-            if deps.battle_auto_acceptance_system and deps.battle_auto_acceptance_system.set_activation_mode then
-                deps.battle_auto_acceptance_system.set_activation_mode(mode)
-                return true
-            end
-            return false
-        end,
-        set_n0_single_bond_name = function(bond_name)
-            if deps.battle_auto_acceptance_system and deps.battle_auto_acceptance_system.set_single_bond_name then
-                deps.battle_auto_acceptance_system.set_single_bond_name(bond_name)
-                return true
-            end
-            return false
-        end,
-        restart_n0_auto_acceptance = function()
-            if deps.battle_auto_acceptance_system and deps.battle_auto_acceptance_system.restart_current_run then
-                return deps.battle_auto_acceptance_system.restart_current_run() == true
-            end
-            return false
-        end,
         debug_set_global_projectile_override = function(projectile_key)
             if deps.debug_actions_system and deps.debug_actions_system.debug_set_global_projectile_override then
                 return deps.debug_actions_system.debug_set_global_projectile_override(projectile_key)
@@ -310,34 +290,12 @@ function M.create_battle_auto_acceptance_system(deps)
         CONFIG = deps.CONFIG,
         y3 = deps.y3,
         message = deps.message,
-        auto_start_in_n0 = true,
         is_battle_active = function()
             return deps.STATE.session_phase == 'battle' and deps.STATE.game_finished ~= true
         end,
         get_enemy_player = deps.get_enemy_player,
         has_unit_data = function(unit_id)
             return deps.battlefield_system and deps.battlefield_system.has_unit_data and deps.battlefield_system.has_unit_data(unit_id) or false
-        end,
-        activate_modifier_bond_effect = function(bond_name, grant_missing_cards)
-            return BondSystem.debug_activate_modifier_bond(deps.create_bond_env(), bond_name, grant_missing_cards)
-        end,
-        activate_single_modifier_bond_effect = function(bond_name, grant_missing_cards)
-            return BondSystem.debug_activate_single_modifier_bond(deps.create_bond_env(), bond_name, grant_missing_cards)
-        end,
-        clear_active_modifier_bond_effects = function()
-            return BondSystem.debug_clear_active_modifier_bonds(deps.create_bond_env())
-        end,
-        set_force_special_effects_100 = function(enabled)
-            BondModifierEffects.set_force_special_effects_100(enabled)
-        end,
-        run_bond_self_test = function()
-            return nil
-        end,
-        get_game_time = function()
-            if deps.y3 and deps.y3.game and deps.y3.game.current_game_run_time then
-                return tonumber(deps.y3.game.current_game_run_time()) or 0
-            end
-            return 0
         end,
     })
 end

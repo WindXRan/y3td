@@ -6,7 +6,7 @@ local M = {}
 -- 注：同事的 skill_visuals.csv 按羁绊名映射，本表按元素名映射，两者互补。
 local ELEMENT_VFX = {
   fire = {
-    projectile_key = 201392012,   -- lib_fire_mid (speed=1500)
+    projectile_key = 134231135,   -- fallback projectile
     projectile_time = 0.92,
     projectile_height = 32,
     cast = 104727,
@@ -15,7 +15,7 @@ local ELEMENT_VFX = {
     hit = 103953,
   },
   lightning = {
-    projectile_key = 201392043,   -- lib_lightning_heavy (speed=1250)
+    projectile_key = 134231135,   -- fallback projectile
     projectile_time = 0.82,
     projectile_height = 28,
     cast = 106074,
@@ -24,7 +24,7 @@ local ELEMENT_VFX = {
     hit = 106074,
   },
   ice = {
-    projectile_key = 201392022,   -- lib_shadow_mid (speed=1480)
+    projectile_key = 134231135,   -- fallback projectile
     projectile_time = 0.95,
     projectile_height = 22,
     cast = 106070,
@@ -33,7 +33,7 @@ local ELEMENT_VFX = {
     hit = 106070,
   },
   arcane = {
-    projectile_key = 201392032,   -- lib_arcane_mid (speed=1520)
+    projectile_key = 134231135,   -- fallback projectile
     projectile_time = 0.88,
     projectile_height = 26,
     cast = 106065,
@@ -42,7 +42,7 @@ local ELEMENT_VFX = {
     hit = 106065,
   },
   physical = {
-    projectile_key = 201392002,   -- lib_phys_mid (speed=1600)
+    projectile_key = 134231135,   -- fallback projectile
     projectile_time = 0.90,
     projectile_height = 20,
     cast = 106060,
@@ -51,7 +51,7 @@ local ELEMENT_VFX = {
     hit = 106060,
   },
   shadow = {
-    projectile_key = 201392022,   -- lib_shadow_mid (speed=1480)
+    projectile_key = 134231135,   -- fallback projectile
     projectile_time = 0.95,
     projectile_height = 24,
     cast = 106056,
@@ -60,7 +60,7 @@ local ELEMENT_VFX = {
     hit = 106056,
   },
   wind = {
-    projectile_key = 134263445,   -- 龙卷风投射物
+    projectile_key = 134231135,   -- fallback projectile
     projectile_time = 0.90,
     projectile_height = 28,
     cast = 100771,
@@ -258,7 +258,7 @@ function M.build_framework_skill(id, visual)
     def = merge_table(def, alias_patch)
     def.id = requested_id
   end
-  def.visual = merge_table(FRAMEWORK_VISUAL_DEFAULTS[requested_id] or FRAMEWORK_VISUAL_DEFAULTS[base_id], visual or {})
+  def.visual = merge_table(FRAMEWORK_VISUAL_DEFAULTS[requested_id] or FRAMEWORK_VISUAL_DEFAULTS[base_id] or {}, visual or {})
   return def
 end
 
@@ -307,16 +307,16 @@ function M.build_element_skill(element, pattern, tier, overrides)
   if not base_id then
     return nil
   end
-  local vfx = ELEMENT_VFX[element]
-  if not vfx then
-    vfx = ELEMENT_VFX.physical
-  end
   local patched_overrides = normalize_flat_overrides(overrides or {})
   patched_overrides.pattern = normalized_pattern
   if not patched_overrides.sub_behavior or patched_overrides.sub_behavior == '' then
     patched_overrides.sub_behavior = legacy and legacy.sub_behavior or (normalized_pattern == 'area' and 'burst' or 'base')
   end
-  local def = M.build_production_skill(base_id, tier, vfx, patched_overrides)
+  
+  local custom_vfx = patched_overrides.visual
+  patched_overrides.visual = nil
+  
+  local def = M.build_production_skill(base_id, tier, custom_vfx or {}, patched_overrides)
   if def and overrides and overrides.id then
     def.id = overrides.id
   end
@@ -343,5 +343,6 @@ end
 -- 供 sample_skills / generated_skills 等模块复用，避免多处维护映射
 M.PATTERN_TO_BASE = PATTERN_TO_BASE
 M.PATTERN_SUB_BEHAVIOR = PATTERN_SUB_BEHAVIOR
+M.ELEMENT_VFX = ELEMENT_VFX
 
 return M

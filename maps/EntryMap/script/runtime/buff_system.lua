@@ -307,7 +307,13 @@ function M.tick_dot(unit_key, inst)
     if unit and unit.is_exist and unit:is_exist() then
       local damage_per_stack = math.abs(template.attr_value)
       local total_damage = damage_per_stack * inst.stacks
-      -- 尝试用 source 触发带跳字的伤害
+      
+      if STATE.hero and STATE.hero:is_exist() and unit == STATE.hero then
+        print(string.format('[buff_system] DOT伤害跳过英雄自身: target_key=%s damage=%s',
+          tostring(unit_key), tostring(total_damage)))
+        return
+      end
+      
       local source = nil
       if inst.source_key then
         source = find_unit_by_key(inst.source_key)
@@ -327,6 +333,7 @@ function M.tick_dot(unit_key, inst)
           target = unit,
           damage = total_damage,
           type = '法术',
+          source_unit = source,
           text_type = 'magic',
           text_track = 934269508,
           common_attack = false,
@@ -335,12 +342,10 @@ function M.tick_dot(unit_key, inst)
         if not ok then
           print(string.format('[buff_system] dot damage failed: %s target_key=%s damage=%s | %s',
             tostring(template.id), tostring(unit_key), tostring(total_damage), tostring(err)))
-          pcall(unit.add_hp, unit, -total_damage)
         end
       else
-        print(string.format('[buff_system] dot fallback add_hp: %s target_key=%s damage=%s',
+        print(string.format('[buff_system] dot fallback skipped for hero: %s target_key=%s damage=%s',
           tostring(template.id), tostring(unit_key), tostring(total_damage)))
-        pcall(unit.add_hp, unit, -total_damage)
       end
     elseif template.id == 'burn' then
       inst.dot_debug_count = (inst.dot_debug_count or 0) + 1

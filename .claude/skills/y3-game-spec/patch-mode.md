@@ -89,7 +89,7 @@ description: >
         ▼
 ┌───────────────┐
 │ Step 9        │
-│ Memory 记录   │───▶ 记录到 <agent>/memory/
+│ Memory 记录   │───▶ 记录到 .claude/memory/
 └───────────────┘
 ```
 
@@ -354,7 +354,7 @@ Lua（逻辑层）
 
 ## Step 9：Memory 记录
 
-记录到 `<agent>/memory/` 系统：
+记录到 `.claude/memory/` 系统：
 
 ```markdown
 ## Patch: {brief}

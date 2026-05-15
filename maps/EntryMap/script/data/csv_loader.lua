@@ -1,4 +1,12 @@
 local M = {}
+local Json = nil
+
+local function get_json()
+  if not Json then
+    Json = require 'y3.tools.json'
+  end
+  return Json
+end
 
 local function get_script_root()
   local source = debug.getinfo(1, 'S').source or ''
@@ -78,10 +86,10 @@ local function parse_csv_line_fast(line)
           i = i + 1
         end
       end
+      result[#result + 1] = table.concat(current)
+      current = {}
       i = i + 1
       if line:sub(i, i) == ',' then
-        result[#result + 1] = table.concat(current)
-        current = {}
         i = i + 1
       end
     elseif c == ',' then
@@ -96,6 +104,11 @@ local function parse_csv_line_fast(line)
 
   if #current > 0 then
     result[#result + 1] = table.concat(current)
+  end
+
+  -- 处理 CSV 末尾逗号产生的空字段（例如 "a,b,c," → 应有 4 个字段，最后一个是空字符串）
+  if line:sub(-1, -1) == ',' then
+    result[#result + 1] = ''
   end
 
   for j = 1, #result do
@@ -153,9 +166,21 @@ local function read_rows_safe(path, optional)
           row[headers[index]] = values[index] or ''
         end
 
+        -- 跳过 __字段说明__ 注释行和空行的列数不匹配警告
+        local first_value = tostring(row[headers[1]] or '')
+        local is_field_comment = (first_value == '__字段说明__')
+
+        if #values ~= header_len and not is_field_comment then
+          warn_once(
+            warned_invalid_paths,
+            resolved .. ':' .. line_num,
+            string.format('[csv] row %d has %d values but header has %d columns in %s', 
+              line_num, #values, header_len, resolved)
+          )
+        end
+
         if header_len > 0 then
-          local first_value = tostring(row[headers[1]] or '')
-          if first_value ~= '__字段说明__' and first_value ~= '' then
+          if not is_field_comment and first_value ~= '' then
             rows[#rows + 1] = row
           end
         end
@@ -181,12 +206,87 @@ local function read_rows_safe(path, optional)
   return rows
 end
 
-function M.read_rows(path)
-  return read_rows_safe(path, false)
+function M.read_rows(options)
+  return read_rows_safe(options.path, false)
 end
 
-function M.read_rows_optional(path)
-  return read_rows_safe(path, true)
+function M.read_rows_optional(options)
+  return read_rows_safe(options.path, true)
+end
+
+local json_cache = {}
+
+function M.read_json(options)
+  if json_cache[options.path] then
+    return json_cache[options.path]
+  end
+
+  local resolved = resolve_path(options.path)
+  local file, err = io.open(resolved, 'r')
+  if not file then
+    warn_once(
+      warned_missing_paths,
+      resolved,
+      string.format('[csv] JSON file missing: %s (%s)', resolved, tostring(err))
+    )
+    return nil
+  end
+
+  local content = file:read('*a')
+  file:close()
+
+  local json = get_json()
+  local ok, data = pcall(json.decode, content)
+  if not ok then
+    warn_once(
+      warned_invalid_paths,
+      resolved,
+      string.format('[csv] JSON parse error in %s: %s', resolved, tostring(data))
+    )
+    return nil
+  end
+
+  json_cache[options.path] = data
+  return data
+end
+
+function M.read_json_optional(options)
+  local resolved = resolve_path(options.path)
+  local file, err = io.open(resolved, 'r')
+  if not file then
+    return nil
+  end
+  file:close()
+  return M.read_json(options)
+end
+
+function M.read_rows_as_map(options)
+  local id_key = options.id_field or 'skill_id'
+  local rows = M.read_rows_optional(options)
+  local result = {}
+
+  for _, row in ipairs(rows) do
+    local id = row[id_key]
+    if id and id ~= '' and id ~= '__字段说明__' then
+      result[id] = row
+    end
+  end
+
+  return result
+end
+
+function M.read_rows_as_map_optional(options)
+  local resolved = resolve_path(options.path)
+  local file = io.open(resolved, 'r')
+  if not file then
+    return {}
+  end
+  file:close()
+  return M.read_rows_as_map(options)
+end
+
+function M.clear_json_cache()
+  json_cache = {}
 end
 
 function M.group_by(rows, key_field)
@@ -264,35 +364,48 @@ function M.clear_cache()
   file_cache = {}
 end
 
+function M.clear_json_cache()
+  json_cache = {}
+end
+
+function M.clear_all_caches()
+  M.clear_cache()
+  M.clear_json_cache()
+end
+
 function M.get_cache_info()
   local info = {
-    cached_files = {},
-    total_rows = 0
+    csv_cached_files = {},
+    csv_total_rows = 0,
+    json_cached_files = {},
   }
   for path, rows in pairs(file_cache) do
-    info.cached_files[#info.cached_files + 1] = path
-    info.total_rows = info.total_rows + #rows
+    info.csv_cached_files[#info.csv_cached_files + 1] = path
+    info.csv_total_rows = info.csv_total_rows + #rows
+  end
+  for path, _ in pairs(json_cache) do
+    info.json_cached_files[#info.json_cached_files + 1] = path
   end
   return info
 end
 
-function M.process_rows(csv_path, order_key, builder, optional)
-  local rows = optional and M.read_rows_optional(csv_path) or M.read_rows(csv_path)
+function M.process_rows(options)
+  local rows = options.optional and M.read_rows_optional(options) or M.read_rows(options)
   local list = {}
 
   for _, row in ipairs(rows) do
-    local ok, result = pcall(builder, row)
+    local ok, result = pcall(options.builder, row)
     if ok then
       list[#list + 1] = result
     else
-      warn_once(warned_invalid_paths, csv_path,
-        string.format('[csv] row processing failed in %s: %s', csv_path, tostring(result)))
+      warn_once(warned_invalid_paths, options.path,
+        string.format('[csv] row processing failed in %s: %s', options.path, tostring(result)))
     end
   end
 
-  if order_key then
+  if options.order_key then
     table.sort(list, function(a, b)
-      return (a[order_key] or 0) < (b[order_key] or 0)
+      return (a[options.order_key] or 0) < (b[options.order_key] or 0)
     end)
   end
 

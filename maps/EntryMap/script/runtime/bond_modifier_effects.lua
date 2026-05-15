@@ -1005,10 +1005,6 @@ local function drive_summon_attack(env, summon)
 end
 
 local function schedule_summon_lifecycle_fx(env, hero, visual_cfg, duration_sec, summon_kind)
-  local auto_acceptance = env and env.STATE and env.STATE.battle_auto_acceptance or nil
-  if auto_acceptance and auto_acceptance.phase_started == true then
-    return false
-  end
   if not hero or not hero.is_exist or not hero:is_exist() then
     return false
   end
@@ -1380,6 +1376,7 @@ local function get_damage_template_api(env)
   end
   env.__bond_damage_template_api = env.__bond_damage_template_api or SkillDamageTemplates.create({
     y3 = env.y3,
+    STATE = env.STATE,
     deal_skill_damage = function(target, amount, damage_meta, visual)
       env.deal_skill_damage(target, amount, damage_meta, visual)
     end,

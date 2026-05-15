@@ -26,5 +26,5 @@
 
 ## 修改文件
 - `maps/EntryMap/ui/BagPanel.json` — 新建
-- `.codemaker/skills/y3-ui-generator/SKILL.md` — Step 0.3 新增强制规则
-- `.codemaker/rules/rules.mdc` — 核心禁令新增一条
+- `.claude/skills/y3-ui-generator/SKILL.md` — Step 0.3 新增强制规则
+- `.claude/rules/rules.mdc` — 核心禁令新增一条

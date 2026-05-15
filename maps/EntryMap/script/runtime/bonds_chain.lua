@@ -938,6 +938,7 @@ function M.try_trigger_hunter_first_hit(env, target)
     target = target,
     damage = damage,
     type = env.basic_attack_damage_type,
+    source_unit = state.hero,
     text_type = is_damage_text_hidden(state) and nil or 'physics',
     common_attack = false,
     no_miss = true,
@@ -1147,6 +1148,22 @@ local function activate_modifier_bond_effects(state, bond_name)
   for _, card in ipairs(get_modifier_cards_by_bond(bond_name)) do
     runtime.consumed_root_sets[card.id] = true
   end
+
+  for _, effect in ipairs(BondModifierPool.activation_effects or {}) do
+    if effect.bond_name == bond_name then
+      local activation_card = get_modifier_card(effect.id)
+      if activation_card and activation_card.ghost_card == true then
+        runtime.modifier_card_ids[activation_card.id] = true
+        runtime.modifier_card_attr_bonuses[activation_card.id] = copy_bonus_pack(activation_card.attr_pack or {})
+        if activation_card.extra_skill_desc and activation_card.extra_skill_desc ~= '' and activation_card.extra_skill_desc ~= '无' then
+          runtime.modifier_card_effect_ids[activation_card.id] = true
+          BondModifierEffects.ensure_effect_state(runtime, activation_card.bond_name)
+        end
+      end
+      break
+    end
+  end
+
   return activated_names
 end
 

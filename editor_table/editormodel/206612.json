@@ -33,6 +33,7 @@
         0.978, 
         0.0
     ], 
+    "rigidbody_type": 3, 
     "select_effect_scale": 1.0, 
     "size": 1.0, 
     "socket_info": {

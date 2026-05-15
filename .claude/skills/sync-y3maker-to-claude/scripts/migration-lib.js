@@ -521,7 +521,11 @@ function materializeTextPlan(plan, workspace) {
     appliedSpecialFixes: [],
   };
 
-  const legacyRewritten = content.replace(/\.codemaker/g, ".claude").replace(/\.codex/g, ".claude");
+  const legacyRewritten = content
+    .replace(/<agent>/g, ".claude")
+    .replace(/<codemaker>/g, ".claude")
+    .replace(/\.codemaker/g, ".claude")
+    .replace(/\.codex/g, ".claude");
   if (legacyRewritten !== content) {
     content = legacyRewritten;
     flags.rewrittenLegacyPaths = true;
