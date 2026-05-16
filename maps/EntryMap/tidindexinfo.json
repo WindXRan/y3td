@@ -203,6 +203,12 @@
         "item_key": 134226184, 
         "prop_key": "name"
     }, 
+    "-622127294": {
+        "editor_type": "projectile_all", 
+        "index_type": "object_editor", 
+        "item_key": 134244467, 
+        "prop_key": "desc"
+    }, 
     "-452646908": {
         "editor_type": "sound_all", 
         "index_type": "object_editor", 
