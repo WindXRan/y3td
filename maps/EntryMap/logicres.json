@@ -1,13 +1,116 @@
 {
-    "1024": {}, 
-    "2048": {}, 
+    "1024": {
+        "10002": {
+            "id": 10002, 
+            "name": "spawn_area", 
+            "placed_lock": false, 
+            "placed_visibility": true, 
+            "pos": {
+                "__tuple__": true, 
+                "items": [
+                    [
+                        -8, 
+                        3043942400
+                    ], 
+                    [
+                        0, 
+                        0
+                    ], 
+                    [
+                        -1, 
+                        588849152
+                    ]
+                ]
+            }, 
+            "tags": {
+                "__tuple__": true, 
+                "items": []
+            }, 
+            "type": 1024
+        }, 
+        "10003": {
+            "id": 10003, 
+            "name": "\u70b9", 
+            "placed_lock": false, 
+            "placed_visibility": true, 
+            "pos": {
+                "__tuple__": true, 
+                "items": [
+                    [
+                        -11, 
+                        1039810560
+                    ], 
+                    [
+                        0, 
+                        0
+                    ], 
+                    [
+                        -12, 
+                        943652864
+                    ]
+                ]
+            }, 
+            "tags": {
+                "__tuple__": true, 
+                "items": []
+            }, 
+            "type": 1024
+        }
+    }, 
+    "2048": {
+        "10000": {
+            "color": null, 
+            "height": {
+                "__tuple__": true, 
+                "items": [
+                    -10, 
+                    0
+                ]
+            }, 
+            "id": 10000, 
+            "name": "spawn_area", 
+            "placed_lock": false, 
+            "placed_visibility": true, 
+            "pos": {
+                "__tuple__": true, 
+                "items": [
+                    [
+                        1, 
+                        3555448832
+                    ], 
+                    [
+                        0, 
+                        0
+                    ], 
+                    [
+                        4, 
+                        2421043200
+                    ]
+                ]
+            }, 
+            "sound": null, 
+            "tags": {
+                "__tuple__": true, 
+                "items": []
+            }, 
+            "type": 2048, 
+            "weather": 0, 
+            "width": {
+                "__tuple__": true, 
+                "items": [
+                    30, 
+                    0
+                ]
+            }
+        }
+    }, 
     "4096": {}, 
     "8192": {}, 
     "32768": {
         "9999": {
             "camera_dist": 30.0, 
             "far": 1000.0, 
-            "focus_max_dist": 400.0, 
+            "focus_max_dist": 40.0, 
             "focus_min_dist": 10.0, 
             "focus_x": 0.0, 
             "focus_y": 0.0, 
@@ -18,12 +121,12 @@
             "is_origin_cam": true, 
             "is_ortho": false, 
             "name": "\u521d\u59cb\u955c\u5934", 
-            "ortho_scale": 1, 
-            "pitch": 0.9773843811168246, 
+            "ortho_scale": 1.0, 
+            "pitch": 0.9773843865841627, 
             "placed_lock": false, 
-            "placed_visibility": false, 
+            "placed_visibility": true, 
             "roll": 0.0, 
-            "set_camera_conf_realtime": null, 
+            "set_camera_conf_realtime": true, 
             "type": 32768, 
             "yaw": 0.0
         }

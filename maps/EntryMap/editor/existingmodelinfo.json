@@ -6,5 +6,69 @@
    "\u521d\u59cb\u955c\u5934", 
    32768
   ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   1, 
+   "\u82f1\u96c4\u6a21\u677f", 
+   1
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   10000, 
+   "spawn_area", 
+   2048
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   1, 
+   "\u5b9d\u7bb1\u602a", 
+   16777216
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   7, 
+   "\u7cbe\u82f1\u6a21\u677f", 
+   4
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   8, 
+   "BOSS\u6a21\u677f", 
+   4
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   9, 
+   "\u5c0f\u602a\u6a21\u677f", 
+   4
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   10002, 
+   "spawn_area", 
+   1024
+  ]
+ }, 
+ {
+  "__tuple__": true, 
+  "items": [
+   10003, 
+   "\u70b9", 
+   1024
+  ]
  }
 ]

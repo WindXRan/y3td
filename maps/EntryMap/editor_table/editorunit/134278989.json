@@ -150,7 +150,7 @@
     }, 
     "hit_rate": 100.0, 
     "hit_rate_grow": 0.0, 
-    "hp_max": 300.0, 
+    "hp_max": 1.0, 
     "hp_max_grow": 0.0, 
     "hp_rec": 10, 
     "hp_rec_grow": 1, 
@@ -233,7 +233,7 @@
         "__tuple__": true, 
         "items": []
     }, 
-    "preview_billboard_health_value": 300.0, 
+    "preview_billboard_health_value": 1.0, 
     "refresh_interval": 1.0, 
     "rescue_finish_return": 0, 
     "rescue_seeker_distance": 3, 
