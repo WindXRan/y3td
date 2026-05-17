@@ -1,4 +1,5 @@
 return function(ctx)
+  local EventBus = require 'runtime.event_bus'
   local STATE = ctx.STATE
   local CONFIG = ctx.CONFIG
   local y3 = ctx.y3
@@ -7,11 +8,9 @@ return function(ctx)
   local api = ctx.api
   local hero_attr_system = ctx.hero_attr_system
   local hero_model = ctx.hero_model
-  local CustomHealthBars = ctx.CustomHealthBars
   local HERO_RUNTIME_FALLBACK_UNIT_ID = ctx.HERO_RUNTIME_FALLBACK_UNIT_ID
 
   local try_create_player_unit = ctx.try_create_player_unit
-  local is_n0_mainline_spawn_disabled = ctx.is_n0_mainline_spawn_disabled
   local has_unit_data = ctx.has_unit_data
   local resolve_runtime_enemy_unit_id = ctx.resolve_runtime_enemy_unit_id
   local get_challenge_charge_count = ctx.get_challenge_charge_count
@@ -21,7 +20,6 @@ return function(ctx)
   local get_challenge_recover_sec = ctx.get_challenge_recover_sec
   local get_scaled_challenge_batch_count = ctx.get_scaled_challenge_batch_count
 
-  local spawn_n0_debug_dummies = ctx.spawn_n0_debug_dummies
   local create_challenge_instance = ctx.create_challenge_instance
   local cleanup_challenge_units = ctx.cleanup_challenge_units
   local spawn_enemy = ctx.spawn_enemy
@@ -33,9 +31,19 @@ return function(ctx)
   local finish_game = ctx.finish_game
   function api.start_wave(index)
     local wave = CONFIG.waves[index]
-    if not wave or STATE.game_finished or STATE.session_phase ~= 'battle' then
+    if not wave then
+      print('[SPAWN DEBUG] start_wave 失败: wave not found, index=' .. tostring(index))
       return
     end
+    if STATE.game_finished then
+      print('[SPAWN DEBUG] start_wave 跳过: game_finished=true')
+      return
+    end
+    if STATE.session_phase ~= 'battle' then
+      print('[SPAWN DEBUG] start_wave 跳过: session_phase=' .. tostring(STATE.session_phase))
+      return
+    end
+    print('[SPAWN DEBUG] start_wave 成功: index=' .. tostring(index) .. ', wave=' .. tostring(wave.name) .. ', spawn_area=' .. tostring(wave.spawn_area_id))
 
     STATE.current_wave_index = index
     STATE.started_wave_count = math.max(STATE.started_wave_count, index)
@@ -50,13 +58,7 @@ return function(ctx)
       next_spawn_sec = 0,
     }
 
-    if env.on_wave_started then
-      env.on_wave_started(index)
-    end
-
-    if is_n0_mainline_spawn_disabled() then
-      spawn_n0_debug_dummies()
-    end
+    EventBus.fire('wave_started', index)
   end
 
   function api.finish_challenge(instance, is_success)
@@ -75,9 +77,7 @@ return function(ctx)
       message(instance.def.name .. ' 失败。')
     end
 
-    if env.on_challenge_finished then
-      env.on_challenge_finished(instance, is_success)
-    end
+    EventBus.fire('challenge_finished', instance, is_success)
   end
 
   local function spawn_challenge_batch(instance, batch_index, batch)
@@ -86,7 +86,7 @@ return function(ctx)
     end
     instance.spawned_batches[batch_index] = true
     local spawned_any = false
-    local batch_count = get_scaled_challenge_batch_count(instance, batch)
+    local batch_count = get_scaled_challenge_batch_count(batch)
 
     for _ = 1, batch_count, 1 do
       local info = spawn_enemy(instance.def.unit_id, instance.def.spawn_area_id, 180.0, {
@@ -116,9 +116,6 @@ return function(ctx)
     if STATE.game_finished or STATE.session_phase ~= 'battle' then
       return
     end
-    if is_n0_mainline_spawn_disabled() then
-      return
-    end
     local def = CONFIG.challenges[challenge_id]
     if not def then
       return
@@ -144,60 +141,28 @@ return function(ctx)
     create_challenge_instance(def, challenge_id)
   end
 
-  function api.start_mainline_task_challenge(task)
-    if STATE.game_finished or STATE.session_phase ~= 'battle' then
-      return nil
-    end
-    if is_n0_mainline_spawn_disabled() then
-      return nil
-    end
-    if not task or not task.id then
-      return nil
-    end
-
-    if not task.spawn_unit_id or not task.spawn_area_id then
-      return nil
-    end
-
-    local instance_id = 'mainline_task:' .. tostring(task.id)
-    if STATE.active_challenges[instance_id] then
-      return nil
-    end
-
-    local target_count = math.max(1, tonumber(task.target_count) or 1)
-    local def = {
-      id = instance_id,
-      mainline_task_id = task.id,
-      name = task.title_text or task.id,
-      duration_sec = tonumber(task.time_limit) or 60,
-      spawn_area_id = task.spawn_area_id,
-      reward = { gold = 0, wood = 0, exp = 0, special = nil },
-      kill_reward = { gold = 0, wood = 0, exp = 0, special = nil },
-      unit_id = resolve_runtime_enemy_unit_id(task.spawn_unit_id),
-      attr_overrides = task.attr_overrides,
-      boss_unit_id = nil,
-      guard_unit_id = nil,
-      batches = {
-        {
-          time_sec = 0,
-          count = target_count,
-        },
-      },
-    }
-    return create_challenge_instance(def, instance_id)
-  end
-
   function api.update_wave(dt)
     local runner = STATE.active_wave
-    if not runner or not runner.active or STATE.game_finished or STATE.session_phase ~= 'battle' then
+    if not runner then
       return
     end
-    if is_n0_mainline_spawn_disabled() then
-      CustomHealthBars.refresh_all(env)
+    if not runner.active then
+      return
+    end
+    if STATE.game_finished then
+      return
+    end
+    if STATE.session_phase ~= 'battle' then
       return
     end
 
     runner.elapsed = runner.elapsed + dt
+
+    if runner.elapsed < 10 and math.floor(runner.elapsed * 2) ~= math.floor((runner.elapsed - dt) * 2) then
+      local should_spawn = can_spawn_main_batch(runner)
+      print(string.format('[SPAWN DEBUG] update_wave: elapsed=%.1f, alive=%d, next_spawn=%.1f, should_spawn=%s',
+        runner.elapsed, runner.alive_count, runner.next_spawn_sec, tostring(should_spawn)))
+    end
 
     while runner.next_spawn_sec <= runner.elapsed do
       if can_spawn_main_batch(runner) then
@@ -213,17 +178,13 @@ return function(ctx)
       local remain = math.max(0, (runner.wave.boss_spawn_sec or 0) - (runner.elapsed or 0))
       if remain <= 6 then
         runner.boss_warning_sent = true
-        if env.on_boss_warning then
-          env.on_boss_warning(runner.wave, remain)
-        end
+        EventBus.fire('boss_warning', runner.wave, remain)
       end
     end
 
     if not runner.boss_spawned and runner.elapsed >= runner.wave.boss_spawn_sec then
       spawn_boss(runner)
     end
-
-    CustomHealthBars.refresh_all(env)
 
     if STATE.enemy_info_map then
       for _, info in pairs(STATE.enemy_info_map) do
@@ -234,9 +195,6 @@ return function(ctx)
 
   function api.update_challenges(dt)
     if STATE.session_phase ~= 'battle' then
-      return
-    end
-    if is_n0_mainline_spawn_disabled() then
       return
     end
 
@@ -289,9 +247,6 @@ return function(ctx)
   end
 
   function api.force_spawn_boss()
-    if is_n0_mainline_spawn_disabled() then
-      return false, '当前关卡配置禁用主线刷怪链路。'
-    end
     local runner = STATE.active_wave
     if not runner or not runner.active then
       return false, '当前没有进行中的主线波次。'
@@ -323,7 +278,7 @@ return function(ctx)
     end
 
     if hero.get_attr then
-      hp = tonumber(hero:get_attr('生命')) or tonumber(hero:get_attr('最大生命')) or 0
+      hp = tonumber(hero:get_attr('生命')) or tonumber(hero:get_attr('hp_max')) or 0
       if hp > 0 then
         return hp
       end
@@ -407,7 +362,10 @@ return function(ctx)
     local initial_attack_range = tonumber(hero_entry_stats['攻击范围']) or basic_attack_range or 2000
     hero_attr_system.set_attr(hero, '攻击范围', math.max(80, math.floor(initial_attack_range)))
 
-    hero:add_state('禁止移动')
+    do
+      local BuffSystem = require 'runtime.buff_system'
+      BuffSystem.apply_buff(hero, 'immobilize', -1, 1, nil)
+    end
     hero:stop()
 
     if CONFIG.debug_time_scale < 1 and CONFIG.debug_apply_hero_bonus_on_spawn == true then
@@ -430,8 +388,6 @@ return function(ctx)
       hero_attr_system.log_snapshot(hero, 'create_hero_after_set_hp', string.format('spawn_hp=%s current_hp=%s', tostring(spawn_hp), tostring(hero:get_hp())))
     end
 
-    CustomHealthBars.apply_hero(env, hero)
-
     hero:event('单位-死亡', function()
       if hero_attr_system and hero_attr_system.log_snapshot then
         hero_attr_system.log_snapshot(
@@ -444,13 +400,11 @@ return function(ctx)
     end)
 
     hero:event('单位-造成伤害后', function(_, data)
-      env.on_hero_damage(data)
+      EventBus.fire('hero_damage', data)
     end)
 
     hero:event('单位-造成伤害时', function(_, data)
-      if env.apply_formula_damage_override then
-        env.apply_formula_damage_override(data)
-      end
+      EventBus.fire('formula_damage_override', data)
     end)
 
     hero:event('单位-受到伤害前', function(_, data)
@@ -487,23 +441,17 @@ return function(ctx)
         return
       end
 
-      if env.on_hero_before_hurt then
-        env.on_hero_before_hurt(data)
-      end
+      EventBus.fire('hero_before_hurt', data)
     end)
 
     hero:event('单位-受到伤害后', function()
       if hero_attr_system and hero_attr_system.log_snapshot then
         hero_attr_system.log_snapshot(hero, 'hero_be_hurt', string.format('hp=%s', tostring(hero:get_hp())))
       end
-      if env.on_hero_be_hurt then
-        env.on_hero_be_hurt()
-      end
+      EventBus.fire('hero_be_hurt')
     end)
 
-    if env.on_hero_attr_changed then
-      env.on_hero_attr_changed()
-    end
+    EventBus.fire('hero_attr_changed')
 
     schedule_hero_spawn_attr_logs(hero)
 
@@ -575,17 +523,6 @@ return function(ctx)
         check_unit('challenge.' .. key .. '.guard_unit_id', challenge.guard_unit_id)
       end
     end
-    for _, task in ipairs(CONFIG.mainline_task_rewards and CONFIG.mainline_task_rewards.list or {}) do
-      if task.spawn_unit_id ~= nil then
-        check_unit('mainline_task[' .. tostring(task.id) .. '].spawn_unit_id', task.spawn_unit_id)
-      else
-        missing[#missing + 1] = string.format('mainline_task[%s].spawn_unit_id: 未配置', tostring(task.id))
-      end
-      if not task.spawn_area_id or not (CONFIG.areas and CONFIG.areas[task.spawn_area_id]) then
-        missing[#missing + 1] = string.format('mainline_task[%s].spawn_area_id: %s', tostring(task.id), tostring(task.spawn_area_id))
-      end
-    end
-
     if #fallback_lines > 0 then
       message('检测到缺失单位物编 ID，主循环将继续并使用 fallback 单位：')
       for _, line in ipairs(fallback_lines) do
@@ -623,8 +560,8 @@ return function(ctx)
     end
     api.destroy_debug_spawn_areas()
     local spawn_keys = {
-      'main_spawn_wave_1', 'main_spawn_wave_2', 'main_spawn_wave_3', 'main_spawn_wave_4', 'main_spawn_wave_5',
-      'boss_spawn_wave_1', 'boss_spawn_wave_2', 'boss_spawn_wave_3', 'boss_spawn_wave_4', 'boss_spawn_wave_5',
+      'main_spawn',
+      'boss_spawn',
       'challenge_spawn_top', 'challenge_spawn_mid', 'challenge_spawn_bottom',
     }
     local player = env.get_player and env.get_player()

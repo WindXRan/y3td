@@ -1,5 +1,3 @@
-local M = {}
-
 local function default_is_enemy(unit)
   return unit and unit.is_exist and unit:is_exist()
 end
@@ -31,18 +29,14 @@ local function is_valid_entity(unit)
   return unit and unit.is_exist and unit:is_exist()
 end
 
-function M.create(env)
-  env = env or {}
-  local y3 = env.y3
-  local deal_skill_damage = env.deal_skill_damage or function() end
-  local get_enemies_in_range = env.get_enemies_in_range or function()
-    return {}
-  end
-  local get_enemies_on_line = env.get_enemies_on_line
-  local is_active_enemy = env.is_active_enemy or default_is_enemy
-  local emit_damage_debug = env.emit_damage_debug
+local y3 = _G.y3 or y3
+local deal_skill_damage = _G.deal_skill_damage or function() end
+local get_enemies_in_range = _G.get_enemies_in_range or function() return {} end
+local get_enemies_on_line = _G.get_enemies_on_line or function() return {} end
+local is_active_enemy = _G.is_active_enemy or default_is_enemy
+local emit_damage_debug = _G.emit_damage_debug_visual and function(vis) _G.emit_damage_debug_visual(vis, nil) end or function() end
 
-  local api = {}
+local api = {}
   local debug_event_seq = 0
 
   local function next_debug_uid(prefix)
@@ -54,19 +48,19 @@ function M.create(env)
     if not is_valid_entity(target) then
       return false
     end
-    
-    if env and env.STATE and env.STATE.hero and is_valid_entity(env.STATE.hero)
-      and target == env.STATE.hero then
+
+    if _G.STATE and _G.STATE.hero and is_valid_entity(_G.STATE.hero)
+      and target == _G.STATE.hero then
       return false
     end
-    
+
     local enemy_ok = is_active_enemy(target)
-    if not enemy_ok and env and env.STATE and env.STATE.hero and is_valid_entity(env.STATE.hero)
-      and env.STATE.hero.is_enemy then
-      local ok, is_enemy_to_hero = pcall(env.STATE.hero.is_enemy, env.STATE.hero, target)
+    if not enemy_ok and _G.STATE and _G.STATE.hero and is_valid_entity(_G.STATE.hero)
+      and _G.STATE.hero.is_enemy then
+      local ok, is_enemy_to_hero = pcall(_G.STATE.hero.is_enemy, _G.STATE.hero, target)
       enemy_ok = ok and is_enemy_to_hero == true
     end
-    
+
     return enemy_ok
   end
 
@@ -301,7 +295,6 @@ function M.create(env)
     return true
   end
 
-  return api
-end
+_G.td_damage_api = api
 
-return M
+return {}

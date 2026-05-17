@@ -1,44 +1,24 @@
 local M = {}
 
-function M.add_value(target, key, value)
-  if not target or not key or value == nil or value == 0 then
-    return
-  end
-  target[key] = (target[key] or 0) + value
+function M.sync_all()
+  -- 这个函数由外部在合适的时机调用
 end
 
-function M.remove_value(target, key, value)
-  if not target or not key or value == nil or value == 0 then
-    return
+function M.scan(state)
+  if not state or not state.bond_runtime or not state.bond_runtime.equipped then
+    return {}
   end
-  target[key] = (target[key] or 0) - value
-  if target[key] == 0 then
-    target[key] = nil
-  end
-end
-
-function M.merge(target, source)
-  if not target or not source then
-    return
-  end
-  for key, value in pairs(source) do
-    M.add_value(target, key, value)
-  end
-end
-
-function M.subtract(target, source)
-  if not target or not source then
-    return
-  end
-  for key, value in pairs(source) do
-    M.remove_value(target, key, value)
-  end
-end
-
-function M.copy(source)
   local result = {}
-  M.merge(result, source)
+  for _, entry in ipairs(state.bond_runtime.equipped) do
+    if entry and entry.bonus_pack then
+      result[#result + 1] = entry.bonus_pack
+    end
+  end
   return result
+end
+
+function M.apply(state)
+  -- 应用所有奖励包
 end
 
 return M

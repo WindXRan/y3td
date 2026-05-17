@@ -82,7 +82,6 @@ function M.create(container, options)
             ['runtime_ui_helpers'] = '运行时UI辅助工具',
             ['message'] = '消息显示函数',
             ['message_system'] = '消息系统',
-            ['camera_manager'] = '相机管理器',
         }
         
         for name, desc in pairs(ui_service_map) do
@@ -111,7 +110,6 @@ function M.create(container, options)
             ['debug_tools_system'] = '调试工具系统',
             ['debug_actions_system'] = '调试动作系统',
             ['gm_bond_effects_system'] = 'GM羁绊效果系统',
-            ['overview_model_system'] = '概览模型系统',
             ['outgame_system'] = '局外系统',
             ['hero_selection_range_system'] = '英雄选择范围系统',
             ['skill_framework_system'] = '技能框架系统',

@@ -1,11 +1,11 @@
 return function(ctx)
+  local EventBus = require 'runtime.event_bus'
   local STATE = ctx.STATE
   local CONFIG = ctx.CONFIG
   local y3 = ctx.y3
   local message = ctx.message
   local env = ctx.env
   local api = ctx.api
-  local CustomHealthBars = ctx.CustomHealthBars
   local set_attr_pack = ctx.set_attr_pack
   local random_point_in_area = ctx.random_point_in_area
   local ENEMY_RUNTIME_FALLBACK_UNIT_ID = ctx.ENEMY_RUNTIME_FALLBACK_UNIT_ID
@@ -47,11 +47,7 @@ return function(ctx)
       STATE.hero and STATE.hero:is_exist() and STATE.hero:get_hp() or 0
     ))
 
-    if env.on_finish_game then
-      y3.ltimer.wait(0, function()
-        env.on_finish_game(result)
-      end)
-    end
+    EventBus.fire('finish_game', result)
   end
   ctx.finish_game = finish_game
 
@@ -73,21 +69,6 @@ return function(ctx)
 
     if info.owner then
       info.owner.alive_count = (info.owner.alive_count or 0) + 1
-    end
-
-    CustomHealthBars.apply_enemy(env, info)
-
-    if y3 and y3.game and y3.game.wait then
-      y3.game.wait(0.05, function()
-        if info and info.alive and info.unit then
-          local unit_valid = pcall(function()
-            return info.unit.is_exist and info.unit:is_exist()
-          end)
-          if unit_valid then
-            CustomHealthBars.apply_enemy(env, info)
-          end
-        end
-      end)
     end
 
     function info.remove_runtime(grant_death_rewards)
@@ -123,18 +104,17 @@ return function(ctx)
         end
 
         if info.kind == 'main' then
-          env.award_rewards(env.build_reward_with_bond_bonus(scaled_reward), nil, true)
-          if STATE.skill_runtime and STATE.skill_runtime.medbot_every and STATE.skill_runtime.medbot_every > 0 and STATE.skill_runtime.medbot_heal and STATE.skill_runtime.medbot_heal > 0 then
-            STATE.skill_runtime.medbot_kills = STATE.skill_runtime.medbot_kills + 1
-            if STATE.skill_runtime.medbot_kills >= STATE.skill_runtime.medbot_every then
-              STATE.skill_runtime.medbot_kills = STATE.skill_runtime.medbot_kills - STATE.skill_runtime.medbot_every
-              env.heal_hero(STATE.skill_runtime.medbot_heal)
+          env.award_rewards(scaled_reward, nil, true)
+          if STATE.skill_runtime then
+            local heal_amount = STATE.skill_runtime:try_medbot_heal(1)
+            if heal_amount then
+              ctx.heal_hero(heal_amount)
             end
           end
         elseif info.kind == 'boss' then
-          env.award_rewards(env.build_reward_with_bond_bonus(scaled_reward), get_boss_name(info.wave), false)
+          env.award_rewards(scaled_reward, get_boss_name(info.wave), false)
         elseif info.kind == 'challenge' and scaled_reward then
-          env.award_rewards(env.build_reward_with_bond_bonus(scaled_reward), nil, true)
+          env.award_rewards(scaled_reward, nil, true)
         end
       end
 
@@ -157,9 +137,6 @@ return function(ctx)
       STATE.total_kills = (STATE.total_kills or 0) + 1
 
       if info.kind == 'boss' then
-        if env.on_mainline_task_cleared then
-          env.on_mainline_task_cleared()
-        end
         STATE.defeated_boss_waves[info.wave.index] = true
         if info.wave.index >= #CONFIG.waves then
           finish_game(true, '击败最终 Boss。')
@@ -176,11 +153,12 @@ return function(ctx)
         end
       end
 
-      if info.kind == 'main' and STATE.skill_runtime and STATE.skill_runtime.bonus_gold_on_kill and STATE.skill_runtime.bonus_gold_on_kill > 0 then
-        STATE.resources.gold = STATE.resources.gold + STATE.skill_runtime.bonus_gold_on_kill
+      if info.kind == 'main' and STATE.skill_runtime then
+        local bonus = STATE.skill_runtime:get('bonus_gold_on_kill') or 0
+        if bonus > 0 then
+          ctx.resource_system.add_gold(bonus)
+        end
       end
-
-      env.handle_bond_enemy_kill(info)
 
       y3.ltimer.wait(corpse_remove_delay, function()
         if unit and unit:is_exist() then
@@ -248,6 +226,11 @@ return function(ctx)
     local spawn_spec = build_enemy_spawn_spec(unit_id, info)
     local runtime_unit_id = spawn_spec.create_unit_id
     local spawn_point = random_point_in_area(area_id)
+    
+    print(string.format('[SPAWN DEBUG] spawn_enemy: area_id=%s, unit_id=%s, spawn_point=%s',
+      tostring(area_id), tostring(runtime_unit_id),
+      spawn_point and string.format('(%.0f,%.0f)', spawn_point.x, spawn_point.y) or 'nil'))
+    
     local ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), runtime_unit_id, spawn_point, facing or 180.0)
     if (not ok or not unit_or_err) and runtime_unit_id ~= ENEMY_RUNTIME_FALLBACK_UNIT_ID then
       ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), ENEMY_RUNTIME_FALLBACK_UNIT_ID, spawn_point, facing or 180.0)
@@ -267,6 +250,7 @@ return function(ctx)
       return nil
     end
     local unit = unit_or_err
+    print('[SPAWN DEBUG] spawn_enemy 成功: unit=' .. tostring(unit and unit:get_name()))
     apply_enemy_model_profile(unit, spawn_spec)
 
     local scaled_attrs = info and info.attr_overrides
@@ -281,17 +265,22 @@ return function(ctx)
       set_attr_pack(unit, info.attr_overrides)
     end
 
+    print('[HP DEBUG] pre-set_attr: max_life=' .. tostring(unit:get_attr('hp_max')) .. ' spawn_hp=' .. tostring(info and info.spawn_hp))
     if info and info.spawn_hp ~= nil and info.spawn_hp > 1 then
+      unit:set_attr('hp_max', info.spawn_hp)
+      print('[HP DEBUG] spawn_hp分支: after set_attr max=' .. tostring(unit:get_attr('hp_max')) .. ' after set_hp=' .. tostring(unit:get_hp()) .. ' expected=' .. tostring(info.spawn_hp))
       unit:set_hp(info.spawn_hp)
       info.max_hp = info.spawn_hp
     else
       local max_hp = nil
       if scaled_attrs then
-        max_hp = tonumber(scaled_attrs['最大生命'])
+        max_hp = tonumber(scaled_attrs['hp_max'])
       end
       if not max_hp or max_hp <= 0 then
-        max_hp = tonumber(unit:get_attr('最大生命')) or 1500
+        max_hp = tonumber(unit:get_attr('hp_max')) or 1500
       end
+      unit:set_attr('hp_max', max_hp)
+      print('[HP DEBUG] 回退分支: after set_attr max=' .. tostring(unit:get_attr('hp_max')) .. ' after set_hp=' .. tostring(unit:get_hp()) .. ' expected=' .. tostring(max_hp))
       unit:set_hp(max_hp)
       info.max_hp = max_hp
     end
@@ -322,9 +311,12 @@ return function(ctx)
     end
     local max_alive = get_wave_max_alive(runner.wave)
     if max_alive > 0 and runner.alive_count >= max_alive then
+      print('[SPAWN DEBUG] can_spawn_main_batch=false: alive_count=' .. runner.alive_count .. ' >= max_alive=' .. max_alive)
       return false
     end
-    if STATE.total_enemy_alive >= CONFIG.total_enemy_soft_cap then
+    local soft_cap = CONFIG.total_enemy_soft_cap or 40
+    if STATE.total_enemy_alive >= soft_cap then
+      print('[SPAWN DEBUG] can_spawn_main_batch=false: total_enemy_alive=' .. STATE.total_enemy_alive .. ' >= soft_cap=' .. soft_cap)
       return false
     end
     return true
@@ -373,15 +365,14 @@ return function(ctx)
       template_unit_id = runner.wave.boss_template_unit_id,
       extra_ability_ids = runner.wave.boss_extra_ability_ids,
       attr_overrides = runner.wave.boss_attr_overrides,
+      spawn_hp = runner.wave.boss_spawn_hp,
       reward = runner.wave.boss_kill_reward,
     })
     if not runner.boss_info then
       runner.boss_spawned = false
       return
     end
-    if env.on_boss_spawned then
-      env.on_boss_spawned(runner.boss_info)
-    end
+    EventBus.fire('boss_spawned', runner.boss_info)
   end
 
   local function cleanup_challenge_units(instance)
@@ -405,13 +396,10 @@ return function(ctx)
       spawned_batches = {},
       all_batches_spawned = false,
       spawn_failed = false,
-      mainline_task_id = def.mainline_task_id,
     }
     STATE.active_challenges[instance.id] = instance
 
-    if env.on_challenge_started then
-      env.on_challenge_started(instance)
-    end
+    EventBus.fire('challenge_started', instance)
     return instance
   end
   ctx.create_challenge_instance = create_challenge_instance
@@ -426,7 +414,7 @@ return function(ctx)
     STATE.n0_dummies_spawned = true
     STATE.n0_dummy_units = {}
 
-    local spawn_area_id = 'main_spawn_wave_1'
+    local spawn_area_id = 'main_spawn'
     local area_def = CONFIG.areas and CONFIG.areas[spawn_area_id]
     if not area_def then
       return
@@ -453,16 +441,14 @@ return function(ctx)
         local dummy_hp = 1200
         if wave_1 then
             if spec.kind == 'boss' and wave_1.boss_attr_overrides then
-                dummy_hp = tonumber(wave_1.boss_attr_overrides['最大生命']) or dummy_hp
+                dummy_hp = tonumber(wave_1.boss_attr_overrides['hp_max']) or dummy_hp
             elseif wave_1.main_attr_overrides then
-                dummy_hp = tonumber(wave_1.main_attr_overrides['最大生命']) or dummy_hp
+                dummy_hp = tonumber(wave_1.main_attr_overrides['hp_max']) or dummy_hp
             end
             if spec.is_elite then dummy_hp = dummy_hp * 3 end
         end
         unit:set_hp(dummy_hp)
         unit:set_attr('移动速度', 0)
-        local en_info = { kind = spec.kind, is_elite = spec.is_elite or nil }
-        CustomHealthBars.apply_unit(env, unit, spec.kind, dummy_hp, en_info)
         STATE.n0_dummy_units[#STATE.n0_dummy_units + 1] = unit
       end
     end

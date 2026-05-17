@@ -1,13 +1,13 @@
 local M = {}
+local y3 = y3
+local CONFIG = require 'config.entry_config'
+local BootHelpers = require 'runtime.boot_helpers'
 
-function M.create(env)
-  local STATE = env.STATE
-  local CONFIG = env.CONFIG
-  local y3 = env.y3
-  local message = env.message or print
-  local is_battle_active = env.is_battle_active
-  local get_enemy_player = env.get_enemy_player
-  local has_unit_data = env.has_unit_data
+  local STATE = _G.STATE
+  local message = _G.message or print
+  local is_battle_active = function() return _G.STATE.session_phase == 'battle' and _G.STATE.game_finished ~= true end
+  local get_enemy_player = BootHelpers.get_enemy_player
+  local has_unit_data = function(unit_id) local bfs = _G.battlefield_system; return bfs and bfs.has_unit_data and bfs.has_unit_data(unit_id) or false end
 
   local function ensure_runtime()
     STATE.battle_auto_acceptance = STATE.battle_auto_acceptance or {
@@ -178,7 +178,7 @@ function M.create(env)
     sustain_dummy_targets(runtime)
   end
 
-  return {
+  local api = {
     update = update,
     spawn_dummy_targets = function()
       local runtime = ensure_runtime()
@@ -189,6 +189,7 @@ function M.create(env)
       clear_runtime_units(ensure_runtime())
     end,
   }
-end
+  _G.battle_auto_acceptance_system = api
+  M = api
 
 return M

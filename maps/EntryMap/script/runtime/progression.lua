@@ -1,12 +1,20 @@
 local M = {}
+local y3 = y3
+local CONFIG = require 'config.entry_config'
+local BootHelpers = require 'runtime.boot_helpers'
 
-function M.create(env)
-  local STATE = env.STATE
-  local CONFIG = env.CONFIG
-  local y3 = env.y3
-  local round_number = env.round_number
-  local message = env.message
-  local on_hero_level_up = env.on_hero_level_up
+local env
+local STATE = env and env.STATE or _G.STATE
+  local round_number = BootHelpers.round_number
+  local message = env and env.message or _G.message
+  local hero_attr_system = env and env.hero_attr_system or _G.hero_attr_system
+
+  local function on_hero_level_up(level)
+    local acs = _G.attr_choice_system
+    if acs and acs.grant_diamond then acs.grant_diamond(1, level) end
+    local rs = _G.reward_system
+    if rs and rs.try_queue_evolution_node_for_level then rs.try_queue_evolution_node_for_level(level) end
+  end
 
   local function get_hero_progression_rules()
     return CONFIG.hero_progression or {}
@@ -125,7 +133,7 @@ function M.create(env)
     }
   end
 
-  local function apply_attr_pack_to_hero(hero, attr_pack, hero_attr_system)
+  local function apply_attr_pack_to_hero(hero, attr_pack)
     for attr_name, value in pairs(attr_pack) do
       if value ~= 0 then
         if hero_attr_system and hero_attr_system.add_attr then
@@ -155,7 +163,7 @@ function M.create(env)
       return false
     end
 
-    apply_attr_pack_to_hero(STATE.hero, growth_pack, env.hero_attr_system)
+    apply_attr_pack_to_hero(STATE.hero, growth_pack)
 
     local hp_growth = tonumber(growth_pack['生命']) or 0
     if hp_growth > 0 and STATE.hero.add_hp then
@@ -249,7 +257,7 @@ function M.create(env)
         progress.exp = 0
         sync_hero_progression()
         apply_hero_level_growth(progress.level)
-        if on_hero_level_up and progress.level % 5 == 0 then
+        if progress.level % 5 == 0 then
           on_hero_level_up(progress.level)
         end
       end
@@ -267,7 +275,7 @@ function M.create(env)
     return granted
   end
 
-  return {
+  local api = {
     get_hero_progression_rules = get_hero_progression_rules,
     get_resource_rules = get_resource_rules,
     get_hero_max_level = get_hero_max_level,
@@ -282,6 +290,6 @@ function M.create(env)
     grant_hero_exp = grant_hero_exp,
     apply_hero_level_growth = apply_hero_level_growth,
   }
-end
+  _G.progression_system = api
 
 return M

@@ -1,24 +1,24 @@
 local M = {}
+local CONFIG = require 'config.entry_config'
 
-function M.create(env)
-  local STATE = env.STATE
-  local CONFIG = env.CONFIG
+  local STATE = _G.STATE
   local ATTACK_SKILL_DEPRECATED = CONFIG and CONFIG.attack_skill_deprecated == true
-  local debug_message = env.debug_message
-  local get_hero_max_level = env.get_hero_max_level
-  local sync_hero_progression = env.sync_hero_progression
-  local ATTACK_SKILL_BLUEPRINTS = env.ATTACK_SKILL_BLUEPRINTS or { list = {} }
-  local unlock_attack_skill = env.unlock_attack_skill
-  local show_attack_skill_loadout = env.show_attack_skill_loadout
-  local try_bond_draw = env.try_bond_draw
-  local force_spawn_boss = env.force_spawn_boss
-  local execute_enemy = env.execute_enemy
-  local is_battle_active = env.is_battle_active
-  local grant_bond_card = env.grant_bond_card
-  local effect_debug_system = env.effect_debug_system
-  local force_trigger_effect = env.force_trigger_effect
-  local open_effect_debug_panel_ui = env.open_effect_debug_panel_ui
-  local sample_skill_system = env.sample_skill_system
+  local debug_message = _G.debug_message
+  local get_hero_max_level = _G.get_hero_max_level or function() return 1 end
+  local sync_hero_progression = _G.sync_hero_progression or function() end
+  local ATTACK_SKILL_BLUEPRINTS = _G.ATTACK_SKILL_BLUEPRINTS or { list = {} }
+  local unlock_attack_skill = _G.unlock_attack_skill or function() end
+  local show_attack_skill_loadout = _G.show_attack_skill_loadout or function() end
+  local try_bond_draw = _G.try_bond_draw or function() end
+  local force_spawn_boss = _G.force_spawn_boss or function() end
+  local execute_enemy = _G.execute_enemy or function() end
+  local is_battle_active = _G.is_battle_active or function() return false end
+  local grant_bond_card = _G.grant_bond_card or function() end
+  local effect_debug_system = _G.effect_debug_system
+  local force_trigger_effect = _G.force_trigger_effect or function() end
+  local open_effect_debug_panel_ui = _G.open_effect_debug_panel_ui or function() end
+  local resource_system = _G.resource_system or require('runtime.resource_system').create()
+  local sample_skill_system = _G.sample_skills_system
   local DEFAULT_DEBUG_PROJECTILE_KEY = 134255250
 
   local api = {}
@@ -36,16 +36,12 @@ function M.create(env)
     if not guard_battle() then
       return
     end
-    if not STATE.resources then
-      return
-    end
-
-    STATE.resources.gold = STATE.resources.gold + 500
-    STATE.resources.wood = STATE.resources.wood + 300
+    resource_system.add_gold(500)
+    resource_system.add_wood(300)
     debug_message(string.format(
       'Debug resources added: gold %d, wood %d.',
-      STATE.resources.gold,
-      STATE.resources.wood
+      resource_system.get_gold(),
+      resource_system.get_wood()
     ))
   end
 
@@ -103,11 +99,8 @@ function M.create(env)
     if not guard_battle() then
       return
     end
-    if not STATE.resources then
-      return
-    end
-    if STATE.resources.wood < 100 then
-      STATE.resources.wood = 100
+    if resource_system.get_wood() < 100 then
+      resource_system.set_wood(100)
       debug_message('Wood was below 100; auto-refilled to 100.')
     end
     try_bond_draw()
@@ -438,7 +431,7 @@ function M.create(env)
     return key
   end
 
-  return api
-end
+  _G.debug_actions_system = api
+  M = api
 
 return M

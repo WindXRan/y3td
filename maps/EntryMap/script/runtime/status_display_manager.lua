@@ -9,20 +9,19 @@ function M.create(env)
   local STATE = env.STATE
   local CONFIG = env.CONFIG
   local message = env.message
-  local BootServices = env.BootServices
   local progression_system = env.progression_system
   
   local api = {}
   
   -- 获取当前波次信息
   local function get_current_wave()
-    local battlefield_system = BootServices.get_service('battlefield_system')
+    local battlefield_system = _G.battlefield_system
     return battlefield_system and battlefield_system.get_current_wave()
   end
-  
+
   -- 获取Boss名称
   local function get_boss_name(wave)
-    local battlefield_system = BootServices.get_service('battlefield_system')
+    local battlefield_system = _G.battlefield_system
     return battlefield_system and battlefield_system.get_boss_name(wave)
   end
   
@@ -79,7 +78,7 @@ function M.create(env)
     end
 
     -- 获取待领奖励数量
-    local reward_system = BootServices.get_service('reward_system')
+    local reward_system = _G.reward_system
     
     -- 输出完整状态信息
     message(string.format(
@@ -98,9 +97,9 @@ function M.create(env)
   
   -- 设置战斗HUD可见性
   function api.set_battle_hud_visible(visible)
-    local runtime_hud_system = BootServices.get_service('runtime_hud_system')
-    if runtime_hud_system and runtime_hud_system.set_battle_hud_visible then
-      return runtime_hud_system.set_battle_hud_visible(visible)
+    local hud = _G.hud_system
+    if hud and hud.set_battle_hud_visible then
+      return hud.set_battle_hud_visible(visible)
     end
     return false
   end

@@ -8,7 +8,6 @@ local M = {}
 function M.create(env)
   local STATE = env.STATE
   local CONFIG = env.CONFIG
-  local BootServices = env.BootServices
   local audio_system = env.audio_system
   
   local api = {}
@@ -26,12 +25,12 @@ function M.create(env)
       env.enforce_runtime_ui_phase(false)
     end
     
-    local outgame_system = BootServices.get_service('outgame_system')
+    local outgame_system = _G.outgame_system
     if outgame_system then
       outgame_system.enter_outgame(result)
     end
-    
-    local result_panel_system = BootServices.get_service('result_panel_system')
+
+    local result_panel_system = _G.result_panel_system
     if result_panel_system then
       result_panel_system.hide()
     end
@@ -44,19 +43,19 @@ function M.create(env)
     end
     
     -- 清理战斗单位
-    local battlefield_system = BootServices.get_service('battlefield_system')
+    local battlefield_system = _G.battlefield_system
     if battlefield_system and battlefield_system.cleanup_battle_units then
       battlefield_system.cleanup_battle_units()
     end
-    
+
     -- 隐藏战斗 HUD
-    local runtime_hud_system = BootServices.get_service('runtime_hud_system')
-    if runtime_hud_system and runtime_hud_system.set_battle_hud_visible then
-      runtime_hud_system.set_battle_hud_visible(false)
+    local hud = _G.hud_system
+    if hud and hud.set_battle_hud_visible then
+      hud.set_battle_hud_visible(false)
     end
-    
+
     -- 显示结果面板或直接切换到 outgame
-    local result_panel_system = BootServices.get_service('result_panel_system')
+    local result_panel_system = _G.result_panel_system
     if result_panel_system then
       local gold = STATE.battle.resources and STATE.battle.resources.gold or 0
       local hp = STATE.battle.hero and STATE.battle.hero:is_exist() and STATE.battle.hero:get_hp() or 0

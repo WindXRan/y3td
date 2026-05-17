@@ -122,7 +122,7 @@ local function build_initial_values(values)
   return result
 end
 
-function M.create()
+do
   local api = {}
   local rebuild_counts = setmetatable({}, { __mode = 'k' })
   local write_attr
@@ -347,8 +347,10 @@ function M.create()
     end
 
     local normalized_name = api.normalize_name(name)
-    if not _registered_attrs[normalized_name] and normalized_name ~= '攻击力' and normalized_name ~= '最大生命' then
-      print('[hero_attr_system] WARNING: getting unregistered attribute [' .. tostring(normalized_name) .. ']')
+    if normalized_name ~= '攻击' and normalized_name ~= '生命' and normalized_name ~= '护甲' and normalized_name ~= '力量' and normalized_name ~= '敏捷' and normalized_name ~= '智力' then
+      if not _registered_attrs[normalized_name] then
+        return 0
+      end
     end
     if normalized_name == '攻击' then
       return attack_total(unit)
@@ -624,7 +626,7 @@ function M.create()
     end
   end
 
-  return api
+  _G.hero_attr_system = api
 end
 
 function M.get_defs()

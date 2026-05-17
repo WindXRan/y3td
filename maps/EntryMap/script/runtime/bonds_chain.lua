@@ -1,5 +1,17 @@
 local M = {}
 
+--[[
+bonds_chain.lua - 羁绊系统
+职责：
+  - 羁绊卡牌收集管理
+  - 羁绊技能激活
+  - 羁绊UI数据构建
+
+迁移说明：
+  激活机制已迁移到 skill_system/activation/
+  此文件保留为向后兼容层，实际调用转发到新模块
+]]
+
 local BondTipModelBuilder = require 'runtime.bond_tip_model_builder'
 local BondBonusPack = require 'runtime.bond_bonus_pack'
 local BondEffectRuntimeRules = require 'data.tables.bond.bond_effect_runtime_rules'
@@ -9,6 +21,9 @@ local SkillRuntimeTuning = require 'data.tables.skill.skill_runtime_tuning'
 local SkillVisuals = require 'data.tables.skill.skill_visuals'
 local TipBlockStyle = require 'data.tables.tip_block_style'
 local IconResolver = require 'data.tables.icon_resolver'
+
+-- 引用新模块（迁移后的代码）
+local SkillActivation = require 'runtime.skill_system.activation'
 
 local BondDrawConfig = BondEffectRuntimeRules.draw or {}
 local BondMiscConfig = BondEffectRuntimeRules.misc or {}

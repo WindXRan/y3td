@@ -129,11 +129,13 @@ function M.create(env)
     end)
   end
 
-  return {
+  local api = {
     register_runtime_events = register_runtime_events,
     refresh_local_preview = refresh_local_preview,
     disable_local_preview = clear_preview,
   }
+  _G.hero_selection_range_system = api
+  return api
 end
 
 return M

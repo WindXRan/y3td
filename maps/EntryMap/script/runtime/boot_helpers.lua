@@ -1,24 +1,8 @@
 local CONFIG = require 'config.entry_config'
-local BondDrawConfig = require 'data.tables.bond.bond_effect_runtime_rules'
-local BondNodeObjects = require 'data.tables.bond.bond_nodes'
 local HeroEvolutionObjects = require 'data.tables.outgame.hero_evolutions'
-local BondSystem = require 'runtime.bonds_chain'
 
 local M = {}
 
-local BOND_ROUTE_META_BY_TAG = {}
-
-for _, node_def in ipairs(BondNodeObjects.list or {}) do
-  for _, tag in ipairs(node_def.route_tags or {}) do
-    if tag and tag ~= '' and not BOND_ROUTE_META_BY_TAG[tag] then
-      BOND_ROUTE_META_BY_TAG[tag] = {
-        icon = node_def.icon,
-        title = node_def.display_name,
-        tip_text = node_def.desc and (node_def.desc.advanced or node_def.desc.single) or nil,
-      }
-    end
-  end
-end
 
 function M.safe_get_unit_icon(unit_key)
   if not unit_key or not y3 or not y3.unit or not y3.unit.get_icon_by_key then
@@ -73,14 +57,7 @@ function M.build_bottom_status_effect_entry(effect_def, snapshot)
   local title
   local lines = {}
 
-  if effect_def.source_type == 'bond' then
-    local meta = BOND_ROUTE_META_BY_TAG[effect_def.source_id] or {}
-    icon = meta.icon
-    title = meta.title
-    if meta.tip_text and meta.tip_text ~= '' then
-      lines[#lines + 1] = tostring(meta.tip_text)
-    end
-  elseif effect_def.source_type == 'mark' then
+  if effect_def.source_type == 'mark' then
     local evolution_def = HeroEvolutionObjects.by_id and HeroEvolutionObjects.by_id[effect_def.source_id] or nil
     icon = evolution_def and M.safe_get_unit_icon(evolution_def.hero_unit_id) or nil
     title = evolution_def and evolution_def.name or nil
@@ -118,62 +95,9 @@ function M.build_bottom_status_effect_entry(effect_def, snapshot)
   }
 end
 
-function M.build_runtime_bond_status_entries(limit, STATE, taken_modifier_keys)
-  local entries = {}
-  limit = math.max(0, tonumber(limit) or 0)
-  if limit <= 0 or not STATE or not STATE.bond_runtime then
-    return entries
-  end
-  local status_map = STATE.bond_runtime.modifier_runtime_status
-  if type(status_map) ~= 'table' then
-    return entries
-  end
 
-  for status_id, runtime_entry in pairs(status_map) do
-    if #entries >= limit then
-      break
-    end
-    local buff = runtime_entry and runtime_entry.buff or nil
-    if buff and buff.is_exist and buff:is_exist() and buff.get_key then
-      local modifier_key = tonumber(buff:get_key()) or 0
-      if modifier_key > 0 and not (taken_modifier_keys and taken_modifier_keys[modifier_key]) then
-        local icon = M.safe_get_buff_icon(modifier_key)
-        if M.has_valid_icon(icon) then
-          local title = (buff.get_name and buff:get_name()) or ''
-          if title == '' then
-            title = M.safe_get_buff_name(modifier_key) or tostring(status_id or modifier_key)
-          end
-          local lines = {}
-          local desc = (buff.get_description and buff:get_description()) or ''
-          if desc ~= '' then
-            lines[#lines + 1] = tostring(desc)
-          end
-          local stack = (buff.get_stack and tonumber(buff:get_stack())) or 0
-          if stack > 1 then
-            lines[#lines + 1] = string.format('层数：%d', math.floor(stack + 0.5))
-          end
-          local left_time = (buff.get_time and tonumber(buff:get_time())) or 0
-          if left_time > 0 and left_time < 86400 then
-            lines[#lines + 1] = string.format('持续：%.1fs', left_time)
-          end
-          if #lines == 0 then
-            lines[#lines + 1] = '当前已激活。'
-          end
-          entries[#entries + 1] = {
-            id = string.format('bond_runtime_%s', tostring(status_id or modifier_key)),
-            icon = icon,
-            modifier_key = modifier_key,
-            tip_title = tostring(title),
-            tip_text = table.concat(lines, '\n'),
-            tip_contents = #lines > 0 and { '[效果详情]\n' .. table.concat(lines, '\n') } or {},
-          }
-        end
-      end
-    end
-  end
 
-  return entries
-end
+
 
 function M.build_hero_buff_status_entries(limit, STATE, taken_modifier_keys)
   local entries = {}
@@ -286,15 +210,6 @@ function M.get_bottom_status_effect_entries(max_slots, STATE, auto_active_effect
     local modifier_key = tonumber(entry.modifier_key) or 0
     if modifier_key > 0 then
       taken_modifier_keys[modifier_key] = true
-    end
-  end
-
-  if #entries < limit then
-    for _, entry in ipairs(M.build_runtime_bond_status_entries(limit - #entries, STATE, taken_modifier_keys)) do
-      push_entry(entry)
-      if #entries >= limit then
-        break
-      end
     end
   end
 
@@ -420,32 +335,12 @@ function M.infer_battle_event_style(text)
   return '普通'
 end
 
-local get_bond_runtime_bonus_func = nil
 
-function M.set_get_bond_runtime_bonus(func)
-  get_bond_runtime_bonus_func = func
-end
-
-function M.get_bond_runtime_bonus(key)
-  if get_bond_runtime_bonus_func then
-    return get_bond_runtime_bonus_func(key)
-  end
-  return 0
-end
-
-function M.update_passive_resources(dt, STATE)
+function M.update_passive_resources(dt, STATE, resource_system)
   local rules = STATE.progression_system and STATE.progression_system.get_resource_rules and STATE.progression_system.get_resource_rules() or {}
-  local gold_per_sec = math.max(
-    0,
-    (rules.gold_per_sec or 0)
-    + M.get_bond_runtime_bonus('gold_per_sec_bonus')
-  )
-  local wood_per_sec = math.max(
-    0,
-    (rules.wood_per_sec or 0)
-    + M.get_bond_runtime_bonus('wood_per_sec_bonus')
-  )
-  if (gold_per_sec <= 0 and wood_per_sec <= 0) or not STATE.resources then
+  local gold_per_sec = math.max(0, rules.gold_per_sec or 0)
+  local wood_per_sec = math.max(0, rules.wood_per_sec or 0)
+  if gold_per_sec <= 0 and wood_per_sec <= 0 then
     return
   end
 
@@ -454,9 +349,25 @@ function M.update_passive_resources(dt, STATE)
 
   while STATE.resource_income_elapsed >= interval do
     STATE.resource_income_elapsed = STATE.resource_income_elapsed - interval
-    STATE.resources.gold = STATE.resources.gold + gold_per_sec
-    STATE.resources.wood = STATE.resources.wood + wood_per_sec
+    resource_system.add_gold(gold_per_sec)
+    resource_system.add_wood(wood_per_sec)
   end
+end
+
+-- ============================================================================
+-- 运行时加成注入（由 boot.lua 在 _G.get_bond_runtime_bonus 就绪后调用）
+-- ============================================================================
+local _get_bond_runtime_bonus = nil
+
+function M.set_get_bond_runtime_bonus(fn)
+  _get_bond_runtime_bonus = fn
+end
+
+function M.get_bond_runtime_bonus(key)
+  if _get_bond_runtime_bonus then
+    return _get_bond_runtime_bonus(key)
+  end
+  return 0
 end
 
 return M

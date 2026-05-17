@@ -126,7 +126,7 @@ return function(ctx)
 
   local MODEL_DRIVEN_ATTR_KEYS = {
     '生命',
-    '最大生命',
+    'hp_max',
     '攻击',
     '物理攻击',
     '护甲',
@@ -301,13 +301,10 @@ return function(ctx)
   end
   ctx.get_wave_max_alive = get_wave_max_alive
 
-  local function get_scaled_challenge_batch_count(instance, batch)
+  local function get_scaled_challenge_batch_count(batch)
     local base_count = tonumber(batch and batch.count) or 0
     if base_count <= 0 then
       return 0
-    end
-    if instance and instance.mainline_task_id then
-      return math.max(1, base_count)
     end
     return scale_enemy_count(base_count, get_enemy_batch_scale())
   end
@@ -377,20 +374,6 @@ return function(ctx)
     return false
   end
   ctx.is_n0_stage_active = is_n0_stage_active
-
-  local function is_n0_mainline_spawn_disabled()
-    if not is_n0_stage_active() then
-      return false
-    end
-    local stage_def = STATE and STATE.current_stage_def or nil
-    local raw = tostring(stage_def and stage_def.n0_disable_mainline_spawn or '')
-    local value = string.lower(raw)
-    if value == '' then
-      return true
-    end
-    return value == '1' or value == 'true' or value == 'yes'
-  end
-  ctx.is_n0_mainline_spawn_disabled = is_n0_mainline_spawn_disabled
 
   local function get_boss_name(wave)
     return string.format('第%d波Boss', wave.index)

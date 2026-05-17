@@ -112,11 +112,11 @@ function M.load_defs()
   return defs
 end
 
---- 创建运行时 API，需要注入 framework 实例
---- @param skill_framework table SkillFramework.create() 的返回值
-function M.create(skill_framework)
-  local api = {}
-  local registered_ids = {}
+-- 自初始化：从全局获取 skill_framework 实例
+local skill_framework = _G.skill_framework_system
+if not skill_framework then error('[generated_skills] skill_framework required') end
+local api = {}
+local registered_ids = {}
 
   --- 批量注册所有技能
   --- @return number 成功注册数量
@@ -161,7 +161,6 @@ function M.create(skill_framework)
     return table.concat(ids, ', ')
   end
 
-  return api
-end
+_G.generated_skills_api = api
 
 return M

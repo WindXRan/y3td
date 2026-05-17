@@ -2,20 +2,11 @@ local CONFIG = require 'config.entry_config'
 local QualityImageTable = require 'data.tables.economy.quality_image_table'
 local IconResolver = require 'data.tables.icon_resolver'
 local BootHelpers = require 'runtime.boot_helpers'
-local BondSystem = require 'runtime.bonds_chain'
 
 local M = {}
 
-local STATE = nil
-local CONFIG_TABLE = nil
-
 local function resolve_display_icon(...)
   return IconResolver.pick(...)
-end
-
-function M.set_dependencies(state, config)
-  STATE = state
-  CONFIG_TABLE = config
 end
 
 function M.resolve_quality_frame_image(quality)
@@ -188,35 +179,6 @@ local CHOICE_CARD_STYLE = {
   },
 }
 
-local function apply_bond_choice_quality_frames()
-  local bond_runtime = STATE.bond_runtime
-  local choices = bond_runtime and bond_runtime.current_choices or nil
-  if not choices or #choices == 0 or STATE.choice_panel_hidden == true then
-    return
-  end
-  local player = BootHelpers.get_player()
-  if not player then
-    return
-  end
-  local panel_name = 'BondChoice4'
-  local panel_index = '4'
-  for index = 1, 4 do
-    local path = string.format(
-      '%s.bond_choice_%s.cards_row.card_%d.icon_frame_%d',
-      panel_name,
-      panel_index,
-      index,
-      index
-    )
-    local ok, frame = pcall(y3.ui.get_ui, player, path)
-    if ok and frame then
-      local choice = choices[index]
-      local image = choice and M.resolve_quality_frame_image(choice.quality) or nil
-      set_ui_visible(frame, image ~= nil)
-      set_ui_image(frame, image)
-    end
-  end
-end
 
 local function resolve_choice_panel_card(scroll, index)
   if not scroll then
@@ -468,17 +430,6 @@ local function build_choice_subtitle_text(kind, choice)
   if not choice then
     return ''
   end
-  if kind == 'bond' then
-    local bond_name = normalize_choice_text(choice.bond_root_name or choice.bond_name or choice.tag or
-      normalize_quality_display(choice.quality))
-    local progress_text = normalize_choice_text(choice.bond_root_progress_text or choice.progress_text)
-    if bond_name ~= '' and progress_text ~= '' then
-      return string.format('%s(%s)', bond_name, progress_text)
-    end
-    if bond_name ~= '' then
-      return bond_name
-    end
-  end
   local quality = choice.quality and normalize_quality_display(choice.quality) or nil
   local kind_text = normalize_kind_display(kind)
   return tostring(choice.bond_root_name or choice.bond_name or choice.tag or quality or kind_text or '候选')
@@ -495,10 +446,7 @@ local function get_pending_round_choice_kind()
       return attr_kind
     end
   end
-  if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice and STATE.bond_runtime.current_choices then
-    return 'bond'
-  end
-  local evolution_runtime = STATE.evolution_runtime
+local evolution_runtime = STATE.evolution_runtime
   if evolution_runtime and evolution_runtime.awaiting_choice and evolution_runtime.current_choices then
     return 'evolution'
   end
@@ -512,9 +460,7 @@ local function get_choice_panel_choices()
     choices = STATE.gear_state and STATE.gear_state.current_choices or nil
   elseif kind == 'attr' then
     choices = STATE.attr_choice_runtime and STATE.attr_choice_runtime.current_choices or nil
-  elseif kind == 'bond' then
-    choices = STATE.bond_runtime and STATE.bond_runtime.current_choices or nil
-  elseif kind == 'evolution' then
+elseif kind == 'evolution' then
     local evolution_runtime = STATE.evolution_runtime
     choices = evolution_runtime and evolution_runtime.current_choices or nil
   end
@@ -569,7 +515,7 @@ local function build_choice_list_cards()
   set_ui_visible(root, is_visible)
   local selected_index = ensure_choice_selected_index(kind, choices, is_visible)
 
-  local old_choice_panels = { 'BondChoice2', 'BondChoice3', 'BondChoice4', 'ChoiceList' }
+  local old_choice_panels = { 'ChoiceList' }
   if player then
     for _, panel_name in ipairs(old_choice_panels) do
       local ok_old, old_panel = pcall(y3.ui.get_ui, player, panel_name)

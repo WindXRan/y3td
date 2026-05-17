@@ -154,13 +154,12 @@ function M.create_runtime()
   }
 end
 
-function M.create(env)
-  local STATE = env.STATE
-  local message = env.message
-  local get_effect_defs = env.get_effect_defs
-  local get_effect_runtime_snapshot = env.get_effect_runtime_snapshot
-  local clear_effect_runtime = env.clear_effect_runtime
-  local get_modifier_name_by_key = env.get_modifier_name_by_key
+local STATE = _G.STATE
+local message = _G.message
+local get_effect_defs = function() return (_G.auto_active_effects_system and _G.auto_active_effects_system.get_effect_defs()) or {} end
+local get_effect_runtime_snapshot = function(id) return _G.auto_active_effects_system and _G.auto_active_effects_system.get_effect_runtime_snapshot(id) or {} end
+local clear_effect_runtime = function(id) if _G.auto_active_effects_system then _G.auto_active_effects_system.clear_effect_runtime(id) end end
+local get_modifier_name_by_key = function(key) return key and y3.buff.get_name_by_key(key) or nil end
 
   local EFFECT_LIST = get_effect_defs() or {}
   local EFFECT_BY_ID = {}
@@ -415,7 +414,7 @@ function M.create(env)
     end
   end
 
-  return {
+  local api = {
     get_runtime = get_runtime,
     get_effect_def = get_effect_def,
     get_selected_effect_id = get_selected_effect_id,
@@ -439,6 +438,6 @@ function M.create(env)
     get_recent_logs = get_recent_logs,
     print_logs = print_logs,
   }
-end
+  _G.effect_debug_system = api
 
 return M

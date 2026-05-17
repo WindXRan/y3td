@@ -1,18 +1,38 @@
 local M = {}
+local y3 = y3
+local CONFIG = require 'config.entry_config'
+local BootHelpers = require 'runtime.boot_helpers'
+local BootCombat = require 'runtime.boot_combat'
 
 local UiRoot = require 'ui.ui_root'
 
-function M.create(env)
-  local STATE = env.STATE
-  local CONFIG = env.CONFIG
-  local y3 = env.y3
-  local message = env.message
-  local round_number = env.round_number
-  local make_point = env.make_point
-  local develop_command = env.develop_command
-  local effect_debug_system = env.effect_debug_system
-  local sample_skill_system = env.sample_skill_system
+  local STATE = _G.STATE
+  local show_runtime_status = _G.show_runtime_status or function() end
+  local debug_show_attr_tip_panel = _G.show_runtime_attr_dialog or function() end
+  local round_number = BootHelpers.round_number
+  local make_point = BootHelpers.make_point
+  local get_player = BootHelpers.get_player
+  local effect_debug_system = _G.effect_debug_system
+  local sample_skill_system = _G.sample_skills_system
+  local develop_command = y3.develop.command
   local DEFAULT_DEBUG_PROJECTILE_KEY = 134255250
+
+  local function message(text)
+    local msg = _G.message
+    if msg then msg(text) end
+  end
+
+  local function get_debug_actions()
+    return _G.debug_actions_system
+  end
+
+  local function get_battlefield()
+    return _G.battlefield_system
+  end
+
+  local function get_progression()
+    return _G.progression_system
+  end
 
   local function round(value)
     return round_number(tonumber(value) or 0)
@@ -47,10 +67,10 @@ function M.create(env)
   end
 
   local function is_ui_path_visible(path)
-    if not path or path == '' or not env.get_player or not y3 or not y3.ui or not y3.ui.get_ui then
+    if not path or path == '' or not get_player or not y3 or not y3.ui or not y3.ui.get_ui then
       return false
     end
-    local player = env.get_player()
+    local player = get_player()
     if not player then
       return false
     end
@@ -272,14 +292,13 @@ function M.create(env)
     develop_command.register('EPOS', {
       desc = '打印英雄、防线与主要刷新区域坐标。',
       onCommand = function()
-        local point = env.get_hero_point()
+        local point = BootCombat.get_hero_point()
         message('英雄当前位置：' .. format_point(point))
         message('英雄出生点：' .. format_point(STATE.hero_spawn_point))
         message('防线点：' .. format_point(STATE.defense_point))
         for _, area_name in ipairs({
-          'main_spawn_wave_1',
-          'main_spawn_wave_3',
-          'main_spawn_wave_5',
+          'main_spawn',
+          'boss_spawn',
           'challenge_spawn_top',
           'challenge_spawn_mid',
           'challenge_spawn_bottom',
@@ -295,7 +314,7 @@ function M.create(env)
     develop_command.register('ESET', {
       desc = '把 hero/defense 记录到当前英雄位置。',
       onCommand = function(target_name)
-        local point = env.get_hero_point()
+        local point = BootCombat.get_hero_point()
         if not point then
           message('当前没有可用英雄，无法记录坐标。')
           return
@@ -318,7 +337,7 @@ function M.create(env)
     develop_command.register('EAREA', {
       desc = '以当前英雄位置为中心重设某个刷新区域。',
       onCommand = function(area_name, width, height, offset_x, offset_y)
-        local point = env.get_hero_point()
+        local point = BootCombat.get_hero_point()
         if not point then
           message('当前没有可用英雄，无法设置区域。')
           return
@@ -381,7 +400,7 @@ function M.create(env)
           message('用法：.ebond <card_id>')
           return
         end
-        env.debug_grant_bond_card(card_id)
+        get_debug_actions().debug_grant_bond_card(card_id)
       end,
     })
 
@@ -393,7 +412,7 @@ function M.create(env)
           return
         end
         if effect_id and effect_id ~= '' then
-          env.debug_select_effect(effect_id)
+          get_debug_actions().debug_select_effect(effect_id)
           return
         end
         for _, entry in ipairs(effect_debug_system.get_effect_list_entries()) do
@@ -405,42 +424,42 @@ function M.create(env)
     develop_command.register('EEMOUNT', {
       desc = '挂载当前或指定特效。',
       onCommand = function(effect_id)
-        env.debug_mount_effect(effect_id)
+        get_debug_actions().debug_mount_effect(effect_id)
       end,
     })
 
     develop_command.register('EEUNMOUNT', {
       desc = '卸下当前或指定特效。',
       onCommand = function(effect_id)
-        env.debug_unmount_effect(effect_id)
+        get_debug_actions().debug_unmount_effect(effect_id)
       end,
     })
 
     develop_command.register('EETRIGGER', {
       desc = '强制触发当前或指定特效。',
       onCommand = function(effect_id)
-        env.debug_trigger_effect(effect_id)
+        get_debug_actions().debug_trigger_effect(effect_id)
       end,
     })
 
     develop_command.register('EEOBS', {
       desc = '观测当前或指定特效 10 秒。',
       onCommand = function(effect_id)
-        env.debug_start_effect_observe(effect_id)
+        get_debug_actions().debug_start_effect_observe(effect_id)
       end,
     })
 
     develop_command.register('EELOG', {
       desc = '打印特效调试日志。',
       onCommand = function()
-        env.debug_print_effect_logs()
+        get_debug_actions().debug_print_effect_logs()
       end,
     })
 
     develop_command.register('EECLEAR', {
       desc = '清空全部特效调试挂载。',
       onCommand = function()
-        env.debug_clear_mounted_effects()
+        get_debug_actions().debug_clear_mounted_effects()
       end,
     })
 
@@ -450,25 +469,25 @@ function M.create(env)
         local raw = tostring(arg or '')
         local cmd = raw:lower()
         if cmd == '' or cmd == 'list' or cmd == 'ls' then
-          if env.debug_list_sample_skills then
-            env.debug_list_sample_skills()
+          if get_debug_actions().debug_list_sample_skills then
+            get_debug_actions().debug_list_sample_skills()
           end
           return
         end
         if cmd == 'next' then
-          if env.debug_cast_next_sample_skill then
-            env.debug_cast_next_sample_skill()
+          if get_debug_actions().debug_cast_next_sample_skill then
+            get_debug_actions().debug_cast_next_sample_skill()
           end
           return
         end
         if cmd == 'report' or cmd == 'r' then
-          if env.debug_print_sample_framework_report then
-            env.debug_print_sample_framework_report()
+          if get_debug_actions().debug_print_sample_framework_report then
+            get_debug_actions().debug_print_sample_framework_report()
           end
           return
         end
-        if env.debug_cast_sample_skill then
-          env.debug_cast_sample_skill(raw)
+        if get_debug_actions().debug_cast_sample_skill then
+          get_debug_actions().debug_cast_sample_skill(raw)
         end
       end,
     })
@@ -481,8 +500,8 @@ function M.create(env)
           message('用法：.eframe <sample_id>，例如 .eframe ice_lance')
           return
         end
-        if env.debug_print_sample_framework_telemetry then
-          env.debug_print_sample_framework_telemetry(id)
+        if get_debug_actions().debug_print_sample_framework_telemetry then
+          get_debug_actions().debug_print_sample_framework_telemetry(id)
         end
       end,
     })
@@ -492,14 +511,14 @@ function M.create(env)
       onCommand = function(arg)
         local cmd = tostring(arg or ''):lower()
         if cmd == '' or cmd == 'run' then
-          if env.debug_run_framework_tier_suite then
-            env.debug_run_framework_tier_suite()
+          if get_debug_actions().debug_run_framework_tier_suite then
+            get_debug_actions().debug_run_framework_tier_suite()
           end
           return
         end
         if cmd == 'report' or cmd == 'r' then
-          if env.debug_print_framework_tier_report then
-            env.debug_print_framework_tier_report()
+          if get_debug_actions().debug_print_framework_tier_report then
+            get_debug_actions().debug_print_framework_tier_report()
           end
           return
         end
@@ -512,14 +531,14 @@ function M.create(env)
       onCommand = function(arg)
         local cmd = tostring(arg or ''):lower()
         if cmd == 'off' or cmd == 'close' or cmd == '0' then
-          if env.debug_clear_global_projectile_override then
-            env.debug_clear_global_projectile_override()
+          if get_debug_actions().debug_clear_global_projectile_override then
+            get_debug_actions().debug_clear_global_projectile_override()
           end
           return
         end
         if cmd == '' or cmd == 'toggle' then
-          if env.debug_toggle_global_projectile_override then
-            env.debug_toggle_global_projectile_override(DEFAULT_DEBUG_PROJECTILE_KEY)
+          if get_debug_actions().debug_toggle_global_projectile_override then
+            get_debug_actions().debug_toggle_global_projectile_override(DEFAULT_DEBUG_PROJECTILE_KEY)
           end
           return
         end
@@ -528,15 +547,15 @@ function M.create(env)
           message('用法：.eproj [id|off|toggle]，例如 .eproj 134255250')
           return
         end
-        if env.debug_set_global_projectile_override then
-          env.debug_set_global_projectile_override(key)
+        if get_debug_actions().debug_set_global_projectile_override then
+          get_debug_actions().debug_set_global_projectile_override(key)
         end
       end,
     })
   end
 
   local function get_gm_panel_wave_text()
-    local wave = env.get_current_wave()
+    local wave = get_battlefield().get_current_wave()
     if not wave then
       return '波次：未开始'
     end
@@ -549,18 +568,18 @@ function M.create(env)
       return 'Boss：等待本波开始'
     end
     if STATE.active_wave.boss_spawned then
-      return string.format('Boss：%s 已登场', env.get_boss_name(STATE.active_wave.wave))
+      return string.format('Boss：%s 已登场', get_battlefield().get_boss_name(STATE.active_wave.wave))
     end
     local remaining = math.max(0, STATE.active_wave.wave.boss_spawn_sec - STATE.active_wave.elapsed)
     return string.format('Boss：%.1f 秒后登场', remaining)
   end
 
   local function get_gm_panel_status_text()
-    local level = env.get_hero_level()
+    local level = get_progression().get_hero_level()
     local gold = STATE.resources and STATE.resources.gold or 0
     local wood = STATE.resources and STATE.resources.wood or 0
     local enemy_count = STATE.total_enemy_alive or 0
-    local challenge_count = env.get_active_challenge_count()
+    local challenge_count = get_battlefield().get_active_challenge_count()
     return table.concat({
       get_gm_panel_wave_text(),
       get_gm_panel_boss_text(),
@@ -568,7 +587,7 @@ function M.create(env)
       string.format('金币：%d    木材：%d', round(gold), round(wood)),
       string.format('挑战次数：%s', get_challenge_charge_text()),
       string.format('进行中挑战：%d', round(challenge_count)),
-      string.format('全局投射物覆盖：%s', tostring((env.debug_get_global_projectile_override and env.debug_get_global_projectile_override()) or '关闭')),
+      string.format('全局投射物覆盖：%s', tostring((get_debug_actions().debug_get_global_projectile_override and get_debug_actions().debug_get_global_projectile_override()) or '关闭')),
     }, '\n')
   end
 
@@ -598,13 +617,13 @@ function M.create(env)
   end
 
   local function create_button(parent, text, x, y, width, height, callback, color)
-    create_rect(parent, x, y, width, height, color or { 120, 128, 140, 110 })
+    create_rect(parent, x, y, width, height, color or { 80, 90, 100, 180 })
     local button = parent:create_child('按钮')
     button:set_ui_size(width, height)
     button:set_pos(x + width / 2, y + height / 2)
     button:set_text(text)
-    button:set_font_size(15)
-    button:set_text_color(245, 248, 255, 255)
+    button:set_font_size(12)
+    button:set_text_color(250, 252, 255, 255)
     button:set_z_order(9502)
     button:add_fast_event('左键-点击', function()
       if callback then
@@ -670,50 +689,45 @@ function M.create(env)
     }
     STATE.gm_ui.effect_debug = effect_ui
 
-    effect_ui.panel = create_rect(panel, 378, 56, 492, 470, { 11, 23, 36, 230 })
-    create_text(panel, '特效调试 / 验收', 390, 494, 190, 26, 20, { 245, 248, 255, 255 })
-    create_text(panel, '选择任意特效查看功能、状态、失败原因，并可强制触发。', 390, 468, 440, 22, 13, { 154, 178, 208, 255 })
+    effect_ui.panel = create_rect(panel, 300, 40, 400, 380, { 11, 23, 36, 230 })
+    create_text(panel, '特效调试', 312, 400, 120, 20, 16, { 245, 248, 255, 255 })
+    create_text(panel, '选择特效查看状态', 440, 402, 150, 16, 11, { 154, 178, 208, 255 })
 
-    for index = 1, 8 do
-      local y = 426 - (index - 1) * 34
-      effect_ui.list_buttons[index] = create_button(panel, '', 394, y, 208, 28, function()
+    for index = 1, 6 do
+      local y = 364 - (index - 1) * 28
+      effect_ui.list_buttons[index] = create_button(panel, '', 312, y, 160, 22, function()
         local entries = effect_debug_system and effect_debug_system.get_effect_list_entries() or {}
         local entry = entries[index]
-        if entry and env.debug_select_effect then
-          env.debug_select_effect(entry.id)
+        if entry and get_debug_actions().debug_select_effect then
+          get_debug_actions().debug_select_effect(entry.id)
         end
       end, { 28, 56, 86, 230 })
     end
 
-    create_rect(panel, 612, 226, 250, 240, { 7, 14, 22, 80 })
-    effect_ui.detail_text = create_text(panel, '', 618, 236, 238, 220, 13, { 224, 234, 248, 255 })
+    create_rect(panel, 480, 180, 200, 170, { 7, 14, 22, 80 })
+    effect_ui.detail_text = create_text(panel, '', 486, 190, 188, 150, 11, { 224, 234, 248, 255 })
 
-    create_button(panel, '挂载', 394, 136, 94, 30, function()
-      env.debug_mount_effect()
+    create_button(panel, '挂载', 312, 92, 74, 22, function()
+      get_debug_actions().debug_mount_effect()
     end, { 54, 96, 122, 235 })
-    create_button(panel, '卸下', 500, 136, 94, 30, function()
-      env.debug_unmount_effect()
+    create_button(panel, '卸下', 394, 92, 74, 22, function()
+      get_debug_actions().debug_unmount_effect()
     end, { 86, 74, 112, 235 })
-    create_button(panel, '触发', 394, 100, 94, 30, function()
-      env.debug_trigger_effect()
+    create_button(panel, '触发', 312, 64, 74, 22, function()
+      get_debug_actions().debug_trigger_effect()
     end, { 112, 78, 82, 235 })
-    create_button(panel, '观测', 500, 100, 94, 30, function()
-      env.debug_start_effect_observe()
+    create_button(panel, '观测', 394, 64, 74, 22, function()
+      get_debug_actions().debug_start_effect_observe()
     end, { 78, 100, 136, 235 })
-    create_button(panel, '清空挂载', 394, 64, 94, 30, function()
-      env.debug_clear_mounted_effects()
+    create_button(panel, '清空', 312, 36, 74, 22, function()
+      get_debug_actions().debug_clear_mounted_effects()
     end, { 92, 80, 94, 235 })
-    create_button(panel, '打印日志', 500, 64, 94, 30, function()
-      env.debug_print_effect_logs()
+    create_button(panel, '日志', 394, 36, 74, 22, function()
+      get_debug_actions().debug_print_effect_logs()
     end, { 68, 96, 126, 235 })
-    create_button(panel, '打开调试', 394, 28, 200, 28, function()
-      if env.debug_open_effect_debug_panel then
-        env.debug_open_effect_debug_panel()
-      end
-    end, { 54, 76, 108, 235 })
 
-    create_text(panel, '最近日志', 618, 184, 120, 20, 15, { 245, 248, 255, 255 })
-    effect_ui.log_text = create_text(panel, '', 618, 64, 238, 118, 12, { 176, 199, 224, 255 })
+    create_text(panel, '日志', 486, 150, 80, 16, 12, { 245, 248, 255, 255 })
+    effect_ui.log_text = create_text(panel, '', 486, 50, 188, 90, 10, { 176, 199, 224, 255 })
 
     return effect_ui
   end
@@ -722,8 +736,8 @@ function M.create(env)
     if STATE and STATE.defense_point then
       return STATE.defense_point
     end
-    if env.get_hero_point then
-      return env.get_hero_point()
+    if BootCombat.get_hero_point then
+      return BootCombat.get_hero_point()
     end
     return nil
   end
@@ -735,21 +749,21 @@ function M.create(env)
     }
     STATE.gm_ui.sample_showcase = sample_ui
 
-    sample_ui.panel = create_rect(panel, 18, 22, 380, 370, { 14, 26, 40, 232 })
-    create_text(panel, '技能列表', 30, 362, 120, 24, 18, { 245, 248, 255, 255 })
-    create_text(panel, '点击技能名施放  |  CSV 配表驱动', 30, 342, 360, 18, 12, { 168, 192, 220, 255 })
-    sample_ui.page_text = create_text(panel, '', 280, 362, 110, 20, 12, { 205, 220, 236, 255 })
-    sample_ui.status_text = create_text(panel, '', 30, 32, 350, 18, 12, { 184, 206, 230, 255 })
+    sample_ui.panel = create_rect(panel, 12, 30, 280, 280, { 14, 26, 40, 232 })
+    create_text(panel, '技能列表', 20, 290, 100, 18, 14, { 245, 248, 255, 255 })
+    create_text(panel, '点击施放', 120, 292, 100, 14, 10, { 168, 192, 220, 255 })
+    sample_ui.page_text = create_text(panel, '', 200, 290, 80, 16, 10, { 205, 220, 236, 255 })
+    sample_ui.status_text = create_text(panel, '', 20, 42, 250, 14, 10, { 184, 206, 230, 255 })
 
-    for i = 1, 10 do
-      local y = 310 - (i - 1) * 28
-      sample_ui.list_buttons[i] = create_button(panel, '', 30, y, 326, 24, function()
+    for i = 1, 8 do
+      local y = 258 - (i - 1) * 24
+      sample_ui.list_buttons[i] = create_button(panel, '', 20, y, 240, 20, function()
         if not sample_skill_system or not sample_skill_system.get_sample_defs then
           debug_message('样例技能系统未初始化。')
           return
         end
         local defs = sample_skill_system.get_sample_defs() or {}
-        local base = (sample_ui.page - 1) * 10
+        local base = (sample_ui.page - 1) * 8
         local def = defs[base + i]
         if not def then
           return
@@ -759,37 +773,36 @@ function M.create(env)
           pcall(STATE.hero.blink, STATE.hero, center)
         end
         local center_text = center and format_point(center) or '(nil)'
-        if env.debug_cast_sample_skill then
-          env.debug_cast_sample_skill(def.id)
-          set_text(sample_ui.status_text, string.format('已施放：%s @ %s', tostring(def.id), center_text))
+        if get_debug_actions().debug_cast_sample_skill then
+          get_debug_actions().debug_cast_sample_skill(def.id)
+          set_text(sample_ui.status_text, string.format('已施放：%s', tostring(def.id)))
         end
-      end, { 90, 98, 110, 130 })
+      end, { 70, 80, 95, 150 })
     end
 
-    create_button(panel, '上一页', 30, 54, 84, 24, function()
+    create_button(panel, '上一页', 20, 64, 68, 20, function()
       local defs = sample_skill_system and sample_skill_system.get_sample_defs and sample_skill_system.get_sample_defs() or {}
-      local pages = math.max(1, math.ceil((#defs) / 10))
+      local pages = math.max(1, math.ceil((#defs) / 8))
       sample_ui.page = math.max(1, sample_ui.page - 1)
       if sample_ui.page > pages then
         sample_ui.page = pages
       end
     end, { 66, 90, 120, 235 })
 
-    create_button(panel, '下一页', 124, 54, 84, 24, function()
+    create_button(panel, '下一页', 96, 64, 68, 20, function()
       local defs = sample_skill_system and sample_skill_system.get_sample_defs and sample_skill_system.get_sample_defs() or {}
-      local pages = math.max(1, math.ceil((#defs) / 10))
+      local pages = math.max(1, math.ceil((#defs) / 8))
       sample_ui.page = math.min(pages, sample_ui.page + 1)
     end, { 66, 90, 120, 235 })
 
-    create_button(panel, '中区连播', 218, 54, 138, 24, function()
+    create_button(panel, '连播', 172, 64, 88, 20, function()
       local center = get_showcase_center_point()
       if center and STATE and STATE.hero and STATE.hero.blink then
         pcall(STATE.hero.blink, STATE.hero, center)
       end
-      if env.debug_cast_next_sample_skill then
-        env.debug_cast_next_sample_skill()
-        local center_text = center and format_point(center) or '(nil)'
-        set_text(sample_ui.status_text, string.format('已连播下一个样例 @ %s', center_text))
+      if get_debug_actions().debug_cast_next_sample_skill then
+        get_debug_actions().debug_cast_next_sample_skill()
+        set_text(sample_ui.status_text, '已连播下一个')
       end
     end, { 92, 82, 116, 235 })
 
@@ -808,16 +821,16 @@ function M.create(env)
       return
     end
     local defs = sample_skill_system and sample_skill_system.get_sample_defs and sample_skill_system.get_sample_defs() or {}
-    local pages = math.max(1, math.ceil((#defs) / 10))
+    local pages = math.max(1, math.ceil((#defs) / 8))
     if sample_ui.page > pages then
       sample_ui.page = pages
     end
     if sample_ui.page < 1 then
       sample_ui.page = 1
     end
-    set_text(sample_ui.page_text, string.format('第 %d/%d 页', sample_ui.page, pages))
-    local base = (sample_ui.page - 1) * 10
-    for i = 1, 10 do
+    set_text(sample_ui.page_text, string.format('%d/%d', sample_ui.page, pages))
+    local base = (sample_ui.page - 1) * 8
+    for i = 1, 8 do
       local idx = base + i
       local def = defs[idx]
       local btn = sample_ui.list_buttons[i]
@@ -857,7 +870,7 @@ function M.create(env)
   end
 
   ensure_gm_panel = function()
-    local parent = UiRoot.get_overlay_parent(y3, env.get_player())
+    local parent = UiRoot.get_overlay_parent(y3, get_player())
     if not parent then
       return nil
     end
@@ -885,56 +898,56 @@ function M.create(env)
 
     local panel = parent:create_child('图片')
     panel:set_image(999)
-    panel:set_ui_size(900, 590)
+    panel:set_ui_size(720, 480)
     panel:set_relative_parent_pos('顶部', 62)
     panel:set_relative_parent_pos('右侧', 18)
-    panel:set_image_color(8, 14, 22, 225)
+    panel:set_image_color(12, 22, 35, 230)
     panel:set_z_order(9500)
     panel:set_intercepts_operations(true)
     gm_ui.panel = panel
 
-    create_rect(panel, 18, 520, 850, 50, { 20, 38, 58, 230 })
-    create_text(panel, 'GM 调试面板', 34, 536, 220, 28, 24, { 245, 248, 255, 255 })
-    create_text(panel, '旧 GM 功能与特效验收已合并，右侧可查看每个特效功能与触发状态。', 250, 538, 560, 22, 14, { 156, 178, 208, 255 })
+    create_rect(panel, 12, 440, 690, 32, { 25, 45, 68, 230 })
+    create_text(panel, 'GM 调试面板', 24, 452, 160, 22, 18, { 245, 248, 255, 255 })
+    create_text(panel, '快捷键 Ctrl+F1~F9', 190, 454, 280, 18, 12, { 160, 185, 215, 255 })
 
-    create_rect(panel, 18, 382, 338, 120, { 14, 27, 42, 235 })
-    gm_ui.status_text = create_text(panel, '', 34, 394, 306, 96, 16, { 233, 239, 248, 255 })
+    create_rect(panel, 12, 320, 280, 100, { 18, 35, 52, 235 })
+    gm_ui.status_text = create_text(panel, '', 20, 332, 260, 80, 13, { 233, 239, 248, 255 })
 
     local actions = {
-      { '帮助 / F1', env.show_debug_hotkey_help or show_debug_hotkey_help, { 58, 84, 120 } },
-      { '加资源 / F2', env.debug_add_test_resources, { 73, 94, 132 } },
-      { '升 3 级 / F3', function() env.debug_grant_levels(3) end, { 64, 88, 128 } },
-      { '技能废弃 / F4', env.debug_unlock_all_attack_skills, { 84, 97, 138 } },
-      { '抽流派 / F6', env.debug_trigger_bond_draw, { 84, 110, 150 } },
-      { '满挑战 / F7', env.debug_refill_challenge_charges, { 70, 112, 142 } },
-      { '刷 Boss / F8', env.debug_force_spawn_boss, { 110, 86, 126 } },
-      { '清全场 / F9', env.debug_kill_all_active_enemies, { 128, 74, 88 } },
-      { '属性对话框', env.debug_open_attr_overview, { 74, 100, 136 } },
-      { '输出属性', env.debug_show_attr_tip_panel, { 70, 104, 134 } },
-      { '打印状态', env.show_runtime_status, { 60, 92, 120 } },
-      { '样例技能', env.debug_cast_next_sample_skill, { 96, 84, 130 } },
-      { '样例列表', env.debug_list_sample_skills, { 82, 96, 126 } },
-      { '验收快照', env.debug_print_sample_framework_report, { 88, 112, 146 } },
-      { '分档连测', env.debug_run_framework_tier_suite, { 86, 92, 132 } },
-      { '分档报告', env.debug_print_framework_tier_report, { 86, 102, 142 } },
+      { '帮助 / F1', show_debug_hotkey_help, { 58, 84, 120 } },
+      { '加资源 / F2', get_debug_actions().debug_add_test_resources, { 73, 94, 132 } },
+      { '升 3 级 / F3', function() get_debug_actions().debug_grant_levels(3) end, { 64, 88, 128 } },
+      { '技能废弃 / F4', get_debug_actions().debug_unlock_all_attack_skills, { 84, 97, 138 } },
+      { '抽流派 / F6', get_debug_actions().debug_trigger_bond_draw, { 84, 110, 150 } },
+      { '满挑战 / F7', get_debug_actions().debug_refill_challenge_charges, { 70, 112, 142 } },
+      { '刷 Boss / F8', get_debug_actions().debug_force_spawn_boss, { 110, 86, 126 } },
+      { '清全场 / F9', get_debug_actions().debug_kill_all_active_enemies, { 128, 74, 88 } },
+      -- 属性对话框已废弃（get_debug_actions().debug_open_attr_overview 未定义）
+      { '输出属性', debug_show_attr_tip_panel, { 70, 104, 134 } },
+      { '打印状态', show_runtime_status, { 60, 92, 120 } },
+      { '样例技能', get_debug_actions().debug_cast_next_sample_skill, { 96, 84, 130 } },
+      { '样例列表', get_debug_actions().debug_list_sample_skills, { 82, 96, 126 } },
+      { '验收快照', get_debug_actions().debug_print_sample_framework_report, { 88, 112, 146 } },
+      { '分档连测', get_debug_actions().debug_run_framework_tier_suite, { 86, 92, 132 } },
+      { '分档报告', get_debug_actions().debug_print_framework_tier_report, { 86, 102, 142 } },
       { '投射物覆盖', function()
-        if env.debug_toggle_global_projectile_override then
-          env.debug_toggle_global_projectile_override(DEFAULT_DEBUG_PROJECTILE_KEY)
+        if get_debug_actions().debug_toggle_global_projectile_override then
+          get_debug_actions().debug_toggle_global_projectile_override(DEFAULT_DEBUG_PROJECTILE_KEY)
         end
       end, { 96, 106, 132 } },
     }
 
-    create_text(panel, '通用 GM', 26, 344, 120, 24, 18, { 245, 248, 255, 255 })
+    create_text(panel, '快捷操作', 16, 302, 100, 18, 15, { 245, 248, 255, 255 })
     for index, action in ipairs(actions) do
-      local column = (index - 1) % 2
-      local row = math.floor((index - 1) / 2)
+      local column = (index - 1) % 3
+      local row = math.floor((index - 1) / 3)
       create_button(
         panel,
         action[1],
-        24 + column * 168,
-        300 - row * 44,
-        154,
-        36,
+        14 + column * 90,
+        276 - row * 28,
+        82,
+        24,
         action[2],
         action[3]
       )
@@ -966,19 +979,21 @@ function M.create(env)
     end
   end
 
-  disable_legacy_gm_panel()
+  if not y3.game.is_debug_mode() then
+    disable_legacy_gm_panel()
 
-  refresh_gm_panel = function()
-    return
-  end
-  toggle_gm_panel = function()
-    return
-  end
-  ensure_gm_panel = function()
-    return nil
+    refresh_gm_panel = function()
+      return
+    end
+    toggle_gm_panel = function()
+      return
+    end
+    ensure_gm_panel = function()
+      return nil
+    end
   end
 
-  return {
+  local api = {
     point_to_table = point_to_table,
     format_point = format_point,
     get_area = get_area,
@@ -997,6 +1012,7 @@ function M.create(env)
     toggle_gm_panel = toggle_gm_panel,
     ensure_gm_panel = ensure_gm_panel,
   }
-end
+  _G.debug_tools_system = api
+  M = api
 
 return M

@@ -1,6 +1,7 @@
 local UiRoot = require 'ui.ui_root'
 local HeroAttrSystem = require 'runtime.hero_attr_system'
 local AttrDefs = HeroAttrSystem.get_defs and HeroAttrSystem.get_defs() or { aliases = {}, by_name = {} }
+local AttrDisplayConfig = require 'data.tables.ui.attr_display_config'
 
 local M = {}
 
@@ -36,9 +37,7 @@ local ATTR_GRID_COLUMN_COUNT = 2
 local ATTR_GRID_CELL_WIDTH = 150
 local ATTR_GRID_CELL_HEIGHT = 33
 
-local function is_alive(ui)
-  return UiRoot.is_alive(ui)
-end
+local is_alive = UiRoot.is_alive
 
 local function call_ui(ui, method, ...)
   if is_alive(ui) and type(ui[method]) == 'function' then
@@ -86,10 +85,10 @@ local function format_percent(value, digits)
 end
 
 function M.create(env)
-  local STATE = env.STATE
-  local y3 = env.y3
-  local get_player = env.get_player
-  local hero_attr_system = env.hero_attr_system
+  local STATE = env and env.STATE or _G.STATE
+  local y3 = env and env.y3 or _G.y3
+  local get_player = env and env.get_player or _G.get_player
+  local hero_attr_system = env and env.hero_attr_system or _G.hero_attr_system
   local nodes = {}
 
   local function get_root()
@@ -206,34 +205,26 @@ function M.create(env)
   end
 
   local function build_attr_lines()
-    return {
-      attr_line('攻击成长', read_attr('每秒攻击'), function(value) return format_number(value, 0) end),
-      attr_line('生命成长', read_attr('每秒生命'), function(value) return format_number(value, 0) end),
-      attr_line('攻击范围', read_attr('攻击范围'), function(value) return format_number(value, 0) end),
-      attr_line('多重数量', read_attr('多重数量'), function(value) return format_number(value, 0) end),
-      attr_line('生命回复', read_attr('生命恢复'), function(value) return format_number(value, 0) end),
-      attr_line('移动速度', read_attr('移动速度'), function(value) return format_number(value, 0) end),
-      attr_line('攻击速度', with_default(read_attr('攻击速度'), 100), function(value) return format_percent(value, 0) end),
-      attr_line('闪避概率', read_attr('闪避'), function(value) return format_percent(value, 0) end),
-      attr_line('被动概率', read_attr('命中'), function(value) return format_percent(value, 0) end),
-      attr_line('护甲穿透', read_attr('护甲穿透'), function(value) return format_percent(value, 0) end),
-      attr_line('物理暴率', read_attr('物理暴击'), function(value) return format_percent(value, 1) end),
-      attr_line('物理暴伤', with_default(read_attr('物理暴伤'), 200), function(value) return format_percent(value, 1) end),
-      attr_line('法术暴率', read_attr('魔法暴击'), function(value) return format_percent(value, 1) end),
-      attr_line('法术暴伤', with_default(read_attr('魔法暴伤'), 200), function(value) return format_percent(value, 1) end),
-      attr_line('射箭伤害', read_attr('普攻伤害'), function(value) return format_percent(value, 1) end),
-      attr_line('物理增伤', read_attr('物理伤害'), function(value) return format_percent(value, 1) end),
-      attr_line('法术增伤', read_attr('魔法伤害'), function(value) return format_percent(value, 1) end),
-      attr_line('最终伤害', read_attr('最终伤害'), function(value) return format_percent(value, 1) end),
-      attr_line('最终减免', read_attr('伤害减免'), function(value) return format_percent(value, 1) end),
-      attr_line('召唤加成', read_attr('召唤加成'), function(value) return format_percent(value, 1) end),
-      attr_line('经验加成', read_attr('杀敌经验'), function(value) return format_percent(value, 1) end),
-      attr_line('金币', read_gold(), function(value) return format_number(value, 0) end),
-      attr_line('绝学伤害', read_attr('技能伤害'), function(value) return format_percent(value, 1) end),
-      attr_line('小怪增伤', read_attr('所有伤害'), function(value) return format_percent(value, 1) end),
-      attr_line('精英增伤', read_attr('精英伤害'), function(value) return format_percent(value, 1) end),
-      attr_line('BOSS增伤', read_attr('挑战伤害'), function(value) return format_percent(value, 1) end),
-    }
+    local lines = {}
+    for _, entry in ipairs(AttrDisplayConfig) do
+      local value
+      if entry.is_gold then
+        value = read_gold()
+      else
+        value = read_attr(entry.attr)
+        if entry.default ~= nil then
+          value = with_default(value, entry.default)
+        end
+      end
+      local formatter
+      if entry.format == 'percent' then
+        formatter = function(v) return format_percent(v, entry.decimals or 1) end
+      else
+        formatter = function(v) return format_number(v, entry.decimals or 0) end
+      end
+      lines[#lines + 1] = attr_line(entry.display, value, formatter)
+    end
+    return lines
   end
 
   local function build_rule_lines()

@@ -2,8 +2,6 @@ local SkillFramework = require 'runtime.skill_framework'
 local Skills = require 'runtime.skills'
 local GeneratedSkills = require 'runtime.generated_skills'
 
-local M = {}
-
 local function make_vfx(pattern, element, sub_behavior)
   local element_vfx = Skills.get_element_vfx(element) or Skills.get_element_vfx('physical')
   local is_burst = pattern == 'area' or pattern == 'area_burst' or sub_behavior == 'burst'
@@ -54,23 +52,19 @@ local function build_rows()
   return rows
 end
 
-function M.create(env)
-  env = env or {}
-  local framework = env.skill_framework or SkillFramework.create({
-    y3 = env.y3,
-    skill_damage_api = env.skill_damage_api,
-    get_primary_target = env.get_primary_target,
-    get_enemies_in_range = env.get_enemies_in_range,
-    get_hero = env.get_hero,
-    get_hero_point = env.get_hero_point,
-    get_hero_attack = env.get_hero_attack,
-    get_hero_facing_towards = env.get_hero_facing_towards,
-    create_offset_point = env.create_offset_point,
-    launch_projectile_from_hero = env.launch_projectile_from_hero,
-    spawn_particle = env.spawn_particle,
-  })
+local framework = _G.skill_framework_system
+local hero_attr_system = _G.hero_attr_system
+local skill_damage_api = _G.td_damage_api
+local get_enemies_in_range = _G.get_enemies_in_range or function() return {} end
+local is_active_enemy = _G.is_active_enemy or function() return false end
+local get_hero = _G.get_current_hero or function() return nil end
+local get_hero_point = _G.get_hero_point or function() return nil end
+local get_hero_attack = _G.get_hero_attack or function() return 0 end
+local get_primary_target = _G.get_primary_target or function() return nil end
+local spawn_particle = _G.spawn_particle or function() end
+local launch_projectile_from_hero = _G.launch_projectile_from_hero or function() end
 
-  local defs = build_rows()
+local defs = build_rows()
   local by_id = {}
   local next_index = 1
 
@@ -169,8 +163,8 @@ function M.create(env)
 
   function api.print_sample_list()
     for _, line in ipairs(api.list_samples()) do
-      if env.message then
-        env.message(line)
+      if _G.message then
+        _G.message(line)
       else
         print(line)
       end
@@ -211,7 +205,4 @@ function M.create(env)
     return rows
   end
 
-  return api
-end
-
-return M
+_G.sample_skills_system = api

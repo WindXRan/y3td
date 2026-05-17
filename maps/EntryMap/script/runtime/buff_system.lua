@@ -6,7 +6,6 @@ local STATE = nil
 local y3 = nil
 local GameAPI = nil
 local GameTables = nil
-local CustomHealthBars = nil
 
 local function get_unit_key_text(unit)
   if type(unit) == 'table' then
@@ -37,17 +36,14 @@ end
 ---@field cycle_accum number   DOT 周期累加器
 ---@field source table|nil    施加者 unit
 
----初始化
----@param env table { STATE, y3, GameTables }
-function M.init(env)
-  STATE = env.STATE
-  y3 = env.y3
-  GameAPI = rawget(_G, 'GameAPI')
-  GameTables = env.GameTables
+-- 自初始化（require 时执行）
+STATE = _G.STATE
+y3 = _G.y3
+GameAPI = rawget(_G, 'GameAPI')
+GameTables = _G.CONFIG and _G.CONFIG.GameTables
 
-  if not STATE.buff_instances then
-    STATE.buff_instances = {}
-  end
+if not STATE.buff_instances then
+  STATE.buff_instances = {}
 end
 
 ---获取单位 Buff 实例表
@@ -128,6 +124,9 @@ function M.apply_buff(unit, template_id, duration, stacks, source)
   -- 应用初始属性修改
   M.apply_attr_change(unit, template, instance.stacks)
 
+  -- 应用 Buff 状态（如禁止移动）
+  M.apply_unit_state(unit, template)
+
   -- 刷新图标
   M.refresh_unit_buff_icons(unit)
 
@@ -147,6 +146,9 @@ function M.remove_buff(unit, template_id)
   if not instance then
     return
   end
+
+  -- 还原 Buff 状态（如禁止移动）
+  M.remove_unit_state(unit, instance.template)
 
   -- 还原属性修改
   M.remove_attr_change(unit, instance.template, instance.stacks)
@@ -201,6 +203,69 @@ function M.remove_attr_change(unit, template, stacks)
   pcall(unit.add_attr, unit, template.attr_name, -value, '增益')
 end
 
+---应用单位状态（带引用计数，支持并发 buff）
+---@param unit table
+---@param state_name string
+local function add_unit_state_ref(unit, state_name)
+  if not unit or not state_name or state_name == '' then
+    return
+  end
+  STATE.buff_unit_states = STATE.buff_unit_states or {}
+  local key = get_unit_key_text(unit)
+  if not key then
+    return
+  end
+  STATE.buff_unit_states[key] = STATE.buff_unit_states[key] or {}
+  local refs = STATE.buff_unit_states[key]
+  refs[state_name] = (refs[state_name] or 0) + 1
+  if refs[state_name] == 1 then
+    pcall(unit.add_state, unit, state_name)
+  end
+end
+
+---移除单位状态引用
+---@param unit table
+---@param state_name string
+local function remove_unit_state_ref(unit, state_name)
+  if not unit or not state_name or state_name == '' then
+    return
+  end
+  local key = get_unit_key_text(unit)
+  if not key then
+    return
+  end
+  STATE.buff_unit_states = STATE.buff_unit_states or {}
+  local refs = STATE.buff_unit_states[key]
+  if not refs or not refs[state_name] then
+    return
+  end
+  refs[state_name] = refs[state_name] - 1
+  if refs[state_name] <= 0 then
+    refs[state_name] = nil
+    pcall(unit.remove_state, unit, state_name)
+  end
+end
+
+---应用 Buff 附带的状态
+---@param unit table
+---@param template table
+function M.apply_unit_state(unit, template)
+  if not template.state_name or template.state_name == '' then
+    return
+  end
+  add_unit_state_ref(unit, template.state_name)
+end
+
+---移除 Buff 附带的状态
+---@param unit table
+---@param template table
+function M.remove_unit_state(unit, template)
+  if not template.state_name or template.state_name == '' then
+    return
+  end
+  remove_unit_state_ref(unit, template.state_name)
+end
+
 ---主循环驱动
 ---@param dt number 帧间隔（秒）
 function M.tick(dt)
@@ -251,6 +316,8 @@ function M.tick(dt)
     local unit_buffs = instances[item.unit_key]
     if unit_buffs and unit_buffs[item.template_id] then
       local inst = unit_buffs[item.template_id]
+      -- 还原 Buff 状态
+      M.remove_unit_state_by_key(item.unit_key, inst)
       -- 还原属性
       M.remove_attr_change_by_key(item.unit_key, inst)
       unit_buffs[item.template_id] = nil
@@ -388,6 +455,20 @@ function M.remove_attr_change_by_key(unit_key, inst)
   end
 end
 
+---通过 unit_key 还原过期 Buff 的状态
+---@param unit_key string
+---@param inst BuffInstance
+function M.remove_unit_state_by_key(unit_key, inst)
+  local template = inst.template
+  if not template.state_name or template.state_name == '' then
+    return
+  end
+  local unit = resolve_instance_unit(unit_key, inst)
+  if unit then
+    remove_unit_state_ref(unit, template.state_name)
+  end
+end
+
 ---获取单位所有活跃 Buff 的汇总信息（给 HUD 使用）
 ---@param unit table
 ---@return table[] entries
@@ -477,11 +558,16 @@ function M.clear_unit_buffs(unit)
   end
 
   for template_id, inst in pairs(unit_buffs) do
+    M.remove_unit_state(unit, inst.template)
     M.remove_attr_change(unit, inst.template, inst.stacks)
   end
 
+  -- 清理状态引用
   local key = get_unit_key_text(unit)
   STATE.buff_instances[key] = nil
+  if STATE.buff_unit_states then
+    STATE.buff_unit_states[key] = nil
+  end
   M.refresh_unit_buff_icons(unit)
 end
 

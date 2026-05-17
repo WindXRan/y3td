@@ -2,10 +2,9 @@ local PresentationProfiles = require 'data.tables.skill.attack_skill_presentatio
 local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
 local SkillRuntimeTuning = require 'data.tables.skill.skill_runtime_tuning'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
+local BootCombat = require 'runtime.boot_combat'
 
-local M = {}
-
---- attack_skills.create(env) — 攻击技能运行时系统入口
+--- attack_skills 模块
 --
 -- 必填字段 (缺少会导致明确错误):
 --   env.STATE         — 全局运行时状态表
@@ -31,59 +30,47 @@ local M = {}
 --   env.play_basic_attack_sound, env.play_attack_skill_sound
 --   env.get_hero_point
 --
--- 返回值: 包含攻击技能全部公共方法的 table
--- 调用方: runtime/boot.lua (attack_skills_system 变量)
-function M.create(env)
-  if not env or not env.STATE or not env.y3 or not env.hero_attr_system then
-    error('[attack_skills] 缺少必填字段: STATE, y3, hero_attr_system')
-  end
-  if not env.get_player or not env.get_enemies_in_range or not env.deal_skill_damage then
-    error('[attack_skills] 缺少必填字段: get_player, get_enemies_in_range, deal_skill_damage')
-  end
+-- Module-level self-initialization: uses _G globals set up by boot.lua before require
+local STATE = _G.STATE
+local ATTACK_SKILL_RUNTIME_TUNING =
+    CONFIG.attack_skill_runtime_tuning
+    or (CONFIG.skill_runtime_tuning and CONFIG.skill_runtime_tuning.attack)
+    or SkillRuntimeTuning.attack
+    or {}
+local ATTACK_SKILL_DEPRECATED = CONFIG.attack_skill_deprecated == true
+local VISUAL_TUNING = ATTACK_SKILL_RUNTIME_TUNING.visual or {}
+local PROJECTILE_TUNING = ATTACK_SKILL_RUNTIME_TUNING.projectile or {}
+local COOLDOWN_TUNING = ATTACK_SKILL_RUNTIME_TUNING.cooldown or {}
+local SEARCH_TUNING = ATTACK_SKILL_RUNTIME_TUNING.search or {}
+local DAMAGE_TEMPLATE_MAP = SkillDamageTemplates.cast_family_map or {}
+local DEFAULT_DAMAGE_TEMPLATE_ID = SkillDamageTemplates.default_template_id or 'single'
+local ATTACK_SKILL_SLOT_COUNT = math.max(1, tonumber(_G.ATTACK_SKILL_SLOT_COUNT) or 5)
+local round_number = _G.round_number
+local message = _G.message
+local ATTACK_SKILL_DEFS = _G.ATTACK_SKILL_DEFS
+local ATTACK_SKILL_BLUEPRINTS = _G.ATTACK_SKILL_BLUEPRINTS or { by_id = {} }
+local ATTACK_SKILL_VFX = _G.AttackSkillObjects and _G.AttackSkillObjects.vfx_by_id
+local hero_attr_system = _G.hero_attr_system
+local get_player = _G.get_player
+local create_attack_skill_instance = _G.create_attack_skill_instance
 
-  local STATE = env.STATE
-  local CONFIG = env.CONFIG or {}
-  local ATTACK_SKILL_RUNTIME_TUNING =
-      CONFIG.attack_skill_runtime_tuning
-      or (CONFIG.skill_runtime_tuning and CONFIG.skill_runtime_tuning.attack)
-      or SkillRuntimeTuning.attack
-      or {}
-  local ATTACK_SKILL_DEPRECATED = CONFIG.attack_skill_deprecated == true
-  local VISUAL_TUNING = ATTACK_SKILL_RUNTIME_TUNING.visual or {}
-  local PROJECTILE_TUNING = ATTACK_SKILL_RUNTIME_TUNING.projectile or {}
-  local COOLDOWN_TUNING = ATTACK_SKILL_RUNTIME_TUNING.cooldown or {}
-  local SEARCH_TUNING = ATTACK_SKILL_RUNTIME_TUNING.search or {}
-  local DAMAGE_TEMPLATE_MAP = SkillDamageTemplates.cast_family_map or {}
-  local DEFAULT_DAMAGE_TEMPLATE_ID = SkillDamageTemplates.default_template_id or 'single'
-  local y3 = env.y3
-  local ATTACK_SKILL_SLOT_COUNT = math.max(1, tonumber(env.attack_skill_slot_count) or 5)
-  local round_number = env.round_number
-  local message = env.message
-  local ATTACK_SKILL_DEFS = env.ATTACK_SKILL_DEFS
-  local ATTACK_SKILL_BLUEPRINTS = env.ATTACK_SKILL_BLUEPRINTS or { by_id = {} }
-  local ATTACK_SKILL_VFX = env.ATTACK_SKILL_VFX
-  local hero_attr_system = env.hero_attr_system
-  local get_player = env.get_player
-  local get_hero_point = env.get_hero_point
-  local get_bond_runtime_bonus = env.get_bond_runtime_bonus
-  local is_active_enemy = env.is_active_enemy
-  local create_attack_skill_instance = env.create_attack_skill_instance
-  local deal_skill_damage = env.deal_skill_damage
-  local get_damage_bonus_multiplier = env.get_damage_bonus_multiplier
-  local reserve_formula_damage = env.reserve_formula_damage or function()
-    return false
-  end
-  local get_enemies_in_range = env.get_enemies_in_range
-  local try_trigger_hunter_first_hit = env.try_trigger_hunter_first_hit
-  local notify_bond_attack_skill_cast = env.notify_bond_attack_skill_cast
-  local notify_auto_active_basic_attack = env.notify_auto_active_basic_attack
-  local notify_auto_active_skill_cast = env.notify_auto_active_skill_cast
-  local play_basic_attack_sound = env.play_basic_attack_sound
-  local play_attack_skill_sound = env.play_attack_skill_sound
-  local skill_framework = env.skill_framework
-  local ATTACK_STATUS_MODIFIER_KEYS = RuntimeEditorIds.modifier.attack_status or {}
-  local VISUAL_ANIMATION_SPEED = tonumber(VISUAL_TUNING.animation_speed) or 0.5
-  local get_skill_damage_template_id
+local get_hero_point = BootCombat.get_hero_point
+local get_bond_runtime_bonus = BootCombat.get_bond_runtime_bonus
+local is_active_enemy = BootCombat.is_active_enemy
+local deal_skill_damage = BootCombat.deal_skill_damage
+local get_damage_bonus_multiplier = BootCombat.get_damage_bonus_multiplier
+local reserve_formula_damage = BootCombat.reserve_formula_damage
+local get_enemies_in_range = BootCombat.get_enemies_in_range
+local try_trigger_hunter_first_hit = BootCombat.try_trigger_hunter_first_hit
+local notify_bond_attack_skill_cast = _G.notify_bond_attack_skill_cast or function() end
+local notify_auto_active_basic_attack = _G.notify_auto_active_basic_attack
+local notify_auto_active_skill_cast = _G.notify_auto_active_skill_cast
+local play_basic_attack_sound = _G.play_basic_attack_sound
+local play_attack_skill_sound = _G.play_attack_skill_sound
+local skill_framework = _G.skill_framework_system
+local ATTACK_STATUS_MODIFIER_KEYS = RuntimeEditorIds.modifier.attack_status or {}
+local VISUAL_ANIMATION_SPEED = tonumber(VISUAL_TUNING.animation_speed) or 0.5
+local get_skill_damage_template_id
 
   local function scale_visual_duration(seconds)
     return math.max(0.05, (seconds or 0.30) / VISUAL_ANIMATION_SPEED)
@@ -161,10 +148,16 @@ function M.create(env)
   end
 
   local function get_basic_attack_runtime_chain_stats()
-    local skill_runtime = STATE.skill_runtime or {}
-    local count = math.max(0, round_number(skill_runtime.chain_bounces or 0))
-    local chance = math.max(0, normalize_ratio(skill_runtime.chain_chance or 0))
-    local ratio = math.max(0, normalize_ratio(skill_runtime.chain_ratio or 0))
+    local count, chance, ratio = 0, 0, 0
+    if STATE.skill_runtime then
+      local bounces, ch, r = STATE.skill_runtime:get_chain()
+      count = bounces or 0
+      chance = ch or 0
+      ratio = r or 0
+    end
+    count = math.max(0, round_number(count))
+    chance = math.max(0, normalize_ratio(chance))
+    ratio = math.max(0, normalize_ratio(ratio))
     return count, chance, ratio
   end
 
@@ -216,7 +209,7 @@ function M.create(env)
   end
 
   local function get_global_skill_bonus(field)
-    local state_bonus = STATE.skill_runtime and STATE.skill_runtime[field] or 0
+    local state_bonus = STATE.skill_runtime and STATE.skill_runtime:get(field) or 0
     return state_bonus + get_bond_runtime_bonus(field)
   end
 
@@ -569,16 +562,7 @@ function M.create(env)
     return result
   end
 
-  local skill_damage_api = SkillDamageTemplates.create({
-    y3 = y3,
-    deal_skill_damage = function(target, amount, damage_meta, visual)
-      deal_skill_damage(target, amount, damage_meta, visual)
-    end,
-    emit_damage_debug = env.emit_damage_debug,
-    get_enemies_in_range = get_enemies_in_range,
-    get_enemies_on_line = get_enemies_on_line,
-    is_active_enemy = is_active_enemy,
-  })
+  local skill_damage_api = _G.td_damage_api
 
   local function resume_enemy_path(unit)
     if is_active_enemy(unit) and STATE.defense_point then
@@ -2294,7 +2278,7 @@ function M.create(env)
         local impact_center = impact_point or get_unit_point_snapshot(target)
         local splash_center = impact_center or target
         local basic_attack_def = ATTACK_SKILL_DEFS.basic_attack or skill
-        local runtime = STATE.skill_runtime or {}
+        local runtime = STATE.skill_runtime
         local runtime_chain_count, runtime_chain_chance, runtime_chain_ratio = get_basic_attack_runtime_chain_stats()
         local bonus_chain_count, bonus_chain_ratio = get_basic_attack_bonus_chain_stats()
         local explosion_ratio = math.max(0, get_effective_skill_value(skill, 'explosion_ratio'))
@@ -2311,8 +2295,9 @@ function M.create(env)
             particle = nil,
             force_hit_effect = false,
           })
-          if (runtime.normal_attack_bonus_ratio or 0) > 0 then
-            deal_single_skill_damage(target, '物理', damage * runtime.normal_attack_bonus_ratio, {
+          local bonus_ratio = runtime and runtime:get('normal_attack_bonus_ratio') or 0
+          if bonus_ratio > 0 then
+            deal_single_skill_damage(target, '物理', damage * bonus_ratio, {
               text_type = 'physics',
             })
           end
@@ -2356,15 +2341,17 @@ function M.create(env)
           end
         end
 
-        if (runtime.splash_ratio or 0) > 0 and (runtime.splash_radius or 0) > 0 then
-          local bonus_splash_units = get_enemies_in_range(splash_center, runtime.splash_radius, target)
+        local splash_ratio = runtime and runtime:get('splash_ratio') or 0
+        local splash_radius = runtime and runtime:get('splash_radius') or 0
+        if splash_ratio > 0 and splash_radius > 0 then
+          local bonus_splash_units = get_enemies_in_range(splash_center, splash_radius, target)
           if #bonus_splash_units > 0 then
             if impact_center then
               play_skill_particle_on_point(skill, impact_center, 'burst', 18)
             end
             play_skill_audio(skill, 'burst', impact_center or splash_center)
             for _, unit in ipairs(bonus_splash_units) do
-              deal_basic_attack_secondary_damage(skill, unit, damage * runtime.splash_ratio, {
+              deal_basic_attack_secondary_damage(skill, unit, damage * splash_ratio, {
                 use_skill_damage = true,
                 damage_meta = '物理',
                 text_type = 'physics',
@@ -2377,7 +2364,8 @@ function M.create(env)
 
         if runtime_chain_count > 0 and runtime_chain_ratio > 0 and runtime_chain_chance > 0 and math.random() <= runtime_chain_chance then
           local bounced = 0
-          for _, unit in ipairs(get_enemies_in_range(splash_center, runtime.chain_radius or 420, target, runtime_chain_count)) do
+          local chain_radius = runtime and runtime:get('chain_radius') or 420
+          for _, unit in ipairs(get_enemies_in_range(splash_center, chain_radius, target, runtime_chain_count)) do
             if deal_basic_attack_secondary_damage(skill, unit, damage * runtime_chain_ratio, {
                   use_skill_damage = true,
                   damage_meta = basic_attack_def,
@@ -2397,7 +2385,7 @@ function M.create(env)
           local bounced = 0
           for _, unit in ipairs(get_enemies_in_range(
             splash_center,
-            math.max(runtime.chain_radius or 0, 420),
+            math.max(runtime and runtime:get('chain_radius') or 0, 420),
             target,
             bonus_chain_count
           )) do
@@ -2680,7 +2668,7 @@ function M.create(env)
     update_active_skills(dt)
   end
 
-  return {
+  local api = {
     get_basic_attack_skill = get_basic_attack_skill,
     get_current_basic_attack_range = get_current_basic_attack_range,
     sync_basic_attack_ability = sync_basic_attack_ability,
@@ -2699,6 +2687,4 @@ function M.create(env)
     update_active_skills = update_active_skills,
     update_attack_skills = update_attack_skills,
   }
-end
-
-return M
+_G.attack_skills_system = api

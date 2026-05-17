@@ -1,4 +1,6 @@
 local M = {}
+local y3 = y3
+local BootHelpers = require 'runtime.boot_helpers'
 
 local AudioResources = require 'data.tables.audio_resources'
 
@@ -26,12 +28,10 @@ local function first_non_empty_list(...)
   return {}
 end
 
-function M.create(params)
-  local STATE = params.STATE
-  local y3 = params.y3
-  local get_player = params.get_player
-  local trace = params.trace or function() end
-  local debug_missing_audio = params.debug_missing_audio == true
+local STATE = _G.STATE
+local get_player = _G.get_player or BootHelpers.get_player
+local trace = _G.trace or function() end
+local debug_missing_audio = true
 
   local function ensure_runtime()
     if not STATE.audio_runtime then
@@ -311,25 +311,37 @@ function M.create(params)
   end
 
   local function play_bgm(audio_ids, options, audio_label)
+    trace('[BGM] 尝试播放BGM, label=' .. tostring(audio_label) .. ', ids=' .. format_audio_ids(audio_ids))
     local runtime = ensure_runtime()
     stop_sound(runtime.bgm_sound, true)
     runtime.bgm_sound = nil
     runtime.bgm_sound = play_audio_candidates(audio_ids, audio_label, function(key)
+      trace('[BGM] 尝试播放音频key=' .. tostring(key))
       local player = ensure_audio_channels_ready()
       if not player then
+        trace('[BGM] 获取玩家失败')
         return nil
       end
-      return y3.sound.play(player, key, {
+      local sound = y3.sound.play(player, key, {
         loop = true,
         fade_in = options and options.fade_in or 0,
         fade_out = options and options.fade_out or 0,
       })
+      if sound then
+        trace('[BGM] 成功播放音频key=' .. tostring(key))
+      else
+        trace('[BGM] y3.sound.play 返回nil, key=' .. tostring(key))
+      end
+      return sound
     end)
     if runtime.bgm_sound and options and options.volume then
       local player = get_player()
       if player then
         runtime.bgm_sound:set_volume(player, options.volume)
       end
+    end
+    if not runtime.bgm_sound then
+      trace('[BGM] BGM播放失败, label=' .. tostring(audio_label))
     end
     return runtime.bgm_sound
   end
@@ -604,7 +616,7 @@ function M.create(params)
     return play_for_unit(AUDIO_SCENES.basic_attack, unit, { volume = 66 }, 'basic_attack')
   end
 
-  return {
+  local api = {
     ensure_music_loop = ensure_music_loop,
     enter_battle = enter_battle,
     handle_wave_started = handle_wave_started,
@@ -624,6 +636,6 @@ function M.create(params)
     play_attack_skill = play_attack_skill,
     play_enemy_death = play_enemy_death,
   }
-end
+  _G.audio_system = api
 
 return M

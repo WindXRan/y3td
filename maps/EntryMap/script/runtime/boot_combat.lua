@@ -1,6 +1,5 @@
 local CONFIG = require 'config.entry_config'
 local BootHelpers = require 'runtime.boot_helpers'
-local BondSystem = require 'runtime.bonds_chain'
 
 local M = {}
 
@@ -9,18 +8,6 @@ local DAMAGE_AREA_DEBUG_SCALE_BASE = 110
 local DAMAGE_AREA_DEBUG_HEIGHT = 8
 local DAMAGE_DEBUG_UID_WINDOW = 0.08
 local SKILL_DAMAGE_REENTRANT_GUARD_LIMIT = 96
-
-local STATE = nil
-local hero_attr_system = nil
-local battlefield_system = nil
-local BattleEventPrompts = nil
-
-function M.set_dependencies(state, attr_system, bf_system, prompts)
-  STATE = state
-  hero_attr_system = attr_system
-  battlefield_system = bf_system
-  BattleEventPrompts = prompts
-end
 
 function M.get_enemies_in_range(center, radius, except_unit, max_count)
   local result = {}
@@ -241,11 +228,14 @@ function M.get_bond_runtime_bonus(key)
   if evolution_runtime and evolution_runtime.applied and evolution_runtime.applied.runtime then
     evolution_bonus = evolution_runtime.applied.runtime[key] or 0
   end
-  return BondSystem.get_runtime_bonus(STATE, key) + evolution_bonus
+  return evolution_bonus
 end
 
-function M.get_combat_bonus(key)
-  return M.get_bond_runtime_bonus(key)
+M.get_combat_bonus = M.get_bond_runtime_bonus
+
+function M.try_trigger_hunter_first_hit(target)
+  local bonus = M.get_combat_bonus('hunter_first_hit')
+  return bonus and bonus > 0 or false
 end
 
 function M.get_damage_bonus_multiplier(target, context)
@@ -288,17 +278,6 @@ function M.get_damage_bonus_multiplier(target, context)
   end
 
   return multiplier
-end
-
-function M.try_trigger_hunter_first_hit(target)
-  if STATE and STATE.basic_attack_bond_enabled ~= false then
-    BondSystem.notify_basic_attack(M.create_bond_env(), target)
-  end
-  BondSystem.try_trigger_hunter_first_hit(M.create_bond_env(), target)
-end
-
-function M.build_reward_with_bond_bonus(reward)
-  return BondSystem.build_reward_with_bonus(M.create_bond_env(), reward)
 end
 
 function M.should_show_damage_area_debug()
@@ -587,9 +566,6 @@ function M.deal_skill_damage(target, amount, damage, visual)
     })
     M.emit_skill_hit_feedback(target, final_damage, hp_before)
 
-    if not (visual and visual.skip_hunter_first_hit) then
-      M.try_trigger_hunter_first_hit(target)
-    end
   end)
 
   STATE.__skill_damage_call_depth = call_depth - 1
@@ -742,40 +718,6 @@ function M.set_get_enemies_in_range(func)
   get_enemies_in_range_func = func
 end
 
-function M.create_bond_env()
-  return {
-    STATE = STATE,
-    message = function(text)
-      if log and log.info then
-        log.info('[entry_runtime] ' .. tostring(text))
-      end
-      if STATE.session_phase == 'battle' then
-        if BattleEventPrompts and BattleEventPrompts.push_battle_event then
-          BattleEventPrompts.push_battle_event(text)
-        end
-        return
-      end
-      BootHelpers.get_player():display_message(text)
-    end,
-    round_number = BootHelpers.round_number,
-    y3 = y3,
-    hero_attr_system = hero_attr_system,
-    heal_hero = heal_hero_func,
-    sync_basic_attack_ability = sync_basic_attack_ability_func,
-    is_active_enemy = M.is_active_enemy,
-    get_enemy_runtime_info = M.get_enemy_runtime_info,
-    is_boss_runtime_enemy = M.is_boss_runtime_enemy,
-    is_elite_runtime_enemy = M.is_elite_runtime_enemy,
-    get_enemies_in_range = get_enemies_in_range_func or M.get_enemies_in_range,
-    deal_skill_damage = M.deal_skill_damage,
-    emit_damage_debug = function(visual)
-      M.emit_damage_debug_visual(visual, nil)
-    end,
-    reserve_formula_damage = M.reserve_formula_damage,
-    basic_attack_damage_type = STATE and STATE.ATTACK_SKILL_DEFS and STATE.ATTACK_SKILL_DEFS.basic_attack.damage_type or '物理',
-    get_player = BootHelpers.get_player,
-  }
-end
 
 function M.get_formula_damage_runtime()
   local runtime = STATE.formula_damage_runtime
@@ -895,7 +837,6 @@ function M.apply_formula_damage_override(data)
 end
 
 function M.handle_bond_enemy_kill(info, auto_active_effects_system)
-  BondSystem.handle_enemy_kill(M.create_bond_env(), info)
   if auto_active_effects_system then
     auto_active_effects_system.handle_enemy_kill(info)
   end
@@ -903,19 +844,17 @@ end
 
 function M.handle_bond_hero_pre_hurt(data)
   if not data or not STATE.hero or not STATE.hero:is_exist() then
-    BondSystem.notify_hero_pre_hurt(M.create_bond_env(), data)
     return
   end
-  
+
   local source_unit = data.source_unit
   local damage_instance = data.damage_instance
   local target_unit = data.target_unit or data.unit
-  
+
   if target_unit ~= STATE.hero then
-    BondSystem.notify_hero_pre_hurt(M.create_bond_env(), data)
     return
   end
-  
+
   if source_unit and source_unit == STATE.hero then
     if damage_instance and damage_instance.set_damage then
       pcall(function()
@@ -927,12 +866,12 @@ function M.handle_bond_hero_pre_hurt(data)
     end
     return
   end
-  
+
   local source_is_enemy = false
   if source_unit and M.is_active_enemy(source_unit) then
     source_is_enemy = true
   end
-  
+
   if not source_is_enemy then
     if damage_instance and damage_instance.set_damage then
       pcall(function()
@@ -944,8 +883,6 @@ function M.handle_bond_hero_pre_hurt(data)
     end
     return
   end
-  
-  BondSystem.notify_hero_pre_hurt(M.create_bond_env(), data)
 end
 
 local ATTACK_SKILL_DEFS = nil
@@ -991,52 +928,40 @@ function M.trigger_td_skills_on_hit(data)
     basic_chain_particle = nil
   end
 
-  if skill.normal_attack_bonus_ratio > 0 then
-    M.deal_skill_damage(target, data.damage * skill.normal_attack_bonus_ratio, { damage_type = '物理', text_type = 'physics' })
+  local bonus_ratio = skill:get('normal_attack_bonus_ratio')
+  if bonus_ratio > 0 then
+    M.deal_skill_damage(target, data.damage * bonus_ratio, { damage_type = '物理', text_type = 'physics' })
   end
 
-  if skill.splash_ratio > 0 then
-    local enemies = M.get_enemies_in_range(target, skill.splash_radius, target)
+  local splash_ratio = skill:get('splash_ratio')
+  local splash_radius = skill:get('splash_radius')
+  if splash_ratio > 0 and splash_radius > 0 then
+    local enemies = M.get_enemies_in_range(target, splash_radius, target)
     for _, enemy in ipairs(enemies) do
       if enemy ~= STATE.hero then
-        M.deal_skill_damage(enemy, data.damage * skill.splash_ratio, { damage_type = '物理', text_type = 'physics' })
+        M.deal_skill_damage(enemy, data.damage * splash_ratio, { damage_type = '物理', text_type = 'physics' })
       end
     end
   end
 
-  if skill.chain_bounces > 0 and skill.chain_chance > 0 and math.random() <= skill.chain_chance then
-    local chain_enemies = M.get_enemies_in_range(chain_center, skill.chain_radius, target, skill.chain_bounces)
+  local chain_bounces = skill:get('chain_bounces')
+  local chain_chance = skill:get('chain_chance')
+  local chain_radius = skill:get('chain_radius')
+  local chain_ratio = skill:get('chain_ratio')
+  if chain_bounces > 0 and chain_chance > 0 and math.random() <= chain_chance then
+    local chain_enemies = M.get_enemies_in_range(chain_center, chain_radius, target, chain_bounces)
     for _, enemy in ipairs(chain_enemies) do
       if enemy ~= STATE.hero then
-        M.deal_skill_damage(enemy, data.damage * skill.chain_ratio, basic_attack_def)
+        M.deal_skill_damage(enemy, data.damage * chain_ratio, basic_attack_def)
       end
     end
   end
 
-  local bond_chain_bounces = math.max(0, M.round_number(
-    M.get_bond_runtime_bonus('chain_bounces') + M.get_hero_attr_value('弹射次数')
-  ))
-  local bond_chain_ratio = 0.30 + math.max(0,
-    M.normalize_ratio(M.get_bond_runtime_bonus('chain_ratio'))
-    + M.get_hero_attr_ratio('弹射伤害')
-  )
-  if bond_chain_bounces > 0 and bond_chain_ratio > 0 then
-    local bond_chain_enemies = M.get_enemies_in_range(
-      chain_center,
-      math.max(skill.chain_radius or 0, 420),
-      target,
-      bond_chain_bounces
-    )
-    for _, enemy in ipairs(bond_chain_enemies) do
-      if enemy ~= STATE.hero then
-        M.deal_skill_damage(enemy, data.damage * bond_chain_ratio, basic_attack_def)
-      end
-    end
-  end
 
-  if skill.execute_threshold > 0 and target:is_exist() and target:get_hp() > 0 then
+  local execute_threshold = skill:get('execute_threshold')
+  if execute_threshold > 0 and target:is_exist() and target:get_hp() > 0 then
     local max_hp = M.get_unit_max_hp(target)
-    if max_hp > 0 and target:get_hp() / max_hp <= skill.execute_threshold then
+    if max_hp > 0 and target:get_hp() / max_hp <= execute_threshold then
       target:kill_by(STATE.hero)
     end
   end

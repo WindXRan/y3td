@@ -143,9 +143,9 @@ function M.create(env)
     local prompt_system = get_message_prompt_system and get_message_prompt_system() or nil
     local content = tostring(text or '')
     if string.find(content, '金币不足', 1, true) then
-      local runtime_hud_system = get_runtime_hud_system and get_runtime_hud_system() or nil
-      if runtime_hud_system and runtime_hud_system.show_insufficient_gold_tip then
-        runtime_hud_system.show_insufficient_gold_tip()
+      local hud = get_hud_system and get_hud_system() or nil
+      if hud and hud.show_insufficient_gold_tip then
+        hud.show_insufficient_gold_tip()
       end
     end
     if not prompt_system then

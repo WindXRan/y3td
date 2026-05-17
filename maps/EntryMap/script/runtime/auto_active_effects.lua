@@ -1,6 +1,7 @@
 local AutoActiveEffectsData = require 'data.tables.skill.auto_active_effects'
 local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
 local M = {}
+local y3 = y3
 
 local function shallow_copy(tbl)
     local result = {}
@@ -10,20 +11,18 @@ local function shallow_copy(tbl)
     return result
 end
 
-function M.create(deps)
-    local STATE = deps.STATE
-    local y3 = deps.y3
-    local attack_skill_slot_count = math.max(1, tonumber(deps.attack_skill_slot_count) or 5)
-    local hero_attr_system = deps.hero_attr_system
-    local ATTACK_SKILL_VFX = deps.ATTACK_SKILL_VFX
-    local has_bond_route_tag = deps.has_bond_route_tag
-    local is_debug_effect_mounted = deps.is_debug_effect_mounted
-    local is_active_enemy = deps.is_active_enemy
-    local get_enemies_in_range = deps.get_enemies_in_range
-    local deal_skill_damage = deps.deal_skill_damage
-    local heal_hero = deps.heal_hero
-    local effect_defs = AutoActiveEffectsData.list
-    local visual_speed = 0.5
+local STATE = _G.STATE
+local attack_skill_slot_count = math.max(1, tonumber(_G.ATTACK_SKILL_SLOT_COUNT or 5) or 5)
+local hero_attr_system = _G.hero_attr_system
+local ATTACK_SKILL_VFX = _G.ATTACK_SKILL_VFX or {}
+local has_bond_route_tag = _G.has_bond_route_tag or function() return false end
+local is_debug_effect_mounted = _G.is_debug_effect_mounted or function() return false end
+local is_active_enemy = _G.is_active_enemy or function() return false end
+local get_enemies_in_range = _G.get_enemies_in_range or function() return {} end
+local deal_skill_damage = _G.deal_skill_damage or function() end
+local heal_hero = _G.heal_hero
+local effect_defs = AutoActiveEffectsData.list
+local visual_speed = 0.5
 
     local MODIFIER_KEYS = {
         stun = 117,
@@ -179,7 +178,7 @@ function M.create(deps)
 
     local function play_particle_on_unit(unit, effect_key, scale, time, socket)
         if is_hit_effect_hidden() or not effect_key or not unit or not unit:is_exist() then return nil end
-        local forced_key = tonumber(STATE and STATE.STATE and STATE.STATE.debug_force_projectile_key) or 201392033
+        local forced_key = tonumber(STATE and STATE.debug_force_projectile_key) or 201392033
         local ok, particle = pcall(y3.projectile.create, {
             key = forced_key,
             target = unit,
@@ -198,7 +197,7 @@ function M.create(deps)
 
     local function play_particle_on_point(point, effect_key, scale, time, socket)
         if is_hit_effect_hidden() or not effect_key or not point then return nil end
-        local forced_key = tonumber(STATE and STATE.STATE and STATE.STATE.debug_force_projectile_key) or 201392033
+        local forced_key = tonumber(STATE and STATE.debug_force_projectile_key) or 201392033
         local ok, particle = pcall(y3.projectile.create, {
             key = forced_key,
             target = point,
@@ -740,7 +739,7 @@ function M.create(deps)
             cooldown = runtime.cooldowns[effect_id] or 0,
             counter = runtime.counters[effect_id] or 0,
             last_result = last_result.result or 'none',
-            last_reason = last_reason.reason or '',
+            last_reason = last_result.reason or '',
             last_modifier_apply = last_modifier
         }
     end
@@ -846,7 +845,7 @@ function M.create(deps)
         end
     end
 
-    return {
+    local api = {
         update = update,
         handle_enemy_kill = handle_enemy_kill,
         handle_basic_attack_cast = handle_basic_attack_cast,
@@ -856,6 +855,6 @@ function M.create(deps)
         force_trigger_effect = force_trigger_effect,
         clear_effect_runtime = clear_effect_runtime
     }
-end
+    _G.auto_active_effects_system = api
 
 return M

@@ -8,7 +8,6 @@ local M = {}
 function M.create(env)
   local STATE = env.STATE
   local CONFIG = env.CONFIG
-  local BootServices = env.BootServices
   local log = env.log
   local GearUpgrades = env.GearUpgrades
   local BootHelpers = env.BootHelpers
@@ -37,8 +36,8 @@ function M.create(env)
       get_audio_system = function()
         return env.audio_system
       end,
-      get_runtime_hud_system = function()
-        return BootServices.get_service('runtime_hud_system')
+      get_hud_system = function()
+        return _G.hud_system
       end,
       get_inventory_panel_system = function()
         return STATE.inventory_panel_system

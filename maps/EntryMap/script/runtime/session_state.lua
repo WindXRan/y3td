@@ -1,38 +1,73 @@
 local M = {}
+local y3 = y3
+local CONFIG = require 'config.entry_config'
+local BootHelpers = require 'runtime.boot_helpers'
+local GearUpgrades = require 'runtime.gear_upgrades'
 
 function M.create(env)
-  local STATE = env.STATE
-  local CONFIG = env.CONFIG
-  local y3 = env.y3
-  local message = env.message
-  local make_point = env.make_point
-  local get_resource_rules = env.get_resource_rules
-  local create_bond_runtime = env.create_bond_runtime
-  local create_battle_event_feed_runtime = env.create_battle_event_feed_runtime
-  local create_effect_debug_runtime = env.create_effect_debug_runtime
-  local create_evolution_runtime = env.create_evolution_runtime
-  local create_skill_runtime = env.create_skill_runtime
-  local create_attack_skill_state = env.create_attack_skill_state
-  local reset_skill_framework_runtime = env.reset_skill_framework_runtime
-  local ATTACK_SKILL_BLUEPRINTS = env.ATTACK_SKILL_BLUEPRINTS or { list = {} }
-  local destroy_choice_panel = env.destroy_choice_panel
-  local battlefield_system = env.battlefield_system
-  local hero_attr_system = env.hero_attr_system
-  local get_player = env.get_player
-  local get_enemy_player = env.get_enemy_player
+  local STATE = env and env.STATE or _G.STATE
+  local message = _G.message or function() end
+  local make_point = env and env.make_point or BootHelpers.make_point
+  local get_player = env and env.get_player or BootHelpers.get_player
+  local get_enemy_player = env and env.get_enemy_player or BootHelpers.get_enemy_player
+  local SkillRuntime = env and env.SkillRuntime
+  local SkillState = env and env.SkillState
+  local setup_basic_attack_ability = _G.setup_basic_attack_ability or function() end
+  local set_battle_hud_visible = _G.set_battle_hud_visible or function() end
+  local enforce_runtime_ui_phase = _G.enforce_runtime_ui_phase or function() end
+
+  local battlefield_system = _G.battlefield_system
+  local hero_attr_system = _G.hero_attr_system
+  local progression_system = _G.progression_system
+  local runtime_ui_helpers = _G.runtime_ui_helpers
+  local destroy_choice_panel = runtime_ui_helpers and runtime_ui_helpers.destroy_choice_panel or function() end
+  local ensure_runtime_hud = runtime_ui_helpers and runtime_ui_helpers.ensure_runtime_hud or function() end
+  local refresh_runtime_hud = runtime_ui_helpers and runtime_ui_helpers.refresh_runtime_hud or function() end
+  local initialize_hero_progression = progression_system and progression_system.initialize_hero_progression or function() end
+
+  local function create_battle_event_feed_runtime()
+    return require 'runtime.battle_event_feed'.create_runtime()
+  end
+  local function create_effect_debug_runtime()
+    return require 'runtime.effect_debug'.create_runtime()
+  end
+  local function create_evolution_runtime()
+    local rs = _G.reward_system
+    return rs and rs.create_evolution_runtime and rs.create_evolution_runtime()
+  end
+  local function reset_skill_framework_runtime()
+    local sfs = _G.sample_skills_system
+    if sfs and sfs.reset_framework_runtime then return sfs.reset_framework_runtime() end
+    local sf = _G.skill_framework_system
+    if sf and sf.reset_runtime then return sf.reset_runtime() end
+    return false
+  end
+  local function get_outgame_system()
+    return _G.outgame_system
+  end
+  local function enter_battle_audio()
+    local as = _G.audio_system
+    return as and as.enter_battle and as.enter_battle() or nil
+  end
+  local function start_wave(index)
+    if battlefield_system and battlefield_system.start_wave then
+      battlefield_system.start_wave(index)
+    end
+  end
+
+  local resource_system = env.resource_system or require('runtime.resource_system').create()
+  local get_resource_rules = env.get_resource_rules or function()
+    return progression_system and progression_system.get_resource_rules() or {}
+  end
   local create_hero = env.create_hero
-  local initialize_hero_progression = env.initialize_hero_progression
-  local ensure_gear_runtime = env.ensure_gear_runtime
-  local sync_gear_items_to_hero = env.sync_gear_items_to_hero
-  local sync_gear_runtime_effects = env.sync_gear_runtime_effects
-  local unlock_attack_skill = env.unlock_attack_skill
-  local show_attack_skill_loadout = env.show_attack_skill_loadout
-  local setup_basic_attack_ability = env.setup_basic_attack_ability
-  local ensure_runtime_hud = env.ensure_runtime_hud
-  local set_battle_hud_visible = env.set_battle_hud_visible
-  local refresh_runtime_hud = env.refresh_runtime_hud
-  local enter_battle_audio = env.enter_battle_audio
-  local enforce_runtime_ui_phase = env.enforce_runtime_ui_phase
+  local ensure_gear_runtime = env.ensure_gear_runtime or
+    function(state, config) return GearUpgrades.ensure_runtime(state, config) end
+  local sync_gear_items_to_hero = env.sync_gear_items_to_hero or
+    function(state, hero, config) return GearUpgrades.sync_items_to_hero(state, hero, config) end
+  local sync_gear_runtime_effects = env.sync_gear_runtime_effects or
+    function(state, hero, config)
+      return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
+    end
 
   local function is_battle_active()
     return STATE.session_phase == 'battle' and STATE.game_finished ~= true
@@ -79,23 +114,17 @@ function M.create(env)
     STATE.started_wave_count = 0
     STATE.active_wave = nil
     STATE.active_challenges = {}
-    STATE.resources = {
-      gold = get_resource_rules().initial_gold or 0,
-      wood = get_resource_rules().initial_wood or 0,
-    }
+    resource_system.init_from_rules(get_resource_rules())
+    STATE.resources = resource_system.get_state_table()
     STATE.resource_income_elapsed = 0
-    -- 复用已创建的 bond_runtime，避免覆盖已初始化的初始卡片
-    if not STATE.bond_runtime then
-        STATE.bond_runtime = create_bond_runtime()
-    end
     STATE.battle_event_feed = create_battle_event_feed_runtime()
     STATE.effect_debug_runtime = create_effect_debug_runtime()
     STATE.evolution_runtime = create_evolution_runtime()
     STATE.auto_active_effects = nil
     STATE.enemy_info_map = {}
     STATE.hero_progress = nil
-    STATE.skill_runtime = create_skill_runtime()
-    STATE.attack_skill_state = create_attack_skill_state()
+    STATE.skill_runtime = SkillRuntime.create()
+    STATE.attack_skill_state = SkillState.create()
     STATE.active_skill_runtime = {
       active_ids = {},
       queue = {},
@@ -107,7 +136,6 @@ function M.create(env)
     end
     STATE.reward_queue = {}
     reset_challenge_charge_state()
-    STATE.bond_draw_count = 0
     STATE.skill_draw_count = 0
     STATE.defeated_boss_waves = {}
     STATE.basic_attack_ability_bound = false
@@ -157,7 +185,7 @@ function M.create(env)
 
   local function show_stage_start_error(text)
     message(text)
-    local outgame_system = env.get_outgame_system()
+    local outgame_system = get_outgame_system()
     if outgame_system then
       outgame_system.set_ui_visible(true)
       outgame_system.refresh_ui()
@@ -208,10 +236,6 @@ function M.create(env)
   end
 
   local function try_enter_battle_audio()
-    if not enter_battle_audio then
-      return false
-    end
-
     local ok, err = pcall(enter_battle_audio)
     if ok then
       return true
@@ -302,7 +326,8 @@ function M.create(env)
     end
     try_enter_battle_audio()
 
-    env.start_wave(1)
+    print('[SESSION STATE] 调用 start_wave(1), session_phase=' .. tostring(STATE.session_phase))
+    start_wave(1)
     return true
   end
 

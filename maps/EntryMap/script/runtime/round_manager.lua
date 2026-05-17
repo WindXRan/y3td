@@ -9,7 +9,6 @@ function M.create(env)
   local STATE = env.STATE
   local CONFIG = env.CONFIG
   local message = env.message
-  local BootServices = env.BootServices
   local BondSystem = env.BondSystem
   local GearUpgrades = env.GearUpgrades
   local attr_choice_system = env.attr_choice_system
@@ -93,9 +92,9 @@ function M.create(env)
     local result = BondSystem.apply_choice(create_bond_env(), index)
     if result == 'replace' then
       STATE.ui.choice_panel_hidden = false
-      local runtime_hud_system = BootServices.get_service('runtime_hud_system')
-      if runtime_hud_system and runtime_hud_system.show_bond_replacement_panel then
-        runtime_hud_system.show_bond_replacement_panel()
+      local hud = _G.hud_system
+      if hud and hud.show_bond_replacement_panel then
+        hud.show_bond_replacement_panel()
       end
       return 'replace'
     end
@@ -114,7 +113,7 @@ function M.create(env)
             message = message,
           }, index) then
         -- 同步装备效果
-        local hero_attr_system = BootServices.get_service('hero_attr_system')
+        local hero_attr_system = _G.hero_attr_system
         if STATE.battle.hero and hero_attr_system then
           GearUpgrades.sync_runtime_bonuses(STATE, STATE.battle.hero, CONFIG.gear_upgrade_config, hero_attr_system)
         end
@@ -140,7 +139,7 @@ function M.create(env)
     end
     
     if kind == 'evolution' then
-      local reward_system = BootServices.get_service('reward_system')
+      local reward_system = _G.reward_system
       if reward_system and reward_system.apply_evolution_choice then
         reward_system.apply_evolution_choice(index)
         STATE.ui.choice_panel_hidden = true

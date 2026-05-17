@@ -1,4 +1,4 @@
-local M = {}
+local y3 = y3
 local Registry = require 'runtime.skill_framework_registry'
 
 local function pow(base, exponent)
@@ -262,21 +262,18 @@ local function impact_fx_scale(skill)
   return 1.0
 end
 
-function M.create(env)
-  env = env or {}
-  local y3 = env.y3
-  local skill_damage_api = env.skill_damage_api
-  local get_primary_target = env.get_primary_target
-  local get_enemies_in_range = env.get_enemies_in_range
-  local get_hero = env.get_hero
-  local get_hero_point = env.get_hero_point
-  local get_hero_attack = env.get_hero_attack
-  local get_hero_facing_towards = env.get_hero_facing_towards
-  local create_offset_point = env.create_offset_point
-  local launch_projectile_from_hero = env.launch_projectile_from_hero
-  local spawn_particle = env.spawn_particle
+local skill_damage_api = _G.td_damage_api
+local get_primary_target = _G.get_primary_target or function() return nil end
+local get_enemies_in_range = _G.get_enemies_in_range or function() return {} end
+local get_hero = _G.get_current_hero or function() return nil end
+local get_hero_point = _G.get_hero_point or function() return nil end
+local get_hero_attack = _G.get_hero_attack or function() return 0 end
+local get_hero_facing_towards = _G.get_hero_facing_towards or function() return 0 end
+local create_offset_point = _G.create_offset_point or function() return nil end
+local spawn_particle = _G.spawn_particle or function() end
+local launch_projectile_from_hero = _G.launch_projectile_from_hero or function() end
 
-  local api = {}
+local api = {}
   local registry = Registry.create()
   local runtime = {}
   local function reset_runtime_state()
@@ -1097,8 +1094,4 @@ function M.create(env)
     return VALID_DAMAGE_TYPE[value] == true
   end
 
-  return api
-end
-
-return M
-
+_G.skill_framework_system = api

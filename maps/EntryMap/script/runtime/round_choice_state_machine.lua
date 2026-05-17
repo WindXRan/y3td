@@ -8,7 +8,6 @@ local M = {}
 function M.create(env)
   local STATE = env.STATE
   local CONFIG = env.CONFIG
-  local BootServices = env.BootServices
   local BondSystem = env.BondSystem
   local GearUpgrades = env.GearUpgrades
   local AttrChoices = env.AttrChoices
@@ -82,7 +81,7 @@ function M.create(env)
     end
     
     if current_kind == CHOICE_KINDS.ATTR then
-      local runtime_hud_system = BootServices.get_service('runtime_hud_system')
+      local runtime_hud_system = _G.runtime_hud_system
       return runtime_hud_system and runtime_hud_system.refresh_hud and runtime_hud_system.refresh_hud() or nil
     end
     
@@ -108,9 +107,9 @@ function M.create(env)
     local result = BondSystem.apply_choice(env.create_bond_env(), index)
     if result == 'replace' then
       STATE.ui.choice_panel_hidden = false
-      local runtime_hud_system = BootServices.get_service('runtime_hud_system')
-      if runtime_hud_system and runtime_hud_system.show_bond_replacement_panel then
-        runtime_hud_system.show_bond_replacement_panel()
+      local hud = _G.hud_system
+      if hud and hud.show_bond_replacement_panel then
+        hud.show_bond_replacement_panel()
       end
       return
     end

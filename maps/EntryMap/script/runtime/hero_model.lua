@@ -1,18 +1,17 @@
 -- runtime/hero_model.lua
 -- 英雄模型管理器：统一管理英雄模型的解析、替换与UI绑定。
--- 模型数据源为 data_csv/hero_roster.csv（经 game_tables 加载为 hero_roster）。
 
 local M = {}
+local y3 = y3
+local CONFIG = require 'config.entry_config'
 
 local DEFAULT_MODEL_ID = 3001
 
-function M.create(env)
-  local STATE = env.STATE
-  local y3 = env.y3
+local STATE = _G.STATE
 
   local hero_roster = nil
-  if env.CONFIG and env.CONFIG.GameTables and env.CONFIG.GameTables.hero_roster then
-    hero_roster = env.CONFIG.GameTables.hero_roster
+  if CONFIG and CONFIG.GameTables and CONFIG.GameTables.hero_roster then
+    hero_roster = CONFIG.GameTables.hero_roster
   end
 
   local roster_by_name = {}
@@ -244,7 +243,6 @@ function M.create(env)
     return false
   end
 
-  return api
-end
+  _G.hero_model = api
 
 return M
