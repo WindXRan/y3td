@@ -1,18 +1,18 @@
 {
   "mcpServers": {
     "y3-helper": {
-      "type": "streamableHttp",
-      "url": "http://127.0.0.1:8766/mcp",
+      "type": "sse",
+      "url": "http://127.0.0.1:18766/sse",
       "timeout": 60
     },
     "y3editor": {
-      "type": "streamableHttp",
-      "url": "http://127.0.0.1:8765/mcp",
+      "type": "sse",
+      "url": "http://127.0.0.1:18765/sse",
       "timeout": 60
     },
     "y3runtime": {
-      "type": "streamableHttp",
-      "url": "http://127.0.0.1:8767/mcp",
+      "type": "sse",
+      "url": "http://127.0.0.1:18767/sse",
       "timeout": 60
     }
   }

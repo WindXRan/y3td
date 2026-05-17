@@ -8,7 +8,10 @@
                     "id": 1, 
                     "name": "$faction 1", 
                     "role_ids": [
-                        1
+                        1, 
+                        2, 
+                        3, 
+                        4
                     ], 
                     "share_vision": true
                 }
@@ -96,6 +99,45 @@
                     "id": 32, 
                     "name": "$player 32", 
                     "type": 2
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                2, 
+                {
+                    "camp_id": 1, 
+                    "color": "#FF8000", 
+                    "id": 2, 
+                    "name": "$player 2", 
+                    "type": 1
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                3, 
+                {
+                    "camp_id": 1, 
+                    "color": "#FFFF00", 
+                    "id": 3, 
+                    "name": "$player 3", 
+                    "type": 1
+                }
+            ]
+        }, 
+        {
+            "__tuple__": true, 
+            "items": [
+                4, 
+                {
+                    "camp_id": 1, 
+                    "color": "#80FF00", 
+                    "id": 4, 
+                    "name": "$player 4", 
+                    "type": 1
                 }
             ]
         }
