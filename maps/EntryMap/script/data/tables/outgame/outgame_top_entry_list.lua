@@ -33,7 +33,7 @@ local ACTION_BY_LABEL = {
 }
 
 local default_list = {
-  { id = 'start',      slot = 1, label = '开始', title = '选择难度', action = 'start_stage',           visible_in_outgame = true, visible_in_battle = true },
+  { id = 'start',      slot = 1, label = '开始', title = '开始游戏', action = 'start_stage',           visible_in_outgame = true, visible_in_battle = true },
   { id = 'archive',    slot = 2, label = '存档', title = '存档',     action = 'open_archive',          visible_in_outgame = true, visible_in_battle = true },
   { id = 'career',     slot = 3, label = '生涯', title = '生涯',     action = 'open_archive_career',   visible_in_outgame = true, visible_in_battle = true },
   { id = 'shop',       slot = 4, label = '商城', title = '商城',     action = 'open_archive_shop',     visible_in_outgame = true, visible_in_battle = true },

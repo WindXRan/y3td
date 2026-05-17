@@ -47,6 +47,7 @@ for _, row in ipairs(rows or {}) do
         tonumber(row.material_color_b) or 255,
       },
       show_on_ui = parse_show_on_ui(row.show_on_ui),
+      state_name = trim(row.state_name),
       notes = trim(row.notes),
     }
     M.list[#M.list + 1] = entry

@@ -26,35 +26,36 @@ end
 
 local function merge_defaults(ids)
   local defaults = {
-    bgm_loop = '134278073',
-    battle = '134278073',
-    boss = '134278073',
-    ui_click = '134278073',
-    ui_open = '134278073',
-    ui_confirm = '134278073',
-    ui_error = '134278073',
-    wave_start = '134278073',
-    boss_warning = '134278073',
-    boss_spawn = '134278073',
-    challenge_start = '134278073',
-    challenge_success = '134278073',
-    challenge_fail = '134278073',
-    hero_low_hp = '134278073',
-    defeat = '134278073',
-    basic_attack = '134278073',
-    attack_cast = '134278073',
-    attack_impact = '134278073',
-    attack_chain = '134278073',
-    attack_burst = '134278073',
-    attack_tick = '134278073',
-    attack_charge = '134278073',
-    enemy_death_heavy = '134278073',
-    enemy_death_burst = '134278073',
-    boss_death_heavy = '134278073',
+    'bgm_loop',
+    'battle',
+    'boss',
+    'ui_click',
+    'ui_open',
+    'ui_confirm',
+    'ui_error',
+    'wave_start',
+    'boss_warning',
+    'boss_spawn',
+    'challenge_start',
+    'challenge_success',
+    'challenge_fail',
+    'hero_low_hp',
+    'defeat',
+    'basic_attack',
+    'attack_cast',
+    'attack_impact',
+    'attack_chain',
+    'attack_burst',
+    'attack_tick',
+    'attack_charge',
+    'enemy_death_heavy',
+    'enemy_death_burst',
+    'boss_death_heavy',
   }
-  for key, value in pairs(defaults) do
-    if tostring(ids[key] or '') == '' then
-      ids[key] = value
+  for _, key in ipairs(defaults) do
+    local value = ids[key]
+    if not value or tostring(value) == '' then
+      error(string.format('[audio_resources] 配置缺失: audio.csv 中缺少 audio_id, key=%s', key))
     end
   end
   return ids

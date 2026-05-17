@@ -3,7 +3,7 @@ local helpers = require 'data.tables.helpers'
 local SecondBatchBlueprints = require 'data.tables.skill.attack_skill_second_batch_blueprints'
 local SkillTaxonomy = require 'data.tables.skill.attack_skill_taxonomy'
 local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
-local BondEffectRuntimeRules = require 'data.tables.bond.bond_effect_runtime_rules'
+local BondEffectRuntimeRules = { basic_attack_profile = {} }
 local Json = require 'y3.tools.json'
 
 local OPTIONAL_NUMBER_FIELDS = {

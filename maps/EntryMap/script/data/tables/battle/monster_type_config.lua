@@ -10,25 +10,6 @@ local function to_number(value)
   return tonumber(value)
 end
 
-local function to_boolean(value)
-  if value == nil or value == '' then
-    return false
-  end
-  return value == 'true' or value == 'TRUE' or value == '1'
-end
-
-local function parse_color(color_str)
-  return color_str or '#FFFFFF'
-end
-
-local function parse_hex_number(hex_str)
-  if not hex_str or hex_str == '' then
-    return nil
-  end
-  local hex = hex_str:gsub('^0x', '')
-  return tonumber(hex, 16)
-end
-
 local MONSTER_TYPE_CONFIG = {}
 
 local rows = CsvLoader.read_rows({path = 'data_csv/monster_types.csv'})
@@ -38,37 +19,27 @@ for _, row in ipairs(rows) do
     MONSTER_TYPE_CONFIG[id] = {
       name = row['name'] or id,
       type = row['type'] or 'main',
-      
+
       hp_scale = to_number(row['hp_scale']) or 1.0,
       attack_scale = to_number(row['attack_scale']) or 1.0,
       armor_scale = to_number(row['armor_scale']) or 1.0,
       move_speed_scale = to_number(row['move_speed_scale']) or 1.0,
-      
+
       reward_gold_scale = to_number(row['reward_gold_scale']) or 1.0,
       reward_wood_scale = to_number(row['reward_wood_scale']) or 1.0,
       reward_exp_scale = to_number(row['reward_exp_scale']) or 1.0,
-      
+
       visual = {
         model_scale = to_number(row['model_scale']) or 1.0,
-        health_bar_width = to_number(row['health_bar_width']) or 1.0,
         effect_scale = to_number(row['effect_scale']) or 1.0,
       },
-      
-      health_bar = {
-        bar_type = parse_hex_number(row['health_bar_type']) or 0x0050002,
-        color = parse_color(row['health_bar_color']),
-        name_prefix = row['name_prefix'] or '敌人',
-        name_font_size = to_number(row['name_font_size']) or 13,
-        show_text = to_boolean(row['show_text']),
-        show_name = to_boolean(row['show_name']),
-      },
-      
+
       hit_reaction = {
         heavy_hit_threshold = to_number(row['heavy_hit_threshold']) or 0.12,
         medium_hit_threshold = to_number(row['medium_hit_threshold']) or 0.04,
         shove_distance = to_number(row['shove_distance']) or 26,
       },
-      
+
       death_reaction = {
         corpse_distance = to_number(row['corpse_distance']) or 160,
         corpse_speed = to_number(row['corpse_speed']) or 920,

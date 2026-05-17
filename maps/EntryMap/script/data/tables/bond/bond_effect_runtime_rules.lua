@@ -479,12 +479,6 @@ local VALID_VALUE_TYPES = {
 }
 
 local function warn(msg)
-  local text = '[bond_effect_runtime_rules] ' .. tostring(msg)
-  if log and log.warn then
-    log.warn(text)
-  else
-    print(text)
-  end
 end
 
 local function is_enabled(raw)

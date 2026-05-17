@@ -54,11 +54,6 @@ local function warn_once(registry, key, message)
     return
   end
   registry[key] = true
-  if log and log.warn then
-    log.warn(message)
-  else
-    print(message)
-  end
 end
 
 local function parse_csv_line_fast(line)

@@ -1,7 +1,5 @@
 local CsvLoader = require 'data.csv_loader'
-local AttrEffect = require 'data.tables.skill.attreffect'
 local BuffTemplates = require 'data.tables.skill.buff_templates'
-local MonsterMaintask = require 'data.tables.battle.monster_maintask'
 local MonsterTypeConfig = require 'data.tables.battle.monster_type_config'
 local hero_attr_config = require 'data.tables.hero.hero_attr_config'
 local hero_level_progression = require 'data.tables.hero.hero_level_progression'
@@ -244,7 +242,8 @@ M.waves = process_csv_rows('data_csv/waves.csv', 'index', function(row)
     post_boss_interval_sec = scale(tonumber(row.post_boss_interval_sec) or 0),
     main_attr_overrides = build_attr_overrides(row, 'main'),
     boss_attr_overrides = build_attr_overrides(row, 'boss'),
-    main_spawn_hp = to_optional_number(row.main_spawn_hp),
+    main_spawn_hp = to_optional_number(row.main_spawn_hp) or tonumber(row.main_hp_max),
+    boss_spawn_hp = tonumber(row.boss_hp_max),
     main_kill_reward = build_reward(row, 'main_kill_reward'),
     boss_kill_reward = build_reward(row, 'boss_kill_reward'),
     main_model_id = tonumber(row.main_model_id) or nil,
@@ -298,7 +297,6 @@ M.stages = process_csv_rows('data_csv/stages.csv', 'order_index', function(row)
     n0_activation_mode = row.n0_activation_mode ~= '' and row.n0_activation_mode or nil,
     n0_single_bond = row.n0_single_bond ~= '' and row.n0_single_bond or nil,
     n0_opening_no_cooldown = row.n0_opening_no_cooldown ~= '' and row.n0_opening_no_cooldown or nil,
-    n0_disable_mainline_spawn = row.n0_disable_mainline_spawn ~= '' and row.n0_disable_mainline_spawn or nil,
   }
 end)
 
@@ -346,82 +344,6 @@ if not initial then for _, e in ipairs(hero_list) do if e.is_initial_hero then
     end end end
 M.hero_roster = { list = hero_list, by_id = list_to_map(hero_list), initial_hero = initial }
 
-local reward_rows = CsvLoader.read_rows({path = 'data_csv/mainline_task_rewards.csv'})
-local effect_rows = AttrEffect.by_source.mainline_task or {}
-local csv_by_id = list_to_map(reward_rows)
-local LEGACY_ATTR = { ['生命'] = 'hp', ['生命恢复'] = 'hp_regen', ['护甲'] = 'armor', ['格挡'] = 'block', ['攻击'] = 'attack',
-  ['攻击范围'] = 'attack_range', ['攻击速度'] = 'attack_speed_pct', ['力量'] = 'strength', ['敏捷'] = 'agility', ['智力'] =
-'intelligence', ['全属性'] = 'all_attributes', ['力量增幅'] = 'strength_growth_pct', ['敏捷增幅'] = 'agility_growth_pct', ['智力增幅'] =
-'intelligence_growth_pct', ['攻击增幅'] = 'attack_growth_pct', ['物理伤害'] = 'physical_damage_pct', ['魔法伤害'] =
-'magic_damage_pct', ['普攻伤害'] = 'basic_attack_damage_pct', ['技能伤害'] = 'skill_damage_pct', ['所有伤害'] = 'all_damage_pct',
-  ['物理暴击'] = 'physical_crit_pct', ['物理暴伤'] = 'physical_crit_damage_pct', ['魔法暴击'] = 'magic_crit_pct', ['魔法暴伤'] =
-'magic_crit_damage_pct' }
-local LEGACY_RUNTIME = { ['每秒金币'] = 'gold_per_sec', ['每秒木材'] = 'wood_per_sec', ['每秒经验'] = 'exp_per_sec', ['杀敌数'] =
-'kill_count', ['每秒杀敌'] = 'kill_per_sec', ['每秒力量'] = 'strength_per_sec', ['每秒敏捷'] = 'agility_per_sec', ['每秒智力'] =
-'intelligence_per_sec', ['杀敌金币'] = 'kill_gold_pct', ['杀敌经验'] = 'kill_exp_pct', ['杀敌木材'] = 'kill_wood_pct', ['精英伤害'] =
-'elite_damage_pct', ['挑战伤害'] = 'challenge_damage_pct' }
-local LEGACY_SPECIAL = { hero_card_count = 'hero_card' }
-local function reward_lines(row, id)
-  local lines, bucket = {}, effect_rows[id]
-  for index = 1, 3 do
-    local prefix = 'reward_' .. index .. '_'
-    local t, k, v = row[prefix .. 'type'], row[prefix .. 'key'], tonumber(row[prefix .. 'value'])
-    if t ~= '' and k ~= '' and v ~= nil then lines[#lines + 1] = { slot = index, type = t, key = k, value = v } end
-  end
-  for _, effect in ipairs(bucket and bucket.ordered or {}) do
-    if effect.effect_kind == 'attr' then
-      local attr_key = LEGACY_ATTR[effect.effect_key]
-      if attr_key then
-        lines[#lines + 1] = { slot = effect.order_index, type = 'attr', key = attr_key, value = effect.value }
-      else
-        lines[#lines + 1] = { slot = effect.order_index, type = 'runtime', key = assert(LEGACY_RUNTIME
-        [effect.effect_key]), value = effect.value }
-      end
-    elseif effect.effect_kind == 'resource' then
-      lines[#lines + 1] = { slot = effect.order_index, type = 'resource', key = effect.effect_key, value = effect.value }
-    elseif effect.effect_kind == 'state' then
-      lines[#lines + 1] = { slot = effect.order_index, type = 'special', key = assert(LEGACY_SPECIAL[effect.effect_key]), value =
-      effect.value }
-    end
-  end
-  table.sort(lines,
-    function(a, b)
-      if (a.slot or 0) == (b.slot or 0) then return tostring(a.type or '') < tostring(b.type or '') end
-      return (a.slot or 0) < (b.slot or 0)
-    end)
-  return lines
-end
-local mainline_list = {}
-local source_rows = (#MonsterMaintask.list > 0) and MonsterMaintask.list or reward_rows
-for _, source_row in ipairs(source_rows) do
-  local monster_row = source_row.source == 'monster_maintask' and source_row or MonsterMaintask.by_id[source_row.id]
-  local row = csv_by_id[source_row.id] or source_row
-  local chapter_id, order_index = tostring(source_row.id or ''):match('^(%d+)%-(%d+)$')
-  mainline_list[#mainline_list + 1] = {
-    id = source_row.id,
-    chapter_id = tonumber(row.chapter_id) or tonumber(chapter_id) or 0,
-    order_index = tonumber(row.order_index) or tonumber(order_index) or 0,
-    title_text = row.title_text or ('主线' .. tostring(source_row.id)),
-    objective_text = monster_row and monster_row.objective_text or row.objective_text,
-    target_count = monster_row and monster_row.target_count or tonumber(row.target_count) or 0,
-    time_limit = tonumber(row.time_limit) or 60,
-    spawn_unit_id = monster_row and monster_row.spawn_unit_id or to_optional_number(row.spawn_unit_id),
-    spawn_area_id = row.spawn_area_id ~= '' and row.spawn_area_id or nil,
-    is_boss_task = monster_row and monster_row.is_boss_task or row.is_boss_task == 'true',
-    monster_name = monster_row and monster_row.monster_name or nil,
-    attr_overrides = monster_row and monster_row.attr_overrides or nil,
-    display_attrs = monster_row and monster_row.display_attrs or nil,
-    monster_maintask_reward_text = monster_row and monster_row.reward_text or nil,
-    monster_maintask_reward_value_text = monster_row and monster_row.reward_value_text or nil,
-    reward_lines = reward_lines(row, source_row.id),
-  }
-end
-table.sort(mainline_list,
-  function(a, b)
-    if (a.chapter_id or 0) == (b.chapter_id or 0) then return (a.order_index or 0) < (b.order_index or 0) end
-    return (a.chapter_id or 0) < (b.chapter_id or 0)
-  end)
-M.mainline_task_rewards = { list = mainline_list, by_id = list_to_map(mainline_list) }
 M.buff_templates = BuffTemplates
 M.monster_type_config = MonsterTypeConfig
 
