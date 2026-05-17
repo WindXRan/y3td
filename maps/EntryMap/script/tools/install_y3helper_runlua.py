@@ -1,14 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Install a y3-helper.runLua command into the Y3 Helper VSCode/Cursor extension.
-"""
+Y3 Helper runLua 命令安装脚本
+为 Y3 Helper 插件添加 runLua 命令，允许通过 Python 执行任意 Lua 代码
 
+用法：
+    # Windows
+    python install_y3helper_runlua.py
+
+    # WSL (需要用 Windows Python)
+    /mnt/c/Windows/py.exe install_y3helper_runlua.py
+
+安装后需要重启 VSCode/Cursor
+"""
 import os
 import sys
 
-
 def find_extension():
+    """查找 Y3 Helper 插件路径"""
     possible_bases = []
 
     if sys.platform == 'win32':
@@ -17,34 +26,42 @@ def find_extension():
             os.path.join(user_home, ".cursor", "extensions"),
             os.path.join(user_home, ".vscode", "extensions"),
         ])
+        for user in ["Administrator", "Public"]:
+            for drive in ["C:", "D:"]:
+                base = os.path.join(drive, "Users", user)
+                if os.path.exists(base):
+                    possible_bases.append(os.path.join(base, ".cursor", "extensions"))
+                    possible_bases.append(os.path.join(base, ".vscode", "extensions"))
     else:
+        # WSL
         for drive in ["/mnt/c", "/mnt/d"]:
-            if not os.path.exists(drive):
-                continue
-            users_dir = os.path.join(drive, "Users")
-            if not os.path.exists(users_dir):
-                continue
-            for user in os.listdir(users_dir):
-                user_path = os.path.join(users_dir, user)
-                if not os.path.isdir(user_path):
-                    continue
-                possible_bases.append(os.path.join(user_path, ".cursor", "extensions"))
-                possible_bases.append(os.path.join(user_path, ".vscode", "extensions"))
+            if os.path.exists(drive):
+                users_dir = os.path.join(drive, "Users")
+                if os.path.exists(users_dir):
+                    try:
+                        for user in os.listdir(users_dir):
+                            user_path = os.path.join(users_dir, user)
+                            if os.path.isdir(user_path):
+                                possible_bases.append(os.path.join(user_path, ".cursor", "extensions"))
+                                possible_bases.append(os.path.join(user_path, ".vscode", "extensions"))
+                    except:
+                        pass
 
     for base in possible_bases:
-        if not os.path.exists(base):
-            continue
-        for name in os.listdir(base):
-            if not name.startswith("sumneko.y3-helper"):
+        if os.path.exists(base):
+            try:
+                for name in os.listdir(base):
+                    if name.startswith("sumneko.y3-helper"):
+                        ext_path = os.path.join(base, name, "dist", "extension.js")
+                        if os.path.exists(ext_path):
+                            return ext_path
+            except:
                 continue
-            ext_path = os.path.join(base, name, "dist", "extension.js")
-            if os.path.exists(ext_path):
-                return ext_path
 
     return None
 
-
 def install_runlua(ext_path):
+    """安装 runLua 命令"""
     print(f"[INFO] 找到插件: {ext_path}")
 
     with open(ext_path, 'r', encoding='utf-8') as f:
@@ -60,32 +77,22 @@ def install_runlua(ext_path):
             f.write(content)
         print(f"[INFO] 已备份到: {backup_path}")
 
-    replacements = [
-        (
-            'a.commands.registerCommand("y3-helper.reloadLua",(async()=>{for(let e of g.allClients)e.notify("command",{data:".rd"})}))',
-            'a.commands.registerCommand("y3-helper.reloadLua",(async()=>{for(let e of g.allClients)e.notify("command",{data:".rd"})})),a.commands.registerCommand("y3-helper.runLua",(async(code)=>{for(let e of g.allClients)e.notify("command",{data:code})}))',
-        ),
-        (
-            'registerCommand("y3-helper.reloadLua",(async()=>{for(let e of d.allClients)e.notify("command",{data:".rd"})}))',
-            'registerCommand("y3-helper.reloadLua",(async()=>{for(let e of d.allClients)e.notify("command",{data:".rd"})})),r.commands.registerCommand("y3-helper.runLua",(async(code)=>{for(let e of d.allClients)e.notify("command",{data:code})}))',
-        ),
-    ]
+    old_code = 'a.commands.registerCommand("y3-helper.reloadLua",(async()=>{for(let e of g.allClients)e.notify("command",{data:".rd"})}))'
+    new_code = old_code + ',a.commands.registerCommand("y3-helper.runLua",(async(code)=>{for(let e of g.allClients)e.notify("command",{data:code})}))'
 
-    for old_code, new_code in replacements:
-        if old_code not in content:
-            continue
-        content = content.replace(old_code, new_code, 1)
+    if old_code in content:
+        content = content.replace(old_code, new_code)
         with open(ext_path, 'w', encoding='utf-8') as f:
             f.write(content)
-        print("[OK] runLua 命令安装成功")
+        print("[OK] runLua 命令安装成功！")
+        print("")
         print("=" * 50)
         print("请重启 VSCode/Cursor 使修改生效")
         print("=" * 50)
         return True
-
-    print("[ERROR] 找不到 reloadLua 命令，可能插件版本不兼容")
-    return False
-
+    else:
+        print("[ERROR] 找不到 reloadLua 命令，可能插件版本不兼容")
+        return False
 
 def main():
     print("=" * 50)
@@ -101,7 +108,6 @@ def main():
         return 1
 
     return 0 if install_runlua(ext_path) else 1
-
 
 if __name__ == '__main__':
     sys.exit(main())

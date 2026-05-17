@@ -4,7 +4,6 @@ local required_paths = {
   'top.top',
   'bottom_bg',
   'bottom_bg.bottom_bg',
-  'MainlineTaskPanel',
   'talk_sys_panel',
   '消息提示',
   '背包系统.背包系统',

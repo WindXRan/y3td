@@ -135,48 +135,6 @@ def _helper_ready():
         return False, f'Y3 Helper 未就绪: {e}'
 
 
-def is_game_running():
-    return _helper_ready()
-
-
-def is_y3_helper_ready():
-    ready, _ = _helper_ready()
-    return ready
-
-
-def wait_for_y3_helper_ready(timeout=60, interval=1):
-    deadline = time.time() + max(1, timeout or 0)
-    while time.time() < deadline:
-        if is_y3_helper_ready():
-            return True
-        time.sleep(max(0.1, interval))
-    return is_y3_helper_ready()
-
-
-def run_lua_with_confirm(code, timeout=10):
-    running, msg = is_game_running()
-    if not running:
-        return {
-            'executed': False,
-            'error': msg,
-        }
-
-    if not send_y3helper('y3-helper.runLua', [code]):
-        return {
-            'executed': False,
-            'error': 'Y3 Helper 调用失败',
-        }
-
-    send_y3helper('workbench.action.debug.continue')
-    time.sleep(min(max(timeout or 0, 1), 5) * 0.1)
-
-    ready, ready_msg = _helper_ready()
-    return {
-        'executed': ready,
-        'error': None if ready else ready_msg,
-    }
-
-
 def launch_game():
     if send_y3helper('y3-helper.launchGame'):
         print('[OK] 游戏启动命令已发送')

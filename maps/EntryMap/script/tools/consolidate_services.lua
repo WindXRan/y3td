@@ -63,10 +63,6 @@ n = content:gsub('(\nbattlefield_system = BattlefieldSystem%.create%(%b{}%))',
   '%1; RuntimeEntry._services.battlefield_system = battlefield_system', 1)
 count = count + (n > 0 and 1 or 0)
 
--- overview_model_system assignment
-n = content:gsub('(\noverview_model_system = OverviewModelSystem%.create%(%b{}%))',
-  '%1; RuntimeEntry._services.overview_model_system = overview_model_system', 1)
-count = count + (n > 0 and 1 or 0)
 
 -- These may be assigned differently, let's check
 -- debug_tools_system, debug_actions_system, gm_bond_effects_system

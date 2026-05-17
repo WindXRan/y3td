@@ -14,14 +14,15 @@
     python heartbeat_monitor.py --once       # 只检测一次（用于外部脚本调用）
 """
 
+import socket
+import struct
 import json
 import os
 import sys
 import time
+import re
 import argparse
 from datetime import datetime
-
-import heartbeat_comm
 
 # ===== 配置 =====
 HEARTBEAT_INTERVAL = 10   # 心跳间隔（秒）
@@ -63,6 +64,82 @@ def log(msg, level='INFO'):
         pass
 
 
+def read_helper_port():
+    """读取 Y3 Helper 端口"""
+    try:
+        with open(PORT_FILE, 'r') as f:
+            match = re.search(r'return\s*(\d+)', f.read())
+            if match:
+                return int(match.group(1))
+    except:
+        pass
+    return None
+
+
+def send_command(command, args=None, timeout=5):
+    """发送命令到 Y3 Helper 并等待响应
+
+    Returns:
+        dict 或 None: 响应字典，超时或错误返回 None
+    """
+    port = read_helper_port()
+    if not port:
+        return None
+
+    try:
+        sock = socket.socket()
+        sock.settimeout(timeout)
+        sock.connect(('127.0.0.1', port))
+
+        msg = {
+            'method': 'command',
+            'id': 1,
+            'params': {'command': command, 'args': args or []}
+        }
+        data = json.dumps(msg).encode('utf-8')
+        sock.send(struct.pack('>I', len(data)) + data)
+
+        # 读取响应头（4字节长度）
+        header = b''
+        while len(header) < 4:
+            chunk = sock.recv(4 - len(header))
+            if not chunk:
+                break
+            header += chunk
+
+        if len(header) < 4:
+            sock.close()
+            return None
+
+        length = struct.unpack('>I', header)[0]
+
+        # 读取响应体
+        body = b''
+        while len(body) < length:
+            chunk = sock.recv(min(4096, length - len(body)))
+            if not chunk:
+                break
+            body += chunk
+
+        sock.close()
+
+        if len(body) < length:
+            return None
+
+        return json.loads(body.decode('utf-8'))
+
+    except socket.timeout:
+        try:
+            sock.close()
+        except:
+            pass
+        return None
+    except ConnectionRefusedError:
+        return None
+    except Exception:
+        return None
+
+
 def send_heartbeat(timeout=None):
     """发送心跳命令
 
@@ -74,7 +151,7 @@ def send_heartbeat(timeout=None):
 
     ts = int(time.time())
     code = f"print('[HEARTBEAT] {ts}')"
-    response = heartbeat_comm.send_command(PORT_FILE, 'y3-helper.runLua', [code], timeout=timeout)
+    response = send_command('y3-helper.runLua', [code], timeout=timeout)
 
     if response is None:
         return False
@@ -91,14 +168,34 @@ def send_heartbeat(timeout=None):
     return False
 
 
-def parse_exception_line(line):
+def send_continue():
+    """发送 continue 命令恢复游戏
+
+    Returns:
+        bool: True = 命令发送成功
+    """
+    # continue 不需要等待 Lua 响应，只需要 Y3 Helper 收到命令
     try:
-        data = json.loads(line)
-    except Exception:
-        return None
-    if data.get('type') == 'exception':
-        return data
-    return None
+        port = read_helper_port()
+        if not port:
+            return False
+
+        sock = socket.socket()
+        sock.settimeout(3)
+        sock.connect(('127.0.0.1', port))
+
+        msg = {
+            'method': 'command',
+            'id': 1,
+            'params': {'command': 'workbench.action.debug.continue', 'args': []}
+        }
+        data = json.dumps(msg).encode('utf-8')
+        sock.send(struct.pack('>I', len(data)) + data)
+        time.sleep(0.3)
+        sock.close()
+        return True
+    except:
+        return False
 
 
 def get_recent_exceptions(since_line=0):
@@ -124,9 +221,12 @@ def get_recent_exceptions(since_line=0):
             line = line.strip()
             if not line:
                 continue
-            data = parse_exception_line(line)
-            if data:
-                exceptions.append(data)
+            try:
+                data = json.loads(line)
+                if data.get('type') == 'exception':
+                    exceptions.append(data)
+            except:
+                pass
     except:
         pass
     return exceptions, total_lines
@@ -170,7 +270,7 @@ def attempt_recovery():
 
     for attempt in range(1, MAX_CONTINUE_RETRIES + 1):
         log(f'    发送 continue ({attempt}/{MAX_CONTINUE_RETRIES})...', 'WARN')
-        heartbeat_comm.send_continue(PORT_FILE)
+        send_continue()
         time.sleep(2)  # 等待游戏恢复
 
         # 验证是否恢复
@@ -249,55 +349,6 @@ def run_once():
     return result
 
 
-def monitor_alive_state(msg_line, log_line):
-    stats['heartbeats_ok'] += 1
-
-    new_errors, new_log_line = get_recent_errors(log_line)
-    if new_errors:
-        log(f'--- 检测到 {len(new_errors)} 个新的日志错误 ---', 'WARN')
-        for err in new_errors[-3:]:
-            log(f'  {err}', 'ERROR')
-        stats['errors_found'] += len(new_errors)
-
-    new_exceptions, new_msg_line = get_recent_exceptions(msg_line)
-    if new_exceptions:
-        log(f'--- 检测到 {len(new_exceptions)} 个新异常 ---', 'WARN')
-        for exc in new_exceptions:
-            log(f'  [EXC] {exc.get("message", "")}', 'ERROR')
-        stats['errors_found'] += len(new_exceptions)
-
-    return new_msg_line, new_log_line
-
-
-def monitor_failed_state(consecutive_failures, msg_line, log_line):
-    consecutive_failures += 1
-    log(f'心跳超时 (连续失败: {consecutive_failures})', 'WARN')
-
-    if attempt_recovery():
-        msg_line, log_line = check_result(msg_line, log_line)
-        time.sleep(COOLDOWN_AFTER_RECOVER)
-        return 0, msg_line, log_line, True
-
-    if consecutive_failures >= 5:
-        log('连续5次无法恢复，退出监控', 'ERROR')
-        return consecutive_failures, msg_line, log_line, False
-
-    return consecutive_failures, msg_line, log_line, True
-
-
-def monitor_tick(consecutive_failures, msg_line, log_line):
-    stats['heartbeats_sent'] += 1
-    if send_heartbeat():
-        msg_line, log_line = monitor_alive_state(msg_line, log_line)
-        return 0, msg_line, log_line, True, False
-
-    consecutive_failures, msg_line, log_line, should_continue = (
-        monitor_failed_state(consecutive_failures, msg_line, log_line)
-    )
-    recovered = consecutive_failures == 0
-    return consecutive_failures, msg_line, log_line, should_continue, recovered
-
-
 def run_loop(interval=None):
     """持续心跳监控循环"""
     if interval is None:
@@ -320,13 +371,54 @@ def run_loop(interval=None):
 
     try:
         while True:
-            consecutive_failures, msg_line, log_line, should_continue, recovered = (
-                monitor_tick(consecutive_failures, msg_line, log_line)
-            )
-            if not should_continue:
-                break
-            if recovered:
-                continue
+            stats['heartbeats_sent'] += 1
+
+            # 发送心跳
+            alive = send_heartbeat()
+
+            if alive:
+                stats['heartbeats_ok'] += 1
+                consecutive_failures = 0
+
+                # 检查新错误（即使游戏正常运行也要监控）
+                new_errors, new_log_line = get_recent_errors(log_line)
+                if new_errors:
+                    log(f'--- 检测到 {len(new_errors)} 个新的日志错误 ---', 'WARN')
+                    for err in new_errors[-3:]:
+                        log(f'  {err}', 'ERROR')
+                    stats['errors_found'] += len(new_errors)
+                log_line = new_log_line
+
+                # 检查新异常
+                new_exceptions, new_msg_line = get_recent_exceptions(msg_line)
+                if new_exceptions:
+                    log(f'--- 检测到 {len(new_exceptions)} 个新异常 ---', 'WARN')
+                    for exc in new_exceptions:
+                        log(f'  [EXC] {exc.get("message", "")}', 'ERROR')
+                    stats['errors_found'] += len(new_exceptions)
+                msg_line = new_msg_line
+
+            else:
+                consecutive_failures += 1
+                log(f'心跳超时 (连续失败: {consecutive_failures})', 'WARN')
+
+                # 记录恢复前的位置
+                pre_msg = msg_line
+                pre_log = log_line
+
+                # 尝试恢复
+                if attempt_recovery():
+                    consecutive_failures = 0
+                    # 恢复后检查错误
+                    msg_line, log_line = check_result(pre_msg, pre_log)
+                    # 恢复后冷却
+                    time.sleep(COOLDOWN_AFTER_RECOVER)
+                    continue
+                else:
+                    if consecutive_failures >= 5:
+                        log('连续5次无法恢复，退出监控', 'ERROR')
+                        break
+
             time.sleep(interval)
 
     except KeyboardInterrupt:
