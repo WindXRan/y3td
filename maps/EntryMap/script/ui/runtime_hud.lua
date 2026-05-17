@@ -5,7 +5,6 @@ local IconResolver = require 'data.tables.icon_resolver'
 local hud_core = require 'ui.hud.hud_core'
 local M = {}
 local DEFAULT_TIP_DURATION = 8;
-local BOND_CARD_SLOT_COUNT = 8;
 local EVOLUTION_SLOT_COUNT = 5;
 local BUFF_SLOT_COUNT = 5;
 local ATTR_ROW_NAMES = { 'battle_power_row', 'hero_attack_row', 'hero_defense_row', 'hero_power_row', 'hero_intelligence_row',
@@ -44,41 +43,24 @@ local function resolve_display_icon(...)
 end
 
 function M.create(params)
-  local STATE = params.STATE;
-  local CONFIG = params.CONFIG or {}
-  local bond_label_cfg = (CONFIG.bond_skill_runtime_tuning and CONFIG.bond_skill_runtime_tuning.labels)
-      or (CONFIG.skill_runtime_tuning and CONFIG.skill_runtime_tuning.bond and CONFIG.skill_runtime_tuning.bond.labels)
-      or {}
-  local bond_ui_cfg = (CONFIG.bond_skill_runtime_tuning and CONFIG.bond_skill_runtime_tuning.ui)
-      or (CONFIG.skill_runtime_tuning and CONFIG.skill_runtime_tuning.bond and CONFIG.skill_runtime_tuning.bond.ui)
-      or {}
-  local bond_skill_label = tostring(bond_ui_cfg.hud_skill_title or bond_label_cfg.effect_name or '羁绊技能')
-  local y3 = params.y3;
-  local skill_slot_count = math.max(1, tonumber(params.attack_skill_slot_count) or 5)
-  local get_player_fn = params.get_player;
-  local hero_attr_system_ref = params.hero_attr_system;
-  local message_fn = params.message or function() end;
+  local STATE = params and params.STATE or _G.STATE;
+  local CONFIG = params and params.CONFIG or _G.CONFIG or {}
+  local y3 = params and params.y3 or _G.y3 or y3;
+  local skill_slot_count = math.max(1, tonumber(params and params.attack_skill_slot_count or _G.ATTACK_SKILL_SLOT_COUNT) or 5)
+  local get_player_fn = params and params.get_player or _G.get_player;
+  local hero_attr_system_ref = params and params.hero_attr_system or _G.hero_attr_system;
 
-  local try_bond_draw = params.try_bond_draw;
-  local try_evolution_entry = params.try_evolution_entry;
-  local mainline_task_system = nil;
-  local try_start_challenge = params.try_start_challenge;
-  local open_save_panel = params.open_save_panel;
-  local try_upgrade_growth_weapon = params.try_upgrade_growth_weapon;
-  local show_runtime_status = params.show_runtime_status;
-  local build_runtime_attr_dialog_chunks = params.build_runtime_attr_dialog_chunks;
-  local build_growth_weapon_tip_payload = params.build_growth_weapon_tip_payload;
-  local build_bond_slot_tip_payload = params.build_bond_slot_tip_payload;
-  local bond_draw_cost = math.max(0, tonumber(params.bond_draw_cost) or 100)
-  local get_bond_slot_icon_fn = params.get_bond_slot_icon;
-  local get_status_effects_fn = params.get_bottom_status_effect_entries;
-  local play_ui_click_fn = params.play_ui_click;
-  local BondSystem = params.BondSystem;
-  local create_bond_env = params.create_bond_env;
-  local apply_bond_replacement_fn = params.apply_bond_replacement;
-  local cancel_bond_replacement_fn = params.cancel_bond_replacement;
-  local get_bond_replacement_info_fn = params.get_bond_replacement_info;
-  local hero_model = params.hero_model
+  local try_evolution_entry = params and params.try_evolution_entry or _G.try_evolution_entry or function() end;
+  local try_start_challenge = params and params.try_start_challenge or _G.try_start_challenge or function() end;
+  local try_upgrade_growth_weapon = params and params.try_upgrade_growth_weapon or _G.try_upgrade_growth_weapon or function() end;
+  local try_draw_bond = _G.try_bond_draw or function() end;
+  local open_save_panel = params and params.open_save_panel or _G.open_save_panel or function() end;
+  local show_runtime_status = params and params.show_runtime_status or _G.show_runtime_status or function() end;
+  local build_runtime_attr_dialog_chunks = params and params.build_runtime_attr_dialog_chunks or _G.build_runtime_attr_dialog_chunks or function() end;
+  local build_growth_weapon_tip_payload = params and params.build_growth_weapon_tip_payload or _G.build_growth_weapon_tip_payload or function() end;
+  local get_status_effects_fn = params and params.get_bottom_status_effect_entries or _G.get_bottom_status_effect_entries or function() return {} end;
+  local play_ui_click_fn = params and params.play_ui_click or _G.play_ui_click or function() end;
+  local hero_model = params and params.hero_model or _G.hero_model
   -- UI 工具函数 (from ui.hud.hud_core)
   local core = hud_core.create({
     y3 = y3,
@@ -131,15 +113,6 @@ function M.create(params)
     local aJ = tonumber(aI) or 0;
     local aW = aJ >= 0 and '+' or '-'
     return aW .. format_short_number(math.abs(aJ))
-  end;
-
-  local function table_count(aY)
-    if type(aY) ~= 'table' then return 0 end;
-
-    local aZ = 0;
-    for a_ in pairs(aY) do aZ = aZ + 1 end;
-
-    return aZ
   end;
 
   local function get_hero_attr(b1, b2)
@@ -383,59 +356,8 @@ function M.create(params)
     }
   end;
 
-  local function build_bond_slot_tooltip(bL)
-    local bs = nil
-    if build_bond_slot_tip_payload then
-      local ok, payload = pcall(build_bond_slot_tip_payload, bL)
-      if ok then
-        bs = payload
-      else
-        message_fn(string.format('[runtime_hud] build_bond_slot_tip_payload(%s) failed: %s', tostring(bL), tostring(payload)))
-      end
-    end;
-    if not bs then return nil end;
-
-    local bM = bs.tip_model or {}
-    local bz = tostring(bM.item_name_text or bs.title_text or '流派')
-    local bN = {}
-    if bM.quality_text and bM.quality_text ~= '' then bN[#bN + 1] = tostring(bM.quality_text) end;
-
-    local bO = tostring(bM.set_name_text or '')
-    local bP = tostring(bM.progress_text or '')
-    if bO ~= '' or bP ~= '' then bN[#bN + 1] = '流派' .. bO .. bP end;
-
-    local bt = {}
-    if bM.bonus_lines and #bM.bonus_lines > 0 then
-      bt[#bt + 1] = '[流派效果]'
-      append_lines(bt, bM.bonus_lines)
-    end;
-
-    if bM.effect_body_text and bM.effect_body_text ~= '' then
-      if #bt > 0 then bt[#bt + 1] = '' end;
-      bt[#bt + 1] = '[收录条件]'
-      append_multiline_text(bt, bM.effect_body_text)
-    end;
-
-    if bM.set_body_lines and #bM.set_body_lines > 0 then
-      if #bt > 0 then bt[#bt + 1] = '' end;
-
-      local bQ = tostring(bM.set_title_text or ''):gsub(', ')
-      bt[#bt + 1] = '[' .. (bQ ~= '' and bQ or bond_skill_label) .. ']'
-      append_lines(bt, bM.set_body_lines)
-    end;
-    if #bt == 0 then bt[#bt + 1] = '当前没有流派说明' end;
-
-    return {
-      title = bz,
-      subtitle = table.concat(bN, '  '),
-      body = table.concat(bt, '\n'),
-      icon = bM.icon_res or bs.icon_res,
-      tip_model = bM
-    }
-  end;
-
   local function build_draw_tooltip()
-    local bt = { '[左键点击]', string.format('本次消耗%d 个木材', P), string.format('当前拥有 %s 木材',
+    local bt = { '[左键点击]', string.format('本次消耗%d 个木材', 100), string.format('当前拥有 %s 木材',
       format_short_number(STATE.resources and STATE.resources.wood or 0)), '', '抽取流派卡牌，相同流派会自动收录进卡册' }
     return {
       title = '抽卡 - [快捷键：F]',
@@ -623,9 +545,6 @@ function M.create(params)
     if STATE.gear_state and STATE.gear_state.awaiting_choice and STATE.gear_state.current_choices then return '武器待选',
           '成长武器词缀候选已出现，请点击面板完成选择' end;
 
-    if STATE.bond_runtime and STATE.bond_runtime.awaiting_choice and STATE.bond_runtime.current_choices then return '流派待选',
-          '流派候选已生成，请点击面板完成选择' end;
-
     local ct = STATE.evolution_runtime;
     if ct and ct.awaiting_choice and ct.current_choices then return '英雄功能提示', '进阶已迁移到新英雄功能，请打开英雄图鉴查看' end;
 
@@ -637,8 +556,8 @@ function M.create(params)
     if hud_state.tip_panel and hud_state.tip_expires_at and hud_state.tip_expires_at > (STATE.runtime_elapsed or 0) then return
       hud_state.tip_title_text ~= '' and hud_state.tip_title_text or '系统提示', hud_state.tip_body_text or '' end;
 
-    local cv,
-    cw = get_pending_choice_status()
+    local choice_label,
+    choice_hint = get_pending_choice_status()
     if choice_label and choice_hint then return choice_label, choice_hint end;
 
     local ck = STATE.battle_event_feed and STATE.battle_event_feed.entries or nil;
@@ -662,14 +581,14 @@ function M.create(params)
 
   local function get_status_bar_text()
     local X = ensure_ui_preferences()
-    local cv,
-    a_ = get_pending_choice_status()
-    if choice_label then return '状态：' .. cv end;
+    local choice_label,
+    _ = get_pending_choice_status()
+    if choice_label then return '状态：' .. choice_label end;
 
     local damage_text_status = X.hide_damage_text and '跳字关' or '跳字开'
     local hit_effects_status = X.hide_hit_effects and '特效关' or '特效开'
     local pause_status = X.soft_paused and '已暂停' or '进行中'
-    return string.format('状态：%s | %s | %s', cA, cy, cz)
+    return string.format('状态：%s | %s | %s', damage_text_status, hit_effects_status, pause_status)
   end;
 
   local function get_station_hint_text() return '按F抽卡；点击如何变强查看英雄图鉴' end;
@@ -834,20 +753,6 @@ function M.create(params)
     set_ui_visible(hud_state.hover_tip_panel, false)
     set_ui_visible(hud_state.bond_tip_panel, false)
     set_bond_tip_root_visible(false)
-  end;
-
-  local function schedule_tip_hide(dA0)
-    local hud_state = get_hud_state()
-    hud_state.bond_tip_hover_token = (hud_state.bond_tip_hover_token or 0) + 1;
-    local dA1 = hud_state.bond_tip_hover_token;
-    if not dA0 or dA0 <= 0 or not y3 or not y3.ltimer or not y3.ltimer.wait then
-      hide_all_tips()
-      return
-    end;
-    y3.ltimer.wait(dA0, function()
-      local dA2 = get_hud_state()
-      if dA2.bond_tip_hover_token == dA1 then hide_all_tips() end
-    end)
   end;
 
   local function split_non_empty_tip_lines(text, max_lines)
@@ -1065,47 +970,6 @@ function M.create(params)
     set_bond_tip_root_visible(hud_state.visible ~= false)
   end;
 
-  local function show_bond_tip_payload(bs)
-    if not bs then
-      hide_all_tips()
-      return
-    end;
-
-    local bM = bs.tip_model or {}
-    local set_body_lines = {}
-    append_lines(set_body_lines, bM.set_body_lines or {})
-    local bonus_lines = {}
-    append_lines(bonus_lines, bM.bonus_lines or {})
-
-    local set_info = tostring(bM.set_name_text or '') .. tostring(bM.progress_text or '')
-
-    local effect_text = tostring(bM.effect_body_text or '')
-    if effect_text == '' then effect_text = tostring(bs.subtitle or '') end;
-
-    local set_text = ''
-    if tostring(bM.set_title_text or '') ~= '' and #set_body_lines > 0 then
-      set_text = tostring(bM.set_title_text) .. '\n' .. table.concat(set_body_lines, '\n')
-    elseif #set_body_lines > 0 then
-      set_text = table.concat(set_body_lines, '\n')
-    elseif tostring(bM.set_title_text or '') ~= '' then
-      set_text = tostring(bM.set_title_text)
-    end
-
-    show_detail_payload({
-      title = tostring(bM.item_name_text or bs.title or '羁绊'),
-      subtitle = tostring(bM.quality_text or ''),
-      icon = bM.icon_res,
-      icon_name = tostring(bM.item_name_text or bM.set_name_text or ''),
-      contents = {
-        set_info,
-        #bonus_lines > 0 and table.concat(bonus_lines, '\n') or '',
-        effect_text,
-        set_text,
-        '',
-      },
-    })
-  end;
-
   local function resolve_combat_module_ui(cO) return resolve_ui_node('BattleBottomHUD.layout.center_hub.combat_module.' ..
     cO) end;
 
@@ -1136,7 +1000,7 @@ function M.create(params)
     if not is_ui_alive(u) or not u.add_fast_event then return end;
     hud_state.bound_events[cT] = u; safe_ui_call(u, 'set_intercepts_operations', true)
     u:add_fast_event('左键-点击', function()
-      if S then S() end;
+      if play_ui_click_fn then play_ui_click_fn() end;
       cU()
     end)
   end;
@@ -1223,7 +1087,7 @@ function M.create(params)
     local hud_state = get_hud_state()
     hud_state.attr_panel_visible = not hud_state.attr_panel_visible;
     if hud_state.attr_panel_visible then
-      local d9 = M and M() or {
+      local attr_chunks = build_runtime_attr_dialog_chunks and build_runtime_attr_dialog_chunks() or {
         string.format('等级%d', get_hero_level()),
         string.format('攻击%s', format_short_number(get_hero_attr('攻击结算值', '攻击'))),
         string.format('护甲%s', format_short_number(get_hero_attr('护甲结算值', '护甲'))),
@@ -1232,7 +1096,7 @@ function M.create(params)
         string.format('敏捷%s', format_short_number(get_hero_attr('最终敏捷', '敏捷'))),
       }
       set_ui_text(hud_state.attr_panel_title, '属性总览')
-      set_ui_text(hud_state.attr_panel_body, table.concat(chunks, '\n\n'))
+      set_ui_text(hud_state.attr_panel_body, table.concat(attr_chunks, '\n\n'))
     end;
     set_ui_visible(hud_state.attr_panel, hud_state.visible ~= false and hud_state.attr_panel_visible)
     return hud_state.attr_panel_visible
@@ -1400,15 +1264,6 @@ function M.create(params)
     show_hover_tip_payload(bs)
   end;
 
-  local function show_bond_slot_tip(bm)
-    local bs = build_bond_slot_tooltip(bm)
-    if bs then
-      show_bond_tip_payload(bs)
-      return
-    end;
-    show_hover_tip_payload({ title = '羁绊' .. tostring(bm), subtitle = '', body = '当前槽位暂无羁绊说明', icon = nil })
-  end;
-
   local function show_draw_button_tip()
     show_hover_tip_payload(build_draw_tooltip())
   end;
@@ -1492,9 +1347,9 @@ function M.create(params)
       refresh_hud()
     end)
     bind_click_handler('top_save', resolve_ui_node('top.top.left_buttons.btn_save'), function()
-      if J and J() ~= false then return end;
+      if open_save_panel and open_save_panel() ~= false then return end;
 
-      if L then L() end
+      if show_runtime_status then show_runtime_status() end
     end)
     bind_click_handler('top_hotkey', resolve_ui_node('top.top.left_buttons.btn_hotkey'), function()
       show_tip_panel(get_hotkey_help_text(), 10, '快捷键')
@@ -1516,7 +1371,7 @@ function M.create(params)
     end)
     bind_click_handler('draw_button',
       resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.draw_button.button'), function()
-      if E then E() end;
+      if try_draw_bond then try_draw_bond() end;
       refresh_hud()
     end)
     bind_click_handler('reward_button',
@@ -1525,14 +1380,14 @@ function M.create(params)
     end)
     bind_click_handler('kill_reward_button',
       resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.kill_reward_button.button'), function()
-      if G then G() end;
+      if try_evolution_entry then try_evolution_entry() end;
       refresh_hud()
     end)
     bind_click_handler('fish_button',
       resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.fish_button.button'), function()
-      if J and J() ~= false then return end;
+      if open_save_panel and open_save_panel() ~= false then return end;
 
-      if L then L() end
+      if show_runtime_status then show_runtime_status() end
     end)
     bind_hover_handlers('draw_button_hover',
       resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.draw_button'), function()
@@ -1568,16 +1423,16 @@ function M.create(params)
       end)
     end;
     bind_click_handler('gold_trial', resolve_combat_module_ui('challenge_row.gold_trial'), function()
-      if I then I('gold_trial') end;
+      if try_start_challenge then try_start_challenge('gold_trial') end;
       refresh_hud()
     end)
     bind_click_handler('wood_trial', resolve_combat_module_ui('challenge_row.treasure_trial'), function()
-      if I then I('wood_trial') end;
+      if try_start_challenge then try_start_challenge('wood_trial') end;
       refresh_hud()
     end)
     bind_click_handler('battle_loadout_slot_1',
       resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_1'), function()
-      if K then K('loadout_slot_click') end;
+      if try_upgrade_growth_weapon then try_upgrade_growth_weapon('loadout_slot_click') end;
       refresh_hud()
     end)
     for bL = 1, 6 do
@@ -1610,29 +1465,8 @@ function M.create(params)
       end)
     end;
 
-    for bL = 1, BOND_CARD_SLOT_COUNT do
-      local card_index = bL
-      local dA3 = string.format('BattleBottomHUD.layout.right_station.card_panel.card_slot_%d', bL)
-      local dA4 = resolve_ui_node(dA3)
-      local function show_bond_tip_for_slot()
-        local hud_state = get_hud_state()
-        hud_state.bond_tip_hover_token = (hud_state.bond_tip_hover_token or 0) + 1;
-        show_bond_slot_tip(card_index)
-      end;
-      local function hide_bond_tip_after_delay() schedule_tip_hide(0.06) end;
-      bind_hover_handlers('battle_bond_hover_' .. tostring(bL), dA4, show_bond_tip_for_slot, hide_bond_tip_after_delay)
-      bind_hover_handlers('battle_bond_hover_icon_' .. tostring(bL), resolve_ui_node(dA3 .. '.icon'),
-        show_bond_tip_for_slot, hide_bond_tip_after_delay)
-      bind_hover_handlers('battle_bond_hover_frame_' .. tostring(bL), resolve_ui_node(dA3 .. '.frame'),
-        show_bond_tip_for_slot, hide_bond_tip_after_delay)
-      bind_hover_handlers('battle_bond_hover_bg_' .. tostring(bL),
-        resolve_ui_node(dA3 .. '.card_slot_' .. tostring(bL) .. '_bg'), show_bond_tip_for_slot, hide_bond_tip_after_delay)
-      bind_click_handler('battle_bond_slot_' .. tostring(bL), dA4, function()
-        show_tip_panel('bond_progress 功能已移除', 4, '提示')
-      end)
-    end;
     bind_click_handler('battle_exp_bar_evolve', resolve_combat_module_ui('exp_bar.evolve_click_area'), function()
-      if G then G() end;
+      if try_evolution_entry then try_evolution_entry() end;
       refresh_hud()
     end)
     set_static_labels()
@@ -1674,8 +1508,7 @@ function M.create(params)
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_state'), STATE.session_phase == 'battle' and '战斗中' or '局中')
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_level'), tostring(get_hero_level()))
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_equip'), '0')
-    set_ui_text(resolve_ui_node('top.top.scoreboard.player_swallow'),
-      tostring(STATE.bond_runtime and table_count(STATE.bond_runtime.completed_root_sets) or 0))
+    set_ui_text(resolve_ui_node('top.top.scoreboard.player_swallow'), '0')
     for row_index = 2, 4 do
       set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_name_%d', row_index)), '-')
       set_ui_text(resolve_ui_node(string.format('top.top.scoreboard.player_power_%d', row_index)), '-')
@@ -1850,21 +1683,6 @@ function M.create(params)
     set_ui_text_alignment(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.station_hint'), ', ')
   end;
 
-  local function refresh_bond_card_panel()
-    for slot_index = 1, BOND_CARD_SLOT_COUNT do
-      local slot_path = string.format('BattleBottomHUD.layout.right_station.card_panel.card_slot_%d', slot_index)
-      local icon_ui = resolve_ui_node(slot_path .. '.icon')
-      local icon_id = get_bond_slot_icon_fn and get_bond_slot_icon_fn(slot_index) or nil; set_ui_visible(resolve_ui_node(slot_path), slot_index <= 7 or slot_index == 8)
-      if icon_id then
-        set_ui_visible(icon_ui, true)
-        set_ui_image(icon_ui, icon_id)
-      else
-        set_ui_visible(icon_ui, false)
-        set_ui_image(icon_ui, nil)
-      end
-    end
-  end;
-
   refresh_hud = function()
     ensure_hud()
     local hud_state = get_hud_state()
@@ -1878,7 +1696,6 @@ function M.create(params)
     refresh_skill_bar()
     refresh_buff_row()
     refresh_status_text()
-    refresh_bond_card_panel()
     refresh_loadout_row()
     set_ui_visible(hud_state.big_cursor, hud_state.visible ~= false and ensure_ui_preferences().big_cursor)
     set_ui_visible(hud_state.attr_panel, hud_state.visible ~= false and hud_state.attr_panel_visible)
@@ -1912,101 +1729,7 @@ function M.create(params)
   end;
 
   -- public api alias
-  show_runtime_tip_panel = show_tip_panel
-
-  local BOND_REPLACEMENT_PANEL = 'BondReplacementPanel'
-  local bond_replacement_visible = false
-
-  local function show_bond_replacement_panel()
-    if not get_bond_replacement_info_fn then
-      message_fn('羁绊替换系统未初始化')
-      return
-    end
-    local info = get_bond_replacement_info_fn(STATE)
-    if not info or not info.awaiting then
-      message_fn('当前没有待处理的羁绊替换')
-      return
-    end
-    bond_replacement_visible = true
-    local player = get_player()
-    if not player then return end
-    local ok_panel, panel = pcall(y3.ui.get_ui, player, BOND_REPLACEMENT_PANEL)
-    if not ok_panel or not panel then
-      message_fn('未找到羁绊替换面板：' .. BOND_REPLACEMENT_PANEL)
-      return
-    end
-    set_ui_visible(panel, true)
-    local new_card = info.new_card
-    local title_text = string.format('选择要替换的羁绊（获得：%s）', new_card.name or '未知卡牌')
-    local desc_text = string.format('羁绊已满，请选择要替换的羁绊：\n新羁绊：%s %s', new_card.name or '', new_card.bond_name or '')
-    local title_ui = nil
-    local desc_ui = nil
-    local ok_title, t = pcall(y3.ui.get_ui, player, BOND_REPLACEMENT_PANEL .. '.title_text')
-    if ok_title and t then title_ui = t end
-    local ok_desc, d = pcall(y3.ui.get_ui, player, BOND_REPLACEMENT_PANEL .. '.desc_text')
-    if ok_desc and d then desc_ui = d end
-    if title_ui then set_ui_text(title_ui, title_text) end
-    if desc_ui then set_ui_text(desc_ui, desc_text) end
-    local options = info.options or {}
-    for slot_index = 1, 8 do
-      local option = options[slot_index]
-      local slot_path = string.format('%s.option_%d', BOND_REPLACEMENT_PANEL, slot_index)
-      local ok_slot, slot_ui = pcall(y3.ui.get_ui, player, slot_path)
-      if ok_slot and slot_ui then
-        if option then
-          set_ui_visible(slot_ui, true)
-          local icon_path = string.format('%s.option_icon_%d', slot_path, slot_index)
-          local name_path = string.format('%s.option_name_%d', slot_path, slot_index)
-          local ok_icon, icon_ui = pcall(y3.ui.get_ui, player, icon_path)
-          local ok_name, name_ui = pcall(y3.ui.get_ui, player, name_path)
-          if ok_icon and icon_ui and option.icon then
-            set_ui_image(icon_ui, option.icon)
-          end
-          if ok_name and name_ui then
-            set_ui_text(name_ui, option.display_name or '')
-          end
-          local click_handler = nil
-          click_handler = function()
-            if apply_bond_replacement_fn then
-              local env = create_bond_env and create_bond_env() or { STATE = STATE }
-              local ok = apply_bond_replacement_fn(env, slot_index)
-              if ok then
-                bond_replacement_visible = false
-                set_ui_visible(panel, false)
-                message_fn(string.format('已替换羁绊：%s %s', option.display_name, new_card.name))
-                if refresh_hud then refresh_hud() end
-              end
-            end
-          end
-          local ok_bind, _ = pcall(function()
-            slot_ui:set_intercepts_operations(true)
-            slot_ui:add_fast_event('左键-点击', click_handler)
-          end)
-        else
-          set_ui_visible(slot_ui, false)
-        end
-      end
-    end
-    local cancel_path = BOND_REPLACEMENT_PANEL .. '.cancel_btn'
-    local ok_cancel, cancel_ui = pcall(y3.ui.get_ui, player, cancel_path)
-    if ok_cancel and cancel_ui then
-      local cancel_handler = function()
-        if cancel_bond_replacement_fn then
-          local env = create_bond_env and create_bond_env() or { STATE = STATE }
-          cancel_bond_replacement_fn(env)
-        end
-        bond_replacement_visible = false
-        set_ui_visible(panel, false)
-        message_fn('已取消羁绊替换')
-      end
-      local ok_bind, _ = pcall(function()
-        cancel_ui:set_intercepts_operations(true)
-        cancel_ui:add_fast_event('左键-点击', cancel_handler)
-      end)
-    end
-  end
-
-  return {
+  local api = {
     ensure_hud = ensure_hud,
     refresh_hud = refresh_hud,
     set_visible = set_hud_visible,
@@ -2030,9 +1753,10 @@ function M.create(params)
     toggle_big_cursor = toggle_big_cursor,
     toggle_damage_text_visible = toggle_damage_text_visible,
     toggle_hit_effects_visible = toggle_hit_effects_visible,
-    toggle_soft_pause = toggle_soft_pause,
-    show_bond_replacement_panel = show_bond_replacement_panel
+    toggle_soft_pause = toggle_soft_pause
   }
-end;
+  _G.hud_system = api
+  return api
+end
 
 return M

@@ -395,7 +395,6 @@ function M.create(env)
     }
     local overlay_paths = {
       'Choice_Panel',
-      'BondSwallowPanel',
       'BattleDetailTipsPanel',
       'panel_1',
       'CommonTip',
@@ -415,10 +414,6 @@ function M.create(env)
     if STATE.gm_ui then
       set_visible_if_alive(STATE.gm_ui.toggle_button, visible == true)
       set_visible_if_alive(STATE.gm_ui.panel, visible == true and STATE.gm_ui.visible == true)
-    end
-    if STATE.gm_bond_ui then
-      set_visible_if_alive(STATE.gm_bond_ui.toggle_button, visible == true)
-      set_visible_if_alive(STATE.gm_bond_ui.panel, visible == true and STATE.gm_bond_ui.visible == true)
     end
   end
 
@@ -1663,7 +1658,7 @@ function M.create(env)
     if selected_view_mode == VIEW_MODE_CULTIVATION then
       return get_top_entry_title_by_action('switch_cultivation', '挂机')
     end
-    return get_top_entry_title_by_action('start_stage', '选择难度')
+    return get_top_entry_title_by_action('start_stage', '开始游戏')
   end
 
   local function ensure_top_entry_list_ui(ui)
@@ -2311,20 +2306,6 @@ function M.create(env)
       end
 
       local mode_slots = {}
-      local mainline_slot = build_static_mode_slot('DifficultyHUD.大厅.layout.left_2.list.主线模式', VIEW_MODE_MAINLINE, '正常模式')
-      local cultivation_slot = build_static_mode_slot('DifficultyHUD.大厅.layout.left_2.list.猎场模式', VIEW_MODE_CULTIVATION, '猎场模式')
-      if not mainline_slot then
-        mainline_slot = build_static_mode_slot('outgame.大厅.layout.left_2.list.主线模式', VIEW_MODE_MAINLINE, '正常模式')
-      end
-      if not cultivation_slot then
-        cultivation_slot = build_static_mode_slot('outgame.大厅.layout.left_2.list.猎场模式', VIEW_MODE_CULTIVATION, '猎场模式')
-      end
-      if mainline_slot then
-        mode_slots[#mode_slots + 1] = mainline_slot
-      end
-      if cultivation_slot then
-        mode_slots[#mode_slots + 1] = cultivation_slot
-      end
 
       local stage_slots = {}
       for index = 1, STAGE_PAGE_SIZE do
@@ -2477,7 +2458,7 @@ function M.create(env)
     -- 确保这些面板始终可见（除非在非局外阶段）
     set_visible_if_alive(ui.left_panel, true)
     set_visible_if_alive(ui.right_panel, true)
-    set_visible_if_alive(ui.mode_panel, true)
+    set_visible_if_alive(ui.mode_panel, false)
     
     refresh_save_entry_ui(ui, profile)
     local archive_ui = ensure_archive_panel_ui()
@@ -2491,19 +2472,16 @@ function M.create(env)
     -- 如果没有选择关卡，仍然刷新基本UI，只跳过依赖关卡的部分
     if not selected_stage_def then
       -- 仍然刷新不需要关卡的部分
-      local top_title = "请选择关卡"
+      local top_title = "开始游戏"
       set_text_if_alive(ui.title, top_title)
       set_text_if_alive(ui.header_tip, "请选择关卡")
       set_text_if_alive(ui.quit_tip, '按 ESC 键可退出游戏')
       set_visible_if_alive(ui.tip_root, false)
       
-      -- 刷新模式选择器
-      refresh_mode_selectors(ui, profile, selected_stage_id, selected_mode_id)
-      
       -- 隐藏难度选择器
       set_visible_if_alive(ui.stage_slot_container, false)
       
-      -- 刷新每日任务和其他面板
+      -- 刷新其他面板
       set_text_if_alive(ui.difficulty_title, top_title)
       set_text_if_alive(ui.difficulty_hint, '请选择关卡')
       set_visible_if_alive(ui.cultivation_note, false)
@@ -2533,26 +2511,16 @@ function M.create(env)
     end
     sync_selected_state(selected_stage_id, SINGLE_MODE_ID)
 
-    local is_cultivation_mode = selected_view_mode == VIEW_MODE_CULTIVATION
-
-    local top_title = resolve_outgame_top_title(profile)
+    local top_title = "开始游戏"
     set_text_if_alive(ui.title, top_title)
     set_text_if_alive(ui.header_tip, build_header_tip_text(profile, selected_stage_id, selected_mode_id))
     set_text_if_alive(ui.quit_tip, '按 ESC 键可退出游戏')
-    set_visible_if_alive(ui.tip_root, is_cultivation_mode)
-    if is_cultivation_mode then
-      set_text_if_alive(ui.tip, '当前模式为挂机模式')
-    end
+    set_visible_if_alive(ui.tip_root, false)
 
-    refresh_mode_selectors(ui, profile, selected_stage_id, selected_mode_id)
-    refresh_stage_slots(ui, profile, selected_stage_id)
     set_text_if_alive(ui.difficulty_title, top_title)
-    set_visible_if_alive(ui.stage_slot_container, not is_cultivation_mode)
-    for _, slot in ipairs(ui.stage_slots or {}) do
-      set_visible_if_alive(slot.root, not is_cultivation_mode and slot.stage_def ~= nil)
-    end
-    set_visible_if_alive(ui.cultivation_note, is_cultivation_mode)
-    set_text_if_alive(ui.difficulty_hint, is_cultivation_mode and '' or '选择难度后即可开始游戏')
+    set_visible_if_alive(ui.stage_slot_container, false)
+    set_visible_if_alive(ui.cultivation_note, false)
+    set_text_if_alive(ui.difficulty_hint, '')
 
     local detail_title, detail_status, detail_hint = resolve_outgame_detail_texts(profile, selected_stage_id, selected_mode_id)
     set_visible_if_alive(ui.detail_title, true)
@@ -2564,7 +2532,7 @@ function M.create(env)
     refresh_reward_card(ui, profile, selected_stage_id)
     refresh_footer(ui, profile)
 
-    local start_enabled = not is_cultivation_mode and is_mode_unlocked(profile, selected_stage_id, selected_mode_id)
+    local start_enabled = is_mode_unlocked(profile, selected_stage_id, selected_mode_id)
     if not start_enabled and selected_stage_id == get_first_stage_id() then
       start_enabled = true
     end
@@ -2816,6 +2784,7 @@ function M.create(env)
 
   api.rebuild_hero_attr_bonus_stats = rebuild_hero_attr_bonus_stats
 
+  _G.outgame_system = api
   return api
 end
 

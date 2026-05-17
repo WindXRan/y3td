@@ -25,8 +25,8 @@ local function safe_set_text(ui, text)
 end
 
 function M.create(env)
-  local y3 = env.y3
-  local get_player = env.get_player
+  local y3 = env and env.y3 or _G.y3 or y3
+  local get_player = env and env.get_player or _G.get_player or function() return nil end
 
   local root = nil
   local result_data = nil
@@ -107,10 +107,12 @@ function M.create(env)
     end
   end
 
-  return {
+  local api = {
     show = show,
     hide = hide,
   }
+  _G.result_panel_system = api
+  return api
 end
 
 return M

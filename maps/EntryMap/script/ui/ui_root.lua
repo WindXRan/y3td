@@ -85,13 +85,6 @@ function M.get_bottom_root(y3, player)
   })
 end
 
-function M.get_tracker_root(y3, player)
-  return resolve_first_ui(y3, player, {
-    'MainlineTaskPanel.爬塔挑战',
-    'MainlineTaskPanel',
-  })
-end
-
 function M.get_talk_root(y3, player)
   return resolve_ui(y3, player, 'talk_sys_panel')
 end

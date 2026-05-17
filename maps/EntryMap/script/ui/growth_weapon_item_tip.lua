@@ -3,9 +3,9 @@ local GrowthWeaponTipPanel = require 'ui.growth_weapon_tip_panel'
 local M = {}
 
 function M.create(env)
-  local y3 = env.y3
-  local STATE = env.STATE
-  local get_player = env.get_player
+  local y3 = env and env.y3 or _G.y3 or y3
+  local STATE = env and env.STATE or _G.STATE
+  local get_player = env and env.get_player or _G.get_player or function() return nil end
   local tip_panel = GrowthWeaponTipPanel.create({
     y3 = y3,
     get_player = get_player,
@@ -36,7 +36,8 @@ function M.create(env)
       hide()
       return
     end
-    local payload = env.build_growth_weapon_tip_payload and env.build_growth_weapon_tip_payload('weapon') or nil
+    local payload_fn = env and env.build_growth_weapon_tip_payload or _G.build_growth_weapon_tip_payload
+    local payload = payload_fn and payload_fn('weapon') or nil
     if not payload then
       hide()
       return
@@ -62,11 +63,13 @@ function M.create(env)
     -- paths no longer exist in the battle HUD, so keep this module inert.
   end
 
-  return {
+  local api = {
     bind = bind,
     refresh = function() end,
     hide = hide,
   }
+  _G.growth_weapon_item_tip_system = api
+  return api
 end
 
 return M
