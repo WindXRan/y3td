@@ -1,5 +1,5 @@
 key,value,description
-__字段说明__,配置键,配置值,说明
+__字段说明__,配置键,配置值
 debug_time_scale_debug,0.2,调试模式时间缩放
 debug_time_scale_release,1.0,发布模式时间缩放
 enemy_player_id,31,敌方玩家ID

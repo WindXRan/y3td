@@ -1,0 +1,2 @@
+id,modifier_key,name,description,buff_type,effect_category,modifier_effect_type,modifier_type,duration,max_stacks,cycle_time,icon_id,attr_name,attr_value,material_color_r,material_color_g,material_color_b,show_on_ui,state_name,notes
+immobilize,0,无法移动,使目标无法移动,debuff,control,2,2,2.0,1,0,100008,,,,,,1,禁止移动,无法移动效果
