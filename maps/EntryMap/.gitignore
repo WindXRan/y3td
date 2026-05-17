@@ -2,4 +2,4 @@
 pytest-cache-files-*/
 
 # Claude skills with nested git repos
-.claude/skills/y3-game-test
+.claude/skills/
