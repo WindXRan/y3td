@@ -82,8 +82,8 @@ local function apply_monster_type_scaling(attr_pack, monster_type)
     scaled[k] = v
   end
   
-  if scaled['最大生命'] or scaled['生命'] then
-    local hp_key = scaled['最大生命'] and '最大生命' or '生命'
+  if scaled['hp_max'] or scaled['生命'] then
+    local hp_key = scaled['hp_max'] and 'hp_max' or '生命'
     scaled[hp_key] = (scaled[hp_key] or 0) * config.hp_scale
   end
   

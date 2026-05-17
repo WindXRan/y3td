@@ -161,7 +161,7 @@ function M.get_target_hp_ratio(target)
   if not target or not target:is_exist() then
     return 1
   end
-  local max_hp = y3.helper.tonumber(target:get_attr('生命')) or y3.helper.tonumber(target:get_attr('最大生命')) or 0
+  local max_hp = y3.helper.tonumber(target:get_attr('生命')) or y3.helper.tonumber(target:get_attr('hp_max')) or 0
   if max_hp <= 0 then
     return 1
   end
@@ -183,7 +183,7 @@ function M.get_unit_max_hp(unit)
   if not unit or not unit.is_exist or not unit:is_exist() then
     return 0
   end
-  return y3.helper.tonumber(unit:get_attr('生命')) or y3.helper.tonumber(unit:get_attr('最大生命')) or 0
+  return y3.helper.tonumber(unit:get_attr('生命')) or y3.helper.tonumber(unit:get_attr('hp_max')) or 0
 end
 
 function M.normalize_ratio(value)

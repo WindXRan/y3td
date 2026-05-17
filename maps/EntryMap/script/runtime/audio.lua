@@ -406,7 +406,7 @@ local debug_missing_audio = true
       max_hp = tonumber(hero:get_max_hp()) or 0
     end
     if max_hp <= 0 and hero.get_attr then
-      max_hp = tonumber(hero:get_attr('最大生命')) or tonumber(hero:get_attr('生命')) or 0
+      max_hp = tonumber(hero:get_attr('hp_max')) or tonumber(hero:get_attr('生命')) or 0
     end
     if max_hp <= 0 then
       return nil

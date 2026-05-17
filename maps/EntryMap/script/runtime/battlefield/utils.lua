@@ -184,7 +184,7 @@ return function(ctx)
       end
     end
 
-    local max_hp = tonumber(unit:get_attr('生命')) or tonumber(unit:get_attr('最大生命'))
+    local max_hp = tonumber(unit:get_attr('生命')) or tonumber(unit:get_attr('hp_max'))
     if max_hp and max_hp > 0 then
       unit:set_hp(max_hp)
     end
@@ -443,7 +443,7 @@ return function(ctx)
     if not unit or not unit.is_exist or not unit:is_exist() then
       return 0
     end
-    return y3.helper.tonumber(unit:get_attr('生命')) or y3.helper.tonumber(unit:get_attr('最大生命')) or 0
+    return y3.helper.tonumber(unit:get_attr('生命')) or y3.helper.tonumber(unit:get_attr('hp_max')) or 0
   end
   ctx.get_unit_max_hp = get_unit_max_hp
 end

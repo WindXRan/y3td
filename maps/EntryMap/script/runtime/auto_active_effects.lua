@@ -144,7 +144,7 @@ local visual_speed = 0.5
         if settled > 0 then return math.max(1, settled) end
         local hp = get_unit_attr(STATE.hero, '生命')
         if hp > 0 then return math.max(1, hp) end
-        return math.max(1, get_unit_attr(STATE.hero, '最大生命'))
+        return math.max(1, get_unit_attr(STATE.hero, 'hp_max'))
     end
 
     local function get_hero_hp_ratio()
@@ -155,12 +155,12 @@ local visual_speed = 0.5
 
     local function get_target_hp_ratio(unit)
         if not unit or not unit:is_exist() then return 1 end
-        local max_hp = math.max(1, y3.helper.tonumber(unit:get_attr('生命')) or y3.helper.tonumber(unit:get_attr('最大生命')) or 1)
+        local max_hp = math.max(1, y3.helper.tonumber(unit:get_attr('生命')) or y3.helper.tonumber(unit:get_attr('hp_max')) or 1)
         return math.max(0, unit:get_hp() / max_hp)
     end
 
     local function get_target_max_hp(unit)
-        local hp = y3.helper.tonumber(unit and unit.get_attr and unit:get_attr('生命')) or get_unit_attr(unit, '最大生命')
+        local hp = y3.helper.tonumber(unit and unit.get_attr and unit:get_attr('生命')) or get_unit_attr(unit, 'hp_max')
         return math.max(1, hp)
     end
 

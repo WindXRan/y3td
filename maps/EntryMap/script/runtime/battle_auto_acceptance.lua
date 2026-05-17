@@ -97,7 +97,7 @@ local BootHelpers = require 'runtime.boot_helpers'
         pcall(function()
           unit:set_name('验收靶子')
           unit:set_attr('生命', runtime.target_hp)
-          unit:set_attr('最大生命', runtime.target_hp)
+          unit:set_attr('hp_max', runtime.target_hp)
           unit:set_hp(runtime.target_hp)
         end)
         if STATE.all_enemies and STATE.all_enemies.add_unit then
@@ -144,7 +144,7 @@ local BootHelpers = require 'runtime.boot_helpers'
       else
         pcall(function()
           unit:set_attr('生命', runtime.target_hp)
-          unit:set_attr('最大生命', runtime.target_hp)
+          unit:set_attr('hp_max', runtime.target_hp)
           unit:set_hp(runtime.target_hp)
           local slot = runtime.unit_slots and runtime.unit_slots[index]
           if slot and y3 and y3.point and y3.point.create and unit.set_point then

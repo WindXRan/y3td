@@ -15,7 +15,6 @@ local AttrDefs = {
     ['物理攻击力'] = '攻击',
     ['法术攻击'] = '攻击',
     ['法术攻击力'] = '攻击',
-    ['最大生命'] = '生命',
   },
   list = AttrDefCsv.list,
   by_name = AttrDefCsv.by_name,
@@ -331,10 +330,10 @@ do
     if not y3 or not y3.const or not y3.const.UnitAttr then
       return
     end
-    if not is_engine_unit_attr('最大生命') then
+    if not is_engine_unit_attr('hp_max') then
       return
     end
-    unit:set_attr('最大生命', value or 1)
+    unit:set_attr('hp_max', value or 1)
   end
 
   function api.normalize_name(name)

@@ -867,7 +867,7 @@ function M.update_effects(env, dt)
   merge_bonus_pack(static_runtime, collect_merged_bonus_packs(runtime.modifier_pool_active_runtime_bonuses))
   local max_hp = math.max(1,
     hero_attr_system and hero_attr_system.get_attr(state.hero, '生命结算值') or
-    env.y3.helper.tonumber(state.hero:get_attr('生命')) or env.y3.helper.tonumber(state.hero:get_attr('最大生命')) or 1)
+    env.y3.helper.tonumber(state.hero:get_attr('生命')) or env.y3.helper.tonumber(state.hero:get_attr('hp_max')) or 1)
   local hp_ratio = math.max(0, state.hero:get_hp() / max_hp)
 
   for key, value in pairs(static_runtime) do
