@@ -144,10 +144,7 @@ local function create_service_registry(error_handler)
             local service = services[name]
             if service and service.dispose then
                 if error_handler then
-                    local result = error_handler.safe_call(service.dispose)
-                    if not result.success then
-                        if logger then logger.warn(string.format('Error disposing service "%s": %s', name, result.error)) end
-                    end
+                    error_handler.safe_call(service.dispose)
                 else
                     -- 降级到 pcall
                     local ok, err = pcall(service.dispose)

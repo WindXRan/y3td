@@ -45,7 +45,6 @@ local WaveObjects = GameTables.waves
 local ChallengeObjects = GameTables.challenges
 local StageObjects = GameTables.stages
 local StageModeObjects = GameTables.stage_modes
-local MainlineTaskRewardObjects = GameTables.mainline_task_rewards
 local HeroRoster = GameTables.hero_roster
 local OutgameAttrBonusConfig = require 'data.tables.outgame.outgame_attr_bonus_config'
 local OutgameTopEntryList = require 'data.tables.outgame.outgame_top_entry_list'
@@ -113,7 +112,6 @@ local M = {
   challenges = ChallengeObjects.by_id,
   stages = StageObjects,
   stage_modes = StageModeObjects,
-  mainline_task_rewards = MainlineTaskRewardObjects,
   outgame_attr_bonus_config = OutgameAttrBonusConfig,
   outgame_top_entry_list = OutgameTopEntryList,
   outgame_archive_ranking_tabs = OutgameArchiveRankingTabs,
@@ -123,7 +121,6 @@ local M = {
   gear_upgrade_config = GearUpgradeConfig,
   skill_runtime_tuning = SkillRuntimeTuning,
   attack_skill_runtime_tuning = SkillRuntimeTuning.attack or {},
-  bond_skill_runtime_tuning = SkillRuntimeTuning.bond or {},
 }
 
 for _, wave in ipairs(M.waves) do

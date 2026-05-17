@@ -80,9 +80,6 @@ function M.create(event_bus, options)
                     for _, h in ipairs(y3_game_event_cache[event_name]) do
                         if error_handler then
                             local result = error_handler.safe_call(function() h(unpack(args)) end)
-                            if not result.success then
-                                if logger then logger.warn(string.format('Handler error for Y3 event "%s": %s', event_name, result.error)) end
-                            end
                         else
                             -- 降级到 pcall
                             pcall(function() h(unpack(args)) end)

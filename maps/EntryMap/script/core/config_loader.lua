@@ -49,7 +49,6 @@ function M.create(config_manager, error_handler)
                 return require(module_path)
             end)
             if not result.success then
-                loader.logger.warn('Failed to load', module_path, ':', result.error)
                 return nil
             end
             return result.value

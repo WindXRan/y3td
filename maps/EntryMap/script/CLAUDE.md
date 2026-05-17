@@ -145,6 +145,14 @@
 
 ## 代码风格
 
+- **命名规范**：请参考 `maps/EntryMap/script/.claude/docs/CODING_STYLE.md` 中的详细命名规范
+  - 文件名：snake_case
+  - 模块导出表：PascalCase
+  - 工厂函数：`create()`
+  - 全局变量：根据类型选择（常量 UPPER_CASE、系统实例 snake_case + `_system`）
+  - 局部变量：snake_case
+
 - `ui/runtime_hud.lua` 中存在两种风格混写：早期的混淆风格（`aJ`, `bL`, `c4`, `dS`, `dr` 等短变量名 + `end;`）和后来的可读风格（`slot_index`, `slot_path`, `entry` 等语义化命名 + `end`）
 - 新增代码一律使用可读风格：语义化变量名，不带分号结尾
 - 不要批量重命名混淆变量，除非明确在做该段的完整重构
+- boot.lua 中的命名已经统一为 snake_case 风格
