@@ -1,0 +1,40 @@
+{
+    "describe": -743817741, 
+    "editor_res": false, 
+    "key": 207958, 
+    "model_id": 501200, 
+    "name": 635017353, 
+    "offical_tags": {
+        "__tuple__": true, 
+        "items": [
+            "\u5199\u5b9e", 
+            "\u602a\u7269", 
+            "\u9b54\u5e7b", 
+            "\u6210\u5e74", 
+            "\u5973\u6027", 
+            "\u5f3a\u58ee", 
+            "\u6cd5\u5e08", 
+            "\u6cd5\u6756", 
+            "\u84dd\u8272", 
+            "P19(\u897f\u65b9\u53e4\u5178\u7cfb\u5217)"
+        ]
+    }, 
+    "preview_icon": "UP1ModelPreview/207958", 
+    "release_delete": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "res_identify": "all", 
+    "res_type": "code_Role,code_Monster", 
+    "rigidbody_offset": [
+        0.0, 
+        0.9770000000000001, 
+        0.0
+    ], 
+    "select_effect_scale": 1.0, 
+    "size": 1.0, 
+    "socket_info": {}, 
+    "source": "code_Source_Import", 
+    "uid": "editor_model_207958", 
+    "unit_prefab": 0
+}

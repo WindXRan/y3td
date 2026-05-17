@@ -1,0 +1,69 @@
+{
+    "adorn": {
+        "__tuple__": true, 
+        "items": [
+            [
+                "8da8714f-0536-e3f4-9039-2c2c48a955c2", 
+                0.3
+            ], 
+            [
+                "993cd937-be4e-8faa-d951-a2dfef0e5a1a", 
+                0.3
+            ], 
+            [
+                "b79c880e-5766-363b-1fcd-c6b9d3bc183b", 
+                0.4
+            ]
+        ]
+    }, 
+    "adorn_model": {
+        "__tuple__": true, 
+        "items": [
+            [
+                1100017, 
+                0.3
+            ], 
+            [
+                1100023, 
+                0.3
+            ], 
+            [
+                1100024, 
+                0.4
+            ]
+        ]
+    }, 
+    "densityScale": {
+        "__tuple__": true, 
+        "items": [
+            35, 
+            2, 
+            1
+        ]
+    }, 
+    "describe": 104405982, 
+    "grass_random_max_angle": 180.0, 
+    "grass_random_max_size": 0.95, 
+    "grass_random_min_angle": -180.0, 
+    "grass_random_min_size": 0.65, 
+    "grass_shadow": true, 
+    "guid": "8da8714f-0536-e3f4-9039-2c2c48a955c2", 
+    "key": 79, 
+    "mini_color": {
+        "__tuple__": true, 
+        "items": [
+            255, 
+            255, 
+            255, 
+            0
+        ]
+    }, 
+    "model_id": 1100017, 
+    "name": 117958193, 
+    "preview_icon": "ui/903734", 
+    "res_identify": "all", 
+    "res_type": "code_clicli_editor_vegetation_Officialvegetation", 
+    "uid": "editor_vegetation_79", 
+    "usable": true, 
+    "vegetation_intensity_num": 1
+}
