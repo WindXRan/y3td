@@ -143,7 +143,7 @@ local function build_effect_function_lines(def)
   return lines
 end
 
-function M.create_runtime()
+local function create_runtime()
   return {
     mounted_effect_ids = {},
     selected_effect_id = nil,
@@ -168,7 +168,7 @@ local get_modifier_name_by_key = function(key) return key and y3.buff.get_name_b
   end
 
   local function get_runtime()
-    STATE.effect_debug_runtime = STATE.effect_debug_runtime or M.create_runtime()
+    STATE.effect_debug_runtime = STATE.effect_debug_runtime or create_runtime()
     return STATE.effect_debug_runtime
   end
 
@@ -415,6 +415,7 @@ local get_modifier_name_by_key = function(key) return key and y3.buff.get_name_b
   end
 
   local api = {
+    create_runtime = create_runtime,
     get_runtime = get_runtime,
     get_effect_def = get_effect_def,
     get_selected_effect_id = get_selected_effect_id,
@@ -442,4 +443,4 @@ local get_modifier_name_by_key = function(key) return key and y3.buff.get_name_b
   _G.SYSTEM = _G.SYSTEM or {}
   _G.SYSTEM.effect_debug = api
 
-return M
+return api

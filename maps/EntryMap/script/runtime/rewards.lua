@@ -919,4 +919,4 @@ local STATE = env and env.STATE or _G.STATE
   _G.SYSTEM = _G.SYSTEM or {}
   _G.SYSTEM.reward = api
 
-return M
+return api

@@ -21,6 +21,41 @@ _G.SYSTEM = _G.SYSTEM or {}
 local GearUpgrades = require 'runtime.gear_upgrades'
 local BootCore = require 'runtime.boot_core'
 local BootCombat = require 'runtime.boot_combat'
+_G.BootCombat = BootCombat
+-- Export BootCombat functions to _G for modules that access them directly
+_G.get_current_hero = BootCombat.get_current_hero
+_G.get_hero_point = BootCombat.get_hero_point
+_G.get_hero_attack = BootCombat.get_hero_attack
+_G.get_primary_target = BootCombat.get_primary_target
+_G.launch_projectile_from_hero = BootCombat.launch_projectile_from_hero
+_G.deal_skill_damage = BootCombat.deal_skill_damage
+_G.spawn_particle = BootCombat.spawn_particle
+_G.is_active_enemy = BootCombat.is_active_enemy
+_G.emit_damage_debug_visual = BootCombat.emit_damage_debug_visual
+_G.get_enemy_runtime_info = BootCombat.get_enemy_runtime_info
+_G.is_boss_runtime_enemy = BootCombat.is_boss_runtime_enemy
+_G.is_elite_runtime_enemy = BootCombat.is_elite_runtime_enemy
+_G.get_hero_facing_towards = function(target)
+  local hero = _G.STATE and _G.STATE.hero
+  if not hero or not hero:is_exist() or not target then return 0 end
+  local ok_hero, hero_x, hero_y = pcall(function() return hero:get_x(), hero:get_y() end)
+  if not ok_hero then return 0 end
+  local ok_target, tx, ty = pcall(function() return target:get_x(), target:get_y() end)
+  if not ok_target then return 0 end
+  return math.atan(ty - hero_y, tx - hero_x)
+end
+_G.sync_basic_attack_ability = function()
+  local bfs = _G.battlefield_system
+  if bfs and bfs.sync_basic_attack_ability then
+    bfs.sync_basic_attack_ability()
+  end
+end
+_G.award_rewards = function(reward, reason, is_silent)
+  local rs = _G.reward_system
+  if rs and rs.award_rewards then
+    return rs.award_rewards(reward, reason, is_silent)
+  end
+end
 local BootHelpers = require 'runtime.boot_helpers'
 local BootUIEnhancements = require 'runtime.boot_ui_enhancements'
 local EventBus = require 'runtime.event_bus'
@@ -139,7 +174,7 @@ _G.get_enemy_player = get_enemy_player
 require 'runtime.boot_utils'
 
 -- 运行时事件处理（message / heal_hero / handle_battle_finished / create_bond_env）
-require 'runtime.boot_event'
+-- 已合并到 runtime.boot_utils，不再单独 require boot_event
 
 BootCombat.set_heal_hero(_G.heal_hero)
 
@@ -149,14 +184,10 @@ function RuntimeEntry.has_valid_hero()
   return _G.STATE.hero and _G.STATE.hero.is_exist and _G.STATE.hero:is_exist()
 end
 
--- 相机控制（提取到独立模块）
-require 'runtime.boot_camera'
+-- 相机控制和 UI 显隐已在 boot_utils 中实现
 RuntimeEntry.apply_fixed_camera_mode = _G.apply_fixed_camera_mode
 RuntimeEntry.sync_fixed_camera_mode = _G.sync_fixed_camera_mode
 RuntimeEntry.toggle_fixed_camera = _G.toggle_fixed_camera
-
--- UI 显隐控制（提取到独立模块）
-require 'runtime.boot_ui_phase'
 
 -- 英雄属性系统（自初始化，require 时设置 _G.hero_attr_system）
 local function sync_gear_runtime_effects(state, hero, config)
@@ -189,7 +220,7 @@ _G.design_seconds = design_seconds
 
 RuntimeEntry.emit_skill_hit_feedback = BootCombat.emit_skill_hit_feedback
 
-BootHelpers.set_get_bond_runtime_bonus(_G.BondUtils.get_bond_runtime_bonus)
+BootHelpers.set_get_bond_runtime_bonus(BootCombat.get_bond_runtime_bonus)
 
 local handle_bond_hero_pre_hurt = BootCombat.handle_bond_hero_pre_hurt
 local trigger_td_skills_on_hit = BootCombat.trigger_td_skills_on_hit
@@ -307,16 +338,16 @@ do
     end
   end
 
-  local active_ids = {}
+  -- 保存所有已注册技能 ID，供 GM 面板列出和手动施放
+  -- 注意：不再自动设为 active_ids（英雄默认不自动施法，仅通过 GM 手动触发）
+  local all_ids = {}
   for _, def in ipairs(defs) do
     if def.id then
-      active_ids[#active_ids + 1] = def.id
+      all_ids[#all_ids + 1] = def.id
     end
   end
-  if #active_ids > 0 then
-    local n, _ = SkillSystem.attack.set_active_skill_ids(active_ids)
-    print('[boot] 已设置 ' .. tostring(n) .. ' 个主动技能')
-  end
+  _G.ALL_SKILL_IDS = all_ids
+  print('[boot] 已注册 ' .. tostring(#all_ids) .. ' 个技能（非自动施法）')
 end
 
 _G.ATTACK_SKILL_VFX = AttackSkillObjects and AttackSkillObjects.vfx_by_id
@@ -340,6 +371,12 @@ _G.SYSTEM.ui = UISystem
 local runtime_hud_module = UISystem.hud
 local hud = runtime_hud_module.create()
 _G.hud_system = hud
+_G.set_battle_hud_visible = function(visible)
+  if hud and hud.set_battle_hud_visible then
+    return hud.set_battle_hud_visible(visible)
+  end
+  return false
+end
 
 STATE.attr_tips_panel = require('runtime.attr_tips_panel').create()
 if STATE.attr_tips_panel and STATE.attr_tips_panel.init then
@@ -351,15 +388,71 @@ runtime_ui_helpers.__raw_refresh_choice_panel = runtime_ui_helpers.refresh_choic
 runtime_ui_helpers.refresh_choice_panel = BootUIEnhancements.refresh_choice_panel
 runtime_ui_helpers.install_panel_systems()
 
+-- 导出 UI 函数到 _G，供 loops.lua / session_state 调用
+_G.ensure_runtime_hud = function()
+  return runtime_ui_helpers.ensure_runtime_hud and runtime_ui_helpers.ensure_runtime_hud()
+end
+_G.ensure_choice_panel = function()
+  return runtime_ui_helpers.ensure_choice_panel and runtime_ui_helpers.ensure_choice_panel()
+end
+_G.refresh_runtime_hud = function()
+  return runtime_ui_helpers.refresh_runtime_hud and runtime_ui_helpers.refresh_runtime_hud()
+end
+_G.refresh_choice_panel = function()
+  return runtime_ui_helpers.refresh_choice_panel and runtime_ui_helpers.refresh_choice_panel()
+end
+_G.refresh_swallow_panel = function()
+  return runtime_ui_helpers.refresh_bond_swallow_panel and runtime_ui_helpers.refresh_bond_swallow_panel()
+end
+_G.refresh_runtime_overview = function()
+  return runtime_ui_helpers.refresh_runtime_overview and runtime_ui_helpers.refresh_runtime_overview()
+end
+_G.refresh_inventory_panel = function()
+  return runtime_ui_helpers.refresh_inventory_panel and runtime_ui_helpers.refresh_inventory_panel()
+end
+
 UISystem.growth_tip.create = UISystem.growth_tip.create or function()
   return require('ui.growth_weapon_item_tip').create()
 end
 _G.growth_weapon_item_tip = UISystem.growth_tip.create()
 
-UISystem.result.create = UISystem.result.create or function()
-  return require('ui.result_panel').create()
+-- 阶段8.5：sample_skills_system 兼容层
+-- debug_actions / debug_tools 在 require 时捕获 _G.sample_skills_system，因此必须在 DebugSystem 加载前设置
+-- 原 SampleSkillsSystem 模块在重构中删除，此处桥接到 generated_skills + skill_framework
+do
+  local generated = SkillSystem.generated
+  local sample_cursor = 0
+
+  _G.sample_skills_system = {
+    get_sample_defs = function()
+      return generated.load_defs()
+    end,
+    cast_sample = function(id, cast_params)
+      if type(id) == 'number' then
+        id = tostring(id)
+      end
+      return generated.cast(id, cast_params)
+    end,
+    cast_next_sample = function()
+      local ids = generated.list_ids()
+      if #ids == 0 then
+        return false, 'no skills registered'
+      end
+      sample_cursor = sample_cursor + 1
+      if sample_cursor > #ids then
+        sample_cursor = 1
+      end
+      return generated.cast(ids[sample_cursor])
+    end,
+    list_samples = function()
+      local lines = {}
+      for _, def in ipairs(generated.load_defs()) do
+        lines[#lines + 1] = string.format('  %s [%s] %s', def.id, def.element or '?', def.name or def.id)
+      end
+      return lines
+    end,
+  }
 end
-_G.result_panel = UISystem.result.create()
 
 -- 阶段9：调试系统 — 使用合并后的 debug_system
 local DebugSystem = require 'runtime.debug_system'
@@ -420,7 +513,13 @@ local outgame_system = OutgameSystem.outgame.create({
     return audio and audio.ensure_music_loop and audio.ensure_music_loop() or nil
   end,
   get_player = BootHelpers.get_player,
-  set_battle_hud_visible = _G.HudUtils.set_battle_hud_visible,
+  set_battle_hud_visible = function(visible)
+    local hud = _G.hud_system
+    if hud and hud.set_battle_hud_visible then
+      return hud.set_battle_hud_visible(visible)
+    end
+    return false
+  end,
   stage_runtime = {
     get_current_stage_text = function()
       local def = _G.STATE.current_stage_def

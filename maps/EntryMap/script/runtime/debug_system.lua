@@ -18,6 +18,7 @@ DebugSystem.handle_input = debug_actions.handle_input
 
 -- 从 debug_tools 转发
 DebugSystem.debug_message = debug_tools.debug_message
+_G.debug_message = debug_tools.debug_message
 DebugSystem.show_debug_hotkey_help = debug_tools.show_debug_hotkey_help
 DebugSystem.get_area = debug_tools.get_area
 DebugSystem.toggle_debug_overlay = debug_tools.toggle_debug_overlay

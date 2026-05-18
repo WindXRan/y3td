@@ -124,4 +124,7 @@ _G.generated_skills_api = api
 _G.SYSTEM = _G.SYSTEM or {}
 _G.SYSTEM.generated_skills = api
 
-return M
+-- 将 M 的方法合并到 api，统一对外接口
+api.load_defs = M.load_defs
+
+return api

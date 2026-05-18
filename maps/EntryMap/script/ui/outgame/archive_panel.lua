@@ -11,6 +11,7 @@ local ArchiveShop
 local ArchiveTabDefinitions
 local RANKING_TABS
 local utils
+local get_player
 
 local ARCHIVE_PANEL_Z_ORDER = 9800
 
@@ -24,6 +25,7 @@ function M.init(env)
   ArchiveShop = env.ArchiveShop
   ArchiveTabDefinitions = env.ArchiveTabDefinitions
   RANKING_TABS = env.RANKING_TABS or {}
+  get_player = env.get_player or _G.get_player or function() return nil end
   utils = require('ui.outgame.utils')
   utils.init(env)
 
@@ -49,7 +51,7 @@ function M.init(env)
 
   ARCHIVE_SHOP_OPTIONS = {
     state = STATE,
-    player = env.get_player and env.get_player() or nil,
+    player = get_player and get_player() or nil,
     specs = OUTGAME_DEFS.archive_shop_item_specs or {},
     primary_tabs = OUTGAME_DEFS.archive_shop_primary_tabs or { OUTGAME_DEFS.archive_shop_primary_tab or DEFAULT_PRIMARY },
     primary_tab_label = OUTGAME_DEFS.archive_shop_primary_tab or DEFAULT_PRIMARY,
@@ -84,7 +86,7 @@ end
 
 local function get_ranking_rows_for_tab(tab)
   local rows = {}
-  local local_player = env.get_player and env.get_player() or nil
+  local local_player = get_player and get_player() or nil
   local local_name = '玩家'
   if local_player and local_player.get_name then
     local ok_name, name = pcall(function()
@@ -265,12 +267,12 @@ local function resolve_archive_chip(path, bg_name)
 end
 
 local function refresh_archive_main_shop_items(ui)
-  ARCHIVE_SHOP_OPTIONS.player = env.get_player and env.get_player() or ARCHIVE_SHOP_OPTIONS.player
+  ARCHIVE_SHOP_OPTIONS.player = get_player and get_player() or ARCHIVE_SHOP_OPTIONS.player
   return ArchiveShop.refresh(ui, ARCHIVE_SHOP_OPTIONS)
 end
 
 local function ensure_archive_main_shop_ui(ui)
-  ARCHIVE_SHOP_OPTIONS.player = env.get_player and env.get_player() or ARCHIVE_SHOP_OPTIONS.player
+  ARCHIVE_SHOP_OPTIONS.player = get_player and get_player() or ARCHIVE_SHOP_OPTIONS.player
   return ArchiveShop.ensure(ui, ARCHIVE_SHOP_OPTIONS)
 end
 
@@ -681,5 +683,7 @@ function M.get_top_entry_title_by_action(action, fallback_title)
   end
   return tostring(fallback_title or '')
 end
+
+M.ensure_archive_panel_ui = ensure_archive_panel_ui
 
 return M

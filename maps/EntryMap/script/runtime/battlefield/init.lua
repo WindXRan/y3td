@@ -13,7 +13,7 @@ env.award_rewards = _G.award_rewards or function() end
 
 local message = _G.message or function() end
 local design_seconds = BootHelpers.design_seconds
-local random_point_in_area = _G.random_point_in_area
+local random_point_in_area = _G.AreaUtils and _G.AreaUtils.random_point_in_area or function(area_id) return _G.STATE.defense_point end
 local hero_attr_system = _G.hero_attr_system
 local hero_model = _G.hero_model
 local play_enemy_death_sound = _G.play_enemy_death_sound
@@ -32,7 +32,8 @@ local ctx = {
   STATE = STATE, CONFIG = CONFIG, y3 = y3, message = message, env = env, api = api,
   design_seconds = design_seconds, random_point_in_area = random_point_in_area,
   hero_attr_system = hero_attr_system, hero_model = hero_model,
-  set_attr_pack = _G.set_attr_pack, add_attr_pack = _G.add_attr_pack,
+  set_attr_pack = (_G.AttrUtils and _G.AttrUtils.set_attr_pack) or function() end,
+  add_attr_pack = (_G.AttrUtils and _G.AttrUtils.add_attr_pack) or function() end,
   play_enemy_death_sound = play_enemy_death_sound,
   heal_hero = _G.heal_hero,
   resource_system = require('runtime.resource_system').create(),
@@ -60,4 +61,4 @@ _G.battlefield_system = api
 _G.SYSTEM = _G.SYSTEM or {}
 _G.SYSTEM.battlefield = api
 
-return M
+return api

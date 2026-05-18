@@ -3,7 +3,7 @@
 
 -- 核心模块导出
 _G.BondSystem = require 'runtime.bonds_chain'
-_G.BootCombat = require 'runtime.boot_combat'
+-- boot_combat 由 boot.lua 统一加载并写入 _G.BootCombat，避免循环 require
 _G.AudioResources = require 'data.tables.audio_resources'
 
 -- 区域相关工具
@@ -135,7 +135,6 @@ end
 
 -- 消息输出
 local BattleEventPrompts = require 'runtime.battle_event_prompts'
-local BootHelpers = require 'runtime.boot_helpers'
 local GearUpgrades = require 'runtime.gear_upgrades'
 local battle_event_prompts_instance
 
@@ -152,7 +151,7 @@ _G.message = function(text)
         create_battle_event_feed_runtime = function()
           return require 'runtime.battle_event_feed'.create_runtime()
         end,
-        infer_battle_event_style = BootHelpers.infer_battle_event_style,
+        infer_battle_event_style = function(...) return _G.BootHelpers and _G.BootHelpers.infer_battle_event_style(...) end,
         GearUpgrades = GearUpgrades,
         CONFIG = _G.CONFIG,
         get_message_prompt_system = function()
@@ -232,7 +231,6 @@ _G.handle_battle_finished = function(result)
     _G.set_battle_hud_visible(false)
   end
 
-  local result_panel_system = _G.result_panel_system
   local outgame_system = _G.outgame_system
 
   local function finish_outgame_transition()
@@ -253,24 +251,9 @@ _G.handle_battle_finished = function(result)
     if outgame_system and outgame_system.enter_outgame then
       outgame_system.enter_outgame(result)
     end
-    if result_panel_system and result_panel_system.hide then
-      result_panel_system.hide()
-    end
   end
 
-  if result_panel_system and result_panel_system.show then
-    local STATE = _G.STATE
-    local gold = STATE and STATE.resources and STATE.resources.gold or 0
-    local hp = STATE and STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist() and STATE.hero:get_hp() or 0
-    result_panel_system.show({
-      is_win = result.is_win,
-      reached_wave_index = result.reached_wave_index,
-      gold = gold,
-      hp = hp,
-    }, finish_outgame_transition)
-  else
-    finish_outgame_transition()
-  end
+  finish_outgame_transition()
 end
 
 -- 区域伤害计算
@@ -461,11 +444,15 @@ end
 -- UI 阶段控制
 local function set_ui_root_visible(path, visible)
   local player = _G.get_player()
-  if not player or not y3 or not y3.ui or not y3.ui.get_ui then
+  if not player or not y3 or not y3.ui then
     return false
   end
-  local ok, ui = pcall(y3.ui.get_ui, player, path)
-  if not ok or not ui or (ui.is_removed and ui:is_removed()) then
+  local py_ui = GameAPI.get_comp_by_absolute_path(player.handle, path)
+  if not py_ui then
+    return false
+  end
+  local ui = y3.ui.get_by_handle(player, py_ui)
+  if not ui or (ui.is_removed and ui:is_removed()) then
     return false
   end
   if ui.set_visible then

@@ -1,13 +1,20 @@
 local M = {}
 
 local y3
+local _env
 
 function M.init(env)
-  y3 = env and env.y3 or _G.y3
+  if env then
+    _env = _env or {}
+    if env.get_player then _env.get_player = env.get_player end
+    if env.y3 then _env.y3 = env.y3 end
+  end
+  y3 = (_env and _env.y3) or (env and env.y3) or _G.y3
 end
 
 function M.resolve_ui(path)
-  local ok, ui = pcall(y3.ui.get_ui, env.get_player(), path)
+  local player = (_env and _env.get_player and _env.get_player()) or (_G.get_player and _G.get_player())
+  local ok, ui = pcall(y3.ui.get_ui, player, path)
   if not ok or not ui then
     return nil
   end

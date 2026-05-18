@@ -140,7 +140,7 @@ function M.mark_profile_dirty()
   if STATE.outgame_profile_save_enabled ~= true then
     return
   end
-  local ok, err = pcall(y3.save_data.upload_save_data, env.get_player())
+  local ok, err = pcall(y3.save_data.upload_save_data, (_G.get_player and _G.get_player() or nil))
   if ok then
     M.set_save_backend_state(true)
     return
@@ -425,7 +425,7 @@ function M.load_profile(hero_growth_api)
 
   local profile
   local ok, result = pcall(function()
-    return y3.save_data.load_table(env.get_player(), SAVE_SLOT, true)
+    return y3.save_data.load_table((_G.get_player and _G.get_player() or nil), SAVE_SLOT, true)
   end)
 
   if ok and type(result) == 'table' then

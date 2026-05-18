@@ -640,4 +640,4 @@ local debug_missing_audio = true
   _G.SYSTEM = _G.SYSTEM or {}
   _G.SYSTEM.audio = api
 
-return M
+return api

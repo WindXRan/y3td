@@ -247,6 +247,10 @@ function M.create(env)
   end
 
   local function start_selected_stage(stage_id, mode_id)
+    if STATE.session_phase == 'battle' then
+      return false
+    end
+
     local stage_def = CONFIG.stages and CONFIG.stages.by_id and CONFIG.stages.by_id[stage_id] or nil
     local mode_def = CONFIG.stage_modes and CONFIG.stage_modes.by_id and CONFIG.stage_modes.by_id[mode_id] or nil
     local content_source_stage_id = stage_def and (stage_def.content_source_stage_id or stage_def.stage_id) or nil

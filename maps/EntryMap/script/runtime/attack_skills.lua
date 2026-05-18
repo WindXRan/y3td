@@ -645,6 +645,15 @@ local function api_sync_basic_attack_ability_range()
   sync_basic_attack_ability_range()
 end
 
+function api_set_active_skill_ids(active_ids)
+  if not STATE.active_skill_runtime then
+    STATE.active_skill_runtime = { active_ids = {}, queue = {}, cursor = 1, next_cast_ready_time = 0 }
+  end
+  STATE.active_skill_runtime.active_ids = active_ids
+  STATE.active_skill_runtime.cursor = 1
+  return #active_ids
+end
+
 local api = {
   sync_basic_attack_ability = api_sync_basic_attack_ability,
   get_basic_attack_skill = api_get_basic_attack_skill,
@@ -655,6 +664,7 @@ local api = {
   show_attack_skill_loadout = api_show_attack_skill_loadout,
   setup_basic_attack_ability = api_setup_basic_attack_ability,
   sync_basic_attack_ability_range = api_sync_basic_attack_ability_range,
+  set_active_skill_ids = api_set_active_skill_ids,
 }
 
 _G.attack_skills_system = api

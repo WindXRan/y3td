@@ -859,4 +859,4 @@ local visual_speed = 0.5
     _G.SYSTEM = _G.SYSTEM or {}
     _G.SYSTEM.auto_active_effects = api
 
-return M
+return api

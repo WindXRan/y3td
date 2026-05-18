@@ -21,8 +21,6 @@ OutgameSystem.reset_battle_state = session_state.reset_battle_state
 
 -- 从 outgame 转发
 OutgameSystem.create_outgame = outgame.create
-OutgameSystem.refresh_stage_selection = outgame.refresh_stage_selection
-OutgameSystem.on_hero_selected = outgame.on_hero_selected
 
 -- 从 hero_selection_range 转发
 OutgameSystem.get_hero_selection_range = hero_selection_range.get_hero_selection_range

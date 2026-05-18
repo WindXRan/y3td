@@ -1117,3 +1117,5 @@ end
 _G.skill_framework_system = api
 _G.SYSTEM = _G.SYSTEM or {}
 _G.SYSTEM.skill_framework = api
+
+return api

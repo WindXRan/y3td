@@ -1,5 +1,4 @@
 ﻿local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
-local SkillVisuals = require 'data.tables.skill.skill_visuals'
 
 local M = {}
 
@@ -29,7 +28,7 @@ local function collect_projectile_ids(extra_ids)
     push_unique(result, set, value)
   end
 
-  for _, cfg in pairs((SkillVisuals and SkillVisuals.visual_by_bond) or {}) do
+  for _, cfg in pairs((_G.AttackSkillObjects and _G.AttackSkillObjects.visual_by_bond) or {} ) do
     if type(cfg) == 'table' then
       push_unique(result, set, cfg.projectile_key)
     end

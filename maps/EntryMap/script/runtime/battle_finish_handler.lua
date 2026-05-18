@@ -29,11 +29,6 @@ function M.create(env)
     if outgame_system then
       outgame_system.enter_outgame(result)
     end
-
-    local result_panel_system = _G.result_panel_system
-    if result_panel_system then
-      result_panel_system.hide()
-    end
   end
   
   function api.handle_battle_finished(result)
@@ -54,22 +49,8 @@ function M.create(env)
       hud.set_battle_hud_visible(false)
     end
 
-    -- 显示结果面板或直接切换到 outgame
-    local result_panel_system = _G.result_panel_system
-    if result_panel_system then
-      local gold = STATE.battle.resources and STATE.battle.resources.gold or 0
-      local hp = STATE.battle.hero and STATE.battle.hero:is_exist() and STATE.battle.hero:get_hp() or 0
-      result_panel_system.show({
-        is_win = result.is_win,
-        reached_wave_index = result.reached_wave_index,
-        gold = gold,
-        hp = hp,
-      }, function()
-        finish_outgame_transition(result)
-      end)
-    else
-      finish_outgame_transition(result)
-    end
+    -- 直接切换到 outgame
+    finish_outgame_transition(result)
   end
   
   return api

@@ -3,7 +3,10 @@ local CONFIG = require 'config.entry_config'
 
   local STATE = _G.STATE
   local ATTACK_SKILL_DEPRECATED = CONFIG and CONFIG.attack_skill_deprecated == true
-  local debug_message = _G.debug_message
+  local function debug_message(text)
+    local dm = _G.debug_message
+    if dm then dm(text) else (_G.message or function() end)(text) end
+  end
   local get_hero_max_level = _G.get_hero_max_level or function() return 1 end
   local sync_hero_progression = _G.sync_hero_progression or function() end
   local ATTACK_SKILL_BLUEPRINTS = _G.ATTACK_SKILL_BLUEPRINTS or { list = {} }
