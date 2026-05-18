@@ -856,5 +856,7 @@ local visual_speed = 0.5
         clear_effect_runtime = clear_effect_runtime
     }
     _G.auto_active_effects_system = api
+    _G.SYSTEM = _G.SYSTEM or {}
+    _G.SYSTEM.auto_active_effects = api
 
 return M

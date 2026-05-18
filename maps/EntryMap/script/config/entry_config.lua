@@ -53,7 +53,7 @@ local OutgameDetailConfig = require 'data.tables.outgame.outgame_detail_config'
 local ArchiveTabDefinitions = require 'data.tables.archive_tab_definitions'
 local GearUpgradeConfig = require 'data.tables.economy.gear_upgrade_config'
 local SkillRuntimeTuning = require 'data.tables.skill.skill_runtime_tuning'
-local ATTACK_SKILL_DEPRECATED = true
+local ATTACK_SKILL_DEPRECATED = false
 
 local M = {
   debug_time_scale = DEBUG_TIME_SCALE,

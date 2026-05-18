@@ -1,3 +1,0 @@
-id,projectile_key,projectile_speed,projectile_time,target_distance,cast_particle,cast_scale,cast_time,impact_particle,impact_scale,impact_time,explosion_particle,explosion_scale,explosion_time,charge_particle,charge_scale,charge_time,chain_particle,chain_scale,chain_time,strike_delay
-__字段说明__,投射物ID,投射物速度,投射物飞行时间,目标距离,施法粒子,施法缩放,施法时间,冲击粒子,冲击缩放,冲击时间,爆炸粒子,爆炸缩放,爆炸时间,蓄力粒子,蓄力缩放,蓄力时间,连锁粒子,连锁缩放,连锁时间,打击延迟
-basic_attack,134267104,3760,2.9,28,101175,0.90,0.14,101175,1.08,0.28,101175,1.08,0.30,101175,0.86,0.20,101175,0.92,0.22,

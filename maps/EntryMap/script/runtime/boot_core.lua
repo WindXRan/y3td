@@ -58,7 +58,7 @@ local function copy_fields(template)
   return result
 end
 
---- 技能修正值对象：封装 chain / splash / artillery / medbot / evolution 等
+--- 技能修正值对象：封装 chain / splash / evolution 等
 local SkillRuntime = {}
 SkillRuntime.__index = SkillRuntime
 
@@ -72,64 +72,22 @@ function SkillRuntime.create()
   data.chain_ratio = 0
   data.chain_radius = 420
   data.execute_threshold = 0
-  data.medbot_every = 0
-  data.medbot_heal = 0
-  data.medbot_kills = 0
-  data.artillery_interval = 0
-  data.artillery_ratio = 0
-  data.artillery_base = 0
-  data.artillery_radius = 0
-  data.artillery_cd = 0
   data.bonus_gold_on_kill = 0
 
   return setmetatable({
-    -- 通用读写
     get = function(_, key) return data[key] end,
     set = function(_, key, value) data[key] = value end,
 
-    --- 链式攻击属性（攻击技能系统高频读取）
     get_chain = function()
       return data.chain_bounces, data.chain_chance, data.chain_ratio, data.chain_radius
     end,
 
-    --- 溅射属性
     get_splash = function()
       return data.splash_ratio, data.splash_radius
     end,
 
-    --- 医疗机器人：敌人击杀计数，达到阈值触发回血
-    --- @param kills_increment number 本次击杀数
-    --- @return number|nil 触发的治疗量，未触发返回 nil
-    try_medbot_heal = function(_, kills_increment)
-      if data.medbot_every <= 0 or data.medbot_heal <= 0 then return nil end
-      data.medbot_kills = data.medbot_kills + (kills_increment or 1)
-      if data.medbot_kills >= data.medbot_every then
-        data.medbot_kills = data.medbot_kills - data.medbot_every
-        return data.medbot_heal
-      end
-      return nil
-    end,
-
-    --- 炮击冷却推进
-    advance_artillery_cd = function(_, amount)
-      data.artillery_cd = (data.artillery_cd or 0) + (amount or 0)
-    end,
-    --- 炮击就绪判断
-    is_artillery_ready = function()
-      return data.artillery_interval > 0 and data.artillery_radius > 0
-          and data.artillery_ratio > 0 and data.artillery_cd >= data.artillery_interval
-    end,
-    --- 消耗炮击
-    consume_artillery = function()
-      data.artillery_cd = 0
-      return data.artillery_base, data.artillery_ratio, data.artillery_radius
-    end,
-
-    --- 击杀金币奖励
     get_bonus_gold_on_kill = function() return data.bonus_gold_on_kill end,
 
-    --- 应用进化/羁绊加成
-    --- @param bonuses table { damage_ratio, repeat_count, range_bonus, cooldown_reduction, ... }
     apply_evolution_bonus = function(_, bonuses)
       for key, value in pairs(bonuses) do
         if data[key] ~= nil and type(value) == 'number' then
@@ -142,7 +100,6 @@ function SkillRuntime.create()
       end
     end,
 
-    --- 导出为纯表（用于保存/传递）
     to_table = function() return data end,
   }, SkillRuntime)
 end

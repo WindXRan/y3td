@@ -105,12 +105,6 @@ return function(ctx)
 
         if info.kind == 'main' then
           env.award_rewards(scaled_reward, nil, true)
-          if STATE.skill_runtime then
-            local heal_amount = STATE.skill_runtime:try_medbot_heal(1)
-            if heal_amount then
-              ctx.heal_hero(heal_amount)
-            end
-          end
         elseif info.kind == 'boss' then
           env.award_rewards(scaled_reward, get_boss_name(info.wave), false)
         elseif info.kind == 'challenge' and scaled_reward then

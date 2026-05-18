@@ -135,6 +135,8 @@ function M.create(env)
     disable_local_preview = clear_preview,
   }
   _G.hero_selection_range_system = api
+  _G.SYSTEM = _G.SYSTEM or {}
+  _G.SYSTEM.hero_selection_range = api
   return api
 end
 

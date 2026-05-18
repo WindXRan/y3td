@@ -626,6 +626,8 @@ do
   end
 
   _G.hero_attr_system = api
+  _G.SYSTEM = _G.SYSTEM or {}
+  _G.SYSTEM.hero_attr = api
 end
 
 function M.get_defs()

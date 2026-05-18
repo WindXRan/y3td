@@ -190,6 +190,8 @@ local BootHelpers = require 'runtime.boot_helpers'
     end,
   }
   _G.battle_auto_acceptance_system = api
+  _G.SYSTEM = _G.SYSTEM or {}
+  _G.SYSTEM.battle_auto_acceptance = api
   M = api
 
 return M

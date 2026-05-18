@@ -637,5 +637,7 @@ local debug_missing_audio = true
     play_enemy_death = play_enemy_death,
   }
   _G.audio_system = api
+  _G.SYSTEM = _G.SYSTEM or {}
+  _G.SYSTEM.audio = api
 
 return M

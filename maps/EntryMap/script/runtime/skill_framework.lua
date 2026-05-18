@@ -262,16 +262,48 @@ local function impact_fx_scale(skill)
   return 1.0
 end
 
-local skill_damage_api = _G.td_damage_api
-local get_primary_target = _G.get_primary_target or function() return nil end
-local get_enemies_in_range = _G.get_enemies_in_range or function() return {} end
-local get_hero = _G.get_current_hero or function() return nil end
-local get_hero_point = _G.get_hero_point or function() return nil end
-local get_hero_attack = _G.get_hero_attack or function() return 0 end
-local get_hero_facing_towards = _G.get_hero_facing_towards or function() return 0 end
-local create_offset_point = _G.create_offset_point or function() return nil end
-local spawn_particle = _G.spawn_particle or function() end
-local launch_projectile_from_hero = _G.launch_projectile_from_hero or function() end
+local function get_skill_damage_api()
+  return _G.td_damage_api
+end
+
+local function get_primary_target(range)
+  return _G.get_primary_target(range)
+end
+
+local function get_enemies_in_range(...)
+  return _G.get_enemies_in_range(...)
+end
+
+local function get_hero()
+  return _G.get_current_hero() or _G.get_player()
+end
+
+local function get_hero_point()
+  return _G.get_hero_point()
+end
+
+local function get_hero_attack()
+  return _G.get_hero_attack()
+end
+
+local function get_hero_facing_towards(target)
+  return _G.get_hero_facing_towards(target)
+end
+
+local function create_offset_point(...)
+  local base = _G.get_hero_point()
+  if not base then return nil end
+  local args = {...}
+  return y3.point.create(base.x + (args[1] or 0), base.y + (args[2] or 0), base.z or 0)
+end
+
+local function spawn_particle(...)
+  return _G.spawn_particle(...)
+end
+
+local function launch_projectile_from_hero(...)
+  return _G.launch_projectile_from_hero(...)
+end
 
 local api = {}
   local registry = Registry.create()
@@ -374,13 +406,13 @@ local api = {}
       if point then
         return nil, point
       end
-      local target = cast_params.target or (get_primary_target and get_primary_target(skill.hit_model.range))
+      local target = cast_params.target or get_primary_target(skill.hit_model.range)
       if target and target.get_point then
         return target, target:get_point()
       end
       return nil, hero_point
     end
-    local target = cast_params.target or (get_primary_target and get_primary_target(skill.hit_model.range))
+    local target = cast_params.target or get_primary_target(skill.hit_model.range)
     if target and target.get_point then
       return target, target:get_point()
     end
@@ -427,9 +459,6 @@ local api = {}
       local fx_scale = impact_fx_scale(skill)
       local impact_delay = resolve_impact_delay(skill)
       local cast_particle = visual_key(skill, 'cast')
-      if skill.id == 'ice_bird' then
-        print('[DEBUG] ice_bird cast_particle:', cast_particle, 'caster:', cast_ctx.caster, 'caster.is_exist:', cast_ctx.caster and cast_ctx.caster.is_exist and cast_ctx.caster:is_exist())
-      end
       spawn_particle(y3, cast_ctx.caster, cast_particle, fx_scale * 0.95, 0.20, 24)
       fire_hook(skill, 'OnSpellStart', cast_ctx)
       local function do_impact(impact_pt)
@@ -440,7 +469,7 @@ local api = {}
         pt = pt or center
         mark_visual_impact(cast_ctx)
         spawn_particle(y3, pt, visual_key(skill, 'impact') or visual_key(skill, 'hit'), fx_scale * 1.08, 0.18, 28)
-        cast_ctx.hits = skill_damage_api.area(pt, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
+        cast_ctx.hits = get_skill_damage_api().area(pt, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
           max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
           visual = {
             particle = visual_key(skill, 'hit'),
@@ -455,10 +484,7 @@ local api = {}
         fire_hook(skill, 'OnFinish', cast_ctx)
       end
       local proj_key = visual_key(skill, 'projectile_key')
-      if skill.id == 'ice_bird' then
-        print('[DEBUG] ice_bird execute_projectile: proj_key=', proj_key, 'impact_delay=', impact_delay, 'launch_projectile_from_hero=', launch_projectile_from_hero)
-      end
-      if proj_key and launch_projectile_from_hero then
+      if proj_key then
         launch_projectile_from_hero(proj_key, target, center, nil, impact_delay, visual_key(skill, 'projectile_height'), do_impact)
       elseif impact_delay > 0 then
         y3.ltimer.wait(impact_delay, function() do_impact(nil) end)
@@ -471,7 +497,7 @@ local api = {}
     if skill.sub_behavior == 'pierce' then
       local angle = 0
       if target then
-        angle = get_hero_facing_towards and get_hero_facing_towards(target) or 0
+        angle = get_hero_facing_towards(target)
       elseif cast_ctx.caster and cast_ctx.caster.get_facing then
         angle = tonumber(cast_ctx.caster:get_facing()) or 0
       end
@@ -549,7 +575,7 @@ local api = {}
             cleanup_proj_after_first_hit()
           end
           local amount = damage_per_hit
-          if skill_damage_api.single(hit_unit, amount, skill.damage_type, {
+          if get_skill_damage_api().single(hit_unit, amount, skill.damage_type, {
             particle = hit_particle,
             metric_scope = 'skill_framework',
             metric_key = skill.id,
@@ -579,7 +605,7 @@ local api = {}
         return false, '附近没有可攻击目标。'
       end
       local chain_targets = { target }
-      local extra = get_enemies_in_range and get_enemies_in_range(target, skill.hit_model.radius, target, skill.hit_model.bounce) or {}
+      local extra = get_enemies_in_range(target, skill.hit_model.radius, target, skill.hit_model.bounce)
       for _, unit in ipairs(extra) do
         chain_targets[#chain_targets + 1] = unit
       end
@@ -598,7 +624,7 @@ local api = {}
       )
       mark_visual_impact(cast_ctx)
       local total_damage = 0
-      cast_ctx.hits = skill_damage_api.chain(chain_targets, base, skill.damage_type, {
+      cast_ctx.hits = get_skill_damage_api().chain(chain_targets, base, skill.damage_type, {
         amount = function(context)
           local idx = context.index or 1
           local amount = base * pow(skill.scale.bounce_ratio, math.max(0, idx - 1))
@@ -639,7 +665,7 @@ local api = {}
         local pt = impact_point or center
         mark_visual_impact(cast_ctx)
         spawn_particle(y3, pt, visual_key(skill, 'impact'), fx_scale * 1.08, 0.18, 28)
-        cast_ctx.hits = skill_damage_api.area(pt, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
+        cast_ctx.hits = get_skill_damage_api().area(pt, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
           max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
           visual = {
             particle = visual_key(skill, 'hit'),
@@ -671,7 +697,7 @@ local api = {}
       fire_hook(skill, 'OnSpellStart', cast_ctx)
       cast_ctx.hit_count = 0
       cast_ctx.total_damage = 0
-      skill_damage_api.area_ticks(skill.timeline.tick_interval, tick_count, skill.damage_type, {
+      get_skill_damage_api().area_ticks(skill.timeline.tick_interval, tick_count, skill.damage_type, {
         center = center,
         radius = skill.hit_model.radius,
         amount = damage_amount(skill, 'tick_ratio'),
@@ -701,7 +727,7 @@ local api = {}
         return false, '附近没有可攻击目标。'
       end
       local chain_targets = { target }
-      local extra = get_enemies_in_range and get_enemies_in_range(target, skill.hit_model.radius, target, skill.hit_model.bounce) or {}
+      local extra = get_enemies_in_range(target, skill.hit_model.radius, target, skill.hit_model.bounce)
       for _, unit in ipairs(extra) do
         chain_targets[#chain_targets + 1] = unit
       end
@@ -721,7 +747,7 @@ local api = {}
       )
       mark_visual_impact(cast_ctx)
       local total_damage = 0
-      cast_ctx.hits = skill_damage_api.chain(chain_targets, base, skill.damage_type, {
+      cast_ctx.hits = get_skill_damage_api().chain(chain_targets, base, skill.damage_type, {
         amount = function(context)
           local idx = context.index or 1
           local amount = base * pow(skill.scale.bounce_ratio, math.max(0, idx - 1))
@@ -771,7 +797,7 @@ local api = {}
       if target and target.is_exist and target:is_exist() then
         spawn_particle(y3, target, visual_key(skill, 'impact') or visual_key(skill, 'hit'), fx_scale, 0.16, 26)
       end
-      local hit = skill_damage_api.single(target, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
+      local hit = get_skill_damage_api().single(target, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
         particle = visual_key(skill, 'hit'),
         metric_scope = 'skill_framework',
         metric_key = skill.id,
@@ -800,7 +826,7 @@ local api = {}
       fire_hook(skill, 'OnSpellStart', cast_ctx)
       cast_ctx.hit_count = 0
       cast_ctx.total_damage = 0
-      skill_damage_api.area_ticks(skill.timeline.tick_interval, tick_count, skill.damage_type, {
+      get_skill_damage_api().area_ticks(skill.timeline.tick_interval, tick_count, skill.damage_type, {
         center = center,
         radius = skill.hit_model.radius,
         amount = damage_amount(skill, 'tick_ratio'),
@@ -837,7 +863,7 @@ local api = {}
       local pt = impact_point or center
       mark_visual_impact(cast_ctx)
       spawn_particle(y3, pt, visual_key(skill, 'impact'), fx_scale * 1.08, 0.18, 28)
-      cast_ctx.hits = skill_damage_api.area(pt, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
+      cast_ctx.hits = get_skill_damage_api().area(pt, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
         max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
         visual = {
           particle = visual_key(skill, 'hit'),
@@ -852,7 +878,7 @@ local api = {}
       fire_hook(skill, 'OnFinish', cast_ctx)
     end
     local proj_key = visual_key(skill, 'projectile_key')
-    if proj_key and launch_projectile_from_hero and proj_time > 0 then
+    if proj_key and proj_time > 0 then
       launch_projectile_from_hero(proj_key, target, center, nil, proj_time, visual_key(skill, 'projectile_height'), do_impact)
     elseif proj_time > 0 then
       y3.ltimer.wait(proj_time, function() do_impact(nil) end)
@@ -887,11 +913,8 @@ local api = {}
   end
 
   function api.cast(def, cast_params)
-    if not skill_damage_api then
-      return false, 'skill_damage_api 未初始化。'
-    end
-    local caster = get_hero and get_hero()
-    local hero_point = get_hero_point and get_hero_point()
+    local caster = get_hero()
+    local hero_point = get_hero_point()
     if not caster or not hero_point then
       return false, '英雄不存在。'
     end
@@ -991,9 +1014,6 @@ local api = {}
 
   function api.register(def)
     local skill = normalize_skill(def)
-    if skill.id == 'ice_bird' then
-      print('[DEBUG] ice_bird register: projectile_key=', skill.visual and skill.visual.projectile_key)
-    end
     apply_production_limits(skill)
     local visual_ok, visual_reason = validate_visual_config(skill)
     if not visual_ok then
@@ -1092,6 +1112,8 @@ local api = {}
 
   function api.validate_damage_type(value)
     return VALID_DAMAGE_TYPE[value] == true
-  end
+end
 
 _G.skill_framework_system = api
+_G.SYSTEM = _G.SYSTEM or {}
+_G.SYSTEM.skill_framework = api

@@ -1013,6 +1013,8 @@ local UiRoot = require 'ui.ui_root'
     ensure_gm_panel = ensure_gm_panel,
   }
   _G.debug_tools_system = api
+  _G.SYSTEM = _G.SYSTEM or {}
+  _G.SYSTEM.debug_tools = api
   M = api
 
 return M

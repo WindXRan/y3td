@@ -291,5 +291,7 @@ local STATE = env and env.STATE or _G.STATE
     apply_hero_level_growth = apply_hero_level_growth,
   }
   _G.progression_system = api
+  _G.SYSTEM = _G.SYSTEM or {}
+  _G.SYSTEM.progression = api
 
 return M

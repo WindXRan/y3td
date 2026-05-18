@@ -245,21 +245,6 @@ function M.create(env)
       if outgame_system then outgame_system.refresh_ui() end
     end)
 
-    y3.ltimer.loop(1, function()
-      if not is_battle_active() then return end
-      local skill = STATE.skill_runtime
-      if not skill then return end
-      skill:advance_artillery_cd(1)
-      if not skill:is_artillery_ready() then return end
-      local artillery_base, artillery_ratio, artillery_radius = skill:consume_artillery()
-      if artillery_radius <= 0 or artillery_ratio <= 0 then return end
-      local anchor = STATE.all_enemies:get_random()
-      if not BootCombat.is_active_enemy(anchor) then return end
-      local attack_value = get_hero_attack_value()
-      local damage = artillery_base + attack_value * artillery_ratio
-      skill_damage_api.area(anchor, artillery_radius, damage, '法术')
-    end)
-
     y3.ltimer.loop(0.25, function()
       if gm_bond_effects_system and gm_bond_effects_system.ensure_board then
         gm_bond_effects_system.ensure_board()

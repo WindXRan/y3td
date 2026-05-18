@@ -439,5 +439,7 @@ local get_modifier_name_by_key = function(key) return key and y3.buff.get_name_b
     print_logs = print_logs,
   }
   _G.effect_debug_system = api
+  _G.SYSTEM = _G.SYSTEM or {}
+  _G.SYSTEM.effect_debug = api
 
 return M

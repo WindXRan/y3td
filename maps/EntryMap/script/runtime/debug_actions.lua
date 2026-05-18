@@ -17,7 +17,9 @@ local CONFIG = require 'config.entry_config'
   local effect_debug_system = _G.effect_debug_system
   local force_trigger_effect = _G.force_trigger_effect or function() end
   local open_effect_debug_panel_ui = _G.open_effect_debug_panel_ui or function() end
-  local resource_system = _G.resource_system or require('runtime.resource_system').create()
+  local function get_resource_system()
+    return _G.resource_system or require('runtime.resource_system').create()
+  end
   local sample_skill_system = _G.sample_skills_system
   local DEFAULT_DEBUG_PROJECTILE_KEY = 134255250
 
@@ -36,12 +38,12 @@ local CONFIG = require 'config.entry_config'
     if not guard_battle() then
       return
     end
-    resource_system.add_gold(500)
-    resource_system.add_wood(300)
+    get_resource_system().add_gold(500)
+    get_resource_system().add_wood(300)
     debug_message(string.format(
       'Debug resources added: gold %d, wood %d.',
-      resource_system.get_gold(),
-      resource_system.get_wood()
+      get_resource_system().get_gold(),
+      get_resource_system().get_wood()
     ))
   end
 
@@ -99,8 +101,8 @@ local CONFIG = require 'config.entry_config'
     if not guard_battle() then
       return
     end
-    if resource_system.get_wood() < 100 then
-      resource_system.set_wood(100)
+    if get_resource_system().get_wood() < 100 then
+      get_resource_system().set_wood(100)
       debug_message('Wood was below 100; auto-refilled to 100.')
     end
     try_bond_draw()
@@ -432,6 +434,8 @@ local CONFIG = require 'config.entry_config'
   end
 
   _G.debug_actions_system = api
+  _G.SYSTEM = _G.SYSTEM or {}
+  _G.SYSTEM.debug_actions = api
   M = api
 
 return M

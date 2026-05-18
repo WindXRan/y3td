@@ -57,5 +57,7 @@ api.get_boss_name = ctx.get_boss_name
 api.finish_game = ctx.finish_game
 
 _G.battlefield_system = api
+_G.SYSTEM = _G.SYSTEM or {}
+_G.SYSTEM.battlefield = api
 
 return M

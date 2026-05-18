@@ -116,6 +116,7 @@ function M.create(env)
     STATE.active_challenges = {}
     resource_system.init_from_rules(get_resource_rules())
     STATE.resources = resource_system.get_state_table()
+    _G.resource_system = resource_system
     STATE.resource_income_elapsed = 0
     STATE.battle_event_feed = create_battle_event_feed_runtime()
     STATE.effect_debug_runtime = create_effect_debug_runtime()

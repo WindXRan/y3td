@@ -1,36 +1,10 @@
-local PresentationProfiles = require 'data.tables.skill.attack_skill_presentation_profiles'
+local AttackSkillsData = require 'data.tables.skill.attack_skills'
+local PresentationProfiles = AttackSkillsData.presentation_profiles or { by_id = {} }
 local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
 local SkillRuntimeTuning = require 'data.tables.skill.skill_runtime_tuning'
 local SkillDamageTemplates = require 'runtime.skill_damage_templates'
 local BootCombat = require 'runtime.boot_combat'
 
---- attack_skills 模块
---
--- 必填字段 (缺少会导致明确错误):
---   env.STATE         — 全局运行时状态表
---   env.y3            — Y3 引擎 API
---   env.hero_attr_system — 英雄属性系统实例
---   env.get_player()  — 获取当前玩家单位
---   env.get_enemies_in_range(center, radius, except, max) — 范围索敌
---   env.deal_skill_damage(target, amount, damage, visual)   — 伤害结算
---
--- 可选但有默认值的字段:
---   env.CONFIG        — 总配置表 (默认 {})
---   env.attack_skill_slot_count — 技能槽数量 (默认 5)
---   env.message()     — 日志/调试消息输出 (默认 noop)
---   env.reserve_formula_damage() — 伤害公式预留 (默认 false)
---
--- 可选但强烈建议提供的字段 (功能开关):
---   env.ATTACK_SKILL_DEFS, env.ATTACK_SKILL_BLUEPRINTS, env.ATTACK_SKILL_VFX
---   env.skill_framework, env.round_number
---   env.get_damage_bonus_multiplier, env.get_bond_runtime_bonus
---   env.create_attack_skill_instance, env.is_active_enemy
---   env.try_trigger_hunter_first_hit, env.notify_bond_attack_skill_cast
---   env.notify_auto_active_basic_attack, env.notify_auto_active_skill_cast
---   env.play_basic_attack_sound, env.play_attack_skill_sound
---   env.get_hero_point
---
--- Module-level self-initialization: uses _G globals set up by boot.lua before require
 local STATE = _G.STATE
 local ATTACK_SKILL_RUNTIME_TUNING =
     CONFIG.attack_skill_runtime_tuning
@@ -58,2633 +32,632 @@ local get_hero_point = BootCombat.get_hero_point
 local get_bond_runtime_bonus = BootCombat.get_bond_runtime_bonus
 local is_active_enemy = BootCombat.is_active_enemy
 local deal_skill_damage = BootCombat.deal_skill_damage
-local get_damage_bonus_multiplier = BootCombat.get_damage_bonus_multiplier
-local reserve_formula_damage = BootCombat.reserve_formula_damage
 local get_enemies_in_range = BootCombat.get_enemies_in_range
-local try_trigger_hunter_first_hit = BootCombat.try_trigger_hunter_first_hit
-local notify_bond_attack_skill_cast = _G.notify_bond_attack_skill_cast or function() end
-local notify_auto_active_basic_attack = _G.notify_auto_active_basic_attack
-local notify_auto_active_skill_cast = _G.notify_auto_active_skill_cast
-local play_basic_attack_sound = _G.play_basic_attack_sound
-local play_attack_skill_sound = _G.play_attack_skill_sound
-local skill_framework = _G.skill_framework_system
-local ATTACK_STATUS_MODIFIER_KEYS = RuntimeEditorIds.modifier.attack_status or {}
-local VISUAL_ANIMATION_SPEED = tonumber(VISUAL_TUNING.animation_speed) or 0.5
-local get_skill_damage_template_id
+local get_enemies_on_line = BootCombat.get_enemies_on_line
+local launch_projectile_from_hero = BootCombat.launch_projectile_from_hero
+local spawn_particle = BootCombat.spawn_particle
+local get_hero_attack = BootCombat.get_hero_attack
+local get_primary_target = BootCombat.get_primary_target
 
-  local function scale_visual_duration(seconds)
-    return math.max(0.05, (seconds or 0.30) / VISUAL_ANIMATION_SPEED)
-  end
-
-  local function apply_visual_animation_speed(target)
-    if not target or not target.set_animation_speed then
-      return
-    end
-    pcall(function()
-      target:set_animation_speed(VISUAL_ANIMATION_SPEED)
-    end)
-  end
-
-  local function get_ui_preferences()
-    return STATE.ui_preferences or {}
-  end
-
-  local function is_damage_text_hidden()
-    return get_ui_preferences().hide_damage_text == true
-  end
-
-  local function is_hit_effect_hidden()
-    return get_ui_preferences().hide_hit_effects == true
-  end
-
-  -- deal_skill_damage is passed from env, no need to wrap
-
-  local function resolve_runtime_text_type(text_type)
-    if is_damage_text_hidden() then
-      return nil
-    end
-    return text_type
-  end
-
-  local function get_hero_attr(name, fallback_name)
-    if not STATE.hero or not STATE.hero:is_exist() then
-      return 0
-    end
-    local value = hero_attr_system and hero_attr_system.get_attr(STATE.hero, name) or STATE.hero:get_attr(name)
-    value = y3.helper.tonumber(value) or 0
-    if value > 0 or not fallback_name then
-      return value
-    end
-    local fallback = hero_attr_system and hero_attr_system.get_attr(STATE.hero, fallback_name) or
-    STATE.hero:get_attr(fallback_name)
-    return y3.helper.tonumber(fallback) or 0
-  end
-
-  local function normalize_ratio(value)
-    local number = y3.helper.tonumber(value) or 0
-    if math.abs(number) > 1 then
-      return number / 100
-    end
-    return number
-  end
-
-  local function get_hero_attr_ratio(name, fallback_name)
-    return normalize_ratio(get_hero_attr(name, fallback_name))
-  end
-
-  local function get_basic_attack_multishot_bonus()
-    local count = math.max(0, round_number(
-      get_bond_runtime_bonus('multishot_count') + get_hero_attr('多重数量')
-    ))
-    if count <= 0 then
-      return 0, 0
-    end
-
-    local ratio = math.max(0,
-      normalize_ratio(get_bond_runtime_bonus('multishot_ratio'))
-      + get_hero_attr_ratio('多重伤害')
-    )
-    return count, ratio
-  end
-
-  local function get_basic_attack_runtime_chain_stats()
-    local count, chance, ratio = 0, 0, 0
-    if STATE.skill_runtime then
-      local bounces, ch, r = STATE.skill_runtime:get_chain()
-      count = bounces or 0
-      chance = ch or 0
-      ratio = r or 0
-    end
-    count = math.max(0, round_number(count))
-    chance = math.max(0, normalize_ratio(chance))
-    ratio = math.max(0, normalize_ratio(ratio))
-    return count, chance, ratio
-  end
-
-  local function get_weapon_arrow_style_flags()
-    local flags = {
-      sniper = 0,
-      gale = 0,
-      multishot = 0,
-    }
-    local gear_state = STATE.gear_state
-    local weapon = gear_state and gear_state.items and gear_state.items.weapon or nil
-    local affixes = weapon and weapon.affixes or nil
-    if not affixes then
-      return flags
-    end
-    for _, affix in ipairs(affixes) do
-      local id = tostring(affix and affix.id or affix and affix.affix_id or '')
-      if string.find(id, 'bow_sniper', 1, true) then
-        flags.sniper = flags.sniper + 1
-      elseif string.find(id, 'bow_gale', 1, true) then
-        flags.gale = flags.gale + 1
-      elseif string.find(id, 'bow_multishot', 1, true) then
-        flags.multishot = flags.multishot + 1
-      end
-    end
-    return flags
-  end
-
-  local function get_basic_attack_bonus_chain_stats()
-    local count = math.max(0, round_number(
-      get_bond_runtime_bonus('chain_bounces') + get_hero_attr('弹射次数')
-    ))
-    if count <= 0 then
-      return 0, 0
-    end
-
-    local ratio = 0.30 + math.max(0,
-      normalize_ratio(get_bond_runtime_bonus('chain_ratio'))
-      + get_hero_attr_ratio('弹射伤害')
-    )
-    return count, ratio
-  end
-
-  local function get_basic_attack_skill()
-    if not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
-      return nil
-    end
-    return STATE.attack_skill_state.by_id.basic_attack
-  end
-
-  local function get_global_skill_bonus(field)
-    local state_bonus = STATE.skill_runtime and STATE.skill_runtime:get(field) or 0
-    return state_bonus + get_bond_runtime_bonus(field)
-  end
-
-  local function get_effective_skill_value(skill, field)
-    return math.max(0, (skill and skill[field] or 0) + get_global_skill_bonus(field))
-  end
-
-  local function remember_basic_attack_range(range)
-    local number = y3.helper.tonumber(range) or 0
-    if number > 0 then
-      STATE.last_valid_basic_attack_range = number
-      return number
-    end
+local function get_hero_attr(name, fallback_name)
+  if not STATE.hero or not STATE.hero:is_exist() then
     return 0
   end
+  local attr = hero_attr_system and hero_attr_system.get_attr(STATE.hero, name)
+  if attr and attr > 0 then
+    return attr
+  end
+  if fallback_name then
+    return hero_attr_system and hero_attr_system.get_attr(STATE.hero, fallback_name) or STATE.hero:get_attr(fallback_name) or 0
+  end
+  return STATE.hero:get_attr(name) or 0
+end
 
-  local function get_current_basic_attack_range()
-    if not STATE.hero or not STATE.hero:is_exist() then
-      return math.max(1, round_number(
-        STATE.last_valid_basic_attack_range
+local function get_basic_attack_multishot_bonus()
+  local skill_runtime = STATE.skill_runtime
+  local multishot_count = (skill_runtime and skill_runtime:get('multishot_count') or 0) + get_bond_runtime_bonus('multishot_count')
+  local multishot_ratio = (skill_runtime and skill_runtime:get('multishot_ratio') or 0) + get_bond_runtime_bonus('multishot_ratio')
+  return math.max(0, multishot_count), math.max(0, multishot_ratio)
+end
+
+local function get_basic_attack_runtime_chain_stats()
+  local skill_runtime = STATE.skill_runtime
+  if not skill_runtime then
+    return 0, 0, 0, 0
+  end
+  return skill_runtime:get_chain()
+end
+
+local function get_weapon_arrow_style_flags()
+  local flags = {
+    has_pierce = false,
+    has_splash = false,
+    has_chain = false,
+    has_execute = false,
+    has_bounce = false,
+    has_multishot = false,
+  }
+  local chain_bounces = get_basic_attack_runtime_chain_stats()
+  flags.has_chain = chain_bounces > 0
+  local multishot_count = get_basic_attack_multishot_bonus()
+  flags.has_multishot = multishot_count > 0
+  local skill_runtime = STATE.skill_runtime
+  if skill_runtime then
+    flags.has_pierce = skill_runtime:get('pierce') and skill_runtime:get('pierce') > 0 or false
+    flags.has_splash = skill_runtime:get('splash_ratio') and skill_runtime:get('splash_ratio') > 0 or false
+    flags.has_execute = skill_runtime:get('execute_threshold') and skill_runtime:get('execute_threshold') > 0 or false
+    flags.has_bounce = skill_runtime:get('bounce') and skill_runtime:get('bounce') > 0 or false
+  end
+  return flags
+end
+
+local function get_basic_attack_bonus_chain_stats()
+  local skill_runtime = STATE.skill_runtime
+  if not skill_runtime then
+    return 0, 0
+  end
+  local chain_chance = skill_runtime:get('chain_chance') or 0
+  local chain_ratio = skill_runtime:get('chain_ratio') or 0
+  return chain_chance + get_bond_runtime_bonus('chain_chance'), chain_ratio + get_bond_runtime_bonus('chain_ratio')
+end
+
+local function get_basic_attack_skill()
+  if not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
+    return nil
+  end
+  return STATE.attack_skill_state.by_id.basic_attack
+end
+
+local function get_global_skill_bonus(field)
+  local state_bonus = STATE.skill_runtime and STATE.skill_runtime:get(field) or 0
+  return state_bonus + get_bond_runtime_bonus(field)
+end
+
+local function get_effective_skill_value(skill, field)
+  return math.max(0, (skill and skill[field] or 0) + get_global_skill_bonus(field))
+end
+
+local function remember_basic_attack_range(range)
+  local number = y3.helper.tonumber(range) or 0
+  if number > 0 then
+    STATE.last_valid_basic_attack_range = number
+    return number
+  end
+  return 0
+end
+
+local function get_current_basic_attack_range()
+  if not STATE.hero or not STATE.hero:is_exist() then
+    return math.max(1, round_number(
+      STATE.last_valid_basic_attack_range
+      or ATTACK_SKILL_DEFS.basic_attack.base_range
+      or 0
+    ))
+  end
+
+  local range = remember_basic_attack_range(
+    hero_attr_system and hero_attr_system.get_attr(STATE.hero, '攻击范围') or STATE.hero:get_attr('攻击范围')
+  )
+  if range <= 0 then
+    range = remember_basic_attack_range(
+      hero_attr_system and hero_attr_system.get_attr(STATE.hero, 'attack_range') or STATE.hero:get_attr('attack_range')
+    )
+  end
+  if range <= 0 then
+    range = STATE.last_valid_basic_attack_range
         or ATTACK_SKILL_DEFS.basic_attack.base_range
         or 0
-      ))
-    end
+  end
+  return math.max(1, round_number(range))
+end
 
-    local range = remember_basic_attack_range(
-      hero_attr_system and hero_attr_system.get_attr(STATE.hero, '攻击范围') or STATE.hero:get_attr('攻击范围')
-    )
-    if range <= 0 then
-      range = remember_basic_attack_range(
-        hero_attr_system and hero_attr_system.get_attr(STATE.hero, 'attack_range') or STATE.hero:get_attr('attack_range')
-      )
-    end
-    if range <= 0 then
-      range = STATE.last_valid_basic_attack_range
-          or ATTACK_SKILL_DEFS.basic_attack.base_range
-          or 0
-    end
-    return math.max(1, round_number(range))
+local function disable_native_basic_attack_ability(ability)
+  if not ability or not ability:is_exist() then
+    return
+  end
+  pcall(function()
+    ability:stop_cast()
+  end)
+  pcall(function()
+    ability:disable()
+  end)
+end
+
+local function sync_basic_attack_ability()
+  if not STATE.hero or not STATE.hero:is_exist() then
+    return nil
   end
 
-  local function disable_native_basic_attack_ability(ability)
-    if not ability or not ability:is_exist() then
-      return
-    end
-    pcall(function()
-      ability:stop_cast()
-    end)
-    pcall(function()
-      ability:disable()
-    end)
+  local ability = STATE.hero_common_attack
+  if not ability or not ability:is_exist() then
+    ability = STATE.hero:get_common_attack()
+    STATE.hero_common_attack = ability
   end
 
-  local function sync_basic_attack_ability()
-    if not STATE.hero or not STATE.hero:is_exist() then
-      return nil
+  if not ability or not ability:is_exist() then
+    if not STATE.basic_attack_ability_warned then
+      STATE.basic_attack_ability_warned = true
+      message('[attack_skills] basic_attack ability not found')
     end
-
-    local ability = STATE.hero_common_attack
-    if not ability or not ability:is_exist() then
-      ability = STATE.hero:get_common_attack()
-      STATE.hero_common_attack = ability
-    end
-
-    if not ability or not ability:is_exist() then
-      if not STATE.basic_attack_ability_warned then
-        STATE.basic_attack_ability_warned = true
-        message('警告：未找到英雄普攻技能对象，无法通过 Ability API 同步普攻参数。')
-      end
-      return nil
-    end
-
-    local skill = get_basic_attack_skill()
-    disable_native_basic_attack_ability(ability)
-    ability:set_range(get_current_basic_attack_range())
-
-    if skill then
-      ability:set_name(skill.name)
-    end
-
-    return ability
+    return nil
   end
 
-  local function bind_basic_attack_ability_events(ability)
-    if not ability or not ability:is_exist() or STATE.basic_attack_ability_bound then
-      return
-    end
-
-    ability:event('施法-出手', function(_, data)
-      if STATE.game_finished or data.unit ~= STATE.hero then
-        return
-      end
-      sync_basic_attack_ability()
-    end)
-
+  if not STATE.basic_attack_ability_bound then
     STATE.basic_attack_ability_bound = true
-  end
-
-  local function setup_basic_attack_ability()
-    local ability = sync_basic_attack_ability()
-    if not ability then
-      return
-    end
     bind_basic_attack_ability_events(ability)
   end
 
-  local function get_attack_skill(skill_id)
-    return STATE.attack_skill_state and STATE.attack_skill_state.by_id[skill_id] or nil
+  local skill = get_basic_attack_skill()
+  if not skill then
+    return ability
   end
 
-  local function get_attack_skill_slot(slot)
-    return STATE.attack_skill_state and STATE.attack_skill_state.slots[slot] or nil
+  local range = get_current_basic_attack_range()
+  pcall(function()
+    ability:set_range(range)
+  end)
+
+  local cooldown = skill.base_cooldown or 1.7
+  pcall(function()
+    ability:set_cooldown(cooldown)
+  end)
+
+  return ability
+end
+
+local function bind_basic_attack_ability_events(ability)
+  if not ability or not ability:is_exist() then
+    return
   end
 
-  local function get_empty_attack_skill_slot()
-    if not STATE.attack_skill_state then
-      return nil
-    end
-    for slot = 1, ATTACK_SKILL_SLOT_COUNT, 1 do
-      if not STATE.attack_skill_state.slots[slot] then
-        return slot
-      end
-    end
-    return nil
-  end
-
-  local function get_unlocked_attack_skill_count()
-    if not STATE.attack_skill_state then
-      return 0
-    end
-
-    local count = 0
-    for slot = 1, ATTACK_SKILL_SLOT_COUNT, 1 do
-      if STATE.attack_skill_state.slots[slot] then
-        count = count + 1
-      end
-    end
-    return count
-  end
-
-  local function get_skill_current_cooldown(skill)
-    if not skill or skill.base_cooldown <= 0 then
-      return 0
-    end
-    return math.max(tonumber(COOLDOWN_TUNING.skill_min_cooldown) or 0.4,
-      skill.base_cooldown * (1 - skill.cooldown_reduction))
-  end
-
-  local function get_basic_attack_interval(skill)
-    if not skill then
-      return tonumber(COOLDOWN_TUNING.basic_attack_fallback_interval) or 0.6
-    end
-    local min_interval = tonumber(COOLDOWN_TUNING.basic_attack_min_interval) or 0.15
-    local interval_override_threshold = tonumber(COOLDOWN_TUNING.interval_offset_override_threshold) or 0.3
-    local attack_speed_floor = tonumber(COOLDOWN_TUNING.attack_speed_floor) or 20
-    local effective_base_interval = math.max(min_interval,
-      (skill.base_cooldown or 1.7) * (1 - math.max(0, skill.cooldown_reduction or 0)))
-
-    if STATE.hero and STATE.hero:is_exist() then
-      local interval_offset = y3.helper.tonumber(get_hero_attr('攻击间隔')) or 0
-      if interval_offset >= interval_override_threshold then
-        return math.max(min_interval, interval_offset)
-      end
-
-      local attack_speed = math.max(attack_speed_floor, get_hero_attr('攻击速度') + (skill.attack_speed_bonus or 0))
-      return math.max(min_interval, effective_base_interval * 100 / attack_speed + interval_offset)
-    end
-
-    return effective_base_interval
-  end
-
-  local function build_attack_skill_slot_text(slot)
-    local skill = get_attack_skill_slot(slot)
-    if not skill then
-      return string.format('%d号位 空', slot)
-    end
-
-    local parts = {
-      string.format('%d号位 %s Lv%d', slot, skill.name, skill.level),
-      string.format('%.0f%%攻击', skill.damage_ratio * 100),
-    }
-
-    if skill.id == 'basic_attack' then
-      parts[#parts + 1] = string.format('间隔 %.2fs', get_basic_attack_interval(skill))
-    elseif skill.base_cooldown > 0 then
-      parts[#parts + 1] = string.format('CD %.1fs', get_skill_current_cooldown(skill))
-    end
-    local cast_family = tostring(skill.cast_family or '')
-    if skill.id ~= 'basic_attack' and (cast_family == 'line' or cast_family == 'line_return' or cast_family == 'beam') then
-      parts[#parts + 1] = '穿透:MAX'
-    elseif skill.pierce and skill.pierce > 0 and skill.id ~= 'basic_attack' then
-      parts[#parts + 1] = '穿透+' .. tostring(skill.pierce)
-    end
-    if skill.extra_targets and skill.extra_targets > 0 then
-      parts[#parts + 1] = '扩散+' .. tostring(skill.extra_targets)
-    end
-    if skill.repeat_count and skill.repeat_count > 1 then
-      parts[#parts + 1] = '连发x' .. tostring(skill.repeat_count)
-    end
-    if skill.split_seek_count and skill.split_seek_count > 0 then
-      parts[#parts + 1] = '分化x' .. tostring(skill.split_seek_count)
-    end
-    if skill.kill_seek_count and skill.kill_seek_count > 0 then
-      parts[#parts + 1] = '追命x' .. tostring(skill.kill_seek_count)
-    end
-    if get_skill_damage_template_id then
-      parts[#parts + 1] = '模板:' .. tostring(skill.damage_template_id or get_skill_damage_template_id(skill))
-    end
-
-    return table.concat(parts, ' | ')
-  end
-
-  local function show_attack_skill_loadout()
-    message('普攻栏：')
-    for slot = 1, ATTACK_SKILL_SLOT_COUNT, 1 do
-      message(build_attack_skill_slot_text(slot))
-    end
-  end
-
-  local function unlock_attack_skill(skill_id)
-    if not skill_id or not ATTACK_SKILL_DEFS[skill_id] then
-      return nil, nil, false
-    end
-    if ATTACK_SKILL_DEPRECATED and skill_id ~= 'basic_attack' then
-      return nil, nil, false
-    end
-
-    local existing = get_attack_skill(skill_id)
-    if existing then
-      return existing, existing.slot, false
-    end
-
-    local empty_slot = get_empty_attack_skill_slot()
-    if not empty_slot then
-      return nil
-    end
-
-    local skill = create_attack_skill_instance(skill_id, empty_slot)
-    if get_skill_damage_template_id then
-      skill.damage_template_id = get_skill_damage_template_id(skill)
-    end
-    STATE.attack_skill_state.slots[empty_slot] = skill
-    STATE.attack_skill_state.by_id[skill_id] = skill
-    STATE.attack_skill_state.new_skill_feed[skill_id] = 2
-    return skill, empty_slot, true
-  end
-
-  local function get_skill_damage(skill, ratio_override)
-    if not STATE.hero or not STATE.hero:is_exist() then
-      return 0
-    end
-    local attack_value = get_hero_attr('攻击结算值', '攻击')
-    return attack_value * (ratio_override or skill.damage_ratio or 0)
-  end
-
-  local function clone_point(point)
-    if not point then
-      return nil
-    end
-    return point:move()
-  end
-
-  local function get_unit_point_snapshot(unit)
-    if not unit or not unit:is_exist() then
-      return nil
-    end
-    return clone_point(unit:get_point())
-  end
-
-  local function is_unit_alive_now(unit)
-    if not unit or not unit.is_exist or not unit:is_exist() then
-      return false
-    end
-    if unit.is_alive then
-      return unit:is_alive()
-    end
-    return (unit.get_hp and unit:get_hp() or 0) > 0
-  end
-
-  local function get_enemies_on_line(origin_point, impact_point, max_distance, line_width, max_hits, except_unit)
-    local result = {}
-    if not origin_point or not impact_point then
-      return result
-    end
-    local normalized_max_hits = nil
-    if type(max_hits) == 'string' then
-      local lowered = string.lower(max_hits)
-      if lowered ~= 'max' and lowered ~= 'all' and lowered ~= '' then
-        normalized_max_hits = tonumber(max_hits)
-      end
-    else
-      normalized_max_hits = tonumber(max_hits)
-    end
-    if normalized_max_hits and normalized_max_hits <= 0 then
-      return result
-    end
-
-    local ox = origin_point:get_x()
-    local oy = origin_point:get_y()
-    local tx = impact_point:get_x()
-    local ty = impact_point:get_y()
-    local dir_x = tx - ox
-    local dir_y = ty - oy
-    local length = origin_point:get_distance_with(impact_point)
-    if length < 1 then
-      return result
-    end
-
-    local reach = math.max(length, max_distance or length)
-    local width = math.max(40, line_width or 95)
-    local start_projection = math.max(0, length - width)
-    local segment_length = reach - start_projection
-    if segment_length <= 0 then
-      return result
-    end
-
-    local direction = origin_point:get_angle_with(impact_point)
-    local segment_center = y3.point.get_point_offset_vector(
-      origin_point,
-      direction,
-      start_projection + segment_length / 2
-    )
-    local line_shape = y3.shape.create_rectangle_shape(width * 2, segment_length, direction)
-    local candidates = {}
-    local picked = y3.selector.create()
-        :is_enemy(get_player())
-        :in_shape(segment_center, line_shape)
-        :pick()
-
-    for _, unit in ipairs(picked) do
-      if unit ~= except_unit and is_active_enemy(unit) then
-        local point = unit:get_point()
-        candidates[#candidates + 1] = {
-          unit = unit,
-          projection = ((point:get_x() - ox) * dir_x + (point:get_y() - oy) * dir_y) / length,
-        }
-      end
-    end
-
-    table.sort(candidates, function(a, b)
-      return a.projection < b.projection
-    end)
-
-    local limit = normalized_max_hits and math.min(math.max(1, math.floor(normalized_max_hits)), #candidates) or
-    #candidates
-    for index = 1, limit, 1 do
-      result[#result + 1] = candidates[index].unit
-    end
-
-    return result
-  end
-
-  local skill_damage_api = _G.td_damage_api
-
-  local function resume_enemy_path(unit)
-    if is_active_enemy(unit) and STATE.defense_point then
-      unit:attack_move(STATE.defense_point)
-    end
-  end
-
-  local function get_enemy_status_bucket(unit)
-    local info = STATE.enemy_info_map and STATE.enemy_info_map[unit] or nil
-    if not info then
-      return nil
-    end
-    info.status = info.status or {}
-    return info.status
-  end
-
-  local function apply_enemy_status(unit, status_id, values)
-    local bucket = get_enemy_status_bucket(unit)
-    if not bucket then
-      return nil
-    end
-    bucket[status_id] = bucket[status_id] or {}
-    for key, value in pairs(values or {}) do
-      bucket[status_id][key] = value
-    end
-    return bucket[status_id]
-  end
-
-  local function try_add_status_modifier(unit, modifier_key, duration)
-    if not modifier_key or modifier_key == 0 or (duration or 0) <= 0 then
-      return nil
-    end
-    if not unit or not unit.is_exist or not unit:is_exist() or not unit.add_buff then
-      return nil
-    end
-    local ok, buff = pcall(unit.add_buff, unit, {
-      key = modifier_key,
-      source = STATE.hero,
-      time = duration,
-    })
-    if ok then
-      return buff
-    end
-    return nil
-  end
-
-  local function get_enemy_status(unit, status_id)
-    local bucket = get_enemy_status_bucket(unit)
-    return bucket and bucket[status_id] or nil
-  end
-
-  local function update_enemy_statuses(dt)
-    if not STATE.enemy_info_map or not STATE.hero or not STATE.hero:is_exist() then
+  local function on_basic_attack_start(_, data)
+    if ATTACK_SKILL_DEPRECATED then
       return
     end
-
-    for unit, info in pairs(STATE.enemy_info_map) do
-      if info and info.status then
-        local ignite = info.status.ignite
-        if ignite then
-          ignite.remaining = math.max(0, (ignite.remaining or 0) - dt)
-          ignite.tick_cd = (ignite.tick_cd or 1) - dt
-          if ignite.remaining <= 0 then
-            info.status.ignite = nil
-          elseif ignite.tick_cd <= 0 and is_active_enemy(unit) then
-            ignite.tick_cd = 1
-            skill_damage_api.single(unit, get_hero_attr('攻击结算值', '攻击') * (ignite.tick_ratio or 0), '物理', {
-              text_type = '物理',
-            })
-          end
-        end
-
-        for _, status_id in ipairs({ 'armor_break', 'shock' }) do
-          local entry = info.status[status_id]
-          if entry then
-            entry.remaining = math.max(0, (entry.remaining or 0) - dt)
-            if entry.remaining <= 0 then
-              info.status[status_id] = nil
-            end
-          end
-        end
-      end
-    end
-  end
-
-  local function play_particle_on_unit(unit, effect_key, scale, time, socket)
-    if is_hit_effect_hidden() or not effect_key or not unit or not unit:is_exist() then
-      return nil
-    end
-
-    local forced = tonumber(STATE and STATE.debug_force_projectile_key) or 0
-    local key = forced > 0 and math.floor(forced) or 201392033
-    local ok, particle = pcall(y3.projectile.create, {
-      key = key,
-      target = unit,
-      socket = socket or 'origin',
-      owner = STATE and STATE.hero or nil,
-      angle = 0,
-      time = scale_visual_duration(time),
-      remove_immediately = true,
-    })
-    if ok and particle then
-      apply_visual_animation_speed(particle)
-      return particle
-    end
-    return nil
-  end
-
-  local function play_particle_on_point(point, effect_key, scale, time, height)
-    if is_hit_effect_hidden() or not effect_key or not point then
-      return nil
-    end
-
-    local forced = tonumber(STATE and STATE.debug_force_projectile_key) or 0
-    local key = forced > 0 and math.floor(forced) or 201392033
-    local ok, particle = pcall(y3.projectile.create, {
-      key = key,
-      target = point,
-      socket = 'origin',
-      owner = STATE and STATE.hero or nil,
-      angle = 0,
-      time = scale_visual_duration(time),
-      remove_immediately = true,
-    })
-    if ok and particle then
-      apply_visual_animation_speed(particle)
-      return particle
-    end
-    return nil
-  end
-
-  local function get_skill_vfx(skill)
-    return ATTACK_SKILL_VFX[skill and skill.id or ''] or {}
-  end
-
-  local function get_skill_presentation_family(skill)
-    if not skill then
-      return 'default'
-    end
-    if skill.presentation_family and skill.presentation_family ~= '' then
-      return skill.presentation_family
-    end
-    local def = ATTACK_SKILL_DEFS[skill.id]
-    if def and def.presentation_family and def.presentation_family ~= '' then
-      return def.presentation_family
-    end
-    return 'default'
-  end
-
-  local function get_skill_stage_profile(skill, stage)
-    local family = get_skill_presentation_family(skill)
-    local profile = PresentationProfiles.by_id[family] or PresentationProfiles.by_id.default or {}
-    return profile[stage] or {}
-  end
-
-  local function resolve_skill_stage_particle(skill, stage)
-    local vfx = get_skill_vfx(skill)
-    local profile = get_skill_stage_profile(skill, stage)
-    local effect_key
-    local scale
-    local time
-
-    if stage == 'cast' then
-      effect_key, scale, time = vfx.cast_particle, vfx.cast_scale, vfx.cast_time
-    elseif stage == 'impact' then
-      -- 全局禁用受击阶段特效（命中点）
-      effect_key, scale, time = nil, nil, nil
-    elseif stage == 'burst' or stage == 'terminal' then
-      -- 全局禁用受击阶段特效（爆发/终结）
-      effect_key, scale, time = nil, nil, nil
-    elseif stage == 'charge' then
-      effect_key = vfx.charge_particle or vfx.cast_particle or vfx.chain_particle
-      scale = vfx.charge_scale or vfx.cast_scale or vfx.chain_scale
-      time = vfx.charge_time or vfx.cast_time or vfx.chain_time
-    elseif stage == 'chain' then
-      -- 全局禁用受击阶段特效（连锁命中）
-      effect_key, scale, time = nil, nil, nil
-    elseif stage == 'sustain' or stage == 'tick' then
-      effect_key = vfx.chain_particle or vfx.charge_particle or vfx.impact_particle or vfx.cast_particle
-      scale = vfx.chain_scale or vfx.charge_scale or vfx.impact_scale or vfx.cast_scale or 1.0
-      time = vfx.chain_time or vfx.charge_time or vfx.impact_time or vfx.cast_time or 0.30
-      scale = math.max(0.42, scale * 0.84)
-      time = math.min(0.24, time)
-    end
-
-    if effect_key and profile.min_scale then
-      scale = math.max(profile.min_scale, scale or 0)
-    end
-    if effect_key and profile.min_time then
-      time = math.max(profile.min_time, time or 0)
-    end
-
-    return effect_key, scale, time, profile.height, profile.socket
-  end
-
-  local function play_skill_particle_on_unit(skill, unit, stage, socket)
-    local effect_key, scale, time, _, profile_socket = resolve_skill_stage_particle(skill, stage)
-    return play_particle_on_unit(unit, effect_key, scale, time, socket or profile_socket)
-  end
-
-  local function play_skill_particle_on_point(skill, point, stage, height)
-    local effect_key, scale, time, profile_height = resolve_skill_stage_particle(skill, stage)
-    return play_particle_on_point(point, effect_key, scale, time, height ~= nil and height or profile_height)
-  end
-
-  local function play_skill_audio(skill, stage, anchor)
-    if not play_attack_skill_sound then
-      return nil
-    end
-    return play_attack_skill_sound(skill, anchor or STATE.hero, stage)
-  end
-
-  local function get_projectile_launch_angle(target)
-    if not STATE.hero or not STATE.hero:is_exist() or not target or not target:is_exist() then
-      return nil
-    end
-    local source_point = STATE.hero:get_point()
-    local target_point = target:get_point()
-    if not source_point or not target_point or not source_point.get_angle_with then
-      return nil
-    end
-    return source_point:get_angle_with(target_point)
-  end
-
-  local PROJECTILE_FLIGHT_HEIGHT = tonumber(PROJECTILE_TUNING.flight_height) or 100
-  local PROJECTILE_NEAR_HIT_TOLERANCE = tonumber(PROJECTILE_TUNING.near_hit_tolerance) or 48
-  local BOW_PROJECTILE_SPEED_FACTOR = tonumber(PROJECTILE_TUNING.bow_speed_factor) or 1.55
-  local PROJECTILE_DEFAULT_SPEED = tonumber(PROJECTILE_TUNING.default_speed) or 1000
-  local PROJECTILE_DEFAULT_TARGET_DISTANCE = tonumber(PROJECTILE_TUNING.default_target_distance) or 60
-  local PROJECTILE_DEFAULT_TIME = tonumber(PROJECTILE_TUNING.default_time) or 3.0
-  local PROJECTILE_LOCAL_DEFAULT_TIME = tonumber(PROJECTILE_TUNING.local_default_time) or 0.25
-  local function is_basic_attack_ability(ability)
-    return type(ability) == 'table' and tostring(ability.id or '') == 'basic_attack'
-  end
-
-  local function resolve_projectile_key(projectile_key, ability)
-    if is_basic_attack_ability(ability) then
-      return projectile_key
-    end
-    local forced = tonumber(STATE and STATE.debug_force_projectile_key) or 0
-    if forced > 0 then
-      return forced
-    end
-    return projectile_key
-  end
-
-  local function resolve_projectile_hit_on_break(projectile, target, target_distance)
-    if not projectile or not projectile.is_exist or not projectile:is_exist() then
-      return false, nil
-    end
-    if not target or not target.is_exist or not target:is_exist() then
-      return false, clone_point(projectile:get_point())
-    end
-
-    local projectile_point = clone_point(projectile:get_point())
-    local target_point = get_unit_point_snapshot(target)
-    if not projectile_point or not target_point or not projectile_point.get_distance_with then
-      return false, projectile_point or target_point
-    end
-
-    local distance = projectile_point:get_distance_with(target_point)
-    local hit_radius = math.max(0, tonumber(target_distance) or 0) + PROJECTILE_NEAR_HIT_TOLERANCE
-    return distance <= hit_radius, projectile_point
-  end
-
-  local function launch_projectile_to_target(vfx, target, on_finish, ability)
-    local impact_point = get_unit_point_snapshot(target)
-    local launch_angle = get_projectile_launch_angle(target)
-    if not vfx or not vfx.projectile_key or not STATE.hero or not STATE.hero:is_exist() then
-      if on_finish then
-        on_finish(impact_point, false)
-      end
-      return false
-    end
-
-    local ok_create, projectile = pcall(y3.projectile.create, {
-      key = resolve_projectile_key(vfx.projectile_key, ability),
-      target = STATE.hero,
-      socket = 'origin',
-      owner = STATE.hero,
-      ability = ability,
-      skip_projectile_override = is_basic_attack_ability(ability),
-      angle = launch_angle,
-      time = vfx.projectile_time or PROJECTILE_DEFAULT_TIME,
-      remove_immediately = true,
-    })
-    if not ok_create or not projectile then
-      if on_finish then
-        on_finish(impact_point, false)
-      end
-      return false
-    end
-
-    pcall(function()
-      projectile:set_height(PROJECTILE_FLIGHT_HEIGHT)
-    end)
-    apply_visual_animation_speed(projectile)
-
-    if launch_angle ~= nil then
-      pcall(function()
-        projectile:set_facing(launch_angle)
-      end)
-    end
-
-    local resolved = false
-
-    local function finish(did_hit, final_point)
-      if resolved then
-        return
-      end
-      resolved = true
-      local resolved_point = final_point or impact_point
-      if projectile and projectile:is_exist() then
-        resolved_point = final_point or clone_point(projectile:get_point()) or resolved_point
-        projectile:remove()
-      end
-      if on_finish then
-        on_finish(resolved_point, did_hit == true)
-      end
-    end
-
-    local ok_move = pcall(function()
-      projectile:mover_target({
-        target = target,
-        speed = (tonumber(vfx and vfx.projectile_speed) or PROJECTILE_DEFAULT_SPEED) * BOW_PROJECTILE_SPEED_FACTOR,
-        target_distance = vfx.target_distance or PROJECTILE_DEFAULT_TARGET_DISTANCE,
-        height = PROJECTILE_FLIGHT_HEIGHT,
-        init_angle = launch_angle,
-        rotate_time = 0.0,
-        face_angle = true,
-        miss_when_target_destroy = false,
-        on_finish = function()
-          finish(target and target:is_exist() or false)
-        end,
-        on_break = function()
-          local did_hit, final_point = resolve_projectile_hit_on_break(projectile, target,
-            vfx.target_distance or PROJECTILE_DEFAULT_TARGET_DISTANCE)
-          finish(did_hit, final_point or impact_point)
-        end,
-        on_miss = function()
-          local did_hit, final_point = resolve_projectile_hit_on_break(projectile, target,
-            vfx.target_distance or PROJECTILE_DEFAULT_TARGET_DISTANCE)
-          finish(did_hit, final_point or impact_point)
-        end,
-      })
-    end)
-
-    if not ok_move then
-      if resolved then
-        return false
-      end
-      finish(false, clone_point(projectile and projectile:is_exist() and projectile:get_point() or nil) or impact_point)
-      return false
-    end
-
-    return true
-  end
-
-  local function launch_projectile_from_point_to_target(vfx, source_point, target, on_finish, ability)
-    local origin_point = clone_point(source_point) or source_point
-    local impact_point = get_unit_point_snapshot(target)
-    if not origin_point then
-      if on_finish then
-        on_finish(impact_point, false)
-      end
-      return false
-    end
-    if not vfx or not vfx.projectile_key or not STATE.hero or not STATE.hero:is_exist() then
-      if on_finish then
-        on_finish(impact_point, false)
-      end
-      return false
-    end
-
-    local launch_angle = nil
-    if origin_point.get_angle_with and target and target.is_exist and target:is_exist() then
-      launch_angle = origin_point:get_angle_with(target:get_point())
-    end
-
-    local ok_create, projectile = pcall(y3.projectile.create, {
-      key = resolve_projectile_key(vfx.projectile_key, ability),
-      target = origin_point,
-      owner = STATE.hero,
-      ability = ability,
-      skip_projectile_override = is_basic_attack_ability(ability),
-      angle = launch_angle,
-      height = PROJECTILE_FLIGHT_HEIGHT,
-      time = vfx.projectile_time or PROJECTILE_DEFAULT_TIME,
-      remove_immediately = true,
-    })
-    if not ok_create or not projectile then
-      if on_finish then
-        on_finish(impact_point, false)
-      end
-      return false
-    end
-
-    pcall(function()
-      projectile:set_height(PROJECTILE_FLIGHT_HEIGHT)
-    end)
-    apply_visual_animation_speed(projectile)
-
-    if launch_angle ~= nil then
-      pcall(function()
-        projectile:set_facing(launch_angle)
-      end)
-    end
-
-    local resolved = false
-
-    local function finish(did_hit, final_point)
-      if resolved then
-        return
-      end
-      resolved = true
-      local resolved_point = final_point or impact_point
-      if projectile and projectile:is_exist() then
-        resolved_point = final_point or clone_point(projectile:get_point()) or resolved_point
-        projectile:remove()
-      end
-      if on_finish then
-        on_finish(resolved_point, did_hit == true)
-      end
-    end
-
-    local ok_move = pcall(function()
-      projectile:mover_target({
-        target = target,
-        speed = (tonumber(vfx and vfx.projectile_speed) or PROJECTILE_DEFAULT_SPEED) * BOW_PROJECTILE_SPEED_FACTOR,
-        target_distance = vfx.target_distance or PROJECTILE_DEFAULT_TARGET_DISTANCE,
-        height = PROJECTILE_FLIGHT_HEIGHT,
-        init_angle = launch_angle,
-        rotate_time = 0.0,
-        face_angle = true,
-        miss_when_target_destroy = false,
-        on_finish = function()
-          finish(target and target:is_exist() or false)
-        end,
-        on_break = function()
-          local did_hit, final_point = resolve_projectile_hit_on_break(projectile, target,
-            vfx.target_distance or PROJECTILE_DEFAULT_TARGET_DISTANCE)
-          finish(did_hit, final_point or impact_point)
-        end,
-        on_miss = function()
-          local did_hit, final_point = resolve_projectile_hit_on_break(projectile, target,
-            vfx.target_distance or PROJECTILE_DEFAULT_TARGET_DISTANCE)
-          finish(did_hit, final_point or impact_point)
-        end,
-      })
-    end)
-
-    if not ok_move then
-      if resolved then
-        return false
-      end
-      finish(false, clone_point(projectile and projectile:is_exist() and projectile:get_point() or nil) or impact_point)
-      return false
-    end
-
-    return true
-  end
-
-  local function launch_local_projectile(vfx, point, on_finish, ability)
-    local fallback_point = clone_point(point) or point or get_hero_point()
-    if not vfx or not vfx.projectile_key or not STATE.hero or not STATE.hero:is_exist() then
-      if on_finish then
-        on_finish(fallback_point, false)
-      end
-      return false
-    end
-
-    local ok_create, projectile = pcall(y3.projectile.create, {
-      key = resolve_projectile_key(vfx.projectile_key, ability),
-      target = STATE.hero,
-      socket = 'origin',
-      owner = STATE.hero,
-      ability = ability,
-      skip_projectile_override = is_basic_attack_ability(ability),
-      time = vfx.projectile_time or PROJECTILE_LOCAL_DEFAULT_TIME,
-      remove_immediately = true,
-    })
-    if not ok_create or not projectile then
-      if on_finish then
-        on_finish(fallback_point, false)
-      end
-      return false
-    end
-
-    pcall(function()
-      projectile:set_height(PROJECTILE_FLIGHT_HEIGHT)
-    end)
-    apply_visual_animation_speed(projectile)
-
-    local function finish(did_hit)
-      local resolved_point = fallback_point
-      if projectile and projectile.is_exist and projectile:is_exist() then
-        resolved_point = clone_point(projectile:get_point()) or resolved_point
-        projectile:remove()
-      end
-      if on_finish then
-        on_finish(resolved_point, did_hit == true)
-      end
-    end
-
-    if not y3 or not y3.ltimer or not y3.ltimer.wait then
-      finish(true)
-      return true
-    end
-
-    y3.ltimer.wait(math.max(0.08, vfx.projectile_time or PROJECTILE_LOCAL_DEFAULT_TIME), function()
-      finish(true)
-    end)
-
-    return true
-  end
-
-  local function run_skill_target_projectile(skill, target, on_resolve, opts)
-    local vfx = ATTACK_SKILL_VFX[skill and skill.id or ''] or {}
-    local fallback_point = get_unit_point_snapshot(target) or get_hero_point()
-    if not vfx.projectile_key then
-      if on_resolve then
-        on_resolve(fallback_point, false, vfx)
-      end
-      return false
-    end
-
-    return launch_projectile_to_target(vfx, target, function(impact_point, did_hit)
-      if did_hit ~= true and not (opts and opts.allow_fallback == true) then
-        return
-      end
-      if on_resolve then
-        on_resolve(impact_point or fallback_point, did_hit == true, vfx)
-      end
-    end, opts and opts.ability or nil)
-  end
-
-  local function run_skill_local_projectile(skill, point, on_resolve, opts)
-    local vfx = ATTACK_SKILL_VFX[skill and skill.id or ''] or {}
-    local fallback_point = clone_point(point) or point or get_hero_point()
-    if not vfx.projectile_key then
-      if on_resolve then
-        on_resolve(fallback_point, false, vfx)
-      end
-      return false
-    end
-
-    return launch_local_projectile(vfx, fallback_point, function(impact_point, did_hit)
-      if did_hit ~= true and not (opts and opts.allow_fallback == true) then
-        return
-      end
-      if on_resolve then
-        on_resolve(impact_point or fallback_point, did_hit == true, vfx)
-      end
-    end, opts and opts.ability or nil)
-  end
-
-  local function get_pending_basic_attack_damage(unit)
-    if not unit or not STATE.basic_attack_pending_damage then
-      return 0
-    end
-    return tonumber(STATE.basic_attack_pending_damage[unit]) or 0
-  end
-
-  local function is_basic_attack_target_reserved_to_die(unit)
-    if not is_active_enemy(unit) then
-      return true
-    end
-    local pending_damage = get_pending_basic_attack_damage(unit)
-    if pending_damage <= 0 then
-      return false
-    end
-    return (tonumber(unit:get_hp()) or 0) <= pending_damage
-  end
-
-  local function is_valid_skill_target(skill, unit)
-    if not is_active_enemy(unit) then
-      return false
-    end
-    if skill and skill.id == 'basic_attack' and is_basic_attack_target_reserved_to_die(unit) then
-      return false
-    end
-    return true
-  end
-
-  local function pick_skill_target(skill)
-    if not STATE.hero or not STATE.hero:is_exist() then
-      return nil
-    end
-
-    local range
-    if skill and skill.id == 'basic_attack' then
-      range = get_current_basic_attack_range()
-    else
-      range = math.max(1, (skill.cast_range or 0) + (skill.range_bonus or 0), skill.base_radius or 0)
-    end
-    local picked = y3.selector.create()
-        :is_enemy(get_player())
-        :in_range(STATE.hero:get_point(), range)
-        :sort_type('由近到远')
-        :pick()
-
-    for _, unit in ipairs(picked) do
-      if is_valid_skill_target(skill, unit) then
-        return unit
-      end
-    end
-
-    -- 兜底：部分调试场景/临时模板下阵营关系可能未正确同步，
-    -- selector:is_enemy 可能拿不到目标，此时回退到运行时敌人分组检索。
-    if get_enemies_in_range then
-      local fallback = get_enemies_in_range(STATE.hero, range, nil, 8) or {}
-      for _, unit in ipairs(fallback) do
-        if is_valid_skill_target(skill, unit) then
-          return unit
-        end
-      end
-    end
-
-    return nil
-  end
-
-  local get_basic_attack_bonus_multiplier
-
-  local function compute_basic_attack_final_damage(skill, target, amount)
-    if not STATE.hero or not STATE.hero:is_exist() or not target or not is_active_enemy(target) then
-      return 0
-    end
-
-    local damage_meta = skill or ATTACK_SKILL_DEFS.basic_attack or {}
-    local damage_form = damage_meta.damage_form or damage_meta.damage_type
-    local element = damage_meta.element
-    if ATTACK_SKILL_DEFS.basic_attack then
-      damage_form = damage_form or ATTACK_SKILL_DEFS.basic_attack.damage_form or
-      ATTACK_SKILL_DEFS.basic_attack.damage_type
-      element = element or ATTACK_SKILL_DEFS.basic_attack.element
-    end
-
-    if hero_attr_system and hero_attr_system.compute_damage then
-      return hero_attr_system.compute_damage(STATE.hero, amount, {
-        damage_type = damage_meta.damage_type or '物理',
-        damage_form = damage_form or 'weapon',
-        element = element,
-        damage_ratio = damage_meta.damage_ratio,
-      }, {
-        damage_kind = 'normal_attack',
-        target_multiplier = get_basic_attack_bonus_multiplier(skill, target),
-      })
-    end
-
-    local hero_damage_multiplier = 1
-    if hero_attr_system and hero_attr_system.get_damage_multiplier then
-      hero_damage_multiplier = hero_attr_system.get_damage_multiplier(
-        STATE.hero,
-        damage_form or 'weapon',
-        'normal_attack',
-        element
-      ) or 1
-    end
-
-    return round_number((amount or 0) * hero_damage_multiplier * get_basic_attack_bonus_multiplier(skill, target))
-  end
-
-  local function reserve_basic_attack_damage(unit, amount)
-    amount = math.max(0, tonumber(amount) or 0)
-    if amount <= 0 or not unit or not is_active_enemy(unit) then
-      return false
-    end
-    STATE.basic_attack_pending_damage = STATE.basic_attack_pending_damage or {}
-    STATE.basic_attack_pending_damage[unit] = get_pending_basic_attack_damage(unit) + amount
-    return true
-  end
-
-  local function release_basic_attack_damage(unit, amount)
-    if not unit or not STATE.basic_attack_pending_damage then
-      return
-    end
-    amount = math.max(0, tonumber(amount) or 0)
-    local remain = get_pending_basic_attack_damage(unit) - amount
-    if remain > 0 then
-      STATE.basic_attack_pending_damage[unit] = remain
-    else
-      STATE.basic_attack_pending_damage[unit] = nil
-    end
-  end
-
-  get_basic_attack_bonus_multiplier = function(skill, target)
-    local multiplier = 1
-    if target and is_active_enemy(target) then
-      multiplier = multiplier * get_damage_bonus_multiplier(target, {
-        is_basic_attack = true,
-      })
-      local info = STATE.enemy_info_map and STATE.enemy_info_map[target] or nil
-      if info and (info.is_elite == true or info.kind == 'boss' or info.is_boss == true) then
-        multiplier = multiplier * (1 + get_effective_skill_value(skill, 'boss_bonus_ratio'))
-      end
-    end
-    return multiplier
-  end
-
-  local function deal_basic_attack_damage(skill, target, amount, options)
-    if not STATE.hero or not STATE.hero:is_exist() or not target or not is_active_enemy(target) then
-      return
-    end
-
-    local hit_effect_enabled = false
-    local final_damage = compute_basic_attack_final_damage(skill, target, amount)
-    if final_damage <= 0 then
-      return
-    end
-
-    local is_critical = false
-    if hero_attr_system then
-      local crit_chance = hero_attr_system.get_attr(STATE.hero, '物理暴击') or 0
-      crit_chance = crit_chance / 100
-      if crit_chance > 0 and math.random() < crit_chance then
-        is_critical = true
-        local crit_damage_ratio = (hero_attr_system.get_attr(STATE.hero, '物理暴伤') or 150) / 100
-        final_damage = final_damage * crit_damage_ratio
-      end
-    end
-
-    if is_critical then
-      STATE.current_damage_is_critical = true
-    end
-
-    reserve_formula_damage(target, final_damage, {
-      source = 'basic_attack',
-      skill_id = skill and skill.id or nil,
-    })
-    local text_type_str = options and options.text_type or '物理'
-    local text_track = is_critical
-      and (y3.const.FloatTextJumpType["物理暴击_中上"] or 934300033)
-      or 934269508
-    STATE.hero:damage({
-      target = target,
-      damage = final_damage,
-      type = skill.damage_type,
-      ability = hit_effect_enabled
-          and STATE.hero_common_attack
-          and STATE.hero_common_attack:is_exist()
-          and STATE.hero_common_attack
-          or nil,
-      text_type = resolve_runtime_text_type(text_type_str),
-      text_track = text_track,
-      particle = hit_effect_enabled and options and options.particle or nil,
-      socket = hit_effect_enabled and options and options.socket or '',
-      pos_socket = hit_effect_enabled and options and options.pos_socket or '',
-      common_attack = hit_effect_enabled and options and options.common_attack == true or false,
-      no_miss = true,
-    })
-  end
-
-  local function apply_armor_break_on_hit(target)
     local skill = get_basic_attack_skill()
-    local ratio = get_effective_skill_value(skill, 'armor_break_ratio')
-    local duration = get_effective_skill_value(skill, 'armor_break_duration')
-    local max_stacks = math.max(1, round_number(get_effective_skill_value(skill, 'armor_break_max_stacks')))
-    if ratio <= 0 or duration <= 0 or not is_active_enemy(target) then
+    if not skill then
       return
     end
-
-    local status = get_enemy_status(target, 'armor_break') or { stacks = 0 }
-    status.stacks = math.min(max_stacks, (status.stacks or 0) + 1)
-    status.remaining = duration
-    status.ratio = ratio
-    apply_enemy_status(target, 'armor_break', status)
-    try_add_status_modifier(target, ATTACK_STATUS_MODIFIER_KEYS.armor_break, duration)
+    local target_unit = data.target_unit
+    if not target_unit or not target_unit:is_exist() then
+      return
+    end
+    if not is_active_enemy(target_unit) then
+      return
+    end
+    execute_basic_attack(skill, target_unit)
   end
 
-  local function get_basic_attack_secondary_search_radius()
-    local min_radius = tonumber(SEARCH_TUNING.secondary_radius_min) or 260
-    local ratio = tonumber(SEARCH_TUNING.secondary_radius_ratio) or 0.45
-    return math.max(min_radius, get_current_basic_attack_range() * ratio)
+  ability:event('单位-开始攻击', function(_, data)
+    on_basic_attack_start(_, data)
+  end)
+
+  ability:event('单位-攻击命中', function(_, data)
+    if ATTACK_SKILL_DEPRECATED then
+      return
+    end
+    local target_unit = data.target_unit
+    if not target_unit or not target_unit:is_exist() then
+      return
+    end
+  end)
+end
+
+local function setup_basic_attack_ability()
+  if not STATE.hero or not STATE.hero:is_exist() then
+    return
   end
 
-  local function get_secondary_hit_center(unit)
-    if not unit or not unit:is_exist() then
-      return nil
-    end
-    return get_unit_point_snapshot(unit) or unit:get_point()
+  if STATE.basic_attack_ability_bound then
+    return
   end
 
-  local function deal_basic_attack_secondary_damage(skill, unit, amount, options)
-    if not unit or not is_active_enemy(unit) then
-      return false
+  local ability = STATE.hero:get_common_attack()
+  if not ability or not ability:is_exist() then
+    if not STATE.basic_attack_ability_warned then
+      STATE.basic_attack_ability_warned = true
+      message('[attack_skills] basic_attack ability not found on hero')
     end
-
-    local hit_center = get_secondary_hit_center(unit)
-    if options and options.audio_stage then
-      play_skill_audio(skill, options.audio_stage, unit or hit_center)
-    end
-
-    if options and options.use_skill_damage == true then
-      skill_damage_api.single(unit, amount, options.damage_meta or skill, {
-        text_type = options.text_type or 'physics',
-        particle = options.particle,
-        skip_hunter_first_hit = options.skip_hunter_first_hit == true,
-      })
-      return true
-    end
-
-    deal_basic_attack_damage(skill, unit, amount, {
-      text_type = options and options.text_type or 'physics',
-      particle = options and options.particle or nil,
-      common_attack = false,
-    })
-    if not (options and options.apply_armor_break == false) then
-      apply_armor_break_on_hit(unit)
-    end
-    return true
+    return
   end
 
-  local function get_skill_archetype(skill)
+  STATE.hero_common_attack = ability
+  bind_basic_attack_ability_events(ability)
+  STATE.basic_attack_ability_bound = true
+end
+
+local function get_attack_skill(skill_id)
+  if not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
+    return nil
+  end
+  return STATE.attack_skill_state.by_id[skill_id]
+end
+
+local function get_attack_skill_slot(slot)
+  if not STATE.attack_skill_state then
+    return nil
+  end
+  return STATE.attack_skill_state:get_slot(slot)
+end
+
+local function get_empty_attack_skill_slot()
+  for i = 1, ATTACK_SKILL_SLOT_COUNT do
+    local skill = get_attack_skill_slot(i)
     if not skill then
-      return ''
+      return i
     end
-    if skill.archetype and skill.archetype ~= '' then
-      return skill.archetype
-    end
-    local blueprint = ATTACK_SKILL_BLUEPRINTS.by_id and ATTACK_SKILL_BLUEPRINTS.by_id[skill.id] or nil
-    return blueprint and blueprint.archetype or ''
   end
+  return nil
+end
 
-  local function get_skill_cast_family(skill)
-    if not skill then
-      return ''
+local function get_unlocked_attack_skill_count()
+  if not STATE.attack_skill_state then
+    return 0
+  end
+  local count = 0
+  for i = 1, ATTACK_SKILL_SLOT_COUNT do
+    local skill = get_attack_skill_slot(i)
+    if skill then
+      count = count + 1
     end
-    if skill.cast_family and skill.cast_family ~= '' then
-      return skill.cast_family
-    end
-    local def = ATTACK_SKILL_DEFS[skill.id]
-    if def and def.cast_family and def.cast_family ~= '' then
-      return def.cast_family
-    end
+  end
+  return count
+end
+
+local function get_skill_current_cooldown(skill)
+  if not skill then
+    return 0
+  end
+  local base_cd = skill.base_cooldown or 0
+  local cd_reduction = skill.cooldown_reduction or 0
+  local final_cd = math.max(0.1, base_cd * (1 - cd_reduction))
+  return final_cd
+end
+
+local function get_basic_attack_interval(skill)
+  local base_interval = skill.base_cooldown or 1.7
+  local attack_speed = get_hero_attr('attack_speed') or 0
+  local speed_bonus = 1 + attack_speed / 100
+  return base_interval / speed_bonus
+end
+
+local function build_attack_skill_slot_text(slot)
+  local skill = get_attack_skill_slot(slot)
+  if not skill then
     return ''
   end
+  return string.format('%s (CD: %.1fs)', skill.name or '?', get_skill_current_cooldown(skill))
+end
 
-  get_skill_damage_template_id = function(skill)
-    local cast_family = get_skill_cast_family(skill)
-    if cast_family ~= '' and DAMAGE_TEMPLATE_MAP[cast_family] then
-      return DAMAGE_TEMPLATE_MAP[cast_family]
+local function show_attack_skill_loadout()
+  local lines = { '[Attack Skills Loadout]' }
+  for i = 1, ATTACK_SKILL_SLOT_COUNT do
+    local skill = get_attack_skill_slot(i)
+    if skill then
+      lines[#lines + 1] = string.format('  Slot %d: %s (CD: %.1fs, Range: %d)',
+        i, skill.name or '?', get_skill_current_cooldown(skill), skill.cast_range or 0)
+    else
+      lines[#lines + 1] = string.format('  Slot %d: [empty]', i)
     end
-    return DEFAULT_DAMAGE_TEMPLATE_ID
   end
+  message(table.concat(lines, '\n'))
+end
 
-  local function get_skill_radius(skill)
-    return math.max(0, skill and skill.base_radius or 0)
+local function unlock_attack_skill(skill_id)
+  local def = ATTACK_SKILL_DEFS[skill_id]
+  if not def then
+    return false
   end
-
-  local function get_skill_duration(skill)
-    return math.max(0, skill and skill.base_duration or 0)
+  local slot = get_empty_attack_skill_slot()
+  if not slot then
+    return false
   end
-
-  local function get_skill_bounce(skill)
-    return math.max(0, round_number(skill and skill.base_bounce or 0))
+  local instance = create_attack_skill_instance(skill_id, slot)
+  if not instance then
+    return false
   end
-
-  local function apply_hold_control(unit, duration)
-    if duration <= 0 or not unit or not is_active_enemy(unit) then
-      return
-    end
-    unit:stop()
-    unit:add_state('禁止移动')
-    unit:add_state('禁止转向')
-    y3.ltimer.wait(duration, function()
-      if not unit or not unit:is_exist() then
-        return
-      end
-      unit:remove_state('禁止移动')
-      unit:remove_state('禁止转向')
-      resume_enemy_path(unit)
-    end)
+  if STATE.attack_skill_state then
+    STATE.attack_skill_state:set_slot(slot, instance)
+    STATE.attack_skill_state:add_skill(instance)
   end
+  return true
+end
 
-  local function pull_unit_towards_point(unit, center, strength)
-    if strength <= 0 or not unit or not center or not is_active_enemy(unit) then
-      return
-    end
-
-    local unit_point = get_unit_point_snapshot(unit)
-    if not unit_point then
-      return
-    end
-
-    local remaining_distance = unit_point:get_distance_with(center)
-    local pull_distance = math.min(math.max(30, strength), math.max(0, remaining_distance - 40))
-    if pull_distance <= 0 then
-      return
-    end
-
-    pcall(function()
-      unit:mover_line({
-        angle = unit_point:get_angle_with(center),
-        distance = pull_distance,
-        speed = math.max(600, strength * 6),
-        terrain_block = false,
-        on_finish = function()
-          if is_active_enemy(unit) then
-            resume_enemy_path(unit)
-          end
-        end,
-        on_break = function()
-          if is_active_enemy(unit) then
-            resume_enemy_path(unit)
-          end
-        end,
-      })
-    end)
+local function get_skill_damage(skill, ratio_override)
+  if not skill then
+    return 0
   end
+  local ratio = ratio_override or skill.damage_ratio or skill.base_damage_ratio or 1.0
+  local attack = get_hero_attack()
+  return attack * ratio
+end
 
-  local function apply_simple_ignite(unit, duration, tick_ratio)
-    if duration <= 0 or tick_ratio <= 0 or not unit or not is_active_enemy(unit) then
-      return
-    end
-    apply_enemy_status(unit, 'ignite', {
-      remaining = duration,
-      tick_cd = 1,
-      tick_ratio = tick_ratio,
+local function clone_point(point)
+  return y3.point.create(point.x, point.y, point.z or 0)
+end
+
+local function get_unit_point_snapshot(unit)
+  if not unit or not unit:is_exist() then
+    return nil
+  end
+  return clone_point(unit:get_point())
+end
+
+local function is_unit_alive_now(unit)
+  if not unit or not unit:is_exist() then
+    return false
+  end
+  return unit:get_hp() > 0
+end
+
+local function play_particle_on_unit(unit, effect_key, scale, time, socket)
+  spawn_particle(unit, effect_key, scale, time)
+end
+
+local function play_particle_on_point(point, effect_key, scale, time, height)
+  spawn_particle(point, effect_key, scale, time, height)
+end
+
+local function get_skill_vfx(skill)
+  if not skill then
+    return {}
+  end
+  if skill.vfx then
+    return skill.vfx
+  end
+  if ATTACK_SKILL_VFX and ATTACK_SKILL_VFX[skill.id] then
+    return ATTACK_SKILL_VFX[skill.id]
+  end
+  return {}
+end
+
+local function get_skill_presentation_family(skill)
+  if not skill then
+    return 'eca_projectile_hit'
+  end
+  return skill.presentation_family or skill.cast_family or 'eca_projectile_hit'
+end
+
+local function get_skill_stage_profile(skill, stage)
+  local family = get_skill_presentation_family(skill)
+  local profiles = PresentationProfiles.by_id or {}
+  local profile = profiles[family] or profiles.default or {}
+  return profile[stage] or {}
+end
+
+local function resolve_skill_stage_particle(skill, stage)
+  local vfx = get_skill_vfx(skill)
+  local stage_particle = vfx[stage .. '_particle']
+  if stage_particle then
+    return stage_particle
+  end
+  local stage_key = stage .. '_key'
+  if vfx[stage_key] then
+    return vfx[stage_key]
+  end
+  return nil
+end
+
+local function play_skill_particle_on_unit(skill, unit, stage, socket)
+  local particle_key = resolve_skill_stage_particle(skill, stage)
+  if not particle_key or not unit or not unit:is_exist() then
+    return
+  end
+  local profile = get_skill_stage_profile(skill, stage)
+  local scale = profile.min_scale or 1.0
+  local time = scale_visual_duration(profile.min_time or 0.2)
+  play_particle_on_unit(unit, particle_key, scale, time, socket)
+end
+
+local function play_skill_particle_on_point(skill, point, stage, height)
+  local particle_key = resolve_skill_stage_particle(skill, stage)
+  if not particle_key or not point then
+    return
+  end
+  local profile = get_skill_stage_profile(skill, stage)
+  local scale = profile.min_scale or 1.0
+  local time = scale_visual_duration(profile.min_time or 0.2)
+  local h = height or profile.height or 0
+  play_particle_on_point(point, particle_key, scale, time, h)
+end
+
+local function play_basic_attack_sound(sound_id, position)
+  if not sound_id then
+    return
+  end
+  local player = get_player()
+  if not player then
+    return
+  end
+  pcall(function()
+    y3.audio.play_3d(player, sound_id, position, {
+      ensure = true,
+      height = 0,
+      volume = 100,
     })
-    try_add_status_modifier(unit, ATTACK_STATUS_MODIFIER_KEYS.ignite, duration)
+  end)
+end
+
+local function play_attack_skill_sound(skill, stage, position)
+  if not skill then
+    return
+  end
+  local vfx = get_skill_vfx(skill)
+  local sound_key = vfx[stage .. '_sound']
+  if sound_key then
+    play_basic_attack_sound(sound_key, position)
+  end
+end
+
+local function play_skill_audio(skill, stage, source_unit)
+  if not source_unit or not source_unit:is_exist() then
+    return
+  end
+  local position = get_unit_point_snapshot(source_unit)
+  if not position then
+    return
+  end
+  play_attack_skill_sound(skill, stage, position)
+end
+
+local function play_basic_attack_impact_effect(target, damage, is_critical)
+  if is_hit_effect_hidden() then
+    return
+  end
+  local skill = get_basic_attack_skill()
+  if not skill then
+    return
+  end
+  play_skill_particle_on_unit(skill, target, 'impact', 'chest')
+end
+
+local function play_basic_attack_cast_effect()
+  local skill = get_basic_attack_skill()
+  if not skill then
+    return
+  end
+  local hero = STATE.hero
+  if not hero or not hero:is_exist() then
+    return
+  end
+  play_skill_particle_on_unit(skill, hero, 'cast', 'right_hand')
+end
+
+local function create_basic_attack_projectile(target)
+  local skill = get_basic_attack_skill()
+  if not skill then
+    return nil
+  end
+  local hero = STATE.hero
+  if not hero or not hero:is_exist() then
+    return nil
+  end
+  local vfx = get_skill_vfx(skill)
+  local projectile_key = vfx.projectile_key
+  if not projectile_key then
+    return nil
+  end
+  return launch_projectile_from_hero(hero, target, {
+    projectile_key = projectile_key,
+    projectile_speed = vfx.projectile_speed or 3000,
+    projectile_time = vfx.projectile_time or 1.0,
+    target_distance = vfx.target_distance or 20,
+    cast_particle = vfx.cast_particle,
+    cast_scale = vfx.cast_scale or 1.0,
+    cast_time = vfx.cast_time or 0.1,
+    impact_particle = vfx.impact_particle,
+    impact_scale = vfx.impact_scale or 1.0,
+    impact_time = vfx.impact_time or 0.2,
+  })
+end
+
+local function deal_basic_attack_damage(target, skill, bonus_ratio)
+  if not target or not target:is_exist() then
+    return 0
+  end
+  local base_damage = get_skill_damage(skill)
+  local ratio = bonus_ratio or 1.0
+  local final_damage = base_damage * ratio
+  if final_damage <= 0 then
+    return 0
+  end
+  deal_skill_damage(target, final_damage, skill, {})
+  return final_damage
+end
+
+local function execute_basic_attack(skill, target)
+  if not skill or not target or not target:is_exist() then
+    return
   end
 
-  local function deal_area_skill_damage(center, radius, skill, amount, options)
-    if not center or radius <= 0 then
-      return {}
-    end
-    return skill_damage_api.area(center, radius, amount, skill, {
-      visual = options,
-      except_unit = options and options.except_unit or nil,
-      max_count = options and options.max_count or nil,
-    })
-  end
+  play_basic_attack_cast_effect()
 
-  local function deal_single_skill_damage(target, skill, amount, options)
-    return skill_damage_api.single(target, amount, skill, options)
-  end
+  local flags = get_weapon_arrow_style_flags()
+  local damage = deal_basic_attack_damage(target, skill, 1.0)
 
-  local function deal_chain_skill_damage(targets, skill, amount, options)
-    return skill_damage_api.chain(targets, amount, skill, options)
-  end
-
-  local function deal_line_skill_damage(origin_point, impact_point, max_distance, line_width, max_hits, except_unit,
-                                        skill, amount, options)
-    return skill_damage_api.line(origin_point, impact_point, amount, skill, {
-      max_distance = max_distance,
-      line_width = line_width,
-      max_hits = max_hits,
-      except_unit = except_unit,
-      visual = options,
-    })
-  end
-
-  local function apply_generic_skill_statuses(skill, unit)
-    if not skill or not unit or not is_active_enemy(unit) then
-      return
-    end
-
-    if skill.apply_generic_armor_break and (skill.armor_break_ratio or 0) > 0 then
-      local status = get_enemy_status(unit, 'armor_break') or { stacks = 0 }
-      status.stacks = math.min(
-        math.max(1, round_number(skill.armor_break_max_stacks or 1)),
-        (status.stacks or 0) + 1
-      )
-      status.remaining = math.max(status.remaining or 0, skill.armor_break_duration or skill.generic_status_duration or 0)
-      status.ratio = math.max(status.ratio or 0, skill.armor_break_ratio or 0)
-      apply_enemy_status(unit, 'armor_break', status)
-      try_add_status_modifier(unit, ATTACK_STATUS_MODIFIER_KEYS.armor_break, status.remaining)
-    end
-
-    if skill.apply_generic_ignite and (skill.ignite_duration or 0) > 0 and (skill.ignite_tick_ratio or 0) > 0 then
-      apply_simple_ignite(unit, skill.ignite_duration, skill.ignite_tick_ratio)
-    end
-
-    if skill.apply_generic_shock and (skill.shock_duration or 0) > 0 then
-      apply_enemy_status(unit, 'shock', {
-        remaining = skill.shock_duration,
-        bonus = skill.shock_bonus or 0,
-      })
-      try_add_status_modifier(unit, ATTACK_STATUS_MODIFIER_KEYS.shock, skill.shock_duration)
-    end
-
-    if skill.apply_generic_control and (skill.control_lock_time or 0) > 0 then
-      apply_hold_control(unit, skill.control_lock_time)
-    end
-  end
-
-  local function trigger_skill_terminal_burst(skill, center)
-    local radius = math.max(0, skill and skill.terminal_burst_radius or 0)
-    local ratio = math.max(0, skill and skill.terminal_burst_ratio or 0)
-    if not center or radius <= 0 or ratio <= 0 then
-      return
-    end
-    play_skill_particle_on_point(skill, center, 'terminal', 0)
-    play_skill_audio(skill, 'burst', center)
-    for _, unit in ipairs(deal_area_skill_damage(center, radius, skill, get_skill_damage(skill) * ratio)) do
-      apply_generic_skill_statuses(skill, unit)
-    end
-  end
-
-  local function trigger_skill_followup_hits(skill, center, except_unit)
-    local count = math.max(0, round_number(skill and skill.followup_count or 0))
-    local ratio = math.max(0, skill and skill.followup_ratio or 0)
-    local vfx = ATTACK_SKILL_VFX[skill and skill.id or ''] or {}
-    if not center or count <= 0 or ratio <= 0 then
-      return
-    end
-    local hit_count = 0
-    for _, unit in ipairs(get_enemies_in_range(center, math.max(220, get_skill_radius(skill) or 0, 320), except_unit, count)) do
-      if hit_count == 0 then
-        play_skill_audio(skill, 'chain', unit)
+  if flags.has_chain then
+    local chain_bounces, chain_chance, chain_ratio, chain_radius = get_basic_attack_runtime_chain_stats()
+    if chain_bounces > 0 and chain_chance > 0 and math.random() <= chain_chance then
+      local chain_enemies = get_enemies_in_range(target:get_point(), chain_radius, target, chain_bounces)
+      for i, chain_target in ipairs(chain_enemies) do
+        deal_basic_attack_damage(chain_target, skill, chain_ratio)
       end
-      deal_single_skill_damage(unit, skill, get_skill_damage(skill) * ratio, {
-        particle = nil,
-      })
-      apply_generic_skill_statuses(skill, unit)
-      hit_count = hit_count + 1
-      if hit_count >= count then
-        break
-      end
-    end
-  end
-
-  local function spawn_persistent_field(skill, center, opts)
-    local duration = math.max(0, opts and opts.duration or skill and skill.persistent_field_duration or 0)
-    local ratio = math.max(0, opts and opts.ratio or skill and skill.persistent_field_ratio or 0)
-    local radius = math.max(120, opts and opts.radius or get_skill_radius(skill))
-    if not center or duration <= 0 or ratio <= 0 then
-      return
-    end
-
-    local tick_interval = 0.50
-    local tick_count = math.max(1, round_number(duration / tick_interval))
-    local tick_damage = get_skill_damage(skill) * ratio
-    skill_damage_api.area_ticks(tick_interval, tick_count, skill, {
-      center = center,
-      radius = radius,
-      amount = tick_damage,
-      before_tick = function()
-        if STATE.game_finished then
-          return false
-        end
-        play_skill_particle_on_point(skill, center, 'sustain', 0)
-        play_skill_audio(skill, 'tick', center)
-        return true
-      end,
-      on_hit = function(context)
-        local unit = context.hit_unit
-        if (opts and opts.control) or skill.persistent_field_control then
-          apply_hold_control(unit, 0.30)
-        end
-        if (opts and opts.ignite) or skill.persistent_field_ignite then
-          apply_simple_ignite(unit, 3, math.max(0.05, ratio * 0.25))
-        end
-        apply_generic_skill_statuses(skill, unit)
-      end,
-    })
-  end
-
-  local function cast_blueprint_line_skill(skill, target, opts)
-    local vfx = ATTACK_SKILL_VFX[skill.id] or {}
-    local damage = get_skill_damage(skill)
-    local origin_point = get_hero_point()
-    play_skill_particle_on_unit(skill, STATE.hero, 'cast')
-
-    launch_projectile_to_target(vfx, target, function(impact_point, did_hit)
-      if did_hit ~= true then
-        return
-      end
-      local center = impact_point or get_unit_point_snapshot(target)
-      if center then
-        play_skill_particle_on_point(skill, center, 'impact', 18)
-      end
-      if is_active_enemy(target) then
-        play_skill_audio(skill, 'impact', target)
-        deal_single_skill_damage(target, skill, damage, {
-          particle = nil,
-        })
-        apply_generic_skill_statuses(skill, target)
-      end
-      if origin_point and center then
-        for _, unit in ipairs(deal_line_skill_damage(
-          origin_point,
-          center,
-          math.max(1, (skill.cast_range or 0) + (skill.range_bonus or 0)),
-          skill.pierce_width or 110,
-          'max',
-          target,
-          skill,
-          damage,
-          {
-            particle = nil,
-          }
-        )) do
-          play_skill_audio(skill, 'chain', unit)
-          apply_generic_skill_statuses(skill, unit)
-        end
-        if (opts and opts.return_pass) or skill.return_pass_enabled then
-          for _, unit in ipairs(deal_line_skill_damage(
-            center,
-            origin_point,
-            math.max(1, (skill.cast_range or 0) + (skill.range_bonus or 0)),
-            skill.pierce_width or 110,
-            'max',
-            nil,
-            skill,
-            damage * (opts and opts.return_ratio or skill.return_pass_ratio or 0.75),
-            {
-              particle = nil,
-            }
-          )) do
-            apply_generic_skill_statuses(skill, unit)
-          end
-        end
-        trigger_skill_followup_hits(skill, center, target)
-        trigger_skill_terminal_burst(skill, center)
-      end
-    end)
-  end
-
-  local function cast_blueprint_beam_skill(skill, target)
-    play_skill_particle_on_unit(skill, STATE.hero, 'cast')
-    run_skill_target_projectile(skill, target, function(impact_point)
-      local duration = math.max(0.6, get_skill_duration(skill))
-      local tick_interval = 0.30
-      local tick_count = math.max(2, round_number(duration / tick_interval))
-      local tick_damage = get_skill_damage(skill) / tick_count
-      local locked_point = impact_point or get_unit_point_snapshot(target)
-      skill_damage_api.line_ticks(tick_interval, tick_count, skill, {
-        origin = function()
-          return get_hero_point()
-        end,
-        impact = function()
-          return get_unit_point_snapshot(target) or locked_point
-        end,
-        amount = tick_damage,
-        max_distance = math.max(1, (skill.cast_range or 0) + (skill.range_bonus or 0)),
-        line_width = skill.sweep_enabled and 180 or 120,
-        max_hits = 'max',
-        before_tick = function(context)
-          if STATE.game_finished or not STATE.hero or not STATE.hero:is_exist() then
-            return false
-          end
-          if not context.origin_point or not context.impact_point then
-            return false
-          end
-          play_skill_particle_on_point(skill, context.impact_point, 'sustain', 12)
-          play_skill_audio(skill, 'tick', context.impact_point)
-          return true
-        end,
-        on_hit = function(context)
-          apply_generic_skill_statuses(skill, context.hit_unit)
-        end,
-        after_tick = function(context)
-          if skill.sweep_enabled then
-            trigger_skill_followup_hits(skill, context.impact_point, nil)
-          end
-          if context.current == context.total then
-            trigger_skill_terminal_burst(skill, context.impact_point)
-          end
-        end,
-      })
-    end, {
-      allow_fallback = true,
-    })
-  end
-
-  local function cast_blueprint_nova_skill(skill)
-    local center = get_hero_point()
-    local radius = math.max(120, get_skill_radius(skill))
-    local hold_duration = math.max(0.25, get_skill_duration(skill))
-    if not center then
-      return
-    end
-    play_skill_particle_on_unit(skill, STATE.hero, 'cast')
-    run_skill_local_projectile(skill, center, function(burst_center)
-      if not burst_center then
-        return
-      end
-      play_skill_particle_on_point(skill, burst_center, 'burst', 0)
-      play_skill_audio(skill, 'burst', burst_center)
-      for _, unit in ipairs(deal_area_skill_damage(burst_center, radius, skill, get_skill_damage(skill))) do
-        apply_hold_control(unit, hold_duration)
-        apply_generic_skill_statuses(skill, unit)
-      end
-
-      if skill.echo_count and skill.echo_count > 0 and (skill.echo_ratio or 0) > 0 then
-        for echo_index = 1, math.max(1, round_number(skill.echo_count)), 1 do
-          y3.ltimer.wait(0.20 * echo_index, function()
-            if STATE.game_finished or not burst_center then
-              return
-            end
-            play_skill_particle_on_point(skill, burst_center, 'sustain', 0)
-            play_skill_audio(skill, 'tick', burst_center)
-            for _, unit in ipairs(deal_area_skill_damage(burst_center, radius, skill, get_skill_damage(skill) * skill.echo_ratio)) do
-              apply_hold_control(unit, math.max(0.15, hold_duration * 0.5))
-              apply_generic_skill_statuses(skill, unit)
-            end
-          end)
-        end
-      end
-
-      trigger_skill_followup_hits(skill, burst_center, nil)
-      trigger_skill_terminal_burst(skill, burst_center)
-      spawn_persistent_field(skill, burst_center)
-    end, {
-      allow_fallback = true,
-    })
-  end
-
-  local function cast_blueprint_chain_skill(skill, target)
-    play_skill_particle_on_unit(skill, STATE.hero, 'cast')
-    run_skill_target_projectile(skill, target, function(impact_point, _, vfx)
-      local damage = get_skill_damage(skill)
-      local remaining = math.max(1, get_skill_bounce(skill))
-      local current_target = target
-      local current_center = impact_point or get_unit_point_snapshot(target)
-      local hit_map = {}
-      local visited = {}
-      local center_map = {}
-      while current_target and remaining > 0 do
-        hit_map[current_target] = true
-        visited[#visited + 1] = current_target
-        center_map[current_target] = current_center or get_unit_point_snapshot(current_target)
-        remaining = remaining - 1
-        if remaining <= 0 then
-          break
-        end
-        local next_target = nil
-        for _, unit in ipairs(get_enemies_in_range(
-          current_center or current_target,
-          math.max(320, 420 + (skill.range_bonus or 0))
-        )) do
-          if not hit_map[unit] then
-            next_target = unit
-            break
-          end
-        end
-        current_target = next_target
-        current_center = next_target and get_unit_point_snapshot(next_target) or nil
-      end
-
-      deal_chain_skill_damage(visited, skill, damage, {
-        visual = function()
-          return {
-            particle = nil,
-          }
-        end,
-        before_hit = function(context)
-          local unit = context.target
-          if not unit or not unit.is_exist or not unit:is_exist() then
-            return false
-          end
-          local center = center_map[unit] or get_unit_point_snapshot(unit)
-          if center then
-            play_skill_particle_on_point(skill, center, 'chain', 0)
-          end
-          play_skill_audio(skill, 'chain', unit or center)
-          return true
-        end,
-        on_hit = function(context)
-          local unit = context.target
-          apply_generic_skill_statuses(skill, unit)
-          apply_enemy_status(unit, 'shock', {
-            remaining = 1.0,
-            bonus = 0.10,
-          })
-          try_add_status_modifier(unit, ATTACK_STATUS_MODIFIER_KEYS.shock, 1.0)
-        end,
-      })
-
-      if skill.return_pass_enabled and #visited >= 2 then
-        local return_targets = {}
-        for index = #visited - 1, 1, -1 do
-          local unit = visited[index]
-          if unit and is_active_enemy(unit) then
-            return_targets[#return_targets + 1] = unit
-          end
-        end
-        deal_chain_skill_damage(return_targets, skill, damage * (skill.return_pass_ratio or 0.65), {
-          visual = function()
-            return {
-              particle = nil,
-            }
-          end,
-          before_hit = function(context)
-            local unit = context.target
-            if not unit or not unit.is_exist or not unit:is_exist() then
-              return false
-            end
-            play_skill_particle_on_point(skill, unit:get_point(), 'chain', 0)
-            play_skill_audio(skill, 'chain', unit)
-            return true
-          end,
-          on_hit = function(context)
-            apply_generic_skill_statuses(skill, context.target)
-          end,
-        })
-      end
-
-      trigger_skill_terminal_burst(skill, current_center or impact_point or get_unit_point_snapshot(target))
-    end, {
-      allow_fallback = true,
-    })
-  end
-
-  local function cast_blueprint_area_burst_skill(skill, target, delay)
-    local radius = math.max(140, get_skill_radius(skill))
-    play_skill_particle_on_unit(skill, STATE.hero, 'cast')
-    run_skill_target_projectile(skill, target, function(center)
-      local function detonate()
-        if not center then
-          return
-        end
-        play_skill_particle_on_point(skill, center, 'impact', 0)
-        play_skill_particle_on_point(skill, center, 'burst', 0)
-        play_skill_audio(skill, 'burst', center)
-        local hit_units = deal_area_skill_damage(center, radius, skill, get_skill_damage(skill))
-        for _, unit in ipairs(hit_units) do
-          apply_generic_skill_statuses(skill, unit)
-        end
-        if skill.echo_count and skill.echo_count > 0 and (skill.echo_ratio or 0) > 0 then
-          for echo_index = 1, math.max(1, round_number(skill.echo_count)), 1 do
-            y3.ltimer.wait(0.22 * echo_index, function()
-              if STATE.game_finished or not center then
-                return
-              end
-              play_skill_particle_on_point(skill, center, 'sustain', 0)
-              play_skill_audio(skill, 'tick', center)
-              local echo_hits = deal_area_skill_damage(center, radius, skill, get_skill_damage(skill) * skill.echo_ratio)
-              for _, unit in ipairs(echo_hits) do
-                apply_generic_skill_statuses(skill, unit)
-              end
-            end)
-          end
-        end
-        trigger_skill_followup_hits(skill, center, target)
-        trigger_skill_terminal_burst(skill, center)
-        spawn_persistent_field(skill, center)
-      end
-      if delay and delay > 0 then
-        if center then
-          play_skill_particle_on_point(skill, center, 'charge', 120)
-          play_skill_audio(skill, 'charge', center)
-        end
-        y3.ltimer.wait(delay, function()
-          if STATE.game_finished then
-            return
-          end
-          detonate()
-        end)
-      else
-        detonate()
-      end
-    end, {
-      allow_fallback = true,
-    })
-  end
-
-  local function cast_blueprint_field_skill(skill, target, opts)
-    local radius = math.max(120, get_skill_radius(skill))
-    local duration = math.max(1.2, get_skill_duration(skill))
-    local tick_interval = 0.50
-    local tick_count = math.max(2, round_number(duration / tick_interval))
-    local tick_damage = get_skill_damage(skill) * 0.50
-    play_skill_particle_on_unit(skill, STATE.hero, 'cast')
-    run_skill_target_projectile(skill, target, function(start_center)
-      local hero_point = get_hero_point()
-      local angle = hero_point and start_center and hero_point:get_angle_with(start_center) or 0
-      local move_step = math.max(40, ((skill.cast_range or 240) / math.max(1, tick_count)) * 0.55)
-      play_skill_particle_on_point(skill, start_center, 'charge', 0)
-      play_skill_audio(skill, 'charge', start_center)
-
-      skill_damage_api.area_ticks(tick_interval, tick_count, skill, {
-        center = function(context)
-          local center = start_center
-          if skill.field_track_target and target and target:is_exist() then
-            center = get_unit_point_snapshot(target) or center
-          elseif opts and opts.moving and center then
-            center = y3.point.get_point_offset_vector(start_center, angle, move_step * (context.current - 1))
-          end
-          return center
-        end,
-        radius = radius,
-        amount = tick_damage,
-        before_tick = function(context)
-          if STATE.game_finished then
-            return false
-          end
-          if not context.center then
-            return false
-          end
-          play_skill_particle_on_point(skill, context.center, 'sustain', 0)
-          play_skill_audio(skill, 'tick', context.center)
-          return true
-        end,
-        on_hit = function(context)
-          local unit = context.hit_unit
-          if opts and opts.control then
-            apply_hold_control(unit, math.min(0.35, duration))
-          end
-          if opts and opts.ignite then
-            apply_simple_ignite(unit, 3, 0.08)
-          end
-          if (skill.pull_strength or 0) > 0 then
-            pull_unit_towards_point(unit, context.center, skill.pull_strength)
-          end
-          apply_generic_skill_statuses(skill, unit)
-        end,
-        after_tick = function(context)
-          if context.current == context.total then
-            trigger_skill_terminal_burst(skill, context.center)
-          end
-        end,
-      })
-    end, {
-      allow_fallback = true,
-    })
-  end
-
-  local function cast_blueprint_seal_skill(skill, target)
-    local radius = math.max(120, get_skill_radius(skill))
-    local delay = math.max(0.2, get_skill_duration(skill) * 0.4)
-    play_skill_particle_on_unit(skill, STATE.hero, 'cast')
-    run_skill_target_projectile(skill, target, function(center)
-      if center then
-        play_skill_particle_on_point(skill, center, 'charge', 120)
-        play_skill_audio(skill, 'charge', center)
-        for _, unit in ipairs(get_enemies_in_range(center, radius)) do
-          apply_hold_control(unit, delay)
-        end
-      end
-      y3.ltimer.wait(delay, function()
-        if STATE.game_finished or not center then
-          return
-        end
-        play_skill_particle_on_point(skill, center, 'impact', 0)
-        play_skill_particle_on_point(skill, center, 'burst', 0)
-        play_skill_audio(skill, 'burst', center)
-        local hit_units = deal_area_skill_damage(center, radius, skill, get_skill_damage(skill))
-        for _, unit in ipairs(hit_units) do
-          apply_generic_skill_statuses(skill, unit)
-        end
-        if skill.echo_count and skill.echo_count > 0 and (skill.echo_ratio or 0) > 0 then
-          for echo_index = 1, math.max(1, round_number(skill.echo_count)), 1 do
-            y3.ltimer.wait(0.25 * echo_index, function()
-              if STATE.game_finished or not center then
-                return
-              end
-              play_skill_particle_on_point(skill, center, 'sustain', 0)
-              play_skill_audio(skill, 'tick', center)
-              local echo_hits = deal_area_skill_damage(center, radius, skill, get_skill_damage(skill) * skill.echo_ratio)
-              for _, unit in ipairs(echo_hits) do
-                apply_generic_skill_statuses(skill, unit)
-              end
-            end)
-          end
-        end
-        trigger_skill_followup_hits(skill, center, target)
-        spawn_persistent_field(skill, center, {
-          control = true,
-        })
-      end)
-    end, {
-      allow_fallback = true,
-    })
-  end
-
-  local function cast_blueprint_seeking_swords(skill, target)
-    local vfx = ATTACK_SKILL_VFX[skill.id] or {}
-    local base_damage = get_skill_damage(skill)
-    local sword_count = math.max(1, get_skill_bounce(skill))
-    local initial_radius = math.max(320, 420 + (skill.range_bonus or 0))
-    local split_count = math.max(0, round_number(skill.split_seek_count or 0))
-    local split_ratio = math.max(0, skill.split_seek_ratio or 0)
-    local split_radius = math.max(220, skill.split_seek_radius or 280)
-    local split_depth = math.max(0, round_number(skill.split_seek_depth or 0))
-    local kill_count = math.max(0, round_number(skill.kill_seek_count or 0))
-    local kill_ratio = math.max(0, skill.kill_seek_ratio or 0)
-    local kill_radius = math.max(split_radius,
-      skill.kill_seek_radius or math.max(420, 460 + (skill.range_bonus or 0) * 0.35))
-    local chain_state = {
-      spawned = 0,
-      max_spawned = math.max(18, sword_count * 4 + split_count * 6 + kill_count * 12),
-    }
-
-    local function reserve_sword_launch()
-      if chain_state.spawned >= chain_state.max_spawned then
-        return false
-      end
-      chain_state.spawned = chain_state.spawned + 1
-      return true
-    end
-
-    local function build_seek_targets(center, radius, except_unit, count)
-      local result = {}
-      if not center or count <= 0 then
-        return result
-      end
-      for _, unit in ipairs(get_enemies_in_range(center, radius)) do
-        if unit ~= except_unit and is_active_enemy(unit) then
-          result[#result + 1] = unit
-          if #result >= count then
-            break
-          end
-        end
-      end
-      return result
-    end
-
-    local launch_seek_sword
-
-    local function queue_seek_burst(center, except_unit, count, ratio, child_split_depth, radius, delay_step)
-      local launch_center = clone_point(center) or center
-      if not launch_center or count <= 0 or ratio <= 0 then
-        return
-      end
-
-      local launched = 0
-      local did_queue = false
-      for _, unit in ipairs(build_seek_targets(launch_center, radius, except_unit, count)) do
-        if not reserve_sword_launch() then
-          break
-        end
-        did_queue = true
-        launched = launched + 1
-        local victim = unit
-        local delay = (launched - 1) * (delay_step or 0.05)
-        y3.ltimer.wait(delay, function()
-          if STATE.game_finished or not victim or not is_active_enemy(victim) then
-            return
-          end
-          launch_seek_sword(victim, launch_center, base_damage * ratio, child_split_depth)
-        end)
-      end
-
-      if did_queue then
-        play_skill_particle_on_point(skill, launch_center, 'chain', 10)
-        play_skill_audio(skill, 'chain', launch_center)
-      end
-    end
-
-    launch_seek_sword = function(victim, origin_point, amount, remaining_split_depth)
-      if not victim or not victim:is_exist() then
-        return
-      end
-
-      local function on_hit(impact_point, did_hit)
-        if did_hit ~= true then
-          return
-        end
-        if impact_point then
-          play_skill_particle_on_point(skill, impact_point, 'impact', 12)
-        end
-        if not is_active_enemy(victim) then
-          return
-        end
-
-        local was_alive = is_unit_alive_now(victim)
-        play_skill_audio(skill, 'impact', victim)
-        deal_single_skill_damage(victim, skill, amount, {
-          particle = nil,
-        })
-        apply_generic_skill_statuses(skill, victim)
-
-        local burst_center = impact_point or get_unit_point_snapshot(victim)
-        if burst_center and split_count > 0 and split_ratio > 0 and remaining_split_depth > 0 then
-          queue_seek_burst(
-            burst_center,
-            victim,
-            split_count,
-            split_ratio,
-            math.max(0, remaining_split_depth - 1),
-            split_radius,
-            0.04
-          )
-        end
-        if burst_center and kill_count > 0 and kill_ratio > 0 and was_alive and not is_unit_alive_now(victim) then
-          queue_seek_burst(
-            burst_center,
-            victim,
-            kill_count,
-            kill_ratio,
-            math.max(0, remaining_split_depth - 1),
-            kill_radius,
-            0.02
-          )
-        end
-        trigger_skill_followup_hits(skill, burst_center or victim:get_point(), victim)
-      end
-
-      if origin_point then
-        launch_projectile_from_point_to_target(vfx, origin_point, victim, on_hit)
-        return
-      end
-      launch_projectile_to_target(vfx, victim, on_hit)
-    end
-
-    local targets = { target }
-    local center = get_unit_point_snapshot(target)
-    for _, unit in ipairs(build_seek_targets(center or target, initial_radius, target, sword_count - 1)) do
-      targets[#targets + 1] = unit
-      if #targets >= sword_count then
-        break
-      end
-    end
-
-    play_skill_particle_on_unit(skill, STATE.hero, 'cast')
-    for index, victim in ipairs(targets) do
-      if not reserve_sword_launch() then
-        break
-      end
-      y3.ltimer.wait((index - 1) * 0.08, function()
-        if STATE.game_finished or not victim or not is_active_enemy(victim) then
-          return
-        end
-        launch_seek_sword(victim, nil, base_damage, split_depth)
-      end)
     end
   end
 
-  local function cast_basic_attack_skill(skill, target)
-    local vfx = ATTACK_SKILL_VFX.basic_attack
-    local damage = get_skill_damage(skill)
+  if flags.has_multishot then
     local multishot_count, multishot_ratio = get_basic_attack_multishot_bonus()
-    local split_count = math.max(0, round_number(get_effective_skill_value(skill, 'split_count')))
-    local split_ratio = get_effective_skill_value(skill, 'split_ratio')
-    local hero_point = get_hero_point()
-    local secondary_search_radius = get_basic_attack_secondary_search_radius()
-    local extra_hit_particle = nil
-    local primary_hit_particle = nil
-    local style_flags = get_weapon_arrow_style_flags()
-    local sniper_hit_particle = nil
-    local gale_hit_particle = nil
-    local multishot_hit_particle = nil
-    if style_flags.sniper <= 0 then
-      sniper_hit_particle = primary_hit_particle
-    end
-    if style_flags.gale <= 0 then
-      gale_hit_particle = extra_hit_particle
-    end
-    if style_flags.multishot <= 0 then
-      multishot_hit_particle = extra_hit_particle
-    end
-    local function with_projectile_key(base_vfx, projectile_key)
-      if not base_vfx then
-        return nil
-      end
-      if not projectile_key or projectile_key == base_vfx.projectile_key then
-        return base_vfx
-      end
-      local copied = {}
-      for key, value in pairs(base_vfx) do
-        copied[key] = value
-      end
-      copied.projectile_key = projectile_key
-      return copied
-    end
-    local bow_projectiles = RuntimeEditorIds.projectile or {}
-    local sniper_vfx = with_projectile_key(vfx,
-      style_flags.sniper > 0 and bow_projectiles.bow_sniper or bow_projectiles.basic_attack)
-    local gale_vfx = with_projectile_key(vfx,
-      style_flags.gale > 0 and bow_projectiles.bow_gale or bow_projectiles.basic_attack)
-    local multishot_vfx = with_projectile_key(vfx,
-      style_flags.multishot > 0 and bow_projectiles.bow_multishot or bow_projectiles.basic_attack)
-    local multishot_targets = {}
-    if multishot_count > 0 and multishot_ratio > 0 then
-      local multishot_center = get_unit_point_snapshot(target) or target
-      for _, unit in ipairs(get_enemies_in_range(
-        multishot_center,
-        secondary_search_radius,
-        target,
-        multishot_count
-      )) do
-        multishot_targets[#multishot_targets + 1] = unit
-        if #multishot_targets >= multishot_count then
-          break
-        end
-      end
-    end
-    play_skill_particle_on_unit(skill, STATE.hero, 'cast')
-    if STATE.hero and STATE.hero:is_exist() then
-      STATE.hero:play_animation('attack1', 1.0, nil, nil, false, true)
-    end
-    if play_basic_attack_sound then
-      play_basic_attack_sound(STATE.hero)
-    end
-    if notify_auto_active_basic_attack then
-      notify_auto_active_basic_attack(target)
-    end
-    if hero_point and target and target:is_exist() and not STATE.hero:has_state('禁止转向') then
-      STATE.hero:set_facing(hero_point:get_angle_with(target:get_point()), 0.08)
-    end
-
-    local reserved_damage = compute_basic_attack_final_damage(skill, target, damage)
-    reserve_basic_attack_damage(target, reserved_damage)
-    local cast_delay = 0.30
-    y3.ltimer.wait(cast_delay, function()
-      if not STATE.hero or not STATE.hero:is_exist() then
-        return
-      end
-      if not target or not target:is_exist() then
-        return
-      end
-      launch_projectile_to_target(sniper_vfx or gale_vfx or vfx, target, function(impact_point, did_hit)
-        release_basic_attack_damage(target, reserved_damage)
-        if STATE.game_finished or not STATE.hero or not STATE.hero:is_exist() then
-          return
-        end
-        if did_hit ~= true then
-          return
-        end
-
-        local impact_center = impact_point or get_unit_point_snapshot(target)
-        local splash_center = impact_center or target
-        local basic_attack_def = ATTACK_SKILL_DEFS.basic_attack or skill
-        local runtime = STATE.skill_runtime
-        local runtime_chain_count, runtime_chain_chance, runtime_chain_ratio = get_basic_attack_runtime_chain_stats()
-        local bonus_chain_count, bonus_chain_ratio = get_basic_attack_bonus_chain_stats()
-        local explosion_ratio = math.max(0, get_effective_skill_value(skill, 'explosion_ratio'))
-        local explosion_radius = math.max(0, get_effective_skill_value(skill, 'explosion_radius'))
-
-        if impact_center then
-          play_skill_particle_on_point(skill, impact_center, 'impact', 18)
-        end
-        play_skill_audio(skill, 'impact', target or impact_center)
-
-        if is_active_enemy(target) then
-          deal_basic_attack_damage(skill, target, damage, {
-            common_attack = false,
-            particle = nil,
-            force_hit_effect = false,
-          })
-          local bonus_ratio = runtime and runtime:get('normal_attack_bonus_ratio') or 0
-          if bonus_ratio > 0 then
-            deal_single_skill_damage(target, '物理', damage * bonus_ratio, {
-              text_type = 'physics',
-            })
-          end
-          try_trigger_hunter_first_hit(target)
-          apply_armor_break_on_hit(target)
-        end
-
-        if explosion_ratio > 0 and explosion_radius > 0 then
-          local splash_units = get_enemies_in_range(splash_center, explosion_radius, target)
-          if #splash_units > 0 then
-            if impact_center then
-              play_skill_particle_on_point(skill, impact_center, 'burst', 18)
-            end
-            play_skill_audio(skill, 'burst', impact_center or splash_center)
-            for _, unit in ipairs(splash_units) do
-              deal_basic_attack_secondary_damage(skill, unit, damage * explosion_ratio, {
-                particle = nil,
-                stage = 'chain',
-              })
-            end
-          end
-        end
-
-        if split_count > 0 and split_ratio > 0 then
-          local split_hits = 0
-          for _, unit in ipairs(get_enemies_in_range(
-            splash_center,
-            secondary_search_radius,
-            target,
-            split_count
-          )) do
-            if deal_basic_attack_secondary_damage(skill, unit, damage * split_ratio, {
-                  particle = nil,
-                  audio_stage = split_hits == 0 and 'chain' or nil,
-                }) then
-              split_hits = split_hits + 1
-            end
-            if split_hits >= split_count then
-              break
-            end
-          end
-        end
-
-        local splash_ratio = runtime and runtime:get('splash_ratio') or 0
-        local splash_radius = runtime and runtime:get('splash_radius') or 0
-        if splash_ratio > 0 and splash_radius > 0 then
-          local bonus_splash_units = get_enemies_in_range(splash_center, splash_radius, target)
-          if #bonus_splash_units > 0 then
-            if impact_center then
-              play_skill_particle_on_point(skill, impact_center, 'burst', 18)
-            end
-            play_skill_audio(skill, 'burst', impact_center or splash_center)
-            for _, unit in ipairs(bonus_splash_units) do
-              deal_basic_attack_secondary_damage(skill, unit, damage * splash_ratio, {
-                use_skill_damage = true,
-                damage_meta = '物理',
-                text_type = 'physics',
-                particle = nil,
-                stage = 'chain',
-              })
-            end
-          end
-        end
-
-        if runtime_chain_count > 0 and runtime_chain_ratio > 0 and runtime_chain_chance > 0 and math.random() <= runtime_chain_chance then
-          local bounced = 0
-          local chain_radius = runtime and runtime:get('chain_radius') or 420
-          for _, unit in ipairs(get_enemies_in_range(splash_center, chain_radius, target, runtime_chain_count)) do
-            if deal_basic_attack_secondary_damage(skill, unit, damage * runtime_chain_ratio, {
-                  use_skill_damage = true,
-                  damage_meta = basic_attack_def,
-                  text_type = 'physics',
-                  particle = nil,
-                  audio_stage = bounced == 0 and 'chain' or nil,
-                }) then
-              bounced = bounced + 1
-            end
-            if bounced >= runtime_chain_count then
-              break
-            end
-          end
-        end
-
-        if bonus_chain_count > 0 and bonus_chain_ratio > 0 then
-          local bounced = 0
-          for _, unit in ipairs(get_enemies_in_range(
-            splash_center,
-            math.max(runtime and runtime:get('chain_radius') or 0, 420),
-            target,
-            bonus_chain_count
-          )) do
-            if deal_basic_attack_secondary_damage(skill, unit, damage * bonus_chain_ratio, {
-                  use_skill_damage = true,
-                  damage_meta = basic_attack_def,
-                  text_type = 'physics',
-                  particle = nil,
-                  audio_stage = bounced == 0 and 'chain' or nil,
-                  skip_hunter_first_hit = true,
-                }) then
-              bounced = bounced + 1
-            end
-            if bounced >= bonus_chain_count then
-              break
-            end
-          end
-        end
-      end)
-      if #multishot_targets > 0 and multishot_ratio > 0 then
-        local multishot_audio_played = false
-        for _, unit in ipairs(multishot_targets) do
-          launch_projectile_to_target(multishot_vfx or gale_vfx or vfx, unit, function(impact_point, did_hit)
-            if STATE.game_finished or not STATE.hero or not STATE.hero:is_exist() then
-              return
-            end
-            if did_hit ~= true or not is_active_enemy(unit) then
-              return
-            end
-
-            local impact_center = impact_point or get_unit_point_snapshot(unit)
-            if impact_center then
-              play_skill_particle_on_point(skill, impact_center, 'chain', 18)
-            end
-            if not multishot_audio_played then
-              multishot_audio_played = true
-              play_skill_audio(skill, 'chain', unit or impact_center)
-            end
-
-            deal_basic_attack_damage(skill, unit, damage * multishot_ratio, {
-              text_type = 'physics',
-              particle = nil,
-              force_hit_effect = false,
-              common_attack = false,
-            })
-            apply_armor_break_on_hit(unit)
-          end)
-        end
-      end
-    end)
-  end
-
-  local function cast_attack_skill_once(skill, target)
-    local cast_family = get_skill_cast_family(skill)
-    if cast_family == 'basic_projectile' then
-      cast_basic_attack_skill(skill, target)
-      return
-    end
-
-    if notify_bond_attack_skill_cast then
-      notify_bond_attack_skill_cast(skill, target)
-    end
-    if notify_auto_active_skill_cast then
-      notify_auto_active_skill_cast(skill, target)
-    end
-
-    if cast_family == 'line_pierce' then
-      cast_blueprint_line_skill(skill, target)
-      return
-    end
-    if cast_family == 'beam' then
-      cast_blueprint_beam_skill(skill, target)
-      return
-    end
-    if cast_family == 'nova' then
-      cast_blueprint_nova_skill(skill)
-      return
-    end
-    if cast_family == 'chain' then
-      cast_blueprint_chain_skill(skill, target)
-      return
-    end
-    if cast_family == 'area_burst' then
-      cast_blueprint_area_burst_skill(skill, target, 0)
-      return
-    end
-    if cast_family == 'moving_field' then
-      cast_blueprint_field_skill(skill, target, { moving = true })
-      return
-    end
-    if cast_family == 'control_field' then
-      cast_blueprint_field_skill(skill, target, { control = true })
-      return
-    end
-    if cast_family == 'delayed_area_burst' then
-      cast_blueprint_area_burst_skill(skill, target,
-        (ATTACK_SKILL_VFX[skill.id] and ATTACK_SKILL_VFX[skill.id].strike_delay) or 0.45)
-      return
-    end
-    if cast_family == 'persistent_field' then
-      cast_blueprint_field_skill(skill, target, {})
-      return
-    end
-    if cast_family == 'line_return' then
-      cast_blueprint_line_skill(skill, target, {
-        return_pass = true,
-        return_ratio = 0.80,
-      })
-      return
-    end
-    if cast_family == 'ignite_field' then
-      cast_blueprint_field_skill(skill, target, {
-        ignite = true,
-      })
-      return
-    end
-    if cast_family == 'seal_burst' then
-      cast_blueprint_seal_skill(skill, target)
-      return
-    end
-    if cast_family == 'seeking_swords' then
-      cast_blueprint_seeking_swords(skill, target)
-      return
-    end
-
-    local archetype = get_skill_archetype(skill)
-    if archetype == '点面兼顾爆炸' then
-      cast_blueprint_area_burst_skill(skill, target, 0.12)
-      return
-    end
-  end
-
-  local function try_cast_attack_skill(skill)
-    if not skill or skill.id == 'basic_attack' then
-      return
-    end
-
-    local first_target = pick_skill_target(skill)
-    if not first_target then
-      return
-    end
-
-    play_skill_audio(skill, 'cast', STATE.hero)
-
-    local cast_times = math.max(1, skill.repeat_count or 1)
-    local skill_echo_chance = math.max(0, get_bond_runtime_bonus('skill_echo_chance') or 0)
-    if skill_echo_chance > 0 and math.random() <= math.min(1, skill_echo_chance) then
-      cast_times = cast_times + 1
-    end
-    for cast_index = 1, cast_times, 1 do
-      local target = cast_index == 1 and first_target or pick_skill_target(skill)
-      if not target then
-        break
-      end
-      cast_attack_skill_once(skill, target)
-    end
-
-    skill.cooldown_remaining = get_skill_current_cooldown(skill)
-  end
-
-  local function get_framework_game_time()
-    if y3 and y3.game and y3.game.current_game_run_time then
-      return tonumber(y3.game.current_game_run_time()) or 0
-    end
-    return tonumber(STATE.runtime_elapsed) or 0
-  end
-
-  local function ensure_active_skill_runtime()
-    STATE.active_skill_runtime = STATE.active_skill_runtime or {}
-    local runtime = STATE.active_skill_runtime
-    runtime.active_ids = runtime.active_ids or {}
-    runtime.queue = runtime.queue or {}
-    runtime.cursor = math.max(1, math.floor(tonumber(runtime.cursor) or 1))
-    runtime.next_cast_ready_time = tonumber(runtime.next_cast_ready_time) or 0
-    return runtime
-  end
-
-  local function set_active_skill_ids(skill_ids)
-    local runtime = ensure_active_skill_runtime()
-    runtime.active_ids = {}
-    runtime.queue = {}
-    runtime.cursor = 1
-    runtime.next_cast_ready_time = 0
-
-    if type(skill_ids) ~= 'table' or not skill_framework or not skill_framework.get_def then
-      return 0, runtime.active_ids
-    end
-
-    local seen = {}
-    for _, raw_id in ipairs(skill_ids) do
-      local skill_id = tostring(raw_id or '')
-      if skill_id ~= '' and not seen[skill_id] and skill_framework.get_def(skill_id) then
-        seen[skill_id] = true
-        runtime.active_ids[#runtime.active_ids + 1] = skill_id
-      end
-    end
-    return #runtime.active_ids, runtime.active_ids
-  end
-
-  local function get_active_skill_ids()
-    local runtime = ensure_active_skill_runtime()
-    local result = {}
-    for _, skill_id in ipairs(runtime.active_ids or {}) do
-      result[#result + 1] = skill_id
-    end
-    return result
-  end
-
-  local function update_active_skills(dt)
-    if not skill_framework or not skill_framework.cast_by_id or not skill_framework.get_def then
-      return
-    end
-    if not STATE.hero or not STATE.hero:is_exist() then
-      return
-    end
-
-    local runtime = ensure_active_skill_runtime()
-    local active_ids = runtime.active_ids
-    if type(active_ids) ~= 'table' or #active_ids <= 0 then
-      return
-    end
-
-    local now = get_framework_game_time()
-    if now < (runtime.next_cast_ready_time or 0) then
-      return
-    end
-
-    local total = #active_ids
-    for _ = 1, total do
-      if runtime.cursor > total then
-        runtime.cursor = 1
-      end
-      local skill_id = active_ids[runtime.cursor]
-      runtime.cursor = runtime.cursor + 1
-      local def = skill_framework.get_def(skill_id)
-      if def then
-        local state = skill_framework.get_skill_state and skill_framework.get_skill_state(skill_id) or nil
-        local cooldown_left = state and tonumber(state.cooldown_left) or 0
-        if cooldown_left <= 0 then
-          local ok = skill_framework.cast_by_id(skill_id)
-          runtime.next_cast_ready_time = now + 0.08
-          if ok then
-            return
-          end
-        end
+    for i = 1, multishot_count do
+      local nearby = get_enemies_in_range(target:get_point(), 300, target, 1)
+      if #nearby > 0 then
+        deal_basic_attack_damage(nearby[1], skill, multishot_ratio)
       end
     end
   end
 
-  local function update_basic_attack(dt)
-    local skill = get_basic_attack_skill()
-    if not skill or not STATE.hero or not STATE.hero:is_exist() then
-      return
-    end
-    if STATE.basic_attack_enabled == false then
-      return
-    end
-    disable_native_basic_attack_ability(STATE.hero_common_attack)
+  play_basic_attack_impact_effect(target, damage, false)
+end
 
-    skill.cooldown_remaining = math.max(0, (skill.cooldown_remaining or 0) - dt)
-    if skill.cooldown_remaining > 0 then
-      return
-    end
-
-    local target = pick_skill_target(skill)
-    if not target then
-      return
-    end
-
-    cast_attack_skill_once(skill, target)
-    skill.cooldown_remaining = get_basic_attack_interval(skill)
+local function sync_basic_attack_ability_range()
+  local ability = STATE.hero_common_attack
+  if not ability or not ability:is_exist() then
+    return
   end
+  local range = get_current_basic_attack_range()
+  pcall(function()
+    ability:set_range(range)
+  end)
+end
 
-  local function update_attack_skills(dt)
-    if not STATE.attack_skill_state or not STATE.hero or not STATE.hero:is_exist() then
-      return
-    end
+local function api_sync_basic_attack_ability()
+  return sync_basic_attack_ability()
+end
 
-    update_basic_attack(dt)
-    update_active_skills(dt)
-  end
+local function api_get_basic_attack_skill()
+  return get_basic_attack_skill()
+end
 
-  local api = {
-    get_basic_attack_skill = get_basic_attack_skill,
-    get_current_basic_attack_range = get_current_basic_attack_range,
-    sync_basic_attack_ability = sync_basic_attack_ability,
-    setup_basic_attack_ability = setup_basic_attack_ability,
-    get_attack_skill = get_attack_skill,
-    get_attack_skill_slot = get_attack_skill_slot,
-    get_empty_attack_skill_slot = get_empty_attack_skill_slot,
-    get_unlocked_attack_skill_count = get_unlocked_attack_skill_count,
-    build_attack_skill_slot_text = build_attack_skill_slot_text,
-    show_attack_skill_loadout = show_attack_skill_loadout,
-    unlock_attack_skill = unlock_attack_skill,
-    get_skill_damage_template_id = get_skill_damage_template_id,
-    update_enemy_statuses = update_enemy_statuses,
-    set_active_skill_ids = set_active_skill_ids,
-    get_active_skill_ids = get_active_skill_ids,
-    update_active_skills = update_active_skills,
-    update_attack_skills = update_attack_skills,
-  }
+local function api_get_current_basic_attack_range()
+  return get_current_basic_attack_range()
+end
+
+local function api_get_attack_skill(skill_id)
+  return get_attack_skill(skill_id)
+end
+
+local function api_get_attack_skill_slot(slot)
+  return get_attack_skill_slot(slot)
+end
+
+local function api_unlock_attack_skill(skill_id)
+  return unlock_attack_skill(skill_id)
+end
+
+local function api_show_attack_skill_loadout()
+  show_attack_skill_loadout()
+end
+
+local function api_setup_basic_attack_ability()
+  setup_basic_attack_ability()
+end
+
+local function api_sync_basic_attack_ability_range()
+  sync_basic_attack_ability_range()
+end
+
+local api = {
+  sync_basic_attack_ability = api_sync_basic_attack_ability,
+  get_basic_attack_skill = api_get_basic_attack_skill,
+  get_current_basic_attack_range = api_get_current_basic_attack_range,
+  get_attack_skill = api_get_attack_skill,
+  get_attack_skill_slot = api_get_attack_skill_slot,
+  unlock_attack_skill = api_unlock_attack_skill,
+  show_attack_skill_loadout = api_show_attack_skill_loadout,
+  setup_basic_attack_ability = api_setup_basic_attack_ability,
+  sync_basic_attack_ability_range = api_sync_basic_attack_ability_range,
+}
+
 _G.attack_skills_system = api
+_G.SYSTEM.attack_skills = api
+
+return api

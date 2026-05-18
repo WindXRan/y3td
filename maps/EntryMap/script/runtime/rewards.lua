@@ -916,5 +916,7 @@ local STATE = env and env.STATE or _G.STATE
   end
 
   _G.reward_system = api
+  _G.SYSTEM = _G.SYSTEM or {}
+  _G.SYSTEM.reward = api
 
 return M

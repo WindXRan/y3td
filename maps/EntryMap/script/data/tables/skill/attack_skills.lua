@@ -1,101 +1,63 @@
-local CsvLoader = require 'data.csv_loader'
 local helpers = require 'data.tables.helpers'
-local SecondBatchBlueprints = require 'data.tables.skill.attack_skill_second_batch_blueprints'
-local SkillTaxonomy = require 'data.tables.skill.attack_skill_taxonomy'
-local RuntimeEditorIds = require 'data.tables.runtime_editor_ids'
-local BondEffectRuntimeRules = { basic_attack_profile = {} }
-local Json = require 'y3.tools.json'
 
-local OPTIONAL_NUMBER_FIELDS = {
-  default_slot = true,
-  base_damage_ratio = true,
-  base_cooldown = true,
-  base_range = true,
-  base_pierce = true,
-  base_pierce_width = true,
-  base_control_lock_time = true,
-  base_knockback_distance = true,
-  base_knockback_speed = true,
-  base_explosion_ratio = true,
-  base_explosion_radius = true,
-  base_extra_targets = true,
-  base_repeat_count = true,
-  ui_icon = true,
-  icon = true,
+local SKILL_DATA = {
+  { id = 'basic_attack', name = '普攻', default_slot = 1, summary = '射出 1 支破空箭矢直取敌人，造成 125% 攻击的金行箭矢伤害。',
+    damage_type = '物理', damage_form = 'weapon', element = 'metal', damage_label = '金行箭矢',
+    base_damage_ratio = 1.25, base_cooldown = 1.05, base_range = 820, base_pierce = 0,
+    base_pierce_width = 96, base_control_lock_time = 0, base_knockback_distance = 0, base_knockback_speed = 0,
+    base_explosion_ratio = 0, base_explosion_radius = 0, base_extra_targets = 0, base_repeat_count = 1,
+    ui_icon = 100508, icon = 100508,
+  },
 }
 
-local OPTIONAL_VFX_NUMBER_FIELDS = {
-  projectile_key = true,
-  projectile_speed = true,
-  projectile_time = true,
-  target_distance = true,
-  cast_particle = true,
-  cast_scale = true,
-  cast_time = true,
-  impact_particle = true,
-  impact_scale = true,
-  impact_time = true,
-  explosion_particle = true,
-  explosion_scale = true,
-  explosion_time = true,
-  charge_particle = true,
-  charge_scale = true,
-  charge_time = true,
-  chain_particle = true,
-  chain_scale = true,
-  chain_time = true,
-  strike_delay = true,
+local SKILL_VFX = {
+  basic_attack = {
+    projectile_key = 134267104, projectile_speed = 3760, projectile_time = 2.9, target_distance = 28,
+    cast_particle = 101175, cast_scale = 0.90, cast_time = 0.14,
+    impact_particle = 101175, impact_scale = 1.08, impact_time = 0.28,
+    explosion_particle = 101175, explosion_scale = 1.08, explosion_time = 0.30,
+    charge_particle = 101175, charge_scale = 0.86, charge_time = 0.20,
+    chain_particle = 101175, chain_scale = 0.92, chain_time = 0.22,
+  },
 }
 
-local VFX_MANIFEST_FIELD_MAP = {
-  projectile_key = 'entry_projectile_id',
-  projectile_speed = 'entry_projectile_speed',
-  projectile_time = 'entry_projectile_time',
-  target_distance = 'entry_target_distance',
-  strike_delay = 'entry_strike_delay',
-  cast_particle = 'entry_cast_effect_id',
-  cast_scale = 'entry_cast_scale',
-  cast_time = 'entry_cast_time',
-  impact_particle = 'entry_impact_effect_id',
-  impact_scale = 'entry_impact_scale',
-  impact_time = 'entry_impact_time',
-  explosion_particle = 'entry_explosion_effect_id',
-  explosion_scale = 'entry_explosion_scale',
-  explosion_time = 'entry_explosion_time',
-  charge_particle = 'entry_charge_effect_id',
-  charge_scale = 'entry_charge_scale',
-  charge_time = 'entry_charge_time',
-  chain_particle = 'entry_chain_effect_id',
-  chain_scale = 'entry_chain_scale',
-  chain_time = 'entry_chain_time',
+local TAXONOMY_LIST = {
+  { id = 'basic_attack', category = '弓箭普攻', cast_family = 'basic_projectile', presentation_family = 'eca_projectile_hit', eca_reference = '弓箭普攻/箭矢命中', tactical_tags = { 'single', 'projectile', 'basic_attack', 'archery', 'arrow' } },
+  { id = 'sword_wave', category = '直线贯穿', cast_family = 'line_pierce', presentation_family = 'eca_line_pierce', eca_reference = '直线穿透型技能', tactical_tags = { 'line', 'pierce', 'clear' } },
+  { id = 'arcane_laser', category = '持续照射', cast_family = 'beam', presentation_family = 'eca_beam_tick', eca_reference = '持续照射型技能', tactical_tags = { 'beam', 'sustain', 'aoe' } },
+  { id = 'arcane_ray', category = '长线爆发', cast_family = 'line_pierce', presentation_family = 'eca_line_pierce', eca_reference = '长线穿透爆发', tactical_tags = { 'line', 'burst', 'pierce' } },
+  { id = 'frost_nova', category = '近身爆发', cast_family = 'nova', presentation_family = 'eca_nova_burst', eca_reference = '以自身为心范围爆发', tactical_tags = { 'nova', 'aoe', 'control' } },
+  { id = 'chain_lightning', category = '连锁弹射', cast_family = 'chain', presentation_family = 'eca_chain_hit', eca_reference = '命中后链式扩散', tactical_tags = { 'chain', 'bounce', 'clear' } },
+  { id = 'earthquake', category = '区域爆发', cast_family = 'area_burst', presentation_family = 'eca_ground_burst', eca_reference = '区域落点爆发', tactical_tags = { 'aoe', 'burst', 'ground' } },
+  { id = 'tornado', category = '移动场域', cast_family = 'moving_field', presentation_family = 'eca_moving_field', eca_reference = '持续移动切割场', tactical_tags = { 'field', 'moving', 'pull' } },
+  { id = 'electro_net', category = '控制场域', cast_family = 'control_field', presentation_family = 'eca_control_field', eca_reference = '区域束缚控制场', tactical_tags = { 'field', 'control', 'aoe' } },
+  { id = 'meteor', category = '延迟终结', cast_family = 'delayed_area_burst', presentation_family = 'eca_charge_burst', eca_reference = '蓄力后高爆发落点', tactical_tags = { 'delayed', 'burst', 'aoe' } },
+  { id = 'hurricane', category = '聚怪场域', cast_family = 'persistent_field', presentation_family = 'eca_persistent_field', eca_reference = '持续聚怪切割场', tactical_tags = { 'field', 'pull', 'sustain' } },
+  { id = 'fireball', category = '点爆炸裂', cast_family = 'area_burst', presentation_family = 'eca_ground_burst', eca_reference = '点面兼顾爆炸', tactical_tags = { 'burst', 'aoe', 'fire' } },
+  { id = 'moon_blade', category = '往返轮斩', cast_family = 'line_return', presentation_family = 'eca_return_blade', eca_reference = '往返飞刃收割', tactical_tags = { 'line', 'return', 'bounce' } },
+  { id = 'lotus_flame', category = '火域持续', cast_family = 'ignite_field', presentation_family = 'eca_persistent_field', eca_reference = '持续火域焚烧', tactical_tags = { 'field', 'ignite', 'aoe' } },
+  { id = 'demon_seal', category = '封镇爆发', cast_family = 'seal_burst', presentation_family = 'eca_seal_burst', eca_reference = '先封后爆控制', tactical_tags = { 'seal', 'control', 'burst' } },
+  { id = 'flying_swords', category = '追击飞剑', cast_family = 'seeking_swords', presentation_family = 'eca_seeking_projectile', eca_reference = '追踪飞剑攒射', tactical_tags = { 'projectile', 'seek', 'bounce' } },
 }
 
-local ABILITY_VISIBLE_STAGE_FIELD_MAP = {
-  cast = 'cst_sfx_list',
-  impact = 'hit_sfx_list',
-  explosion = 'end_sfx_list',
-  charge = 'sp_sfx_list',
-  chain = 'bs_sfx_list',
-}
+local TAXONOMY_BY_ID = helpers.list_to_map(TAXONOMY_LIST)
 
-local POSITIVE_ONLY_VFX_FIELDS = {
-  projectile_key = true,
-  cast_particle = true,
-  impact_particle = true,
-  explosion_particle = true,
-  charge_particle = true,
-  chain_particle = true,
-}
-
-local EDITOR_JSON_CACHE = {
-  abilityall = {},
-  projectileall = {},
-}
-
-local EDITOR_JSON_PATH_PATTERNS = {
-  'maps/EntryMap/editor_table/%s/%s.json',
-  'editor_table/%s/%s.json',
-  '../editor_table/%s/%s.json',
+local PRESENTATION_PROFILES = {
+  default = {
+    cast = { min_scale = 0.72, min_time = 0.14, socket = 'origin' },
+    impact = { min_scale = 0.96, min_time = 0.22, height = 12 },
+    burst = { min_scale = 1.08, min_time = 0.30, height = 0 },
+    terminal = { min_scale = 1.08, min_time = 0.30, height = 0 },
+    charge = { min_scale = 0.86, min_time = 0.20, height = 90 },
+    chain = { min_scale = 0.82, min_time = 0.18, height = 0 },
+    sustain = { min_scale = 0.82, min_time = 0.20, height = 0 },
+    tick = { min_scale = 0.82, min_time = 0.20, height = 0 },
+  },
+  eca_projectile_hit = {
+    cast = { min_scale = 0.76, min_time = 0.16, socket = 'origin' },
+    impact = { min_scale = 1.00, min_time = 0.24, height = 18 },
+    chain = { min_scale = 0.84, min_time = 0.20, height = 16 },
+  },
 }
 
 local LEGACY_DAMAGE_TYPE_MAP = {
@@ -103,373 +65,102 @@ local LEGACY_DAMAGE_TYPE_MAP = {
   ['法术'] = { damage_form = 'spell', element = 'none', damage_label = '术法伤害' },
 }
 
-local function unwrap_editor_kv_entry(raw)
-  if type(raw) == 'table' and raw.value ~= nil then
-    return raw.value
-  end
-  return raw
-end
-
-local function to_optional_number(raw)
-  raw = unwrap_editor_kv_entry(raw)
-  if raw == nil or raw == '' then
-    return nil
-  end
-  return tonumber(raw) or raw
-end
-
-local function read_text_file(path)
-  local handle = io.open(path, 'r')
-  if not handle then
-    return nil
-  end
-  local content = handle:read('*a')
-  handle:close()
-  return content
-end
-
-local function load_editor_json(table_name, object_key)
-  if not table_name or not object_key then
-    return nil
-  end
-
-  local cache = EDITOR_JSON_CACHE[table_name]
-  if cache and cache[object_key] ~= nil then
-    return cache[object_key] or nil
-  end
-
-  local content
-  for _, path_pattern in ipairs(EDITOR_JSON_PATH_PATTERNS) do
-    local path = string.format(path_pattern, table_name, tostring(object_key))
-    content = read_text_file(path)
-    if content then
-      break
-    end
-  end
-
-  if not content or content == '' then
-    if cache then
-      cache[object_key] = false
-    end
-    return nil
-  end
-
-  local ok, data = pcall(Json.decode, content)
-  if not ok or type(data) ~= 'table' then
-    if cache then
-      cache[object_key] = false
-    end
-    return nil
-  end
-
-  if cache then
-    cache[object_key] = data
-  end
-  return data
-end
-
-local function get_editor_object_data(table_name, object_key)
-  if not table_name or not object_key then
-    return nil
-  end
-
-  local local_json_data = load_editor_json(table_name, object_key)
-  if local_json_data then
-    return local_json_data
-  end
-
-  local y3_runtime = rawget(_G, 'y3')
-  if y3_runtime and y3_runtime.object then
-    local object_pool
-    if table_name == 'abilityall' then
-      object_pool = y3_runtime.object.ability
-    elseif table_name == 'projectileall' then
-      object_pool = y3_runtime.object.projectile
-    end
-    local editor_object = object_pool and object_pool[object_key] or nil
-    if editor_object and type(editor_object.data) == 'table' then
-      return editor_object.data
-    end
-  end
-
-  return load_editor_json(table_name, object_key)
-end
-
-local function get_editor_kv(table_name, object_key)
-  local data = get_editor_object_data(table_name, object_key)
-  if type(data) == 'table' and type(data.kv) == 'table' then
-    return data.kv
-  end
-  return {}
-end
-
-local function unwrap_tuple_items(raw)
-  raw = unwrap_editor_kv_entry(raw)
-  if type(raw) ~= 'table' then
-    return nil
-  end
-  if type(raw.items) == 'table' then
-    return raw.items
-  end
-  return raw
-end
-
-local function read_visible_stage_effect(entry)
-  local items = unwrap_tuple_items(entry)
-  if type(items) ~= 'table' then
-    return nil, nil, nil
-  end
-
-  local effect_id = to_optional_number(items[1])
-  if type(effect_id) == 'number' and effect_id <= 0 then
-    effect_id = nil
-  end
-
-  local scale_items = unwrap_tuple_items(items[4])
-  local scale
-  if type(scale_items) == 'table' then
-    for index = 1, 3 do
-      local candidate = to_optional_number(scale_items[index])
-      if type(candidate) == 'number' and candidate > 0 then
-        scale = candidate
-        break
-      end
-    end
-  end
-
-  local time = to_optional_number(items[5])
-  return effect_id, scale, time
-end
-
-local function apply_visible_ability_vfx(result, ability_data)
-  if type(ability_data) ~= 'table' then
-    return
-  end
-
-  for stage, field_name in pairs(ABILITY_VISIBLE_STAGE_FIELD_MAP) do
-    local effect_list = unwrap_tuple_items(ability_data[field_name])
-    local effect_id, scale, time = read_visible_stage_effect(effect_list and effect_list[1] or nil)
-    if effect_id ~= nil and result[stage .. '_particle'] == nil then
-      result[stage .. '_particle'] = effect_id
-    end
-    if scale ~= nil and result[stage .. '_scale'] == nil then
-      result[stage .. '_scale'] = scale
-    end
-    if time ~= nil and result[stage .. '_time'] == nil then
-      result[stage .. '_time'] = time
-    end
-  end
-end
-
-local function apply_manifest_vfx(result, manifest)
-  if type(manifest) ~= 'table' then
-    return
-  end
-  for field_name, manifest_field in pairs(VFX_MANIFEST_FIELD_MAP) do
-    local value = to_optional_number(manifest[manifest_field])
-    if value ~= nil then
-      result[field_name] = value
-    end
-  end
-end
-
-local function normalize_vfx(result)
-  for field_name, _ in pairs(POSITIVE_ONLY_VFX_FIELDS) do
-    local value = to_optional_number(result[field_name])
-    if type(value) == 'number' and value <= 0 then
-      result[field_name] = nil
-    end
-  end
-  return result
-end
-
-local function build_vfx_from_editor(ability_key, projectile_key)
-  local result = {}
-  local ability_data = get_editor_object_data('abilityall', ability_key)
-  apply_manifest_vfx(result, get_editor_kv('projectileall', projectile_key))
-  apply_manifest_vfx(result, get_editor_kv('abilityall', ability_key))
-  apply_visible_ability_vfx(result, ability_data)
-  if projectile_key and result.projectile_key == nil then
-    result.projectile_key = projectile_key
-  end
-  for field_name, _ in pairs(OPTIONAL_VFX_NUMBER_FIELDS) do
-    local value = to_optional_number(result[field_name])
-    if value ~= nil then
-      result[field_name] = value
-    end
-  end
-  return normalize_vfx(result)
-end
-
-local function build_damage_meta(row)
-  local damage_form = row.damage_form
-  local element = row.element
-  local damage_label = row.damage_label
-
-  if damage_form and damage_form ~= '' and element and element ~= '' and damage_label and damage_label ~= '' then
-    return damage_form, element, damage_label
-  end
-
-  local fallback = LEGACY_DAMAGE_TYPE_MAP[row.damage_type]
-  if fallback then
-    return fallback.damage_form, fallback.element, fallback.damage_label
-  end
-
-  error(string.format('attack skill %s missing damage metadata', tostring(row.id)))
-end
-
 local function apply_taxonomy(def, skill_id)
-  local taxonomy = SkillTaxonomy.by_id and SkillTaxonomy.by_id[skill_id] or nil
-  if not taxonomy then
-    return def
+  local taxonomy = TAXONOMY_BY_ID[skill_id]
+  if taxonomy then
+    def.category = taxonomy.category
+    def.cast_family = taxonomy.cast_family
+    def.presentation_family = taxonomy.presentation_family
+    def.eca_reference = taxonomy.eca_reference
+    def.tactical_tags = taxonomy.tactical_tags
   end
-
-  def.category = taxonomy.category
-  def.cast_family = taxonomy.cast_family
-  def.presentation_family = taxonomy.presentation_family
-  def.eca_reference = taxonomy.eca_reference
-  def.tactical_tags = taxonomy.tactical_tags
   return def
 end
 
-local skill_rows = CsvLoader.read_rows_optional({path = 'data_csv/attack_skills.csv'})
-local vfx_rows = CsvLoader.read_rows_optional({path = 'data_csv/attack_skill_vfx.csv'})
-local csv_vfx_by_id = {}
-for _, row in ipairs(vfx_rows) do
-  if row.id and row.id ~= '' and row.id ~= '__字段说明__' then
-    local vfx = {}
-    for field_name, _ in pairs(OPTIONAL_VFX_NUMBER_FIELDS) do
-      local value = to_optional_number(row[field_name])
-      if value ~= nil then
-        vfx[field_name] = value
-      end
-    end
-    csv_vfx_by_id[row.id] = normalize_vfx(vfx)
-  end
-end
-
-local function build_vfx(skill_id, ability_key, projectile_key)
-  local csv_vfx = csv_vfx_by_id[skill_id]
-  if csv_vfx and next(csv_vfx) then
-    if csv_vfx.projectile_key then
-      return csv_vfx
-    end
-    local editor_vfx = build_vfx_from_editor(ability_key, projectile_key)
-    local result = {}
-    for k, v in pairs(editor_vfx) do
-      result[k] = v
-    end
-    for k, v in pairs(csv_vfx) do
-      result[k] = v
-    end
-    return result
-  end
-  return build_vfx_from_editor(ability_key, projectile_key)
-end
-
 local list = {}
-for _, row in ipairs(skill_rows) do
-  if row.id and row.id ~= '' and row.id ~= '__字段说明__' then
-    local damage_form, element, damage_label = build_damage_meta(row)
-    local editor_ability_key = RuntimeEditorIds.ability[row.id]
-    local editor_projectile_key = RuntimeEditorIds.projectile and RuntimeEditorIds.projectile[row.id] or nil
-    local def = {
-      id = row.id,
-      name = row.name,
-      summary = row.summary,
-      damage_type = row.damage_type,
-      damage_form = damage_form,
-      element = element,
-      damage_label = damage_label,
-      editor_ability_key = editor_ability_key,
-      editor_projectile_key = editor_projectile_key,
-      vfx = build_vfx(row.id, editor_ability_key, editor_projectile_key),
-    }
-
-    for field_name, _ in pairs(OPTIONAL_NUMBER_FIELDS) do
-      def[field_name] = to_optional_number(row[field_name])
-    end
-
-    apply_taxonomy(def, row.id)
-
-    list[#list + 1] = def
-  end
+for _, row in ipairs(SKILL_DATA) do
+  local def = {
+    id = row.id, name = row.name, summary = row.summary,
+    damage_type = row.damage_type, damage_form = row.damage_form, element = row.element, damage_label = row.damage_label,
+    base_damage_ratio = row.base_damage_ratio, base_cooldown = row.base_cooldown, base_range = row.base_range,
+    base_pierce = row.base_pierce, base_pierce_width = row.base_pierce_width,
+    base_control_lock_time = row.base_control_lock_time, base_knockback_distance = row.base_knockback_distance,
+    base_knockback_speed = row.base_knockback_speed, base_explosion_ratio = row.base_explosion_ratio,
+    base_explosion_radius = row.base_explosion_radius, base_extra_targets = row.base_extra_targets,
+    base_repeat_count = row.base_repeat_count, default_slot = row.default_slot, ui_icon = row.ui_icon, icon = row.icon,
+    vfx = SKILL_VFX[row.id] or {},
+  }
+  apply_taxonomy(def, row.id)
+  list[#list + 1] = def
 end
 
 local defs_by_id = helpers.list_to_map(list)
 local vfx_by_id = helpers.build_field_map(list, 'vfx', {})
 
-for _, blueprint in ipairs(SecondBatchBlueprints.list or {}) do
-  if not defs_by_id[blueprint.id] then
-    local editor_ability_key = RuntimeEditorIds.ability[blueprint.id]
-    local editor_projectile_key = RuntimeEditorIds.projectile and RuntimeEditorIds.projectile[blueprint.id] or nil
-    defs_by_id[blueprint.id] = {
-      id = blueprint.id,
-      name = blueprint.name,
-      summary = blueprint.summary,
-      damage_type = blueprint.damage_type,
-      damage_form = blueprint.damage_form,
-      element = blueprint.element,
-      damage_label = blueprint.damage_label,
-      ui_icon = blueprint.ui_icon or blueprint.icon,
-      icon = blueprint.ui_icon or blueprint.icon,
-      archetype = blueprint.archetype,
-      category = nil,
-      cast_family = nil,
-      presentation_family = nil,
-      eca_reference = nil,
-      editor_ability_key = editor_ability_key,
-      editor_projectile_key = editor_projectile_key,
-      base_damage_ratio = blueprint.base and blueprint.base.damage_ratio or 0,
-      base_cooldown = blueprint.base and blueprint.base.cooldown or 0,
-      base_range = blueprint.base and blueprint.base.range or 0,
-      base_pierce = blueprint.base and blueprint.base.pierce or 0,
-      base_duration = blueprint.base and blueprint.base.duration or 0,
-      base_radius = blueprint.base and blueprint.base.radius or 0,
-      base_bounce = blueprint.base and blueprint.base.bounce or 0,
-      evolution_name = blueprint.evolution and blueprint.evolution.name or nil,
-      evolution_summary = blueprint.evolution and blueprint.evolution.summary or nil,
-      vfx = build_vfx(blueprint.id, editor_ability_key, editor_projectile_key),
-    }
-    apply_taxonomy(defs_by_id[blueprint.id], blueprint.id)
-    vfx_by_id[blueprint.id] = defs_by_id[blueprint.id].vfx
-  end
-end
-
 if not defs_by_id.basic_attack then
-  local fallback_basic_editor_ability_key = RuntimeEditorIds.ability and RuntimeEditorIds.ability.basic_attack or nil
-  local fallback_basic_editor_projectile_key = RuntimeEditorIds.projectile and RuntimeEditorIds.projectile.basic_attack or nil
-  local fallback_basic_vfx = build_vfx('basic_attack', fallback_basic_editor_ability_key, fallback_basic_editor_projectile_key)
-  local profile = type(BondEffectRuntimeRules.basic_attack_profile) == 'table' and BondEffectRuntimeRules.basic_attack_profile or {}
-  local fallback_basic_def = {
-    id = 'basic_attack',
-    name = tostring(profile.name or '基础攻击'),
-    summary = tostring(profile.summary or '默认普攻（CSV 缺失兜底）'),
-    damage_type = '物理',
-    damage_form = 'weapon',
-    element = 'none',
-    damage_label = '兵刃伤害',
-    editor_ability_key = fallback_basic_editor_ability_key,
-    editor_projectile_key = fallback_basic_editor_projectile_key,
-    base_damage_ratio = tonumber(profile.base_damage_ratio) or 1.0,
-    base_cooldown = tonumber(profile.base_cooldown) or 1.7,
-    base_range = tonumber(profile.base_range) or 250,
-    base_pierce = tonumber(profile.base_pierce) or 0,
-    base_pierce_width = tonumber(profile.base_pierce_width) or 90,
-    base_repeat_count = tonumber(profile.base_repeat_count) or 1,
-    ui_icon = tonumber(profile.ui_icon),
-    icon = tonumber(profile.icon),
-    archetype = profile.archetype,
-    vfx = fallback_basic_vfx,
+  defs_by_id.basic_attack = {
+    id = 'basic_attack', name = '基础攻击', summary = '默认普攻（兜底）',
+    damage_type = '物理', damage_form = 'weapon', element = 'none', damage_label = '兵刃伤害',
+    base_damage_ratio = 1.0, base_cooldown = 1.7, base_range = 250, base_pierce = 0,
+    base_pierce_width = 90, base_repeat_count = 1, vfx = {},
   }
-  defs_by_id.basic_attack = apply_taxonomy(fallback_basic_def, 'basic_attack')
+  apply_taxonomy(defs_by_id.basic_attack, 'basic_attack')
   vfx_by_id.basic_attack = defs_by_id.basic_attack.vfx
 end
 
+local CsvLoader = require 'data.csv_loader'
+
+local function trim(v) return tostring(v or ''):gsub('^%s+', ''):gsub('%s+$', '') end
+local function to_num(v) local s = trim(v); return s == '' and nil or tonumber(s) end
+local function parse_enabled(v) local s = string.lower(trim(v)); return s == '' or s == '1' or s == 'true' end
+
+local visual_by_bond = {}
+local visual_by_skill_id = {}
+local bond_to_skill_id = {}
+
+for _, row in ipairs(CsvLoader.read_rows_optional({path = 'data_csv/skill_visuals.csv'})) do
+  if parse_enabled(row.enabled) then
+    local skill_id = trim(row.skill_id)
+    local bond_name = trim(row.bond_name)
+    if bond_name ~= '' then
+      local cfg = {
+        projectile_key = to_num(row.projectile_key), particle_key = to_num(row.particle_key), icon_key = to_num(row.icon_key),
+        line_particle_key = to_num(row.line_particle_key), template_ref = to_num(row.template_ref),
+        projectile_speed = to_num(row.projectile_speed), projectile_time = to_num(row.projectile_time),
+        target_distance = to_num(row.target_distance), projectile_line_distance = to_num(row.projectile_line_distance),
+        projectile_angle_offset = to_num(row.projectile_angle_offset), projectile_motion_angle_offset = to_num(row.projectile_motion_angle_offset),
+        trajectory_style = trim(row.trajectory_style), projectile_parabola_height = to_num(row.projectile_parabola_height),
+        projectile_rotate_time = to_num(row.projectile_rotate_time), projectile_init_max_rotate_angle = to_num(row.projectile_init_max_rotate_angle),
+        area_fx_base_radius = to_num(row.area_fx_base_radius), area_fx_scale_bias = to_num(row.area_fx_scale_bias),
+        particle_scale_bias = to_num(row.particle_scale_bias), delivery_mode = trim(row.delivery_mode),
+        motion_mode = trim(row.motion_mode), hit_fx_mode = trim(row.hit_fx_mode),
+      }
+      visual_by_bond[bond_name] = cfg
+      if skill_id ~= '' and skill_id ~= '__字段说明__' then
+        visual_by_skill_id[skill_id] = cfg
+        bond_to_skill_id[bond_name] = skill_id
+      end
+    end
+  end
+end
+
+local function get_by_bond_name(bond_name)
+  local bond = trim(bond_name)
+  if bond == '' then return nil end
+  local skill_id = bond_to_skill_id[bond]
+  if skill_id and visual_by_skill_id[skill_id] then return visual_by_skill_id[skill_id] end
+  return visual_by_bond[bond]
+end
+
+local function get_by_skill_id(skill_id) return visual_by_skill_id[trim(skill_id)] end
+
 return {
-  list = list,
-  defs_by_id = defs_by_id,
-  vfx_by_id = vfx_by_id,
-  blueprints = SecondBatchBlueprints,
-  blueprint_by_id = helpers.list_to_map(SecondBatchBlueprints.list),
+  list = list, defs_by_id = defs_by_id, vfx_by_id = vfx_by_id,
+  blueprints = { list = {} },
+  blueprint_by_id = {},
+  taxonomy_list = TAXONOMY_LIST, taxonomy_by_id = TAXONOMY_BY_ID,
+  presentation_profiles = PRESENTATION_PROFILES,
+  skills = SKILL_DATA, vfx = SKILL_VFX,
+  visual_by_bond = visual_by_bond, visual_by_skill_id = visual_by_skill_id, bond_to_skill_id = bond_to_skill_id,
+  get_by_bond_name = get_by_bond_name, get_by_skill_id = get_by_skill_id,
 }

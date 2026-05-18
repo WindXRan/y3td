@@ -1,6 +1,29 @@
 local M = {}
-local BootDevCommands = require 'runtime.boot_dev_commands'
-local BootBootstrapSequence = require 'runtime.boot_bootstrap_sequence'
+
+local function create_dev_commands()
+  return function()
+    local debug_tools_system = _G.debug_tools_system
+    if debug_tools_system and debug_tools_system.register_dev_commands then
+      debug_tools_system.register_dev_commands()
+    end
+
+    local gm_bond_effects_system = _G.gm_bond_effects_system
+    if gm_bond_effects_system and gm_bond_effects_system.register_dev_commands then
+      gm_bond_effects_system.register_dev_commands()
+    end
+  end
+end
+
+local function create_bootstrap_sequence(env)
+  return function()
+    env.ensure_helper_signals()
+    env.reset_session_state()
+    env.register_runtime_events()
+    env.register_dev_commands()
+    env.start_runtime_loops()
+    env.setup_post_bootstrap_ui()
+  end
+end
 
 function M.create()
   local RuntimeLoopsSystem = require 'runtime.loops'
@@ -23,9 +46,9 @@ function M.create()
     return runtime_loops_system.start_runtime_loops()
   end
 
-  local register_dev_commands = BootDevCommands.create()
+  local register_dev_commands = create_dev_commands()
 
-  local run_bootstrap_sequence = BootBootstrapSequence.create({
+  local run_bootstrap_sequence = create_bootstrap_sequence({
     ensure_helper_signals = _G.ensure_helper_signals,
     reset_session_state = function() return _G.reset_session_state and _G.reset_session_state() end,
     register_runtime_events = register_runtime_events,

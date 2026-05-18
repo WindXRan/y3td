@@ -2,13 +2,20 @@
   boot.lua — 运行时入口及总协调
   职责：创建 STATE、初始化全局、加载子系统、注册事件、返回 RuntimeEntry
   加载顺序原则：先数据表 → 工具模块 → 核心状态 → 业务系统（按依赖排序）
-  所有业务系统模块均已自初始化（require 时自动设置 _G.xxx），无需 create() 调用
+
+  全局命名空间规范：
+  - _G.STATE / _G.CONFIG：核心状态和配置
+  - _G.SYSTEM：统一的系统服务定位器
+  - 工具函数通过模块导出（如 AreaUtils, BattleUtils 等）
 --]]
 
 -- 数据表和配置（无运行时依赖，可最先加载）
 local CONFIG = require 'config.entry_config'
 local AttackSkillObjects = require 'data.tables.skill.attack_skills'
 _G.AttackSkillObjects = AttackSkillObjects
+
+-- 统一系统命名空间
+_G.SYSTEM = _G.SYSTEM or {}
 
 -- 工具模块（无 _G 依赖，纯函数/工厂）
 local GearUpgrades = require 'runtime.gear_upgrades'
@@ -77,6 +84,8 @@ _G.ATTACK_SKILL_SLOT_COUNT = ATTACK_SKILL_SLOT_COUNT
 -- Buff 系统（使用 snake_case 统一导出）
 local buff_system = require 'runtime.buff_system'
 _G.buff_system_tick = buff_system.tick
+_G.update_buff_system = _G.buff_system_tick
+_G.SYSTEM.buff = buff_system
 
 local function install_projectile_override_hook()
   if projectile_override_hook_installed then
@@ -158,6 +167,7 @@ _G.sync_gear_runtime_effects = sync_gear_runtime_effects
 -- 加载英雄属性模块
 local hero_attr_module = require 'runtime.hero_attr_system'
 hero_attr_system = _G.hero_attr_system
+_G.SYSTEM.hero_attr = hero_attr_system
 
 do
   local ratio = CONFIG
@@ -170,6 +180,7 @@ do
 end
 
 require 'runtime.hero_model'
+_G.SYSTEM.hero_model = _G.hero_model
 
 local round_number = BootHelpers.round_number
 local design_seconds = BootHelpers.design_seconds
@@ -178,7 +189,7 @@ _G.design_seconds = design_seconds
 
 RuntimeEntry.emit_skill_hit_feedback = BootCombat.emit_skill_hit_feedback
 
-BootHelpers.set_get_bond_runtime_bonus(_G.get_bond_runtime_bonus)
+BootHelpers.set_get_bond_runtime_bonus(_G.BondUtils.get_bond_runtime_bonus)
 
 local handle_bond_hero_pre_hurt = BootCombat.handle_bond_hero_pre_hurt
 local trigger_td_skills_on_hit = BootCombat.trigger_td_skills_on_hit
@@ -189,14 +200,17 @@ require 'runtime.progression'
 _G.get_hero_max_level = _G.progression_system.get_hero_max_level
 _G.sync_hero_progression = _G.progression_system.sync_hero_progression
 _G.sync_hero_progress_from_engine = _G.progression_system.sync_hero_progress_from_engine
+_G.SYSTEM.progression = _G.progression_system
 
 require 'runtime.rewards'
 reward_system = _G.reward_system
+_G.SYSTEM.reward = reward_system
 
 attr_choice_system = reward_system
 
 require 'runtime.audio'
 audio_system = _G.audio_system
+_G.SYSTEM.audio = audio_system
 
 
 -- 阶段6：回合选择系统（拆分为独立模块）
@@ -257,21 +271,21 @@ end)
 EventBus.subscribe('hero_damage', trigger_td_skills_on_hit)
 EventBus.subscribe('formula_damage_override', BootCombat.apply_formula_damage_override)
 EventBus.subscribe('hero_before_hurt', handle_bond_hero_pre_hurt)
-EventBus.subscribe('hero_attr_changed', _G.snapshot_hero_attrs)
+EventBus.subscribe('hero_attr_changed', _G.AttrUtils.snapshot_hero_attrs)
 EventBus.subscribe('finish_game', _G.handle_battle_finished)
 
--- 阶段7：技能系统 — 伤害模板 → 技能框架 → 样本技能 → 生成技能 → 运行时
--- 所有技能模块自初始化，依赖 _G.STATE/_G.CONFIG 等全局
--- 加载顺序有严格依赖：框架 → 样本 → 生成（register_all） → 攻击技能运行时
+-- 阶段7：技能系统 — 使用合并后的 skill_system
 require 'runtime.skill_damage_templates'
-require 'runtime.skill_framework'
-require 'runtime.sample_skills'
-require 'runtime.generated_skills'
-require 'runtime.attack_skills'
+_G.SYSTEM.damage_api = _G.td_damage_api
 
+local SkillSystem = require 'runtime.skill_system'
+_G.SYSTEM.skill = SkillSystem
+
+_G.update_attack_skills = SkillSystem.update_attack_skills
+_G.update_enemy_statuses = SkillSystem.update_enemy_statuses
 
 do
-  local generated_api = _G.generated_skills_api
+  local generated_api = SkillSystem.generated
   local count, defs = generated_api.register_all()
   print('[boot] 批量注册技能完成: ' .. tostring(count) .. ' 个')
   if AttackSkillObjects and AttackSkillObjects.vfx_by_id then
@@ -292,24 +306,38 @@ do
       end
     end
   end
+
+  local active_ids = {}
+  for _, def in ipairs(defs) do
+    if def.id then
+      active_ids[#active_ids + 1] = def.id
+    end
+  end
+  if #active_ids > 0 then
+    local n, _ = SkillSystem.attack.set_active_skill_ids(active_ids)
+    print('[boot] 已设置 ' .. tostring(n) .. ' 个主动技能')
+  end
 end
 
 _G.ATTACK_SKILL_VFX = AttackSkillObjects and AttackSkillObjects.vfx_by_id
 
-require 'runtime.auto_active_effects'
-_G.force_trigger_effect = _G.auto_active_effects_system.force_trigger_effect
+_G.force_trigger_effect = SkillSystem.auto_effects.force_trigger_effect
+_G.update_auto_active_effects = SkillSystem.auto_effects.update
 
-require 'runtime.effect_debug'
+-- 阶段7.5：战场系统 — 使用合并后的 battle_system
+local BattleSystem = require 'runtime.battle_system'
+_G.SYSTEM.battle = BattleSystem
 
-require 'runtime.battlefield'
-_G.force_spawn_boss = _G.battlefield_system.force_spawn_boss
-_G.execute_enemy = _G.battlefield_system.execute_enemy
+_G.force_spawn_boss = BattleSystem.force_spawn_boss
+_G.execute_enemy = BattleSystem.execute_enemy
 
 BootUIEnhancements.set_apply_round_choice(_G.apply_round_choice)
 
--- 阶段8：UI 系统 — HUD、提示面板、武器提示、结算面板
--- runtime_hud 和 attr_tips_panel 使用 create() 初始化
-local runtime_hud_module = require 'ui.runtime_hud'
+-- 阶段8：UI 系统 — 使用合并后的 ui_system
+local UISystem = require 'runtime.ui_system'
+_G.SYSTEM.ui = UISystem
+
+local runtime_hud_module = UISystem.hud
 local hud = runtime_hud_module.create()
 _G.hud_system = hud
 
@@ -318,40 +346,103 @@ if STATE.attr_tips_panel and STATE.attr_tips_panel.init then
   STATE.attr_tips_panel.init()
 end
 
-require 'runtime.runtime_ui_helpers'
+local runtime_ui_helpers = UISystem.helpers
+runtime_ui_helpers.__raw_refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel
+runtime_ui_helpers.refresh_choice_panel = BootUIEnhancements.refresh_choice_panel
+runtime_ui_helpers.install_panel_systems()
 
-_G.runtime_ui_helpers.__raw_refresh_choice_panel = _G.runtime_ui_helpers.refresh_choice_panel
-_G.runtime_ui_helpers.refresh_choice_panel = BootUIEnhancements.refresh_choice_panel
-_G.runtime_ui_helpers.install_panel_systems()
+UISystem.growth_tip.create = UISystem.growth_tip.create or function()
+  return require('ui.growth_weapon_item_tip').create()
+end
+_G.growth_weapon_item_tip = UISystem.growth_tip.create()
 
-local growth_weapon_item_tip = require('ui.growth_weapon_item_tip').create()
-_G.growth_weapon_item_tip = growth_weapon_item_tip
+UISystem.result.create = UISystem.result.create or function()
+  return require('ui.result_panel').create()
+end
+_G.result_panel = UISystem.result.create()
 
-local result_panel = require('ui.result_panel').create()
-_G.result_panel = result_panel
+-- 阶段9：调试系统 — 使用合并后的 debug_system
+local DebugSystem = require 'runtime.debug_system'
+_G.SYSTEM.debug = DebugSystem
 
--- 阶段9：调试系统 — 调试动作、调试工具、战斗自动接受
-require 'runtime.debug_actions'
+_G.force_trigger_effect = DebugSystem.effects.force_trigger_effect or _G.force_trigger_effect
+_G.update_effect_debug = DebugSystem.effects.update
+_G.update_battle_auto_acceptance = require('runtime.battle_auto_acceptance').update
 
-require 'runtime.debug_tools'
-
--- 调试系统（使用统一的存根对象）
-local gm_bond_effects_stub = {
-  ensure_board = function() end,
-  toggle_board = function() end,
-  refresh_board = function() end,
-}
-
-require 'runtime.battle_auto_acceptance'
-
-_G.gm_bond_effects = gm_bond_effects_stub
+_G.SYSTEM.battle_auto_acceptance = require 'runtime.battle_auto_acceptance'
+_G.SYSTEM.gm_bond_effects = DebugSystem.gm_bond_effects
 _G.attr_choice = attr_choice_system
+_G.SYSTEM.attr_choice = attr_choice_system
 
--- 阶段10：Session/Runtime 设置 — 状态重置、事件注册、主循环、启动序列
--- boot_session_setup：处理 session 级别状态（跨战斗生命周期）
--- boot_runtime_setup：处理运行时事件注册和循环
+-- loops.lua 所需的 _G.update_passive_resources 包装
+_G.update_passive_resources = function(dt)
+  local STATE = _G.STATE
+  if not STATE or not _G.resource_system then return end
+  BootHelpers.update_passive_resources(dt, STATE, _G.resource_system)
+end
+
+-- 阶段10：局外系统 — 使用合并后的 outgame_system
 _G.RuntimeEntry = RuntimeEntry
-RuntimeEntry._session_bundle = require('runtime.boot_session_setup').create()
+
+local OutgameSystem = require 'runtime.outgame_system'
+_G.SYSTEM.outgame = OutgameSystem
+
+_G.RuntimeEntry.validate_config = function()
+  local battle = _G.SYSTEM.battle
+  return battle and battle.battlefield and battle.battlefield.validate_config and battle.battlefield.validate_config()
+end
+
+local session_state_system = OutgameSystem.session.create({
+  SkillRuntime = _G.SkillRuntime,
+  SkillState = _G.SkillState,
+  create_hero = function()
+    local battle = _G.SYSTEM.battle
+    local bfs = battle and battle.battlefield
+    local hero = bfs and bfs.create_hero(_G.ATTACK_SKILL_DEFS.basic_attack.base_range or 250)
+    if _G.STATE.fixed_camera_enabled == true then
+      _G.RuntimeEntry.sync_fixed_camera_mode()
+    end
+    return hero
+  end,
+})
+
+local outgame_system = OutgameSystem.outgame.create({
+  STATE = _G.STATE,
+  CONFIG = _G.CONFIG,
+  y3 = y3,
+  message = _G.message,
+  play_ui_click = function()
+    local audio = _G.audio_system
+    return audio and audio.play_ui_click and audio.play_ui_click() or nil
+  end,
+  ensure_music_loop = function()
+    local audio = _G.audio_system
+    return audio and audio.ensure_music_loop and audio.ensure_music_loop() or nil
+  end,
+  get_player = BootHelpers.get_player,
+  set_battle_hud_visible = _G.HudUtils.set_battle_hud_visible,
+  stage_runtime = {
+    get_current_stage_text = function()
+      local def = _G.STATE.current_stage_def
+      if def and (def.display_label or def.display_name) then
+        return def.display_label or def.display_name
+      end
+      return '第1关'
+    end,
+    start_selected_stage = session_state_system.start_selected_stage,
+  },
+})
+
+_G.outgame_system = outgame_system
+_G.session_state_system = session_state_system
+
+RuntimeEntry._session_bundle = {
+  session_state_system = session_state_system,
+  outgame_system = outgame_system,
+  is_battle_active = session_state_system.is_battle_active,
+  reset_battle_state = session_state_system.reset_battle_state,
+  reset_session_state = session_state_system.reset_session_state,
+}
 
 _G.reset_session_state = RuntimeEntry._session_bundle.reset_session_state
 _G.is_battle_active = RuntimeEntry._session_bundle.is_battle_active
