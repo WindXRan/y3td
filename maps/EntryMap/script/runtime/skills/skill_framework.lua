@@ -1,0 +1,1121 @@
+local y3 = y3
+local Registry = require 'runtime.skills.skill_framework_registry'
+
+local function pow(base, exponent)
+  if not base or not exponent then
+    return 1
+  end
+  if exponent == 0 then
+    return 1
+  end
+  return base ^ exponent
+end
+
+local VALID_DAMAGE_TYPE = { ['物理'] = true, ['法术'] = true, ['真实'] = true }
+local VALID_PATTERN = { projectile = true, area = true }
+local VALID_SUB_BEHAVIOR = {
+  projectile = { base = true, burst = true, pierce = true, chain = true },
+  area = { burst = true, delayed_burst = true, tick = true },
+}
+local OLD_TO_NEW_PATTERN = {
+  line_pierce = { pattern = 'projectile', sub_behavior = 'pierce' },
+  chain_bounce = { pattern = 'projectile', sub_behavior = 'chain' },
+  area_burst = { pattern = 'area', sub_behavior = 'burst' },
+  area_tick = { pattern = 'area', sub_behavior = 'tick' },
+}
+local VALID_TARGET_MODE = { unit = true, point = true, self = true, none = true }
+local GLOBAL_CAST_GCD = 0.06
+
+local PRODUCTION_LIMITS = {
+  cast_point_min = 0.00,
+  cast_point_max = 0.35,
+  impact_delay_min = 0.06,
+  impact_delay_max = 0.80,
+  duration_min = 0.20,
+  duration_max = 8.00,
+  tick_interval_min = 0.18,
+  tick_interval_max = 1.20,
+  range_min = 80,
+  range_max = 2800,
+  width_min = 30,
+  width_max = 520,
+  radius_min = 40,
+  radius_max = 900,
+  cooldown_min = 0.00,
+  cooldown_max = 15.00,
+}
+
+local function normalize_damage_type(value)
+  if value == '物理' then
+    return '物理'
+  end
+  if value == '真实' then
+    return '真实'
+  end
+  return '法术'
+end
+
+local function normalize_number(value, fallback, min)
+  local n = tonumber(value)
+  if n == nil then
+    n = fallback
+  end
+  if min ~= nil and n < min then
+    return min
+  end
+  return n
+end
+
+local function safe_id(value, fallback)
+  local text = tostring(value or fallback or 'skill')
+  if text == '' then
+    return tostring(fallback or 'skill')
+  end
+  return text
+end
+
+local function normalize_pattern_and_behavior(pattern_value, behavior_value)
+  local raw_pattern = tostring(pattern_value or 'projectile')
+  local legacy = OLD_TO_NEW_PATTERN[raw_pattern]
+  local pattern = legacy and legacy.pattern or raw_pattern
+  if not VALID_PATTERN[pattern] then
+    pattern = 'projectile'
+  end
+
+  local sub_behavior = tostring(behavior_value or '')
+  if sub_behavior == '' and legacy then
+    sub_behavior = legacy.sub_behavior
+  end
+  if sub_behavior == '' then
+    sub_behavior = pattern == 'area' and 'burst' or 'base'
+  end
+  if not (VALID_SUB_BEHAVIOR[pattern] and VALID_SUB_BEHAVIOR[pattern][sub_behavior]) then
+    sub_behavior = pattern == 'area' and 'burst' or 'base'
+  end
+  return pattern, sub_behavior
+end
+
+local function normalize_skill(def)
+  local cfg = def or {}
+  local pattern, sub_behavior = normalize_pattern_and_behavior(cfg.pattern, cfg.sub_behavior)
+
+  local target_mode = tostring(cfg.target_mode or '')
+  if target_mode == '' then
+    if pattern == 'area' then
+      target_mode = 'point'
+    else
+      target_mode = 'unit'
+    end
+  end
+  if not VALID_TARGET_MODE[target_mode] then
+    target_mode = 'unit'
+  end
+
+  local out = {
+    id = safe_id(cfg.id, pattern),
+    name = safe_id(cfg.name, cfg.id or pattern),
+    pattern = pattern,
+    sub_behavior = sub_behavior,
+    target_mode = target_mode,
+    damage_type = normalize_damage_type(cfg.damage_type),
+    timeline = {
+      cast_point = normalize_number(cfg.timeline and cfg.timeline.cast_point, 0.15, 0),
+      impact_delay = normalize_number(cfg.timeline and cfg.timeline.impact_delay, 0.2, 0),
+      backswing = normalize_number(cfg.timeline and cfg.timeline.backswing, 0.12, 0),
+      duration = normalize_number(cfg.timeline and cfg.timeline.duration, 1.0, 0.05),
+      tick_interval = normalize_number(cfg.timeline and cfg.timeline.tick_interval, 0.2, 0.03),
+    },
+    hit_model = {
+      range = normalize_number(cfg.hit_model and cfg.hit_model.range, 1200, 80),
+      width = normalize_number(cfg.hit_model and cfg.hit_model.width, 180, 30),
+      radius = normalize_number(cfg.hit_model and cfg.hit_model.radius, 260, 40),
+      max_hits = math.floor(normalize_number(cfg.hit_model and cfg.hit_model.max_hits, 0, 0) + 0.5),
+      bounce = math.floor(normalize_number(cfg.hit_model and cfg.hit_model.bounce, 4, 1) + 0.5),
+    },
+    scale = {
+      attack_ratio = normalize_number(cfg.scale and cfg.scale.attack_ratio, 1.8, 0.01),
+      splash_ratio = normalize_number(cfg.scale and cfg.scale.splash_ratio, 0.6, 0),
+      tick_ratio = normalize_number(cfg.scale and cfg.scale.tick_ratio, 0.4, 0),
+      bounce_ratio = normalize_number(cfg.scale and cfg.scale.bounce_ratio, 0.75, 0.01),
+    },
+    resource = {
+      mana_cost = normalize_number(cfg.resource and cfg.resource.mana_cost, 0, 0),
+      cooldown = normalize_number(cfg.resource and cfg.resource.cooldown, 0, 0),
+      charges = math.floor(normalize_number(cfg.resource and cfg.resource.charges, 0, 0) + 0.5),
+    },
+    behavior = {
+      no_target = target_mode == 'none' or target_mode == 'self',
+      point_target = target_mode == 'point',
+      unit_target = target_mode == 'unit',
+      is_channeled = cfg.behavior and cfg.behavior.is_channeled == true or false,
+    },
+    visual = cfg.visual or {},
+    hooks = cfg.hooks or {},
+  }
+  return out
+end
+
+local function validate_visual_config(skill)
+  local visual = skill and skill.visual or nil
+  if type(visual) ~= 'table' then
+    return false, string.format('[%s] visual 缺失', tostring(skill and skill.id or 'unknown'))
+  end
+  local required_particles = { 'cast', 'impact', 'hit' }
+  for _, key in ipairs(required_particles) do
+    local value = tonumber(visual[key]) or 0
+    if value <= 0 then
+      return false, string.format('[%s] visual.%s 非法: %s', tostring(skill.id), key, tostring(visual[key]))
+    end
+  end
+  if skill.pattern == 'projectile' then
+    local projectile_key = tonumber(visual.projectile_key) or 0
+    if projectile_key <= 0 then
+      return false, string.format('[%s] projectile_key 非法: %s', tostring(skill.id), tostring(visual.projectile_key))
+    end
+  end
+  return true
+end
+
+local function clamp(value, min_value, max_value)
+  if value < min_value then
+    return min_value
+  end
+  if value > max_value then
+    return max_value
+  end
+  return value
+end
+
+local function clamp_number(value, min_value, max_value, fallback)
+  local n = tonumber(value)
+  if n == nil then
+    n = fallback
+  end
+  if min_value ~= nil and n < min_value then
+    n = min_value
+  end
+  if max_value ~= nil and n > max_value then
+    n = max_value
+  end
+  return n
+end
+
+local function apply_production_limits(skill)
+  skill.timeline.cast_point = clamp_number(skill.timeline.cast_point, PRODUCTION_LIMITS.cast_point_min, PRODUCTION_LIMITS.cast_point_max, 0.10)
+  skill.timeline.impact_delay = clamp_number(skill.timeline.impact_delay, PRODUCTION_LIMITS.impact_delay_min, PRODUCTION_LIMITS.impact_delay_max, 0.20)
+  skill.timeline.duration = clamp_number(skill.timeline.duration, PRODUCTION_LIMITS.duration_min, PRODUCTION_LIMITS.duration_max, 1.0)
+  skill.timeline.tick_interval = clamp_number(skill.timeline.tick_interval, PRODUCTION_LIMITS.tick_interval_min, PRODUCTION_LIMITS.tick_interval_max, 0.22)
+  skill.hit_model.range = clamp_number(skill.hit_model.range, PRODUCTION_LIMITS.range_min, PRODUCTION_LIMITS.range_max, 1200)
+  skill.hit_model.width = clamp_number(skill.hit_model.width, PRODUCTION_LIMITS.width_min, PRODUCTION_LIMITS.width_max, 180)
+  skill.hit_model.radius = clamp_number(skill.hit_model.radius, PRODUCTION_LIMITS.radius_min, PRODUCTION_LIMITS.radius_max, 260)
+  skill.resource.cooldown = clamp_number(skill.resource.cooldown, PRODUCTION_LIMITS.cooldown_min, PRODUCTION_LIMITS.cooldown_max, 0)
+  if skill.pattern == 'area' and skill.sub_behavior == 'tick' then
+    skill.timeline.tick_interval = math.max(skill.timeline.tick_interval, 0.18)
+    local min_duration = math.max(0.36, skill.timeline.tick_interval * 2)
+    skill.timeline.duration = math.max(skill.timeline.duration, min_duration)
+  end
+  return skill
+end
+
+local function dedupe_units(units)
+  if type(units) ~= 'table' then
+    return {}
+  end
+  local result = {}
+  local seen = {}
+  for _, unit in ipairs(units) do
+    if unit and not seen[unit] then
+      seen[unit] = true
+      result[#result + 1] = unit
+    end
+  end
+  return result
+end
+
+local function area_fx_scale(radius)
+  local r = tonumber(radius) or 260
+  -- 基准半径 260 -> scale 1.0，控制在可接受区间避免夸张穿帮。
+  return clamp(r / 260, 0.75, 2.20)
+end
+
+local function line_fx_scale(width, range)
+  local w = tonumber(width) or 180
+  local r = tonumber(range) or 1200
+  -- 宽度决定主视觉，距离只做轻微修正。
+  local scale = (w / 180) * clamp(r / 1200, 0.85, 1.20)
+  return clamp(scale, 0.80, 2.10)
+end
+
+local function impact_fx_scale(skill)
+  if skill.pattern == 'area' then
+    return area_fx_scale(skill.hit_model.radius)
+  end
+  if skill.pattern == 'projectile' and skill.sub_behavior == 'burst' then
+    return area_fx_scale(skill.hit_model.radius)
+  end
+  if skill.pattern == 'projectile' and skill.sub_behavior == 'pierce' then
+    return line_fx_scale(skill.hit_model.width, skill.hit_model.range)
+  end
+  if skill.pattern == 'projectile' and skill.sub_behavior == 'chain' then
+    return clamp((tonumber(skill.hit_model.bounce) or 4) / 4, 0.90, 1.50)
+  end
+  return 1.0
+end
+
+local function get_skill_damage_api()
+  return _G.td_damage_api
+end
+
+local function get_primary_target(range)
+  return _G.get_primary_target(range)
+end
+
+local function get_enemies_in_range(...)
+  return _G.get_enemies_in_range(...)
+end
+
+local function get_hero()
+  return _G.get_current_hero() or _G.get_player()
+end
+
+local function get_hero_point()
+  return _G.get_hero_point()
+end
+
+local function get_hero_attack()
+  return _G.get_hero_attack()
+end
+
+local function get_hero_facing_towards(target)
+  return _G.get_hero_facing_towards(target)
+end
+
+local function create_offset_point(...)
+  local base = _G.get_hero_point()
+  if not base then return nil end
+  local args = {...}
+  return y3.point.create(base.x + (args[1] or 0), base.y + (args[2] or 0), base.z or 0)
+end
+
+local function spawn_particle(...)
+  return _G.spawn_particle(...)
+end
+
+local function launch_projectile_from_hero(...)
+  return _G.launch_projectile_from_hero(...)
+end
+
+local api = {}
+  local registry = Registry.create()
+  local runtime = {}
+  local function reset_runtime_state()
+    runtime.by_skill_id = {}
+    runtime.active_casts = {}
+    runtime.telemetry = {}
+    runtime.global_last_cast_time = 0
+  end
+  reset_runtime_state()
+
+  local function fire_hook(skill, hook_name, ctx)
+    local hooks = skill.hooks or {}
+    local hook = hooks[hook_name]
+    if type(hook) == 'function' then
+      local ok, result = pcall(hook, ctx)
+      if ok then
+        return result
+      end
+    end
+    return nil
+  end
+
+  local function state_of(skill_id)
+    runtime.by_skill_id[skill_id] = runtime.by_skill_id[skill_id] or {
+      cooldown_end = 0,
+      charges = 0,
+      max_charges = 0,
+      last_cast_time = 0,
+    }
+    return runtime.by_skill_id[skill_id]
+  end
+
+  local function telemetry_of(skill_id)
+    runtime.telemetry[skill_id] = runtime.telemetry[skill_id] or {
+      cast_count = 0,
+      success_count = 0,
+      fail_count = 0,
+      total_hits = 0,
+      empty_cast_count = 0,
+      total_damage = 0,
+      timing_drift_ms_total = 0,
+      timing_sample_count = 0,
+      first_cast_time = 0,
+      last_reason = '',
+      last_cast_time = 0,
+    }
+    return runtime.telemetry[skill_id]
+  end
+
+  local function now()
+    if y3 and y3.game and y3.game.current_game_run_time then
+      return tonumber(y3.game.current_game_run_time()) or 0
+    end
+    return 0
+  end
+
+  local function in_cooldown(st)
+    return st.cooldown_end > now()
+  end
+
+  local function ensure_charges(skill, st)
+    if skill.resource.charges <= 0 then
+      return
+    end
+    if st.max_charges ~= skill.resource.charges then
+      st.max_charges = skill.resource.charges
+      st.charges = skill.resource.charges
+    end
+  end
+
+  local function consume_charge_or_cooldown(skill, st)
+    ensure_charges(skill, st)
+    if skill.resource.charges > 0 then
+      if st.charges <= 0 then
+        return false
+      end
+      st.charges = st.charges - 1
+      if skill.resource.cooldown > 0 then
+        y3.ltimer.wait(skill.resource.cooldown, function()
+          st.charges = math.min(st.max_charges, st.charges + 1)
+        end)
+      end
+      return true
+    end
+    if skill.resource.cooldown > 0 then
+      st.cooldown_end = now() + skill.resource.cooldown
+    end
+    return true
+  end
+
+  local function resolve_target(skill, caster, hero_point, cast_params)
+    cast_params = cast_params or {}
+    if skill.behavior.no_target then
+      return caster, hero_point
+    end
+    if skill.behavior.point_target then
+      local point = cast_params.point
+      if point then
+        return nil, point
+      end
+      local target = cast_params.target or get_primary_target(skill.hit_model.range)
+      if target and target.get_point then
+        return target, target:get_point()
+      end
+      return nil, hero_point
+    end
+    local target = cast_params.target or get_primary_target(skill.hit_model.range)
+    if target and target.get_point then
+      return target, target:get_point()
+    end
+    return nil, nil
+  end
+
+  local function damage_amount(skill, ratio_key)
+    local ratio = skill.scale[ratio_key] or 1
+    return (get_hero_attack() or 0) * ratio
+  end
+
+  local function visual_key(skill, key)
+    return skill.visual and skill.visual[key] or nil
+  end
+
+  local function resolve_impact_delay(skill)
+    local base = tonumber(skill and skill.timeline and skill.timeline.impact_delay) or 0
+    local projectile_time = tonumber(skill and skill.visual and skill.visual.projectile_time) or 0
+    return math.max(0, base, projectile_time)
+  end
+
+  local function mark_visual_impact(cast_ctx)
+    cast_ctx.visual_impact_time = now()
+  end
+
+  local function mark_damage_impact(cast_ctx)
+    cast_ctx.damage_time = now()
+    local v = tonumber(cast_ctx.visual_impact_time) or 0
+    local d = tonumber(cast_ctx.damage_time) or 0
+    cast_ctx.timing_drift_ms = math.abs(d - v) * 1000
+  end
+
+  local function execute_projectile(cast_ctx)
+    local skill = cast_ctx.skill
+    local hero_point = cast_ctx.origin_point
+    local target = cast_ctx.target
+    local impact_point = cast_ctx.impact_point
+
+    if skill.sub_behavior == 'burst' then
+      if not target then
+        return false, '附近没有可攻击目标。'
+      end
+      local center = impact_point or hero_point
+      local fx_scale = impact_fx_scale(skill)
+      local impact_delay = resolve_impact_delay(skill)
+      local cast_particle = visual_key(skill, 'cast')
+      spawn_particle(y3, cast_ctx.caster, cast_particle, fx_scale * 0.95, 0.20, 24)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      local function do_impact(impact_pt)
+        local pt = impact_pt
+        if not pt and target and target.is_exist and target:is_exist() then
+          pt = target:get_point()
+        end
+        pt = pt or center
+        mark_visual_impact(cast_ctx)
+        spawn_particle(y3, pt, visual_key(skill, 'impact') or visual_key(skill, 'hit'), fx_scale * 1.08, 0.18, 28)
+        cast_ctx.hits = get_skill_damage_api().area(pt, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
+          max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
+          visual = {
+            particle = visual_key(skill, 'hit'),
+            metric_scope = 'skill_framework',
+            metric_key = skill.id,
+          },
+        })
+        cast_ctx.hit_count = #(cast_ctx.hits or {})
+        cast_ctx.total_damage = (damage_amount(skill, 'attack_ratio') or 0) * cast_ctx.hit_count
+        mark_damage_impact(cast_ctx)
+        fire_hook(skill, 'OnProjectileHit', cast_ctx)
+        fire_hook(skill, 'OnFinish', cast_ctx)
+      end
+      local proj_key = visual_key(skill, 'projectile_key')
+      if proj_key then
+        launch_projectile_from_hero(proj_key, target, center, nil, impact_delay, visual_key(skill, 'projectile_height'), do_impact)
+      elseif impact_delay > 0 then
+        y3.ltimer.wait(impact_delay, function() do_impact(nil) end)
+      else
+        do_impact(nil)
+      end
+      return true, string.format('[%s] projectile.burst 触发', skill.id)
+    end
+
+    if skill.sub_behavior == 'pierce' then
+      local angle = 0
+      if target then
+        angle = get_hero_facing_towards(target)
+      elseif cast_ctx.caster and cast_ctx.caster.get_facing then
+        angle = tonumber(cast_ctx.caster:get_facing()) or 0
+      end
+      local proj_key = visual_key(skill, 'projectile_key')
+      if not proj_key then
+        return false, 'pierce 缺少 projectile_key。'
+      end
+      local pierce_duration = tonumber(skill.timeline.duration or 1.0)
+      local impact_delay = resolve_impact_delay(skill)
+      local proj_speed = math.max(600, (skill.hit_model.range or 1300) / math.max(0.01, impact_delay)) * 0.335
+      local proj_height = visual_key(skill, 'projectile_height') or 28
+      local hit_radius = skill.hit_model.width or 200
+      -- tick_interval > 0.22 视为持续伤害型（龙卷风），否则为单次命中（风刃）
+      local tick_interval = tonumber(skill.timeline.tick_interval or 0)
+      local hit_same = tick_interval > 0.22
+      local mover_hit_interval = hit_same and math.max(tick_interval, 0.01) or 999
+      local damage_per_hit = hit_same
+        and damage_amount(skill, 'tick_ratio')
+        or damage_amount(skill, 'attack_ratio')
+      local hit_particle = visual_key(skill, 'hit')
+      local hit_units = {}
+      local first_hit = false
+      local init_proj_time = math.max(pierce_duration + 4.0, 8.0)
+      local ok, proj = pcall(y3.projectile.create, {
+        key = proj_key,
+        target = cast_ctx.caster or hero_point,
+        socket = cast_ctx.caster and 'origin' or nil,
+        owner = cast_ctx.caster,
+        angle = angle,
+        time = init_proj_time,
+        remove_immediately = true,
+      })
+      if not ok or not proj then
+        return false, '投射物创建失败。'
+      end
+      local function cleanup_proj()
+        if proj and proj:is_exist() then
+          pcall(proj.remove, proj)
+        end
+      end
+      local function cleanup_proj_after_first_hit()
+        if first_hit then
+          return
+        end
+        first_hit = true
+        if y3 and y3.ltimer and y3.ltimer.wait then
+          y3.ltimer.wait(2.5, cleanup_proj)
+        else
+          pcall(proj.set_time, proj, 2.5)
+        end
+      end
+      pcall(proj.set_height, proj, proj_height)
+      local fx_scale = impact_fx_scale(skill)
+      spawn_particle(y3, cast_ctx.caster, visual_key(skill, 'cast'), fx_scale * 0.95, 0.20, 24)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      pcall(proj.mover_line, proj, {
+        angle = angle,
+        distance = proj_speed * init_proj_time,
+        speed = proj_speed,
+        hit_radius = hit_radius,
+        hit_type = 0,
+        hit_same = hit_same,
+        hit_interval = mover_hit_interval,
+        face_angle = true,
+        on_hit = function(_, hit_unit)
+          if not hit_unit or not hit_unit.is_exist or not hit_unit:is_exist() then
+            return
+          end
+          if not hit_same and hit_units[hit_unit] then
+            return
+          end
+          hit_units[hit_unit] = true
+          -- 命中首个敌人后继续保留 2.5 秒再清理。
+          if proj and proj:is_exist() then
+            cleanup_proj_after_first_hit()
+          end
+          local amount = damage_per_hit
+          if get_skill_damage_api().single(hit_unit, amount, skill.damage_type, {
+            particle = hit_particle,
+            metric_scope = 'skill_framework',
+            metric_key = skill.id,
+          }) then
+            cast_ctx.hit_count = (cast_ctx.hit_count or 0) + 1
+            cast_ctx.total_damage = (cast_ctx.total_damage or 0) + (amount or 0)
+            mark_damage_impact(cast_ctx)
+            cast_ctx.hits = { hit_unit }
+            fire_hook(skill, 'OnProjectileHit', cast_ctx)
+            cast_ctx.hits = nil
+          end
+        end,
+        on_finish = function()
+          cleanup_proj()
+          fire_hook(skill, 'OnFinish', cast_ctx)
+        end,
+        on_break = function()
+          cleanup_proj()
+          fire_hook(skill, 'OnFinish', cast_ctx)
+        end,
+      })
+      return true, string.format('[%s] projectile.pierce(mover_line) 触发', skill.id)
+    end
+
+    if skill.sub_behavior == 'chain' then
+      if not target then
+        return false, '附近没有可攻击目标。'
+      end
+      local chain_targets = { target }
+      local extra = get_enemies_in_range(target, skill.hit_model.radius, target, skill.hit_model.bounce)
+      for _, unit in ipairs(extra) do
+        chain_targets[#chain_targets + 1] = unit
+      end
+      chain_targets = dedupe_units(chain_targets)
+      local base = damage_amount(skill, 'attack_ratio')
+      local fx_scale = impact_fx_scale(skill)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      spawn_particle(y3, target, visual_key(skill, 'cast'), fx_scale, 0.20, 28)
+      launch_projectile_from_hero(
+        visual_key(skill, 'projectile_key'),
+        target,
+        nil,
+        nil,
+        resolve_impact_delay(skill),
+        visual_key(skill, 'projectile_height')
+      )
+      mark_visual_impact(cast_ctx)
+      local total_damage = 0
+      cast_ctx.hits = get_skill_damage_api().chain(chain_targets, base, skill.damage_type, {
+        amount = function(context)
+          local idx = context.index or 1
+          local amount = base * pow(skill.scale.bounce_ratio, math.max(0, idx - 1))
+          total_damage = total_damage + math.max(0, tonumber(amount) or 0)
+          return amount
+        end,
+        visual = function()
+          return {
+            particle = visual_key(skill, 'hit'),
+            metric_scope = 'skill_framework',
+            metric_key = skill.id,
+          }
+        end,
+        on_hit = function(context)
+          cast_ctx.bounce_index = context.index
+          cast_ctx.hit_unit = context.target
+          if context.target then
+            spawn_particle(y3, context.target, visual_key(skill, 'impact') or visual_key(skill, 'hit'), fx_scale, 0.16, 26)
+          end
+          fire_hook(skill, 'OnProjectileHit', cast_ctx)
+        end,
+      })
+      cast_ctx.hit_count = #(cast_ctx.hits or {})
+      cast_ctx.total_damage = total_damage
+      mark_damage_impact(cast_ctx)
+      fire_hook(skill, 'OnFinish', cast_ctx)
+      return true, string.format('[%s] projectile.chain 触发', skill.id)
+    end
+
+    if skill.pattern == 'area_burst' then
+      local center = impact_point or hero_point
+      local fx_scale = impact_fx_scale(skill)
+      local proj_time = tonumber(skill.visual and skill.visual.projectile_time) or skill.timeline.impact_delay
+      -- 施法特效在英雄身上
+      spawn_particle(y3, cast_ctx.caster, visual_key(skill, 'cast'), fx_scale, 0.25, nil)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      local function do_impact(impact_point)
+        local pt = impact_point or center
+        mark_visual_impact(cast_ctx)
+        spawn_particle(y3, pt, visual_key(skill, 'impact'), fx_scale * 1.08, 0.18, 28)
+        cast_ctx.hits = get_skill_damage_api().area(pt, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
+          max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
+          visual = {
+            particle = visual_key(skill, 'hit'),
+            metric_scope = 'skill_framework',
+            metric_key = skill.id,
+          },
+        })
+        cast_ctx.hit_count = #(cast_ctx.hits or {})
+        cast_ctx.total_damage = (damage_amount(skill, 'attack_ratio') or 0) * cast_ctx.hit_count
+        mark_damage_impact(cast_ctx)
+        fire_hook(skill, 'OnProjectileHit', cast_ctx)
+        fire_hook(skill, 'OnFinish', cast_ctx)
+      end
+      -- 投射物飞行：用投射物自身飞行时间，到达时触发爆炸
+      local proj_key = visual_key(skill, 'projectile_key')
+      if proj_key and launch_projectile_from_hero then
+        launch_projectile_from_hero(proj_key, target, center, nil, proj_time, visual_key(skill, 'projectile_height'), do_impact)
+      else
+        y3.ltimer.wait(proj_time, function() do_impact(nil) end)
+      end
+      return true, string.format('[%s] area_burst 触发', skill.id)
+    end
+
+    if skill.pattern == 'area_tick' then
+      local center = impact_point or hero_point
+      local tick_count = math.max(1, math.floor(skill.timeline.duration / skill.timeline.tick_interval + 0.5))
+      local fx_scale = impact_fx_scale(skill)
+      spawn_particle(y3, center, visual_key(skill, 'warning') or visual_key(skill, 'cast'), fx_scale, skill.timeline.duration, 20)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      cast_ctx.hit_count = 0
+      cast_ctx.total_damage = 0
+      get_skill_damage_api().area_ticks(skill.timeline.tick_interval, tick_count, skill.damage_type, {
+        center = center,
+        radius = skill.hit_model.radius,
+        amount = damage_amount(skill, 'tick_ratio'),
+        max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
+        visual = {
+          particle = visual_key(skill, 'hit'),
+          metric_scope = 'skill_framework',
+          metric_key = skill.id,
+        },
+        after_tick = function(ctx)
+          cast_ctx.tick = ctx.current
+          cast_ctx.hits = ctx.hits
+          local one_tick_hits = #(ctx.hits or {})
+          cast_ctx.hit_count = cast_ctx.hit_count + one_tick_hits
+          cast_ctx.total_damage = cast_ctx.total_damage + ((damage_amount(skill, 'tick_ratio') or 0) * one_tick_hits)
+          fire_hook(skill, 'OnTick', cast_ctx)
+        end,
+      })
+      y3.ltimer.wait(skill.timeline.duration, function()
+        fire_hook(skill, 'OnFinish', cast_ctx)
+      end)
+      return true, string.format('[%s] area_tick %d tick', skill.id, tick_count)
+    end
+
+    if skill.pattern == 'chain_bounce' then
+      if not target then
+        return false, '附近没有可攻击目标。'
+      end
+      local chain_targets = { target }
+      local extra = get_enemies_in_range(target, skill.hit_model.radius, target, skill.hit_model.bounce)
+      for _, unit in ipairs(extra) do
+        chain_targets[#chain_targets + 1] = unit
+      end
+      chain_targets = dedupe_units(chain_targets)
+      local base = damage_amount(skill, 'attack_ratio')
+      local fx_scale = impact_fx_scale(skill)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      spawn_particle(y3, target, visual_key(skill, 'cast'), fx_scale, 0.20, 28)
+      -- 投射物仅作视觉装饰，伤害立即结算，避免目标在飞行期间被击杀导致落空。
+      launch_projectile_from_hero(
+        visual_key(skill, 'projectile_key'),
+        target,
+        nil,
+        nil,
+        resolve_impact_delay(skill),
+        visual_key(skill, 'projectile_height')
+      )
+      mark_visual_impact(cast_ctx)
+      local total_damage = 0
+      cast_ctx.hits = get_skill_damage_api().chain(chain_targets, base, skill.damage_type, {
+        amount = function(context)
+          local idx = context.index or 1
+          local amount = base * pow(skill.scale.bounce_ratio, math.max(0, idx - 1))
+          total_damage = total_damage + math.max(0, tonumber(amount) or 0)
+          return amount
+        end,
+        visual = function()
+          return {
+            particle = visual_key(skill, 'hit'),
+            metric_scope = 'skill_framework',
+            metric_key = skill.id,
+          }
+        end,
+        on_hit = function(context)
+          cast_ctx.bounce_index = context.index
+          cast_ctx.hit_unit = context.target
+          if context.target then
+            spawn_particle(y3, context.target, visual_key(skill, 'impact') or visual_key(skill, 'hit'), fx_scale, 0.16, 26)
+          end
+          fire_hook(skill, 'OnProjectileHit', cast_ctx)
+        end,
+      })
+      cast_ctx.hit_count = #(cast_ctx.hits or {})
+      cast_ctx.total_damage = total_damage
+      mark_damage_impact(cast_ctx)
+      fire_hook(skill, 'OnFinish', cast_ctx)
+      return true, string.format('[%s] projectile.chain 触发', skill.id)
+    end
+
+    if not target then
+      return false, '附近没有可攻击目标。'
+    end
+    local fx_scale = impact_fx_scale(skill)
+    local impact_delay = resolve_impact_delay(skill)
+    spawn_particle(y3, cast_ctx.caster, visual_key(skill, 'cast'), fx_scale * 0.95, 0.20, 24)
+    fire_hook(skill, 'OnSpellStart', cast_ctx)
+    launch_projectile_from_hero(
+      visual_key(skill, 'projectile_key'),
+      target,
+      nil,
+      nil,
+      impact_delay,
+      visual_key(skill, 'projectile_height')
+    )
+    y3.ltimer.wait(impact_delay, function()
+      mark_visual_impact(cast_ctx)
+      if target and target.is_exist and target:is_exist() then
+        spawn_particle(y3, target, visual_key(skill, 'impact') or visual_key(skill, 'hit'), fx_scale, 0.16, 26)
+      end
+      local hit = get_skill_damage_api().single(target, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
+        particle = visual_key(skill, 'hit'),
+        metric_scope = 'skill_framework',
+        metric_key = skill.id,
+      })
+      cast_ctx.hits = hit and { target } or {}
+      cast_ctx.hit_count = hit and 1 or 0
+      cast_ctx.total_damage = hit and (damage_amount(skill, 'attack_ratio') or 0) or 0
+      mark_damage_impact(cast_ctx)
+      fire_hook(skill, 'OnProjectileHit', cast_ctx)
+      fire_hook(skill, 'OnFinish', cast_ctx)
+    end)
+    return true, string.format('[%s] projectile.base 触发', skill.id)
+  end
+
+  local function execute_area(cast_ctx)
+    local skill = cast_ctx.skill
+    local hero_point = cast_ctx.origin_point
+    local target = cast_ctx.target
+    local impact_point = cast_ctx.impact_point
+
+    if skill.sub_behavior == 'tick' then
+      local center = impact_point or hero_point
+      local tick_count = math.max(1, math.floor(skill.timeline.duration / skill.timeline.tick_interval + 0.5))
+      local fx_scale = impact_fx_scale(skill)
+      spawn_particle(y3, center, visual_key(skill, 'warning') or visual_key(skill, 'cast'), fx_scale, skill.timeline.duration, 20)
+      fire_hook(skill, 'OnSpellStart', cast_ctx)
+      cast_ctx.hit_count = 0
+      cast_ctx.total_damage = 0
+      get_skill_damage_api().area_ticks(skill.timeline.tick_interval, tick_count, skill.damage_type, {
+        center = center,
+        radius = skill.hit_model.radius,
+        amount = damage_amount(skill, 'tick_ratio'),
+        max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
+        visual = {
+          particle = visual_key(skill, 'hit'),
+          metric_scope = 'skill_framework',
+          metric_key = skill.id,
+        },
+        after_tick = function(ctx)
+          cast_ctx.tick = ctx.current
+          cast_ctx.hits = ctx.hits
+          local one_tick_hits = #(ctx.hits or {})
+          cast_ctx.hit_count = cast_ctx.hit_count + one_tick_hits
+          cast_ctx.total_damage = cast_ctx.total_damage + ((damage_amount(skill, 'tick_ratio') or 0) * one_tick_hits)
+          fire_hook(skill, 'OnTick', cast_ctx)
+        end,
+      })
+      y3.ltimer.wait(skill.timeline.duration, function()
+        fire_hook(skill, 'OnFinish', cast_ctx)
+      end)
+      return true, string.format('[%s] area.tick %d tick', skill.id, tick_count)
+    end
+
+    local center = impact_point or hero_point
+    local fx_scale = impact_fx_scale(skill)
+    local proj_time = skill.sub_behavior == 'delayed_burst'
+      and (tonumber(skill.visual and skill.visual.projectile_time) or skill.timeline.impact_delay)
+      or 0
+    -- area 系技能在目标区域显示预警，避免在英雄自身产生与冲击相同的粒子造成"自瞄"错觉
+    spawn_particle(y3, center, visual_key(skill, 'warning') or visual_key(skill, 'cast'), fx_scale * 0.6, 0.35, 20)
+    fire_hook(skill, 'OnSpellStart', cast_ctx)
+    local function do_impact(impact_point)
+      local pt = impact_point or center
+      mark_visual_impact(cast_ctx)
+      spawn_particle(y3, pt, visual_key(skill, 'impact'), fx_scale * 1.08, 0.18, 28)
+      cast_ctx.hits = get_skill_damage_api().area(pt, skill.hit_model.radius, damage_amount(skill, 'attack_ratio'), skill.damage_type, {
+        max_count = skill.hit_model.max_hits > 0 and skill.hit_model.max_hits or nil,
+        visual = {
+          particle = visual_key(skill, 'hit'),
+          metric_scope = 'skill_framework',
+          metric_key = skill.id,
+        },
+      })
+      cast_ctx.hit_count = #(cast_ctx.hits or {})
+      cast_ctx.total_damage = (damage_amount(skill, 'attack_ratio') or 0) * cast_ctx.hit_count
+      mark_damage_impact(cast_ctx)
+      fire_hook(skill, 'OnProjectileHit', cast_ctx)
+      fire_hook(skill, 'OnFinish', cast_ctx)
+    end
+    local proj_key = visual_key(skill, 'projectile_key')
+    if proj_key and proj_time > 0 then
+      launch_projectile_from_hero(proj_key, target, center, nil, proj_time, visual_key(skill, 'projectile_height'), do_impact)
+    elseif proj_time > 0 then
+      y3.ltimer.wait(proj_time, function() do_impact(nil) end)
+    else
+      do_impact(nil)
+    end
+    return true, string.format('[%s] area.%s 触发', skill.id, tostring(skill.sub_behavior))
+  end
+
+  local function execute_pattern(cast_ctx)
+    if cast_ctx.skill.pattern == 'projectile' then
+      return execute_projectile(cast_ctx)
+    end
+    if cast_ctx.skill.pattern == 'area' then
+      return execute_area(cast_ctx)
+    end
+
+    return false, '不支持的技能 pattern。'
+  end
+
+  local function validate_cast(skill, caster, hero_point)
+    if not caster or not hero_point then
+      return false, '英雄不存在。'
+    end
+    if not VALID_DAMAGE_TYPE[skill.damage_type] then
+      return false, string.format('[%s] damage_type 非法', skill.id)
+    end
+    if skill.hit_model.range <= 0 then
+      return false, string.format('[%s] range 非法', skill.id)
+    end
+    return true
+  end
+
+  function api.cast(def, cast_params)
+    local caster = get_hero()
+    local hero_point = get_hero_point()
+    if not caster or not hero_point then
+      return false, '英雄不存在。'
+    end
+    local skill = normalize_skill(def)
+    apply_production_limits(skill)
+    local visual_ok, visual_reason = validate_visual_config(skill)
+    if not visual_ok then
+      return false, visual_reason
+    end
+    local telemetry = telemetry_of(skill.id)
+    telemetry.cast_count = telemetry.cast_count + 1
+    telemetry.last_cast_time = now()
+    if (tonumber(telemetry.first_cast_time) or 0) <= 0 then
+      telemetry.first_cast_time = telemetry.last_cast_time
+    end
+    if (telemetry.last_cast_time - (runtime.global_last_cast_time or 0)) < GLOBAL_CAST_GCD then
+      telemetry.fail_count = telemetry.fail_count + 1
+      telemetry.last_reason = 'global_cast_gcd'
+      return false, string.format('[%s] 施法过快', skill.id)
+    end
+    local valid, reason = validate_cast(skill, caster, hero_point)
+    if not valid then
+      telemetry.fail_count = telemetry.fail_count + 1
+      telemetry.last_reason = reason or 'validate_failed'
+      return false, reason
+    end
+    local st = state_of(skill.id)
+    ensure_charges(skill, st)
+    if in_cooldown(st) and skill.resource.charges <= 0 then
+      telemetry.fail_count = telemetry.fail_count + 1
+      telemetry.last_reason = 'cooldown'
+      return false, string.format('[%s] 冷却中', skill.id)
+    end
+    if not consume_charge_or_cooldown(skill, st) then
+      telemetry.fail_count = telemetry.fail_count + 1
+      telemetry.last_reason = 'no_charge'
+      return false, string.format('[%s] 充能不足', skill.id)
+    end
+
+    local target, impact_point = resolve_target(skill, caster, hero_point, cast_params)
+    local can_cast_without_unit = skill.pattern == 'projectile' and skill.sub_behavior == 'pierce'
+    if skill.behavior.unit_target and not can_cast_without_unit and not target then
+      telemetry.fail_count = telemetry.fail_count + 1
+      telemetry.last_reason = 'no_target'
+      return false, string.format('[%s] 没有可用目标', skill.id)
+    end
+
+    local cast_ctx = {
+      skill = skill,
+      caster = caster,
+      origin_point = hero_point,
+      target = target,
+      impact_point = impact_point or hero_point,
+      cast_time = now(),
+    }
+    runtime.global_last_cast_time = cast_ctx.cast_time
+    st.last_cast_time = cast_ctx.cast_time
+    runtime.active_casts[#runtime.active_casts + 1] = cast_ctx
+
+    if skill.timeline.cast_point > 0 then
+      y3.ltimer.wait(skill.timeline.cast_point, function()
+        local ok, msg = execute_pattern(cast_ctx)
+        if ok then
+          telemetry.success_count = telemetry.success_count + 1
+          telemetry.total_hits = telemetry.total_hits + (cast_ctx.hit_count or 0)
+          telemetry.total_damage = telemetry.total_damage + (cast_ctx.total_damage or 0)
+          telemetry.timing_drift_ms_total = (tonumber(telemetry.timing_drift_ms_total) or 0) + (tonumber(cast_ctx.timing_drift_ms) or 0)
+          telemetry.timing_sample_count = (tonumber(telemetry.timing_sample_count) or 0) + (((tonumber(cast_ctx.timing_drift_ms) or 0) > 0) and 1 or 0)
+          if (cast_ctx.hit_count or 0) <= 0 then
+            telemetry.empty_cast_count = telemetry.empty_cast_count + 1
+          end
+          telemetry.last_reason = msg or 'ok'
+        else
+          telemetry.fail_count = telemetry.fail_count + 1
+          telemetry.last_reason = msg or 'execute_failed'
+        end
+      end)
+      return true, string.format('[%s] 开始施法 cast_point=%.2f', skill.id, skill.timeline.cast_point)
+    end
+    local ok, msg = execute_pattern(cast_ctx)
+    if ok then
+      telemetry.success_count = telemetry.success_count + 1
+      telemetry.total_hits = telemetry.total_hits + (cast_ctx.hit_count or 0)
+      telemetry.total_damage = telemetry.total_damage + (cast_ctx.total_damage or 0)
+      telemetry.timing_drift_ms_total = (tonumber(telemetry.timing_drift_ms_total) or 0) + (tonumber(cast_ctx.timing_drift_ms) or 0)
+      telemetry.timing_sample_count = (tonumber(telemetry.timing_sample_count) or 0) + (((tonumber(cast_ctx.timing_drift_ms) or 0) > 0) and 1 or 0)
+      if (cast_ctx.hit_count or 0) <= 0 then
+        telemetry.empty_cast_count = telemetry.empty_cast_count + 1
+      end
+      telemetry.last_reason = msg or 'ok'
+    else
+      telemetry.fail_count = telemetry.fail_count + 1
+      telemetry.last_reason = msg or 'execute_failed'
+    end
+    return ok, msg
+  end
+
+  function api.register(def)
+    local skill = normalize_skill(def)
+    apply_production_limits(skill)
+    local visual_ok, visual_reason = validate_visual_config(skill)
+    if not visual_ok then
+      return false, visual_reason
+    end
+    return registry.register(skill)
+  end
+
+  function api.cast_by_id(skill_id, cast_params)
+    local def = registry.get(skill_id)
+    if not def then
+      return false, string.format('未注册技能：%s', tostring(skill_id))
+    end
+    return api.cast(def, cast_params)
+  end
+
+  function api.get_def(skill_id)
+    return registry.get(skill_id)
+  end
+
+  function api.list_registered()
+    return registry.list()
+  end
+
+  function api.reset_runtime()
+    reset_runtime_state()
+    return true
+  end
+
+  function api.get_skill_state(skill_id)
+    local st = state_of(skill_id)
+    return {
+      cooldown_left = math.max(0, (st.cooldown_end or 0) - now()),
+      charges = st.charges or 0,
+      max_charges = st.max_charges or 0,
+      last_cast_time = st.last_cast_time or 0,
+    }
+  end
+
+  function api.get_telemetry(skill_id)
+    local t = telemetry_of(skill_id)
+    local cast_count = math.max(1, t.cast_count)
+    local first_cast_time = tonumber(t.first_cast_time) or 0
+    local last_cast_time = tonumber(t.last_cast_time) or 0
+    local active_span = math.max(0.01, last_cast_time - first_cast_time)
+    local success_count = tonumber(t.success_count) or 0
+    local total_hits = tonumber(t.total_hits) or 0
+    local total_damage = tonumber(t.total_damage) or 0
+    local timing_samples = math.max(0, tonumber(t.timing_sample_count) or 0)
+    local timing_drift_ms_avg = timing_samples > 0 and ((tonumber(t.timing_drift_ms_total) or 0) / timing_samples) or 0
+    return {
+      cast_count = t.cast_count,
+      success_count = t.success_count,
+      fail_count = t.fail_count,
+      total_hits = t.total_hits,
+      empty_cast_count = t.empty_cast_count,
+      total_damage = t.total_damage,
+      avg_hits_per_cast = t.total_hits / cast_count,
+      empty_cast_rate = t.empty_cast_count / cast_count,
+      last_reason = t.last_reason,
+      first_cast_time = t.first_cast_time,
+      last_cast_time = t.last_cast_time,
+      active_span = active_span,
+      casts_per_sec = success_count / active_span,
+      hits_per_sec = total_hits / active_span,
+      dmg_per_sec = total_damage / active_span,
+      timing_drift_ms_avg = timing_drift_ms_avg,
+    }
+  end
+
+  function api.get_all_telemetry()
+    local result = {}
+    for skill_id, _ in pairs(runtime.telemetry or {}) do
+      result[#result + 1] = api.get_telemetry(skill_id)
+      result[#result].skill_id = skill_id
+    end
+    table.sort(result, function(a, b)
+      local aid = tostring(a and a.skill_id or '')
+      local bid = tostring(b and b.skill_id or '')
+      return aid < bid
+    end)
+    return result
+  end
+
+  function api.reset_telemetry(skill_id)
+    if skill_id and skill_id ~= '' then
+      runtime.telemetry[tostring(skill_id)] = nil
+      return
+    end
+    runtime.telemetry = {}
+  end
+
+  function api.normalize_skill(def)
+    return normalize_skill(def)
+  end
+
+  function api.validate_damage_type(value)
+    return VALID_DAMAGE_TYPE[value] == true
+end
+
+_G.skill_framework_system = api
+_G.SYSTEM = _G.SYSTEM or {}
+_G.SYSTEM.skill_framework = api
+
+return api

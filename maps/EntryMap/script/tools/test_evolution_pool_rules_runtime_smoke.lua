@@ -1,6 +1,6 @@
 package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
-local RewardSystem = require 'runtime.rewards'
+local RewardSystem = require 'runtime.progression.rewards'
 
 math.randomseed(12345)
 

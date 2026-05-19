@@ -1,5 +1,5 @@
 -- 验证"新增技能只靠数据就能生成定义"的目标
-local Skills = require 'runtime.skills'
+local Skills = require 'runtime.skills.defs'
 
 local def = Skills.build_element_skill('fire', 'area_burst', 'mid', {
   id = 'test_fire_burst',

@@ -1,6 +1,6 @@
 package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
-local bonds = require 'runtime.bonds_chain'
+local bonds = require 'runtime.bonds.bonds_chain'
 
 local state = {
   resources = {

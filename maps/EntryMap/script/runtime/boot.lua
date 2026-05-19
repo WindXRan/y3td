@@ -7,20 +7,37 @@
   - _G.STATE / _G.CONFIG：核心状态和配置
   - _G.SYSTEM：统一的系统服务定位器
   - 工具函数通过模块导出（如 AreaUtils, BattleUtils 等）
+
+  模块加载编号体系（详见 docs/总册/模块加载顺序方案.md）：
+  1xx — 基础数据    2xx — 工具模块      3xx — 核心状态与Buff
+  4xx — 英雄系统    5xx — 核心玩法      6xx — 技能与战斗
+  7xx — UI系统      8xx — 调试系统      9xx — 局外系统
+
+  已解决的隐式依赖：
+  ✅ D1: bonds_chain 已在阶段2显式加载（见 [222]）
+  ✅ D2: boot_helpers 已合并到 boot_utils，不再独立存在
 --]]
 
--- 数据表和配置（无运行时依赖，可最先加载）
-local CONFIG = require 'config.entry_config'
-local AttackSkillObjects = require 'data.tables.skill.attack_skills'
+-- ============================================================
+-- [1xx] 阶段1：基础数据 — 数据表和配置（无运行时依赖，可最先加载）
+-- 加载项: [110] config.entry_config
+--         [120] data.tables.skill.attack_skills
+-- ============================================================
+local CONFIG = require 'config.entry_config'                              -- [110]
+local AttackSkillObjects = require 'data.tables.skill.attack_skills'      -- [120]
 _G.AttackSkillObjects = AttackSkillObjects
 
 -- 统一系统命名空间
 _G.SYSTEM = _G.SYSTEM or {}
 
--- 工具模块（无 _G 依赖，纯函数/工厂）
-local GearUpgrades = require 'runtime.gear_upgrades'
-local BootCore = require 'runtime.boot_core'
-local BootCombat = require 'runtime.boot_combat'
+-- ============================================================
+-- [2xx] 阶段2：工具模块 — 纯函数/工厂，部分有隐式依赖
+-- 依赖链: [230]boot_combat → [221]boot_utils → [222]bonds_chain
+-- ✅ D1 已消除: bonds_chain 于阶段2显式加载
+-- ============================================================
+local GearUpgrades = require 'runtime.progression.gear_upgrades'                      -- [240]
+local BootCore      = require 'runtime.core.boot_core'                         -- [210]
+local BootCombat    = require 'runtime.core.boot_combat'                       -- [230]
 _G.BootCombat = BootCombat
 -- Export BootCombat functions to _G for modules that access them directly
 _G.get_current_hero = BootCombat.get_current_hero
@@ -56,9 +73,12 @@ _G.award_rewards = function(reward, reason, is_silent)
     return rs.award_rewards(reward, reason, is_silent)
   end
 end
-local BootHelpers = require 'runtime.boot_helpers'
-local BootUIEnhancements = require 'runtime.boot_ui_enhancements'
-local EventBus = require 'runtime.event_bus'
+-- ✅ D1 已消除: bonds_chain 显式加载（原通过 boot_helpers→boot_utils 隐式 3 层链）
+require 'runtime.bonds.bonds_chain'                                              -- [222] 显式
+-- ✅ D2 已消除: boot_helpers 已合并到 boot_utils，不再需要薄包装
+require 'runtime.core.boot_utils'; local BootHelpers = _G.BootHelpers                        -- [221]
+local BootUIEnhancements = require 'runtime.core.boot_ui_enhancements'         -- [250]
+local EventBus = require 'runtime.core.event_bus'                              -- [260] 零依赖
 local RuntimeEntry = {}
 local projectile_override_hook_installed = false
 local helper_signals_started = false
@@ -91,6 +111,11 @@ _G.ensure_helper_signals = ensure_helper_signals
 
 trace_boot('chunk loaded')
 
+-- ============================================================
+-- [3xx] 阶段3：核心状态与Buff — 创建 STATE、设置 _G 全局
+-- 此后所有模块可安全读取 _G.STATE / _G.CONFIG
+-- ============================================================
+
 -- 阶段1：核心状态初始化 — 创建 STATE、设置 _G 全局
 -- 此后的 require 可安全读取 _G.STATE / _G.CONFIG
 local boot_core = BootCore.create({
@@ -117,7 +142,7 @@ _G.ATTACK_SKILL_BLUEPRINTS = ATTACK_SKILL_BLUEPRINTS
 _G.ATTACK_SKILL_SLOT_COUNT = ATTACK_SKILL_SLOT_COUNT
 
 -- Buff 系统（使用 snake_case 统一导出）
-local buff_system = require 'runtime.buff_system'
+local buff_system = require 'runtime.effects.buff_system'                         -- [310]
 _G.buff_system_tick = buff_system.tick
 _G.update_buff_system = _G.buff_system_tick
 _G.SYSTEM.buff = buff_system
@@ -152,7 +177,8 @@ end
 install_projectile_override_hook()
 
 -- 阶段2：基础能力 — Buff、投射物校验、玩家工具函数
-local ProjectileNameGuard = require 'runtime.projectile_name_guard'
+-- [3xx] 投射物校验
+local ProjectileNameGuard = require 'runtime.core.projectile_name_guard'       -- [320]
 ProjectileNameGuard.validate({
   y3 = y3,
 }, {
@@ -171,7 +197,7 @@ _G.get_player = get_player
 _G.get_enemy_player = get_enemy_player
 
 -- 工具函数（薄转发层，全部直接挂 _G，自初始化）
-require 'runtime.boot_utils'
+require 'runtime.core.boot_utils'
 
 -- 运行时事件处理（message / heal_hero / handle_battle_finished / create_bond_env）
 -- 已合并到 runtime.boot_utils，不再单独 require boot_event
@@ -189,6 +215,11 @@ RuntimeEntry.apply_fixed_camera_mode = _G.apply_fixed_camera_mode
 RuntimeEntry.sync_fixed_camera_mode = _G.sync_fixed_camera_mode
 RuntimeEntry.toggle_fixed_camera = _G.toggle_fixed_camera
 
+-- ============================================================
+-- [4xx] 阶段4：英雄系统
+-- ⚠ D9: hero_model:10 在模块顶层读取 _G.STATE，必须在 STATE 创建之后
+-- ============================================================
+
 -- 英雄属性系统（自初始化，require 时设置 _G.hero_attr_system）
 local function sync_gear_runtime_effects(state, hero, config)
   return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
@@ -196,7 +227,7 @@ end
 _G.sync_gear_runtime_effects = sync_gear_runtime_effects
 
 -- 加载英雄属性模块
-local hero_attr_module = require 'runtime.hero_attr_system'
+local hero_attr_module = require 'runtime.heroes.hero_attr_system'               -- [410]
 hero_attr_system = _G.hero_attr_system
 _G.SYSTEM.hero_attr = hero_attr_system
 
@@ -210,7 +241,7 @@ do
   end
 end
 
-require 'runtime.hero_model'
+require 'runtime.heroes.hero_model'                                              -- [420]
 _G.SYSTEM.hero_model = _G.hero_model
 
 local round_number = BootHelpers.round_number
@@ -225,27 +256,30 @@ BootHelpers.set_get_bond_runtime_bonus(BootCombat.get_bond_runtime_bonus)
 local handle_bond_hero_pre_hurt = BootCombat.handle_bond_hero_pre_hurt
 local trigger_td_skills_on_hit = BootCombat.trigger_td_skills_on_hit
 
--- 阶段5：核心玩法系统 — 升级、奖励、音频（自初始化）
--- 此时 STATE / hero_attr_system / audio_system 前向声明已就绪
-require 'runtime.progression'
+-- ============================================================
+-- [5xx] 阶段5：核心玩法 — 升级、奖励、音频、回合选择
+-- ⚠ D4: progression 在模块顶层读取 _G.hero_attr_system
+-- ⚠ D5: progression 惰性访问 _G.reward_system / _G.attr_choice_system
+-- ============================================================
+require 'runtime.progression.progression'                                              -- [510]
 _G.get_hero_max_level = _G.progression_system.get_hero_max_level
 _G.sync_hero_progression = _G.progression_system.sync_hero_progression
 _G.sync_hero_progress_from_engine = _G.progression_system.sync_hero_progress_from_engine
 _G.SYSTEM.progression = _G.progression_system
 
-require 'runtime.rewards'
+require 'runtime.progression.rewards'                                                -- [520]
 reward_system = _G.reward_system
 _G.SYSTEM.reward = reward_system
 
 attr_choice_system = reward_system
 
-require 'runtime.audio'
+require 'runtime.audio.audio'                                                  -- [530]
 audio_system = _G.audio_system
 _G.SYSTEM.audio = audio_system
 
 
--- 阶段6：回合选择系统（拆分为独立模块）
-require 'runtime.round_choice'
+-- [5xx] 回合选择系统（拆分为独立模块）
+require 'runtime.rounds.round_choice'                                            -- [540]
 
 EventBus.subscribe('wave_started', function(wave_index)
   if audio_system and audio_system.handle_wave_started then
@@ -305,11 +339,13 @@ EventBus.subscribe('hero_before_hurt', handle_bond_hero_pre_hurt)
 EventBus.subscribe('hero_attr_changed', _G.AttrUtils.snapshot_hero_attrs)
 EventBus.subscribe('finish_game', _G.handle_battle_finished)
 
--- 阶段7：技能系统 — 使用合并后的 skill_system
-require 'runtime.skill_damage_templates'
+-- ============================================================
+-- [6xx] 阶段6：技能与战斗
+-- ============================================================
+require 'runtime.skills.skill_damage_templates'                                   -- [610]
 _G.SYSTEM.damage_api = _G.td_damage_api
 
-local SkillSystem = require 'runtime.skill_system'
+local SkillSystem = require 'runtime.skills.skill_system'                          -- [620]
 _G.SYSTEM.skill = SkillSystem
 
 _G.update_attack_skills = SkillSystem.update_attack_skills
@@ -355,8 +391,8 @@ _G.ATTACK_SKILL_VFX = AttackSkillObjects and AttackSkillObjects.vfx_by_id
 _G.force_trigger_effect = SkillSystem.auto_effects.force_trigger_effect
 _G.update_auto_active_effects = SkillSystem.auto_effects.update
 
--- 阶段7.5：战场系统 — 使用合并后的 battle_system
-local BattleSystem = require 'runtime.battle_system'
+-- [6xx] 战场系统
+local BattleSystem = require 'runtime.combat.battle_system'                      -- [630]
 _G.SYSTEM.battle = BattleSystem
 
 _G.force_spawn_boss = BattleSystem.force_spawn_boss
@@ -364,8 +400,10 @@ _G.execute_enemy = BattleSystem.execute_enemy
 
 BootUIEnhancements.set_apply_round_choice(_G.apply_round_choice)
 
--- 阶段8：UI 系统 — 使用合并后的 ui_system
-local UISystem = require 'runtime.ui_system'
+-- ============================================================
+-- [7xx] 阶段7：UI 系统
+-- ============================================================
+local UISystem = require 'runtime.ui.ui_system'                              -- [710]
 _G.SYSTEM.ui = UISystem
 
 local runtime_hud_module = UISystem.hud
@@ -378,7 +416,7 @@ _G.set_battle_hud_visible = function(visible)
   return false
 end
 
-STATE.attr_tips_panel = require('runtime.attr_tips_panel').create()
+STATE.attr_tips_panel = require('runtime.ui.attr_tips_panel').create()       -- [711]
 if STATE.attr_tips_panel and STATE.attr_tips_panel.init then
   STATE.attr_tips_panel.init()
 end
@@ -454,15 +492,18 @@ do
   }
 end
 
--- 阶段9：调试系统 — 使用合并后的 debug_system
-local DebugSystem = require 'runtime.debug_system'
+-- ============================================================
+-- [8xx] 阶段8：调试系统
+-- ⚠ D3: debug_actions:20 模块顶层读取 _G.sample_skills_system，必须在 [720] 桥之后
+-- ============================================================
+local DebugSystem = require 'runtime.debug.debug_system'                        -- [810]
 _G.SYSTEM.debug = DebugSystem
 
 _G.force_trigger_effect = DebugSystem.effects.force_trigger_effect or _G.force_trigger_effect
 _G.update_effect_debug = DebugSystem.effects.update
-_G.update_battle_auto_acceptance = require('runtime.battle_auto_acceptance').update
+_G.update_battle_auto_acceptance = require('runtime.combat.battle_auto_acceptance').update  -- [820]
 
-_G.SYSTEM.battle_auto_acceptance = require 'runtime.battle_auto_acceptance'
+_G.SYSTEM.battle_auto_acceptance = require 'runtime.combat.battle_auto_acceptance'
 _G.SYSTEM.gm_bond_effects = DebugSystem.gm_bond_effects
 _G.attr_choice = attr_choice_system
 _G.SYSTEM.attr_choice = attr_choice_system
@@ -474,16 +515,28 @@ _G.update_passive_resources = function(dt)
   BootHelpers.update_passive_resources(dt, STATE, _G.resource_system)
 end
 
--- 阶段10：局外系统 — 使用合并后的 outgame_system
+-- ============================================================
+-- [9xx] 阶段9：局外系统
+-- ⚠ D6: outgame_system.create 闭包访问 _G.audio_system, _G.hud_system
+-- ⚠ D7: session_state.create 闭包访问 6 个系统，任何一个未就绪则 boot.lua 顶层崩溃
+-- ============================================================
 _G.RuntimeEntry = RuntimeEntry
 
-local OutgameSystem = require 'runtime.outgame_system'
+local OutgameSystem = require 'runtime.outgame.outgame_system'                    -- [910]
 _G.SYSTEM.outgame = OutgameSystem
 
 _G.RuntimeEntry.validate_config = function()
   local battle = _G.SYSTEM.battle
   return battle and battle.battlefield and battle.battlefield.validate_config and battle.battlefield.validate_config()
 end
+
+-- [D7] 断言：session_state.create() 依赖 6 个系统，任意一个 nil 则崩溃
+assert(_G.battlefield_system, '[boot] D7 FAIL: battlefield_system not ready')
+assert(_G.hero_attr_system, '[boot] D7 FAIL: hero_attr_system not ready')
+assert(_G.progression_system, '[boot] D7 FAIL: progression_system not ready')
+assert(_G.runtime_ui_helpers, '[boot] D7 FAIL: runtime_ui_helpers not ready')
+assert(_G.reward_system, '[boot] D7 FAIL: reward_system not ready')
+assert(_G.sample_skills_system, '[boot] D7 FAIL: sample_skills_system bridge not ready')
 
 local session_state_system = OutgameSystem.session.create({
   SkillRuntime = _G.SkillRuntime,
@@ -546,7 +599,8 @@ RuntimeEntry._session_bundle = {
 _G.reset_session_state = RuntimeEntry._session_bundle.reset_session_state
 _G.is_battle_active = RuntimeEntry._session_bundle.is_battle_active
 
-RuntimeEntry._runtime_bundle = require('runtime.boot_runtime_setup').create()
+RuntimeEntry._runtime_bundle = require('runtime.core.boot_runtime_setup').create()  -- [911]
+-- ⚠ D8: boot_runtime_setup.create() 惰性访问 _G.debug_tools_system, _G.gm_bond_effects_system
 
 RuntimeEntry.register_runtime_events = RuntimeEntry._runtime_bundle.register_runtime_events
 RuntimeEntry.start_runtime_loops = RuntimeEntry._runtime_bundle.start_runtime_loops

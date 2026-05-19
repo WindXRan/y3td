@@ -1,6 +1,6 @@
 package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
-local bonds = require 'runtime.bonds_chain'
+local bonds = require 'runtime.bonds.bonds_chain'
 local bond_modifier_pool = require 'data.tables.bond.bond_modifier_pool'
 
 local function normalize_text(value)

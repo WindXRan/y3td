@@ -1,5 +1,5 @@
 local CsvLoader = require 'data.csv_loader'
-local HeroAttrDefs = require 'runtime.hero_attr_defs'
+local HeroAttrDefs = require 'runtime.heroes.hero_attr_defs'
 
 local rows = CsvLoader.read_rows_optional({path = 'data_csv/attreffect.csv'})
 
@@ -22,8 +22,6 @@ local VALID_STATE_KEYS = {
 }
 
 local VALID_RUNTIME_KEYS = {
-  agility_on_kill = true,
-  agility_per_second = true,
   all_damage_bonus = true,
   attack_on_kill = true,
   attack_per_second = true,
@@ -33,8 +31,6 @@ local VALID_RUNTIME_KEYS = {
   critical_damage_bonus = true,
   elite_damage_bonus = true,
   gold_per_sec_bonus = true,
-  intelligence_on_kill = true,
-  intelligence_per_second = true,
   kill_gold_ratio = true,
   kill_reward_ratio = true,
   low_hp_damage_bonus = true,
@@ -44,8 +40,6 @@ local VALID_RUNTIME_KEYS = {
   skill_damage_bonus = true,
   skill_echo_chance = true,
   spell_damage_bonus = true,
-  strength_on_kill = true,
-  strength_per_second = true,
   wood_per_sec_bonus = true,
 }
 

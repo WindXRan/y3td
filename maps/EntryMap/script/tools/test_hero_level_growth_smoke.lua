@@ -1,6 +1,6 @@
 package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
-local Progression = require 'runtime.progression'
+local Progression = require 'runtime.progression.progression'
 
 local state = {}
 local added = {}

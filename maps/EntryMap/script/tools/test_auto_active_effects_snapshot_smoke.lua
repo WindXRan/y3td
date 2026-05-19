@@ -1,6 +1,6 @@
 package.path = 'script/?.lua;script/?/init.lua;script/?/?.lua;maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
-local mod = require 'runtime.auto_active_effects'
+local mod = require 'runtime.effects.auto_active_effects'
 
 local state = {}
 local system = mod.create({

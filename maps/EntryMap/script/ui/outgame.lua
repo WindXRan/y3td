@@ -1,7 +1,7 @@
 local theme = require 'ui.theme'
 local outgame_defs = require 'ui.outgame_defs'
 local ArchiveShop = require 'ui.outgame_archive_shop'
-local OutgameHeroGrowth = require 'runtime.outgame_hero_growth'
+local OutgameHeroGrowth = require 'runtime.outgame.outgame_hero_growth'
 local ArchiveRankingTabs = require 'data.tables.outgame.archive_ranking_tabs'
 local ArchiveTabDefinitions = require 'data.tables.archive_tab_definitions'
 local OutgameUIConfig = require 'data.tables.outgame.outgame_ui_config'

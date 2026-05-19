@@ -1,6 +1,6 @@
 package.path = 'maps/EntryMap/script/?.lua;maps/EntryMap/script/?/init.lua;maps/EntryMap/script/?/?.lua;' .. package.path
 
-local gear = require 'runtime.gear_upgrades'
+local gear = require 'runtime.progression.gear_upgrades'
 
 local state = {
   resources = { gold = 9999 },
