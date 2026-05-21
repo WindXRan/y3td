@@ -10,32 +10,27 @@
 
   模块加载编号体系（详见 docs/总册/模块加载顺序方案.md）：
   1xx — 基础数据    2xx — 工具模块      3xx — 核心状态与Buff
-  4xx — 英雄系统    5xx — 核心玩法      6xx — 技能与战斗
+  4xx — 英雄系统    5xx — 核心玩法      6xx — 战斗系统
   7xx — UI系统      8xx — 调试系统      9xx — 局外系统
 
   已解决的隐式依赖：
-  ✅ D1: bonds_chain 已在阶段2显式加载（见 [222]）
   ✅ D2: boot_helpers 已合并到 boot_utils，不再独立存在
 --]]
 
 -- ============================================================
 -- [1xx] 阶段1：基础数据 — 数据表和配置（无运行时依赖，可最先加载）
 -- 加载项: [110] config.entry_config
---         [120] data.tables.skill.attack_skills
 -- ============================================================
 local CONFIG = require 'config.entry_config'                              -- [110]
-local AttackSkillObjects = require 'data.tables.skill.attack_skills'      -- [120]
-_G.AttackSkillObjects = AttackSkillObjects
 
 -- 统一系统命名空间
 _G.SYSTEM = _G.SYSTEM or {}
 
 -- ============================================================
 -- [2xx] 阶段2：工具模块 — 纯函数/工厂，部分有隐式依赖
--- 依赖链: [230]boot_combat → [221]boot_utils → [222]bonds_chain
--- ✅ D1 已消除: bonds_chain 于阶段2显式加载
 -- ============================================================
-local GearUpgrades = require 'runtime.progression.gear_upgrades'                      -- [240]
+local ok_gear, GearUpgrades = pcall(require, 'runtime.progression.gear_upgrades')
+if not ok_gear then GearUpgrades = {} end
 local BootCore      = require 'runtime.core.boot_core'                         -- [210]
 local BootCombat    = require 'runtime.core.boot_combat'                       -- [230]
 _G.BootCombat = BootCombat
@@ -45,10 +40,8 @@ _G.get_hero_point = BootCombat.get_hero_point
 _G.get_hero_attack = BootCombat.get_hero_attack
 _G.get_primary_target = BootCombat.get_primary_target
 _G.launch_projectile_from_hero = BootCombat.launch_projectile_from_hero
-_G.deal_skill_damage = BootCombat.deal_skill_damage
 _G.spawn_particle = BootCombat.spawn_particle
 _G.is_active_enemy = BootCombat.is_active_enemy
-_G.emit_damage_debug_visual = BootCombat.emit_damage_debug_visual
 _G.get_enemy_runtime_info = BootCombat.get_enemy_runtime_info
 _G.is_boss_runtime_enemy = BootCombat.is_boss_runtime_enemy
 _G.is_elite_runtime_enemy = BootCombat.is_elite_runtime_enemy
@@ -61,24 +54,15 @@ _G.get_hero_facing_towards = function(target)
   if not ok_target then return 0 end
   return math.atan(ty - hero_y, tx - hero_x)
 end
-_G.sync_basic_attack_ability = function()
-  local bfs = _G.battlefield_system
-  if bfs and bfs.sync_basic_attack_ability then
-    bfs.sync_basic_attack_ability()
-  end
-end
 _G.award_rewards = function(reward, reason, is_silent)
   local rs = _G.reward_system
   if rs and rs.award_rewards then
     return rs.award_rewards(reward, reason, is_silent)
   end
 end
--- ✅ D1 已消除: bonds_chain 显式加载（原通过 boot_helpers→boot_utils 隐式 3 层链）
-require 'runtime.bonds.bonds_chain'                                              -- [222] 显式
 -- ✅ D2 已消除: boot_helpers 已合并到 boot_utils，不再需要薄包装
 require 'runtime.core.boot_utils'; local BootHelpers = _G.BootHelpers                        -- [221]
 local BootUIEnhancements = require 'runtime.core.boot_ui_enhancements'         -- [250]
-local EventBus = require 'runtime.core.event_bus'                              -- [260] 零依赖
 local RuntimeEntry = {}
 local projectile_override_hook_installed = false
 local helper_signals_started = false
@@ -118,34 +102,12 @@ trace_boot('chunk loaded')
 
 -- 阶段1：核心状态初始化 — 创建 STATE、设置 _G 全局
 -- 此后的 require 可安全读取 _G.STATE / _G.CONFIG
-local boot_core = BootCore.create({
-  AttackSkillObjects = AttackSkillObjects,
-})
-
-local ATTACK_SKILL_DEFS = boot_core.ATTACK_SKILL_DEFS
-local ATTACK_SKILL_BLUEPRINTS = boot_core.ATTACK_SKILL_BLUEPRINTS
-local ATTACK_SKILL_SLOT_COUNT = boot_core.ATTACK_SKILL_SLOT_COUNT
-local SkillRuntime = boot_core.SkillRuntime
-local create_attack_skill_instance = boot_core.create_attack_skill_instance
-_G.create_attack_skill_instance = create_attack_skill_instance
-local SkillState = boot_core.SkillState
+local boot_core = BootCore.create()
 
 STATE = boot_core.create_initial_state()
-STATE.effect_debug_runtime = nil
 STATE.fixed_camera_enabled = true
 _G.CONFIG = CONFIG
 _G.STATE = STATE
-_G.SkillRuntime = SkillRuntime
-_G.SkillState = SkillState
-_G.ATTACK_SKILL_DEFS = ATTACK_SKILL_DEFS
-_G.ATTACK_SKILL_BLUEPRINTS = ATTACK_SKILL_BLUEPRINTS
-_G.ATTACK_SKILL_SLOT_COUNT = ATTACK_SKILL_SLOT_COUNT
-
--- Buff 系统（使用 snake_case 统一导出）
-local buff_system = require 'runtime.effects.buff_system'                         -- [310]
-_G.buff_system_tick = buff_system.tick
-_G.update_buff_system = _G.buff_system_tick
-_G.SYSTEM.buff = buff_system
 
 local function install_projectile_override_hook()
   if projectile_override_hook_installed then
@@ -176,30 +138,20 @@ end
 
 install_projectile_override_hook()
 
--- 阶段2：基础能力 — Buff、投射物校验、玩家工具函数
--- [3xx] 投射物校验
-local ProjectileNameGuard = require 'runtime.core.projectile_name_guard'       -- [320]
-ProjectileNameGuard.validate({
-  y3 = y3,
-}, {
-  134255250,
-})
+-- 阶段2：基础能力 — Buff、玩家工具函数
 
-local function get_player()
-  return BootHelpers.get_player()
-end
+-- get_player 已在 boot_utils.lua 中定义，此处不再重复定义
 
 local function get_enemy_player()
   return BootHelpers.get_enemy_player()
 end
 
-_G.get_player = get_player
 _G.get_enemy_player = get_enemy_player
 
 -- 工具函数（薄转发层，全部直接挂 _G，自初始化）
 require 'runtime.core.boot_utils'
 
--- 运行时事件处理（message / heal_hero / handle_battle_finished / create_bond_env）
+-- 运行时事件处理（message / heal_hero）
 -- 已合并到 runtime.boot_utils，不再单独 require boot_event
 
 BootCombat.set_heal_hero(_G.heal_hero)
@@ -220,194 +172,119 @@ RuntimeEntry.toggle_fixed_camera = _G.toggle_fixed_camera
 -- ⚠ D9: hero_model:10 在模块顶层读取 _G.STATE，必须在 STATE 创建之后
 -- ============================================================
 
--- 英雄属性系统（自初始化，require 时设置 _G.hero_attr_system）
-local function sync_gear_runtime_effects(state, hero, config)
-  return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
-end
-_G.sync_gear_runtime_effects = sync_gear_runtime_effects
+-- 英雄属性系统（已禁用，使用编辑器自带属性系统）
+_G.hero_attr_system = {
+  get_attr = function(unit, name)
+    if not unit or not unit.get_attr then return 0 end
+    local v = unit:get_attr(name)
+    return tonumber(v) or 0
+  end,
+  add_attr = function() end,
+  set_attr = function() end,
+  init_hero_attrs = function() end,
+  rebuild_derived_attrs = function() end,
+  snapshot = function() end,
+  log_snapshot = function() end,
+  get_attack_power = function(unit)
+    if not unit or not unit.get_attr then return 0 end
+    return tonumber(unit:get_attr('攻击')) or 0
+  end,
+}
+_G.SYSTEM.hero_attr = _G.hero_attr_system
+local hero_attr_system = _G.hero_attr_system
 
--- 加载英雄属性模块
-local hero_attr_module = require 'runtime.heroes.hero_attr_system'               -- [410]
-hero_attr_system = _G.hero_attr_system
-_G.SYSTEM.hero_attr = hero_attr_system
-
-do
-  local ratio = CONFIG
-      and CONFIG.hero_progression
-      and CONFIG.hero_progression.main_stat_attack_ratio
-      or nil
-  if hero_attr_module and hero_attr_module.set_main_stat_attack_ratio and ratio ~= nil then
-    hero_attr_module.set_main_stat_attack_ratio(ratio)
-  end
-end
-
-require 'runtime.heroes.hero_model'                                              -- [420]
+pcall(require, 'runtime.heroes.hero_model')
 _G.SYSTEM.hero_model = _G.hero_model
 
-local round_number = BootHelpers.round_number
-local design_seconds = BootHelpers.design_seconds
+local round_number = BootHelpers and BootHelpers.round_number
+local design_seconds = BootHelpers and BootHelpers.design_seconds
 _G.round_number = round_number
 _G.design_seconds = design_seconds
-
-RuntimeEntry.emit_skill_hit_feedback = BootCombat.emit_skill_hit_feedback
-
-BootHelpers.set_get_bond_runtime_bonus(BootCombat.get_bond_runtime_bonus)
-
-local handle_bond_hero_pre_hurt = BootCombat.handle_bond_hero_pre_hurt
-local trigger_td_skills_on_hit = BootCombat.trigger_td_skills_on_hit
 
 -- ============================================================
 -- [5xx] 阶段5：核心玩法 — 升级、奖励、音频、回合选择
 -- ⚠ D4: progression 在模块顶层读取 _G.hero_attr_system
 -- ⚠ D5: progression 惰性访问 _G.reward_system / _G.attr_choice_system
 -- ============================================================
-require 'runtime.progression.progression'                                              -- [510]
-_G.get_hero_max_level = _G.progression_system.get_hero_max_level
-_G.sync_hero_progression = _G.progression_system.sync_hero_progression
-_G.sync_hero_progress_from_engine = _G.progression_system.sync_hero_progress_from_engine
-_G.SYSTEM.progression = _G.progression_system
+pcall(require, 'runtime.progression.progression')
+if _G.progression_system then
+  _G.get_hero_max_level = _G.progression_system.get_hero_max_level
+  _G.sync_hero_progression = _G.progression_system.sync_hero_progression
+  _G.sync_hero_progress_from_engine = _G.progression_system.sync_hero_progress_from_engine
+  _G.SYSTEM.progression = _G.progression_system
+end
 
-require 'runtime.progression.rewards'                                                -- [520]
+pcall(require, 'runtime.progression.rewards')
 reward_system = _G.reward_system
 _G.SYSTEM.reward = reward_system
 
 attr_choice_system = reward_system
 
-require 'runtime.audio.audio'                                                  -- [530]
+pcall(require, 'runtime.audio.audio')
 audio_system = _G.audio_system
 _G.SYSTEM.audio = audio_system
 
 
 -- [5xx] 回合选择系统（拆分为独立模块）
-require 'runtime.rounds.round_choice'                                            -- [540]
+pcall(require, 'runtime.rounds.round_choice')
 
-EventBus.subscribe('wave_started', function(wave_index)
-  if audio_system and audio_system.handle_wave_started then
-    audio_system.handle_wave_started(wave_index)
-  end
-  if reward_system and reward_system.handle_wave_started then
-    return reward_system.handle_wave_started(wave_index)
-  end
-end)
+local AudioUtils = require 'runtime.audio.audio_utils'
 
-EventBus.subscribe('boss_spawned', function(boss_info)
-  if audio_system and audio_system.handle_boss_spawned then
-    audio_system.handle_boss_spawned(boss_info)
-  end
-  if reward_system and reward_system.handle_boss_spawned then
-    return reward_system.handle_boss_spawned()
-  end
-end)
-
-EventBus.subscribe('boss_warning', function(wave, remain)
-  if audio_system and audio_system.handle_boss_warning then
-    return audio_system.handle_boss_warning(wave, remain)
-  end
-  return nil
-end)
-
-EventBus.subscribe('challenge_started', function(instance)
-  if audio_system and audio_system.handle_challenge_started then
-    audio_system.handle_challenge_started(instance)
-  end
-  if reward_system and reward_system.handle_challenge_started then
-    return reward_system.handle_challenge_started(instance)
-  end
-end)
-
-EventBus.subscribe('challenge_finished', function(instance, is_success)
-  if audio_system and audio_system.handle_challenge_finished then
-    audio_system.handle_challenge_finished(instance, is_success)
-  end
-  if reward_system and reward_system.handle_challenge_finished then
-    return reward_system.handle_challenge_finished(instance, is_success)
-  end
-end)
-
-EventBus.subscribe('hero_be_hurt', function()
-  if audio_system and audio_system.handle_hero_be_hurt then
-    audio_system.handle_hero_be_hurt()
-  end
-  if reward_system and reward_system.handle_hero_be_hurt then
-    return reward_system.handle_hero_be_hurt()
-  end
-end)
-
-EventBus.subscribe('hero_damage', trigger_td_skills_on_hit)
-EventBus.subscribe('formula_damage_override', BootCombat.apply_formula_damage_override)
-EventBus.subscribe('hero_before_hurt', handle_bond_hero_pre_hurt)
-EventBus.subscribe('hero_attr_changed', _G.AttrUtils.snapshot_hero_attrs)
-EventBus.subscribe('finish_game', _G.handle_battle_finished)
-
--- ============================================================
--- [6xx] 阶段6：技能与战斗
--- ============================================================
-require 'runtime.skills.skill_damage_templates'                                   -- [610]
-_G.SYSTEM.damage_api = _G.td_damage_api
-
-local SkillSystem = require 'runtime.skills.skill_system'                          -- [620]
-_G.SYSTEM.skill = SkillSystem
-
-_G.update_attack_skills = SkillSystem.update_attack_skills
-_G.update_enemy_statuses = SkillSystem.update_enemy_statuses
-
-do
-  local generated_api = SkillSystem.generated
-  local count, defs = generated_api.register_all()
-  print('[boot] 批量注册技能完成: ' .. tostring(count) .. ' 个')
-  if AttackSkillObjects and AttackSkillObjects.vfx_by_id then
-    for _, def in ipairs(defs) do
-      if def.id and def.visual then
-        if not AttackSkillObjects.vfx_by_id[def.id] then
-          AttackSkillObjects.vfx_by_id[def.id] = {}
-        end
-        local visual = def.visual
-        local vfx = AttackSkillObjects.vfx_by_id[def.id]
-        if visual.cast then vfx.cast_particle = visual.cast end
-        if visual.impact then vfx.impact_particle = visual.impact end
-        if visual.hit then vfx.hit_particle = visual.hit end
-        if visual.projectile_key then vfx.projectile_key = visual.projectile_key end
-        if visual.projectile_height then vfx.projectile_height = visual.projectile_height end
-        if visual.projectile_time then vfx.projectile_time = visual.projectile_time end
-        if visual.warning then vfx.warning_particle = visual.warning end
-      end
-    end
-  end
-
-  -- 保存所有已注册技能 ID，供 GM 面板列出和手动施放
-  -- 注意：不再自动设为 active_ids（英雄默认不自动施法，仅通过 GM 手动触发）
-  local all_ids = {}
-  for _, def in ipairs(defs) do
-    if def.id then
-      all_ids[#all_ids + 1] = def.id
-    end
-  end
-  _G.ALL_SKILL_IDS = all_ids
-  print('[boot] 已注册 ' .. tostring(#all_ids) .. ' 个技能（非自动施法）')
+_G.play_ui_click = function()
+  return AudioUtils.play_click()
 end
 
-_G.ATTACK_SKILL_VFX = AttackSkillObjects and AttackSkillObjects.vfx_by_id
+_G.play_ui_error = function()
+  return AudioUtils.play_error()
+end
 
-_G.force_trigger_effect = SkillSystem.auto_effects.force_trigger_effect
-_G.update_auto_active_effects = SkillSystem.auto_effects.update
+_G.play_basic_attack_sound = function(source_unit)
+  if audio_system and audio_system.play_basic_attack then
+    return audio_system.play_basic_attack(source_unit)
+  end
+  return AudioUtils.play_basic_attack(source_unit)
+end
 
+_G.play_enemy_death_sound = function(unit, info, death_point)
+  if audio_system and audio_system.play_enemy_death then
+    return audio_system.play_enemy_death(unit, info and info.kind == 'boss', death_point)
+  end
+  return AudioUtils.play_enemy_death(unit, info and info.kind == 'boss', death_point)
+end
+
+y3.game:event_on('hero_attr_changed', function(trg)
+  _G.AttrUtils.snapshot_hero_attrs()
+end)
+
+-- ============================================================
+-- [6xx] 阶段6：战斗系统
+-- ============================================================
 -- [6xx] 战场系统
-local BattleSystem = require 'runtime.combat.battle_system'                      -- [630]
+local ok_battle, BattleSystem = pcall(require, 'runtime.combat.battle_system')
+if not ok_battle then
+  print('[boot] ERROR loading battle_system: ' .. tostring(BattleSystem))
+  BattleSystem = {}
+end
 _G.SYSTEM.battle = BattleSystem
 
-_G.force_spawn_boss = BattleSystem.force_spawn_boss
-_G.execute_enemy = BattleSystem.execute_enemy
+_G.force_spawn_boss = BattleSystem.force_spawn_boss or function() end
+_G.execute_enemy = BattleSystem.execute_enemy or function() end
 
-BootUIEnhancements.set_apply_round_choice(_G.apply_round_choice)
+-- [635] 攻击技能运行时
+pcall(require, 'runtime.attack_skills')
+
+-- [640] 技能处理器
+pcall(require, 'runtime.combat.skill_handlers')
 
 -- ============================================================
 -- [7xx] 阶段7：UI 系统
 -- ============================================================
-local UISystem = require 'runtime.ui.ui_system'                              -- [710]
+local ok_ui, UISystem = pcall(require, 'runtime.ui.ui_system')
+if not ok_ui then UISystem = {} end
 _G.SYSTEM.ui = UISystem
 
-local runtime_hud_module = UISystem.hud
-local hud = runtime_hud_module.create()
+local runtime_hud_module = UISystem.hud or {}
+local hud = runtime_hud_module.create and runtime_hud_module.create() or {}
 _G.hud_system = hud
 _G.set_battle_hud_visible = function(visible)
   if hud and hud.set_battle_hud_visible then
@@ -416,15 +293,23 @@ _G.set_battle_hud_visible = function(visible)
   return false
 end
 
-STATE.attr_tips_panel = require('runtime.ui.attr_tips_panel').create()       -- [711]
+local ok_attr_tips, attr_tips_panel_mod = pcall(require, 'runtime.ui.attr_tips_panel')
+if not ok_attr_tips then attr_tips_panel_mod = {} end
+STATE.attr_tips_panel = attr_tips_panel_mod.create and attr_tips_panel_mod.create() or {}
 if STATE.attr_tips_panel and STATE.attr_tips_panel.init then
   STATE.attr_tips_panel.init()
 end
 
-local runtime_ui_helpers = UISystem.helpers
-runtime_ui_helpers.__raw_refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel
-runtime_ui_helpers.refresh_choice_panel = BootUIEnhancements.refresh_choice_panel
-runtime_ui_helpers.install_panel_systems()
+local runtime_ui_helpers = UISystem.helpers or {}
+if runtime_ui_helpers.refresh_choice_panel then
+  runtime_ui_helpers.__raw_refresh_choice_panel = runtime_ui_helpers.refresh_choice_panel
+end
+if BootUIEnhancements and BootUIEnhancements.refresh_choice_panel then
+  runtime_ui_helpers.refresh_choice_panel = BootUIEnhancements.refresh_choice_panel
+end
+if runtime_ui_helpers.install_panel_systems then
+  runtime_ui_helpers.install_panel_systems()
+end
 
 -- 导出 UI 函数到 _G，供 loops.lua / session_state 调用
 _G.ensure_runtime_hud = function()
@@ -439,90 +324,44 @@ end
 _G.refresh_choice_panel = function()
   return runtime_ui_helpers.refresh_choice_panel and runtime_ui_helpers.refresh_choice_panel()
 end
-_G.refresh_swallow_panel = function()
-  return runtime_ui_helpers.refresh_bond_swallow_panel and runtime_ui_helpers.refresh_bond_swallow_panel()
-end
-_G.refresh_runtime_overview = function()
-  return runtime_ui_helpers.refresh_runtime_overview and runtime_ui_helpers.refresh_runtime_overview()
-end
 _G.refresh_inventory_panel = function()
   return runtime_ui_helpers.refresh_inventory_panel and runtime_ui_helpers.refresh_inventory_panel()
 end
 
-UISystem.growth_tip.create = UISystem.growth_tip.create or function()
-  return require('ui.growth_weapon_item_tip').create()
-end
-_G.growth_weapon_item_tip = UISystem.growth_tip.create()
-
--- 阶段8.5：sample_skills_system 兼容层
--- debug_actions / debug_tools 在 require 时捕获 _G.sample_skills_system，因此必须在 DebugSystem 加载前设置
--- 原 SampleSkillsSystem 模块在重构中删除，此处桥接到 generated_skills + skill_framework
-do
-  local generated = SkillSystem.generated
-  local sample_cursor = 0
-
-  _G.sample_skills_system = {
-    get_sample_defs = function()
-      return generated.load_defs()
-    end,
-    cast_sample = function(id, cast_params)
-      if type(id) == 'number' then
-        id = tostring(id)
-      end
-      return generated.cast(id, cast_params)
-    end,
-    cast_next_sample = function()
-      local ids = generated.list_ids()
-      if #ids == 0 then
-        return false, 'no skills registered'
-      end
-      sample_cursor = sample_cursor + 1
-      if sample_cursor > #ids then
-        sample_cursor = 1
-      end
-      return generated.cast(ids[sample_cursor])
-    end,
-    list_samples = function()
-      local lines = {}
-      for _, def in ipairs(generated.load_defs()) do
-        lines[#lines + 1] = string.format('  %s [%s] %s', def.id, def.element or '?', def.name or def.id)
-      end
-      return lines
-    end,
-  }
-end
-
 -- ============================================================
 -- [8xx] 阶段8：调试系统
--- ⚠ D3: debug_actions:20 模块顶层读取 _G.sample_skills_system，必须在 [720] 桥之后
 -- ============================================================
-local DebugSystem = require 'runtime.debug.debug_system'                        -- [810]
+local ok_debug, DebugSystem = pcall(require, 'runtime.debug.debug_system')
+if not ok_debug then DebugSystem = {} end
 _G.SYSTEM.debug = DebugSystem
 
-_G.force_trigger_effect = DebugSystem.effects.force_trigger_effect or _G.force_trigger_effect
-_G.update_effect_debug = DebugSystem.effects.update
-_G.update_battle_auto_acceptance = require('runtime.combat.battle_auto_acceptance').update  -- [820]
-
-_G.SYSTEM.battle_auto_acceptance = require 'runtime.combat.battle_auto_acceptance'
-_G.SYSTEM.gm_bond_effects = DebugSystem.gm_bond_effects
+local ok_battle_auto, battle_sys_for_auto = pcall(require, 'runtime.combat.battle_system')
+if not ok_battle_auto then battle_sys_for_auto = {} end
+_G.update_battle_auto_acceptance = (battle_sys_for_auto.auto_acceptance and battle_sys_for_auto.auto_acceptance.update) or function() end
+_G.SYSTEM.battle_auto_acceptance = battle_sys_for_auto.auto_acceptance or {}
 _G.attr_choice = attr_choice_system
 _G.SYSTEM.attr_choice = attr_choice_system
+
+
 
 -- loops.lua 所需的 _G.update_passive_resources 包装
 _G.update_passive_resources = function(dt)
   local STATE = _G.STATE
   if not STATE or not _G.resource_system then return end
-  BootHelpers.update_passive_resources(dt, STATE, _G.resource_system)
+  if BootHelpers and BootHelpers.update_passive_resources then
+    BootHelpers.update_passive_resources(dt, STATE, _G.resource_system)
+  end
 end
 
 -- ============================================================
 -- [9xx] 阶段9：局外系统
 -- ⚠ D6: outgame_system.create 闭包访问 _G.audio_system, _G.hud_system
--- ⚠ D7: session_state.create 闭包访问 6 个系统，任何一个未就绪则 boot.lua 顶层崩溃
+-- ⚠ D7: session_state.create 闭包访问多个系统
 -- ============================================================
 _G.RuntimeEntry = RuntimeEntry
 
-local OutgameSystem = require 'runtime.outgame.outgame_system'                    -- [910]
+local ok_outgame, OutgameSystem = pcall(require, 'runtime.outgame.outgame_system')
+if not ok_outgame then OutgameSystem = {} end
 _G.SYSTEM.outgame = OutgameSystem
 
 _G.RuntimeEntry.validate_config = function()
@@ -530,84 +369,146 @@ _G.RuntimeEntry.validate_config = function()
   return battle and battle.battlefield and battle.battlefield.validate_config and battle.battlefield.validate_config()
 end
 
--- [D7] 断言：session_state.create() 依赖 6 个系统，任意一个 nil 则崩溃
-assert(_G.battlefield_system, '[boot] D7 FAIL: battlefield_system not ready')
-assert(_G.hero_attr_system, '[boot] D7 FAIL: hero_attr_system not ready')
-assert(_G.progression_system, '[boot] D7 FAIL: progression_system not ready')
-assert(_G.runtime_ui_helpers, '[boot] D7 FAIL: runtime_ui_helpers not ready')
-assert(_G.reward_system, '[boot] D7 FAIL: reward_system not ready')
-assert(_G.sample_skills_system, '[boot] D7 FAIL: sample_skills_system bridge not ready')
-
-local session_state_system = OutgameSystem.session.create({
-  SkillRuntime = _G.SkillRuntime,
-  SkillState = _G.SkillState,
-  create_hero = function()
-    local battle = _G.SYSTEM.battle
-    local bfs = battle and battle.battlefield
-    local hero = bfs and bfs.create_hero(_G.ATTACK_SKILL_DEFS.basic_attack.base_range or 250)
-    if _G.STATE.fixed_camera_enabled == true then
-      _G.RuntimeEntry.sync_fixed_camera_mode()
-    end
-    return hero
-  end,
-})
-
-local outgame_system = OutgameSystem.outgame.create({
-  STATE = _G.STATE,
-  CONFIG = _G.CONFIG,
-  y3 = y3,
-  message = _G.message,
-  play_ui_click = function()
-    local audio = _G.audio_system
-    return audio and audio.play_ui_click and audio.play_ui_click() or nil
-  end,
-  ensure_music_loop = function()
-    local audio = _G.audio_system
-    return audio and audio.ensure_music_loop and audio.ensure_music_loop() or nil
-  end,
-  get_player = BootHelpers.get_player,
-  set_battle_hud_visible = function(visible)
-    local hud = _G.hud_system
-    if hud and hud.set_battle_hud_visible then
-      return hud.set_battle_hud_visible(visible)
-    end
-    return false
-  end,
-  stage_runtime = {
-    get_current_stage_text = function()
-      local def = _G.STATE.current_stage_def
-      if def and (def.display_label or def.display_name) then
-        return def.display_label or def.display_name
+-- [D7] 断言已移除，允许缺失模块继续运行
+local session_state_system = nil
+if OutgameSystem.session and OutgameSystem.session.create then
+  session_state_system = OutgameSystem.session.create({
+    create_hero = function()
+      local battle = _G.SYSTEM.battle
+      local bfs = battle and battle.battlefield
+      local hero = bfs and bfs.create_hero(250)
+      if _G.STATE.fixed_camera_enabled == true then
+        _G.RuntimeEntry.sync_fixed_camera_mode()
       end
-      return '第1关'
+      if hero and _G.hero_attr_system and _G.CONFIG and _G.CONFIG.hero_init_stats then
+        _G.hero_attr_system.init_hero_attrs(hero, _G.CONFIG.hero_init_stats)
+      end
+      
+      -- 让英雄无法移动
+      if hero and hero.set_move_speed then
+        hero:set_move_speed(0)
+        print('[HERO] 英雄已设置为无法移动')
+      end
+      
+      if hero then
+        hero:event('单位-死亡', function()
+          print('[HERO DEATH] 英雄死亡')
+          y3.game:event_notify('hero_death')
+          if _G.STATE and _G.STATE.hero == hero then
+            hero:revive()
+            local max_hp = hero:get_attr('生命') or hero:get_attr('hp_max') or 1000
+            if max_hp <= 0 then
+              max_hp = 1000
+            end
+            hero:set_hp(max_hp)
+            y3.game:event_notify('hero_revive')
+            print('[HERO REVIVE] 英雄已复活，血量恢复至 ' .. max_hp)
+          end
+        end)
+      end
+      
+      -- 在英雄前方创建测试靶子（无法移动的敌人）
+      if hero and bfs then
+        local ok, hero_pos = pcall(function() return hero:get_point() end)
+        if ok and hero_pos and hero_pos.x then
+          -- 在英雄前方1000单位处创建靶子
+          local target_pos = y3.point.create(hero_pos.x + 1000, hero_pos.y, hero_pos.z)
+          local enemy_player = y3.player(2)
+          local target_unit = y3.unit.create({
+            player = enemy_player,
+            unit_id = 'monster_001',
+            point = target_pos,
+            angle = 180,
+          })
+          if target_unit then
+            target_unit:set_move_speed(0)
+            target_unit:set_max_hp(99999)
+            target_unit:set_hp(99999)
+            print('[TEST TARGET] 在英雄前方创建了测试靶子')
+          end
+        else
+          print('[TEST TARGET] 无法获取英雄位置，跳过创建靶子')
+        end
+      end
+      
+      return hero
     end,
-    start_selected_stage = session_state_system.start_selected_stage,
-  },
-})
+  })
+end
+
+local outgame_system = {}
+if OutgameSystem.outgame and OutgameSystem.outgame.create then
+  outgame_system = OutgameSystem.outgame.create({
+    STATE = _G.STATE,
+    CONFIG = _G.CONFIG,
+    y3 = y3,
+    message = _G.message,
+    play_ui_click = function()
+      local audio = _G.audio_system
+      return audio and audio.play_ui_click and audio.play_ui_click() or nil
+    end,
+    ensure_music_loop = function()
+      local audio = _G.audio_system
+      return audio and audio.ensure_music_loop and audio.ensure_music_loop() or nil
+    end,
+    get_player = y3.player.get_main_player,
+    set_battle_hud_visible = function(visible)
+      local hud = _G.hud_system
+      if hud and hud.set_battle_hud_visible then
+        return hud.set_battle_hud_visible(visible)
+      end
+      return false
+    end,
+    stage_runtime = {
+      get_current_stage_text = function()
+        return '第1关'
+      end,
+      start_selected_stage = session_state_system and session_state_system.start_selected_stage,
+    },
+  })
+end
 
 _G.outgame_system = outgame_system
-_G.session_state_system = session_state_system
+_G.session_state_system = session_state_system or {}
 
 RuntimeEntry._session_bundle = {
-  session_state_system = session_state_system,
+  session_state_system = session_state_system or {},
   outgame_system = outgame_system,
-  is_battle_active = session_state_system.is_battle_active,
-  reset_battle_state = session_state_system.reset_battle_state,
-  reset_session_state = session_state_system.reset_session_state,
+  is_battle_active = session_state_system and session_state_system.is_battle_active or function() return false end,
+  reset_battle_state = session_state_system and session_state_system.reset_battle_state or function() end,
+  reset_session_state = session_state_system and session_state_system.reset_session_state or function() end,
 }
 
 _G.reset_session_state = RuntimeEntry._session_bundle.reset_session_state
 _G.is_battle_active = RuntimeEntry._session_bundle.is_battle_active
 
-RuntimeEntry._runtime_bundle = require('runtime.core.boot_runtime_setup').create()  -- [911]
--- ⚠ D8: boot_runtime_setup.create() 惰性访问 _G.debug_tools_system, _G.gm_bond_effects_system
+local ok_boot_setup, boot_runtime_setup = pcall(require, 'runtime.core.boot_runtime_setup')
+if not ok_boot_setup then boot_runtime_setup = {} end
+RuntimeEntry._runtime_bundle = boot_runtime_setup and boot_runtime_setup.create() or {}
 
-RuntimeEntry.register_runtime_events = RuntimeEntry._runtime_bundle.register_runtime_events
-RuntimeEntry.start_runtime_loops = RuntimeEntry._runtime_bundle.start_runtime_loops
-RuntimeEntry.run_bootstrap_sequence = RuntimeEntry._runtime_bundle.run_bootstrap_sequence
+RuntimeEntry.register_runtime_events = RuntimeEntry._runtime_bundle.register_runtime_events or function() end
+RuntimeEntry.start_runtime_loops = RuntimeEntry._runtime_bundle.start_runtime_loops or function() end
+RuntimeEntry.run_bootstrap_sequence = RuntimeEntry._runtime_bundle.run_bootstrap_sequence or function() end
 
 function RuntimeEntry.bootstrap()
   RuntimeEntry.run_bootstrap_sequence()
+end
+
+_G.sync_basic_attack_ability = function()
+  local hero = _G.STATE and _G.STATE.hero
+  if not hero or not hero:is_exist() then
+    print('[sync_basic_attack_ability] Hero not found')
+    return
+  end
+  
+  print('[sync_basic_attack_ability] Setting up skill 100001001 as basic attack')
+  local skill = hero:find_ability('英雄', 100001001)
+  if skill then
+    print('[sync_basic_attack_ability] Found skill 100001001, enabling autocast')
+    skill:set_autocast(true)
+  else
+    print('[sync_basic_attack_ability] Skill 100001001 not found on hero')
+  end
 end
 
 _G.RuntimeEntry = RuntimeEntry

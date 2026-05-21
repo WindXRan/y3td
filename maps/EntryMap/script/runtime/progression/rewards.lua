@@ -1,6 +1,7 @@
 local HeroEvolutionObjects = require 'data.tables.outgame.hero_evolutions'
 local HeroEvolutionNodeObjects = require 'data.tables.outgame.hero_evolution_nodes'
-local HeroRoster = (require 'data.game_tables').hero_roster
+local HeroRoster = require 'data.simple_data'.load_hero_roster()
+local GameEvents = require 'runtime.events.game_events'
 
 local M = {}
 local y3 = y3
@@ -93,12 +94,16 @@ local function build_choices(level)
 end
 
 local function apply_attr_pack_to_hero(hero, attr_pack, hero_attr_system)
+  if not hero or not attr_pack then
+    return
+  end
   for attr_name, value in pairs(attr_pack) do
-    if value ~= 0 then
+    local num_value = tonumber(value) or 0
+    if num_value ~= 0 then
       if hero_attr_system and hero_attr_system.add_attr then
-        hero_attr_system.add_attr(hero, attr_name, value)
+        hero_attr_system.add_attr(hero, attr_name, num_value)
       elseif hero.add_attr then
-        hero:add_attr(attr_name, value)
+        hero:add_attr(attr_name, num_value)
       end
     end
   end
@@ -535,24 +540,28 @@ local STATE = env and env.STATE or _G.STATE
   end
 
   local function apply_evolution_attack_skill_bonus(bonus, direction)
-    if not bonus or not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
+    if not bonus or not STATE or not STATE.attack_skill_state or not STATE.attack_skill_state.by_id then
       return
     end
 
-    local factor = direction or 1
+    local factor = tonumber(direction) or 1
     for skill_id, skill in pairs(STATE.attack_skill_state.by_id) do
-      if skill_id ~= 'basic_attack' then
-        if bonus.damage_ratio and bonus.damage_ratio ~= 0 then
-          skill.damage_ratio = math.max(0, (skill.damage_ratio or 0) + bonus.damage_ratio * factor)
+      if skill_id ~= 'basic_attack' and skill then
+        local damage_ratio = tonumber(bonus.damage_ratio) or 0
+        if damage_ratio ~= 0 then
+          skill.damage_ratio = math.max(0, tonumber(skill.damage_ratio) or 0 + damage_ratio * factor)
         end
-        if bonus.repeat_count and bonus.repeat_count ~= 0 then
-          skill.repeat_count = math.max(1, (skill.repeat_count or 1) + bonus.repeat_count * factor)
+        local repeat_count = tonumber(bonus.repeat_count) or 0
+        if repeat_count ~= 0 then
+          skill.repeat_count = math.max(1, tonumber(skill.repeat_count) or 1 + repeat_count * factor)
         end
-        if bonus.range_bonus and bonus.range_bonus ~= 0 then
-          skill.range_bonus = math.max(0, (skill.range_bonus or 0) + bonus.range_bonus * factor)
+        local range_bonus = tonumber(bonus.range_bonus) or 0
+        if range_bonus ~= 0 then
+          skill.range_bonus = math.max(0, tonumber(skill.range_bonus) or 0 + range_bonus * factor)
         end
-        if bonus.cooldown_reduction and bonus.cooldown_reduction ~= 0 then
-          skill.cooldown_reduction = math.max(0, (skill.cooldown_reduction or 0) + bonus.cooldown_reduction * factor)
+        local cooldown_reduction = tonumber(bonus.cooldown_reduction) or 0
+        if cooldown_reduction ~= 0 then
+          skill.cooldown_reduction = math.max(0, tonumber(skill.cooldown_reduction) or 0 + cooldown_reduction * factor)
         end
       end
     end
@@ -727,9 +736,6 @@ local STATE = env and env.STATE or _G.STATE
   end
 
   local function try_process_reward_queue()
-    if STATE.game_finished then
-      return false
-    end
     local evolution_runtime = api.get_evolution_runtime()
     if evolution_runtime.awaiting_choice then
       return false
@@ -914,6 +920,14 @@ local STATE = env and env.STATE or _G.STATE
 
   function api.handle_hero_be_hurt()
   end
+
+  local function _subscribe_events()
+    y3.game:event_on(GameEvents.BATTLE_HERO_HURT, function(trg)
+      api.handle_hero_be_hurt()
+    end)
+  end
+  
+  _subscribe_events()
 
   _G.reward_system = api
   _G.SYSTEM = _G.SYSTEM or {}

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__y3editor__get_editor_log"
+    ]
+  }
+}

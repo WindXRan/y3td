@@ -163,4 +163,120 @@ end
 ---@class MyClass
 ---@field public name string
 ---@field public value number
----@field private _
+---@field private _data table
+
+---@param name string
+---@param value number
+---@return MyClass
+function M.create(name, value)
+    local instance = New 'MyClass'()
+    instance.name = name
+    instance.value = value
+    return instance
+end
+```
+
+### 6.4 错误处理规范（强制）
+
+```lua
+-- 正确：主动抛出错误
+function M:do_something(param)
+    if not param then
+        error("param is required")
+    end
+    -- 继续处理
+end
+
+-- 错误：静默返回 nil
+-- function M:do_something(param)
+--     if not param then return nil end  -- 禁止！
+-- end
+```
+
+---
+
+## 七、适用场景
+
+| 场景 | y3 仓库风格 | 业务代码风格 |
+|-----|------------|-------------|
+| **新开发模块** | ✓ **强制** | ✗ **禁止** |
+| **通用组件** | ✓ **强制** | ✗ **禁止** |
+| **频繁复用的逻辑** | ✓ **强制** | ✗ **禁止** |
+| **需要类型约束的模块** | ✓ **强制** | ✗ **禁止** |
+| **与底层 API 交互层** | ✓ **强制** | ✗ **禁止** |
+| **历史代码维护** | ✗ | ✓（仅兼容） |
+| **一次性临时脚本** | ✓（建议） | ✓（兼容） |
+
+---
+
+## 八、迁移指南
+
+### 8.1 现有代码迁移策略
+
+1. **优先迁移**：核心业务对象（Buff、Skill、Unit 等）
+2. **逐步迁移**：工具函数和一次性逻辑可延后
+3. **保持兼容**：迁移时保持对外接口不变
+
+### 8.2 迁移示例
+
+```lua
+-- 旧代码（业务风格）
+local SkillSystem = {}
+
+function SkillSystem.create_skill(skill_id)
+    return {
+        id = skill_id,
+        level = 1,
+    }
+end
+
+-- 新代码（y3 风格）
+---@class SkillRuntime
+---@field public id string
+---@field public level integer
+local SkillRuntime = Class 'SkillRuntime'
+
+function SkillRuntime:__init(skill_id)
+    self.id = skill_id
+    self.level = 1
+    return self
+end
+
+-- 保持兼容接口
+local SkillSystem = {}
+
+function SkillSystem.create_skill(skill_id)
+    return New 'SkillRuntime'(skill_id)
+end
+```
+
+---
+
+## 九、关键识别特征
+
+### y3 仓库代码特征（必须使用）
+- 文件头部有 `---@class` 注解
+- 使用 `Class 'XXX'` 定义类
+- 方法使用冒号语法 `M:method()`
+- 包含完整的 TypeDoc 类型注解
+- 构造函数使用 `__init` 方法
+
+### 业务代码特征（禁止新代码）
+- 文件开头是 `local M = {}`
+- 大量访问 `_G.STATE`
+- 使用 `pcall()` 包裹外部调用
+- 函数名以 `ensure_`、`spawn_`、`update_` 开头
+
+---
+
+## 十、总结
+
+| 维度 | 结论 |
+|-----|------|
+| **新代码风格** | **必须使用 y3 仓库风格** |
+| **历史代码维护** | 保持原有风格，逐步迁移 |
+| **类型注解** | **强制要求** |
+| **错误处理** | **禁止静默返回 nil** |
+| **核心业务对象** | **必须使用 Class 封装** |
+
+**最终要求**：所有新增代码必须采用 y3 仓库风格，遵循 TypeDoc 类型注解规范，主动抛出错误而不是静默返回。现有代码在维护时应逐步迁移到 y3 仓库风格。

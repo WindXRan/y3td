@@ -13,7 +13,15 @@ function M.init(env)
 end
 
 function M.resolve_ui(path)
-  local player = (_env and _env.get_player and _env.get_player()) or (_G.get_player and _G.get_player())
+  local player
+  if _env and _env.get_player then
+    player = _env.get_player()
+  elseif y3 and y3.player and y3.player.get_main_player then
+    player = y3.player.get_main_player()
+  end
+  if not player then
+    return nil
+  end
   local ok, ui = pcall(y3.ui.get_ui, player, path)
   if not ok or not ui then
     return nil
@@ -41,8 +49,10 @@ function M.resolve_outgame_ui(path)
   })
 end
 
+local U = require 'runtime.utils'
+
 function M.is_ui_alive(ui)
-  return ui and (not ui.is_removed or not ui:is_removed())
+  return U.is_ui_alive(ui)
 end
 
 function M.set_visible_if_alive(ui, visible)

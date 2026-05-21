@@ -29,16 +29,6 @@ return function(ctx)
   end
   ctx.is_hit_effect_hidden = is_hit_effect_hidden
 
-  local function get_challenge_recover_sec(challenge_id)
-    local def = CONFIG.challenges and CONFIG.challenges[challenge_id]
-    local recover_sec = def and tonumber(def.recover_sec)
-    if recover_sec and recover_sec > 0 then
-      return recover_sec
-    end
-    return CONFIG.challenge_rules.recover_sec or 0
-  end
-  ctx.get_challenge_recover_sec = get_challenge_recover_sec
-
   local function try_create_player_unit(player, unit_id, point, facing)
     if not player or not player.create_unit or unit_id == nil then
       return nil, 'invalid_player_or_unit_id'
@@ -50,63 +40,6 @@ return function(ctx)
     return nil, unit_or_err
   end
   ctx.try_create_player_unit = try_create_player_unit
-
-  local function sync_challenge_summary_cache()
-    local total_charges = 0
-    local min_remain = nil
-    local has_partial = false
-    local max_charges = CONFIG.challenge_rules.max_charges or 0
-
-    for challenge_id in pairs(CONFIG.challenges or {}) do
-      local charges = STATE.challenge_charge_map and STATE.challenge_charge_map[challenge_id]
-      charges = tonumber(charges) or 0
-      total_charges = total_charges + charges
-
-      if charges < max_charges then
-        has_partial = true
-        local recover_sec = get_challenge_recover_sec(challenge_id)
-        local elapsed = STATE.challenge_recover_elapsed_map and STATE.challenge_recover_elapsed_map[challenge_id] or 0
-        local remain = math.max(0, recover_sec - (tonumber(elapsed) or 0))
-        if min_remain == nil or remain < min_remain then
-          min_remain = remain
-        end
-      end
-    end
-
-    STATE.challenge_charges = total_charges
-    STATE.challenge_recover_elapsed = has_partial and (min_remain or 0) or 0
-  end
-  ctx.sync_challenge_summary_cache = sync_challenge_summary_cache
-
-  local function get_challenge_charge_count(challenge_id)
-    if STATE.challenge_charge_map and STATE.challenge_charge_map[challenge_id] ~= nil then
-      return tonumber(STATE.challenge_charge_map[challenge_id]) or 0
-    end
-    return tonumber(STATE.challenge_charges) or 0
-  end
-  ctx.get_challenge_charge_count = get_challenge_charge_count
-
-  local function set_challenge_charge_count(challenge_id, value)
-    STATE.challenge_charge_map = STATE.challenge_charge_map or {}
-    STATE.challenge_charge_map[challenge_id] = math.max(0, tonumber(value) or 0)
-    sync_challenge_summary_cache()
-  end
-  ctx.set_challenge_charge_count = set_challenge_charge_count
-
-  local function get_challenge_recover_elapsed(challenge_id)
-    if STATE.challenge_recover_elapsed_map and STATE.challenge_recover_elapsed_map[challenge_id] ~= nil then
-      return tonumber(STATE.challenge_recover_elapsed_map[challenge_id]) or 0
-    end
-    return tonumber(STATE.challenge_recover_elapsed) or 0
-  end
-  ctx.get_challenge_recover_elapsed = get_challenge_recover_elapsed
-
-  local function set_challenge_recover_elapsed(challenge_id, value)
-    STATE.challenge_recover_elapsed_map = STATE.challenge_recover_elapsed_map or {}
-    STATE.challenge_recover_elapsed_map[challenge_id] = math.max(0, tonumber(value) or 0)
-    sync_challenge_summary_cache()
-  end
-  ctx.set_challenge_recover_elapsed = set_challenge_recover_elapsed
 
   local function has_unit_data(unit_id)
     return unit_id ~= nil and y3.object.unit[unit_id] and y3.object.unit[unit_id].data ~= nil
@@ -301,15 +234,6 @@ return function(ctx)
   end
   ctx.get_wave_max_alive = get_wave_max_alive
 
-  local function get_scaled_challenge_batch_count(batch)
-    local base_count = tonumber(batch and batch.count) or 0
-    if base_count <= 0 then
-      return 0
-    end
-    return scale_enemy_count(base_count, get_enemy_batch_scale())
-  end
-  ctx.get_scaled_challenge_batch_count = get_scaled_challenge_batch_count
-
   local function get_monster_type_config(info)
     if CONFIG and CONFIG.monster_type_config then
       local monster_type = CONFIG.monster_type_config.resolve_type(info)
@@ -362,15 +286,6 @@ return function(ctx)
   ctx.get_current_wave = get_current_wave
 
   local function is_n0_stage_active()
-    local stage_def = STATE and STATE.current_stage_def or nil
-    local stage_id = tostring(stage_def and stage_def.stage_id or '')
-    if stage_id:match('%-0$') then
-      return true
-    end
-    local display_name = tostring(stage_def and stage_def.display_name or '')
-    if display_name:find('N0', 1, true) then
-      return true
-    end
     return false
   end
   ctx.is_n0_stage_active = is_n0_stage_active
@@ -380,12 +295,8 @@ return function(ctx)
   end
   ctx.get_boss_name = get_boss_name
 
-  local function clone_point(point)
-    if not point or not point.move then
-      return nil
-    end
-    return point:move()
-  end
+  local Utils = require 'runtime.utils'
+  local clone_point = Utils.clone_point
   ctx.clone_point = clone_point
 
   local function get_unit_point_snapshot(unit)

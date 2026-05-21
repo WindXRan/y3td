@@ -14,10 +14,6 @@ OutgameSystem.hero_range = hero_selection_range
 
 -- 从 session_state 转发
 OutgameSystem.create_session = session_state.create
-OutgameSystem.start_selected_stage = session_state.start_selected_stage
-OutgameSystem.is_battle_active = session_state.is_battle_active
-OutgameSystem.reset_session_state = session_state.reset_session_state
-OutgameSystem.reset_battle_state = session_state.reset_battle_state
 
 -- 从 outgame 转发
 OutgameSystem.create_outgame = outgame.create

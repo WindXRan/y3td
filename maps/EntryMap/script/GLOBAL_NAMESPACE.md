@@ -19,9 +19,8 @@
 
 | 子命名空间 | 来源模块 | 职责 |
 |-----------|---------|------|
-| `SYSTEM.skill` | runtime.skill_system | **技能系统**（合并了框架/攻击技能/生成技能/样本技能） |
-| `SYSTEM.battle` | runtime.battle_system | **战场系统**（合并了战场/自动激活效果） |
-| `SYSTEM.debug` | runtime.debug_system | **调试系统**（合并了调试动作/调试工具/特效调试） |
+| `SYSTEM.battle` | runtime.battle_system | **战场系统** |
+| `SYSTEM.debug` | runtime.debug_system | **调试系统** |
 | `SYSTEM.ui` | runtime.ui_system | **UI系统**（合并了HUD/UI辅助/武器提示/结算面板） |
 | `SYSTEM.outgame` | runtime.outgame_system | **局外系统**（合并了会话状态/局外/英雄选择范围） |
 | `SYSTEM.buff` | runtime.buff_system | Buff 系统 |
@@ -30,35 +29,17 @@
 | `SYSTEM.audio` | runtime.audio | 音频系统 |
 | `SYSTEM.hero_attr` | runtime.hero_attr_system | 英雄属性系统 |
 | `SYSTEM.hero_model` | runtime.hero_model | 英雄模型系统 |
-| `SYSTEM.damage_api` | runtime.skill_damage_templates | 伤害模板 API |
 | `SYSTEM.battle_auto_acceptance` | runtime.battle_auto_acceptance | 战斗自动接受系统 |
 | `SYSTEM.gm_bond_effects` | boot.lua (stub) | GM 羁绊效果面板 |
 | `SYSTEM.attr_choice` | runtime.rewards | 属性选择系统 |
 
-**合并后的系统数量**：从 26 个减少到 **15 个**
-
-### SYSTEM.skill — 技能系统
-
-```lua
--- 技能系统子模块
-SYSTEM.skill.framework   -- skill_framework 核心
-SYSTEM.skill.attack      -- attack_skills 运行时
-SYSTEM.skill.generated   -- generated_skills 生成器
-SYSTEM.skill.samples     -- sample_skills 样本
-
--- 常用 API
-SYSTEM.skill.cast(skill_def)                    -- 施放技能
-SYSTEM.skill.unlock_attack_skill(skill_id)     -- 解锁技能
-SYSTEM.skill.update_attack_skills(dt)          -- 更新技能
-SYSTEM.skill.sync_basic_attack_ability()        -- 同步普攻
-```
+**合并后的系统数量**：从 26 个减少到 **13 个**
 
 ### SYSTEM.battle — 战场系统
 
 ```lua
 -- 战场系统子模块
 SYSTEM.battle.battlefield   -- battlefield 战场
-SYSTEM.battle.auto_effects   -- auto_active_effects 自动效果
 
 -- 常用 API
 SYSTEM.battle.get_current_wave()       -- 获取当前波次
@@ -72,12 +53,10 @@ SYSTEM.battle.is_active_enemy(unit)   -- 判断敌人是否活跃
 -- 调试系统子模块
 SYSTEM.debug.actions  -- debug_actions 动作
 SYSTEM.debug.tools    -- debug_tools 工具
-SYSTEM.debug.effects  -- effect_debug 特效
 SYSTEM.debug.gm_bond_effects -- GM羁绊存根
 
 -- 常用 API
 SYSTEM.debug.show_debug_hotkey_help()  -- 显示快捷键帮助
-SYSTEM.debug.update(dt)                -- 更新调试状态
 ```
 
 ### SYSTEM.ui — UI系统
@@ -86,7 +65,6 @@ SYSTEM.debug.update(dt)                -- 更新调试状态
 -- UI系统子模块
 SYSTEM.ui.hud        -- runtime_hud HUD
 SYSTEM.ui.helpers    -- runtime_ui_helpers 辅助
-SYSTEM.ui.growth_tip -- growth_weapon_item_tip 武器提示
 SYSTEM.ui.result     -- result_panel 结算面板
 ```
 
@@ -113,13 +91,11 @@ SYSTEM.outgame.outgame.refresh_stage_selection() -- 刷新选关
 | `_G.AttrUtils` | 属性相关 | `set_attr_pack`, `add_attr_pack`, `snapshot_hero_attrs`, `build_runtime_attr_dialog_chunks`, `show_runtime_attr_dialog` |
 | `_G.HeroUtils` | 英雄相关 | `get_hero_facing_towards` |
 | `_G.BattleUtils` | 战场相关 | `is_active_enemy`, `get_current_wave`, `get_boss_name`, `show_runtime_status`, `get_enemy_runtime_info`, `is_boss_runtime_enemy`, `is_elite_runtime_enemy` |
-| `_G.HudUtils` | HUD 相关 | `get_hud_system`, `get_runtime_hud_system_fn`, `set_battle_hud_visible`, `sync_basic_attack_ability` |
-| `_G.DebugUtils` | 调试相关 | `debug_message`, `show_debug_hotkey_help`, `is_debug_effect_mounted` |
-| `_G.SkillUtils` | 技能相关 | `show_attack_skill_loadout`, `unlock_attack_skill` |
-| `_G.AutoEffectUtils` | 自动激活效果 | `notify_auto_active_basic_attack`, `notify_auto_active_skill_cast` |
-| `_G.AudioUtils` | 音频相关 | `play_basic_attack_sound`, `play_attack_skill_sound`, `play_ui_click`, `play_enemy_death_sound` |
+| `_G.HudUtils` | HUD 相关 | `get_hud_system`, `get_runtime_hud_system_fn`, `set_battle_hud_visible` |
+| `_G.DebugUtils` | 调试相关 | `debug_message`, `show_debug_hotkey_help` |
+| `_G.AudioUtils` | 音频相关 | `play_basic_attack_sound`, `play_ui_click`, `play_enemy_death_sound` |
 | `_G.PointUtils` | 点操作相关 | `create_offset_point` |
-| `_G.BondUtils` | 羁绊相关 | `update_bond_effects`, `get_bond_runtime_bonus`, `has_bond_route_tag`, `notify_bond_attack_skill_cast` |
+| `_G.BondUtils` | 羁绊相关 | `update_bond_effects`, `get_bond_runtime_bonus`, `has_bond_route_tag` |
 
 ### 核心模块导出
 
@@ -135,14 +111,9 @@ SYSTEM.outgame.outgame.refresh_stage_selection() -- 刷新选关
 
 ```lua
 -- 使用合并后的 SYSTEM 命名空间
-_G.SYSTEM.skill.cast(skill_def)
 _G.SYSTEM.battle.get_current_wave()
 _G.SYSTEM.debug.show_debug_hotkey_help()
 _G.SYSTEM.ui.hud.toggle_attr_panel()
-
--- 访问子系统
-_G.SYSTEM.skill.attack.unlock_attack_skill(skill_id)
-_G.SYSTEM.battle.auto_effects.update(dt)
 ```
 
 ### 工具模块调用
@@ -165,7 +136,7 @@ BattleUtils.show_runtime_status()
 
 全局命名空间的初始化顺序由 `boot.lua` 控制：
 
-1. **数据表和配置** → CONFIG、AttackSkillObjects
+1. **数据表和配置** → CONFIG
 2. **核心状态** → STATE
 3. **工具模块** → boot_utils (模块级导出)
 4. **业务系统** → 按依赖顺序初始化并注册到 SYSTEM
@@ -173,11 +144,11 @@ BattleUtils.show_runtime_status()
 
 ## 命名规范
 
-- **系统名**：使用小写蛇形命名（`skill_framework`）
-- **合并系统名**：使用 PascalCase（`SkillSystem`, `BattleSystem`）
+- **系统名**：使用小写蛇形命名（`battlefield_system`）
+- **合并系统名**：使用 PascalCase（`BattleSystem`）
 - **模块名**：使用 PascalCase（`AreaUtils`）
 - **函数名**：使用小写蛇形命名（`get_current_hero`）
-- **常量**：使用大写蛇形命名（`ATTACK_SKILL_DEFS`）
+- **常量**：使用大写蛇形命名（`GLOBAL_CONSTANTS`）
 - **状态变量**：使用 PascalCase（`STATE.hero`）
 
 ## 扩展指南

@@ -27,22 +27,8 @@
    {
     "__tuple__": true, 
     "items": [
-     "38ddddb2-6785-4804-9b5c-dfb479bd62b3", 
-     "DifficultyHUD"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
      "1b62165d-57b8-4ed7-aa73-71b3b8c1bb36", 
      "TipsPanel"
-    ]
-   }, 
-   {
-    "__tuple__": true, 
-    "items": [
-     "525485f2-959b-406e-a1ce-65dae4b7e556", 
-     "top"
     ]
    }, 
    {

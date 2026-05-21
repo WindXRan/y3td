@@ -255,7 +255,12 @@ local function apply_choice_card_style(card, selected, quality, skip_icon_color)
 end
 
 local function ensure_choice_list_choice_panel()
-  local player = BootHelpers.get_player()
+  local player
+  if y3 and y3.player and y3.player.get_main_player then
+    player = y3.player.get_main_player()
+  elseif _G.get_player then
+    player = _G.get_player()
+  end
   if not player then
     return nil, nil, nil
   end

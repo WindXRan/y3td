@@ -8,7 +8,6 @@ function M.create(env)
   local get_hero_max_level = env and env.get_hero_max_level or _G.get_hero_max_level or function() return 1 end
   local sync_hero_progress_from_engine = env and env.sync_hero_progress_from_engine or _G.sync_hero_progress_from_engine or function() end
   local grant_attr_diamond = env and env.grant_attr_diamond or _G.grant_attr_diamond or function() end
-  local try_bond_draw = env and env.try_bond_draw or _G.try_bond_draw or function() end
   local show_runtime_attr_tip_panel = env and env.show_runtime_attr_tip_panel or _G.show_runtime_attr_tip_panel or function() end
   local show_runtime_attr_dialog = env and env.show_runtime_attr_dialog or _G.show_runtime_attr_dialog or function() end
   local start_current_task_challenge = env and env.start_current_task_challenge or _G.start_current_task_challenge or function() end
@@ -21,31 +20,27 @@ function M.create(env)
   local toggle_talk_input = env and env.toggle_talk_input or _G.toggle_talk_input or function() end
   local toggle_inventory_panel = env and env.toggle_inventory_panel or _G.toggle_inventory_panel or function() end
   local open_save_panel = env and env.open_save_panel or _G.open_save_panel or function() end
-  local try_upgrade_growth_weapon = env and env.try_upgrade_growth_weapon or _G.try_upgrade_growth_weapon or function() end
+  
   local use_attr_diamond = env and env.use_attr_diamond or _G.use_attr_diamond or function() end
   local toggle_fixed_camera = env and env.toggle_fixed_camera or _G.toggle_fixed_camera or function() end
 
   -- Loops params
   local is_battle_active = env and env.is_battle_active or _G.is_battle_active or function() return false end
   local update_passive_resources = env and env.update_passive_resources or _G.update_passive_resources or function() end
-  local battlefield_system = env and env.battlefield_system or _G.battlefield_system
+  local get_battlefield_system = env and env.battlefield_system or function() return _G.battlefield_system end
   local update_bond_effects = env and env.update_bond_effects or _G.update_bond_effects or function() end
-  local update_auto_active_effects = env and env.update_auto_active_effects or _G.update_auto_active_effects or function() end
-  local update_effect_debug = env and env.update_effect_debug or _G.update_effect_debug or function() end
   local update_enemy_statuses = env and env.update_enemy_statuses or _G.update_enemy_statuses or function() end
   local update_attack_skills = env and env.update_attack_skills or _G.update_attack_skills or function() end
-  local update_buff_system = env and env.update_buff_system or _G.update_buff_system or function() end
+
   local update_battle_auto_acceptance = env and env.update_battle_auto_acceptance or _G.update_battle_auto_acceptance or function() end
   local ensure_runtime_hud = env and env.ensure_runtime_hud or _G.ensure_runtime_hud or function() end
   local ensure_choice_panel = env and env.ensure_choice_panel or _G.ensure_choice_panel or function() end
   local set_battle_hud_visible = env and env.set_battle_hud_visible or _G.set_battle_hud_visible or function() end
   local refresh_runtime_hud = env and env.refresh_runtime_hud or _G.refresh_runtime_hud or function() end
   local refresh_choice_panel = env and env.refresh_choice_panel or _G.refresh_choice_panel or function() end
-  local refresh_swallow_panel = env and env.refresh_swallow_panel or _G.refresh_swallow_panel or function() end
   local refresh_runtime_overview = env and env.refresh_runtime_overview or _G.refresh_runtime_overview or function() end
   local refresh_inventory_panel = env and env.refresh_inventory_panel or _G.refresh_inventory_panel or function() end
   local outgame_system = env and env.outgame_system or _G.outgame_system
-  local gm_bond_effects_system = env and env.gm_bond_effects_system or _G.gm_bond_effects_system or { ensure_board = function() end, toggle_board = function() end, refresh_board = function() end }
   local hero_attr_system = env and env.hero_attr_system or _G.hero_attr_system
   local debug_tools_system = env and env.debug_tools_system or _G.debug_tools_system
 
@@ -83,7 +78,6 @@ function M.create(env)
   end
 
   local function register_battle_hotkeys()
-    register_battle_hotkey('F', function() try_bond_draw() end)
     register_battle_hotkey('B', function()
       if toggle_inventory_panel then toggle_inventory_panel() end
     end)
@@ -112,7 +106,6 @@ function M.create(env)
     register_battle_hotkey('KEY_1', function()
       if apply_round_choice(1) then return end
       if use_attr_diamond and use_attr_diamond() then return end
-      if try_upgrade_growth_weapon then try_upgrade_growth_weapon('hotkey') end
     end)
     register_battle_hotkey('KEY_2', function() apply_round_choice(2) end)
     register_battle_hotkey('KEY_3', function() apply_round_choice(3) end)
@@ -151,20 +144,14 @@ function M.create(env)
         end)
       end
 
+      if not debug_actions_system then return end
       register_debug_hotkey('F1', show_debug_hotkey_help)
       register_debug_hotkey('F2', debug_actions_system.debug_add_test_resources)
       register_debug_hotkey('F3', function() debug_actions_system.debug_grant_levels(3) end)
       register_debug_hotkey('F4', debug_actions_system.debug_unlock_all_attack_skills)
-      register_debug_hotkey('F6', debug_actions_system.debug_trigger_bond_draw)
       register_debug_hotkey('F7', debug_actions_system.debug_refill_challenge_charges)
       register_debug_hotkey('F8', debug_actions_system.debug_force_spawn_boss)
       register_debug_hotkey('F9', debug_actions_system.debug_kill_all_active_enemies)
-      register_debug_hotkey('F10', function()
-        if gm_bond_effects_system then
-          gm_bond_effects_system.ensure_board()
-          gm_bond_effects_system.toggle_board()
-        end
-      end)
     end
   end
 
@@ -228,28 +215,20 @@ function M.create(env)
       if is_battle_active() then
         STATE.runtime_elapsed = (STATE.runtime_elapsed or 0) + 0.25
         update_passive_resources(0.25)
-        battlefield_system.update_wave(0.25)
-        battlefield_system.update_challenges(0.25)
-        battlefield_system.update_challenge_charges(0.25)
+        local bfs = get_battlefield_system()
+        if not bfs then return end
+        bfs.update_wave(0.25)
         if update_battle_auto_acceptance then update_battle_auto_acceptance(0.25) end
         update_bond_effects(0.25)
-        update_auto_active_effects(0.25)
-        if update_effect_debug then update_effect_debug(0.25) end
         update_enemy_statuses(0.25)
+        local update_attack_skills = _G.update_attack_skills or function() end
         update_attack_skills(0.25)
-        if update_buff_system then update_buff_system(0.25) end
+
         try_refresh_battle_ui()
         return
       end
       if set_battle_hud_visible then set_battle_hud_visible(false) end
-      if outgame_system then outgame_system.refresh_ui() end
-    end)
-
-    y3.ltimer.loop(0.25, function()
-      if gm_bond_effects_system and gm_bond_effects_system.ensure_board then
-        gm_bond_effects_system.ensure_board()
-        gm_bond_effects_system.refresh_board()
-      end
+      if outgame_system and outgame_system.refresh_ui then outgame_system.refresh_ui() end
     end)
   end
 

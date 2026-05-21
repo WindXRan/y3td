@@ -1,6 +1,6 @@
 local ui_root = require 'ui.ui_root'
 local hero_evolutions = require 'data.tables.outgame.hero_evolutions'
-local game_tables_hero_roster = (require 'data.game_tables').hero_roster
+local game_tables_hero_roster = require 'data.simple_data'.load_hero_roster()
 local IconResolver = require 'data.tables.icon_resolver'
 local hud_core = require 'ui.hud.hud_core'
 local M = {}
@@ -47,17 +47,14 @@ function M.create(params)
   local CONFIG = params and params.CONFIG or _G.CONFIG or {}
   local y3 = params and params.y3 or _G.y3 or y3;
   local skill_slot_count = math.max(1, tonumber(params and params.attack_skill_slot_count or _G.ATTACK_SKILL_SLOT_COUNT) or 5)
-  local get_player_fn = params and params.get_player or _G.get_player;
+  local get_player_fn = params and params.get_player or y3.player.get_main_player;
   local hero_attr_system_ref = params and params.hero_attr_system or _G.hero_attr_system;
 
   local try_evolution_entry = params and params.try_evolution_entry or _G.try_evolution_entry or function() end;
   local try_start_challenge = params and params.try_start_challenge or _G.try_start_challenge or function() end;
-  local try_upgrade_growth_weapon = params and params.try_upgrade_growth_weapon or _G.try_upgrade_growth_weapon or function() end;
-  local try_draw_bond = _G.try_bond_draw or function() end;
   local open_save_panel = params and params.open_save_panel or _G.open_save_panel or function() end;
   local show_runtime_status = params and params.show_runtime_status or _G.show_runtime_status or function() end;
   local build_runtime_attr_dialog_chunks = params and params.build_runtime_attr_dialog_chunks or _G.build_runtime_attr_dialog_chunks or function() end;
-  local build_growth_weapon_tip_payload = params and params.build_growth_weapon_tip_payload or _G.build_growth_weapon_tip_payload or function() end;
   local get_status_effects_fn = params and params.get_bottom_status_effect_entries or _G.get_bottom_status_effect_entries or function() return {} end;
   local play_ui_click_fn = params and params.play_ui_click or _G.play_ui_click or function() end;
   local hero_model = params and params.hero_model or _G.hero_model
@@ -205,25 +202,6 @@ function M.create(params)
     return evo_runtime and evo_runtime.awaiting_choice == true and evo_runtime.current_choices and #evo_runtime.current_choices > 0 or false
   end;
 
-  local function get_weapon_level() return STATE.gear_state and STATE.gear_state.items and STATE.gear_state.items.weapon and
-    STATE.gear_state.items.weapon.level or 0 end;
-
-  local function get_weapon_item_key()
-    local bk = CONFIG.gear_upgrade_config and CONFIG.gear_upgrade_config.slots and CONFIG.gear_upgrade_config.slots.weapon or nil;
-    return bk and bk.item_key or nil
-  end;
-
-  local function bk_icon_fallback()
-    local item_key = get_weapon_item_key()
-    if item_key and y3 and y3.item and y3.item.get_icon_id_by_key then
-      local ok, icon = pcall(y3.item.get_icon_id_by_key, item_key)
-      if ok and icon and tonumber(icon) and tonumber(icon) ~= 0 then
-        return icon
-      end
-    end
-    return 999
-  end;
-
   local function get_hero_item_by_slot(bm)
     if not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() or not STATE.hero.get_item_by_slot then return nil end;
 
@@ -232,45 +210,6 @@ function M.create(params)
     if not bn then return nil end;
 
     return bo
-  end;
-
-  local function is_weapon_item(bo)
-    if not bo or not bo.get_key then return false end;
-
-    local bq = get_weapon_item_key()
-    if not bq then return false end;
-
-    return tostring(bo:get_key()) == tostring(bq)
-  end;
-
-  local function format_gear_upgrade_tip(bs)
-    if not bs then return '当前没有成长武器数据' end;
-
-    local bt = {}
-    if bs.subtitle_text and bs.subtitle_text ~= '' then bt[#bt + 1] = tostring(bs.subtitle_text) end;
-
-    if bs.cost_text and bs.cost_text ~= '' then bt[#bt + 1] = tostring(bs.cost_text) end;
-
-    local bu = bs.attr_lines or {}
-    if #bu > 0 then
-      if #bt > 0 then bt[#bt + 1] = '' end;
-      bt[#bt + 1] = '当前属性增幅'
-      for a_, bv in ipairs(bu) do bt[#bt + 1] = tostring(bv) end
-    end;
-
-    local bw = bs.affix_lines or {}
-    if #bw > 0 then
-      if #bt > 0 then bt[#bt + 1] = '' end;
-
-      for a_, bx in ipairs(bw) do
-        if bx.title and bx.title ~= '' then bt[#bt + 1] = tostring(bx.title) end;
-
-        if bx.body and bx.body ~= '' then bt[#bt + 1] = tostring(bx.body) end
-      end
-    end;
-    if #bt == 0 then return '当前没有成长武器数据' end;
-
-    return table.concat(bt, '\n')
   end;
 
   local function get_item_display_info(bo)
@@ -308,42 +247,8 @@ function M.create(params)
     for bv in aI:gmatch('[^\n]+') do append_line(bE, bv) end
   end;
 
-  local function build_weapon_tooltip()
-    local bs = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil;
-    if not bs then return nil end;
-
-    local attr_lines = bs.attr_lines or {}
-    local affix_lines = {}
-    for _, bx in ipairs(bs.affix_lines or {}) do
-      if bx.title and bx.title ~= '' then
-        affix_lines[#affix_lines + 1] = '[' .. tostring(bx.title) .. ']'
-      end
-      if bx.body and bx.body ~= '' then
-        affix_lines[#affix_lines + 1] = tostring(bx.body)
-      end
-    end
-
-    return {
-      title = tostring(bs.title_text or '成长武器'),
-      subtitle = tostring(bs.subtitle_text or ''),
-      body = tostring(bs.cost_text or ''),
-      icon = bs.icon_res,
-      tip_model = {
-        item_name_text = tostring(bs.title_text or '成长武器'),
-        quality_text = tostring(bs.subtitle_text or ''),
-        effect_body_text = tostring(bs.cost_text or ''),
-        set_title_text = '当前属性增幅',
-        set_body_lines = #attr_lines > 0 and attr_lines or { '当前无直接属性增幅' },
-        bonus_lines = #affix_lines > 0 and affix_lines or { '暂无词缀' },
-        icon_res = bs.icon_res
-      }
-    }
-  end;
-
   local function build_slot_tooltip(bm)
     local bo = get_hero_item_by_slot(bm)
-    if bo and is_weapon_item(bo) then return build_weapon_tooltip() end;
-
     local bz,
     bJ = get_item_display_info(bo)
     if not bz or not bJ then return nil end;
@@ -542,9 +447,6 @@ function M.create(params)
   end;
 
   local function get_pending_choice_status()
-    if STATE.gear_state and STATE.gear_state.awaiting_choice and STATE.gear_state.current_choices then return '武器待选',
-          '成长武器词缀候选已出现，请点击面板完成选择' end;
-
     local ct = STATE.evolution_runtime;
     if ct and ct.awaiting_choice and ct.current_choices then return '英雄功能提示', '进阶已迁移到新英雄功能，请打开英雄图鉴查看' end;
 
@@ -1122,48 +1024,8 @@ function M.create(params)
     set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.fish_button.hotkey'), 'B')
   end;
 
-  local function show_weapon_tip()
-    local bs = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil;
-    if not bs then
-      hide_all_tips()
-      return
-    end;
-
-    local attr_lines = bs.attr_lines or {}
-    local affix_lines = {}
-    for _, bx in ipairs(bs.affix_lines or {}) do
-      if bx.title and bx.title ~= '' then
-        affix_lines[#affix_lines + 1] = '[' .. tostring(bx.title) .. ']'
-      end
-      if bx.body and bx.body ~= '' then
-        affix_lines[#affix_lines + 1] = tostring(bx.body)
-      end
-    end
-
-    show_detail_payload({
-      title = tostring(bs.title_text or '成长武器'),
-      subtitle = tostring(bs.subtitle_text or ''),
-      icon = bs.icon_res,
-      icon_name = '成长武器',
-      contents = {
-        tostring(bs.cost_text or ''),
-        '[当前属性增幅]\n' .. join_or_default(attr_lines, '当前无直接属性增幅'),
-        join_or_default(affix_lines, '暂无词缀'),
-        '10 级会进入一次词缀选择，选择完成后可继续升级',
-      },
-      bottom = '悬停装备栏成长武器时实时读取当前等级、费用、属性和词缀'
-    })
-    local hud_state = get_hud_state()
-    hud_state.active_tip_kind = 'weapon'
-  end;
-
   local function show_slot_item_tip(bm)
     local bo = get_hero_item_by_slot(bm)
-    if bo and is_weapon_item(bo) then
-      show_weapon_tip()
-      return
-    end;
-
     local bz,
     bJ = get_item_display_info(bo)
     if bz and bJ then
@@ -1252,15 +1114,7 @@ function M.create(params)
   end;
 
   local function show_loadout_tip(bm)
-    if bm == 1 and build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() then
-      show_weapon_tip()
-      return
-    end
     local bs = build_slot_tooltip(bm)
-    if bs and bs.tip_model then
-      show_weapon_tip()
-      return
-    end
     show_hover_tip_payload(bs)
   end;
 
@@ -1285,8 +1139,7 @@ function M.create(params)
   end;
 
   local function refresh_loadout_row()
-    local dp = build_growth_weapon_tip_payload and build_growth_weapon_tip_payload() or nil; set_ui_text(
-    resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), '物品栏')
+    set_ui_text(resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), '物品栏')
     set_ui_size(resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), 92, 17)
     set_ui_text_alignment(resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_title'), ', ')
     for bL = 1, 6 do
@@ -1294,8 +1147,7 @@ function M.create(params)
       local bo = get_hero_item_by_slot(bL)
       local dq = bo and bo.get_icon and bo:get_icon() or nil;
       local dr = resolve_ui_node(cJ .. '.icon')
-      if not dq and bL == 1 and dp then dq = dp.icon_res end;
-      if not dq and bL == 1 then dq = bk_icon_fallback() end;
+      
       set_ui_visible(dr, dq ~= nil)
       set_ui_image(dr, dq)
       if not dq then set_ui_image(dr, nil) end
@@ -1371,7 +1223,6 @@ function M.create(params)
     end)
     bind_click_handler('draw_button',
       resolve_ui_node('BattleBottomHUD.layout.right_station.card_panel.draw_button.button'), function()
-      if try_draw_bond then try_draw_bond() end;
       refresh_hud()
     end)
     bind_click_handler('reward_button',
@@ -1430,11 +1281,6 @@ function M.create(params)
       if try_start_challenge then try_start_challenge('wood_trial') end;
       refresh_hud()
     end)
-    bind_click_handler('battle_loadout_slot_1',
-      resolve_ui_node('BattleBottomHUD.layout.right_station.loadout_row.loadout_slot_1'), function()
-      if try_upgrade_growth_weapon then try_upgrade_growth_weapon('loadout_slot_click') end;
-      refresh_hud()
-    end)
     for bL = 1, 6 do
       local slot_index = bL
       bind_hover_handlers('battle_loadout_hover_' .. tostring(slot_index),
@@ -1484,8 +1330,8 @@ function M.create(params)
     du = get_current_tip_text()
     set_ui_text(resolve_ui_node('top.top.system_notice.notice_title'), dt)
     set_ui_text(resolve_ui_node('top.top.system_notice.notice_text'), du)
-    local dv = STATE.current_stage_def and (STATE.current_stage_def.display_label or STATE.current_stage_def.display_name) or '当前章节'
-    local dw = STATE.current_mode_def and STATE.current_mode_def.display_name or '战斗模式'
+    local dv = '第1关'
+    local dw = '战斗模式'
     local dx = STATE.active_wave and STATE.active_wave.wave and STATE.active_wave.wave.name or
     (STATE.current_wave_index and STATE.current_wave_index > 0 and string.format('%d', STATE.current_wave_index) or '未开始')
     local dy = ({ get_pending_choice_status() })[1] or (STATE.session_phase == 'battle' and '战斗中' or '准备中')

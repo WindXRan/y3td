@@ -4,8 +4,6 @@ local STATE
 local CONFIG
 local y3
 local OUTGAME_DEFS
-local STAGE_LIST
-local STAGES_BY_ID
 local OUTGAME_ATTR_BONUS_BY_STAGE_MODE
 local SAVE_SLOT = 1
 local SINGLE_MODE_ID = 'standard'
@@ -17,8 +15,6 @@ function M.init(env)
   CONFIG = env.CONFIG
   y3 = env.y3
   OUTGAME_DEFS = env.OUTGAME_DEFS
-  STAGE_LIST = CONFIG.stages and CONFIG.stages.list or {}
-  STAGES_BY_ID = CONFIG.stages and CONFIG.stages.by_id or {}
   OUTGAME_ATTR_BONUS_BY_STAGE_MODE = CONFIG.outgame_attr_bonus_config
     and CONFIG.outgame_attr_bonus_config.by_stage_mode
     or {}
@@ -41,106 +37,30 @@ function M.set_save_backend_state(enabled, detail)
 end
 
 function M.build_save_status_brief(profile)
-  local stage_id = profile and profile.selected_stage_id or STATE.selected_stage_id or M.get_first_stage_id()
   if STATE.outgame_profile_save_enabled == true then
-    return string.format('槽位 %d · 云端已连接\n当前关卡：%s', SAVE_SLOT, tostring(stage_id))
+    return string.format('槽位 %d · 云端已连接', SAVE_SLOT)
   end
   return string.format('槽位 %d · 当前为内存态\n点击按钮查看原因', SAVE_SLOT)
 end
 
 function M.build_save_status_detail(profile)
-  local stage_id = profile and profile.selected_stage_id or STATE.selected_stage_id or M.get_first_stage_id()
-  local stage_def = STAGES_BY_ID[stage_id]
-  local stage_name = M.get_stage_display_text(stage_def, stage_id)
   if STATE.outgame_profile_save_enabled == true then
     return string.format(
-      '局外存档已连接到槽位 %d。\n当前进度：%s。\n系统会在关键节点自动上传，也可以手动保存一次。',
-      SAVE_SLOT,
-      stage_name
+      '局外存档已连接到槽位 %d。\n系统会在关键节点自动上传，也可以手动保存一次。',
+      SAVE_SLOT
     )
   end
   return string.format(
-    '当前会话使用内存态默认档。\n当前进度：%s。\n原因：%s',
-    stage_name,
+    '当前会话使用内存态默认档。\n原因：%s',
     tostring(STATE.outgame_profile_save_error or '局外存档不可用')
   )
-end
-
-function M.get_first_stage_id()
-  local first_stage = STAGE_LIST[1]
-  return first_stage and first_stage.stage_id or '1-1'
-end
-
-function M.get_stage_display_text(stage_def, fallback_stage_id)
-  if stage_def and stage_def.display_name and stage_def.display_name ~= '' then
-    return stage_def.display_name
-  end
-  return tostring(fallback_stage_id or '未命名关卡')
-end
-
-local function get_stage_index(stage_id)
-  for index, stage_def in ipairs(STAGE_LIST) do
-    if stage_def.stage_id == stage_id then
-      return index
-    end
-  end
-  return nil
-end
-
-function M.get_next_stage_id(stage_id)
-  local index = get_stage_index(stage_id)
-  if not index then
-    return nil
-  end
-  local next_stage = STAGE_LIST[index + 1]
-  return next_stage and next_stage.stage_id or nil
-end
-
-function M.get_stage_progress(profile, stage_id)
-  if not profile or type(profile.stage_progress) ~= 'table' then
-    return nil
-  end
-  return profile.stage_progress[stage_id]
-end
-
-function M.is_standard_unlocked(profile, stage_id)
-  local progress = M.get_stage_progress(profile, stage_id)
-  return progress and progress.standard_unlocked == true or false
-end
-
-function M.is_mode_unlocked(profile, stage_id, mode_id)
-  mode_id = mode_id or SINGLE_MODE_ID
-  local progress = M.get_stage_progress(profile, stage_id)
-  if not progress and (stage_id == '1-0' or stage_id == '1-1') and mode_id == SINGLE_MODE_ID then
-    return true
-  end
-  if not progress then
-    return false
-  end
-  if mode_id == SINGLE_MODE_ID then
-    if stage_id == '1-0' or stage_id == '1-1' then
-      return true
-    end
-    return progress.standard_unlocked == true
-  end
-  return false
-end
-
-function M.get_highest_unlocked_standard_stage_id(profile)
-  local fallback = M.get_first_stage_id()
-  for _, stage_def in ipairs(STAGE_LIST) do
-    if M.is_standard_unlocked(profile, stage_def.stage_id) then
-      fallback = stage_def.stage_id
-    end
-  end
-  return fallback
 end
 
 function M.mark_profile_dirty()
   if STATE.outgame_profile_save_enabled ~= true then
     return
   end
-  local ok, err = pcall(y3.save_data.upload_save_data, (_G.get_player and _G.get_player() or nil))
+  local ok, err = pcall(y3.save_data.upload_save_data, y3.player.get_main_player())
   if ok then
     M.set_save_backend_state(true)
     return
@@ -148,47 +68,8 @@ function M.mark_profile_dirty()
   M.set_save_backend_state(false, err)
 end
 
-function M.ensure_stage_progress_defaults(profile, stage_id)
-  local dirty = false
-  if type(profile.stage_progress) ~= 'table' then
-    profile.stage_progress = {}
-    dirty = true
-  end
-  if type(profile.stage_progress[stage_id]) ~= 'table' then
-    profile.stage_progress[stage_id] = {}
-    dirty = true
-  end
-  local progress = profile.stage_progress[stage_id]
-  local is_first_stage = stage_id == M.get_first_stage_id() or stage_id == '1-0' or stage_id == '1-1'
-  if progress.standard_unlocked == nil then
-    progress.standard_unlocked = is_first_stage
-    dirty = true
-  end
-  if progress.standard_cleared == nil then
-    progress.standard_cleared = false
-    dirty = true
-  end
-  if progress.challenge_unlocked == nil then
-    progress.challenge_unlocked = false
-    dirty = true
-  end
-  if progress.challenge_cleared == nil then
-    progress.challenge_cleared = false
-    dirty = true
-  end
-  return dirty
-end
-
 function M.normalize_loaded_selection(profile)
   local dirty = false
-  local selected_stage_id = profile.selected_stage_id
-  local fallback_stage_id = M.get_highest_unlocked_standard_stage_id(profile)
-  if type(selected_stage_id) ~= 'string'
-    or not STAGES_BY_ID[selected_stage_id]
-    or not M.is_standard_unlocked(profile, selected_stage_id) then
-    profile.selected_stage_id = fallback_stage_id
-    dirty = true
-  end
   if profile.selected_mode_id ~= SINGLE_MODE_ID then
     profile.selected_mode_id = SINGLE_MODE_ID
     dirty = true
@@ -227,19 +108,6 @@ end
 
 function M.rebuild_hero_attr_bonus_stats(profile)
   local rebuilt = {}
-  for _, stage_def in ipairs(STAGE_LIST) do
-    local stage_id = stage_def.stage_id
-    local progress = M.get_stage_progress(profile, stage_id)
-    local stage_rules = OUTGAME_ATTR_BONUS_BY_STAGE_MODE[stage_id]
-    if progress and stage_rules then
-      if progress.standard_cleared == true then
-        merge_bonus_stats(rebuilt, stage_rules.standard)
-      end
-      if progress.challenge_cleared == true then
-        merge_bonus_stats(rebuilt, stage_rules.challenge)
-      end
-    end
-  end
   if are_same_bonus_stats(profile.hero_attr_bonus_stats, rebuilt) then
     return false
   end
@@ -395,11 +263,6 @@ function M.ensure_profile_defaults(profile, hero_growth_api)
     profile.selected_view_mode = VIEW_MODE_MAINLINE
     dirty = true
   end
-  for _, stage_def in ipairs(STAGE_LIST) do
-    if M.ensure_stage_progress_defaults(profile, stage_def.stage_id) then
-      dirty = true
-    end
-  end
   if M.rebuild_hero_attr_bonus_stats(profile) then
     dirty = true
   end
@@ -425,7 +288,7 @@ function M.load_profile(hero_growth_api)
 
   local profile
   local ok, result = pcall(function()
-    return y3.save_data.load_table((_G.get_player and _G.get_player() or nil), SAVE_SLOT, true)
+    return y3.save_data.load_table(y3.player.get_main_player(), SAVE_SLOT, true)
   end)
 
   if ok and type(result) == 'table' then
@@ -459,29 +322,9 @@ function M.apply_battle_result(result, hero_growth_api)
   end
 
   local profile = M.load_profile(hero_growth_api)
-  local stage_id = result.stage_id or M.get_first_stage_id()
-  local mode_id = SINGLE_MODE_ID
-  local progress = M.get_stage_progress(profile, stage_id)
-  if not progress then
-    return nil
-  end
 
-  profile.last_result.stage_id = stage_id
-  profile.last_result.mode_id = SINGLE_MODE_ID
   profile.last_result.is_win = result.is_win == true
   profile.last_result.reached_wave_index = math.max(0, result.reached_wave_index or 0)
-
-  if result.is_win then
-    progress.standard_cleared = true
-
-    local next_stage_id = M.get_next_stage_id(stage_id)
-    if next_stage_id then
-      local next_progress = M.get_stage_progress(profile, next_stage_id)
-      if next_progress then
-        next_progress.standard_unlocked = true
-      end
-    end
-  end
 
   M.rebuild_hero_attr_bonus_stats(profile)
   M.mark_profile_dirty()

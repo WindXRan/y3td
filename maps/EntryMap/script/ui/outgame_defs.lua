@@ -1,7 +1,7 @@
 local M = {}
 local ShopItems = require 'data.tables.economy.shop_items'
 local QualityImageTable = require 'data.tables.economy.quality_image_table'
-local GameTables = require 'data.game_tables'
+local HeroRoster = require 'data.simple_data'.load_hero_roster()
 local ArchiveTabDefinitions = require 'data.tables.archive_tab_definitions'
 local IconResolver = require 'data.tables.icon_resolver'
 
@@ -105,7 +105,7 @@ local function build_archive_shop_specs(shop_items)
     end
   end
 
-  for _, hero in ipairs((GameTables.hero_roster and GameTables.hero_roster.list) or {}) do
+  for _, hero in ipairs((HeroRoster and HeroRoster.list) or {}) do
     local id = trim(hero.id)
     local name = trim(hero.name)
     if id ~= '' and name ~= '' then

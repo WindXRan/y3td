@@ -1,5 +1,4 @@
 return function(ctx)
-  local EventBus = require 'runtime.core.event_bus'
   local STATE = ctx.STATE
   local CONFIG = ctx.CONFIG
   local y3 = ctx.y3
@@ -427,7 +426,7 @@ return function(ctx)
       return false
     end
 
-    EventBus.fire('reserve_formula_damage', unit, 99999999, {
+    y3.game:event_notify('reserve_formula_damage', unit, 99999999, {
       source = 'execute_enemy',
     })
     STATE.hero:damage({

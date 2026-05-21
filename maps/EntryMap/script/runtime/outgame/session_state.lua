@@ -2,17 +2,24 @@ local M = {}
 local y3 = y3
 local CONFIG = require 'config.entry_config'
 require 'runtime.core.boot_utils'; local BootHelpers = _G.BootHelpers
-local GearUpgrades = require 'runtime.progression.gear_upgrades'
+local ok_gear, GearUpgrades = pcall(require, 'runtime.progression.gear_upgrades')
+if not ok_gear then GearUpgrades = {} end
 
 function M.create(env)
   local STATE = env and env.STATE or _G.STATE
   local message = _G.message or function() end
-  local make_point = env and env.make_point or BootHelpers.make_point
-  local get_player = env and env.get_player or BootHelpers.get_player
+  local make_point = env and env.make_point or (BootHelpers and BootHelpers.make_point or y3.point.create)
+  local get_player = function()
+    if env and env.get_player then
+      return env.get_player()
+    elseif y3 and y3.player and y3.player.get_main_player then
+      return y3.player.get_main_player()
+    elseif _G.get_player then
+      return _G.get_player()
+    end
+    return nil
+  end
   local get_enemy_player = env and env.get_enemy_player or BootHelpers.get_enemy_player
-  local SkillRuntime = env and env.SkillRuntime
-  local SkillState = env and env.SkillState
-  local setup_basic_attack_ability = _G.setup_basic_attack_ability or function() end
   local set_battle_hud_visible = _G.set_battle_hud_visible or function() end
   local enforce_runtime_ui_phase = _G.enforce_runtime_ui_phase or function() end
 
@@ -28,19 +35,9 @@ function M.create(env)
   local function create_battle_event_feed_runtime()
     return require 'runtime.combat.battle_event_feed'.create_runtime()
   end
-  local function create_effect_debug_runtime()
-    return require 'runtime.effects.effect_debug'.create_runtime()
-  end
   local function create_evolution_runtime()
     local rs = _G.reward_system
     return rs and rs.create_evolution_runtime and rs.create_evolution_runtime()
-  end
-  local function reset_skill_framework_runtime()
-    local sfs = _G.sample_skills_system
-    if sfs and sfs.reset_framework_runtime then return sfs.reset_framework_runtime() end
-    local sf = _G.skill_framework_system
-    if sf and sf.reset_runtime then return sf.reset_runtime() end
-    return false
   end
   local function get_outgame_system()
     return _G.outgame_system
@@ -55,37 +52,51 @@ function M.create(env)
     end
   end
 
+  local function setup_basic_attack_ability()
+    if STATE.basic_attack_ability_bound then return end
+    STATE.basic_attack_ability_bound = true
+    
+    local hero = STATE.hero
+    if not hero or not hero:is_exist() then
+      print('[session_state] setup_basic_attack_ability: hero not found')
+      return
+    end
+    
+    print('[session_state] setup_basic_attack_ability: setting up basic attack')
+    
+    if _G.sync_basic_attack_ability then
+      _G.sync_basic_attack_ability()
+    else
+      print('[session_state] setup_basic_attack_ability: _G.sync_basic_attack_ability not defined')
+    end
+  end
+
   local resource_system = env.resource_system or require('runtime.resources.resource_system').create()
   local get_resource_rules = env.get_resource_rules or function()
     return progression_system and progression_system.get_resource_rules() or {}
   end
   local create_hero = env.create_hero
   local ensure_gear_runtime = env.ensure_gear_runtime or
-    function(state, config) return GearUpgrades.ensure_runtime(state, config) end
+    function(state, config)
+      if GearUpgrades and GearUpgrades.ensure_runtime then
+        return GearUpgrades.ensure_runtime(state, config)
+      end
+    end
   local sync_gear_items_to_hero = env.sync_gear_items_to_hero or
-    function(state, hero, config) return GearUpgrades.sync_items_to_hero(state, hero, config) end
+    function(state, hero, config)
+      if GearUpgrades and GearUpgrades.sync_items_to_hero then
+        return GearUpgrades.sync_items_to_hero(state, hero, config)
+      end
+    end
   local sync_gear_runtime_effects = env.sync_gear_runtime_effects or
     function(state, hero, config)
-      return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
+      if GearUpgrades and GearUpgrades.sync_runtime_bonuses then
+        return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
+      end
     end
 
   local function is_battle_active()
-    return STATE.session_phase == 'battle' and STATE.game_finished ~= true
-  end
-
-  local function reset_challenge_charge_state()
-    STATE.challenge_charge_map = {}
-    STATE.challenge_recover_elapsed_map = {}
-
-    local total = 0
-    for challenge_id in pairs(CONFIG.challenges or {}) do
-      STATE.challenge_charge_map[challenge_id] = CONFIG.challenge_rules.initial_charges
-      STATE.challenge_recover_elapsed_map[challenge_id] = 0
-      total = total + (CONFIG.challenge_rules.initial_charges or 0)
-    end
-
-    STATE.challenge_charges = total
-    STATE.challenge_recover_elapsed = 0
+    return STATE.session_phase == 'battle'
   end
 
   local function cleanup_swallow_panel()
@@ -113,70 +124,44 @@ function M.create(env)
     STATE.current_wave_index = 0
     STATE.started_wave_count = 0
     STATE.active_wave = nil
-    STATE.active_challenges = {}
     resource_system.init_from_rules(get_resource_rules())
     STATE.resources = resource_system.get_state_table()
     _G.resource_system = resource_system
     STATE.resource_income_elapsed = 0
     STATE.battle_event_feed = create_battle_event_feed_runtime()
-    STATE.effect_debug_runtime = create_effect_debug_runtime()
     STATE.evolution_runtime = create_evolution_runtime()
-    STATE.auto_active_effects = nil
     STATE.enemy_info_map = {}
-    STATE.hero_progress = nil
-    STATE.skill_runtime = SkillRuntime.create()
-    STATE.attack_skill_state = SkillState.create()
-    STATE.active_skill_runtime = {
-      active_ids = {},
-      queue = {},
-      cursor = 1,
-      next_cast_ready_time = 0,
-    }
-    if reset_skill_framework_runtime then
-      reset_skill_framework_runtime()
-    end
     STATE.reward_queue = {}
-    reset_challenge_charge_state()
-    STATE.skill_draw_count = 0
     STATE.defeated_boss_waves = {}
-    STATE.basic_attack_ability_bound = false
-    STATE.basic_attack_ability_warned = false
-    STATE.runtime_elapsed = 0
-    STATE.hero_attr_runtime = nil
-    STATE.attr_choice_runtime = nil
-    STATE.bond_swallow_panel_visible = false
-    STATE.bond_swallow_selected_root_index = nil
-    STATE.skill_swallow_panel_visible = false
-    STATE.skill_swallow_selected_root_index = nil
     STATE.gear_state = nil
-    STATE.choice_panel_hidden = false
-    STATE.choice_panel = nil
-    STATE.game_finished = false
-    STATE.runtime_ui_fault_logged = false
-    STATE.runtime_ui_fault_message = nil
     STATE._battle_hud_visible_cached = nil
+    
+    STATE.attack_skill_state = {
+      by_id = {
+        basic_attack = {
+          id = 'basic_attack',
+          ability_key = 100001001,
+          name = '普攻',
+          damage_ratio = 1.0,
+          cooldown = 0,
+          cooldown_remain = 0,
+          splash_radius = 100,
+          splash_ratio = 0.2,
+        },
+      },
+      basic_attack_meta = {
+        attack_count = 0,
+        total_damage_dealt = 0,
+        last_cast_time = 0,
+      },
+    }
   end
 
   local function reset_session_state()
     pcall(destroy_choice_panel)
     reset_battle_state()
     STATE.session_phase = 'outgame'
-    STATE.outgame_profile = nil
-    STATE.selected_stage_id = nil
-    STATE.selected_mode_id = nil
-    STATE.current_stage_def = nil
-    STATE.current_mode_def = nil
-    STATE.last_battle_result = nil
     STATE.outgame_ui = nil
-    STATE.outgame_profile_save_enabled = false
-    STATE.outgame_profile_save_warned = false
-    STATE.runtime_hud = nil
-    STATE.choice_panel = nil
-    STATE.runtime_overview = nil
-    STATE.runtime_overview_mode = 'build'
-    STATE.gm_ui = nil
-    STATE.debug_ctrl_down_count = 0
-    STATE.game_finished = true
     STATE.events_registered = STATE.events_registered or false
     STATE.dev_commands_registered = STATE.dev_commands_registered or false
     if enforce_runtime_ui_phase then
@@ -226,10 +211,7 @@ function M.create(env)
     end
     reset_battle_state()
     STATE.session_phase = 'outgame'
-    STATE.current_stage_def = nil
-    STATE.current_mode_def = nil
     STATE.last_battle_result = nil
-    STATE.game_finished = true
     if enforce_runtime_ui_phase then
       enforce_runtime_ui_phase(false)
     end
@@ -246,37 +228,9 @@ function M.create(env)
     return false
   end
 
-  local function start_selected_stage(stage_id, mode_id)
+  local function start_selected_stage()
     if STATE.session_phase == 'battle' then
       return false
-    end
-
-    local stage_def = CONFIG.stages and CONFIG.stages.by_id and CONFIG.stages.by_id[stage_id] or nil
-    local mode_def = CONFIG.stage_modes and CONFIG.stage_modes.by_id and CONFIG.stage_modes.by_id[mode_id] or nil
-    local content_source_stage_id = stage_def and (stage_def.content_source_stage_id or stage_def.stage_id) or nil
-    local content_source_stage_def = content_source_stage_id
-      and CONFIG.stages
-      and CONFIG.stages.by_id
-      and CONFIG.stages.by_id[content_source_stage_id]
-      or nil
-
-    if not stage_def or not mode_def then
-      return show_stage_start_error('当前关卡或模式配置无效。')
-    end
-
-    local mode_supported = false
-    for _, supported_mode_id in ipairs(stage_def.mode_ids or {}) do
-      if supported_mode_id == mode_id then
-        mode_supported = true
-        break
-      end
-    end
-    if not mode_supported then
-      return show_stage_start_error('当前章节不支持所选模式。')
-    end
-
-    if not content_source_stage_def then
-      return show_stage_start_error('当前章节复用源配置无效。')
     end
 
     if battlefield_system and battlefield_system.cleanup_battle_units then
@@ -285,17 +239,17 @@ function M.create(env)
 
     reset_battle_state()
     STATE.session_phase = 'battle'
-    STATE.selected_stage_id = stage_id
-    STATE.selected_mode_id = mode_id
-    STATE.current_stage_def = stage_def
-    STATE.current_mode_def = mode_def
     STATE.last_battle_result = nil
     if enforce_runtime_ui_phase then
       enforce_runtime_ui_phase(true)
     end
 
-    get_player():set_hostility(get_enemy_player(), true)
-    get_enemy_player():set_hostility(get_player(), true)
+    local player = get_player()
+    local enemy_player = get_enemy_player()
+    if player and enemy_player then
+      player:set_hostility(enemy_player, true)
+      enemy_player:set_hostility(player, true)
+    end
 
     STATE.hero = create_hero()
     if battlefield_system and battlefield_system.create_debug_spawn_areas then
@@ -319,7 +273,7 @@ function M.create(env)
         hero_attr_system.log_snapshot(
           STATE.hero,
           'start_selected_stage',
-          string.format('stage=%s mode=%s hp=%s', tostring(stage_id), tostring(mode_id), tostring(STATE.hero:get_hp())),
+          string.format('hp=%s', tostring(STATE.hero:get_hp())),
           STATE
         )
       end

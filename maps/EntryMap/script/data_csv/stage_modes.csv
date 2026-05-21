@@ -1,3 +1,0 @@
-id,mode_id,order_index,display_name,unlock_rule,ui_badge_text,battle_config_key,result_bucket
-__字段说明__,字段：mode_id,排序,字段：display_name,字段：unlock_rule,字段：ui_badge_text,字段：battle_config_key,字段：result_bucket
-standard,standard,1,主线模式,stage_standard_unlocked,,standard,standard

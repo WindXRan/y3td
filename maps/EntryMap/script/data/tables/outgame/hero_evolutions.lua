@@ -1,9 +1,8 @@
-local AttrEffect = require 'data.tables.skill.attreffect'
-local HeroRoster = (require 'data.game_tables').hero_roster
 local CsvLoader = require 'data.csv_loader'
 local helpers = require 'data.tables.helpers'
+local HeroRoster = require 'data.simple_data'.load_hero_roster()
 
-local bonus_groups = AttrEffect.by_source.mark or {}
+local bonus_groups = {}
 local hero_list = HeroRoster.list or {}
 local hero_list_by_name = {}
 for _, hero in ipairs(hero_list) do

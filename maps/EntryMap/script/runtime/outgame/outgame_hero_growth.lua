@@ -1,4 +1,4 @@
-local HeroRoster = (require 'data.game_tables').hero_roster
+local HeroRoster = require 'data.simple_data'.load_hero_roster()
 local IconResolver = require 'data.tables.icon_resolver'
 
 local M = {}

@@ -53,7 +53,6 @@ def main() -> None:
         "  get_resource_rules = function() return { initial_gold = 0, initial_wood = 0 } end, "
         "  create_bond_runtime = function() return {} end, "
         "  create_battle_event_feed_runtime = function() return {} end, "
-        "  create_effect_debug_runtime = function() return {} end, "
         "  create_mark_runtime = function() return {} end, "
         "  create_skill_runtime = function() return {} end, "
         "  create_attack_skill_state = function() return {} end, "

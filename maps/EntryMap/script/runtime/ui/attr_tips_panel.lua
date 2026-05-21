@@ -1,6 +1,5 @@
 local UiRoot = require 'ui.ui_root'
-local HeroAttrSystem = require 'runtime.heroes.hero_attr_system'
-local AttrDefs = HeroAttrSystem.get_defs and HeroAttrSystem.get_defs() or { aliases = {}, by_name = {} }
+local AttrDefs = { aliases = {}, by_name = {} }
 local AttrDisplayConfig = require 'data.tables.ui.attr_display_config'
 
 local M = {}
@@ -87,7 +86,7 @@ end
 function M.create(env)
   local STATE = env and env.STATE or _G.STATE
   local y3 = env and env.y3 or _G.y3
-  local get_player = env and env.get_player or _G.get_player
+  local get_player = env and env.get_player or y3.player.get_main_player
   local hero_attr_system = env and env.hero_attr_system or _G.hero_attr_system
   local nodes = {}
 

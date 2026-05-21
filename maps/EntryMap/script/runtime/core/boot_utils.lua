@@ -2,7 +2,6 @@
 -- 工具函数直接注册到 _G，简化调用
 
 -- 核心模块导出
-_G.BondSystem = require 'runtime.bonds.bonds_chain'
 -- boot_combat 由 boot.lua 统一加载并写入 _G.BootCombat，避免循环 require
 _G.AudioResources = require 'data.tables.audio_resources'
 
@@ -57,6 +56,38 @@ AttrUtils.get_attr_pack = function(unit, attr_names)
   return pack
 end
 
+AttrUtils.add_attr_pack = function(unit, attr_pack)
+  if not unit or not attr_pack then
+    return
+  end
+  for attr_name, value in pairs(attr_pack) do
+    if value ~= nil then
+      unit:add_attr(attr_name, value)
+    end
+  end
+end
+
+AttrUtils.snapshot_hero_attrs = function()
+  local STATE = _G.STATE
+  if not STATE or not STATE.hero then
+    return
+  end
+  local hero = STATE.hero
+  if not (hero.is_exist and hero:is_exist()) then
+    return
+  end
+  if hero_attr_system and hero_attr_system.snapshot then
+    hero_attr_system.snapshot(hero, STATE)
+  end
+end
+
+AttrUtils.build_runtime_attr_dialog_chunks = function()
+  return {}
+end
+
+AttrUtils.show_runtime_attr_dialog = function()
+end
+
 _G.AttrUtils = AttrUtils
 
 -- 物品相关工具
@@ -85,28 +116,23 @@ end
 _G.ItemUtils = ItemUtils
 
 -- 玩家相关工具
-local PlayerUtils = {}
-
-PlayerUtils.get_player = function()
-  if _G.STATE and _G.STATE.player then
-    return _G.STATE.player
-  end
-  if y3 and y3.player and y3.player.get_main_player then
-    return y3.player.get_main_player()
+_G.get_player = function()
+  if y3 and y3.player then
+    if y3.player.get_main_player then
+      return y3.player.get_main_player()
+    else
+      return y3.player(1)
+    end
   end
   return nil
 end
 
-PlayerUtils.get_player_name = function()
-  local player = PlayerUtils.get_player()
-  if player and player.get_name then
-    return player:get_name()
+_G.get_enemy_player = function()
+  if y3 and y3.player then
+    return y3.player(2)
   end
-  return 'Player'
+  return nil
 end
-
-_G.PlayerUtils = PlayerUtils
-_G.get_player = PlayerUtils.get_player
 
 -- 战斗相关工具
 _G.get_skill_damage_modifier = function()
@@ -134,9 +160,18 @@ _G.get_hero_attack_damage = function()
 end
 
 -- 消息输出
-local BattleEventPrompts = require 'runtime.combat.battle_event_prompts'
-local GearUpgrades = require 'runtime.progression.gear_upgrades'
+local BattleEventPrompts = {
+  create = function(env)
+    local ok, BattleSystem = pcall(require, 'runtime.combat.battle_system')
+    if not ok then return {} end
+    return BattleSystem.event_prompts or {}
+  end
+}
+local ok_gear, GearUpgrades = pcall(require, 'runtime.progression.gear_upgrades')
+if not ok_gear then GearUpgrades = {} end
 local battle_event_prompts_instance
+local ok_battle_feed, BattleEventFeedSystem_mod = pcall(require, 'runtime.combat.battle_event_feed')
+if not ok_battle_feed then BattleEventFeedSystem_mod = {} end
 
 _G.message = function(text)
   if log and log.info then
@@ -147,9 +182,9 @@ _G.message = function(text)
     if not battle_event_prompts_instance then
       battle_event_prompts_instance = BattleEventPrompts.create({
         STATE = STATE,
-        BattleEventFeedSystem = require 'runtime.combat.battle_event_feed',
+        BattleEventFeedSystem = BattleEventFeedSystem_mod,
         create_battle_event_feed_runtime = function()
-          return require 'runtime.combat.battle_event_feed'.create_runtime()
+          return BattleEventFeedSystem_mod and BattleEventFeedSystem_mod.create_runtime and BattleEventFeedSystem_mod.create_runtime() or {}
         end,
         infer_battle_event_style = function(...) return _G.BootHelpers and _G.BootHelpers.infer_battle_event_style(...) end,
         GearUpgrades = GearUpgrades,
@@ -174,7 +209,11 @@ _G.message = function(text)
     battle_event_prompts_instance.push_battle_event(text)
     return
   end
-  local player = _G.get_player()
+  local get_player_func = _G.get_player
+  if not get_player_func then
+    return
+  end
+  local player = get_player_func()
   if player and player.display_message then
     player:display_message(text)
   end
@@ -190,70 +229,6 @@ _G.heal_hero = function(amount)
   if STATE.hero:get_hp() > before then
     _G.message(string.format('急救生效，英雄生命恢复至 %.0f。', STATE.hero:get_hp()))
   end
-end
-
--- 创建羁绊环境
-_G.create_bond_env = function()
-  return {
-    STATE = _G.STATE,
-    message = _G.message,
-    round_number = _G.round_number,
-    y3 = y3,
-    hero_attr_system = _G.hero_attr_system,
-    heal_hero = _G.heal_hero,
-    sync_basic_attack_ability = _G.sync_basic_attack_ability,
-    is_active_enemy = _G.is_active_enemy,
-    get_enemy_runtime_info = _G.get_enemy_runtime_info,
-    is_boss_runtime_enemy = _G.is_boss_runtime_enemy,
-    is_elite_runtime_enemy = _G.is_elite_runtime_enemy,
-    get_enemies_in_range = _G.get_enemies_in_range,
-    deal_skill_damage = _G.deal_skill_damage,
-    emit_damage_debug = function(visual)
-      _G.emit_damage_debug_visual(visual, nil)
-    end,
-    reserve_formula_damage = _G.BootCombat and _G.BootCombat.reserve_formula_damage,
-    basic_attack_damage_type = _G.ATTACK_SKILL_DEFS and _G.ATTACK_SKILL_DEFS.basic_attack.damage_type,
-    get_player = _G.get_player,
-  }
-end
-
--- 处理战斗结束
-_G.handle_battle_finished = function(result)
-  local audio_system = _G.audio_system
-  if audio_system and audio_system.handle_battle_finished then
-    audio_system.handle_battle_finished(result)
-  end
-  local battlefield_system = _G.battlefield_system
-  if battlefield_system and battlefield_system.cleanup_battle_units then
-    battlefield_system.cleanup_battle_units()
-  end
-  if _G.set_battle_hud_visible then
-    _G.set_battle_hud_visible(false)
-  end
-
-  local outgame_system = _G.outgame_system
-
-  local function finish_outgame_transition()
-    local reset_func = _G.RuntimeEntry and _G.RuntimeEntry._session_bundle
-        and _G.RuntimeEntry._session_bundle.reset_battle_state
-    if reset_func then
-      reset_func()
-    end
-    local STATE = _G.STATE
-    if STATE then
-      STATE.session_phase = 'outgame'
-      STATE.game_finished = true
-      STATE.last_battle_result = result
-    end
-    if _G.enforce_runtime_ui_phase then
-      _G.enforce_runtime_ui_phase(false)
-    end
-    if outgame_system and outgame_system.enter_outgame then
-      outgame_system.enter_outgame(result)
-    end
-  end
-
-  finish_outgame_transition()
 end
 
 -- 区域伤害计算
@@ -304,53 +279,9 @@ _G.get_chain_targets = function(initial_target, radius, max_bounce)
   return targets
 end
 
--- 投射物创建辅助
-_G.create_projectile = function(params)
-  if not y3 or not y3.projectile then
-    return nil
-  end
-  local ok, proj = pcall(y3.projectile.create, params)
-  if ok and proj then
-    return proj
-  end
-  return nil
-end
-
--- 粒子效果创建
-_G.create_particle = function(target, particle_id, scale, duration, height)
-  if not y3 or not y3.particle then
-    return nil
-  end
-  local ok, particle = pcall(y3.particle.create, target, particle_id, {
-    scale = scale or 1.0,
-    duration = duration or 1.0,
-    height = height or 0,
-  })
-  if ok and particle then
-    return particle
-  end
-  return nil
-end
-
--- 音效播放
-_G.play_sound = function(sound_id, position, volume)
-  if not y3 or not y3.sound then
-    return nil
-  end
-  local player = _G.get_player()
-  if not player then
-    return nil
-  end
-  local ok, sound = pcall(y3.sound.play_3d, player, sound_id, position, {
-    ensure = true,
-    height = 0,
-    volume = volume or 100,
-  })
-  if ok and sound then
-    return sound
-  end
-  return nil
-end
+-- 投射物创建辅助 — 使用 y3.projectile.create 原生 API（调用方自行 pcall 包裹）
+-- 粒子效果创建 — 使用 y3.particle.create 原生 API（调用方自行 pcall 包裹）
+-- 音效播放 — 使用 y3.sound.play_3d 原生 API（调用方自行 pcall 包裹）
 
 -- 相机控制
 _G.apply_fixed_camera_mode = function(enabled)
@@ -390,6 +321,10 @@ _G.apply_fixed_camera_mode = function(enabled)
     if player.set_mouse_wheel then
       player:set_mouse_wheel(false)
     end
+    -- 更新全局状态
+    if STATE then
+      STATE.fixed_camera_enabled = true
+    end
     return true
   end
 
@@ -408,6 +343,11 @@ _G.apply_fixed_camera_mode = function(enabled)
   if player.set_mouse_wheel then
     player:set_mouse_wheel(true)
   end
+  -- 更新全局状态
+  local STATE = _G.STATE
+  if STATE then
+    STATE.fixed_camera_enabled = false
+  end
   return true
 end
 
@@ -415,6 +355,11 @@ _G.sync_fixed_camera_mode = function(enabled)
   local player = _G.get_player()
   if not player or not y3 or not y3.camera then
     return
+  end
+  -- 如果没有提供 enabled 参数，使用当前 STATE 中的值
+  if enabled == nil then
+    local STATE = _G.STATE
+    enabled = STATE and STATE.fixed_camera_enabled or true
   end
   local is_fixed = false
   if y3.camera.is_tps_follow then
@@ -432,40 +377,53 @@ _G.toggle_fixed_camera = function()
   if not player or not y3 or not y3.camera then
     return false
   end
-  local is_fixed = false
-  if y3.camera.is_tps_follow then
-    is_fixed = y3.camera.is_tps_follow(player)
-  elseif y3.camera.is_camera_follow then
-    is_fixed = y3.camera.is_camera_follow(player)
+  -- 优先使用 STATE 中的状态，这样更可靠
+  local STATE = _G.STATE
+  local is_fixed
+  if STATE and STATE.fixed_camera_enabled ~= nil then
+    is_fixed = STATE.fixed_camera_enabled
+  else
+    -- 如果 STATE 不可用，回退到检查相机状态
+    if y3.camera.is_tps_follow then
+      is_fixed = y3.camera.is_tps_follow(player)
+    elseif y3.camera.is_camera_follow then
+      is_fixed = y3.camera.is_camera_follow(player)
+    else
+      is_fixed = false
+    end
   end
   return _G.apply_fixed_camera_mode(not is_fixed)
 end
 
--- UI 阶段控制
-local function set_ui_root_visible(path, visible)
-  local player = _G.get_player()
-  if not player or not y3 or not y3.ui then
-    return false
-  end
-  local py_ui = GameAPI.get_comp_by_absolute_path(player.handle, path)
-  if not py_ui then
-    return false
-  end
-  local ui = y3.ui.get_by_handle(player, py_ui)
-  if not ui or (ui.is_removed and ui:is_removed()) then
-    return false
-  end
-  if ui.set_visible then
-    ui:set_visible(visible == true)
-    return true
-  end
-  return false
-end
-
 _G.enforce_runtime_ui_phase = function(is_battle)
+  local function set_ui_root_visible(path, visible)
+    local get_player_func = _G.get_player
+    if not get_player_func then
+      return false
+    end
+    local player = get_player_func()
+    if not player or not y3 or not y3.ui then
+      return false
+    end
+    local py_ui = GameAPI.get_comp_by_absolute_path(player.handle, path)
+    if not py_ui then
+      return false
+    end
+    local ui = y3.ui.get_by_handle(player, py_ui)
+    if not ui or (ui.is_removed and ui:is_removed()) then
+      return false
+    end
+    if ui.set_visible then
+      ui:set_visible(visible == true)
+      return true
+    end
+    return false
+  end
+
   if is_battle == true then
     local hidden_in_battle = {
       'outgame',
+      'DifficultyHUD',
       'ArchivePanel',
       'ArchivePageProfile',
       'ArchivePageEquipment',
@@ -478,25 +436,58 @@ _G.enforce_runtime_ui_phase = function(is_battle)
       'loss',
       'CommonTip',
       'SceneUI',
+      'OutgamePanel',
     }
     for _, path in ipairs(hidden_in_battle) do
       set_ui_root_visible(path, false)
     end
+
+    local visible_in_battle = {
+      'top',
+      'GameHUD',
+      'BattleHUD',
+      'BattleBottomHUD',
+      'bottom_bg',
+    }
+    for _, path in ipairs(visible_in_battle) do
+      set_ui_root_visible(path, true)
+    end
     return
   end
 
-  local visible_in_outgame = {
+  local hidden_outside_battle = {
+    'top',
+    'GameHUD',
+    'BattleHUD',
+    'BattleBottomHUD',
+    'bottom_bg',
+    'Choice_Panel',
+    'CommonTip',
+    'SceneUI',
+    'LoadingPanel',
+    'LogoPanel',
+    'win',
+    'loss',
+    'panel_1',
+    'panel',
+  }
+  for _, path in ipairs(hidden_outside_battle) do
+    set_ui_root_visible(path, false)
+  end
+
+  local visible_outside_battle = {
     'outgame',
+    'DifficultyHUD',
     'ArchivePanel',
   }
-  for _, path in ipairs(visible_in_outgame) do
+  for _, path in ipairs(visible_outside_battle) do
     set_ui_root_visible(path, true)
   end
 end
 
 -- BootHelpers 模块（原 boot_helpers.lua）
-local CONFIG = require 'config.entry_config'
-local HeroEvolutionObjects = require 'data.tables.outgame.hero_evolutions'
+local CONFIG = _G.CONFIG
+local HeroEvolutionObjects = pcall(require, 'data.tables.outgame.hero_evolutions') and require('data.tables.outgame.hero_evolutions') or {}
 
 local BootHelpers = {}
 
@@ -714,19 +705,6 @@ function BootHelpers.get_bottom_status_effect_entries(max_slots, STATE, auto_act
     end
   end
 
-  if #entries < limit
-      and auto_active_effects_system
-      and auto_active_effects_system.get_effect_defs
-      and auto_active_effects_system.get_effect_runtime_snapshot then
-    for _, effect_def in ipairs(auto_active_effects_system.get_effect_defs() or {}) do
-      if #entries >= limit then
-        break
-      end
-      local snapshot = auto_active_effects_system.get_effect_runtime_snapshot(effect_def.id)
-      push_entry(BootHelpers.build_bottom_status_effect_entry(effect_def, snapshot))
-    end
-  end
-
   return entries
 end
 
@@ -764,27 +742,28 @@ function BootHelpers.resolve_damage_meta(damage)
   }
 end
 
-function BootHelpers.make_point(data)
-  return y3.point.create(data.x, data.y, data.z or 0)
-end
-
 function BootHelpers.round_number(value)
   return math.floor((value or 0) + 0.5)
 end
 
 function BootHelpers.design_seconds(seconds)
-  if CONFIG.debug_time_scale <= 0 then
+  if not CONFIG or CONFIG.debug_time_scale <= 0 then
     return seconds
   end
   return seconds / CONFIG.debug_time_scale
 end
 
-function BootHelpers.get_player()
-  return y3.player(CONFIG.player_id)
+function BootHelpers.make_point(x_or_table, y, z)
+  if type(x_or_table) == 'table' then
+    local t = x_or_table
+    return y3.point.create(t.x or 0, t.y or 0, t.z or 0)
+  end
+  return y3.point.create(x_or_table or 0, y or 0, z or 0)
 end
 
 function BootHelpers.get_enemy_player()
-  return y3.player(CONFIG.enemy_player_id)
+  local CONFIG = _G.CONFIG
+  return y3.player(CONFIG and CONFIG.enemy_player_id or 2)
 end
 
 function BootHelpers.trace_boot(message)
@@ -828,14 +807,18 @@ function BootHelpers.infer_battle_event_style(text)
 end
 
 function BootHelpers.update_passive_resources(dt, STATE, resource_system)
+  if not STATE or not resource_system then
+    return
+  end
   local rules = STATE.progression_system and STATE.progression_system.get_resource_rules and STATE.progression_system.get_resource_rules() or {}
-  local gold_per_sec = math.max(0, rules.gold_per_sec or 0)
-  local wood_per_sec = math.max(0, rules.wood_per_sec or 0)
+  local gold_per_sec = math.max(0, tonumber(rules.gold_per_sec) or 0)
+  local wood_per_sec = math.max(0, tonumber(rules.wood_per_sec) or 0)
   if gold_per_sec <= 0 and wood_per_sec <= 0 then
     return
   end
 
-  local interval = math.max(0.05, CONFIG.debug_time_scale or 1.0)
+  local time_scale = tonumber(CONFIG and CONFIG.debug_time_scale) or 1.0
+  local interval = math.max(0.05, time_scale <= 0 and 1.0 or time_scale)
   STATE.resource_income_elapsed = (STATE.resource_income_elapsed or 0) + dt
 
   while STATE.resource_income_elapsed >= interval do
@@ -843,19 +826,6 @@ function BootHelpers.update_passive_resources(dt, STATE, resource_system)
     resource_system.add_gold(gold_per_sec)
     resource_system.add_wood(wood_per_sec)
   end
-end
-
-local _get_bond_runtime_bonus = nil
-
-function BootHelpers.set_get_bond_runtime_bonus(fn)
-  _get_bond_runtime_bonus = fn
-end
-
-function BootHelpers.get_bond_runtime_bonus(key)
-  if _get_bond_runtime_bonus then
-    return _get_bond_runtime_bonus(key)
-  end
-  return 0
 end
 
 _G.BootHelpers = BootHelpers

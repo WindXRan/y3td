@@ -1,11 +1,11 @@
 local M = {}
 
 local function resolve_ui(y3, player, path)
-  local py_ui = GameAPI.get_comp_by_absolute_path(player.handle, path)
-  if not py_ui then
+  local ok, ui = pcall(y3.ui.get_ui, player, path)
+  if not ok or not ui then
     return nil
   end
-  return y3.ui.get_by_handle(player, py_ui)
+  return ui
 end
 
 local function resolve_first_ui(y3, player, paths)
@@ -29,8 +29,10 @@ local function resolve_child(ui, path)
   return child
 end
 
+local Utils = require 'runtime.utils'
+
 local function is_alive(ui)
-  return ui and (not ui.is_removed or not ui:is_removed())
+  return Utils.is_ui_alive(ui)
 end
 
 function M.resolve_ui(y3, player, path)

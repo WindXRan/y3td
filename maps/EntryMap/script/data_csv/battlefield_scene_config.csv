@@ -2,8 +2,9 @@ type,id,x,y,z,x_min,x_max,y_min,y_max,z_min,z_max,speed_factor,description
 __字段说明__,类型,标识,X坐标,Y坐标,Z坐标,X最小,X最大,Y最小,Y最大,Z最小,Z最大,速度因子,说明
 point,hero_spawn,-1200,0,0,,,,,,,英雄出生点
 point,defense_point,-1050,0,0,,,,,,,防守点
+point,boss_spawn_point,650,0,0,,,,,,,Boss刷怪点
 area,main_spawn,,,,500,1100,-340,340,0,0,,主怪刷怪区域
-area,boss_spawn,,,,400,900,-170,170,0,0,,Boss刷怪区域
+area,boss_spawn,,,,400,900,-170,170,0,0,,Boss刷怪区域(已废弃,改用固定点)
 area,mid_slow_lane_outer,,,,,-220,260,-520,520,0,0,,中层外减速区
 area,mid_slow_lane_inner,,,,,-760,40,-420,420,0,0,,中层内减速区
 area,hero_front_slow_lane,,,,,-1220,-700,-320,320,0,0,,英雄前方减速区

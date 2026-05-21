@@ -1,5 +1,5 @@
 return function(ctx)
-  local EventBus = require 'runtime.core.event_bus'
+  local GameEvents = require 'runtime.events.game_events'
   local STATE = ctx.STATE
   local CONFIG = ctx.CONFIG
   local y3 = ctx.y3
@@ -17,39 +17,10 @@ return function(ctx)
   local apply_enemy_model_profile = ctx.apply_enemy_model_profile
   local get_wave_batch_bounds = ctx.get_wave_batch_bounds
   local get_wave_max_alive = ctx.get_wave_max_alive
-  local get_scaled_challenge_batch_count = ctx.get_scaled_challenge_batch_count
   local is_point_in_area = ctx.is_point_in_area
   local apply_spawn_enemy_speed_tuning = ctx.apply_spawn_enemy_speed_tuning
   local play_enemy_hit_reaction = ctx.play_enemy_hit_reaction
   local play_enemy_death_reaction = ctx.play_enemy_death_reaction
-
-  local function finish_game(is_win, reason)
-    if STATE.game_finished then
-      return
-    end
-
-    STATE.game_finished = true
-    local result = {
-      stage_id = STATE.current_stage_def and STATE.current_stage_def.stage_id or nil,
-      mode_id = STATE.current_mode_def and STATE.current_mode_def.mode_id or nil,
-      is_win = is_win == true,
-      reached_wave_index = math.max(0, STATE.current_wave_index or 0),
-      reason = reason,
-    }
-    STATE.last_battle_result = result
-    message((is_win and '游戏胜利：' or '游戏失败：') .. (reason and (' ' .. reason) or ''))
-    message(string.format(
-      '结算：波次 %d/%d，金币 %d，木材 %d，英雄剩余生命 %.0f。',
-      STATE.current_wave_index,
-      #CONFIG.waves,
-      STATE.resources.gold,
-      STATE.resources.wood,
-      STATE.hero and STATE.hero:is_exist() and STATE.hero:get_hp() or 0
-    ))
-
-    EventBus.fire('finish_game', result)
-  end
-  ctx.finish_game = finish_game
 
   local function create_enemy_info(unit, info)
     info.unit = unit
@@ -107,8 +78,6 @@ return function(ctx)
           env.award_rewards(scaled_reward, nil, true)
         elseif info.kind == 'boss' then
           env.award_rewards(scaled_reward, get_boss_name(info.wave), false)
-        elseif info.kind == 'challenge' and scaled_reward then
-          env.award_rewards(scaled_reward, nil, true)
         end
       end
 
@@ -132,21 +101,16 @@ return function(ctx)
 
       if info.kind == 'boss' then
         STATE.defeated_boss_waves[info.wave.index] = true
-        if info.wave.index >= #CONFIG.waves then
-          finish_game(true, '击败最终 Boss。')
-        else
+        local runner = STATE.active_wave
+        if runner and runner.alive_count and runner.alive_count <= 1 then
           local next_wave = CONFIG.waves[info.wave.index + 1]
           STATE.active_wave = nil
-          STATE.current_wave_index = next_wave.index
-          api.start_wave(next_wave.index)
-        end
-      elseif info.kind == 'challenge' then
-        local instance = info.owner
-        if instance and instance.active and instance.alive_count <= 0 and instance.all_batches_spawned then
-          api.finish_challenge(instance, true)
+          STATE.current_wave_index = next_wave and next_wave.index or info.wave.index
+          if next_wave then
+            api.start_wave(next_wave.index)
+          end
         end
       end
-
       if info.kind == 'main' and STATE.skill_runtime then
         local bonus = STATE.skill_runtime:get('bonus_gold_on_kill') or 0
         if bonus > 0 then
@@ -268,10 +232,10 @@ return function(ctx)
     else
       local max_hp = nil
       if scaled_attrs then
-        max_hp = tonumber(scaled_attrs['hp_max'])
+        max_hp = tonumber(scaled_attrs['hp_max']) or tonumber(scaled_attrs['最大生命'])
       end
       if not max_hp or max_hp <= 0 then
-        max_hp = tonumber(unit:get_attr('hp_max')) or 1500
+        max_hp = tonumber(unit:get_attr('hp_max')) or tonumber(unit:get_attr('最大生命')) or 1500
       end
       unit:set_attr('hp_max', max_hp)
       print('[HP DEBUG] 回退分支: after set_attr max=' .. tostring(unit:get_attr('hp_max')) .. ' after set_hp=' .. tostring(unit:get_hp()) .. ' expected=' .. tostring(max_hp))
@@ -347,11 +311,26 @@ return function(ctx)
   end
 
   local function spawn_boss(runner)
-    if not runner or runner.boss_spawned or STATE.game_finished then
+    if not runner or runner.boss_spawned then
       return
     end
     runner.boss_spawned = true
-    runner.boss_info = spawn_enemy(nil, runner.wave.boss_spawn_area_id, 180.0, {
+
+    local boss_point_def = CONFIG.points and CONFIG.points.boss_spawn_point
+    local spawn_point
+    if boss_point_def then
+      spawn_point = y3.point.create(boss_point_def.x, boss_point_def.y, boss_point_def.z or 0)
+      print(string.format('[SPAWN DEBUG] spawn_boss 使用固定点: (%.0f, %.0f, %.0f)', boss_point_def.x, boss_point_def.y, boss_point_def.z or 0))
+    else
+      spawn_point = random_point_in_area(runner.wave.boss_spawn_area_id)
+      print('[SPAWN DEBUG] spawn_boss 回退到区域随机点: area_id=' .. tostring(runner.wave.boss_spawn_area_id))
+    end
+
+    if not spawn_point then
+      spawn_point = STATE.defense_point
+    end
+
+    local spawn_spec = build_enemy_spawn_spec(nil, {
       kind = 'boss',
       owner = runner,
       wave = runner.wave,
@@ -362,11 +341,54 @@ return function(ctx)
       spawn_hp = runner.wave.boss_spawn_hp,
       reward = runner.wave.boss_kill_reward,
     })
-    if not runner.boss_info then
+
+    local runtime_unit_id = spawn_spec.create_unit_id
+    local ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), runtime_unit_id, spawn_point, 180.0)
+    if not ok or not unit_or_err then
+      ok, unit_or_err = pcall(y3.unit.create_unit, env.get_enemy_player(), ENEMY_RUNTIME_FALLBACK_UNIT_ID, spawn_point, 180.0)
+    end
+    if not ok or not unit_or_err then
       runner.boss_spawned = false
       return
     end
-    EventBus.fire('boss_spawned', runner.boss_info)
+
+    local unit = unit_or_err
+    print('[SPAWN DEBUG] spawn_boss 成功: unit=' .. tostring(unit and unit:get_name()))
+    apply_enemy_model_profile(unit, spawn_spec)
+
+    local scaled_attrs = runner.wave.boss_attr_overrides
+    if scaled_attrs and CONFIG and CONFIG.monster_type_config then
+      local monster_type = CONFIG.monster_type_config.resolve_type({kind = 'boss', wave = runner.wave})
+      scaled_attrs = CONFIG.monster_type_config.apply_attr_scaling(scaled_attrs, monster_type)
+    end
+    if scaled_attrs then
+      set_attr_pack(unit, scaled_attrs)
+    end
+
+    local spawn_hp = runner.wave.boss_spawn_hp
+    if spawn_hp and spawn_hp > 1 then
+      unit:set_attr('hp_max', spawn_hp)
+      unit:set_hp(spawn_hp)
+    end
+
+    apply_spawn_enemy_speed_tuning(unit, {kind = 'boss', wave = runner.wave})
+    unit:set_reward_exp(0)
+    unit:attack_move(STATE.defense_point)
+
+    local boss_info = create_enemy_info(unit, {
+      kind = 'boss',
+      owner = runner,
+      wave = runner.wave,
+      spawn_hp = spawn_hp,
+      max_hp = spawn_hp or unit:get_attr('hp_max'),
+      model_id = runner.wave.boss_model_id,
+      template_unit_id = runner.wave.boss_template_unit_id,
+      extra_ability_ids = runner.wave.boss_extra_ability_ids,
+      reward = runner.wave.boss_kill_reward,
+    })
+
+    runner.boss_info = boss_info
+    y3.game:event_notify(GameEvents.BATTLE_BOSS_SPAWNED, runner.boss_info)
   end
 
   local function cleanup_challenge_units(instance)
@@ -377,26 +399,6 @@ return function(ctx)
       end
     end
   end
-
-  local function create_challenge_instance(def, instance_id)
-    local instance = {
-      id = instance_id or def.id,
-      def = def,
-      elapsed = 0,
-      active = true,
-      alive_count = 0,
-      dead_count = 0,
-      infos = {},
-      spawned_batches = {},
-      all_batches_spawned = false,
-      spawn_failed = false,
-    }
-    STATE.active_challenges[instance.id] = instance
-
-    EventBus.fire('challenge_started', instance)
-    return instance
-  end
-  ctx.create_challenge_instance = create_challenge_instance
 
   local function spawn_n0_debug_dummies()
     if not is_n0_stage_active() then
@@ -421,10 +423,9 @@ return function(ctx)
     local fallback_id = ENEMY_RUNTIME_FALLBACK_UNIT_ID
 
     local dummy_specs = {
-      { kind = 'main',      name = '普通靶子', offset_y = -150, is_elite = false },
-      { kind = 'main',      name = '精英靶子', offset_y = -50,  is_elite = true  },
-      { kind = 'boss',      name = 'Boss靶子', offset_y = 50,   is_elite = false },
-      { kind = 'challenge', name = '挑战靶子', offset_y = 150,  is_elite = false },
+      { kind = 'main', name = '普通靶子', offset_y = -150, is_elite = false },
+      { kind = 'main', name = '精英靶子', offset_y = -50,  is_elite = true  },
+      { kind = 'boss', name = 'Boss靶子', offset_y = 50,   is_elite = false },
     }
 
     for _, spec in ipairs(dummy_specs) do
@@ -454,5 +455,4 @@ return function(ctx)
   ctx.get_spawn_interval = get_spawn_interval
   ctx.spawn_boss = spawn_boss
   ctx.apply_main_enemy_lane_slow = apply_main_enemy_lane_slow
-  ctx.cleanup_challenge_units = cleanup_challenge_units
 end

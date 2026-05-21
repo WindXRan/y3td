@@ -1,16 +1,14 @@
 -- ui_system.lua — UI系统统一入口
--- 合并了 hud, ui_helpers, growth_weapon_tip
+-- 合并了 hud, ui_helpers
 -- 提供统一的UI系统 API
 
 local UISystem = {}
 
 local runtime_hud = require 'ui.runtime_hud'
 local ui_helpers = require 'runtime.ui.runtime_ui_helpers'
-local growth_weapon_tip = require 'ui.growth_weapon_item_tip'
 
 UISystem.hud = runtime_hud
 UISystem.helpers = ui_helpers
-UISystem.growth_tip = growth_weapon_tip
 
 -- 从 hud 转发
 UISystem.create_hud = runtime_hud.create

@@ -6,11 +6,6 @@ local function create_dev_commands()
     if debug_tools_system and debug_tools_system.register_dev_commands then
       debug_tools_system.register_dev_commands()
     end
-
-    local gm_bond_effects_system = _G.gm_bond_effects_system
-    if gm_bond_effects_system and gm_bond_effects_system.register_dev_commands then
-      gm_bond_effects_system.register_dev_commands()
-    end
   end
 end
 
@@ -29,16 +24,14 @@ function M.create()
   local RuntimeLoopsSystem = require 'runtime.core.loops'
 
   local outgame_system = _G.outgame_system
-  local growth_weapon_item_tip_system = _G.growth_weapon_item_tip_system
+
+  print('[boot_runtime_setup] _G.battlefield_system type=' .. type(_G.battlefield_system) .. ' ok=' .. tostring(_G.battlefield_system ~= nil))
 
   local runtime_loops_system = RuntimeLoopsSystem.create()
 
   local register_runtime_events = function()
     if runtime_loops_system.register_runtime_events then
       runtime_loops_system.register_runtime_events()
-    end
-    if growth_weapon_item_tip_system and growth_weapon_item_tip_system.bind then
-      growth_weapon_item_tip_system.bind()
     end
   end
 
@@ -55,17 +48,33 @@ function M.create()
     register_dev_commands = register_dev_commands,
     start_runtime_loops = start_runtime_loops,
     setup_post_bootstrap_ui = function()
-      local gm = _G.gm_bond_effects_system
-      if gm and gm.ensure_board then
-        gm.ensure_board()
-        gm.refresh_board()
+      -- 跳过局外界面，直接进入战斗
+      print('[BOOT] Skipping outgame UI, starting battle directly')
+      
+      -- 先隐藏局外UI（使用pcall避免UI不存在时出错）
+      if outgame_system and outgame_system.set_ui_visible then
+        pcall(outgame_system.set_ui_visible, false)
       end
-      outgame_system.load_profile()
-      if outgame_system.set_ui_visible then
-        outgame_system.set_ui_visible(false)
+      
+      -- 直接调用开始游戏
+      if _G.session_state_system and _G.session_state_system.start_selected_stage then
+        local ok, err = pcall(_G.session_state_system.start_selected_stage)
+        if not ok then
+          print('[BOOT] ERROR starting stage:', tostring(err))
+        end
+      elseif _G.outgame_system and _G.outgame_system.start_selected_stage then
+        local ok, err = pcall(_G.outgame_system.start_selected_stage)
+        if not ok then
+          print('[BOOT] ERROR starting stage:', tostring(err))
+        end
+      end
+      
+      -- 设置战斗UI可见
+      if _G.set_battle_hud_visible then
+        _G.set_battle_hud_visible(true)
       end
       if _G.enforce_runtime_ui_phase then
-        _G.enforce_runtime_ui_phase(false)
+        _G.enforce_runtime_ui_phase(true)
       end
     end,
   })

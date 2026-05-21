@@ -4,7 +4,14 @@
       "Bash(git ls-tree *)",
       "Bash(luac -p runtime/attack_skills.lua)",
       "Bash(curl -s -X POST \"http://127.0.0.1:8765/mcp\" -H \"Content-Type: application/json\" -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"hotfix_ui_editor\",\"arguments\":{}}}')",
-      "Bash(curl -s -X POST \"http://127.0.0.1:8765/mcp\" -H \"Content-Type: application/json\" -d '{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"save_editor\",\"arguments\":{}}}')"
+      "Bash(curl -s -X POST \"http://127.0.0.1:8765/mcp\" -H \"Content-Type: application/json\" -d '{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"save_editor\",\"arguments\":{}}}')",
+      "Bash(luac -p \"d:/project/_codex_y3td_push/maps/EntryMap/script/runtime/attack_skills.lua\")",
+      "Bash(luac -p \"d:/project/_codex_y3td_push/maps/EntryMap/script/runtime/combat/skill_handlers.lua\")",
+      "Bash(luac -p \"d:/project/_codex_y3td_push/maps/EntryMap/script/runtime/boot.lua\")",
+      "Bash(where luac *)",
+      "Bash(where lua *)",
+      "mcp__y3editor__hotfix_object_editor",
+      "mcp__y3editor__save_editor"
     ]
   },
   "enableAllProjectMcpServers": true
