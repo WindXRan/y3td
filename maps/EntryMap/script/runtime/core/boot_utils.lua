@@ -9,13 +9,6 @@ _G.AudioResources = require 'data.tables.audio_resources'
 local AreaUtils = {}
 
 AreaUtils.get_area = function(area_id)
-  local debug_tools_system = _G.debug_tools_system
-  if debug_tools_system and debug_tools_system.get_area then
-    local area = debug_tools_system.get_area(area_id)
-    if area then
-      return area
-    end
-  end
   return _G.CONFIG and _G.CONFIG.areas and _G.CONFIG.areas[area_id]
 end
 
@@ -32,40 +25,11 @@ end
 _G.AreaUtils = AreaUtils
 
 -- 属性相关工具
+-- 注意：属性操作建议直接使用编辑器原生API：
+-- - unit:get_attr(name) - 获取单位属性
+-- - unit:set_attr(name, value) - 设置单位属性
+-- - unit:add_attr(name, value) - 增加单位属性
 local AttrUtils = {}
-
-AttrUtils.set_attr_pack = function(unit, attr_pack)
-  if not unit or not attr_pack then
-    return
-  end
-  for attr_name, value in pairs(attr_pack) do
-    if value ~= nil then
-      unit:set_attr(attr_name, value)
-    end
-  end
-end
-
-AttrUtils.get_attr_pack = function(unit, attr_names)
-  if not unit or not attr_names then
-    return {}
-  end
-  local pack = {}
-  for _, name in ipairs(attr_names) do
-    pack[name] = unit:get_attr(name)
-  end
-  return pack
-end
-
-AttrUtils.add_attr_pack = function(unit, attr_pack)
-  if not unit or not attr_pack then
-    return
-  end
-  for attr_name, value in pairs(attr_pack) do
-    if value ~= nil then
-      unit:add_attr(attr_name, value)
-    end
-  end
-end
 
 AttrUtils.snapshot_hero_attrs = function()
   local STATE = _G.STATE
@@ -79,13 +43,6 @@ AttrUtils.snapshot_hero_attrs = function()
   if hero_attr_system and hero_attr_system.snapshot then
     hero_attr_system.snapshot(hero, STATE)
   end
-end
-
-AttrUtils.build_runtime_attr_dialog_chunks = function()
-  return {}
-end
-
-AttrUtils.show_runtime_attr_dialog = function()
 end
 
 _G.AttrUtils = AttrUtils
@@ -283,117 +240,7 @@ end
 -- 粒子效果创建 — 使用 y3.particle.create 原生 API（调用方自行 pcall 包裹）
 -- 音效播放 — 使用 y3.sound.play_3d 原生 API（调用方自行 pcall 包裹）
 
--- 相机控制
-_G.apply_fixed_camera_mode = function(enabled)
-  local player = _G.get_player()
-  if not player or not y3.camera then
-    return false
-  end
 
-  if enabled == true then
-    local STATE = _G.STATE
-    if not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then
-      return false
-    end
-    if y3.camera.set_tps_follow_unit then
-      y3.camera.set_tps_follow_unit(player, STATE.hero, 0, 0, -60, 300, 0, 220, 1800)
-    elseif y3.camera.set_camera_follow_unit then
-      y3.camera.set_camera_follow_unit(player, STATE.hero, 0, 0, 220)
-    end
-    if y3.camera.disable_camera_move then
-      y3.camera.disable_camera_move(player)
-    end
-    if y3.camera.set_moving_with_mouse then
-      y3.camera.set_moving_with_mouse(player, false)
-    end
-    if y3.camera.set_mouse_move_camera_speed then
-      y3.camera.set_mouse_move_camera_speed(player, 0)
-    end
-    if y3.camera.set_keyboard_move_camera_speed then
-      y3.camera.set_keyboard_move_camera_speed(player, 0)
-    end
-    if y3.camera.set_max_distance then
-      y3.camera.set_max_distance(player, 1800)
-    end
-    if y3.camera.set_distance then
-      y3.camera.set_distance(player, 1800, 0)
-    end
-    if player.set_mouse_wheel then
-      player:set_mouse_wheel(false)
-    end
-    -- 更新全局状态
-    if STATE then
-      STATE.fixed_camera_enabled = true
-    end
-    return true
-  end
-
-  if y3.camera.cancel_tps_follow_unit then
-    y3.camera.cancel_tps_follow_unit(player)
-  end
-  if y3.camera.cancel_camera_follow_unit then
-    y3.camera.cancel_camera_follow_unit(player)
-  end
-  if y3.camera.enable_camera_move then
-    y3.camera.enable_camera_move(player)
-  end
-  if y3.camera.set_moving_with_mouse then
-    y3.camera.set_moving_with_mouse(player, true)
-  end
-  if player.set_mouse_wheel then
-    player:set_mouse_wheel(true)
-  end
-  -- 更新全局状态
-  local STATE = _G.STATE
-  if STATE then
-    STATE.fixed_camera_enabled = false
-  end
-  return true
-end
-
-_G.sync_fixed_camera_mode = function(enabled)
-  local player = _G.get_player()
-  if not player or not y3 or not y3.camera then
-    return
-  end
-  -- 如果没有提供 enabled 参数，使用当前 STATE 中的值
-  if enabled == nil then
-    local STATE = _G.STATE
-    enabled = STATE and STATE.fixed_camera_enabled or true
-  end
-  local is_fixed = false
-  if y3.camera.is_tps_follow then
-    is_fixed = y3.camera.is_tps_follow(player)
-  elseif y3.camera.is_camera_follow then
-    is_fixed = y3.camera.is_camera_follow(player)
-  end
-  if is_fixed ~= (enabled == true) then
-    _G.apply_fixed_camera_mode(enabled)
-  end
-end
-
-_G.toggle_fixed_camera = function()
-  local player = _G.get_player()
-  if not player or not y3 or not y3.camera then
-    return false
-  end
-  -- 优先使用 STATE 中的状态，这样更可靠
-  local STATE = _G.STATE
-  local is_fixed
-  if STATE and STATE.fixed_camera_enabled ~= nil then
-    is_fixed = STATE.fixed_camera_enabled
-  else
-    -- 如果 STATE 不可用，回退到检查相机状态
-    if y3.camera.is_tps_follow then
-      is_fixed = y3.camera.is_tps_follow(player)
-    elseif y3.camera.is_camera_follow then
-      is_fixed = y3.camera.is_camera_follow(player)
-    else
-      is_fixed = false
-    end
-  end
-  return _G.apply_fixed_camera_mode(not is_fixed)
-end
 
 _G.enforce_runtime_ui_phase = function(is_battle)
   local function set_ui_root_visible(path, visible)

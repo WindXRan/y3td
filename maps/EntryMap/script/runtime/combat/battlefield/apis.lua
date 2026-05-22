@@ -111,13 +111,13 @@ return function(ctx)
       return 1
     end
 
-    local hp = hero_attr_system and hero_attr_system.get_attr(hero, '生命结算值') or 0
+    local hp = hero:get_attr('生命')
     hp = tonumber(hp) or 0
     if hp > 0 then
       return hp
     end
 
-    hp = hero_attr_system and hero_attr_system.get_attr(hero, '生命') or 0
+    hp = hero:get_attr('最大生命') or 0
     hp = tonumber(hp) or 0
     if hp > 0 then
       return hp
@@ -197,6 +197,10 @@ return function(ctx)
 
     if player and player.select_unit then
       player:select_unit(hero)
+    end
+
+    if player then
+      player.mainhero = hero
     end
 
     STATE.hero_common_attack = hero:get_common_attack()

@@ -166,6 +166,11 @@ local STATE = env and env.STATE or _G.STATE
     progress.last_growth_from_level = applied_level + 1
     progress.last_growth_to_level = new_level
     progress.applied_growth_level = new_level
+    
+    if _G.attack_skills_system and _G.attack_skills_system.update_projectile_count_on_level_up then
+      _G.attack_skills_system.update_projectile_count_on_level_up(new_level)
+    end
+    
     return true
   end
 

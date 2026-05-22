@@ -76,6 +76,12 @@
 ### 对象编辑
 - **y3-obj-edit** - 对象编辑器，支持单位属性修改
 - **y3-obj-gen** - 对象生成器，基于模板批量创建游戏对象
+- **制作物编必须参考 `xunhuanquan`** - 所有物编必须参考 `../xunhuanquan/xunhuanquan/maps/EntryMap/editor_table/` 下的 JSON 格式：
+  - `abilityall/` - 技能模板
+  - `editorunit/` - 单位模板
+  - `modifierall/` - Buff 模板
+  - `editordecoration/` - 装饰物模板
+  - `technologyall/` - 科技模板
 
 ### 测试与规范
 - **y3-auto-test** - 自动化测试框架

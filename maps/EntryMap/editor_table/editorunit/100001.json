@@ -17,7 +17,7 @@
     "attack_mag_grow": 0.0, 
     "attack_phy": 80.0, 
     "attack_phy_grow": 5.0, 
-    "attack_range": 525, 
+    "attack_range": 525.0, 
     "attack_range_grow": 0, 
     "attack_speed": 80.0, 
     "attack_speed_grow": 5.0, 
@@ -85,7 +85,7 @@
     "common_atk": {
         "__tuple__": true, 
         "items": [
-            100001201, 
+            900001001, 
             1
         ]
     }, 
@@ -144,15 +144,7 @@
     "healing_effect": 0, 
     "healing_effect_grow": 0, 
     "height_offset": 0, 
-    "hero_ability_list": {
-        "__tuple__": true, 
-        "items": [
-            [
-                100001001, 
-                1
-            ]
-        ]
-    }, 
+    "hero_ability_list": [], 
     "hit_rate": 100.0, 
     "hit_rate_grow": 0.0, 
     "hp_max": 700.0, 
@@ -161,7 +153,7 @@
     "hp_rec_grow": 1, 
     "hp_rec_percent": 0, 
     "hp_rec_percent_grow": 0, 
-    "icon": 903952, 
+    "icon": 907324, 
     "idle_anim": "hold", 
     "init_stock": 5, 
     "intelligence": 10.0, 
@@ -271,17 +263,26 @@
     "show_y3_extra_info": false, 
     "silver coin": 0, 
     "simple_common_atk": {
-        "ability_animations": [], 
-        "ability_bw_point": 0.5, 
-        "ability_cast_point": 0.2, 
+        "ability_animations": [
+            "attack1"
+        ], 
+        "ability_bw_point": 0.6, 
+        "ability_cast_point": 0.35, 
+        "attack_interval": 1.2, 
+        "attack_range": 525.0, 
         "attack_trajectory": {
-            "effect": 100001, 
-            "follow_scale": true, 
+            "destroy_immediately": false, 
+            "duration": -1.0, 
+            "effect": 104948, 
+            "follow_scale": false, 
             "scale": 1.0, 
-            "socket": "origin"
+            "socket": "missile", 
+            "target_socket": "hit_point"
         }, 
         "cast_effect_list": [], 
-        "cast_sound": 100001, 
+        "cast_interrupt": false, 
+        "cast_sound": 0, 
+        "collection_destructible_tags": [], 
         "critical_anim": "attack1", 
         "damage": {
             "__tuple__": true, 
@@ -312,18 +313,25 @@
         }, 
         "damage_type": 0, 
         "filter_condition_camp": 5, 
+        "filter_condition_move_channel_type": 99, 
         "filter_condition_type": 7, 
+        "filter_item_tags": [], 
+        "filter_unit_tags": [], 
         "hit_effect": {
-            "effect": 100001, 
-            "follow_scale": true, 
-            "scale": 1.0, 
-            "socket": "origin"
+            "effect": 104949, 
+            "follow_scale": false, 
+            "scale": 1.5, 
+            "socket": "hit_point"
         }, 
-        "hit_sound": 100001, 
+        "hit_sound": 0, 
+        "jump_word": true, 
         "order_play_anim": false, 
         "order_play_reset_time": 0.5, 
-        "trajectory_radian": 1.0, 
-        "trajectory_speed": 1000.0
+        "simple_atk_dice_count": 0, 
+        "simple_atk_dice_max_value": 0, 
+        "target_attribute": 0, 
+        "trajectory_radian": 0.0, 
+        "trajectory_speed": 2000.0
     }, 
     "sound_event_list": {
         "__tuple__": true, 

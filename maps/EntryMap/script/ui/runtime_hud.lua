@@ -185,7 +185,7 @@ function M.create(params)
   local function get_hero_hp_info()
     local bc = STATE.hero and STATE.hero.is_exist and STATE.hero:is_exist()
         and (tonumber(STATE.hero:get_hp()) or 0) or 0;
-    local bd = math.max(1, get_hero_attr('生命结算值', '生命'))
+    local bd = math.max(1, get_hero_attr('生命', '最大生命'))
     return bc, bd
   end;
 
@@ -991,11 +991,11 @@ function M.create(params)
     if hud_state.attr_panel_visible then
       local attr_chunks = build_runtime_attr_dialog_chunks and build_runtime_attr_dialog_chunks() or {
         string.format('等级%d', get_hero_level()),
-        string.format('攻击%s', format_short_number(get_hero_attr('攻击结算值', '攻击'))),
-        string.format('护甲%s', format_short_number(get_hero_attr('护甲结算值', '护甲'))),
-        string.format('力量%s', format_short_number(get_hero_attr('最终力量', '力量'))),
-        string.format('智力%s', format_short_number(get_hero_attr('最终智力', '智力'))),
-        string.format('敏捷%s', format_short_number(get_hero_attr('最终敏捷', '敏捷'))),
+        string.format('攻击%s', format_short_number(get_hero_attr('物理攻击'))),
+        string.format('护甲%s', format_short_number(get_hero_attr('物理护甲'))),
+        string.format('力量%s', format_short_number(get_hero_attr('力量'))),
+        string.format('智力%s', format_short_number(get_hero_attr('智力'))),
+        string.format('敏捷%s', format_short_number(get_hero_attr('敏捷'))),
       }
       set_ui_text(hud_state.attr_panel_title, '属性总览')
       set_ui_text(hud_state.attr_panel_body, table.concat(attr_chunks, '\n\n'))
@@ -1350,7 +1350,7 @@ function M.create(params)
     set_ui_text(resolve_ui_node('top.tophud.layout_2.threat_text'), dz)
     set_ui_text(resolve_ui_node('top.top.scoreboard.title'), '玩家状态')
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_name'), get_player_name())
-    set_ui_text(resolve_ui_node('top.top.scoreboard.player_power'), format_short_number(get_hero_attr('攻击结算值', '攻击')))
+    set_ui_text(resolve_ui_node('top.top.scoreboard.player_power'), format_short_number(get_hero_attr('物理攻击')))
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_state'), STATE.session_phase == 'battle' and '战斗中' or '局中')
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_level'), tostring(get_hero_level()))
     set_ui_text(resolve_ui_node('top.top.scoreboard.player_equip'), '0')
@@ -1366,8 +1366,8 @@ function M.create(params)
   end;
 
   local function refresh_player_attr_list()
-    local dB = format_short_number(get_hero_attr('攻击结算值', '攻击'))
-    local dC = format_short_number(get_hero_attr('护甲结算值', '护甲'))
+    local dB = format_short_number(get_hero_attr('物理攻击'))
+    local dC = format_short_number(get_hero_attr('物理护甲'))
     local dD = { {
       label = '战力',
       value = dB,

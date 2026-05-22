@@ -14,15 +14,11 @@ function M.create(env)
   local try_start_challenge = env and env.try_start_challenge or _G.try_start_challenge or function() end
   local apply_round_choice = env and env.apply_round_choice or _G.apply_round_choice or function() end
   local show_runtime_status = env and env.show_runtime_status or _G.show_runtime_status or function() end
-  local show_debug_hotkey_help = env and env.show_debug_hotkey_help or _G.show_debug_hotkey_help or function() end
-  local show_debug_tip_example = env and env.show_debug_tip_example or _G.show_debug_tip_example or function() end
-  local debug_actions_system = env and env.debug_actions_system or _G.debug_actions_system
   local toggle_talk_input = env and env.toggle_talk_input or _G.toggle_talk_input or function() end
   local toggle_inventory_panel = env and env.toggle_inventory_panel or _G.toggle_inventory_panel or function() end
   local open_save_panel = env and env.open_save_panel or _G.open_save_panel or function() end
   
   local use_attr_diamond = env and env.use_attr_diamond or _G.use_attr_diamond or function() end
-  local toggle_fixed_camera = env and env.toggle_fixed_camera or _G.toggle_fixed_camera or function() end
 
   -- Loops params
   local is_battle_active = env and env.is_battle_active or _G.is_battle_active or function() return false end
@@ -42,7 +38,6 @@ function M.create(env)
   local refresh_inventory_panel = env and env.refresh_inventory_panel or _G.refresh_inventory_panel or function() end
   local outgame_system = env and env.outgame_system or _G.outgame_system
   local hero_attr_system = env and env.hero_attr_system or _G.hero_attr_system
-  local debug_tools_system = env and env.debug_tools_system or _G.debug_tools_system
 
   local skill_damage_api = _G.td_damage_api
 
@@ -111,48 +106,6 @@ function M.create(env)
     register_battle_hotkey('KEY_3', function() apply_round_choice(3) end)
     register_battle_hotkey('KEY_4', function() apply_round_choice(4) end)
     register_battle_hotkey('SPACE', function() show_runtime_status() end)
-    register_battle_hotkey('F12', function()
-      if toggle_fixed_camera then toggle_fixed_camera() end
-    end)
-
-    local function register_tip_debug_key(key_name, index)
-      y3.game:event('键盘-按下', y3.const.KeyboardKey[key_name], function()
-        if show_debug_tip_example then show_debug_tip_example(index) end
-      end)
-    end
-    register_tip_debug_key('KEY_1', 1)
-    register_tip_debug_key('KEY_2', 2)
-    register_tip_debug_key('KEY_3', 3)
-    register_tip_debug_key('KEY_4', 4)
-    register_tip_debug_key('KEY_5', 5)
-  end
-
-  local function register_debug_hotkeys()
-    if y3.game.is_debug_mode() then
-      local function add_debug_ctrl_state(delta)
-        STATE.debug_ctrl_down_count = math.max(0, (STATE.debug_ctrl_down_count or 0) + delta)
-      end
-      y3.game:event('键盘-按下', y3.const.KeyboardKey['LCTRL'], function() add_debug_ctrl_state(1) end)
-      y3.game:event('键盘-按下', y3.const.KeyboardKey['RCTRL'], function() add_debug_ctrl_state(1) end)
-      y3.game:event('键盘-抬起', y3.const.KeyboardKey['LCTRL'], function() add_debug_ctrl_state(-1) end)
-      y3.game:event('键盘-抬起', y3.const.KeyboardKey['RCTRL'], function() add_debug_ctrl_state(-1) end)
-
-      local function register_debug_hotkey(key_name, callback)
-        y3.game:event('键盘-按下', y3.const.KeyboardKey[key_name], function()
-          if (STATE.debug_ctrl_down_count or 0) <= 0 then return end
-          callback()
-        end)
-      end
-
-      if not debug_actions_system then return end
-      register_debug_hotkey('F1', show_debug_hotkey_help)
-      register_debug_hotkey('F2', debug_actions_system.debug_add_test_resources)
-      register_debug_hotkey('F3', function() debug_actions_system.debug_grant_levels(3) end)
-      register_debug_hotkey('F4', debug_actions_system.debug_unlock_all_attack_skills)
-      register_debug_hotkey('F7', debug_actions_system.debug_refill_challenge_charges)
-      register_debug_hotkey('F8', debug_actions_system.debug_force_spawn_boss)
-      register_debug_hotkey('F9', debug_actions_system.debug_kill_all_active_enemies)
-    end
   end
 
   local function register_runtime_events()
@@ -160,17 +113,13 @@ function M.create(env)
     STATE.events_registered = true
     register_level_sync_event()
     register_battle_hotkeys()
-    register_debug_hotkeys()
   end
 
   -- ============ Loops ============
 
   local function get_hero_attack_value()
     if not STATE.hero or not STATE.hero:is_exist() then return 0 end
-    local value = hero_attr_system and hero_attr_system.get_attr(STATE.hero, '攻击结算值') or STATE.hero:get_attr('攻击结算值')
-    value = y3.helper.tonumber(value) or 0
-    if value > 0 then return value end
-    return y3.helper.tonumber(hero_attr_system and hero_attr_system.get_attr(STATE.hero, '攻击') or STATE.hero:get_attr('攻击') or STATE.hero:get_attr('物理攻击')) or 0
+    return y3.helper.tonumber(STATE.hero:get_attr('物理攻击')) or 0
   end
 
   local function try_refresh_battle_ui()
@@ -184,7 +133,6 @@ function M.create(env)
       if refresh_swallow_panel then refresh_swallow_panel() end
       if refresh_inventory_panel then refresh_inventory_panel() end
       if refresh_runtime_overview then refresh_runtime_overview() end
-      if debug_tools_system and debug_tools_system.ensure_gm_panel then debug_tools_system.ensure_gm_panel() end
     end)
     if ok then
       STATE.runtime_ui_fault_logged = false

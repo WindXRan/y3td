@@ -625,11 +625,9 @@ local STATE = env and env.STATE or _G.STATE
     end
 
     local current_hp = tonumber(STATE.hero:get_hp()) or 0
-    local max_hp = hero_attr_system and hero_attr_system.get_attr(STATE.hero, '生命结算值') or 0
+    local max_hp = tonumber(STATE.hero:get_attr('生命')) or 0
     if max_hp <= 0 then
-      max_hp = tonumber(STATE.hero:get_attr('生命结算值'))
-        or tonumber(STATE.hero:get_attr('生命'))
-        or tonumber(STATE.hero:get_attr('hp_max'))
+      max_hp = tonumber(STATE.hero:get_attr('最大生命'))
         or 0
     end
 
@@ -657,11 +655,9 @@ local STATE = env and env.STATE or _G.STATE
       return
     end
 
-    local max_hp = hero_attr_system and hero_attr_system.get_attr(STATE.hero, '生命结算值') or 0
+    local max_hp = tonumber(STATE.hero:get_attr('生命')) or 0
     if max_hp <= 0 then
-      max_hp = tonumber(STATE.hero:get_attr('生命结算值'))
-        or tonumber(STATE.hero:get_attr('生命'))
-        or tonumber(STATE.hero:get_attr('hp_max'))
+      max_hp = tonumber(STATE.hero:get_attr('最大生命'))
         or 0
     end
     if max_hp <= 0 then

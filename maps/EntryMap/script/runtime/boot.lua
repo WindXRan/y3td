@@ -64,8 +64,6 @@ end
 require 'runtime.core.boot_utils'; local BootHelpers = _G.BootHelpers                        -- [221]
 local BootUIEnhancements = require 'runtime.core.boot_ui_enhancements'         -- [250]
 local RuntimeEntry = {}
-local projectile_override_hook_installed = false
-local helper_signals_started = false
 
 -- 前向声明
 local STATE
@@ -75,23 +73,6 @@ local attr_choice_system
 local audio_system
 
 local trace_boot = BootHelpers.trace_boot
-
-local function ensure_helper_signals()
-  if helper_signals_started or not y3.game.is_debug_mode() then
-    return
-  end
-
-  helper_signals_started = true
-
-  y3.ltimer.wait(1, function()
-    print('[Y3_HELPER_READY]')
-  end)
-
-  y3.ltimer.loop(5, function()
-    print('[HEARTBEAT]')
-  end)
-end
-_G.ensure_helper_signals = ensure_helper_signals
 
 trace_boot('chunk loaded')
 
@@ -105,38 +86,8 @@ trace_boot('chunk loaded')
 local boot_core = BootCore.create()
 
 STATE = boot_core.create_initial_state()
-STATE.fixed_camera_enabled = true
 _G.CONFIG = CONFIG
 _G.STATE = STATE
-
-local function install_projectile_override_hook()
-  if projectile_override_hook_installed then
-    return
-  end
-  if not y3 or not y3.projectile or type(y3.projectile.create) ~= 'function' then
-    return
-  end
-  projectile_create_original = y3.projectile.create
-  y3.projectile.create = function(args, ...)
-    local forced_key = tonumber(STATE and STATE.debug_force_projectile_key) or 0
-    if forced_key > 0 and type(args) == 'table' then
-      local copied = {}
-      for k, v in pairs(args) do
-        if k ~= 'skip_projectile_override' then
-          copied[k] = v
-        end
-      end
-      if args.skip_projectile_override ~= true then
-        copied.key = math.floor(forced_key)
-      end
-      args = copied
-    end
-    return projectile_create_original(args, ...)
-  end
-  projectile_override_hook_installed = true
-end
-
-install_projectile_override_hook()
 
 -- 阶段2：基础能力 — Buff、玩家工具函数
 
@@ -162,27 +113,40 @@ function RuntimeEntry.has_valid_hero()
   return _G.STATE.hero and _G.STATE.hero.is_exist and _G.STATE.hero:is_exist()
 end
 
--- 相机控制和 UI 显隐已在 boot_utils 中实现
-RuntimeEntry.apply_fixed_camera_mode = _G.apply_fixed_camera_mode
-RuntimeEntry.sync_fixed_camera_mode = _G.sync_fixed_camera_mode
-RuntimeEntry.toggle_fixed_camera = _G.toggle_fixed_camera
+
 
 -- ============================================================
 -- [4xx] 阶段4：英雄系统
 -- ⚠ D9: hero_model:10 在模块顶层读取 _G.STATE，必须在 STATE 创建之后
 -- ============================================================
 
--- 英雄属性系统（已禁用，使用编辑器自带属性系统）
+-- 英雄属性系统 - 简化版，直接使用编辑器原生API
 _G.hero_attr_system = {
   get_attr = function(unit, name)
     if not unit or not unit.get_attr then return 0 end
     local v = unit:get_attr(name)
     return tonumber(v) or 0
   end,
-  add_attr = function() end,
-  set_attr = function() end,
-  init_hero_attrs = function() end,
-  rebuild_derived_attrs = function() end,
+  add_attr = function(unit, name, value)
+    if not unit or not unit.add_attr then return end
+    unit:add_attr(name, value)
+  end,
+  set_attr = function(unit, name, value)
+    if not unit or not unit.set_attr then return end
+    unit:set_attr(name, value)
+  end,
+  init_hero_attrs = function(hero, init_stats)
+    if not hero then return end
+    local max_hp = 700
+    if hero.set_hp then
+      hero:set_hp(max_hp)
+    end
+    print('[hero_attr_system] 初始化英雄血量: ' .. max_hp)
+  end,
+  rebuild_derived_attrs = function(unit)
+    if not unit or not unit.update_attr then return end
+    unit:update_attr()
+  end,
   snapshot = function() end,
   log_snapshot = function() end,
   get_attack_power = function(unit)
@@ -270,11 +234,11 @@ _G.SYSTEM.battle = BattleSystem
 _G.force_spawn_boss = BattleSystem.force_spawn_boss or function() end
 _G.execute_enemy = BattleSystem.execute_enemy or function() end
 
--- [635] 攻击技能运行时
-pcall(require, 'runtime.attack_skills')
-
 -- [640] 技能处理器
-pcall(require, 'runtime.combat.skill_handlers')
+local ok_skill, skill_mod = pcall(require, 'runtime.combat.skill_handlers')
+if not ok_skill then
+    print('[boot] 警告: 无法加载 skill_handlers: ' .. tostring(skill_mod))
+end
 
 -- ============================================================
 -- [7xx] 阶段7：UI 系统
@@ -329,12 +293,17 @@ _G.refresh_inventory_panel = function()
 end
 
 -- ============================================================
--- [8xx] 阶段8：调试系统
+-- [750] 技能升级面板
 -- ============================================================
-local ok_debug, DebugSystem = pcall(require, 'runtime.debug.debug_system')
-if not ok_debug then DebugSystem = {} end
-_G.SYSTEM.debug = DebugSystem
+local ok_skill_upgrade, skill_upgrade_mod = pcall(require, 'runtime.ui.skill_upgrade_panel')
+if not ok_skill_upgrade then
+  print('[boot] 警告: 无法加载 skill_upgrade_panel: ' .. tostring(skill_upgrade_mod))
+  skill_upgrade_mod = {}
+end
 
+-- ============================================================
+-- [8xx] 阶段8：自动战斗接受系统
+-- ============================================================
 local ok_battle_auto, battle_sys_for_auto = pcall(require, 'runtime.combat.battle_system')
 if not ok_battle_auto then battle_sys_for_auto = {} end
 _G.update_battle_auto_acceptance = (battle_sys_for_auto.auto_acceptance and battle_sys_for_auto.auto_acceptance.update) or function() end
@@ -377,17 +346,8 @@ if OutgameSystem.session and OutgameSystem.session.create then
       local battle = _G.SYSTEM.battle
       local bfs = battle and battle.battlefield
       local hero = bfs and bfs.create_hero(250)
-      if _G.STATE.fixed_camera_enabled == true then
-        _G.RuntimeEntry.sync_fixed_camera_mode()
-      end
       if hero and _G.hero_attr_system and _G.CONFIG and _G.CONFIG.hero_init_stats then
         _G.hero_attr_system.init_hero_attrs(hero, _G.CONFIG.hero_init_stats)
-      end
-      
-      -- 让英雄无法移动
-      if hero and hero.set_move_speed then
-        hero:set_move_speed(0)
-        print('[HERO] 英雄已设置为无法移动')
       end
       
       if hero then
@@ -396,39 +356,12 @@ if OutgameSystem.session and OutgameSystem.session.create then
           y3.game:event_notify('hero_death')
           if _G.STATE and _G.STATE.hero == hero then
             hero:revive()
-            local max_hp = hero:get_attr('生命') or hero:get_attr('hp_max') or 1000
-            if max_hp <= 0 then
-              max_hp = 1000
-            end
+            local max_hp = 700
             hero:set_hp(max_hp)
             y3.game:event_notify('hero_revive')
             print('[HERO REVIVE] 英雄已复活，血量恢复至 ' .. max_hp)
           end
         end)
-      end
-      
-      -- 在英雄前方创建测试靶子（无法移动的敌人）
-      if hero and bfs then
-        local ok, hero_pos = pcall(function() return hero:get_point() end)
-        if ok and hero_pos and hero_pos.x then
-          -- 在英雄前方1000单位处创建靶子
-          local target_pos = y3.point.create(hero_pos.x + 1000, hero_pos.y, hero_pos.z)
-          local enemy_player = y3.player(2)
-          local target_unit = y3.unit.create({
-            player = enemy_player,
-            unit_id = 'monster_001',
-            point = target_pos,
-            angle = 180,
-          })
-          if target_unit then
-            target_unit:set_move_speed(0)
-            target_unit:set_max_hp(99999)
-            target_unit:set_hp(99999)
-            print('[TEST TARGET] 在英雄前方创建了测试靶子')
-          end
-        else
-          print('[TEST TARGET] 无法获取英雄位置，跳过创建靶子')
-        end
       end
       
       return hero
@@ -492,23 +425,6 @@ RuntimeEntry.run_bootstrap_sequence = RuntimeEntry._runtime_bundle.run_bootstrap
 
 function RuntimeEntry.bootstrap()
   RuntimeEntry.run_bootstrap_sequence()
-end
-
-_G.sync_basic_attack_ability = function()
-  local hero = _G.STATE and _G.STATE.hero
-  if not hero or not hero:is_exist() then
-    print('[sync_basic_attack_ability] Hero not found')
-    return
-  end
-  
-  print('[sync_basic_attack_ability] Setting up skill 100001001 as basic attack')
-  local skill = hero:find_ability('英雄', 100001001)
-  if skill then
-    print('[sync_basic_attack_ability] Found skill 100001001, enabling autocast')
-    skill:set_autocast(true)
-  else
-    print('[sync_basic_attack_ability] Skill 100001001 not found on hero')
-  end
 end
 
 _G.RuntimeEntry = RuntimeEntry

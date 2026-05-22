@@ -33,7 +33,6 @@ local function load_runtime()
     MAIN_STATE.runtime_load_attempted = true
 
     local ok, result = xpcall(function()
-        require 'runtime.core.compat'
         return require 'entry_runtime'
     end, debug.traceback)
 

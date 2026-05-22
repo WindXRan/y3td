@@ -4,7 +4,7 @@
     "ability_break_cast_range": {
         "__tuple__": true, 
         "items": [
-            "50"
+            "100.0"
         ]
     }, 
     "ability_build_subtype": 1, 
@@ -13,11 +13,11 @@
     "ability_cast_range": {
         "__tuple__": true, 
         "items": [
-            "525"
+            "2000.0"
         ]
     }, 
-    "ability_cast_type": 2, 
-    "ability_channel_time": 0.0, 
+    "ability_cast_type": 1, 
+    "ability_channel_time": 0, 
     "ability_cost": {
         "__tuple__": true, 
         "items": [
@@ -27,7 +27,7 @@
     "ability_damage": {
         "__tuple__": true, 
         "items": [
-            "10"
+            "0"
         ]
     }, 
     "ability_damage_range": {
@@ -42,7 +42,7 @@
             "0"
         ]
     }, 
-    "ability_icon": 100508, 
+    "ability_icon": 101117, 
     "ability_joystick_check_range": {
         "__tuple__": true, 
         "items": [
@@ -75,23 +75,14 @@
     "arrow_length": {
         "__tuple__": true, 
         "items": [
-            "5.0"
+            "0.05"
         ]
     }, 
     "arrow_width": {
         "__tuple__": true, 
         "items": [
-            "2.0"
+            "0.02"
         ]
-    }, 
-    "attack_trajectory": {
-        "destroy_immediately": false, 
-        "duration": -1.0, 
-        "effect": 100001201, 
-        "follow_scale": false, 
-        "scale": 1.0, 
-        "socket": "origin", 
-        "target_socket": "hit_point"
     }, 
     "auto_pick": true, 
     "bs_sfx_list": {
@@ -108,9 +99,6 @@
     }, 
     "build_rotate": 0, 
     "building_attack_range_sfx": 101492, 
-    "bw_ignore_ability_command": false, 
-    "bw_ignore_move_command": false, 
-    "bw_move_interrupt": true, 
     "camp_priority_enemy": 1, 
     "camp_priority_friend": 1, 
     "camp_priority_neutral": 1, 
@@ -118,38 +106,29 @@
     "can_autocast_when_attack_target": true, 
     "can_bs_interrupt": true, 
     "can_cache": true, 
-    "can_cast_interrupt": false, 
+    "can_cast_interrupt": true, 
     "can_cast_when_hp_insufficient": false, 
     "can_cost_hp": false, 
     "can_interrupt_others": true, 
-    "can_prepare_interrupt": false, 
+    "can_prepare_interrupt": true, 
     "can_ps_interrupt": true, 
-    "cast_ignore_ability_command": true, 
-    "cast_ignore_move_command": true, 
-    "cast_move_interrupt": false, 
     "circle_radius": {
         "__tuple__": true, 
         "items": [
-            "5.0"
+            "1"
         ]
     }, 
     "cold_down_time": {
         "__tuple__": true, 
         "items": [
-            "0"
+            "1.0"
         ]
     }, 
     "collection_animation": "", 
     "collection_animation_loop": true, 
     "collection_continuously": true, 
-    "collection_destructible_tags": {
-        "__tuple__": true, 
-        "items": []
-    }, 
+    "collection_destructible_tags": [], 
     "cost_hp_can_die": false, 
-    "csp_ignore_ability_command": false, 
-    "csp_ignore_move_command": false, 
-    "csp_move_interrupt": true, 
     "cst_sfx_list": {
         "__tuple__": true, 
         "items": []
@@ -159,8 +138,7 @@
         "items": []
     }, 
     "customized_pointer_sfx": 100000, 
-    "desc": -1106323389, 
-    "description": -1106323389, 
+    "description": -1106323390, 
     "enable_customized_pointer_sfx": false, 
     "end_sfx_list": {
         "__tuple__": true, 
@@ -173,14 +151,8 @@
     "filter_condition_camp": 5, 
     "filter_condition_move_channel_type": 99, 
     "filter_condition_type": 7, 
-    "filter_item_tags": {
-        "__tuple__": true, 
-        "items": []
-    }, 
-    "filter_unit_tags": {
-        "__tuple__": true, 
-        "items": []
-    }, 
+    "filter_item_tags": [], 
+    "filter_unit_tags": [], 
     "forbid_unit_tags": {
         "__tuple__": true, 
         "items": []
@@ -197,18 +169,28 @@
     "influenced_by_move": true, 
     "is_autocast": true, 
     "is_charge_ability": false, 
-    "is_immediate": true, 
+    "is_immediate": false, 
     "is_meele": false, 
     "key": 100001001, 
-    "kv": {}, 
+    "kv": {
+        "\u6280\u80fd\u52a8\u4f5c": {
+            "annotation": "", 
+            "desc": "", 
+            "key": "\u6280\u80fd\u52a8\u4f5c", 
+            "prop_cls": "PText", 
+            "remark": "", 
+            "type": 0, 
+            "value": "attack1"
+        }
+    }, 
     "magicbook_list": {
         "__tuple__": true, 
         "items": []
     }, 
-    "name": 1888909295, 
+    "name": -1106323389, 
     "need_turn_to_target": true, 
     "pick_count": 1, 
-    "player_props_cost": {}, 
+    "player_props_cost": [], 
     "pointer_can_block": 0, 
     "pointer_channel": 0, 
     "pointer_limitation": 1, 
@@ -216,9 +198,6 @@
         "__tuple__": true, 
         "items": []
     }, 
-    "prepare_ignore_ability_command": true, 
-    "prepare_ignore_move_command": true, 
-    "prepare_move_interrupt": false, 
     "ps_sfx_list": {
         "__tuple__": true, 
         "items": []
@@ -232,30 +211,23 @@
         "formula": "", 
         "required_levels": {
             "__tuple__": true, 
-            "items": [
-                1, 
-                2, 
-                3, 
-                4, 
-                5
-            ]
+            "items": []
         }
     }, 
     "sector_angle": {
         "__tuple__": true, 
         "items": [
-            "30"
+            "2"
         ]
     }, 
-    "sector_radian": 0, 
     "sector_radius": {
         "__tuple__": true, 
         "items": [
-            "5.25"
+            "0.1"
         ]
     }, 
     "show_building_attack_range": false, 
-    "sight_type": 0, 
+    "sight_type": 4, 
     "sound_event_list": {
         "__tuple__": true, 
         "items": []

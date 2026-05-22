@@ -1,0 +1,14 @@
+{
+    "_custom_": true, 
+    "_ref_": 100001, 
+    "audio_bus": "SFX", 
+    "audio_file": "", 
+    "audio_switch": "", 
+    "key": 100001, 
+    "sound_event_list": {
+        "__tuple__": true, 
+        "items": []
+    }, 
+    "sound_type": 0, 
+    "uid": "100001"
+}

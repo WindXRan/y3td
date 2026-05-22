@@ -31,7 +31,7 @@ local play_enemy_death_sound = _G.play_enemy_death_sound or function() end
 
 local api = {}
 local VISUAL_ANIMATION_SPEED = 0.5
-local HERO_RUNTIME_FALLBACK_UNIT_ID = tonumber(CONFIG.hero_fallback_unit_id) or 134245850
+local HERO_RUNTIME_FALLBACK_UNIT_ID = tonumber(CONFIG.hero_fallback_unit_id)
 local ENEMY_RUNTIME_FALLBACK_UNIT_ID = tonumber(CONFIG.fixed_enemy_spawn_unit_id) or 134278989
 local ENEMY_BASE_SPEED_FACTORS = {
   main = 0.76,

@@ -1,0 +1,23 @@
+{
+    "_custom_": true,
+    "_ref_": 100112,
+    "effect_asset": {
+        "__tuple__": true,
+        "items": ["104657"]
+    },
+    "effect_born_mode": 1,
+    "effect_class": "EffectActor",
+    "effect_follow": false,
+    "effect_name": 178079398,
+    "effect_resource": {
+        "model_id": 2002
+    },
+    "effect_scale": 1.0,
+    "effect_type": 0,
+    "key": 100112,
+    "sound_event_list": {
+        "__tuple__": true,
+        "items": []
+    },
+    "uid": "100112"
+}

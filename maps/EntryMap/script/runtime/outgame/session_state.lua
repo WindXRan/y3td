@@ -136,26 +136,7 @@ function M.create(env)
     STATE.gear_state = nil
     STATE._battle_hud_visible_cached = nil
     
-    STATE.attack_skill_state = {
-      by_id = {
-        basic_attack = {
-          id = 'basic_attack',
-          ability_key = 100001001,
-          name = '普攻',
-          damage_ratio = 1.0,
-          cooldown = 0,
-          cooldown_remain = 0,
-          splash_radius = 100,
-          splash_ratio = 0.2,
-        },
-      },
-      basic_attack_meta = {
-        attack_count = 0,
-        total_damage_dealt = 0,
-        last_cast_time = 0,
-      },
-    }
-  end
+    end
 
   local function reset_session_state()
     pcall(destroy_choice_panel)
@@ -263,8 +244,11 @@ function M.create(env)
     end
     if sync_gear_runtime_effects and STATE.hero then
       sync_gear_runtime_effects(STATE, STATE.hero, CONFIG.gear_upgrade_config)
-      if hero_attr_system and hero_attr_system.get_attr and STATE.hero.set_hp then
-        STATE.hero:set_hp(hero_attr_system.get_attr(STATE.hero, '生命结算值'))
+      if STATE.hero.set_hp then
+        local hp = STATE.hero:get_attr('生命')
+        if hp and hp > 0 then
+          STATE.hero:set_hp(hp)
+        end
       end
     end
     if hero_attr_system and STATE.hero then
@@ -283,6 +267,7 @@ function M.create(env)
     if not try_initialize_battle_ui() then
       return rollback_stage_start('战斗界面初始化失败，请稍后重试。')
     end
+    
     try_enter_battle_audio()
 
     print('[SESSION STATE] 调用 start_wave(1), session_phase=' .. tostring(STATE.session_phase))
