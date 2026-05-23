@@ -37,7 +37,6 @@ function M.create(env)
   local refresh_runtime_overview = env and env.refresh_runtime_overview or _G.refresh_runtime_overview or function() end
   local refresh_inventory_panel = env and env.refresh_inventory_panel or _G.refresh_inventory_panel or function() end
   local outgame_system = env and env.outgame_system or _G.outgame_system
-  local hero_attr_system = env and env.hero_attr_system or _G.hero_attr_system
 
   local skill_damage_api = _G.td_damage_api
 

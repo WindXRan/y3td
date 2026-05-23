@@ -148,8 +148,7 @@ function M.get_hero_attr_value(name)
   if not STATE or not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then
     return 0
   end
-  local value = hero_attr_system and hero_attr_system.get_attr(STATE.hero, name) or STATE.hero:get_attr(name)
-  return y3.helper.tonumber(value) or 0
+  return y3.helper.tonumber(STATE.hero:get_attr(name)) or 0
 end
 
 function M.get_hero_attr_ratio(name)
@@ -202,9 +201,6 @@ end
 function M.get_hero_attack()
   if not STATE.hero or not STATE.hero:is_exist() then
     return 0
-  end
-  if hero_attr_system and hero_attr_system.get_attr then
-    return hero_attr_system.get_attr(STATE.hero, '攻击') or STATE.hero:get_attr('攻击') or 0
   end
   return STATE.hero:get_attr('攻击') or 0
 end

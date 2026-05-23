@@ -48,7 +48,7 @@ function M.create(params)
   local y3 = params and params.y3 or _G.y3 or y3;
   local skill_slot_count = math.max(1, tonumber(params and params.attack_skill_slot_count or _G.ATTACK_SKILL_SLOT_COUNT) or 5)
   local get_player_fn = params and params.get_player or y3.player.get_main_player;
-  local hero_attr_system_ref = params and params.hero_attr_system or _G.hero_attr_system;
+  -- hero_attr_system 已移除，直接使用原生 API
 
   local try_evolution_entry = params and params.try_evolution_entry or _G.try_evolution_entry or function() end;
   local try_start_challenge = params and params.try_start_challenge or _G.try_start_challenge or function() end;
@@ -115,12 +115,11 @@ function M.create(params)
   local function get_hero_attr(b1, b2)
     if not STATE.hero or not STATE.hero.is_exist or not STATE.hero:is_exist() then return 0 end;
 
-    local aI = hero_attr_system_ref and hero_attr_system_ref.get_attr(STATE.hero, b1) or STATE.hero:get_attr(b1)
-    aI = tonumber(aI) or 0;
+    local aI = tonumber(STATE.hero:get_attr(b1)) or 0;
     if aI ~= 0 or not b2 then return aI end;
 
-    local b3 = hero_attr_system_ref and hero_attr_system_ref.get_attr(STATE.hero, b2) or STATE.hero:get_attr(b2)
-    return tonumber(b3) or 0
+    local b3 = tonumber(STATE.hero:get_attr(b2)) or 0
+    return b3
   end;
 
   local function get_hero_level() return math.max(1, math.floor(tonumber(STATE.hero_progress and STATE.hero_progress.level) or 1)) end;

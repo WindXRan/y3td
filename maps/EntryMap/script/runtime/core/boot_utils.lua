@@ -32,17 +32,7 @@ _G.AreaUtils = AreaUtils
 local AttrUtils = {}
 
 AttrUtils.snapshot_hero_attrs = function()
-  local STATE = _G.STATE
-  if not STATE or not STATE.hero then
-    return
-  end
-  local hero = STATE.hero
-  if not (hero.is_exist and hero:is_exist()) then
-    return
-  end
-  if hero_attr_system and hero_attr_system.snapshot then
-    hero_attr_system.snapshot(hero, STATE)
-  end
+  -- snapshot 已移除，直接使用原生属性 API 即可
 end
 
 _G.AttrUtils = AttrUtils

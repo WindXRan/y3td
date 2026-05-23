@@ -7,7 +7,7 @@ local env
 local STATE = env and env.STATE or _G.STATE
   local round_number = BootHelpers.round_number
   local message = env and env.message or _G.message
-  local hero_attr_system = env and env.hero_attr_system or _G.hero_attr_system
+  -- hero_attr_system 已移除，直接使用原生 API
 
   local function on_hero_level_up(level)
     local acs = _G.attr_choice_system
@@ -128,16 +128,12 @@ local STATE = env and env.STATE or _G.STATE
 
   local function apply_attr_pack_to_hero(hero, attr_pack)
     for attr_name, value in pairs(attr_pack) do
-      if value ~= 0 then
-        if hero_attr_system and hero_attr_system.add_attr then
-          hero_attr_system.add_attr(hero, attr_name, value)
-        elseif hero.add_attr then
-          hero:add_attr(attr_name, value)
-        end
+      if value ~= 0 and hero.add_attr then
+        hero:add_attr(attr_name, value)
       end
     end
-    if hero_attr_system and hero_attr_system.rebuild_derived_attrs then
-      hero_attr_system.rebuild_derived_attrs(hero)
+    if hero.update_attr then
+      hero:update_attr()
     end
   end
 

@@ -155,25 +155,7 @@ return function(ctx)
     return result
   end
 
-  local function schedule_hero_spawn_attr_logs(hero)
-    if not hero_attr_system or not hero_attr_system.log_snapshot or not y3 or not y3.ltimer then
-      return
-    end
-
-    local checkpoints = { 0.1, 0.5, 1.0 }
-    for _, delay in ipairs(checkpoints) do
-      y3.ltimer.wait(delay, function()
-        if not hero or not hero.is_exist or not hero:is_exist() then
-          return
-        end
-        hero_attr_system.log_snapshot(
-          hero,
-          'create_hero_delayed_snapshot',
-          string.format('delay=%.1fs hp=%s', delay, tostring(hero:get_hp()))
-        )
-      end)
-    end
-  end
+  -- log_snapshot 已移除，使用原生属性 API 即可获取英雄属性
 
   function api.create_hero(basic_attack_range)
     local player

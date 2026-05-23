@@ -67,7 +67,6 @@ local RuntimeEntry = {}
 
 -- 前向声明
 local STATE
-local hero_attr_system
 local reward_system
 local attr_choice_system
 local audio_system
@@ -120,42 +119,8 @@ end
 -- ⚠ D9: hero_model:10 在模块顶层读取 _G.STATE，必须在 STATE 创建之后
 -- ============================================================
 
--- 英雄属性系统 - 简化版，直接使用编辑器原生API
-_G.hero_attr_system = {
-  get_attr = function(unit, name)
-    if not unit or not unit.get_attr then return 0 end
-    local v = unit:get_attr(name)
-    return tonumber(v) or 0
-  end,
-  add_attr = function(unit, name, value)
-    if not unit or not unit.add_attr then return end
-    unit:add_attr(name, value)
-  end,
-  set_attr = function(unit, name, value)
-    if not unit or not unit.set_attr then return end
-    unit:set_attr(name, value)
-  end,
-  init_hero_attrs = function(hero, init_stats)
-    if not hero then return end
-    local max_hp = 700
-    if hero.set_hp then
-      hero:set_hp(max_hp)
-    end
-    print('[hero_attr_system] 初始化英雄血量: ' .. max_hp)
-  end,
-  rebuild_derived_attrs = function(unit)
-    if not unit or not unit.update_attr then return end
-    unit:update_attr()
-  end,
-  snapshot = function() end,
-  log_snapshot = function() end,
-  get_attack_power = function(unit)
-    if not unit or not unit.get_attr then return 0 end
-    return tonumber(unit:get_attr('攻击')) or 0
-  end,
-}
-_G.SYSTEM.hero_attr = _G.hero_attr_system
-local hero_attr_system = _G.hero_attr_system
+-- 英雄属性系统已移除，直接使用编辑器原生 API
+-- 相关方法: unit:get_attr(name), unit:add_attr(name, value), unit:set_attr(name, value), unit:update_attr()
 
 pcall(require, 'runtime.heroes.hero_model')
 _G.SYSTEM.hero_model = _G.hero_model
@@ -167,7 +132,6 @@ _G.design_seconds = design_seconds
 
 -- ============================================================
 -- [5xx] 阶段5：核心玩法 — 升级、奖励、音频、回合选择
--- ⚠ D4: progression 在模块顶层读取 _G.hero_attr_system
 -- ⚠ D5: progression 惰性访问 _G.reward_system / _G.attr_choice_system
 -- ============================================================
 pcall(require, 'runtime.progression.progression')
@@ -346,8 +310,11 @@ if OutgameSystem.session and OutgameSystem.session.create then
       local battle = _G.SYSTEM.battle
       local bfs = battle and battle.battlefield
       local hero = bfs and bfs.create_hero(250)
-      if hero and _G.hero_attr_system and _G.CONFIG and _G.CONFIG.hero_init_stats then
-        _G.hero_attr_system.init_hero_attrs(hero, _G.CONFIG.hero_init_stats)
+      if hero and _G.CONFIG and _G.CONFIG.hero_init_stats then
+        local max_hp = tonumber(_G.CONFIG.hero_init_stats['生命基础值']) or 700
+        if hero.set_hp then
+          hero:set_hp(max_hp)
+        end
       end
       
       if hero then

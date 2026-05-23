@@ -87,7 +87,7 @@ function M.create(env)
   local STATE = env and env.STATE or _G.STATE
   local y3 = env and env.y3 or _G.y3
   local get_player = env and env.get_player or y3.player.get_main_player
-  local hero_attr_system = env and env.hero_attr_system or _G.hero_attr_system
+  -- hero_attr_system 已移除，直接使用原生属性 API
   local nodes = {}
 
   local function get_root()
@@ -169,19 +169,19 @@ function M.create(env)
     end
     local normalized_name = AttrDefs.aliases[name] or name
     local value = nil
-    if AttrDefs.by_name[normalized_name] and hero_attr_system and hero_attr_system.get_attr then
-      value = hero_attr_system.get_attr(hero, normalized_name)
-    end
-    if (value == nil or tonumber(value) == 0) and fallback_name then
-      local normalized_fallback = AttrDefs.aliases[fallback_name] or fallback_name
-      if AttrDefs.by_name[normalized_fallback] and hero_attr_system and hero_attr_system.get_attr then
-        value = hero_attr_system.get_attr(hero, normalized_fallback)
-      end
-    end
-    if value == nil and hero.get_attr then
+    if hero.get_attr then
       local ok, attr_value = pcall(hero.get_attr, hero, normalized_name)
       if ok then
         value = attr_value
+      end
+    end
+    if (value == nil or tonumber(value) == 0) and fallback_name then
+      local normalized_fallback = AttrDefs.aliases[fallback_name] or fallback_name
+      if hero.get_attr then
+        local ok, attr_value = pcall(hero.get_attr, hero, normalized_fallback)
+        if ok then
+          value = attr_value
+        end
       end
     end
     return tonumber(value) or 0

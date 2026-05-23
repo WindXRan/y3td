@@ -14,14 +14,7 @@ env.award_rewards = _G.award_rewards or function() end
 local message = _G.message or function() end
 local design_seconds = BootHelpers.design_seconds
 local random_point_in_area = _G.AreaUtils and _G.AreaUtils.random_point_in_area or function(area_id) return (STATE.defense_point) end
-local hero_attr_system = _G.hero_attr_system or {
-  init_hero_attrs = function() end,
-  set_attr = function() end,
-  add_attr = function() end,
-  get_attr = function() return 0 end,
-  rebuild_derived_attrs = function() end,
-  log_snapshot = function() end,
-}
+-- hero_attr_system 已移除，直接使用原生属性 API
 local hero_model = _G.hero_model or {
   apply_hero_model = function() return false end,
   resolve_model_id = function() return nil end,
@@ -41,7 +34,7 @@ local ENEMY_BASE_SPEED_FACTORS = {
 local ctx = {
   STATE = STATE, CONFIG = CONFIG, y3 = y3, message = message, env = env, api = api,
   design_seconds = design_seconds, random_point_in_area = random_point_in_area,
-  hero_attr_system = hero_attr_system, hero_model = hero_model,
+  hero_model = hero_model,
   set_attr_pack = (_G.AttrUtils and _G.AttrUtils.set_attr_pack) or function() end,
   add_attr_pack = (_G.AttrUtils and _G.AttrUtils.add_attr_pack) or function() end,
   play_enemy_death_sound = play_enemy_death_sound,

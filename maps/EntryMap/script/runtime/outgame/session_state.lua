@@ -24,7 +24,6 @@ function M.create(env)
   local enforce_runtime_ui_phase = _G.enforce_runtime_ui_phase or function() end
 
   local battlefield_system = _G.battlefield_system
-  local hero_attr_system = _G.hero_attr_system
   local progression_system = _G.progression_system
   local runtime_ui_helpers = _G.runtime_ui_helpers
   local destroy_choice_panel = runtime_ui_helpers and runtime_ui_helpers.destroy_choice_panel or function() end
@@ -91,7 +90,7 @@ function M.create(env)
   local sync_gear_runtime_effects = env.sync_gear_runtime_effects or
     function(state, hero, config)
       if GearUpgrades and GearUpgrades.sync_runtime_bonuses then
-        return GearUpgrades.sync_runtime_bonuses(state, hero, config, hero_attr_system)
+        return GearUpgrades.sync_runtime_bonuses(state, hero, config)
       end
     end
 
@@ -251,17 +250,7 @@ function M.create(env)
         end
       end
     end
-    if hero_attr_system and STATE.hero then
-      hero_attr_system.snapshot(STATE.hero, STATE)
-      if hero_attr_system.log_snapshot then
-        hero_attr_system.log_snapshot(
-          STATE.hero,
-          'start_selected_stage',
-          string.format('hp=%s', tostring(STATE.hero:get_hp())),
-          STATE
-        )
-      end
-    end
+    -- snapshot 已移除，直接使用原生属性 API
     initialize_hero_progression()
     setup_basic_attack_ability()
     if not try_initialize_battle_ui() then

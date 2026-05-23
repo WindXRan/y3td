@@ -235,7 +235,7 @@ function M.persist_archive_shop_specs_to_profile()
   M.mark_profile_dirty()
 end
 
-function M.ensure_profile_defaults(profile, hero_growth_api)
+function M.ensure_profile_defaults(profile)
   local dirty = false
   if type(profile.version) ~= 'number' then
     profile.version = 1
@@ -251,9 +251,6 @@ function M.ensure_profile_defaults(profile, hero_growth_api)
   end
   if type(profile.hero_attr_bonus_stats) ~= 'table' then
     profile.hero_attr_bonus_stats = {}
-    dirty = true
-  end
-  if hero_growth_api and hero_growth_api.ensure_profile_defaults and hero_growth_api.ensure_profile_defaults(profile) then
     dirty = true
   end
   if M.ensure_archive_items_profile_defaults(profile) then
@@ -281,7 +278,7 @@ function M.ensure_profile_defaults(profile, hero_growth_api)
   return dirty
 end
 
-function M.load_profile(hero_growth_api)
+function M.load_profile()
   if STATE.outgame_profile then
     return STATE.outgame_profile
   end
@@ -299,12 +296,12 @@ function M.load_profile(hero_growth_api)
     M.set_save_backend_state(false, result)
   end
 
-  local defaults_ok, defaults_dirty_or_err = pcall(M.ensure_profile_defaults, profile, hero_growth_api)
+  local defaults_ok, defaults_dirty_or_err = pcall(M.ensure_profile_defaults, profile)
   if not defaults_ok then
     profile = {}
     STATE.outgame_profile = profile
     M.set_save_backend_state(false, defaults_dirty_or_err)
-    M.ensure_profile_defaults(profile, hero_growth_api)
+    M.ensure_profile_defaults(profile)
     return profile
   end
 
@@ -316,12 +313,12 @@ function M.load_profile(hero_growth_api)
   return profile
 end
 
-function M.apply_battle_result(result, hero_growth_api)
+function M.apply_battle_result(result)
   if not result then
     return nil
   end
 
-  local profile = M.load_profile(hero_growth_api)
+  local profile = M.load_profile()
 
   profile.last_result.is_win = result.is_win == true
   profile.last_result.reached_wave_index = math.max(0, result.reached_wave_index or 0)

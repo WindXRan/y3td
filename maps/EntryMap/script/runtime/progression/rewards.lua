@@ -93,22 +93,18 @@ local function build_choices(level)
   return choices
 end
 
-local function apply_attr_pack_to_hero(hero, attr_pack, hero_attr_system)
+local function apply_attr_pack_to_hero(hero, attr_pack)
   if not hero or not attr_pack then
     return
   end
   for attr_name, value in pairs(attr_pack) do
     local num_value = tonumber(value) or 0
-    if num_value ~= 0 then
-      if hero_attr_system and hero_attr_system.add_attr then
-        hero_attr_system.add_attr(hero, attr_name, num_value)
-      elseif hero.add_attr then
-        hero:add_attr(attr_name, num_value)
-      end
+    if num_value ~= 0 and hero.add_attr then
+      hero:add_attr(attr_name, num_value)
     end
   end
-  if hero_attr_system and hero_attr_system.rebuild_derived_attrs then
-    hero_attr_system.rebuild_derived_attrs(hero)
+  if hero.update_attr then
+    hero:update_attr()
   end
 end
 
@@ -169,7 +165,6 @@ end
 local env
 local STATE = env and env.STATE or _G.STATE
   local message = _G.message
-  local hero_attr_system = _G.hero_attr_system
   local hero_model = _G.hero_model
 
   local api = {
@@ -257,7 +252,7 @@ local STATE = env and env.STATE or _G.STATE
 
     local hero = STATE.hero
     if hero and hero.is_exist and hero:is_exist() then
-      apply_attr_pack_to_hero(hero, choice.attr_pack or {}, hero_attr_system)
+      apply_attr_pack_to_hero(hero, choice.attr_pack or {})
     end
 
     runtime.applied_packs[#runtime.applied_packs + 1] = copy_pack(choice.attr_pack)
@@ -602,7 +597,7 @@ local STATE = env and env.STATE or _G.STATE
           negative_attr[attr_name] = -value
         end
       end
-      apply_attr_pack_to_hero(STATE.hero, negative_attr, hero_attr_system)
+      apply_attr_pack_to_hero(STATE.hero, negative_attr)
     end
 
     apply_evolution_attack_skill_bonus(previous.attack_skill or {}, -1)
@@ -610,7 +605,7 @@ local STATE = env and env.STATE or _G.STATE
     local aggregate = build_evolution_bonus_pack()
 
     if STATE.hero and STATE.hero:is_exist() then
-      apply_attr_pack_to_hero(STATE.hero, aggregate.attr, hero_attr_system)
+      apply_attr_pack_to_hero(STATE.hero, aggregate.attr)
     end
 
     apply_evolution_attack_skill_bonus(aggregate.attack_skill or {}, 1)
